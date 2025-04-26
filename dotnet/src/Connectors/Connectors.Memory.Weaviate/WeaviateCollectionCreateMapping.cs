@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -139,64 +138,31 @@ internal static class WeaviateCollectionCreateMapping
     /// </summary>
     private static string MapType(Type type)
     {
-        // Check if the type is a collection.
-        if (typeof(IEnumerable).IsAssignableFrom(type) && type != typeof(string))
-        {
-            var elementType = GetCollectionElementType(type);
-
-            // If type is a collection, handle collection element type.
-            return MapType(elementType, isCollection: true);
-        }
-
-        // If type is not a collection, handle single type.
-        return MapType(type, isCollection: false);
-    }
-
-    /// <summary>
-    /// Maps record property type to Weaviate data type.
-    /// More information here: <see href="https://weaviate.io/developers/weaviate/config-refs/datatypes"/>.
-    /// </summary>
-    private static string MapType(Type type, bool isCollection)
-    {
         return type switch
         {
-            Type t when t == typeof(string) => isCollection ? "text[]" : "text",
-            Type t when t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) ||
-                        t == typeof(int?) || t == typeof(long?) || t == typeof(short?) || t == typeof(byte?) => isCollection ? "int[]" : "int",
-            Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) ||
-                        t == typeof(float?) || t == typeof(double?) || t == typeof(decimal?) => isCollection ? "number[]" : "number",
-            Type t when t == typeof(DateTime) || t == typeof(DateTime?) ||
-                        t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => isCollection ? "date[]" : "date",
-            Type t when t == typeof(Guid) || t == typeof(Guid?) => isCollection ? "uuid[]" : "uuid",
-            Type t when t == typeof(bool) || t == typeof(bool?) => isCollection ? "boolean[]" : "boolean",
-            _ => isCollection ? "object[]" : "object",
+            var t when TryMapType(type, out var mappedType) => mappedType,
+            var t when type.IsArray && TryMapType(type.GetElementType()!, out var mappedType) => mappedType + "[]",
+            var t when type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)
+                && TryMapType(type.GenericTypeArguments[0], out var mappedType) => mappedType + "[]",
+            _ => throw new NotSupportedException($"Type '{type.Name}' is not supported by Weaviate.")
         };
-    }
 
-    /// <summary>
-    /// Gets the element type of a collection.
-    /// </summary>
-    /// <remarks>
-    /// For example, when <paramref name="type"/> is <see cref="List{T}"/>, returned type will be generic parameter <see langword="T"/>.
-    /// </remarks>
-    private static Type GetCollectionElementType(Type type)
-    {
-        if (type.IsArray)
+        bool TryMapType(Type type, [NotNullWhen(true)] out string? mappedType)
         {
-            var elementType = type.GetElementType();
-
-            if (elementType is not null)
+            mappedType = (Nullable.GetUnderlyingType(type) ?? type) switch
             {
-                return elementType;
-            }
-        }
+                Type t when t == typeof(string) => "text",
+                Type t when t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) => "int",
+                Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) => "number",
+                Type t when t == typeof(DateTime) || t == typeof(DateTimeOffset) => "date",
+                Type t when t == typeof(Guid) => "uuid",
+                Type t when t == typeof(bool) => "boolean",
 
-        if (type.IsGenericType)
-        {
-            return type.GetGenericArguments().First();
-        }
+                _ => null
+            };
 
-        return typeof(object);
+            return mappedType is not null;
+        }
     }
 
     #endregion

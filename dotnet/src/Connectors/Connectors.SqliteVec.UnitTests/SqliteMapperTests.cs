@@ -172,7 +172,7 @@ public sealed class SqliteMapperTests
     }
 
     private static CollectionModel BuildModel(Type type, VectorStoreRecordDefinition definition)
-        => new CollectionModelBuilder(SqliteConstants.ModelBuildingOptions).Build(type, definition, defaultEmbeddingGenerator: null);
+        => new SqliteModelBuilder().Build(type, definition, defaultEmbeddingGenerator: null);
 
 #pragma warning disable CA1812
     private sealed class TestRecord<TKey>

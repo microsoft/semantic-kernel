@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -14,13 +15,17 @@ using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
+// TODO: Remove this once we implement IDisposable at the abstraction level
+#pragma warning disable CA1063
+#pragma warning disable CA1816
+
 /// <summary>
 /// Represents a collection of vector store records in a Postgres database.
 /// </summary>
 /// <typeparam name="TKey">The type of the key.</typeparam>
 /// <typeparam name="TRecord">The type of the record.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
+public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : class
@@ -48,12 +53,13 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// </summary>
     /// <param name="dataSource">The data source to use for connecting to the database.</param>
     /// <param name="name">The name of the collection.</param>
-    /// <param name="ownsDataSource">A value indicating whether <paramref name="dataSource"/> is disposed after the collection is disposed.</param>
+    /// <param name="ownsDataSource">A value indicating whether <paramref name="dataSource"/> is disposed when the collection is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead.")]
+    [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead")]
     public PostgresCollection(NpgsqlDataSource dataSource, string name, bool ownsDataSource, PostgresCollectionOptions? options = default)
         : this(() => new PostgresDbClient(dataSource, options?.Schema, ownsDataSource), name, options)
     {
-        Verify.NotNull(dataSource);
     }
 
     /// <summary>
@@ -62,6 +68,8 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <param name="connectionString">Postgres database connection string.</param>
     /// <param name="name">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead.")]
+    [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead")]
     public PostgresCollection(string connectionString, string name, PostgresCollectionOptions? options = default)
         : this(() => new PostgresDbClient(PostgresUtils.CreateDataSource(connectionString), options?.Schema, ownsDataSource: true), name, options)
     {
@@ -77,16 +85,24 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <remarks>
     /// This constructor is internal. It allows internal code to create an instance of this class with a custom client.
     /// </remarks>
+    [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead.")]
+    [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead.")]
     internal PostgresCollection(Func<PostgresDbClient> clientFactory, string name, PostgresCollectionOptions? options)
+        : this(
+            clientFactory,
+            name,
+            new PostgresModelBuilder().Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator),
+            options)
+    {
+    }
+
+    internal PostgresCollection(Func<PostgresDbClient> clientFactory, string name, CollectionModel model, PostgresCollectionOptions? options)
     {
         Verify.NotNullOrWhiteSpace(name);
 
         this.Name = name;
-
-        this._model = new PostgresModelBuilder()
-            .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
-
-        this._mapper = new PostgresMapper<TRecord>(this._model);
+        this._model = model;
+        this._mapper = new PostgresMapper<TRecord>(model);
 
         // The code above can throw, so we need to create the client after the model is built and verified.
         // In case an exception is thrown, we don't need to dispose any resources.
@@ -369,7 +385,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
 
             default:
                 throw new InvalidOperationException(
-                    PostgresModelBuilder.SupportedVectorTypes.Contains(typeof(TInput))
+                    PostgresModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
                         ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                         : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }
@@ -402,11 +418,10 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         var vectorType = vector.GetType();
 
-        if (!PostgresModelBuilder.SupportedVectorTypes.Contains(vectorType))
+        if (!PostgresModelBuilder.IsVectorPropertyTypeValidCore(vectorType, out var supportedTypes))
         {
             throw new NotSupportedException(
-                $"The provided vector type {vectorType.Name} is not supported by the PostgreSQL connector. " +
-                $"Supported types are: {string.Join(", ", PostgresModelBuilder.SupportedVectorTypes.Select(l => l.Name))}");
+                $"The provided vector type {vectorType.Name} is not supported by the PostgreSQL connector. Supported types are: {supportedTypes}");
         }
 
         if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))

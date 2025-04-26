@@ -62,6 +62,20 @@ public static class PineconeFactory
                 }) as VectorStoreCollection<TKey, TRecord>)!;
         }
 
+        public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        {
+            // Create a Pinecone collection and pass in our custom record definition that matches
+            // the schema used by Langchain so that the default mapper can use the storage names
+            // in it, to map to the storage scheme.
+            return new PineconeDynamicCollection(
+                _pineconeClient,
+                name,
+                new()
+                {
+                    VectorStoreRecordDefinition = s_recordDefinition
+                });
+        }
+
         public override object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);
 
         public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => innerStore.ListCollectionNamesAsync(cancellationToken);

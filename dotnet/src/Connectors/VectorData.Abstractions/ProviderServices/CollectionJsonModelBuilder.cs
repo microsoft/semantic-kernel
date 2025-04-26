@@ -14,14 +14,14 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// This is an internal support type meant for use by connectors only, and not for use by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public class CollectionJsonModelBuilder : CollectionModelBuilder
+public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
 {
-    private JsonSerializerOptions _jsonSerializerOptions = JsonSerializerOptions.Default;
+    private JsonSerializerOptions? _jsonSerializerOptions;
 
     /// <summary>
     /// Constructs a new <see cref="CollectionJsonModelBuilder"/>.
     /// </summary>
-    public CollectionJsonModelBuilder(CollectionModelBuildingOptions options)
+    protected CollectionJsonModelBuilder(CollectionModelBuildingOptions options)
         : base(options)
     {
         if (!options.UsesExternalSerializer)
@@ -33,18 +33,30 @@ public class CollectionJsonModelBuilder : CollectionModelBuilder
     /// <summary>
     /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="vectorStoreRecordDefinition"/>.
     /// </summary>
+    [RequiresDynamicCode("This model building variant is not compatible with NativeAOT. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
+    [RequiresUnreferencedCode("This model building variant is not compatible with trimming. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     public virtual CollectionModel Build(
         Type type,
         VectorStoreRecordDefinition? vectorStoreRecordDefinition,
         IEmbeddingGenerator? defaultEmbeddingGenerator,
-        JsonSerializerOptions? jsonSerializerOptions)
+        JsonSerializerOptions jsonSerializerOptions)
     {
-        if (jsonSerializerOptions is not null)
-        {
-            this._jsonSerializerOptions = jsonSerializerOptions;
-        }
+        this._jsonSerializerOptions = jsonSerializerOptions;
 
         return this.Build(type, vectorStoreRecordDefinition, defaultEmbeddingGenerator);
+    }
+
+    /// <summary>
+    /// Builds and returns an <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="vectorStoreRecordDefinition"/>.
+    /// </summary>
+    public virtual CollectionModel BuildDynamic(
+        VectorStoreRecordDefinition vectorStoreRecordDefinition,
+        IEmbeddingGenerator? defaultEmbeddingGenerator,
+        JsonSerializerOptions jsonSerializerOptions)
+    {
+        this._jsonSerializerOptions = jsonSerializerOptions;
+
+        return this.BuildDynamic(vectorStoreRecordDefinition, defaultEmbeddingGenerator);
     }
 
     /// <inheritdoc/>
@@ -53,7 +65,7 @@ public class CollectionJsonModelBuilder : CollectionModelBuilder
         // This mimics the naming behavior of the System.Text.Json serializer, which we use for serialization/deserialization.
         // The property storage names in the model must in sync with the serializer configuration, since the model is used e.g. for filtering
         // even if serialization/deserialization doesn't use the model.
-        var namingPolicy = this._jsonSerializerOptions.PropertyNamingPolicy;
+        var namingPolicy = this._jsonSerializerOptions?.PropertyNamingPolicy;
 
         foreach (var property in this.Properties)
         {

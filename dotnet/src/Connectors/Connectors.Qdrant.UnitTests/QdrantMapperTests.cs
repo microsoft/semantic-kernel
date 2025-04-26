@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client.Grpc;
 using Xunit;
@@ -24,7 +23,7 @@ public class QdrantMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(ulong));
-        var model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(hasNamedVectors))
+        var model = new QdrantModelBuilder(hasNamedVectors)
             .Build(typeof(SinglePropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<SinglePropsModel<ulong>>(model, hasNamedVectors);
 
@@ -54,7 +53,7 @@ public class QdrantMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(Guid));
-        var model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(hasNamedVectors))
+        var model = new QdrantModelBuilder(hasNamedVectors)
             .Build(typeof(SinglePropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<SinglePropsModel<Guid>>(model, hasNamedVectors);
 
@@ -77,7 +76,7 @@ public class QdrantMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(ulong));
-        var model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(hasNamedVectors))
+        var model = new QdrantModelBuilder(hasNamedVectors)
             .Build(typeof(SinglePropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<SinglePropsModel<ulong>>(model, hasNamedVectors);
 
@@ -109,7 +108,7 @@ public class QdrantMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(Guid));
-        var model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(hasNamedVectors))
+        var model = new QdrantModelBuilder(hasNamedVectors)
             .Build(typeof(SinglePropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<SinglePropsModel<Guid>>(model, hasNamedVectors);
 
@@ -137,7 +136,7 @@ public class QdrantMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(ulong));
-        var model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+        var model = new QdrantModelBuilder(hasNamedVectors: true)
             .Build(typeof(MultiPropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
 
         var sut = new QdrantMapper<MultiPropsModel<ulong>>(model, hasNamedVectors: true);
@@ -166,7 +165,7 @@ public class QdrantMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(Guid));
-        var model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+        var model = new QdrantModelBuilder(hasNamedVectors: true)
             .Build(typeof(MultiPropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<MultiPropsModel<Guid>>(model, hasNamedVectors: true);
 
@@ -196,7 +195,7 @@ public class QdrantMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(ulong));
-        var model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+        var model = new QdrantModelBuilder(hasNamedVectors: true)
             .Build(typeof(MultiPropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<MultiPropsModel<ulong>>(model, hasNamedVectors: true);
 
@@ -235,7 +234,7 @@ public class QdrantMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(Guid));
-        var model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+        var model = new QdrantModelBuilder(hasNamedVectors: true)
             .Build(typeof(MultiPropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantMapper<MultiPropsModel<Guid>>(model, hasNamedVectors: true);
 

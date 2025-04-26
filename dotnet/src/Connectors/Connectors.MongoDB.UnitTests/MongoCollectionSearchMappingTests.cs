@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
@@ -18,8 +17,7 @@ namespace SemanticKernel.Connectors.MongoDB.UnitTests;
 public sealed class MongoCollectionSearchMappingTests
 {
     private readonly CollectionModel _model = new MongoModelBuilder()
-        .Build(
-            typeof(Dictionary<string, object?>),
+        .BuildDynamic(
             new()
             {
                 Properties =

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,6 +52,8 @@ public sealed class MongoVectorStore : VectorStore
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+    [RequiresDynamicCode("This overload of GetCollection() is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
+    [RequiresUnreferencedCode("This overload of GetCollecttion() is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
 #if NET8_0_OR_GREATER
     public override MongoCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #else
@@ -64,6 +67,22 @@ public sealed class MongoVectorStore : VectorStore
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator
             });
+
+    /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    public override MongoDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#else
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#endif
+        => new MongoDynamicCollection(
+            this._mongoDatabase,
+            name,
+            new()
+            {
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._embeddingGenerator,
+            }
+        );
 #pragma warning restore IDE0090
 
     /// <inheritdoc />
@@ -89,14 +108,14 @@ public sealed class MongoVectorStore : VectorStore
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.DeleteCollectionAsync(cancellationToken);
     }
 

@@ -3,10 +3,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -16,42 +15,6 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 internal static class QdrantFieldMapping
 {
-    public static CollectionModelBuildingOptions GetModelBuildOptions(bool hasNamedVectors)
-        => new()
-        {
-            RequiresAtLeastOneVector = !hasNamedVectors,
-            SupportsMultipleKeys = false,
-            SupportsMultipleVectors = hasNamedVectors,
-
-            SupportedKeyPropertyTypes = [typeof(ulong), typeof(Guid)],
-            SupportedDataPropertyTypes = QdrantFieldMapping.s_supportedDataTypes,
-            SupportedEnumerableDataPropertyElementTypes = QdrantFieldMapping.s_supportedDataTypes,
-            SupportedVectorPropertyTypes = QdrantFieldMapping.s_supportedVectorTypes
-        };
-
-    /// <summary>A set of types that data properties on the provided model may have.</summary>
-    public static readonly HashSet<Type> s_supportedDataTypes =
-    [
-        typeof(string),
-        typeof(int),
-        typeof(long),
-        typeof(double),
-        typeof(float),
-        typeof(bool),
-        typeof(DateTimeOffset)
-    ];
-
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    /// <remarks>
-    /// While qdrant supports float32 and uint64, the api only supports float64, therefore
-    /// any float32 vectors will be converted to float64 before being sent to qdrant.
-    /// </remarks>
-    public static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?)
-    ];
-
     /// <summary>
     /// Convert the given <paramref name="payloadValue"/> to the correct native type based on its properties.
     /// </summary>
@@ -59,37 +22,77 @@ internal static class QdrantFieldMapping
     /// <param name="targetType">The target type to convert the value to.</param>
     /// <returns>The converted native value.</returns>
     /// <exception cref="InvalidOperationException">Thrown when an unsupported type is encountered.</exception>
-    public static object? ConvertFromGrpcFieldValueToNativeType(Value payloadValue, Type targetType)
+    public static object? Deserialize(Value payloadValue, Type targetType)
     {
+        if (Nullable.GetUnderlyingType(targetType) is Type unwrapped)
+        {
+            targetType = unwrapped;
+        }
+
         return payloadValue.KindCase switch
         {
             Value.KindOneofCase.NullValue => null,
-            Value.KindOneofCase.IntegerValue =>
-                targetType == typeof(int) || targetType == typeof(int?) ?
-                (object)(int)payloadValue.IntegerValue :
-                (object)payloadValue.IntegerValue,
-            Value.KindOneofCase.StringValue =>
-                ConvertStringValue(payloadValue.StringValue),
-            Value.KindOneofCase.DoubleValue =>
-                targetType == typeof(float) || targetType == typeof(float?) ?
-                (object)(float)payloadValue.DoubleValue :
-                (object)payloadValue.DoubleValue,
-            Value.KindOneofCase.BoolValue => payloadValue.BoolValue,
-            Value.KindOneofCase.ListValue => VectorStoreRecordMapping.CreateEnumerable(
-                payloadValue.ListValue.Values.Select(
-                    x => ConvertFromGrpcFieldValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))),
-                targetType),
+
+            Value.KindOneofCase.IntegerValue
+                => targetType == typeof(int) ? (object)(int)payloadValue.IntegerValue : (object)payloadValue.IntegerValue,
+
+            Value.KindOneofCase.StringValue when targetType == typeof(DateTimeOffset)
+                => DeserializeDateTimeOffset(payloadValue.StringValue),
+
+            Value.KindOneofCase.StringValue
+                => payloadValue.StringValue,
+
+            Value.KindOneofCase.DoubleValue
+                => targetType == typeof(float) ? (object)(float)payloadValue.DoubleValue : (object)payloadValue.DoubleValue,
+
+            Value.KindOneofCase.BoolValue
+                => payloadValue.BoolValue,
+
+            Value.KindOneofCase.ListValue => DeserializeCollection(payloadValue, targetType),
+
             _ => throw new InvalidOperationException($"Unsupported grpc value kind {payloadValue.KindCase}."),
         };
 
-        object ConvertStringValue(string stringValue)
-        {
-            return targetType switch
+        static object? DeserializeCollection(Value payloadValue, Type targetType)
+            => targetType switch
             {
-                Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => DateTimeOffset.Parse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-                _ => stringValue,
+                Type t when t == typeof(List<int>)
+                    => payloadValue.ListValue.Values.Select(v => (int)v.IntegerValue).ToList(),
+                Type t when t == typeof(int[])
+                    => payloadValue.ListValue.Values.Select(v => (int)v.IntegerValue).ToArray(),
+                Type t when t == typeof(List<long>)
+                    => payloadValue.ListValue.Values.Select(v => v.IntegerValue).ToList(),
+                Type t when t == typeof(long[])
+                    => payloadValue.ListValue.Values.Select(v => v.IntegerValue).ToArray(),
+
+                Type t when t == typeof(List<string>)
+                    => payloadValue.ListValue.Values.Select(v => v.StringValue).ToList(),
+                Type t when t == typeof(string[])
+                    => payloadValue.ListValue.Values.Select(v => v.StringValue).ToArray(),
+
+                Type t when t == typeof(List<double>)
+                    => payloadValue.ListValue.Values.Select(v => v.DoubleValue).ToList(),
+                Type t when t == typeof(double[])
+                    => payloadValue.ListValue.Values.Select(v => v.DoubleValue).ToArray(),
+                Type t when t == typeof(List<float>)
+                    => payloadValue.ListValue.Values.Select(v => (float)v.DoubleValue).ToList(),
+                Type t when t == typeof(float[])
+                    => payloadValue.ListValue.Values.Select(v => (float)v.DoubleValue).ToArray(),
+
+                Type t when t == typeof(List<bool>)
+                    => payloadValue.ListValue.Values.Select(v => v.BoolValue).ToList(),
+                Type t when t == typeof(bool[])
+                    => payloadValue.ListValue.Values.Select(v => v.BoolValue).ToArray(),
+
+                Type t when t == typeof(List<DateTimeOffset>)
+                    => payloadValue.ListValue.Values.Select(v => DeserializeDateTimeOffset(v.StringValue)).ToList(),
+                Type t when t == typeof(DateTimeOffset[])
+                    => payloadValue.ListValue.Values.Select(v => DeserializeDateTimeOffset(v.StringValue)).ToArray(),
+
+                _ => throw new UnreachableException($"Unsupported collection type {targetType.Name}"),
             };
-        }
+
+        static DateTimeOffset DeserializeDateTimeOffset(string s) => DateTimeOffset.Parse(s, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
     }
 
     /// <summary>

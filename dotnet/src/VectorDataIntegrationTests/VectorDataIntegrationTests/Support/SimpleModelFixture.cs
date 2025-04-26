@@ -46,7 +46,7 @@ public abstract class SimpleModelFixture<TKey> : VectorStoreCollectionFixture<TK
             Properties =
             [
                 new VectorStoreKeyProperty(nameof(SimpleRecord<TKey>.Id), typeof(TKey)),
-                new VectorStoreVectorProperty(nameof(SimpleRecord<TKey>.Floats), typeof(ReadOnlyMemory<float>?), SimpleRecord<TKey>.DimensionCount)
+                new VectorStoreVectorProperty(nameof(SimpleRecord<TKey>.Floats), typeof(ReadOnlyMemory<float>), SimpleRecord<TKey>.DimensionCount)
                 {
                     DistanceFunction = this.DistanceFunction,
                     IndexKind = this.IndexKind

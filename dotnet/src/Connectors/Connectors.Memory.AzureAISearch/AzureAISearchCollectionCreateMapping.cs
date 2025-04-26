@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Azure.Search.Documents.Indexes.Models;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
@@ -117,49 +115,32 @@ internal static class AzureAISearchCollectionCreateMapping
     /// <returns>The <see cref="SearchFieldDataType"/> that corresponds to the given property type.</returns>"
     /// <exception cref="InvalidOperationException">Thrown if the given type is not supported.</exception>
     public static SearchFieldDataType GetSDKFieldDataType(Type propertyType)
-    {
-        return propertyType switch
+        => (Nullable.GetUnderlyingType(propertyType) ?? propertyType) switch
         {
-            Type stringType when stringType == typeof(string) => SearchFieldDataType.String,
-            Type boolType when boolType == typeof(bool) || boolType == typeof(bool?) => SearchFieldDataType.Boolean,
-            Type intType when intType == typeof(int) || intType == typeof(int?) => SearchFieldDataType.Int32,
-            Type longType when longType == typeof(long) || longType == typeof(long?) => SearchFieldDataType.Int64,
-            Type floatType when floatType == typeof(float) || floatType == typeof(float?) => SearchFieldDataType.Double,
-            Type doubleType when doubleType == typeof(double) || doubleType == typeof(double?) => SearchFieldDataType.Double,
-            Type dateTimeType when dateTimeType == typeof(DateTime) || dateTimeType == typeof(DateTime?) => SearchFieldDataType.DateTimeOffset,
-            Type dateTimeOffsetType when dateTimeOffsetType == typeof(DateTimeOffset) || dateTimeOffsetType == typeof(DateTimeOffset?) => SearchFieldDataType.DateTimeOffset,
-            Type collectionType when typeof(IEnumerable).IsAssignableFrom(collectionType) => SearchFieldDataType.Collection(GetSDKFieldDataType(GetEnumerableType(propertyType))),
+            Type t when t == typeof(string) => SearchFieldDataType.String,
+            Type t when t == typeof(bool) => SearchFieldDataType.Boolean,
+            Type t when t == typeof(int) => SearchFieldDataType.Int32,
+            Type t when t == typeof(long) => SearchFieldDataType.Int64,
+            Type t when t == typeof(float) => SearchFieldDataType.Double,
+            Type t when t == typeof(double) => SearchFieldDataType.Double,
+            Type t when t == typeof(DateTime) => SearchFieldDataType.DateTimeOffset,
+            Type t when t == typeof(DateTimeOffset) => SearchFieldDataType.DateTimeOffset,
+
+            Type t when t == typeof(string[]) => SearchFieldDataType.Collection(SearchFieldDataType.String),
+            Type t when t == typeof(List<string>) => SearchFieldDataType.Collection(SearchFieldDataType.String),
+            Type t when t == typeof(bool[]) => SearchFieldDataType.Collection(SearchFieldDataType.Boolean),
+            Type t when t == typeof(List<bool>) => SearchFieldDataType.Collection(SearchFieldDataType.Boolean),
+            Type t when t == typeof(int[]) => SearchFieldDataType.Collection(SearchFieldDataType.Int32),
+            Type t when t == typeof(List<int>) => SearchFieldDataType.Collection(SearchFieldDataType.Int32),
+            Type t when t == typeof(long[]) => SearchFieldDataType.Collection(SearchFieldDataType.Int64),
+            Type t when t == typeof(List<long>) => SearchFieldDataType.Collection(SearchFieldDataType.Int64),
+            Type t when t == typeof(double[]) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
+            Type t when t == typeof(List<double>) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
+            Type t when t == typeof(DateTime[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+            Type t when t == typeof(List<DateTime>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+            Type t when t == typeof(DateTimeOffset[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+            Type t when t == typeof(List<DateTimeOffset>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+
             _ => throw new InvalidOperationException($"Data type '{propertyType}' for {nameof(VectorStoreDataProperty)} is not supported by the Azure AI Search VectorStore.")
         };
-    }
-
-    /// <summary>
-    /// Gets the type of object stored in the given enumerable type.
-    /// </summary>
-    /// <param name="type">The enumerable to get the stored type for.</param>
-    /// <returns>The type of object stored in the given enumerable type.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the given type is not enumerable.</exception>
-    public static Type GetEnumerableType(Type type)
-    {
-        if (type is IEnumerable)
-        {
-            return typeof(object);
-        }
-        else if (type.IsArray)
-        {
-            return type.GetElementType()!;
-        }
-
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-        {
-            return type.GetGenericArguments()[0];
-        }
-
-        if (type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type enumerableInterface)
-        {
-            return enumerableInterface.GetGenericArguments()[0];
-        }
-
-        throw new InvalidOperationException($"Data type '{type}' for {nameof(VectorStoreDataProperty)} is not supported by the Azure AI Search VectorStore.");
-    }
 }

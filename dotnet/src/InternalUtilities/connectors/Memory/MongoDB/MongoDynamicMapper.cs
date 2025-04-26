@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using MongoDB.Bson;
 
@@ -121,7 +119,7 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             return null;
         }
 
-        return propertyType switch
+        var result = propertyType switch
         {
             Type t when t == typeof(bool) => value.AsBoolean,
             Type t when t == typeof(bool?) => value.AsNullableBoolean,
@@ -138,10 +136,64 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             Type t when t == typeof(decimal?) => value.AsNullableDecimal,
             Type t when t == typeof(DateTime) => value.ToUniversalTime(),
             Type t when t == typeof(DateTime?) => value.ToNullableUniversalTime(),
-            Type t when typeof(IEnumerable).IsAssignableFrom(t) => value.AsBsonArray.Select(
-                item => GetDataPropertyValue(propertyName, VectorStoreRecordPropertyVerification.GetCollectionElementType(t), item)),
-            _ => throw new NotSupportedException($"Mapping for property {propertyName} with type {propertyType.FullName} is not supported in dynamic data model.")
+
+            _ => (object?)null
         };
+
+        if (result is not null)
+        {
+            return result;
+        }
+
+        if (propertyType.IsArray)
+        {
+            return propertyType switch
+            {
+                Type t when t == typeof(bool[]) => value.AsBsonArray.Select(x => x.AsBoolean).ToArray(),
+                Type t when t == typeof(bool?[]) => value.AsBsonArray.Select(x => x.AsNullableBoolean).ToArray(),
+                Type t when t == typeof(string[]) => value.AsBsonArray.Select(x => x.AsString).ToArray(),
+                Type t when t == typeof(int[]) => value.AsBsonArray.Select(x => x.AsInt32).ToArray(),
+                Type t when t == typeof(int?[]) => value.AsBsonArray.Select(x => x.AsNullableInt32).ToArray(),
+                Type t when t == typeof(long[]) => value.AsBsonArray.Select(x => x.AsInt64).ToArray(),
+                Type t when t == typeof(long?[]) => value.AsBsonArray.Select(x => x.AsNullableInt64).ToArray(),
+                Type t when t == typeof(float[]) => value.AsBsonArray.Select(x => (float)x.AsDouble).ToArray(),
+                Type t when t == typeof(float?[]) => value.AsBsonArray.Select(x => (float?)x.AsNullableDouble).ToArray(),
+                Type t when t == typeof(double[]) => value.AsBsonArray.Select(x => x.AsDouble).ToArray(),
+                Type t when t == typeof(double?[]) => value.AsBsonArray.Select(x => x.AsNullableDouble).ToArray(),
+                Type t when t == typeof(decimal[]) => value.AsBsonArray.Select(x => x.AsDecimal).ToArray(),
+                Type t when t == typeof(decimal?[]) => value.AsBsonArray.Select(x => x.AsNullableDecimal).ToArray(),
+                Type t when t == typeof(DateTime[]) => value.AsBsonArray.Select(x => x.ToUniversalTime()).ToArray(),
+                Type t when t == typeof(DateTime?[]) => value.AsBsonArray.Select(x => x.ToNullableUniversalTime()).ToArray(),
+
+                _ => (object?)null
+            };
+        }
+
+        if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
+        {
+            return propertyType switch
+            {
+                Type t when t == typeof(List<bool>) => value.AsBsonArray.Select(x => x.AsBoolean).ToList(),
+                Type t when t == typeof(List<bool?>) => value.AsBsonArray.Select(x => x.AsNullableBoolean).ToList(),
+                Type t when t == typeof(List<string>) => value.AsBsonArray.Select(x => x.AsString).ToList(),
+                Type t when t == typeof(List<int>) => value.AsBsonArray.Select(x => x.AsInt32).ToList(),
+                Type t when t == typeof(List<int?>) => value.AsBsonArray.Select(x => x.AsNullableInt32).ToList(),
+                Type t when t == typeof(List<long>) => value.AsBsonArray.Select(x => x.AsInt64).ToList(),
+                Type t when t == typeof(List<long?>) => value.AsBsonArray.Select(x => x.AsNullableInt64).ToList(),
+                Type t when t == typeof(List<float>) => value.AsBsonArray.Select(x => (float)x.AsDouble).ToList(),
+                Type t when t == typeof(List<float?>) => value.AsBsonArray.Select(x => (float?)x.AsNullableDouble).ToList(),
+                Type t when t == typeof(List<double>) => value.AsBsonArray.Select(x => x.AsDouble).ToList(),
+                Type t when t == typeof(List<double?>) => value.AsBsonArray.Select(x => x.AsNullableDouble).ToList(),
+                Type t when t == typeof(List<decimal>) => value.AsBsonArray.Select(x => x.AsDecimal).ToList(),
+                Type t when t == typeof(List<decimal?>) => value.AsBsonArray.Select(x => x.AsNullableDecimal).ToList(),
+                Type t when t == typeof(List<DateTime>) => value.AsBsonArray.Select(x => x.ToUniversalTime()).ToList(),
+                Type t when t == typeof(List<DateTime?>) => value.AsBsonArray.Select(x => x.ToNullableUniversalTime()).ToList(),
+
+                _ => (object?)null
+            };
+        }
+
+        throw new NotSupportedException($"Mapping for property {propertyName} with type {propertyType.FullName} is not supported in dynamic data model.");
     }
 
     private static ReadOnlyMemory<float>? GetVectorPropertyValue(string propertyName, Type propertyType, BsonValue value)

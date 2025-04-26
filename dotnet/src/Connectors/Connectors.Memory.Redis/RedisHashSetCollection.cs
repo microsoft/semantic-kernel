@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -11,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
-using Microsoft.SemanticKernel.Connectors.PgVector;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
 using NRedisStack.Search.Literals.Enums;
@@ -25,7 +25,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
+public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -46,25 +46,7 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,
-        SupportsMultipleVectors = true,
-
-        SupportedKeyPropertyTypes = [typeof(string)],
-
-        SupportedDataPropertyTypes =
-        [
-            typeof(string),
-            typeof(int),
-            typeof(uint),
-            typeof(long),
-            typeof(ulong),
-            typeof(double),
-            typeof(float),
-            typeof(bool)
-        ],
-
-        SupportedEnumerableDataPropertyElementTypes = [],
-
-        SupportedVectorPropertyTypes = s_supportedVectorTypes
+        SupportsMultipleVectors = true
     };
 
     /// <summary>The default options for vector search.</summary>
@@ -95,7 +77,20 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
     /// <param name="name">The name of the collection that this <see cref="RedisHashSetCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
+    // TODO: The provider uses unsafe JSON serialization in many places, #11963
+    [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
     public RedisHashSetCollection(IDatabase database, string name, RedisHashSetCollectionOptions? options = null)
+        : this(
+            database,
+            name,
+            new RedisModelBuilder(ModelBuildingOptions)
+                .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator),
+            options)
+    {
+    }
+
+    internal RedisHashSetCollection(IDatabase database, string name, CollectionModel model, RedisHashSetCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(database);
@@ -109,12 +104,10 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
         // Assign.
         this._database = database;
         this.Name = name;
+        this._model = model;
 
         options ??= RedisHashSetCollectionOptions.Default;
         this._prefixCollectionNameToKeyNames = options.PrefixCollectionNameToKeyNames;
-
-        this._model = new RedisModelBuilder(ModelBuildingOptions)
-            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
 
         // Lookup storage property names.
         this._dataStoragePropertyNameRedisValues = this._model.DataProperties.Select(p => RedisValue.Unbox(p.StorageName)).ToArray();

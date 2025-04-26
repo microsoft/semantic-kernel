@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
@@ -48,46 +48,49 @@ internal static class PostgresPropertyMapping
             return null;
         }
 
-        // Check if the type implements IEnumerable<T>
-        if (propertyType.IsGenericType && propertyType.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
+        // Npgsql returns array values as a .NET array - that's what GetValue() returns below.
+        // If the .NET property is a List<T>, we need an explicit GetFieldValue<List<T>>() call instead.
+        if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
         {
-            var enumerable = (IEnumerable)reader.GetValue(propertyIndex);
-            return VectorStoreRecordMapping.CreateEnumerable(enumerable.Cast<object>(), propertyType);
+            return propertyType switch
+            {
+                Type t when t == typeof(List<bool>) => reader.GetFieldValue<List<bool>>(propertyIndex),
+                Type t when t == typeof(List<short>) => reader.GetFieldValue<List<short>>(propertyIndex),
+                Type t when t == typeof(List<int>) => reader.GetFieldValue<List<int>>(propertyIndex),
+                Type t when t == typeof(List<long>) => reader.GetFieldValue<List<long>>(propertyIndex),
+                Type t when t == typeof(List<float>) => reader.GetFieldValue<List<float>>(propertyIndex),
+                Type t when t == typeof(List<double>) => reader.GetFieldValue<List<double>>(propertyIndex),
+                Type t when t == typeof(List<decimal>) => reader.GetFieldValue<List<decimal>>(propertyIndex),
+                Type t when t == typeof(List<string>) => reader.GetFieldValue<List<string>>(propertyIndex),
+                Type t when t == typeof(List<byte[]>) => reader.GetFieldValue<List<byte[]>>(propertyIndex),
+                Type t when t == typeof(List<DateTime>) => reader.GetFieldValue<List<DateTime>>(propertyIndex),
+                Type t when t == typeof(List<DateTimeOffset>) => reader.GetFieldValue<List<DateTimeOffset>>(propertyIndex),
+                Type t when t == typeof(List<Guid>) => reader.GetFieldValue<List<Guid>>(propertyIndex),
+
+                _ => new UnreachableException()
+
+            };
         }
 
-        return propertyType switch
-        {
-            Type t when t == typeof(bool) || t == typeof(bool?) => reader.GetBoolean(propertyIndex),
-            Type t when t == typeof(short) || t == typeof(short?) => reader.GetInt16(propertyIndex),
-            Type t when t == typeof(int) || t == typeof(int?) => reader.GetInt32(propertyIndex),
-            Type t when t == typeof(long) || t == typeof(long?) => reader.GetInt64(propertyIndex),
-            Type t when t == typeof(float) || t == typeof(float?) => reader.GetFloat(propertyIndex),
-            Type t when t == typeof(double) || t == typeof(double?) => reader.GetDouble(propertyIndex),
-            Type t when t == typeof(decimal) || t == typeof(decimal?) => reader.GetDecimal(propertyIndex),
-            Type t when t == typeof(string) => reader.GetString(propertyIndex),
-            Type t when t == typeof(byte[]) => reader.GetFieldValue<byte[]>(propertyIndex),
-            Type t when t == typeof(DateTime) || t == typeof(DateTime?) => reader.GetDateTime(propertyIndex),
-            Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => reader.GetFieldValue<DateTimeOffset>(propertyIndex),
-            Type t when t == typeof(Guid) => reader.GetFieldValue<Guid>(propertyIndex),
-            _ => reader.GetValue(propertyIndex)
-        };
+        return reader.GetValue(propertyIndex);
     }
 
     public static NpgsqlDbType? GetNpgsqlDbType(Type propertyType) =>
-        propertyType switch
+        (Nullable.GetUnderlyingType(propertyType) ?? propertyType) switch
         {
-            Type t when t == typeof(bool) || t == typeof(bool?) => NpgsqlDbType.Boolean,
-            Type t when t == typeof(short) || t == typeof(short?) => NpgsqlDbType.Smallint,
-            Type t when t == typeof(int) || t == typeof(int?) => NpgsqlDbType.Integer,
-            Type t when t == typeof(long) || t == typeof(long?) => NpgsqlDbType.Bigint,
-            Type t when t == typeof(float) || t == typeof(float?) => NpgsqlDbType.Real,
-            Type t when t == typeof(double) || t == typeof(double?) => NpgsqlDbType.Double,
-            Type t when t == typeof(decimal) || t == typeof(decimal?) => NpgsqlDbType.Numeric,
+            Type t when t == typeof(bool) => NpgsqlDbType.Boolean,
+            Type t when t == typeof(short) => NpgsqlDbType.Smallint,
+            Type t when t == typeof(int) => NpgsqlDbType.Integer,
+            Type t when t == typeof(long) => NpgsqlDbType.Bigint,
+            Type t when t == typeof(float) => NpgsqlDbType.Real,
+            Type t when t == typeof(double) => NpgsqlDbType.Double,
+            Type t when t == typeof(decimal) => NpgsqlDbType.Numeric,
             Type t when t == typeof(string) => NpgsqlDbType.Text,
             Type t when t == typeof(byte[]) => NpgsqlDbType.Bytea,
-            Type t when t == typeof(DateTime) || t == typeof(DateTime?) => NpgsqlDbType.Timestamp,
-            Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => NpgsqlDbType.TimestampTz,
+            Type t when t == typeof(DateTime) => NpgsqlDbType.Timestamp,
+            Type t when t == typeof(DateTimeOffset) => NpgsqlDbType.TimestampTz,
             Type t when t == typeof(Guid) => NpgsqlDbType.Uuid,
+
             _ => null
         };
 
@@ -98,42 +101,49 @@ internal static class PostgresPropertyMapping
     /// <returns>Tuple of the the PostgreSQL type name and whether it can be NULL</returns>
     public static (string PgType, bool IsNullable) GetPostgresTypeName(Type propertyType)
     {
-        var (pgType, isNullable) = propertyType switch
+        static bool TryGetBaseType(Type type, [NotNullWhen(true)] out string? typeName)
         {
-            Type t when t == typeof(bool) => ("BOOLEAN", false),
-            Type t when t == typeof(short) => ("SMALLINT", false),
-            Type t when t == typeof(int) => ("INTEGER", false),
-            Type t when t == typeof(long) => ("BIGINT", false),
-            Type t when t == typeof(float) => ("REAL", false),
-            Type t when t == typeof(double) => ("DOUBLE PRECISION", false),
-            Type t when t == typeof(decimal) => ("NUMERIC", false),
-            Type t when t == typeof(string) => ("TEXT", true),
-            Type t when t == typeof(byte[]) => ("BYTEA", true),
-            Type t when t == typeof(DateTime) => ("TIMESTAMP", false),
-            Type t when t == typeof(DateTimeOffset) => ("TIMESTAMPTZ", false),
-            Type t when t == typeof(Guid) => ("UUID", false),
-            _ => (null, false)
-        };
+            typeName = type switch
+            {
+                Type t when t == typeof(bool) => "BOOLEAN",
+                Type t when t == typeof(short) => "SMALLINT",
+                Type t when t == typeof(int) => "INTEGER",
+                Type t when t == typeof(long) => "BIGINT",
+                Type t when t == typeof(float) => "REAL",
+                Type t when t == typeof(double) => "DOUBLE PRECISION",
+                Type t when t == typeof(decimal) => "NUMERIC",
+                Type t when t == typeof(string) => "TEXT",
+                Type t when t == typeof(byte[]) => "BYTEA",
+                Type t when t == typeof(DateTime) => "TIMESTAMP",
+                Type t when t == typeof(DateTimeOffset) => "TIMESTAMPTZ",
+                Type t when t == typeof(Guid) => "UUID",
+                _ => null
+            };
 
-        if (pgType != null)
-        {
-            return (pgType, isNullable);
+            return typeName is not null;
         }
 
-        // Handle enumerables
-        if (VectorStoreRecordPropertyVerification.IsSupportedEnumerableType(propertyType))
+        // TODO: Handle NRTs properly via NullabilityInfoContext
+
+        if (TryGetBaseType(propertyType, out string? pgType))
         {
-            Type elementType = propertyType.IsArray ? propertyType.GetElementType()! : propertyType.GetGenericArguments()[0];
-            var underlyingPgType = GetPostgresTypeName(elementType);
-            return (underlyingPgType.PgType + "[]", true);
+            return (pgType, !propertyType.IsValueType);
         }
 
         // Handle nullable types (e.g. Nullable<int>)
-        if (Nullable.GetUnderlyingType(propertyType) != null)
+        if (Nullable.GetUnderlyingType(propertyType) is Type unwrappedType
+            && TryGetBaseType(unwrappedType, out string? underlyingPgType))
         {
-            Type underlyingType = Nullable.GetUnderlyingType(propertyType) ?? throw new ArgumentException("Nullable type must have an underlying type.");
-            var underlyingPgType = GetPostgresTypeName(underlyingType);
-            return (underlyingPgType.PgType, true);
+            return (underlyingPgType, true);
+        }
+
+        // Handle collections
+        if ((propertyType.IsArray && TryGetBaseType(propertyType.GetElementType()!, out string? elementPgType))
+            || (propertyType.IsGenericType
+                && propertyType.GetGenericTypeDefinition() == typeof(List<>)
+                && TryGetBaseType(propertyType.GetGenericArguments()[0], out elementPgType)))
+        {
+            return (elementPgType + "[]", true);
         }
 
         throw new NotSupportedException($"Type {propertyType.Name} is not supported by this store.");
@@ -166,24 +176,7 @@ internal static class PostgresPropertyMapping
     }
 
     public static NpgsqlParameter GetNpgsqlParameter(object? value)
-        => value switch
-        {
-            null => new NpgsqlParameter { Value = DBNull.Value },
-
-            // If it's an IEnumerable<T>, use reflection to determine if it needs to be converted to a list.
-            // Exclude strings which are enumerable (but should not be treated as arrays), and BitArray which
-            // represents a pgvector binary embedding.
-            IEnumerable enumerable and not string and not BitArray when value.GetType() is var propertyType
-                // If it's already a List<T>, return it directly
-                => new NpgsqlParameter
-                {
-                    Value = propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>)
-                        ? value
-                        : ConvertToListIfNecessary(enumerable)
-                },
-
-            _ => new NpgsqlParameter { Value = value }
-        };
+        => new() { Value = value ?? DBNull.Value };
 
     /// <summary>
     /// Returns information about indexes to create, validating that the dimensions of the vector are supported.
@@ -240,34 +233,5 @@ internal static class PostgresPropertyMapping
         }
 
         return vectorIndexesToCreate;
-    }
-
-    // Helper method to convert an IEnumerable to a List if necessary
-    private static object ConvertToListIfNecessary(IEnumerable enumerable)
-    {
-        // Get an enumerator to manually iterate over the collection
-        var enumerator = enumerable.GetEnumerator();
-
-        // Check if the collection is empty by attempting to move to the first element
-        if (!enumerator.MoveNext())
-        {
-            return enumerable; // Return the original enumerable if it's empty
-        }
-
-        // Determine the type of the first element
-        var firstItem = enumerator.Current;
-        var itemType = firstItem?.GetType() ?? typeof(object);
-
-        // Create a strongly-typed List<T> based on the type of the first element
-        var typedList = Activator.CreateInstance(typeof(List<>).MakeGenericType(itemType)) as IList;
-        typedList!.Add(firstItem); // Add the first element to the typed list
-
-        // Continue iterating through the rest of the enumerable and add items to the list
-        while (enumerator.MoveNext())
-        {
-            typedList.Add(enumerator.Current);
-        }
-
-        return typedList;
     }
 }

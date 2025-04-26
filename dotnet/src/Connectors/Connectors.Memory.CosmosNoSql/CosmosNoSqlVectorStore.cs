@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -39,6 +40,8 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     /// </summary>
     /// <param name="database"><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
     public CosmosNoSqlVectorStore(Database database, CosmosNoSqlVectorStoreOptions? options = null)
         : this(new(database.Client, ownsClient: false), _ => database, options)
     {
@@ -95,6 +98,8 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+    [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
     public override CosmosNoSqlCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #else
@@ -110,6 +115,26 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
                 JsonSerializerOptions = this._jsonSerializerOptions,
                 EmbeddingGenerator = this._embeddingGenerator
             });
+
+    /// <inheritdoc />
+    [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
+#if NET8_0_OR_GREATER
+    public override CosmosNoSqlDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#else
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#endif
+        => new CosmosNoSqlDynamicCollection(
+            this._clientWrapper.Share(),
+            _ => this._database,
+            name,
+            new()
+            {
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                JsonSerializerOptions = this._jsonSerializerOptions,
+                EmbeddingGenerator = this._embeddingGenerator
+            }
+        );
 #pragma warning restore IDE0090
 
     /// <inheritdoc />
@@ -138,14 +163,14 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.DeleteCollectionAsync(cancellationToken);
     }
 

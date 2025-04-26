@@ -3,9 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +29,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
+public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -61,7 +63,18 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="searchIndexClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when options are misconfigured.</exception>
+    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
     public AzureAISearchCollection(SearchIndexClient searchIndexClient, string name, AzureAISearchCollectionOptions? options = default)
+        : this(
+            searchIndexClient,
+            name,
+            new AzureAISearchModelBuilder().Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator, options?.JsonSerializerOptions ?? JsonSerializerOptions.Default),
+            options)
+    {
+    }
+
+    internal AzureAISearchCollection(SearchIndexClient searchIndexClient, string name, CollectionModel model, AzureAISearchCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(searchIndexClient);
@@ -74,14 +87,11 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
 
         // Assign.
         this.Name = name;
+        this._model = model;
         this._searchIndexClient = searchIndexClient;
         this._searchClient = this._searchIndexClient.GetSearchClient(name);
 
         options ??= AzureAISearchCollectionOptions.Default;
-
-        this._model = typeof(TRecord) == typeof(Dictionary<string, object?>) ?
-            new AzureAISearchDynamicModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator) :
-            new AzureAISearchModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, options.JsonSerializerOptions);
 
         this._mappper = typeof(TRecord) == typeof(Dictionary<string, object?>) ?
             (IAzureAISearchMapper<TRecord>)(object)new AzureAISearchDynamicMapper(this._model, options.JsonSerializerOptions) :
@@ -398,7 +408,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
 
                 default:
                     throw new InvalidOperationException(
-                        AzureAISearchConstants.SupportedVectorTypes.Contains(typeof(TInput))
+                        AzureAISearchModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
                             ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                             : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
             }

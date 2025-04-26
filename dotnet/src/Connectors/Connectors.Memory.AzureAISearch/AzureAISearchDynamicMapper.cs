@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -139,46 +138,80 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
     /// <returns>The value of the json node as the required type.</returns>
     private static object? GetDataPropertyValue(Type propertyType, JsonNode value)
     {
-        if (propertyType == typeof(string))
+        var result = propertyType switch
         {
-            return (string?)value.AsValue();
+            Type t when t == typeof(string) => value.GetValue<string>(),
+            Type t when t == typeof(int) => value.GetValue<int>(),
+            Type t when t == typeof(int?) => value.GetValue<int?>(),
+            Type t when t == typeof(long) => value.GetValue<long>(),
+            Type t when t == typeof(long?) => value.GetValue<long?>(),
+            Type t when t == typeof(float) => value.GetValue<float>(),
+            Type t when t == typeof(float?) => value.GetValue<float?>(),
+            Type t when t == typeof(double) => value.GetValue<double>(),
+            Type t when t == typeof(double?) => value.GetValue<double?>(),
+            Type t when t == typeof(bool) => value.GetValue<bool>(),
+            Type t when t == typeof(bool?) => value.GetValue<bool?>(),
+            Type t when t == typeof(DateTime) => value.GetValue<DateTime>(),
+            Type t when t == typeof(DateTime?) => value.GetValue<DateTime?>(),
+            Type t when t == typeof(DateTimeOffset) => value.GetValue<DateTimeOffset>(),
+            Type t when t == typeof(DateTimeOffset?) => value.GetValue<DateTimeOffset?>(),
+
+            _ => (object?)null
+        };
+
+        if (result is not null)
+        {
+            return result;
         }
 
-        if (propertyType == typeof(int) || propertyType == typeof(int?))
+        if (propertyType.IsArray)
         {
-            return (int?)value.AsValue();
+            return propertyType switch
+            {
+                Type t when t == typeof(string[]) => value.AsArray().Select(x => (string?)x).ToArray(),
+                Type t when t == typeof(int[]) => value.AsArray().Select(x => (int)x!).ToArray(),
+                Type t when t == typeof(int?[]) => value.AsArray().Select(x => (int?)x).ToArray(),
+                Type t when t == typeof(long[]) => value.AsArray().Select(x => (long)x!).ToArray(),
+                Type t when t == typeof(long?[]) => value.AsArray().Select(x => (long?)x).ToArray(),
+                Type t when t == typeof(float[]) => value.AsArray().Select(x => (float)x!).ToArray(),
+                Type t when t == typeof(float?[]) => value.AsArray().Select(x => (float?)x).ToArray(),
+                Type t when t == typeof(double[]) => value.AsArray().Select(x => (double)x!).ToArray(),
+                Type t when t == typeof(double?[]) => value.AsArray().Select(x => (double?)x).ToArray(),
+                Type t when t == typeof(bool[]) => value.AsArray().Select(x => (bool)x!).ToArray(),
+                Type t when t == typeof(bool?[]) => value.AsArray().Select(x => (bool?)x).ToArray(),
+                Type t when t == typeof(DateTime[]) => value.AsArray().Select(x => (DateTime)x!).ToArray(),
+                Type t when t == typeof(DateTime?[]) => value.AsArray().Select(x => (DateTime?)x).ToArray(),
+                Type t when t == typeof(DateTimeOffset[]) => value.AsArray().Select(x => (DateTimeOffset)x!).ToArray(),
+                Type t when t == typeof(DateTimeOffset?[]) => value.AsArray().Select(x => (DateTimeOffset?)x).ToArray(),
+
+                _ => throw new UnreachableException($"Unsupported property type '{propertyType.Name}'.")
+            };
         }
 
-        if (propertyType == typeof(long) || propertyType == typeof(long?))
+        if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
         {
-            return (long?)value.AsValue();
+            return propertyType switch
+            {
+                Type t when t == typeof(List<string>) => value.AsArray().Select(x => (string?)x).ToList(),
+                Type t when t == typeof(List<int>) => value.AsArray().Select(x => (int)x!).ToList(),
+                Type t when t == typeof(List<int?>) => value.AsArray().Select(x => (int?)x).ToList(),
+                Type t when t == typeof(List<long>) => value.AsArray().Select(x => (long)x!).ToList(),
+                Type t when t == typeof(List<long?>) => value.AsArray().Select(x => (long?)x).ToList(),
+                Type t when t == typeof(List<float>) => value.AsArray().Select(x => (float)x!).ToList(),
+                Type t when t == typeof(List<float?>) => value.AsArray().Select(x => (float?)x).ToList(),
+                Type t when t == typeof(List<double>) => value.AsArray().Select(x => (double)x!).ToList(),
+                Type t when t == typeof(List<double?>) => value.AsArray().Select(x => (double?)x).ToList(),
+                Type t when t == typeof(List<bool>) => value.AsArray().Select(x => (bool)x!).ToList(),
+                Type t when t == typeof(List<bool?>) => value.AsArray().Select(x => (bool?)x).ToList(),
+                Type t when t == typeof(List<DateTime>) => value.AsArray().Select(x => (DateTime)x!).ToList(),
+                Type t when t == typeof(List<DateTime?>) => value.AsArray().Select(x => (DateTime?)x).ToList(),
+                Type t when t == typeof(List<DateTimeOffset>) => value.AsArray().Select(x => (DateTimeOffset)x!).ToList(),
+                Type t when t == typeof(List<DateTimeOffset?>) => value.AsArray().Select(x => (DateTimeOffset?)x).ToList(),
+
+                _ => throw new UnreachableException($"Unsupported property type '{propertyType.Name}'.")
+            };
         }
 
-        if (propertyType == typeof(float) || propertyType == typeof(float?))
-        {
-            return (float?)value.AsValue();
-        }
-
-        if (propertyType == typeof(double) || propertyType == typeof(double?))
-        {
-            return (double?)value.AsValue();
-        }
-
-        if (propertyType == typeof(bool) || propertyType == typeof(bool?))
-        {
-            return (bool?)value.AsValue();
-        }
-
-        if (propertyType == typeof(DateTimeOffset) || propertyType == typeof(DateTimeOffset?))
-        {
-            return value.GetValue<DateTimeOffset>();
-        }
-
-        if (typeof(IEnumerable).IsAssignableFrom(propertyType))
-        {
-            return value.Deserialize(propertyType);
-        }
-
-        return null;
+        throw new UnreachableException($"Unsupported property type '{propertyType.Name}'.");
     }
 }

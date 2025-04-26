@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
@@ -27,26 +26,6 @@ public sealed class CollectionModelBuildingOptions
     /// Whether at least one vector property is required.
     /// </summary>
     public required bool RequiresAtLeastOneVector { get; init; }
-
-    /// <summary>
-    /// The set of types that are supported as key properties.
-    /// </summary>
-    public required HashSet<Type>? SupportedKeyPropertyTypes { get; init; }
-
-    /// <summary>
-    /// The set of types that are supported as data properties.
-    /// </summary>
-    public required HashSet<Type>? SupportedDataPropertyTypes { get; init; }
-
-    /// <summary>
-    /// The set of element types that are supported within collection types in data properties.
-    /// </summary>
-    public required HashSet<Type>? SupportedEnumerableDataPropertyElementTypes { get; init; }
-
-    /// <summary>
-    /// The set of types that are supported as vector properties.
-    /// </summary>
-    public required HashSet<Type> SupportedVectorPropertyTypes { get; init; }
 
     /// <summary>
     /// Indicates that an external serializer will be used (e.g. System.Text.Json).

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -17,7 +16,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// </summary>
 /// <remarks>Note that this class is single-use only, and not thread-safe.</remarks>
 [Experimental("MEVD9001")]
-public class CollectionModelBuilder
+public abstract class CollectionModelBuilder
 {
     /// <summary>
     /// Options for building the model.
@@ -57,7 +56,7 @@ public class CollectionModelBuilder
     /// <summary>
     /// Constructs a new <see cref="CollectionModelBuilder"/>.
     /// </summary>
-    public CollectionModelBuilder(CollectionModelBuildingOptions options)
+    protected CollectionModelBuilder(CollectionModelBuildingOptions options)
     {
         if (options.SupportsMultipleKeys && options.ReservedKeyStorageName is not null)
         {
@@ -70,35 +69,67 @@ public class CollectionModelBuilder
     /// <summary>
     /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="vectorStoreRecordDefinition"/>.
     /// </summary>
-    [RequiresDynamicCode("Currently not compatible with NativeAOT code")]
-    [RequiresUnreferencedCode("Currently not compatible with trimming")] // TODO
+    [RequiresDynamicCode("This model building variant is not compatible with NativeAOT. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
+    [RequiresUnreferencedCode("This model building variant is not compatible with trimming. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     public virtual CollectionModel Build(Type type, VectorStoreRecordDefinition? vectorStoreRecordDefinition, IEmbeddingGenerator? defaultEmbeddingGenerator)
     {
+        if (type == typeof(Dictionary<string, object?>))
+        {
+            throw new ArgumentException("Dynamic mapping with Dictionary<string, object?> requires calling BuildDynamic().");
+        }
+
         this.DefaultEmbeddingGenerator = defaultEmbeddingGenerator;
 
-        var dynamicMapping = type == typeof(Dictionary<string, object?>);
+        this.ProcessTypeProperties(type, vectorStoreRecordDefinition);
 
-        if (!dynamicMapping)
+        if (vectorStoreRecordDefinition is not null)
         {
-            this.ProcessTypeProperties(type, vectorStoreRecordDefinition);
+            this.ProcessRecordDefinition(vectorStoreRecordDefinition, type);
         }
 
-        if (vectorStoreRecordDefinition is null)
+        // Go over the properties, set the PropertyInfos to point to the .NET type's properties and validate type compatibility.
+        foreach (var property in this.Properties)
         {
-            if (dynamicMapping)
+            // If we have a CLR type (POCO, not dynamic mapping), get the .NET property's type and make sure it matches the definition.
+            property.PropertyInfo = type.GetProperty(property.ModelName)
+                ?? throw new InvalidOperationException($"Property '{property.ModelName}' not found on CLR type '{type.FullName}'.");
+
+            var clrPropertyType = property.PropertyInfo.PropertyType;
+            if ((Nullable.GetUnderlyingType(clrPropertyType) ?? clrPropertyType) != (Nullable.GetUnderlyingType(property.Type) ?? property.Type))
             {
-                throw new ArgumentException("Vector store record definition must be provided for dynamic mapping.");
+                throw new InvalidOperationException(
+                    $"Property '{property.ModelName}' has a different CLR type in the record definition ('{property.Type.Name}') and on the .NET property ('{property.PropertyInfo.PropertyType}').");
             }
-        }
-        else
-        {
-            this.ProcessRecordDefinition(vectorStoreRecordDefinition, dynamicMapping ? null : type);
         }
 
         this.Customize();
         this.Validate(type);
 
-        return new(type, this.KeyProperties, this.DataProperties, this.VectorProperties, this.PropertyMap);
+        // Extra validation for non-dynamic mapping scenarios: ensure the type has a parameterless constructor.
+        if (!this.Options.UsesExternalSerializer && type.GetConstructor(Type.EmptyTypes) is null)
+        {
+            throw new NotSupportedException($"Type '{type.Name}' must have a parameterless constructor.");
+        }
+
+        return new(type, new ActivatorBasedRecordCreator(), this.KeyProperties, this.DataProperties, this.VectorProperties, this.PropertyMap);
+    }
+
+    /// <summary>
+    /// Builds and returns an <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="vectorStoreRecordDefinition"/>.
+    /// </summary>
+    public virtual CollectionModel BuildDynamic(VectorStoreRecordDefinition vectorStoreRecordDefinition, IEmbeddingGenerator? defaultEmbeddingGenerator)
+    {
+        if (vectorStoreRecordDefinition is null)
+        {
+            throw new ArgumentException("Vector store record definition must be provided for dynamic mapping.");
+        }
+
+        this.DefaultEmbeddingGenerator = defaultEmbeddingGenerator;
+        this.ProcessRecordDefinition(vectorStoreRecordDefinition, type: null);
+        this.Customize();
+        this.Validate(type: null);
+
+        return new(typeof(Dictionary<string, object?>), new DynamicRecordCreator(), this.KeyProperties, this.DataProperties, this.VectorProperties, this.PropertyMap);
     }
 
     /// <summary>
@@ -172,7 +203,7 @@ public class CollectionModelBuilder
                 // Note that inferring the embedding type from the IEmbeddingGenerator isn't trivial, involving both connector logic (around which embedding
                 // types are supported/preferred), as well as the vector property type (which knows about supported input types).
 
-                if (this.DefaultEmbeddingGenerator is null || this.Options.SupportedVectorPropertyTypes.Contains(clrProperty.PropertyType))
+                if (this.DefaultEmbeddingGenerator is null || this.IsVectorPropertyTypeValid(clrProperty.PropertyType, out _))
                 {
                     vectorProperty.EmbeddingType = clrProperty.PropertyType;
                 }
@@ -202,9 +233,7 @@ public class CollectionModelBuilder
     /// <summary>
     /// As part of building the model, this method processes the given <paramref name="vectorStoreRecordDefinition"/>.
     /// </summary>
-    protected virtual void ProcessRecordDefinition(
-        VectorStoreRecordDefinition vectorStoreRecordDefinition,
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type? type)
+    protected virtual void ProcessRecordDefinition(VectorStoreRecordDefinition vectorStoreRecordDefinition, Type? type)
     {
         foreach (VectorStoreProperty definitionProperty in vectorStoreRecordDefinition.Properties)
         {
@@ -235,18 +264,6 @@ public class CollectionModelBuilder
                         break;
                     default:
                         throw new ArgumentException($"Unknown type '{definitionProperty.GetType().FullName}' in vector store record definition.");
-                }
-
-                if (type is not null)
-                {
-                    // If we have a CLR type (POCO, not dynamic mapping), get the .NET property's type and make sure it matches the definition.
-                    property.PropertyInfo = type.GetProperty(property.ModelName)
-                        ?? throw new InvalidOperationException($"Property '{property.ModelName}' not found on CLR type '{type.FullName}'.");
-
-                    if (property.PropertyInfo.PropertyType != property.Type)
-                    {
-                        throw new InvalidOperationException($"Property '{property.ModelName}' has a different CLR type in the record definition ('{property.Type.Name}') and on the .NET property ('{property.PropertyInfo.PropertyType}').");
-                    }
                 }
             }
 
@@ -307,7 +324,7 @@ public class CollectionModelBuilder
                     if (definitionVectorProperty.EmbeddingGenerator is not null)
                     {
                         // If we have a property CLR type (POCO, not dynamic mapping) and it's an embedding type, throw as that's incompatible.
-                        if (this.Options.SupportedVectorPropertyTypes.Contains(vectorProperty.Type))
+                        if (this.IsVectorPropertyTypeValid(vectorProperty.Type, out _))
                         {
                             throw new InvalidOperationException(VectorDataStrings.EmbeddingPropertyTypeIncompatibleWithEmbeddingGenerator(vectorProperty));
                         }
@@ -317,7 +334,7 @@ public class CollectionModelBuilder
                     // If a default embedding generator is defined (at the collection or store level), configure that on the property, but only if the property type is not an embedding type.
                     // If the property type is an embedding type, just ignore the default embedding generator.
                     else if ((vectorStoreRecordDefinition.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator) is IEmbeddingGenerator defaultEmbeddingGenerator
-                        && !this.Options.SupportedVectorPropertyTypes.Contains(vectorProperty.Type))
+                        && !this.IsVectorPropertyTypeValid(vectorProperty.Type, out _))
                     {
                         embeddingGenerator = vectorStoreRecordDefinition.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator;
                     }
@@ -396,31 +413,26 @@ public class CollectionModelBuilder
     /// <summary>
     /// Validates the model after all properties have been processed.
     /// </summary>
-    protected virtual void Validate(Type type)
+    protected virtual void Validate(Type? type)
     {
-        if (!this.Options.UsesExternalSerializer && type.GetConstructor(Type.EmptyTypes) is null)
-        {
-            throw new NotSupportedException($"Type '{type.Name}' must have a parameterless constructor.");
-        }
-
         if (!this.Options.SupportsMultipleKeys && this.KeyProperties.Count > 1)
         {
-            throw new NotSupportedException($"Multiple key properties found on type '{type.Name}' or the provided {nameof(VectorStoreRecordDefinition)} while only one is supported.");
+            throw new NotSupportedException($"Multiple key properties found on {TypeMessage()}the provided {nameof(VectorStoreRecordDefinition)} while only one is supported.");
         }
 
         if (this.KeyProperties.Count == 0)
         {
-            throw new NotSupportedException($"No key property found on type '{type.Name}' or the provided {nameof(VectorStoreRecordDefinition)} while at least one is required.");
+            throw new NotSupportedException($"No key property found on {TypeMessage()}the provided {nameof(VectorStoreRecordDefinition)} while at least one is required.");
         }
 
         if (this.Options.RequiresAtLeastOneVector && this.VectorProperties.Count == 0)
         {
-            throw new NotSupportedException($"No vector property found on type '{type.Name}' or the provided {nameof(VectorStoreRecordDefinition)} while at least one is required.");
+            throw new NotSupportedException($"No vector property found on {TypeMessage()}the provided {nameof(VectorStoreRecordDefinition)} while at least one is required.");
         }
 
         if (!this.Options.SupportsMultipleVectors && this.VectorProperties.Count > 1)
         {
-            throw new NotSupportedException($"Multiple vector properties found on type '{type.Name}' or the provided {nameof(VectorStoreRecordDefinition)} while only one is supported.");
+            throw new NotSupportedException($"Multiple vector properties found on {TypeMessage()}the provided {nameof(VectorStoreRecordDefinition)} while only one is supported.");
         }
 
         var storageNameMap = new Dictionary<string, PropertyModel>();
@@ -436,6 +448,8 @@ public class CollectionModelBuilder
 
             storageNameMap[property.StorageName] = property;
         }
+
+        string TypeMessage() => type is null ? "" : $"type '{type.Name}' or ";
     }
 
     /// <summary>
@@ -447,31 +461,28 @@ public class CollectionModelBuilder
 
         Debug.Assert(propertyModel.Type is not null);
 
-        if (type.IsGenericType && Nullable.GetUnderlyingType(type) is Type underlyingType)
-        {
-            type = underlyingType;
-        }
-
         switch (propertyModel)
         {
             case KeyPropertyModel keyProperty:
-                if (this.Options.SupportedKeyPropertyTypes is not null)
+                if (!this.IsKeyPropertyTypeValid(keyProperty.Type, out var supportedTypes))
                 {
-                    ValidatePropertyType(propertyModel.ModelName, type, "Key", this.Options.SupportedKeyPropertyTypes);
+                    throw new NotSupportedException(
+                        $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: {supportedTypes}.");
                 }
                 break;
 
             case DataPropertyModel dataProperty:
-                if (this.Options.SupportedDataPropertyTypes is not null)
+                if (!this.IsDataPropertyTypeValid(dataProperty.Type, out supportedTypes))
                 {
-                    ValidatePropertyType(propertyModel.ModelName, type, "Data", this.Options.SupportedDataPropertyTypes, this.Options.SupportedEnumerableDataPropertyElementTypes);
+                    throw new NotSupportedException(
+                        $"Property '{dataProperty.ModelName}' has unsupported type '{type.Name}'. Data properties must be one of the supported types: {supportedTypes}.");
                 }
                 break;
 
             case VectorPropertyModel vectorProperty:
                 Debug.Assert(vectorProperty.EmbeddingGenerator is null ^ vectorProperty.Type != vectorProperty.EmbeddingType);
 
-                if (!this.Options.SupportedVectorPropertyTypes.Contains(vectorProperty.EmbeddingType))
+                if (!this.IsVectorPropertyTypeValid(vectorProperty.EmbeddingType, out supportedTypes))
                 {
                     throw new InvalidOperationException(
                         vectorProperty.EmbeddingGenerator is null
@@ -491,104 +502,33 @@ public class CollectionModelBuilder
         }
     }
 
-    private static void ValidatePropertyType(string propertyName, Type propertyType, string propertyCategoryDescription, HashSet<Type> supportedTypes, HashSet<Type>? supportedEnumerableElementTypes = null)
+    /// <summary>
+    /// Validates that the .NET type for a key property is supported by the provider.
+    /// </summary>
+    protected abstract bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes);
+
+    /// <summary>
+    /// Validates that the .NET type for a data property is supported by the provider.
+    /// </summary>
+    protected abstract bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes);
+
+    /// <summary>
+    /// Validates that the .NET type for a vector property is supported by the provider.
+    /// </summary>
+    protected abstract bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes);
+
+    [RequiresUnreferencedCode("This record creator is incompatible with trimming and is only used in non-trimming compatible codepaths")]
+    private sealed class ActivatorBasedRecordCreator : IRecordCreator
     {
-        // Add shortcut before testing all the more expensive scenarios.
-        if (supportedTypes.Contains(propertyType))
-        {
-            return;
-        }
-
-        // Check all collection scenarios and get stored type.
-        if (supportedEnumerableElementTypes?.Count > 0 && IsSupportedEnumerableType(propertyType))
-        {
-            var typeToCheck = GetCollectionElementType(propertyType);
-
-            if (!supportedEnumerableElementTypes.Contains(typeToCheck))
-            {
-                var supportedEnumerableElementTypesString = string.Join(", ", supportedEnumerableElementTypes!.Select(t => t.FullName));
-                throw new NotSupportedException($"Enumerable {propertyCategoryDescription} properties must have one of the supported element types: {supportedEnumerableElementTypesString}. Element type of the property '{propertyName}' is {typeToCheck.FullName}.");
-            }
-        }
-        else
-        {
-            // if we got here, we know the type is not supported
-            var supportedTypesString = string.Join(", ", supportedTypes.Select(t => t.FullName));
-            var supportedEnumerableTypesString = supportedEnumerableElementTypes is { Count: > 0 } ? string.Join(", ", supportedEnumerableElementTypes.Select(t => t.FullName)) : null;
-            throw new NotSupportedException($"""
-                Property '{propertyName}' has unsupported type '{propertyType.Name}'.
-                {propertyCategoryDescription} properties must be one of the supported types: {supportedTypesString}{(supportedEnumerableElementTypes is null ? "" : ", or a collection type over: " + supportedEnumerableElementTypes)}.
-                """);
-        }
+        public TRecord Create<TRecord>()
+            => Activator.CreateInstance<TRecord>() ?? throw new InvalidOperationException($"Failed to instantiate record of type '{typeof(TRecord).Name}'.");
     }
 
-    private static bool IsSupportedEnumerableType(Type type)
+    private sealed class DynamicRecordCreator : IRecordCreator
     {
-        if (type.IsArray || type == typeof(IEnumerable))
-        {
-            return true;
-        }
-
-#if NET6_0_OR_GREATER
-        if (typeof(IList).IsAssignableFrom(type) && type.GetMemberWithSameMetadataDefinitionAs(s_objectGetDefaultConstructorInfo) != null)
-#else
-        if (typeof(IList).IsAssignableFrom(type) && type.GetConstructor(Type.EmptyTypes) != null)
-#endif
-        {
-            return true;
-        }
-
-        if (type.IsGenericType)
-        {
-            var genericTypeDefinition = type.GetGenericTypeDefinition();
-            if (genericTypeDefinition == typeof(ICollection<>) ||
-                genericTypeDefinition == typeof(IEnumerable<>) ||
-                genericTypeDefinition == typeof(IList<>) ||
-                genericTypeDefinition == typeof(IReadOnlyCollection<>) ||
-                genericTypeDefinition == typeof(IReadOnlyList<>))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        public TRecord Create<TRecord>()
+            => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? (TRecord)(object)new Dictionary<string, object?>()
+                : throw new UnreachableException($"Dynamic record creator only supports Dictionary<string, object?>, but got {typeof(TRecord).Name}.");
     }
-
-    private static Type GetCollectionElementType(Type collectionType)
-    {
-        return collectionType switch
-        {
-            IEnumerable => typeof(object),
-            var enumerableType when GetGenericEnumerableInterface(enumerableType) is Type enumerableInterface => enumerableInterface.GetGenericArguments()[0],
-            var arrayType when arrayType.IsArray => arrayType.GetElementType()!,
-            _ => collectionType
-        };
-    }
-
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2070:UnrecognizedReflectionPattern",
-        Justification = "The 'IEnumerable<>' Type must exist and so trimmer kept it. In which case " +
-            "It also kept it on any type which implements it. The below call to GetInterfaces " +
-            "may return fewer results when trimmed but it will return 'IEnumerable<>' " +
-            "if the type implemented it, even after trimming.")]
-    private static Type? GetGenericEnumerableInterface(Type type)
-    {
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-        {
-            return type;
-        }
-
-        foreach (Type typeToCheck in type.GetInterfaces())
-        {
-            if (typeToCheck.IsGenericType && typeToCheck.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-            {
-                return typeToCheck;
-            }
-        }
-
-        return null;
-    }
-
-#if NET6_0_OR_GREATER
-    private static readonly ConstructorInfo s_objectGetDefaultConstructorInfo = typeof(object).GetConstructor(Type.EmptyTypes)!;
-#endif
 }

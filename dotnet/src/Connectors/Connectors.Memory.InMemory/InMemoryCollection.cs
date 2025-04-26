@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -21,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
+public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : class
@@ -46,25 +47,16 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// </summary>
     /// <param name="name">The name of the collection that this <see cref="InMemoryCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresUnreferencedCode("The InMemory provider is incompatible with trimming.")]
+    [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
     public InMemoryCollection(string name, InMemoryCollectionOptions? options = default)
+        : this(
+            internalCollection: null,
+            internalCollectionTypes: null,
+            name,
+            new InMemoryModelBuilder().Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator),
+            options)
     {
-        // Verify.
-        Verify.NotNullOrWhiteSpace(name);
-
-        // Assign.
-        this.Name = name;
-        this._internalCollections = new();
-        this._internalCollectionTypes = new();
-        options ??= new InMemoryCollectionOptions();
-
-        this._model = new InMemoryModelBuilder()
-            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
-
-        this._collectionMetadata = new()
-        {
-            VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
-            CollectionName = name
-        };
     }
 
     /// <summary>
@@ -72,17 +64,44 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// </summary>
     /// <param name="internalCollection">Internal storage for the record collection.</param>
     /// <param name="internalCollectionTypes">The data type of each collection, to enforce a single type per collection.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="InMemoryCollection{TKey,TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="InMemoryCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresUnreferencedCode("The InMemory provider is incompatible with trimming.")]
+    [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
     internal InMemoryCollection(
         ConcurrentDictionary<string, ConcurrentDictionary<object, object>> internalCollection,
         ConcurrentDictionary<string, Type> internalCollectionTypes,
-        string collectionName,
+        string name,
         InMemoryCollectionOptions? options = default)
-        : this(collectionName, options)
+        : this(name, options)
     {
         this._internalCollections = internalCollection;
         this._internalCollectionTypes = internalCollectionTypes;
+    }
+
+    internal InMemoryCollection(
+        ConcurrentDictionary<string, ConcurrentDictionary<object, object>>? internalCollection,
+        ConcurrentDictionary<string, Type>? internalCollectionTypes,
+        string name,
+        CollectionModel model,
+        InMemoryCollectionOptions? options)
+    {
+        // Verify.
+        Verify.NotNullOrWhiteSpace(name);
+
+        // Assign.
+        this.Name = name;
+        this._model = model;
+
+        this._internalCollections = internalCollection ?? new();
+        this._internalCollectionTypes = internalCollectionTypes ?? new();
+        options ??= new InMemoryCollectionOptions();
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
+            CollectionName = name
+        };
     }
 
     /// <inheritdoc />
@@ -255,7 +274,7 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
 
             default:
                 throw new InvalidOperationException(
-                    InMemoryModelBuilder.ValidationOptions.SupportedVectorPropertyTypes.Contains(typeof(TInput))
+                    InMemoryModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
                         ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                         : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }
@@ -423,6 +442,7 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// The user provides a filter expression accepting a Record, but we internally store it wrapped in an InMemoryVectorRecordWrapper.
     /// This method converts a filter expression accepting a Record to one accepting an InMemoryVectorRecordWrapper.
     /// </summary>
+    [RequiresUnreferencedCode("Filtering isn't supported with trimming.")]
     private Expression<Func<InMemoryRecordWrapper<TRecord>, bool>> ConvertFilter(Expression<Func<TRecord, bool>> recordFilter)
     {
         var wrapperParameter = Expression.Parameter(typeof(InMemoryRecordWrapper<TRecord>), "w");

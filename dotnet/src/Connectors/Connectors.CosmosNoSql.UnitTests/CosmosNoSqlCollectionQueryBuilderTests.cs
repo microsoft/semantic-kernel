@@ -18,8 +18,7 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
 {
     private const string ScorePropertyName = "TestScore";
 
-    private readonly CollectionModel _model = new CosmosNoSqlModelBuilder().Build(
-        typeof(Dictionary<string, object?>),
+    private readonly CollectionModel _model = new CosmosNoSqlModelBuilder().BuildDynamic(
         new()
         {
             Properties =
@@ -192,8 +191,7 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
         const string KeyStoragePropertyName = "id";
         const string PartitionKeyPropertyName = "TestProperty1";
 
-        var model = new CosmosNoSqlModelBuilder().Build(
-            typeof(Dictionary<string, object?>),
+        var model = new CosmosNoSqlModelBuilder().BuildDynamic(
             new()
             {
                 Properties =

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -21,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 /// <typeparam name="TKey">The data type of the record key. Can be <see cref="string"/> or <see cref="ulong"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
+public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect
@@ -62,10 +63,22 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <param name="connectionString">The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</param>
     /// <param name="name">The name of the collection/table that this <see cref="SqliteCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate SqliteDynamicCollection instead.")]
+    [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate SqliteDynamicCollection instead")]
     public SqliteCollection(
         string connectionString,
         string name,
         SqliteCollectionOptions? options = default)
+        : this(
+            connectionString,
+            name,
+            new SqliteModelBuilder()
+                .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator),
+            options)
+    {
+    }
+
+    internal SqliteCollection(string connectionString, string name, CollectionModel model, SqliteCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(connectionString);
@@ -79,15 +92,13 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
         // Assign.
         this._connectionString = connectionString;
         this.Name = name;
+        this._model = model;
 
         options ??= SqliteCollectionOptions.Default;
 
         // Escape both table names before exposing them to anything that may build SQL commands.
         this._dataTableName = name.EscapeIdentifier();
         this._vectorTableName = GetVectorTableName(name, options).EscapeIdentifier();
-
-        this._model = new CollectionModelBuilder(SqliteConstants.ModelBuildingOptions)
-            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
 
         this._vectorPropertiesExist = this._model.VectorProperties.Count > 0;
 
@@ -174,7 +185,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
             default:
                 throw new InvalidOperationException(
-                    SqliteConstants.SupportedVectorTypes.Contains(typeof(TInput))
+                    SqliteModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
                         ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                         : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }
@@ -208,11 +219,10 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
         Verify.NotLessThan(top, 1);
 
         var vectorType = vector.GetType();
-        if (!SqliteConstants.SupportedVectorTypes.Contains(vectorType))
+        if (!SqliteModelBuilder.IsVectorPropertyTypeValidCore(vectorType, out var supportedTypes))
         {
             throw new NotSupportedException(
-                $"The provided vector type {vectorType.FullName} is not supported by the SQLite connector. " +
-                $"Supported types are: {string.Join(", ", SqliteConstants.SupportedVectorTypes.Select(l => l.FullName))}");
+                $"The provided vector type {vectorType.FullName} is not supported by the SQLite connector. Supported types are: {supportedTypes}");
         }
 
         if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))

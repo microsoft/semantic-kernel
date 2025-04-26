@@ -135,7 +135,7 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
             {
                 dataProperty.SetValueAsObject(
                     outputRecord,
-                    QdrantFieldMapping.ConvertFromGrpcFieldValueToNativeType(fieldValue, dataProperty.Type));
+                    QdrantFieldMapping.Deserialize(fieldValue, dataProperty.Type));
             }
         }
 

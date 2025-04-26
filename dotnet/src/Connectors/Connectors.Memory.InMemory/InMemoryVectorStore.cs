@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,6 +45,8 @@ public sealed class InMemoryVectorStore : VectorStore
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+    [RequiresUnreferencedCode("The InMemory provider is incompatible with trimming.")]
+    [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
     public override InMemoryCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #else
@@ -66,6 +69,25 @@ public sealed class InMemoryVectorStore : VectorStore
             });
         return collection!;
     }
+
+    /// <inheritdoc />
+    [RequiresUnreferencedCode("The InMemory provider is incompatible with trimming.")]
+    [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
+#if NET8_0_OR_GREATER
+    public override InMemoryDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#else
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#endif
+        => new InMemoryDynamicCollection(
+            this._internalCollections,
+            this._internalCollectionTypes,
+            name,
+            new()
+            {
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._embeddingGenerator,
+            }
+        );
 #pragma warning restore IDE0090
 
     /// <inheritdoc />

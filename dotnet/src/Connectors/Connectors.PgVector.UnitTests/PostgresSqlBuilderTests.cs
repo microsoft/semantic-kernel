@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.PgVector;
 using Pgvector;
 using Xunit;
@@ -50,7 +49,7 @@ public class PostgresSqlBuilderTests
             ]
         };
 
-        var model = new CollectionModelBuilder(PostgresModelBuilder.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null);
+        var model = new PostgresModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null);
 
         var cmdInfo = PostgresSqlBuilder.BuildCreateTableCommand("public", "testcollection", model, ifNotExists: ifNotExists);
 
@@ -279,7 +278,7 @@ public class PostgresSqlBuilderTests
             ]
         };
 
-        var model = new CollectionModelBuilder(PostgresModelBuilder.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null);
+        var model = new PostgresModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null);
 
         var key = 123;
 
@@ -324,7 +323,7 @@ public class PostgresSqlBuilderTests
 
         var keys = new List<long> { 123, 124 };
 
-        var model = new CollectionModelBuilder(PostgresModelBuilder.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null);
+        var model = new PostgresModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null);
 
         // Act
         var cmdInfo = PostgresSqlBuilder.BuildGetBatchCommand("public", "testcollection", model, keys, includeVectors: true);

@@ -21,8 +21,7 @@ public sealed class WeaviateCollectionCreateMappingTests
     {
         // Arrange
         var model = new WeaviateModelBuilder(HasNamedVectors)
-            .Build(
-                typeof(Dictionary<string, object?>),
+            .BuildDynamic(
                 new VectorStoreRecordDefinition
                 {
                     Properties =
@@ -45,8 +44,7 @@ public sealed class WeaviateCollectionCreateMappingTests
     {
         // Arrange
         var model = new WeaviateModelBuilder(HasNamedVectors)
-            .Build(
-                typeof(Dictionary<string, object?>),
+            .BuildDynamic(
                 new VectorStoreRecordDefinition
                 {
                     Properties =
@@ -70,8 +68,7 @@ public sealed class WeaviateCollectionCreateMappingTests
     {
         // Arrange
         var model = new WeaviateModelBuilder(HasNamedVectors)
-            .Build(
-                typeof(Dictionary<string, object?>),
+            .BuildDynamic(
                 new VectorStoreRecordDefinition
                 {
                     Properties =
@@ -96,8 +93,7 @@ public sealed class WeaviateCollectionCreateMappingTests
     {
         // Arrange
         var model = new WeaviateModelBuilder(HasNamedVectors)
-            .Build(
-                typeof(Dictionary<string, object?>),
+            .BuildDynamic(
                 new VectorStoreRecordDefinition
                 {
                     Properties =
@@ -168,8 +164,7 @@ public sealed class WeaviateCollectionCreateMappingTests
     {
         // Arrange
         var model = new WeaviateModelBuilder(HasNamedVectors)
-            .Build(
-                typeof(Dictionary<string, object?>),
+            .BuildDynamic(
                 new VectorStoreRecordDefinition
                 {
                     Properties =
@@ -201,8 +196,7 @@ public sealed class WeaviateCollectionCreateMappingTests
     {
         // Arrange
         var model = new WeaviateModelBuilder(hasNamedVectors)
-            .Build(
-                typeof(Dictionary<string, object?>),
+            .BuildDynamic(
                 new VectorStoreRecordDefinition
                 {
                     Properties =

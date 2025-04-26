@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,6 +35,8 @@ public sealed class SqlServerVectorStore : VectorStore
     /// </summary>
     /// <param name="connectionString">The connection string.</param>
     /// <param name="options">Optional configuration options.</param>
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
     public SqlServerVectorStore(string connectionString, SqlServerVectorStoreOptions? options = null)
     {
         Verify.NotNullOrWhiteSpace(connectionString);
@@ -55,6 +58,8 @@ public sealed class SqlServerVectorStore : VectorStore
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc/>
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
     public override SqlServerCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #else
@@ -73,6 +78,26 @@ public sealed class SqlServerVectorStore : VectorStore
                 EmbeddingGenerator = this._embeddingGenerator
             });
     }
+
+    /// <inheritdoc />
+    // TODO: The provider uses unsafe JSON serialization in many places, #11963
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
+#if NET8_0_OR_GREATER
+    public override SqlServerDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#else
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#endif
+        => new SqlServerDynamicCollection(
+            this._connectionString,
+            name,
+            new()
+            {
+                Schema = this._schema,
+                RecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._embeddingGenerator,
+            }
+        );
 #pragma warning restore IDE0090
 
     /// <inheritdoc/>
@@ -99,14 +124,14 @@ public sealed class SqlServerVectorStore : VectorStore
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.DeleteCollectionAsync(cancellationToken);
     }
 

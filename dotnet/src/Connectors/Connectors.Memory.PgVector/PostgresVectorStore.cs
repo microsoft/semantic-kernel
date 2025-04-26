@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -32,7 +33,7 @@ public sealed class PostgresVectorStore : VectorStore
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
     /// </summary>
     /// <param name="dataSource">Postgres data source.</param>
-    /// <param name="ownsDataSource">A value indicating whether <paramref name="dataSource"/> is disposed after the vector store is disposed.</param>
+    /// <param name="ownsDataSource">A value indicating whether <paramref name="dataSource"/> is disposed when this instance of <see cref="PostgresVectorStore"/> is disposed.</param>
     /// <param name="options">Optional configuration options for this class</param>
     public PostgresVectorStore(NpgsqlDataSource dataSource, bool ownsDataSource, PostgresVectorStoreOptions? options = default)
     {
@@ -80,6 +81,8 @@ public sealed class PostgresVectorStore : VectorStore
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+    [RequiresDynamicCode("This overload of GetCollection() is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
+    [RequiresUnreferencedCode("This overload of GetCollecttion() is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
 #if NET8_0_OR_GREATER
     public override PostgresCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #else
@@ -88,26 +91,43 @@ public sealed class PostgresVectorStore : VectorStore
         => new PostgresCollection<TKey, TRecord>(
             () => this._client.Share(),
             name,
-            new PostgresCollectionOptions()
+            new()
             {
                 Schema = this._schema,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator,
             }
         );
-#pragma warning restore IDE0090
+
+    /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    public override PostgresDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#else
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#endif
+        => new PostgresDynamicCollection(
+            () => this._client.Share(),
+            name,
+            new()
+            {
+                Schema = this._schema,
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._embeddingGenerator,
+            }
+        );
+#pragma warning restore IDE0090 // Use 'new(...)'
 
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.DeleteCollectionAsync(cancellationToken);
     }
 

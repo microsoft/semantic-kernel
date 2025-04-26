@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,6 +41,8 @@ public sealed class RedisVectorStore : VectorStore
     /// </summary>
     /// <param name="database">The redis database to read/write indices from.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresUnreferencedCode("The Redis provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Redis provider is currently incompatible with NativeAOT.")]
     public RedisVectorStore(IDatabase database, RedisVectorStoreOptions? options = default)
     {
         Verify.NotNull(database);
@@ -58,6 +61,9 @@ public sealed class RedisVectorStore : VectorStore
     }
 
     /// <inheritdoc />
+    // TODO: The provider uses unsafe JSON serialization in many places, #11963
+    [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         => this._storageType switch
         {
@@ -68,6 +74,28 @@ public sealed class RedisVectorStore : VectorStore
             }),
 
             RedisStorageType.Json => new RedisJsonCollection<TKey, TRecord>(this._database, name, new RedisJsonCollectionOptions()
+            {
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._embeddingGenerator
+            }),
+
+            _ => throw new UnreachableException()
+        };
+
+    /// <inheritdoc />
+    // TODO: The provider uses unsafe JSON serialization in many places, #11963
+    [RequiresUnreferencedCode("The Redis provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Redis provider is currently incompatible with NativeAOT.")]
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+        => this._storageType switch
+        {
+            RedisStorageType.HashSet => new RedisHashSetDynamicCollection(this._database, name, new RedisHashSetCollectionOptions()
+            {
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._embeddingGenerator
+            }),
+
+            RedisStorageType.Json => new RedisJsonDynamicCollection(this._database, name, new RedisJsonCollectionOptions()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator
@@ -99,14 +127,14 @@ public sealed class RedisVectorStore : VectorStore
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.DeleteCollectionAsync(cancellationToken);
     }
 

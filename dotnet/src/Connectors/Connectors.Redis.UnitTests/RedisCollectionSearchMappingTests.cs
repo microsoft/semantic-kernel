@@ -242,9 +242,6 @@ public class RedisCollectionSearchMappingTests
 #pragma warning restore CA1812
 
     private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
-        => new CollectionModelBuilder(RedisHashSetCollection<string, DummyType>.ModelBuildingOptions)
-            .Build(
-                typeof(Dictionary<string, object?>),
-                new() { Properties = properties },
-                defaultEmbeddingGenerator: null);
+        => new RedisModelBuilder(RedisHashSetCollection<string, DummyType>.ModelBuildingOptions)
+            .BuildDynamic(new() { Properties = properties }, defaultEmbeddingGenerator: null);
 }
