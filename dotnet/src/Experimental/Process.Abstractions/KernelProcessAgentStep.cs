@@ -22,6 +22,9 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
     {
         Verify.NotNull(agentDefinition);
         this.AgentDefinition = agentDefinition;
+
+        // Register the state as a know type for the DataContractSerialization used by Dapr.
+        KernelProcessState.RegisterDerivedType(state.GetType());
     }
 
     /// <summary>

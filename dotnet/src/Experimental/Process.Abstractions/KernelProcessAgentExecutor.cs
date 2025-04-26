@@ -29,7 +29,7 @@ public class KernelProcessAgentExecutor : KernelProcessStep<KernelProcessAgentEx
     /// <inheritdoc/>
     public override ValueTask ActivateAsync(KernelProcessStepState<KernelProcessAgentExecutorState> state)
     {
-        this._state = state.State!;
+        this._state = state.State ?? new();
 
         return base.ActivateAsync(state);
     }
