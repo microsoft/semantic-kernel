@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
@@ -213,5 +214,44 @@ public sealed class Gemini_FunctionCalling(ITestOutputHelper output) : BaseTest(
             }
         }
         */
+    }
+
+    [Fact]
+    public async Task GoogleAIFunctionCallingNullable()
+    {
+        Assert.NotNull(TestConfiguration.GoogleAI.ApiKey);
+
+        var kernelBuilder = Kernel.CreateBuilder()
+            .AddGoogleAIGeminiChatCompletion(
+                modelId: "gemini-2.0-flash",
+                apiKey: TestConfiguration.GoogleAI.ApiKey);
+
+        kernelBuilder.Plugins.AddFromType<Plugin>();
+
+        var promptExecutionSettings = new GeminiPromptExecutionSettings()
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+        }
+
+        var kernel = kernelBuilder.Build();
+
+        var response = await kernel.InvokePromptAsync("Hi, what's the weather in New York?", new(promptExecutionSettings));
+
+        Console.WriteLine(response.ToString());
+    }
+
+    private sealed class Plugin
+    {
+        [KernelFunction]
+        [Description("Get the weather for a given location.")]
+        private string GetWeather(Request request)
+        {
+            return $"The weather in {request?.Location} is sunny.";
+        }
+    }
+
+    private sealed class Request
+    {
+        public string? Location { get; set; }
     }
 }
