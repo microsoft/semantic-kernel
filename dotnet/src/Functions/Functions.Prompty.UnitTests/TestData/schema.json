@@ -1,0 +1,17 @@
+﻿{
+  "type": "object",
+  "properties": {
+    "answer": {
+      "type": "string"
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    }
+  },
+  "required": [ "answer", "citations" ],
+  "additionalProperties": false
+}  

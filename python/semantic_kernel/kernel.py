@@ -3,7 +3,7 @@
 import logging
 from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from contextlib import AbstractAsyncContextManager
-from copy import copy
+from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
@@ -487,6 +487,28 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             inputs[field_to_store] = vectors[0]  # type: ignore
             return
         setattr(inputs, field_to_store, vectors[0])
+
+    def clone(self) -> "Kernel":
+        """Clone the kernel instance to create a new one that may be mutated without affecting the current instance.
+
+        The current instance is not mutated by this operation.
+
+        Note: The same service clients are used in the new instance, so if you mutate the service clients
+        in the new instance, the original instance will be affected as well.
+
+        New lists of plugins and filters are created. It will not affect the original lists when the new instance
+        is mutated. A new `ai_service_selector` is created. It will not affect the original instance when the new
+        instance is mutated.
+        """
+        return Kernel(
+            plugins=deepcopy(self.plugins),
+            # Shallow copy of the services, as they are not serializable
+            services={k: v for k, v in self.services.items()},
+            ai_service_selector=deepcopy(self.ai_service_selector),
+            function_invocation_filters=deepcopy(self.function_invocation_filters),
+            prompt_rendering_filters=deepcopy(self.prompt_rendering_filters),
+            auto_function_invocation_filters=deepcopy(self.auto_function_invocation_filters),
+        )
 
     @experimental
     def as_mcp_server(
