@@ -42,14 +42,10 @@ from semantic_kernel.agents.azure_ai.agent_content_generation import (
     get_function_call_contents,
 )
 from semantic_kernel.agents.azure_ai.azure_ai_agent_utils import AzureAIAgentUtils
-from semantic_kernel.agents.open_ai.assistant_content_generation import (
-    merge_streaming_function_results,
-)
+from semantic_kernel.agents.open_ai.assistant_content_generation import merge_streaming_function_results
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
-from semantic_kernel.connectors.ai.function_calling_utils import (
-    kernel_function_metadata_to_function_call_format,
-)
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -304,7 +300,7 @@ class AgentThreadActions:
                             message_id=message_call_details.message_creation.message_id,  # type: ignore
                         )
                         if message:
-                            content = generate_message_content(agent.name, message)
+                            content = generate_message_content(agent.name, message, completed_step)
                             if content and len(content.items) > 0:
                                 message_count += 1
                                 logger.debug(
