@@ -23,19 +23,20 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// provided <see cref="IVectorSearch{TRecord}"/> for performing searches and
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
-    /// <param name="vectorizedSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the search.</param>
+    /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the search.</param>
     /// <param name="textEmbeddingGeneration"><see cref="ITextEmbeddingGenerationService"/> instance used to create a vector from the text query.</param>
     /// <param name="stringMapper"><see cref="MapFromResultToString" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="MapFromResultToTextSearchResult" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
+    [Obsolete("Use the constructor without an ITextEmbeddingGenerationService and pass a vectorSearch configured to perform embedding generation with IEmbeddingGenerator")]
     public VectorStoreTextSearch(
-        IVectorSearch<TRecord> vectorizedSearch,
+        IVectorSearch<TRecord> vectorSearch,
         ITextEmbeddingGenerationService textEmbeddingGeneration,
         MapFromResultToString stringMapper,
         MapFromResultToTextSearchResult resultMapper,
         VectorStoreTextSearchOptions? options = null) :
         this(
-            vectorizedSearch,
+            vectorSearch,
             textEmbeddingGeneration,
             stringMapper is null ? null : new TextSearchStringMapper(stringMapper),
             resultMapper is null ? null : new TextSearchResultMapper(resultMapper),
@@ -53,6 +54,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
+    [Obsolete("Use the constructor without an ITextEmbeddingGenerationService and pass a vectorSearch configured to perform embedding generation with IEmbeddingGenerator")]
     public VectorStoreTextSearch(
         IVectorSearch<TRecord> vectorSearch,
         ITextEmbeddingGenerationService textEmbeddingGeneration,
@@ -204,7 +206,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             Skip = searchOptions.Skip,
         };
 
-        if (this._vectorSearch is not null)
+        if (this._textEmbeddingGeneration is not null)
         {
             var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
 

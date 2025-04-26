@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if DISABLED
-
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -52,7 +50,10 @@ public class InMemoryVectorStoreTextSearchTests : BaseVectorStoreTextSearchTests
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
 
+        // TODO: Once OpenAITextEmbeddingGenerationService implements MEAI's IEmbeddingGenerator (#10811), configure it with the InMemoryVectorStore above instead of passing it here.
+#pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
         return new VectorStoreTextSearch<DataModel>(vectorSearch, this.EmbeddingGenerator!, stringMapper, resultMapper);
+#pragma warning restore CS0618
     }
 
     /// <inheritdoc/>
@@ -76,5 +77,3 @@ public class InMemoryVectorStoreTextSearchTests : BaseVectorStoreTextSearchTests
         return true;
     }
 }
-
-#endif

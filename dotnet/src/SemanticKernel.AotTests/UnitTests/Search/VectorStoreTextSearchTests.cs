@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if DISABLED
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -48,7 +46,7 @@ internal sealed class VectorStoreTextSearchTests
         };
         var vectorizableTextSearch = new MockVectorizableTextSearch<DataModel>(testData);
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton<IVectorizableTextSearch<DataModel>>(vectorizableTextSearch);
+        serviceCollection.AddSingleton<IVectorSearch<DataModel>>(vectorizableTextSearch);
 
         // Act
         serviceCollection.AddVectorStoreTextSearch<DataModel>();
@@ -84,5 +82,3 @@ internal sealed class VectorStoreTextSearchTests
         public required string Link { get; init; }
     }
 }
-
-#endif
