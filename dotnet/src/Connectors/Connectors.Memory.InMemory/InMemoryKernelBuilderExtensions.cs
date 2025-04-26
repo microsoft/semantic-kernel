@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 
@@ -32,7 +33,7 @@ public static class InMemoryKernelBuilderExtensions
     /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
-    public static IKernelBuilder AddInMemoryVectorStoreRecordCollection<TKey, TRecord>(
+    public static IKernelBuilder AddInMemoryVectorStoreRecordCollection<TKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)] TRecord>(
         this IKernelBuilder builder,
         string collectionName,
         InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default,

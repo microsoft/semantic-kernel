@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+#if NET7_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 using System.Threading;
 
 namespace Microsoft.Extensions.VectorData;
@@ -28,7 +31,11 @@ public interface IVectorStore
     /// <seealso cref="VectorStoreRecordKeyAttribute"/>
     /// <seealso cref="VectorStoreRecordDataAttribute"/>
     /// <seealso cref="VectorStoreRecordVectorAttribute"/>
-    IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey,
+#if NET7_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)]
+#endif
+    TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull;
 
     /// <summary>
