@@ -6,10 +6,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -28,7 +27,10 @@ internal class RedisFilterTranslator
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        this.Translate(lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = true };
+        var preprocessedExpression = preprocessor.Visit(lambdaExpression.Body);
+
+        this.Translate(preprocessedExpression);
         return this._filter.ToString();
     }
 
@@ -93,8 +95,7 @@ internal class RedisFilterTranslator
         bool TryProcessEqualityComparison(Expression first, Expression second)
         {
             // TODO: Nullable
-            if (this.TryBindProperty(first, out var property)
-                && TryGetConstant(second, out var constantValue))
+            if (this.TryBindProperty(first, out var property) && second is ConstantExpression { Value: var constantValue })
             {
                 // Numeric negation has a special syntax (!=), for the rest we nest in a NOT
                 if (binary.NodeType is ExpressionType.NotEqual && constantValue is not int or long or float or double)
@@ -176,9 +177,7 @@ internal class RedisFilterTranslator
     private void TranslateContains(Expression source, Expression item)
     {
         // Contains over tag field
-        if (this.TryBindProperty(source, out var property)
-            && TryGetConstant(item, out var itemConstant)
-            && itemConstant is string stringConstant)
+        if (this.TryBindProperty(source, out var property) && item is ConstantExpression { Value: string stringConstant })
         {
             this._filter
                 .Append('@')
@@ -236,26 +235,5 @@ internal class RedisFilterTranslator
         }
 
         return true;
-    }
-
-    private static bool TryGetConstant(Expression expression, out object? constantValue)
-    {
-        switch (expression)
-        {
-            case ConstantExpression { Value: var v }:
-                constantValue = v;
-                return true;
-
-            // This identifies compiler-generated closure types which contain captured variables.
-            case MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
-                when constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
-                     && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true):
-                constantValue = fieldInfo.GetValue(constant.Value);
-                return true;
-
-            default:
-                constantValue = null;
-                return false;
-        }
     }
 }

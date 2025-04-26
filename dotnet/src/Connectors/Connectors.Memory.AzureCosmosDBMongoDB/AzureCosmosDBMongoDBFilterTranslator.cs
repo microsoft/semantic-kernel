@@ -7,9 +7,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
@@ -28,7 +27,10 @@ internal class AzureCosmosDBMongoDBFilterTranslator
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        return this.Translate(lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = true };
+        var preprocessedExpression = preprocessor.Visit(lambdaExpression.Body);
+
+        return this.Translate(preprocessedExpression);
     }
 
     private BsonDocument Translate(Expression? node)
@@ -57,9 +59,10 @@ internal class AzureCosmosDBMongoDBFilterTranslator
         };
 
     private BsonDocument TranslateEqualityComparison(BinaryExpression binary)
-        => (this.TryBindProperty(binary.Left, out var property) && TryGetConstant(binary.Right, out var value))
-            || (this.TryBindProperty(binary.Right, out property) && TryGetConstant(binary.Left, out value))
-                ? this.GenerateEqualityComparison(property, value, binary.NodeType)
+        => this.TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant }
+            ? this.GenerateEqualityComparison(property, rightConstant, binary.NodeType)
+            : this.TryBindProperty(binary.Right, out property) && binary.Left is ConstantExpression { Value: var leftConstant }
+                ? this.GenerateEqualityComparison(property, leftConstant, binary.NodeType)
                 : throw new NotSupportedException("Invalid equality/comparison");
 
     private BsonDocument GenerateEqualityComparison(VectorStoreRecordPropertyModel property, object? value, ExpressionType nodeType)
@@ -184,7 +187,7 @@ internal class AzureCosmosDBMongoDBFilterTranslator
 
                 for (var i = 0; i < newArray.Expressions.Count; i++)
                 {
-                    if (!TryGetConstant(newArray.Expressions[i], out var elementValue))
+                    if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })
                     {
                         throw new NotSupportedException("Invalid element in array");
                     }
@@ -195,8 +198,7 @@ internal class AzureCosmosDBMongoDBFilterTranslator
                 return ProcessInlineEnumerable(elements, item);
 
             // Contains over captured enumerable (we inline)
-            case var _ when TryGetConstant(source, out var constantEnumerable)
-                            && constantEnumerable is IEnumerable enumerable and not string:
+            case ConstantExpression { Value: IEnumerable enumerable and not string }:
                 return ProcessInlineEnumerable(enumerable, item);
 
             default:
@@ -264,26 +266,5 @@ internal class AzureCosmosDBMongoDBFilterTranslator
         }
 
         return true;
-    }
-
-    private static bool TryGetConstant(Expression expression, out object? constantValue)
-    {
-        switch (expression)
-        {
-            case ConstantExpression { Value: var v }:
-                constantValue = v;
-                return true;
-
-            // This identifies compiler-generated closure types which contain captured variables.
-            case MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
-                when constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
-                     && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true):
-                constantValue = fieldInfo.GetValue(constant.Value);
-                return true;
-
-            default:
-                constantValue = null;
-                return false;
-        }
     }
 }

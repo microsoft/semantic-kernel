@@ -7,10 +7,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
@@ -32,7 +31,11 @@ internal class AzureAISearchFilterTranslator
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        this.Translate(lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = true };
+        var preprocessedExpression = preprocessor.Visit(lambdaExpression.Body);
+
+        this.Translate(preprocessedExpression);
+
         return this._filter.ToString();
     }
 
@@ -139,20 +142,13 @@ internal class AzureAISearchFilterTranslator
 
     private void TranslateMember(MemberExpression memberExpression)
     {
-        switch (memberExpression)
+        if (this.TryBindProperty(memberExpression, out var property))
         {
-            case var _ when this.TryBindProperty(memberExpression, out var property):
-                this._filter.Append(property.StorageName); // TODO: Escape
-                return;
-
-            // Identify captured lambda variables, inline them as constants
-            case var _ when TryGetCapturedValue(memberExpression, out var capturedValue):
-                this.GenerateLiteral(capturedValue);
-                return;
-
-            default:
-                throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
+            this._filter.Append(property.StorageName); // TODO: Escape
+            return;
         }
+
+        throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
@@ -207,7 +203,7 @@ internal class AzureAISearchFilterTranslator
 
                 for (var i = 0; i < newArray.Expressions.Count; i++)
                 {
-                    if (!TryGetConstant(newArray.Expressions[i], out var elementValue))
+                    if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })
                     {
                         throw new NotSupportedException("Invalid element in array");
                     }
@@ -223,9 +219,7 @@ internal class AzureAISearchFilterTranslator
                 ProcessInlineEnumerable(elements, item);
                 return;
 
-            // Contains over captured enumerable (we inline)
-            case var _ when TryGetConstant(source, out var constantEnumerable)
-                            && constantEnumerable is IEnumerable enumerable and not string:
+            case ConstantExpression { Value: IEnumerable enumerable and not string }:
                 ProcessInlineEnumerable(enumerable, item);
                 return;
 
@@ -371,37 +365,5 @@ RestartLoop:
         }
 
         return true;
-    }
-
-    private static bool TryGetCapturedValue(Expression expression, out object? capturedValue)
-    {
-        if (expression is MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
-            && constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
-            && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true))
-        {
-            capturedValue = fieldInfo.GetValue(constant.Value);
-            return true;
-        }
-
-        capturedValue = null;
-        return false;
-    }
-
-    private static bool TryGetConstant(Expression expression, out object? constantValue)
-    {
-        switch (expression)
-        {
-            case ConstantExpression { Value: var v }:
-                constantValue = v;
-                return true;
-
-            case var _ when TryGetCapturedValue(expression, out var capturedValue):
-                constantValue = capturedValue;
-                return true;
-
-            default:
-                constantValue = null;
-                return false;
-        }
     }
 }
