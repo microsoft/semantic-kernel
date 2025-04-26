@@ -1,8 +1,11 @@
 ﻿---
 name: prompty_with_no_execution_setting
 description: prompty without execution setting
-authors:
-  - ????
+metadata:
+  authors:
+    - markwallace
+  tags:
+    - basic
 inputs:
   prompt: dummy
 ---
