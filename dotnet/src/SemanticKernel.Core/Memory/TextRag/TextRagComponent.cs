@@ -46,8 +46,8 @@ public class TextRagComponent : ConversationStatePart
         [
             AIFunctionFactory.Create(
             this.SearchAsync,
-            name: this.Options.PluginSearchFunctionName ?? DefaultPluginSearchFunctionName,
-            description: this.Options.PluginSearchFunctionDescription ?? DefaultPluginSearchFunctionDescription)
+            name: this.Options.PluginFunctionName ?? DefaultPluginSearchFunctionName,
+            description: this.Options.PluginFunctionDescription ?? DefaultPluginSearchFunctionDescription)
         ];
     }
 
@@ -61,7 +61,7 @@ public class TextRagComponent : ConversationStatePart
     {
         get
         {
-            if (this.Options.SearchTime != TextRagComponentOptions.TextRagSearchTime.ViaPlugin)
+            if (this.Options.SearchTime != TextRagComponentOptions.RagBehavior.ViaPlugin)
             {
                 return Array.Empty<AIFunction>();
             }
@@ -73,7 +73,7 @@ public class TextRagComponent : ConversationStatePart
     /// <inheritdoc/>
     public override async Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
-        if (this.Options.SearchTime != TextRagComponentOptions.TextRagSearchTime.BeforeAIInvoke)
+        if (this.Options.SearchTime != TextRagComponentOptions.RagBehavior.BeforeAIInvoke)
         {
             return string.Empty;
         }
@@ -87,28 +87,16 @@ public class TextRagComponent : ConversationStatePart
             new() { Top = this.Options.Top },
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        // Format the results showing the content with source link and name for each result.
-        var sb = new StringBuilder();
-        sb.AppendLine(this.Options.ContextPrompt ?? DefaultContextPrompt);
-        await foreach (var result in searchResults.Results.ConfigureAwait(false))
-        {
-            sb.AppendLine($"    Source Document Name: {result.Name}");
-            sb.AppendLine($"    Source Document Link: {result.Link}");
-            sb.AppendLine($"    Source Document Contents: {result.Value}");
-            sb.AppendLine("    -----------------");
-        }
+        var results = await searchResults.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        sb.AppendLine(this.Options.InclueCitationsPrompt ?? DefaultIncludeCitationsPrompt);
-        sb.AppendLine("-------------------");
-
-        return sb.ToString();
+        return this.FormatResults(results);
     }
 
     /// <summary>
     /// Plugin method to search the database on demand.
     /// </summary>
     [KernelFunction]
-    public async Task<string> SearchAsync(string userQuestion, CancellationToken cancellationToken = default)
+    internal async Task<string> SearchAsync(string userQuestion, CancellationToken cancellationToken = default)
     {
         var searchResults = await this._textSearch.GetTextSearchResultsAsync(
             userQuestion,
@@ -117,7 +105,28 @@ public class TextRagComponent : ConversationStatePart
 
         var results = await searchResults.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        return JsonSerializer.Serialize(results, TextRagSourceGenerationContext.Default.ListTextSearchResult);
+        return this.FormatResults(results);
+    }
+
+    /// <summary>
+    /// Format the results showing the content with source link and name for each result.
+    /// </summary>
+    /// <param name="results">The results to format.</param>
+    /// <returns>The formatted results.</returns>
+    private string FormatResults(List<TextSearchResult> results)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine(this.Options.ContextPrompt ?? DefaultContextPrompt);
+        foreach (var result in results)
+        {
+            sb.AppendLine($"    Source Document Name: {result.Name}");
+            sb.AppendLine($"    Source Document Link: {result.Link}");
+            sb.AppendLine($"    Source Document Contents: {result.Value}");
+            sb.AppendLine("    -----------------");
+        }
+        sb.AppendLine(this.Options.IncludeCitationsPrompt ?? DefaultIncludeCitationsPrompt);
+        sb.AppendLine("-------------------");
+        return sb.ToString();
     }
 }
 

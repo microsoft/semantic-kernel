@@ -35,26 +35,32 @@ public class TextRagComponentOptions
     /// <summary>
     /// Gets or sets the time at which the text search is performed.
     /// </summary>
-    public TextRagSearchTime SearchTime { get; init; } = TextRagSearchTime.BeforeAIInvoke;
+    public RagBehavior SearchTime { get; init; } = RagBehavior.BeforeAIInvoke;
 
     /// <summary>
     /// Gets or sets the name of the plugin method that will be made available for searching
-    /// if the <see cref="SearchTime"/> option is set to <see cref="TextRagSearchTime.ViaPlugin"/>.
+    /// if the <see cref="SearchTime"/> option is set to <see cref="RagBehavior.ViaPlugin"/>.
     /// </summary>
-    public string? PluginSearchFunctionName { get; init; }
+    /// <value>
+    /// Defaults to &quot;Search&quot; if not set.
+    /// </value>
+    public string? PluginFunctionName { get; init; }
 
     /// <summary>
     /// Gets or sets the description of the plugin method that will be made available for searching
-    /// if the <see cref="SearchTime"/> option is set to <see cref="TextRagSearchTime.ViaPlugin"/>.
+    /// if the <see cref="SearchTime"/> option is set to <see cref="RagBehavior.ViaPlugin"/>.
     /// </summary>
-    public string? PluginSearchFunctionDescription { get; init; }
+    /// <value>
+    /// Defaults to &quot;Allows searching for additional information to help answer the user question.&quot; if not set.
+    /// </value>
+    public string? PluginFunctionDescription { get; init; }
 
     /// <summary>
     /// When providing the text chunks to the AI model on invocation, this string is prefixed
     /// to those chunks, in order to provide some context to the model.
     /// </summary>
     /// <value>
-    /// Defaults to &quot;Consider the following source information when responding to the user::&quot;
+    /// Defaults to &quot;Consider the following source information when responding to the user:&quot;
     /// </value>
     public string? ContextPrompt { get; init; }
 
@@ -65,21 +71,21 @@ public class TextRagComponentOptions
     /// <value>
     /// Defaults to &quot;Include citations to the relevant information where it is referenced in the response.:&quot;
     /// </value>
-    public string? InclueCitationsPrompt { get; init; }
+    public string? IncludeCitationsPrompt { get; init; }
 
     /// <summary>
-    /// The time at which the text search is performed.
+    /// Choices for controlling the behavior of the <see cref="TextRagComponent"/>.
     /// </summary>
-    public enum TextRagSearchTime
+    public enum RagBehavior
     {
         /// <summary>
-        /// A search is performed each time that the AI is invoked just before the AI is invoked
-        /// and the results are provided to the AI via the invocation context.
+        /// A search is performed each time that the model/agent is invoked just before invocation
+        /// and the results are provided to the model/agent via the invocation context.
         /// </summary>
         BeforeAIInvoke,
 
         /// <summary>
-        /// A search may be performed by the AI on demand via a plugin.
+        /// A search may be performed by the model/agent on demand via function calling.
         /// </summary>
         ViaPlugin
     }

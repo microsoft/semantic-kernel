@@ -41,7 +41,12 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="searchNamespace">An optional namespace to filter search results to.</param>
     /// <exception cref="NotSupportedException">Thrown if the key type provided is not supported.</exception>
-    public TextRagStore(IVectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService, string collectionName, int vectorDimensions, string? searchNamespace)
+    public TextRagStore(
+        IVectorStore vectorStore,
+        ITextEmbeddingGenerationService textEmbeddingGenerationService,
+        string collectionName,
+        int vectorDimensions,
+        string? searchNamespace)
     {
         Verify.NotNull(vectorStore);
         Verify.NotNull(textEmbeddingGenerationService);
