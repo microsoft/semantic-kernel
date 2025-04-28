@@ -46,7 +46,7 @@ public interface IVectorSearch<TRecord>
     /// <param name="options">The options that control the behavior of the search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The records found by the vector search, including their result scores.</returns>
-    // TODO: We may also want to consider allowing the user to pass Embedding<ReadOnlyMemory<float>>, rather than just ReadOnlyMemory<float>.
+    // TODO: We may also want to consider allowing the user to pass Embedding<float>, rather than just ReadOnlyMemory<float> (#11701).
     // TODO: However, if they have an Embedding, they likely got it from an IEmbeddingGenerator, at which point why not wire that up into MEVD and use SearchAsync?
     // TODO: So this raw embedding API is likely more for users who already have a ReadOnlyMemory<float> at hand and we don't want to force them to wrap it with Embedding.
     IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(

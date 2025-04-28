@@ -539,7 +539,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
             wrapperParameter);
     }
 
-    private class ParameterReplacer(ParameterExpression originalRecordParameter, Expression replacementExpression) : ExpressionVisitor
+    private sealed class ParameterReplacer(ParameterExpression originalRecordParameter, Expression replacementExpression) : ExpressionVisitor
     {
         protected override Expression VisitParameter(ParameterExpression node)
             => node == originalRecordParameter ? replacementExpression : base.VisitParameter(node);
