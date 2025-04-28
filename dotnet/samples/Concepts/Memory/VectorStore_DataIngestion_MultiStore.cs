@@ -55,16 +55,16 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         if (databaseType == "Redis")
         {
             await redisFixture.ManualInitializeAsync();
-            kernelBuilder.AddRedisVectorStore("localhost:6379");
+            kernelBuilder.Services.AddRedisVectorStore("localhost:6379");
         }
         else if (databaseType == "Qdrant")
         {
             await qdrantFixture.ManualInitializeAsync();
-            kernelBuilder.AddQdrantVectorStore("localhost");
+            kernelBuilder.Services.AddQdrantVectorStore("localhost");
         }
         else if (databaseType == "InMemory")
         {
-            kernelBuilder.AddInMemoryVectorStore();
+            kernelBuilder.Services.AddInMemoryVectorStore();
         }
 
         // Register the DataIngestor with the DI container.

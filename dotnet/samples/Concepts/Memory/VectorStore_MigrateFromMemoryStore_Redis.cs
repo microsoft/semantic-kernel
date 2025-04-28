@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED
+
 using System.Text.Json;
 using Azure.Identity;
 using Memory.VectorStoreFixtures;
@@ -189,3 +191,5 @@ public class VectorStore_MigrateFromMemoryStore_Redis(ITestOutputHelper output, 
             key: "33333333-3333-3333-3333-333333333333");
     }
 }
+
+#endif

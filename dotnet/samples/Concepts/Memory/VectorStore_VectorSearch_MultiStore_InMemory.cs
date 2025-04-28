@@ -36,7 +36,7 @@ public class VectorStore_VectorSearch_MultiStore_InMemory(ITestOutputHelper outp
             credential: new AzureCliCredential());
 
         // Register the InMemory VectorStore.
-        kernelBuilder.AddInMemoryVectorStore();
+        kernelBuilder.Services.AddInMemoryVectorStore();
 
         // Register the test output helper common processor with the DI container.
         kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
