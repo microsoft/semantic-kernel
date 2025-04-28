@@ -8,8 +8,6 @@ using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
-#pragma warning disable SKEXP0020
-
 /// <summary>
 /// Interface for client managing postgres database operations for <see cref="PostgresMemoryStore"/>.
 /// </summary>

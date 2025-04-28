@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010;SKEXP0020</NoWarn>
+    <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010</NoWarn>
     <UserSecretsId>c4203b00-7179-47c1-8701-ee352e381412</UserSecretsId>
   </PropertyGroup>
 

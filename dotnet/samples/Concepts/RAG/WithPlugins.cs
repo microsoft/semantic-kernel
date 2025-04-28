@@ -2,10 +2,12 @@
 
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Chroma;
+using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Resources;
 
 namespace RAG;
@@ -27,23 +29,46 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>
-    /// Shows how to use RAG pattern with <see cref="Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin"/>.
+    /// Shows how to use RAG pattern with <see cref="InMemoryVectorStore"/>.
     /// </summary>
-    [Fact(Skip = "Requires Chroma server up and running")]
-    public async Task RAGWithTextMemoryPluginAsync()
+    [Fact]
+    public async Task RAGWithInMemoryVectorStoreAndPluginAsync()
     {
-        var memory = new MemoryBuilder()
-            .WithMemoryStore(new ChromaMemoryStore("http://localhost:8000"))
-            .WithOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
-            .Build();
+        var vectorStore = new InMemoryVectorStore();
+        var textEmbeddingGenerator = new OpenAITextEmbeddingGenerationService(
+            TestConfiguration.OpenAI.EmbeddingModelId,
+            TestConfiguration.OpenAI.ApiKey);
 
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        kernel.ImportPluginFromObject(new Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin(memory));
+        // Create the collection and add data
+        var collection = vectorStore.GetCollection<string, FinanceInfo>("finances");
+        await collection.CreateCollectionAsync();
+        string[] budgetInfo =
+        {
+            "The budget for 2020 is EUR 100 000",
+            "The budget for 2021 is EUR 120 000",
+            "The budget for 2022 is EUR 150 000",
+            "The budget for 2023 is EUR 200 000",
+            "The budget for 2024 is EUR 364 000"
+        };
+        var vectors = await textEmbeddingGenerator.GenerateEmbeddingsAsync(budgetInfo);
+        var records = budgetInfo.Zip(vectors).Select((input, index) => new FinanceInfo { Key = index.ToString(), Text = input.First, Embedding = input.Second }).ToList();
+        await collection.UpsertAsync(records);
 
-        var result = await kernel.InvokePromptAsync("{{recall 'budget by year' collection='finances'}} What is my budget for 2024?");
+        // Add the collection to the kernel as a plugin.
+        var textSearch = new VectorStoreTextSearch<FinanceInfo>(collection, textEmbeddingGenerator);
+        kernel.Plugins.Add(textSearch.CreateWithSearch("FinanceSearch", "Can search for budget information"));
+
+        // Invoke the kernel, using the plugin from within the prompt.
+        KernelArguments arguments = new() { { "query", "What is my budget for 2024?" } };
+        var result = await kernel.InvokePromptAsync(
+            "{{FinanceSearch-Search query}} {{query}}",
+            arguments,
+            templateFormat: HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
+            promptTemplateFactory: new HandlebarsPromptTemplateFactory());
 
         Console.WriteLine(result);
     }
@@ -89,6 +114,17 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
             // Here will be a call to vector DB, return example result for demo purposes
             return "Year Budget 2020 100,000 2021 120,000 2022 150,000 2023 200,000 2024 364,000";
         }
+    }
+
+    private sealed class FinanceInfo
+    {
+        [VectorStoreRecordKey]
+        public string Key { get; set; } = string.Empty;
+        [TextSearchResultValue]
+        [VectorStoreRecordData]
+        public string Text { get; set; } = string.Empty;
+        [VectorStoreRecordVector(1536)]
+        public ReadOnlyMemory<float> Embedding { get; set; }
     }
 
     #endregion
