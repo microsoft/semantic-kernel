@@ -27,13 +27,13 @@ from semantic_kernel.processes.local_runtime.local_step import LocalStep
 @pytest.fixture
 def mocked_process_step_state():
     """Fixture for creating a mocked KernelProcessStepState object."""
-    return KernelProcessStepState(name="my_step", id="123", state=None)
+    return KernelProcessStepState(name="my_step", id="123", state=None, version="1.0")
 
 
 @pytest.fixture
 def mocked_process_step_state_without_id():
     """Fixture for creating a mocked KernelProcessStepState object without id."""
-    return KernelProcessStepState(name="my_step", id=None, state=None)
+    return KernelProcessStepState(name="my_step", id=None, state=None, version="1.0")
 
 
 @pytest.fixture
@@ -55,7 +55,7 @@ async def test_parse_initial_configuration_adds_ids_if_missing():
     edge = KernelProcessEdge(source_step_id="s1", output_target=AsyncMock(spec=KernelProcessFunctionTarget))
     data = {
         "step_info": KernelProcess(
-            state=KernelProcessState(name="test_step"),  # noqa: F821
+            state=KernelProcessState(name="test_step", version="1.0"),  # noqa: F821
             steps=[AsyncMock(spec=KernelProcessStepInfo)],
             edges={"test_event": [edge]},
         ),
@@ -76,7 +76,7 @@ async def test_parse_initial_configuration_id_already_set():
     """Test that parse_initial_configuration does not overwrite step_info.state.id if already set."""
     data = {
         "step_info": KernelProcess(
-            state=KernelProcessState(name="test_step", id="test_id_set"),  # noqa: F821
+            state=KernelProcessState(name="test_step", id="test_id_set", version="1.0"),  # noqa: F821
             steps=[AsyncMock(spec=KernelProcessStepInfo)],
         ),
     }
@@ -388,7 +388,7 @@ async def test_invoke_function_calls_kernel_invoke():
 
     mock_step_info = AsyncMock(spec=KernelProcessStepInfo)
     mock_step_info.edges = MagicMock(return_value={"edge1": "value1", "edge2": "value2"})
-    mock_step_info.state = KernelProcessStepState(name="test", id="step-id", state={})
+    mock_step_info.state = KernelProcessStepState(name="test", id="step-id", state={}, version="1.0")
 
     step = LocalStep(
         kernel=mock_kernel,  # type: ignore
@@ -410,7 +410,7 @@ async def test_emit_event_puts_local_event_into_queue():
     queue_obj = Queue()
     mock_step_info = AsyncMock(spec=KernelProcessStepInfo)
     mock_step_info.edges = MagicMock(return_value={"edge1": "value1", "edge2": "value2"})
-    mock_step_info.state = KernelProcessStepState(name="test", id="step-id", state={})
+    mock_step_info.state = KernelProcessStepState(name="test", id="step-id", state={}, version="1.0")
 
     step = LocalStep(
         kernel=AsyncMock(spec=Kernel),
@@ -437,7 +437,7 @@ async def test_emit_local_event_puts_into_queue():
     queue_obj = Queue()
     mock_step_info = AsyncMock(spec=KernelProcessStepInfo)
     mock_step_info.edges = MagicMock(return_value={"edge1": "value1", "edge2": "value2"})
-    mock_step_info.state = KernelProcessStepState(name="test", id="step-id", state={})
+    mock_step_info.state = KernelProcessStepState(name="test", id="step-id", state={}, version="1.0")
 
     step = LocalStep(
         kernel=AsyncMock(spec=Kernel),
