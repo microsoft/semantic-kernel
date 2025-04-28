@@ -22,15 +22,15 @@ logging.basicConfig(level=logging.WARNING)
 kernel = Kernel()
 
 """
-The following Process and Dapr runtime sample uses a FastAPI app      #
-to start a process and run steps. The process is defined in the       #
-process/process.py file and the steps are defined in the steps.py     #
-file. The process is started by calling the /processes/{process_id}   #
-endpoint. The actors are registered with the Dapr runtime using       #
-the DaprActor class. The ProcessActor and the StepActor require a     #
-kernel dependency to be injected during creation. This is done by     #
-defining a factory function that takes the kernel as a parameter      #
-and returns the actor instance with the kernel injected.              #
+The following Process and Dapr runtime sample uses a FastAPI app
+to start a process and run steps. The process is defined in the
+process/process.py file and the steps are defined in the steps.py
+file. The process is started by calling the /processes/{process_id}
+endpoint. The actors are registered with the Dapr runtime using
+the DaprActor class. The ProcessActor and the StepActor require a
+kernel dependency to be injected during creation. This is done by
+defining a factory function that takes the kernel as a parameter
+and returns the actor instance with the kernel injected.
 """
 
 # Get the process which means we have the `KernelProcess` object

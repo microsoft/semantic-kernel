@@ -42,7 +42,7 @@ class AddSpecialSauceStep(KernelProcessStep):
         await context.emit_event(
             process_event=self.OutputEvents.SpecialSauceAdded,
             data=food_actions,
-            visibility=KernelProcessEventVisibility.Public,  # ⇐ parity with .NET
+            visibility=KernelProcessEventVisibility.Public,
         )
 
 
