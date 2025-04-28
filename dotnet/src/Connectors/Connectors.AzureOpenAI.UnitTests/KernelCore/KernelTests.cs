@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Moq;
-using Xunit.Sdk;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.KernelCore;
 
