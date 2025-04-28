@@ -17,7 +17,7 @@ public class AzureAISearchNoDataConformanceTests(AzureAISearchNoDataConformanceT
 
     public new class Fixture : NoDataConformanceTests<string>.Fixture
     {
-        protected override string CollectionName => "nodata-" + _testIndexPostfix;
+        public override string CollectionName => "nodata-" + _testIndexPostfix;
 
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
     }

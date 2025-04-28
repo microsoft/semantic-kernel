@@ -8,8 +8,10 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.Properties;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
 using NRedisStack.Search.Literals.Enums;
@@ -30,6 +32,15 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
+    /// <summary>A set of types that vectors on the provided model may have.</summary>
+    private static readonly HashSet<Type> s_supportedVectorTypes =
+    [
+        typeof(ReadOnlyMemory<float>),
+        typeof(ReadOnlyMemory<double>),
+        typeof(ReadOnlyMemory<float>?),
+        typeof(ReadOnlyMemory<double>?)
+    ];
 
     internal static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
     {
@@ -55,15 +66,6 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
 
         SupportedVectorPropertyTypes = s_supportedVectorTypes
     };
-
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<double>),
-        typeof(ReadOnlyMemory<float>?),
-        typeof(ReadOnlyMemory<double>?)
-    ];
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -111,7 +113,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
         this._database = database;
         this._collectionName = name;
         this._options = options ?? new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>();
-        this._model = new VectorStoreRecordModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
+        this._model = new VectorStoreRecordModelBuilder(ModelBuildingOptions)
+            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
 
         // Lookup storage property names.
         this._dataStoragePropertyNameRedisValues = this._model.DataProperties.Select(p => RedisValue.Unbox(p.StorageName)).ToArray();
@@ -209,7 +212,13 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
 
         // Create Options
         var maybePrefixedKey = this.PrefixKeyIfNeeded(stringKey);
+
         var includeVectors = options?.IncludeVectors ?? false;
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
+
         var operationName = includeVectors ? "HGETALL" : "HMGET";
 
         // Get the Redis value.
@@ -292,6 +301,26 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
     /// <inheritdoc />
     public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
+        (_, var generatedEmbeddings) = await RedisVectorStoreRecordFieldMapping.ProcessEmbeddingsAsync<TRecord>(this._model, [record], cancellationToken).ConfigureAwait(false);
+
+        return await this.UpsertCoreAsync(record, 0, generatedEmbeddings, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(records);
+
+        (records, var generatedEmbeddings) = await RedisVectorStoreRecordFieldMapping.ProcessEmbeddingsAsync<TRecord>(this._model, records, cancellationToken).ConfigureAwait(false);
+
+        // Upsert records in parallel.
+        var tasks = records.Select((r, i) => this.UpsertCoreAsync(r, i, generatedEmbeddings, cancellationToken));
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        return results.Where(r => r is not null).ToList();
+    }
+
+    private async Task<TKey> UpsertCoreAsync(TRecord record, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings, CancellationToken cancellationToken = default)
+    {
         Verify.NotNull(record);
 
         // Map.
@@ -300,7 +329,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
             this._collectionMetadata.VectorStoreName,
             this._collectionName,
             "HSET",
-            () => this._mapper.MapFromDataToStorageModel(record));
+            () => this._mapper.MapFromDataToStorageModel(record, recordIndex, generatedEmbeddings));
 
         // Upsert.
         var maybePrefixedKey = this.PrefixKeyIfNeeded(redisHashSetRecord.Key);
@@ -315,33 +344,94 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
         return (TKey)(object)redisHashSetRecord.Key;
     }
 
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(records);
+    #region Search
 
-        // Upsert records in parallel.
-        var tasks = records.Select(x => this.UpsertAsync(x, cancellationToken));
-        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-        return results.Where(r => r is not null).ToList();
+    /// <inheritdoc />
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+        TInput value,
+        int top,
+        VectorSearchOptions<TRecord>? options = default,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        switch (vectorProperty.EmbeddingGenerator)
+        {
+            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
+            {
+                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+            }
+
+            case IEmbeddingGenerator<TInput, Embedding<double>> generator:
+            {
+                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+            }
+
+            case null:
+                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
+
+            default:
+                throw new InvalidOperationException(
+                    s_supportedVectorTypes.Contains(typeof(TInput))
+                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
+                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
+        }
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorSearchOptions<TRecord>? options = null,
+        CancellationToken cancellationToken = default)
+        where TVector : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
+    }
+
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorStoreRecordVectorPropertyModel vectorProperty,
+        string operationName,
+        VectorSearchOptions<TRecord> options,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TVector : notnull
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
 
-        var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
         // Build query & search.
-        var selectFields = internalOptions.IncludeVectors ? null : this._dataStoragePropertyNamesWithScore;
+        var selectFields = options.IncludeVectors ? null : this._dataStoragePropertyNamesWithScore;
         byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "HashSet");
         var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(
             vectorBytes,
             top,
-            internalOptions,
+            options,
             this._model,
             vectorProperty,
             selectFields);
@@ -367,11 +457,11 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
                 "FT.SEARCH",
                 () =>
                 {
-                    return this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(result.Id), retrievedHashEntries), new() { IncludeVectors = internalOptions.IncludeVectors });
+                    return this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(result.Id), retrievedHashEntries), new() { IncludeVectors = options.IncludeVectors });
                 });
 
             // Process the score of the result item.
-            var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
+            var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
             var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(vectorProperty);
             var score = RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(result["vector_score"].HasValue ? (float)result["vector_score"] : null, distanceFunction);
 
@@ -385,13 +475,28 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
     }
 
     /// <inheritdoc />
+    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        where TVector : notnull
+        => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
+
+    #endregion Search
+
+    /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
         GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
-        Query query = RedisVectorStoreCollectionSearchMapping.BuildQuery(filter, top, options ??= new(), this._model);
+        options ??= new();
+
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
+
+        Query query = RedisVectorStoreCollectionSearchMapping.BuildQuery(filter, top, options, this._model);
 
         var results = await this.RunOperationAsync(
             "FT.SEARCH",

@@ -4,6 +4,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Azure.Search.Documents.Indexes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -38,4 +39,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionOptions<TRecord>
     /// to provide the same set of <see cref="System.Text.Json.JsonSerializerOptions"/> both here and when constructing the <see cref="SearchIndexClient"/>.
     /// </summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; init; } = null;
+
+    /// <summary>
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

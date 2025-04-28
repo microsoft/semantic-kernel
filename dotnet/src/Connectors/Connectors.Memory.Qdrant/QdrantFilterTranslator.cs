@@ -7,10 +7,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using Google.Protobuf.Collections;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
 using Qdrant.Client.Grpc;
 using Range = Qdrant.Client.Grpc.Range;
 
@@ -28,7 +27,10 @@ internal class QdrantFilterTranslator
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        return this.Translate(lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = true };
+        var preprocessedExpression = preprocessor.Visit(lambdaExpression.Body);
+
+        return this.Translate(preprocessedExpression);
     }
 
     private Filter Translate(Expression? node)
@@ -57,10 +59,11 @@ internal class QdrantFilterTranslator
         };
 
     private Filter TranslateEqual(Expression left, Expression right, bool negated = false)
-        => (this.TryBindProperty(left, out var property) && TryGetConstant(right, out var constantValue))
-            || (this.TryBindProperty(right, out property) && TryGetConstant(left, out constantValue))
-                ? this.GenerateEqual(property.StorageName, constantValue, negated)
-                : throw new NotSupportedException("Equality expression not supported by Qdrant");
+        => this.TryBindProperty(left, out var property) && right is ConstantExpression { Value: var rightConstant }
+            ? this.GenerateEqual(property.StorageName, rightConstant, negated)
+            : this.TryBindProperty(right, out property) && left is ConstantExpression { Value: var leftConstant }
+                ? this.GenerateEqual(property.StorageName, leftConstant, negated)
+                : throw new NotSupportedException("Invalid equality/comparison");
 
     private Filter GenerateEqual(string propertyStorageName, object? value, bool negated = false)
     {
@@ -108,8 +111,7 @@ internal class QdrantFilterTranslator
         bool TryProcessComparison(Expression first, Expression second, [NotNullWhen(true)] out Filter? result)
         {
             // TODO: Nullable
-            if (this.TryBindProperty(first, out var property)
-                && TryGetConstant(second, out var constantValue))
+            if (this.TryBindProperty(first, out var property) && second is ConstantExpression { Value: var constantValue })
             {
                 double doubleConstantValue = constantValue switch
                 {
@@ -281,9 +283,9 @@ internal class QdrantFilterTranslator
 
                 for (var i = 0; i < newArray.Expressions.Count; i++)
                 {
-                    if (!TryGetConstant(newArray.Expressions[i], out var elementValue))
+                    if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })
                     {
-                        throw new NotSupportedException("Invalid element in array");
+                        throw new NotSupportedException("Inline array elements must be constants");
                     }
 
                     elements[i] = elementValue;
@@ -291,9 +293,7 @@ internal class QdrantFilterTranslator
 
                 return ProcessInlineEnumerable(elements, item);
 
-            // Contains over captured enumerable (we inline)
-            case var _ when TryGetConstant(source, out var constantEnumerable)
-                            && constantEnumerable is IEnumerable enumerable and not string:
+            case ConstantExpression { Value: IEnumerable enumerable and not string }:
                 return ProcessInlineEnumerable(enumerable, item);
 
             default:
@@ -383,26 +383,5 @@ internal class QdrantFilterTranslator
         }
 
         return true;
-    }
-
-    private static bool TryGetConstant(Expression expression, out object? constantValue)
-    {
-        switch (expression)
-        {
-            case ConstantExpression { Value: var v }:
-                constantValue = v;
-                return true;
-
-            // This identifies compiler-generated closure types which contain captured variables.
-            case MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
-                when constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
-                     && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true):
-                constantValue = fieldInfo.GetValue(constant.Value);
-                return true;
-
-            default:
-                constantValue = null;
-                return false;
-        }
     }
 }

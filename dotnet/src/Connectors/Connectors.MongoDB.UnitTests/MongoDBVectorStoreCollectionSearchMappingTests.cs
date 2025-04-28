@@ -27,7 +27,8 @@ public sealed class MongoDBVectorStoreCollectionSearchMappingTests
                     new VectorStoreRecordKeyProperty("Property1", typeof(string)) { StoragePropertyName = "property_1" },
                     new VectorStoreRecordDataProperty("Property2", typeof(string)) { StoragePropertyName = "property_2" },
                 ]
-            });
+            },
+            defaultEmbeddingGenerator: null);
 
     [Fact]
     public void BuildFilterThrowsExceptionWithUnsupportedFilterClause()

@@ -45,7 +45,7 @@ public sealed class WeaviateVectorStoreRecordMapperTests
         var sut = GetMapper(hasNamedVectors);
 
         // Act
-        var document = sut.MapFromDataToStorageModel(hotel);
+        var document = sut.MapFromDataToStorageModel(hotel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.NotNull(document);
@@ -118,6 +118,7 @@ public sealed class WeaviateVectorStoreRecordMapperTests
                         new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>), 10)
                     ]
                 },
+                defaultEmbeddingGenerator: null,
                 s_jsonSerializerOptions),
             s_jsonSerializerOptions);
 

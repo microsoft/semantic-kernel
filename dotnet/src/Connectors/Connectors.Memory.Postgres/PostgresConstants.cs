@@ -59,7 +59,11 @@ internal static class PostgresConstants
             typeof(Guid),
         ],
 
-        SupportedVectorPropertyTypes = [typeof(ReadOnlyMemory<float>)],
+        SupportedVectorPropertyTypes =
+        [
+            typeof(ReadOnlyMemory<float>),
+            typeof(ReadOnlyMemory<float>?)
+        ],
 
         EscapeIdentifier = Escape,
     };

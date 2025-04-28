@@ -5,7 +5,7 @@ using VectorDataSpecificationTests.Filter;
 using VectorDataSpecificationTests.Support;
 using Xunit;
 
-namespace PostgresIntegrationTests.Filter;
+namespace InMemoryIntegrationTests.Filter;
 
 public class InMemoryBasicQueryTests(InMemoryBasicQueryTests.Fixture fixture)
     : BasicQueryTests<int>(fixture), IClassFixture<InMemoryBasicQueryTests.Fixture>

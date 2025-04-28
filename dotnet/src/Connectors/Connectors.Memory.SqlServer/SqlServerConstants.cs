@@ -15,56 +15,56 @@ internal static class SqlServerConstants
 
     internal const int MaxIndexNameLength = 128;
 
+    internal static readonly HashSet<Type> SupportedVectorTypes =
+    [
+        typeof(ReadOnlyMemory<float>), // VECTOR
+        typeof(ReadOnlyMemory<float>?)
+    ];
+
     public static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
 
-        SupportedKeyPropertyTypes = SqlServerConstants.SupportedKeyTypes,
-        SupportedDataPropertyTypes = SqlServerConstants.SupportedDataTypes,
+        SupportedKeyPropertyTypes =
+
+        [
+            typeof(int), // INT
+            typeof(long), // BIGINT
+            typeof(string), // VARCHAR
+            typeof(Guid), // UNIQUEIDENTIFIER
+            typeof(DateTime), // DATETIME2
+            typeof(byte[]) // VARBINARY
+        ],
+
+        SupportedDataPropertyTypes =
+        [
+            typeof(int), // INT
+            typeof(short), // SMALLINT
+            typeof(byte), // TINYINT
+            typeof(long), // BIGINT.
+            typeof(Guid), // UNIQUEIDENTIFIER.
+            typeof(string), // NVARCHAR
+            typeof(byte[]), // VARBINARY
+            typeof(bool), // BIT
+            typeof(DateTime), // DATETIME2
+#if NET
+            // We don't support mapping TimeSpan to TIME on purpose
+            // See https://github.com/microsoft/semantic-kernel/pull/10623#discussion_r1980350721
+            typeof(TimeOnly), // TIME
+#endif
+            typeof(decimal), // DECIMAL
+            typeof(double), // FLOAT
+            typeof(float), // REAL
+        ],
+
         SupportedEnumerableDataPropertyElementTypes = [],
-        SupportedVectorPropertyTypes = SqlServerConstants.SupportedVectorTypes,
+
+        SupportedVectorPropertyTypes = SupportedVectorTypes,
 
         EscapeIdentifier = Escape
     };
-
-    internal static readonly HashSet<Type> SupportedKeyTypes =
-    [
-        typeof(int), // INT
-        typeof(long), // BIGINT
-        typeof(string), // VARCHAR
-        typeof(Guid), // UNIQUEIDENTIFIER
-        typeof(DateTime), // DATETIME2
-        typeof(byte[]) // VARBINARY
-    ];
-
-    internal static readonly HashSet<Type> SupportedDataTypes =
-    [
-        typeof(int), // INT
-        typeof(short), // SMALLINT
-        typeof(byte), // TINYINT
-        typeof(long), // BIGINT.
-        typeof(Guid), // UNIQUEIDENTIFIER.
-        typeof(string), // NVARCHAR
-        typeof(byte[]), // VARBINARY
-        typeof(bool), // BIT
-        typeof(DateTime), // DATETIME2
-#if NET
-        // We don't support mapping TimeSpan to TIME on purpose
-        // See https://github.com/microsoft/semantic-kernel/pull/10623#discussion_r1980350721
-        typeof(TimeOnly), // TIME
-#endif
-        typeof(decimal), // DECIMAL
-        typeof(double), // FLOAT
-        typeof(float), // REAL
-    ];
-
-    internal static readonly HashSet<Type> SupportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>), // VECTOR
-        typeof(ReadOnlyMemory<float>?)
-    ];
 
     internal static string Escape(string input) => input.Replace("]", "]]");
 

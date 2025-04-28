@@ -245,5 +245,6 @@ public class RedisVectorStoreCollectionSearchMappingTests
         => new VectorStoreRecordModelBuilder(RedisHashSetVectorStoreRecordCollection<string, DummyType>.ModelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
-                new() { Properties = properties });
+                new() { Properties = properties },
+                defaultEmbeddingGenerator: null);
 }

@@ -3,6 +3,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -45,4 +46,9 @@ public sealed class RedisJsonVectorStoreRecordCollectionOptions<TRecord>
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Redis record.
     /// </summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; init; } = null;
+
+    /// <summary>
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

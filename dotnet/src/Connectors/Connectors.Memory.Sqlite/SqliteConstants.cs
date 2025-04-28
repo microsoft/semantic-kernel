@@ -16,49 +16,45 @@ internal static class SqliteConstants
     /// </summary>
     public const string VectorSearchExtensionName = "vec0";
 
-    public static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
-    {
-        RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
-        SupportsMultipleVectors = true,
-
-        SupportedKeyPropertyTypes = SqliteConstants.SupportedKeyTypes,
-        SupportedDataPropertyTypes = SqliteConstants.SupportedDataTypes,
-        SupportedEnumerableDataPropertyElementTypes = [],
-        SupportedVectorPropertyTypes = SqliteConstants.SupportedVectorTypes,
-
-        EscapeIdentifier = Escape
-    };
-
-    /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
-    public static readonly HashSet<Type> SupportedKeyTypes =
-    [
-        typeof(ulong),
-        typeof(string)
-    ];
-
-    /// <summary>A <see cref="HashSet{T}"/> of types that data properties on the provided model may have.</summary>
-    public static readonly HashSet<Type> SupportedDataTypes =
-    [
-        typeof(int),
-        typeof(long),
-        typeof(ulong),
-        typeof(short),
-        typeof(ushort),
-        typeof(string),
-        typeof(bool),
-        typeof(float),
-        typeof(double),
-        typeof(decimal),
-        typeof(byte[])
-    ];
-
     /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have.</summary>
     public static readonly HashSet<Type> SupportedVectorTypes =
     [
         typeof(ReadOnlyMemory<float>),
         typeof(ReadOnlyMemory<float>?)
     ];
+
+    public static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
+    {
+        RequiresAtLeastOneVector = false,
+        SupportsMultipleKeys = false,
+        SupportsMultipleVectors = true,
+
+        SupportedKeyPropertyTypes =
+        [
+            typeof(ulong),
+            typeof(string)
+        ],
+
+        SupportedDataPropertyTypes =
+        [
+            typeof(int),
+            typeof(long),
+            typeof(ulong),
+            typeof(short),
+            typeof(ushort),
+            typeof(string),
+            typeof(bool),
+            typeof(float),
+            typeof(double),
+            typeof(decimal),
+            typeof(byte[])
+        ],
+
+        SupportedEnumerableDataPropertyElementTypes = [],
+        SupportedVectorPropertyTypes = SupportedVectorTypes,
+
+        EscapeIdentifier = Escape
+    };
 
     internal static string Escape(string value) => value.Replace("\"", "\"\"");
 

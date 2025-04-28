@@ -98,25 +98,22 @@ public sealed class VectorStoreRecordModel
     /// </summary>
     /// <param name="searchOptions">The search options.</param>
     /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid vector property name.</exception>
-    public VectorStoreRecordVectorPropertyModel GetVectorPropertyOrSingle<TRecord>(VectorSearchOptions<TRecord>? searchOptions)
+    public VectorStoreRecordVectorPropertyModel GetVectorPropertyOrSingle<TRecord>(VectorSearchOptions<TRecord> searchOptions)
     {
-        if (searchOptions is not null)
-        {
 #pragma warning disable CS0618 // Type or member is obsolete
-            string? vectorPropertyName = searchOptions.VectorPropertyName;
+        string? vectorPropertyName = searchOptions.VectorPropertyName;
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            // If vector property name is provided, try to find it in schema or throw an exception.
-            if (!string.IsNullOrWhiteSpace(vectorPropertyName))
-            {
-                // Check vector properties by data model property name.
-                return this.VectorProperties.FirstOrDefault(p => p.ModelName == vectorPropertyName)
-                    ?? throw new InvalidOperationException($"The {this._recordType.FullName} type does not have a vector property named '{vectorPropertyName}'.");
-            }
-            else if (searchOptions.VectorProperty is Expression<Func<TRecord, object?>> expression)
-            {
-                return this.GetMatchingProperty<TRecord, VectorStoreRecordVectorPropertyModel>(expression, data: false);
-            }
+        // If vector property name is provided, try to find it in schema or throw an exception.
+        if (!string.IsNullOrWhiteSpace(vectorPropertyName))
+        {
+            // Check vector properties by data model property name.
+            return this.VectorProperties.FirstOrDefault(p => p.ModelName == vectorPropertyName)
+                ?? throw new InvalidOperationException($"The {this._recordType.FullName} type does not have a vector property named '{vectorPropertyName}'.");
+        }
+        else if (searchOptions.VectorProperty is Expression<Func<TRecord, object?>> expression)
+        {
+            return this.GetMatchingProperty<TRecord, VectorStoreRecordVectorPropertyModel>(expression, data: false);
         }
 
         // If vector property name is not provided, check if there is a single vector property, or throw if there are no vectors or more than one.

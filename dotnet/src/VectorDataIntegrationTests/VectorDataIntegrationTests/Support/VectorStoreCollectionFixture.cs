@@ -16,10 +16,10 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
 {
     private List<TRecord>? _testData;
 
-    protected abstract VectorStoreRecordDefinition GetRecordDefinition();
+    public abstract VectorStoreRecordDefinition GetRecordDefinition();
     protected abstract List<TRecord> BuildTestData();
 
-    protected virtual string CollectionName => Guid.NewGuid().ToString();
+    public virtual string CollectionName => Guid.NewGuid().ToString();
     protected virtual string DistanceFunction => this.TestStore.DefaultDistanceFunction;
     protected virtual string IndexKind => this.TestStore.DefaultIndexKind;
 

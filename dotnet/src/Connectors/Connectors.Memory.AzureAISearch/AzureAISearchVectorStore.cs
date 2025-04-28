@@ -68,7 +68,8 @@ public sealed class AzureAISearchVectorStore : IVectorStore
             new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>()
             {
                 JsonSerializerOptions = this._options.JsonSerializerOptions,
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._options.EmbeddingGenerator
             }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
         return recordCollection!;

@@ -6,11 +6,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -30,7 +29,10 @@ internal class WeaviateFilterTranslator
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        this.Translate(lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = true };
+        var preprocessedExpression = preprocessor.Visit(lambdaExpression.Body);
+
+        this.Translate(preprocessedExpression);
         return this._filter.ToString();
     }
 
@@ -102,10 +104,15 @@ internal class WeaviateFilterTranslator
 
     private void TranslateEqualityComparison(BinaryExpression binary)
     {
-        if ((this.TryBindProperty(binary.Left, out var property) && TryGetConstant(binary.Right, out var value))
-            || (this.TryBindProperty(binary.Right, out property) && TryGetConstant(binary.Left, out value)))
+        if (this.TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant })
         {
-            this.GenerateEqualityComparison(property.StorageName, value, binary.NodeType);
+            this.GenerateEqualityComparison(property.StorageName, rightConstant, binary.NodeType);
+            return;
+        }
+
+        if (this.TryBindProperty(binary.Right, out property) && binary.Left is ConstantExpression { Value: var leftConstant })
+        {
+            this.GenerateEqualityComparison(property.StorageName, leftConstant, binary.NodeType);
             return;
         }
 
@@ -210,9 +217,7 @@ internal class WeaviateFilterTranslator
     {
         // Contains over array
         // { path: ["stringArrayPropName"], operator: ContainsAny, valueText: ["foo"] }
-        if (this.TryBindProperty(source, out var property)
-            && TryGetConstant(item, out var itemConstant)
-            && itemConstant is string stringConstant)
+        if (this.TryBindProperty(source, out var property) && item is ConstantExpression { Value: string stringConstant })
         {
             this._filter
                 .Append("{ path: [\"")
@@ -270,26 +275,5 @@ internal class WeaviateFilterTranslator
         }
 
         return true;
-    }
-
-    private static bool TryGetConstant(Expression expression, out object? constantValue)
-    {
-        switch (expression)
-        {
-            case ConstantExpression { Value: var v }:
-                constantValue = v;
-                return true;
-
-            // This identifies compiler-generated closure types which contain captured variables.
-            case MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
-                when constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
-                     && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true):
-                constantValue = fieldInfo.GetValue(constant.Value);
-                return true;
-
-            default:
-                constantValue = null;
-                return false;
-        }
     }
 }

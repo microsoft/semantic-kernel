@@ -29,7 +29,7 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         this._sql.Append(']');
     }
 
-    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
+    protected override void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value)
     {
         this.Translate(item);
         this._sql.Append(" = ANY (");
@@ -37,17 +37,17 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    protected override void TranslateCapturedVariable(object? capturedValue)
+    protected override void TranslateQueryParameter(string name, object? value)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)
-        if (capturedValue is null)
+        if (value is null)
         {
             this._sql.Append("NULL");
         }
         else
         {
-            this._parameterValues.Add(capturedValue);
+            this._parameterValues.Add(value);
             this._sql.Append('$').Append(this._parameterIndex++);
         }
     }

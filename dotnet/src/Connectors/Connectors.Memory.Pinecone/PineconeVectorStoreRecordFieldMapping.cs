@@ -14,45 +14,36 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// </summary>
 internal static class PineconeVectorStoreRecordFieldMapping
 {
-    public static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
-    {
-        RequiresAtLeastOneVector = true,
-        SupportsMultipleKeys = false,
-        SupportsMultipleVectors = false,
-
-        SupportedKeyPropertyTypes = PineconeVectorStoreRecordFieldMapping.s_supportedKeyTypes,
-        SupportedDataPropertyTypes = PineconeVectorStoreRecordFieldMapping.s_supportedDataTypes,
-        SupportedEnumerableDataPropertyElementTypes = [typeof(string)],
-        SupportedVectorPropertyTypes = PineconeVectorStoreRecordFieldMapping.s_supportedVectorTypes
-    };
-
-    /// <summary>A set of types that a key on the provided model may have.</summary>
-    public static readonly HashSet<Type> s_supportedKeyTypes = [typeof(string)];
-
-    /// <summary>A set of types that data properties on the provided model may have.</summary>
-    public static readonly HashSet<Type> s_supportedDataTypes =
-    [
-        typeof(bool),
-        typeof(string),
-        typeof(int),
-        typeof(long),
-        typeof(float),
-        typeof(double),
-        typeof(decimal)
-    ];
-
-    /// <summary>A set of types that enumerable data properties on the provided model may use as their element types.</summary>
-    public static readonly HashSet<Type> s_supportedEnumerableDataElementTypes =
-    [
-        typeof(string)
-    ];
-
     /// <summary>A set of types that vectors on the provided model may have.</summary>
     public static readonly HashSet<Type> s_supportedVectorTypes =
     [
         typeof(ReadOnlyMemory<float>),
         typeof(ReadOnlyMemory<float>?),
     ];
+
+    public static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
+    {
+        RequiresAtLeastOneVector = true,
+        SupportsMultipleKeys = false,
+        SupportsMultipleVectors = false,
+
+        SupportedKeyPropertyTypes = [typeof(string)],
+
+        SupportedDataPropertyTypes =
+        [
+            typeof(bool),
+            typeof(string),
+            typeof(int),
+            typeof(long),
+            typeof(float),
+            typeof(double),
+            typeof(decimal)
+        ],
+
+        SupportedEnumerableDataPropertyElementTypes = [typeof(string)],
+
+        SupportedVectorPropertyTypes = s_supportedVectorTypes
+    };
 
     public static object? ConvertFromMetadataValueToNativeType(MetadataValue metadataValue, Type targetType)
         => metadataValue.Value switch

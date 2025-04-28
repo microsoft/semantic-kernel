@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
@@ -30,7 +31,11 @@ internal class AzureCosmosDBNoSqlFilterTranslator
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
+        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = false };
+        var preprocessedExpression = preprocessor.Visit(lambdaExpression);
+
         this.Translate(lambdaExpression.Body);
+
         return (this._sql.ToString(), this._parameters);
     }
 

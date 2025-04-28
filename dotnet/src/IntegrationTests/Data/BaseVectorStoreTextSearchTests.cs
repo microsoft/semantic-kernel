@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -95,33 +94,6 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
         {
             IList<ReadOnlyMemory<float>> result = [new float[] { 0, 1, 2, 3 }];
             return Task.FromResult(result);
-        }
-    }
-
-    /// <summary>
-    /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
-    /// </summary>
-    protected sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
-    {
-        /// <inheritdoc/>
-        public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            var vectorizedQuery = await textEmbeddingGeneration!.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            await foreach (var result in vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, top, options, cancellationToken))
-            {
-                yield return result;
-            }
-        }
-
-        /// <inheritdoc />
-        public object? GetService(Type serviceType, object? serviceKey = null)
-        {
-            ArgumentNullException.ThrowIfNull(serviceType);
-
-            return
-                serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
-                vectorizedSearch.GetService(serviceType, serviceKey);
         }
     }
 

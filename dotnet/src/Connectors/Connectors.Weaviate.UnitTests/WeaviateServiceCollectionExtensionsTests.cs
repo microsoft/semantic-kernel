@@ -57,7 +57,7 @@ public sealed class WeaviateServiceCollectionExtensionsTests
         Assert.NotNull(collection);
         Assert.IsType<WeaviateVectorStoreRecordCollection<Guid, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<WeaviateVectorStoreRecordCollection<Guid, TestRecord>>(vectorizedSearch);
     }

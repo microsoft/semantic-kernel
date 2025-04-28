@@ -52,7 +52,7 @@ public sealed class WeaviateKernelBuilderExtensionsTests
         Assert.NotNull(collection);
         Assert.IsType<WeaviateVectorStoreRecordCollection<Guid, TestRecord>>(collection);
 
-        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<WeaviateVectorStoreRecordCollection<Guid, TestRecord>>(vectorizedSearch);
     }

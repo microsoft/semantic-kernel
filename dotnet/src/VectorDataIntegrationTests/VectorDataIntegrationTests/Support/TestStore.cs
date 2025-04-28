@@ -90,19 +90,18 @@ public abstract class TestStore
 
         for (var i = 0; i < 20; i++)
         {
-            var results = collection.VectorizedSearchAsync(
+            var results = collection.SearchEmbeddingAsync(
                 new ReadOnlyMemory<float>(vector),
-                top: recordCount,
-                new()
-                {
-                    // In some databases (Azure AI Search), the data shows up but the filtering index isn't yet updated,
-                    // so filtered searches show empty results. Add a filter to the seed data check below.
-                    Filter = filter
-                });
+                top: 1000, // TODO: this should be recordCount, but see #11655
+                new() { Filter = filter });
             var count = await results.CountAsync();
             if (count == recordCount)
             {
                 return;
+            }
+            if (count > recordCount)
+            {
+                throw new InvalidOperationException($"Expected at most {recordCount} records, but found {count}.");
             }
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));

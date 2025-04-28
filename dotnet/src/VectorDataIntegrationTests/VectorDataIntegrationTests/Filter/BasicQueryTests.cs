@@ -29,7 +29,7 @@ public abstract class BasicQueryTests<TKey>(BasicQueryTests<TKey>.QueryFixture f
     {
         private static readonly Random s_random = new();
 
-        protected override string CollectionName => "QueryTests";
+        public override string CollectionName => "QueryTests";
 
         /// <summary>
         /// Use random vectors to make sure that the values don't matter for GetAsync.

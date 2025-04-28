@@ -45,7 +45,8 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
                     new VectorStoreRecordDataProperty("Tags", typeof(string[])) { StoragePropertyName = "tags" },
                     new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "descriptionEmbeddding" },
                 ]
-            });
+            },
+            defaultEmbeddingGenerator: null);
 
     private readonly ReadOnlyMemory<float> _vector = new([31f, 32f, 33f, 34f]);
 

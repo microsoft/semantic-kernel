@@ -49,7 +49,7 @@ public class RedisHashSetDynamicDataModelMapperTests
         };
 
         // Act.
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", storageModel.Key);
@@ -82,7 +82,7 @@ public class RedisHashSetDynamicDataModelMapperTests
         var sut = new RedisHashSetVectorStoreRecordMapper<Dictionary<string, object?>>(model);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", storageModel.Key);
@@ -178,7 +178,7 @@ public class RedisHashSetDynamicDataModelMapperTests
         var dataModel = new Dictionary<string, object?> { ["Key"] = "key" };
 
         // Act.
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", storageModel.Key);
@@ -208,5 +208,5 @@ public class RedisHashSetDynamicDataModelMapperTests
 
     private static VectorStoreRecordModel BuildModel(VectorStoreRecordDefinition definition)
         => new VectorStoreRecordModelBuilder(RedisHashSetVectorStoreRecordCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
-            .Build(typeof(Dictionary<string, object?>), definition);
+            .Build(typeof(Dictionary<string, object?>), definition, defaultEmbeddingGenerator: null);
 }

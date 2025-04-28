@@ -106,7 +106,7 @@ public class QdrantKernelBuilderExtensionsTests
         Assert.NotNull(collection);
         Assert.IsType<QdrantVectorStoreRecordCollection<ulong, TestRecord>>(collection);
 
-        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<QdrantVectorStoreRecordCollection<ulong, TestRecord>>(vectorizedSearch);
     }

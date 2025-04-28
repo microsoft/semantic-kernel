@@ -20,12 +20,12 @@ public static class InMemoryKernelBuilderExtensions
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddInMemoryVectorStore(this IKernelBuilder builder, string? serviceId = default)
     {
-        builder.Services.AddInMemoryVectorStore(serviceId);
+        builder.Services.AddInMemoryVectorStore(serviceId: serviceId);
         return builder;
     }
 
     /// <summary>
-    /// Register an InMemory <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID.
+    /// Register an InMemory <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>

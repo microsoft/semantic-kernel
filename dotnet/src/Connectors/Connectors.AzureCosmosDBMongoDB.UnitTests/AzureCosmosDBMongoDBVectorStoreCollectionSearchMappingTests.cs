@@ -28,7 +28,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreCollectionSearchMappingTests
                     new VectorStoreRecordKeyProperty("Property1", typeof(string)) { StoragePropertyName = "property_1" },
                     new VectorStoreRecordDataProperty("Property2", typeof(string)) { StoragePropertyName = "property_2" }
                 ]
-            });
+            },
+            defaultEmbeddingGenerator: null);
 
     [Fact]
     public void BuildFilterWithNullVectorSearchFilterReturnsNull()
@@ -105,5 +106,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreCollectionSearchMappingTests
     => new MongoDBModelBuilder()
         .Build(
             typeof(Dictionary<string, object?>),
-            new() { Properties = properties });
+            new() { Properties = properties },
+            defaultEmbeddingGenerator: null);
 }

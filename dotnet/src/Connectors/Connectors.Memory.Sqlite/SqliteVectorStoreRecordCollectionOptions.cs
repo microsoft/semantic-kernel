@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
@@ -39,4 +40,9 @@ public sealed class SqliteVectorStoreRecordCollectionOptions<TRecord>
     /// If not provided, collection name with prefix will be used as virtual table name.
     /// </remarks>
     public string? VectorVirtualTableName { get; set; } = null;
+
+    /// <summary>
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

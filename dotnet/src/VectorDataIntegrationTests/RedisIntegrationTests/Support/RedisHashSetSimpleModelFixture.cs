@@ -10,7 +10,7 @@ public class RedisHashSetSimpleModelFixture : SimpleModelFixture<string>
 {
     public override TestStore TestStore => RedisTestStore.HashSetInstance;
 
-    protected override VectorStoreRecordDefinition GetRecordDefinition()
+    public override VectorStoreRecordDefinition GetRecordDefinition()
         => new()
         {
             Properties =

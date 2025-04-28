@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
@@ -13,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
 internal sealed class SqliteVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model)
 {
-    public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
+    public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         var properties = new Dictionary<string, object?>
         {
@@ -25,18 +26,19 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
             properties.Add(property.StorageName, property.GetValueAsObject(dataModel!));
         }
 
-        foreach (var property in model.VectorProperties)
+        for (var i = 0; i < model.VectorProperties.Count; i++)
         {
-            object? result = null;
-            var propertyValue = property.GetValueAsObject(dataModel!);
+            var property = model.VectorProperties[i];
+            var vector = generatedEmbeddings?[i] is IReadOnlyList<Embedding> e ? ((Embedding<float>)e[recordIndex]).Vector : property.GetValueAsObject(dataModel!);
 
-            if (propertyValue is not null)
-            {
-                var vector = (ReadOnlyMemory<float>)propertyValue;
-                result = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
-            }
-
-            properties.Add(property.StorageName, result);
+            properties.Add(
+                property.StorageName,
+                vector switch
+                {
+                    ReadOnlyMemory<float> floats => SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(floats),
+                    null => null,
+                    _ => throw new InvalidOperationException($"Retrieved value for vector property '{property.StorageName}' which is not a ReadOnlyMemory<float> ('{vector?.GetType().Name}').")
+                });
         }
 
         return properties;

@@ -11,7 +11,7 @@ public class SqliteSimpleModelFixture<TKey> : SimpleModelFixture<TKey>
 {
     public override TestStore TestStore => SqliteTestStore.Instance;
 
-    protected override VectorStoreRecordDefinition GetRecordDefinition()
+    public override VectorStoreRecordDefinition GetRecordDefinition()
         => new()
         {
             Properties =

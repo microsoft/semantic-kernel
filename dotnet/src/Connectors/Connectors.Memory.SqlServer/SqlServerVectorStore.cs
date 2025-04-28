@@ -37,7 +37,7 @@ public sealed class SqlServerVectorStore : IVectorStore
         // We need to create a copy, so any changes made to the option bag after
         // the ctor call do not affect this instance.
         this._options = options is not null
-            ? new() { Schema = options.Schema }
+            ? new() { Schema = options.Schema, EmbeddingGenerator = options.EmbeddingGenerator }
             : SqlServerVectorStoreOptions.Defaults;
 
         var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
@@ -62,7 +62,8 @@ public sealed class SqlServerVectorStore : IVectorStore
             new()
             {
                 Schema = this._options.Schema,
-                RecordDefinition = vectorStoreRecordDefinition
+                RecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._options.EmbeddingGenerator
             });
     }
 

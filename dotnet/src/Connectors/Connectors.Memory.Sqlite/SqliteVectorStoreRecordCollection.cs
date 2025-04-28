@@ -9,8 +9,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.Properties;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
@@ -92,7 +94,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         this._vectorTableName = SqliteConstants.Escape(GetVectorTableName(name, this._options));
 
         this._model = new VectorStoreRecordModelBuilder(SqliteConstants.ModelBuildingOptions)
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
+            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
 
         this._vectorPropertiesExist = this._model.VectorProperties.Count > 0;
 
@@ -156,8 +158,64 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         }
     }
 
+    #region Search
+
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+        TInput value,
+        int top,
+        VectorSearchOptions<TRecord>? options = default,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        switch (vectorProperty.EmbeddingGenerator)
+        {
+            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
+                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+
+            case null:
+                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
+
+            default:
+                throw new InvalidOperationException(
+                    SqliteConstants.SupportedVectorTypes.Contains(typeof(TInput))
+                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
+                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
+        }
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorSearchOptions<TRecord>? options = null,
+        CancellationToken cancellationToken = default)
+        where TVector : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
+    }
+
+    private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorStoreRecordVectorPropertyModel vectorProperty,
+        string operationName,
+        VectorSearchOptions<TRecord> options,
+        CancellationToken cancellationToken = default)
+        where TVector : notnull
     {
         const string LimitPropertyName = "k";
 
@@ -172,14 +230,16 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                 $"Supported types are: {string.Join(", ", SqliteConstants.SupportedVectorTypes.Select(l => l.FullName))}");
         }
 
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
         var mappedArray = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 
         // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
-        var limit = top + searchOptions.Skip;
+        var limit = top + options.Skip;
 
         var conditions = new List<SqliteWhereCondition>()
         {
@@ -191,24 +251,24 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         string? extraWhereFilter = null;
         Dictionary<string, object>? extraParameters = null;
 
-        if (searchOptions.OldFilter is not null)
+        if (options.OldFilter is not null)
         {
-            if (searchOptions.Filter is not null)
+            if (options.Filter is not null)
             {
                 throw new ArgumentException("Either Filter or OldFilter can be specified, but not both");
             }
 
             // Old filter, we translate it to a list of SqliteWhereCondition, and merge these into the conditions we already have
-            var filterConditions = this.GetFilterConditions(searchOptions.OldFilter, this._dataTableName);
+            var filterConditions = this.GetFilterConditions(options.OldFilter, this._dataTableName);
 
             if (filterConditions is { Count: > 0 })
             {
                 conditions.AddRange(filterConditions);
             }
         }
-        else if (searchOptions.Filter is not null)
+        else if (options.Filter is not null)
         {
-            SqliteFilterTranslator translator = new(this._model, searchOptions.Filter);
+            SqliteFilterTranslator translator = new(this._model, options.Filter);
             translator.Translate(appendWhere: false);
             extraWhereFilter = translator.Clause.ToString();
             extraParameters = translator.Parameters;
@@ -219,9 +279,17 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             conditions,
             extraWhereFilter,
             extraParameters,
-            searchOptions,
+            options,
             cancellationToken);
     }
+
+    /// <inheritdoc />
+    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        where TVector : notnull
+        => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
+
+    #endregion Search
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -230,6 +298,11 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         Verify.NotLessThan(top, 1);
 
         options ??= new();
+
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
         SqliteFilterTranslator translator = new(this._model, filter);
         translator.Translate(appendWhere: false);
@@ -329,6 +402,32 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         const string OperationName = "Upsert";
 
+        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
+
+        var vectorPropertyCount = this._model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
+        {
+            var vectorProperty = this._model.VectorProperties[i];
+
+            if (vectorProperty.EmbeddingGenerator is null)
+            {
+                continue;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var floatTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = [await floatTask.ConfigureAwait(false)];
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
+            }
+        }
+
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
@@ -336,7 +435,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             this._collectionMetadata.VectorStoreName,
             this.Name,
             OperationName,
-            () => this._mapper.MapFromDataToStorageModel(record));
+            () => this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings));
 
         var key = storageModel[this._keyStorageName];
 
@@ -357,12 +456,55 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         const string OperationName = "UpsertBatch";
 
-        var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
+        IReadOnlyList<TRecord>? recordsList = null;
+
+        // If an embedding generator is defined, invoke it once per property for all records.
+        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
+
+        var vectorPropertyCount = this._model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
+        {
+            var vectorProperty = this._model.VectorProperties[i];
+
+            if (vectorProperty.EmbeddingGenerator is null)
+            {
+                continue;
+            }
+
+            // We have a property with embedding generation; materialize the records' enumerable if needed, to
+            // prevent multiple enumeration.
+            if (recordsList is null)
+            {
+                recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+
+                if (recordsList.Count == 0)
+                {
+                    return [];
+                }
+
+                records = recordsList;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var floatTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
+            }
+        }
+
+        var storageModels = VectorStoreErrorHandler.RunModelConversion(
             SqliteConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
             this.Name,
             OperationName,
-            () => this._mapper.MapFromDataToStorageModel(record))).ToList();
+            () => records.Select((r, i) => this._mapper.MapFromDataToStorageModel(r, i, generatedEmbeddings)).ToList());
 
         if (storageModels.Count == 0)
         {
@@ -532,6 +674,11 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         if (includeVectors)
         {
+            if (this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+            {
+                throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+            }
+
             command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectLeftJoinCommand<TRecord>(
                 connection,
                 this._vectorTableName,

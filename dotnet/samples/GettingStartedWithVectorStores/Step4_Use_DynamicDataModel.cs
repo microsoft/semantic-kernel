@@ -11,7 +11,7 @@ namespace GettingStartedWithVectorStores;
 /// Example that shows that you can use the dynamic data modeling to interact with a vector database.
 /// This makes it possible to use the vector store abstractions without having to create your own strongly-typed data model.
 /// </summary>
-public class Step5_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFixture fixture) : BaseTest(output), IClassFixture<VectorStoresFixture>
+public class Step4_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFixture fixture) : BaseTest(output), IClassFixture<VectorStoresFixture>
 {
     /// <summary>
     /// Example showing how to query a vector store that uses dynamic data modeling.
@@ -20,7 +20,7 @@ public class Step5_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFi
     /// docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
     /// </summary>
     [Fact]
-    public async Task SearchAVectorStoreWithGenericDataModelAsync()
+    public async Task SearchAVectorStoreWithDynamicMappingAsync()
     {
         // Construct a redis vector store.
         var vectorStore = new RedisVectorStore(ConnectionMultiplexer.Connect("localhost:6379").GetDatabase());
@@ -56,7 +56,7 @@ public class Step5_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFi
         var searchVector = await fixture.TextEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
 
         // Search the generic data model collection and get the single most relevant result.
-        var searchResultItems = await dynamicDataModelCollection.VectorizedSearchAsync(
+        var searchResultItems = await dynamicDataModelCollection.SearchEmbeddingAsync(
             searchVector,
             top: 1).ToListAsync();
 

@@ -16,7 +16,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 {
     private static readonly VectorStoreRecordModel s_model
         = new VectorStoreRecordModelBuilder(RedisHashSetVectorStoreRecordCollection<string, AllTypesModel>.ModelBuildingOptions)
-            .Build(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
+            .Build(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, defaultEmbeddingGenerator: null);
 
     [Fact]
     public void MapsAllFieldsFromDataToStorageModel()
@@ -25,7 +25,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(s_model);
 
         // Act.
-        var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
+        var actual = sut.MapFromDataToStorageModel(CreateModel("test key"), recordIndex: 0, generatedEmbeddings: null);
 
         // Assert.
         Assert.NotNull(actual.HashEntries);

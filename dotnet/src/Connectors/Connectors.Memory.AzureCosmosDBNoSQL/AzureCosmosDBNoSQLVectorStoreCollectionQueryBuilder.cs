@@ -139,7 +139,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
             projectionProperties = projectionProperties.Where(p => p is not VectorStoreRecordVectorPropertyModel);
         }
 
-        var fieldsArgument = projectionProperties.Select(field => $"{tableVariableName}.{field}");
+        var fieldsArgument = projectionProperties.Select(field => $"{tableVariableName}.{field.StorageName}");
 
         var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument]);
 
