@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
+from semantic_kernel.agents.agent_registry import register_agent_type
 from semantic_kernel.agents.open_ai.responses_agent_thread_actions import ResponsesAgentThreadActions
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
@@ -179,6 +180,7 @@ class ResponsesAgentThread(AgentThread):
 
 
 @experimental
+@register_agent_type("openai_responses")
 class OpenAIResponsesAgent(Agent):
     """OpenAI Responses Agent class.
 
@@ -303,6 +305,21 @@ class OpenAIResponsesAgent(Agent):
         if kwargs:
             args.update(kwargs)
         super().__init__(**args)
+
+    @classmethod
+    async def _from_dict(
+        cls,
+        data: dict,
+        *,
+        kernel,
+        **kwargs,
+    ) -> "OpenAIResponsesAgent":
+        fields = cls._extract_common_fields(data, kernel=kernel)
+
+        fields["client"] = kwargs["client"]  # Must inject
+        fields["ai_model_id"] = kwargs["ai_model_id"]  # Must inject
+
+        return cls(**fields)
 
     @staticmethod
     def setup_resources(

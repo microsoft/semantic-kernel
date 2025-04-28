@@ -6,6 +6,7 @@ import uuid
 from collections.abc import AsyncGenerator, AsyncIterable, Awaitable, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from semantic_kernel.agents.agent_registry import register_agent_type
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 
@@ -114,6 +115,7 @@ class ChatHistoryAgentThread(AgentThread):
         return await self._chat_history.reduce()
 
 
+@register_agent_type("chat_completion_agent")
 class ChatCompletionAgent(Agent):
     """A Chat Completion Agent based on ChatCompletionClientBase."""
 
@@ -209,6 +211,21 @@ class ChatCompletionAgent(Agent):
             )
         self.kernel.add_service(self.service, overwrite=True)
         return self
+
+    @classmethod
+    async def _from_dict(
+        cls,
+        data: dict,
+        *,
+        kernel: "Kernel | None" = None,
+        **kwargs,
+    ) -> "ChatCompletionAgent":
+        fields = cls._extract_common_fields(data, kernel=kernel)
+
+        if "service" in kwargs:
+            fields["service"] = kwargs["service"]
+
+        return cls(**fields)
 
     async def create_channel(
         self, chat_history: ChatHistory | None = None, thread_id: str | None = None

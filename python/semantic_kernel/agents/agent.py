@@ -5,7 +5,7 @@ import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable, Sequence
 from contextlib import AbstractAsyncContextManager
-from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Generic, TypeVar
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Generic, Type, TypeVar
 
 from pydantic import Field, model_validator
 
@@ -13,9 +13,10 @@ from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
+from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException, AgentInitializationException
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -28,10 +29,16 @@ from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 if TYPE_CHECKING:
     from mcp.server.lowlevel.server import LifespanResultT, Server
 
+    from semantic_kernel.kernel_pydantic import KernelBaseSettings
+
 logger: logging.Logger = logging.getLogger(__name__)
 
+_T = TypeVar("_T", bound="Agent")
 TMessage = TypeVar("TMessage", bound=ChatMessageContent)
 TThreadType = TypeVar("TThreadType", bound="AgentThread")
+
+
+# region AgentThread
 
 
 class AgentThread(ABC):
@@ -109,6 +116,11 @@ class AgentThread(ABC):
         raise NotImplementedError
 
 
+# endregion
+
+# region AgentResponseItem
+
+
 class AgentResponseItem(KernelBaseModel, Generic[TMessage]):
     """Class representing a response item from an agent.
 
@@ -156,6 +168,12 @@ class AgentResponseItem(KernelBaseModel, Generic[TMessage]):
     def __hash__(self):
         """Get the hash of the response item."""
         return hash((self.message, self.thread))
+
+
+# endregion
+
+
+# region Agent Base Class
 
 
 class Agent(KernelBaseModel, ABC):
@@ -232,6 +250,8 @@ class Agent(KernelBaseModel, ABC):
         # Keep Pydantic happy with the "private" method, otherwise
         # it will fail validating the model.
         setattr(self, "_as_kernel_function", _as_kernel_function)
+
+    # region Invocation Methods
 
     @abstractmethod
     def get_response(
@@ -325,6 +345,10 @@ class Agent(KernelBaseModel, ABC):
         """
         pass
 
+    # endregion
+
+    # region Channel Management
+
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.
 
@@ -344,6 +368,10 @@ class Agent(KernelBaseModel, ABC):
         if not self.channel_type:
             raise NotImplementedError("Unable to create channel. Channel type not configured.")
         return self.channel_type()
+
+    # endregion
+
+    # region Instructions Management
 
     async def format_instructions(self, kernel: Kernel, arguments: KernelArguments | None = None) -> str | None:
         """Format the instructions.
@@ -390,6 +418,131 @@ class Agent(KernelBaseModel, ABC):
 
         return KernelArguments(settings=merged_execution_settings, **merged_params)
 
+    # endregion
+
+    # region Declarative Agent Methods
+
+    @classmethod
+    async def from_yaml(
+        cls: Type[_T],
+        yaml_str: str,
+        *,
+        kernel: Kernel,
+        prompt_template_config: PromptTemplateConfig | None = None,
+        settings: "KernelBaseSettings | None" = None,
+        **kwargs,
+    ) -> "Agent":
+        """Create an agent instance from a YAML string."""
+        import yaml
+
+        data = yaml.safe_load(yaml_str)
+        return await cls._from_dict(
+            data, kernel=kernel, prompt_template_config=prompt_template_config, settings=settings, **kwargs
+        )
+
+    @classmethod
+    async def from_dict(
+        cls: Type[_T],
+        data: dict,
+        *,
+        kernel,
+        prompt_template_config: PromptTemplateConfig | None = None,
+        settings: "KernelBaseSettings | None" = None,
+        **kwargs,
+    ) -> _T:
+        """Default implementation: call the protected _from_dict."""
+        return await cls._from_dict(
+            data, kernel=kernel, prompt_template_config=prompt_template_config, settings=settings, **kwargs
+        )
+
+    @classmethod
+    @abstractmethod
+    async def _from_dict(
+        cls: Type[_T],
+        data: dict,
+        *,
+        kernel: Kernel,
+        prompt_template_config: PromptTemplateConfig | None = None,
+        settings: "KernelBaseSettings | None" = None,
+        **kwargs,
+    ) -> "Agent":
+        """Create an agent instance from a dictionary."""
+        pass
+
+    @classmethod
+    def resolve_placeholders(cls, yaml_str: str, settings: "KernelBaseSettings") -> str:
+        """Resolve placeholders inside the YAML string using agent-specific settings.
+
+        Override in subclasses if necessary.
+        """
+        return yaml_str
+
+    @classmethod
+    def _extract_common_fields(
+        cls: Type[_T],
+        data: dict,
+        *,
+        kernel: Kernel,
+    ) -> dict[str, Any]:
+        fields = {
+            "name": data.get("name"),
+            "description": data.get("description"),
+            "instructions": data.get("instructions"),
+            "arguments": KernelArguments(**(data.get("model", {}).get("options", {}))) if data.get("model") else None,
+            "kernel": kernel,
+        }
+
+        # Handle prompt_template if available
+        if "template" in data or "prompt_template" in data:
+            template_data = data.get("prompt_template") or data.get("template")
+            if isinstance(template_data, dict):
+                prompt_template_config = PromptTemplateConfig(**template_data)
+                fields["prompt_template"] = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
+                    prompt_template_config=prompt_template_config
+                )
+
+                # Overwrite instructions from prompt template if explicitly provided
+                if prompt_template_config.template is not None:
+                    fields["instructions"] = prompt_template_config.template
+
+        # Handle tools
+        if "tools" in data:
+            tools_list = data["tools"]
+            resolved_plugins = cls._resolve_tools(tools_list, kernel)
+            fields["plugins"] = resolved_plugins
+
+        return fields
+
+    @classmethod
+    def _resolve_tools(cls: Type[_T], tools_list: list[dict], kernel: Kernel) -> dict[str, Any]:
+        """Resolve tools by id from the kernel plugins."""
+        resolved_plugins = {}
+
+        for tool in tools_list:
+            tool_id = tool.get("id")
+            if not tool_id:
+                continue
+
+            if "." not in tool_id:
+                raise AgentInitializationException(f"Tool id '{tool_id}' must be in format PluginName.FunctionName")
+
+            plugin_name, function_name = tool_id.split(".", 1)
+
+            plugin = kernel.plugins.get(plugin_name)
+            if not plugin:
+                raise AgentInitializationException(f"Plugin '{plugin_name}' not found in kernel.")
+
+            if function_name not in plugin.functions:
+                raise AgentInitializationException(f"Function '{function_name}' not found in plugin '{plugin_name}'.")
+
+            resolved_plugins[tool_id] = plugin.get(function_name)
+
+        return resolved_plugins
+
+    # endregion
+
+    # region Thread Managment
+
     async def _ensure_thread_exists_with_messages(
         self,
         *,
@@ -431,6 +584,8 @@ class Agent(KernelBaseModel, ABC):
     ) -> None:
         """Notify the thread of a new message."""
         await thread.on_new_message(new_message)
+
+    # endregion
 
     def __eq__(self, other):
         """Check if two agents are equal."""

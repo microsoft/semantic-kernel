@@ -10,6 +10,8 @@ from typing import Any, ClassVar
 
 from pydantic import ValidationError
 
+from semantic_kernel.agents.agent_registry import register_agent_type
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -108,6 +110,7 @@ class BedrockAgentThread(AgentThread):
 
 
 @experimental
+@register_agent_type("bedrock")
 class BedrockAgent(BedrockAgentBase):
     """Bedrock Agent.
 
@@ -163,6 +166,21 @@ class BedrockAgent(BedrockAgentBase):
             args["bedrock_client"] = bedrock_client
 
         super().__init__(**args)
+
+    @classmethod
+    async def _from_dict(
+        cls,
+        data: dict,
+        *,
+        kernel,
+        **kwargs,
+    ) -> "BedrockAgent":
+        fields = cls._extract_common_fields(data, kernel=kernel)
+
+        fields["bedrock_runtime_client"] = kwargs.get("bedrock_runtime_client")
+        fields["bedrock_client"] = kwargs.get("bedrock_client")
+
+        return cls(**fields)
 
     # region convenience class methods
 

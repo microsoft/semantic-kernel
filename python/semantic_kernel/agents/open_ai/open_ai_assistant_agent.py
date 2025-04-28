@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from typing_extensions import deprecated
 
+from semantic_kernel.agents.agent_registry import register_agent_type
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 if sys.version_info >= (3, 12):
@@ -161,6 +162,7 @@ class AssistantAgentThread(AgentThread):
 
 
 @release_candidate
+@register_agent_type("openai_assistant")
 class OpenAIAssistantAgent(Agent):
     """OpenAI Assistant Agent class.
 
@@ -243,6 +245,21 @@ class OpenAIAssistantAgent(Agent):
         if kwargs:
             args.update(kwargs)
         super().__init__(**args)
+
+    @classmethod
+    async def _from_dict(
+        cls,
+        data: dict,
+        *,
+        kernel,
+        **kwargs,
+    ) -> "OpenAIAssistantAgent":
+        fields = cls._extract_common_fields(data, kernel=kernel)
+
+        fields["client"] = kwargs["client"]  # Must inject
+        fields["definition"] = kwargs["definition"]  # Must inject (Assistant object)
+
+        return cls(**fields)
 
     @staticmethod
     def setup_resources(

@@ -5,13 +5,6 @@ import sys
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
-from typing_extensions import deprecated
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 from azure.ai.projects.aio import AIProjectClient
 from azure.ai.projects.models import Agent as AzureAIAgentModel
 from azure.ai.projects.models import (
@@ -24,8 +17,10 @@ from azure.ai.projects.models import (
     TruncationObject,
 )
 from pydantic import Field
+from typing_extensions import deprecated
 
 from semantic_kernel.agents.agent import Agent, AgentResponseItem, AgentThread
+from semantic_kernel.agents.agent_registry import register_agent_type
 from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActions
 from semantic_kernel.agents.azure_ai.azure_ai_agent_settings import AzureAIAgentSettings
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
@@ -50,6 +45,11 @@ from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_invocation,
 )
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, SEMANTIC_KERNEL_USER_AGENT
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -159,6 +159,7 @@ class AzureAIAgentThread(AgentThread):
 
 
 @experimental
+@register_agent_type("foundry_agent")
 class AzureAIAgent(Agent):
     """Azure AI Agent class."""
 
@@ -237,6 +238,66 @@ class AzureAIAgent(Agent):
             args.update(kwargs)
 
         super().__init__(**args)
+
+    @classmethod
+    async def _from_dict(
+        cls,
+        data: dict,
+        *,
+        kernel,
+        service: Any = None,
+        **kwargs,
+    ) -> "AzureAIAgent":
+        fields = cls._extract_common_fields(data, kernel=kernel)
+
+        client: AIProjectClient = kwargs.get("client")
+        if client is None:
+            raise ValueError("AzureAIAgent requires a 'client' to be injected.")
+
+        if agent_id := data.get("id"):
+            # Case 1: Load existing agent
+            agent = await client.agents.get_agent(agent_id)
+        else:
+            # Case 2: Create new agent
+
+            model_info = data.get("model")
+            if not model_info or not model_info.get("id"):
+                raise ValueError("New agent creation requires 'model.id' in YAML definition.")
+
+            agent = await client.agents.create_agent(
+                model=model_info["id"],
+                name=data.get("name"),
+                description=data.get("description"),
+                instructions=data.get("instructions"),
+                tools=[],  # TODO
+                tool_resources=[],  # TODO
+                metadata={},  # Optional
+            )
+
+        return cls(
+            agent=agent,
+            client=client,
+            kernel=kernel,
+            arguments=fields.get("arguments"),
+            prompt_template=fields.get("prompt_template"),
+            instructions=data.get("instructions") or getattr(agent, "instructions", None),
+        )
+
+    @classmethod
+    def resolve_placeholders(cls, yaml_str: str, settings: Any) -> str:
+        """Resolve placeholders in the YAML string."""
+        import re
+
+        pattern = re.compile(r"\$\{([^}]+)\}")
+
+        def replacer(match):
+            full_key = match.group(1)
+            section, _, key = full_key.partition(":")
+            if section != "AzureAI":
+                return match.group(0)
+            return getattr(settings, key.lower(), match.group(0)) or match.group(0)
+
+        return pattern.sub(replacer, yaml_str)
 
     @staticmethod
     def create_client(

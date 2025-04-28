@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from .agent import Agent, AgentResponseItem, AgentThread
+from .agent_registry import AgentRegistry
 from .autogen.autogen_conversable_agent import AutoGenConversableAgent, AutoGenConversableAgentThread
 from .azure_ai.azure_ai_agent import AzureAIAgent, AzureAIAgentThread
 from .azure_ai.azure_ai_agent_settings import AzureAIAgentSettings
@@ -18,6 +19,7 @@ __all__ = [
     "Agent",
     "AgentChat",
     "AgentGroupChat",
+    "AgentRegistry",
     "AgentResponseItem",
     "AgentThread",
     "AssistantAgentThread",
