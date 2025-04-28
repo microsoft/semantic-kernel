@@ -21,9 +21,9 @@ class DummyInnerStepType:
 
 @pytest.fixture
 def process_context():
-    state = KernelProcessState(name="TestProcess", id=str(uuid.uuid4()))
+    state = KernelProcessState(name="TestProcess", version="1.0", id=str(uuid.uuid4()))
 
-    step_state = KernelProcessStepState(name="TestStep", id="step1")
+    step_state = KernelProcessStepState(name="TestStep", version="1.0", id="step1")
 
     step = KernelProcessStepInfo(
         state=step_state,
