@@ -20,7 +20,7 @@ class KernelProcessStepStateMetadata(KernelBaseModel, Generic[TState]):
 
     type_: Literal["Step", "Process"] = Field(
         "Step", alias="$type"
-    )  # satisfies mypy to have `Steps` anfd `Process` as type
+    )  # satisfies mypy to have `Steps` and `Process` as type
     id: str | None = Field(None, alias="id")
     name: str | None = Field(None, alias="name")
     version_info: str | None = Field(None, alias="versionInfo")
