@@ -168,7 +168,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         // We have a generator configured for string, not int.
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => collection.SearchAsync(8, top: 1).ToListAsync().AsTask());
 
-        Assert.Equal(string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, nameof(Int32), nameof(FakeEmbeddingGenerator)), exception.Message);
+        Assert.Equal($"An input of type 'Int32' was provided, but an incompatible embedding generator of type '{nameof(FakeEmbeddingGenerator)}' was configured.", exception.Message);
     }
 
     #endregion Search
@@ -306,7 +306,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         var exception = await Assert.ThrowsAsync<NotSupportedException>(() => collection.SearchAsync("[1, 0, 0]", top: 1, new() { IncludeVectors = true }).ToListAsync().AsTask());
 
-        Assert.Equal(string.Format(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration), exception.Message);
+        Assert.Equal("When an embedding generator is configured, `Include Vectors` cannot be enabled.", exception.Message);
     }
 
     [ConditionalFact]
@@ -316,7 +316,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         var exception = await Assert.ThrowsAsync<NotSupportedException>(() => collection.GetAsync(fixture.TestData[0].Key, new() { IncludeVectors = true }));
 
-        Assert.Equal(string.Format(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration), exception.Message);
+        Assert.Equal("When an embedding generator is configured, `Include Vectors` cannot be enabled.", exception.Message);
     }
 
     [ConditionalFact]
@@ -330,7 +330,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
                 new() { IncludeVectors = true })
                 .ToListAsync().AsTask());
 
-        Assert.Equal(string.Format(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration), exception.Message);
+        Assert.Equal("When an embedding generator is configured, `Include Vectors` cannot be enabled.", exception.Message);
     }
 
     #endregion IncludeVectors
