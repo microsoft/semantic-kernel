@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);CA2007,CA1861,CA1869,VSTHRD111,CS1591,SKEXP0040,SKEXP0001</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1861,CA1869,VSTHRD111,CS1591,CS0618,SKEXP0040,SKEXP0001</NoWarn>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
   <ItemGroup>
@@ -73,6 +73,9 @@
     <EmbeddedResource Include="OpenApi\TestPlugins\multipart-form-data.json" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="OpenApi\TestPlugins\example-apimanifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="OpenApi\TestPlugins\messages-apiplugin.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

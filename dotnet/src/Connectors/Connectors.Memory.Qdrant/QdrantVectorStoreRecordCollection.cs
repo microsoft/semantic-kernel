@@ -461,9 +461,27 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
             var pointStruct = new PointStruct
             {
                 Id = retrievedPoint.Id,
-                Vectors = retrievedPoint.Vectors,
                 Payload = { }
             };
+
+            if (includeVectors)
+            {
+                pointStruct.Vectors = new();
+                switch (retrievedPoint.Vectors.VectorsOptionsCase)
+                {
+                    case VectorsOutput.VectorsOptionsOneofCase.Vector:
+                        pointStruct.Vectors.Vector = retrievedPoint.Vectors.Vector.Data.ToArray();
+                        break;
+                    case VectorsOutput.VectorsOptionsOneofCase.Vectors:
+                        pointStruct.Vectors.Vectors_ = new();
+                        foreach (var v in retrievedPoint.Vectors.Vectors.Vectors)
+                        {
+                            // TODO: Refactor mapper to not require pre-mapping to pointstruct to avoid this ToArray conversion.
+                            pointStruct.Vectors.Vectors_.Vectors.Add(v.Key, v.Value.Data.ToArray());
+                        }
+                        break;
+                }
+            }
 
             foreach (KeyValuePair<string, Value> payloadEntry in retrievedPoint.Payload)
             {

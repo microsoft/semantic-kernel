@@ -17,7 +17,7 @@ from semantic_kernel.prompt_template.prompt_template_config import PromptTemplat
 logger = logging.getLogger(__name__)
 
 """
-This sample demonstrates how to expose your Semantic Kernel instance as a MCP server.
+This sample demonstrates how to expose your Semantic Kernel `kernel` instance as a MCP server.
 
 To run this sample, set up your MCP host (like Claude Desktop or VSCode Github Copilot Agents)
 with the following configuration:
@@ -27,7 +27,7 @@ with the following configuration:
         "sk": {
             "command": "uv",
             "args": [
-                "--directory=<path to sk project>/semantic-kernel/python/samples/demos/sk_mcp_server",
+                "--directory=<path to sk project>/semantic-kernel/python/samples/demos/mcp_server",
                 "run",
                 "sk_mcp_server.py"
             ],
@@ -39,10 +39,13 @@ with the following configuration:
     }
 }
 ```
+
+Note: You might need to set the uv to its full path.
+
 Alternatively, you can run this as a SSE server, by setting the same environment variables as above, 
 and running the following command:
 ```bash
-uv --directory=<path to sk project>/semantic-kernel/python/samples/demos/sk_mcp_server \
+uv --directory=<path to sk project>/semantic-kernel/python/samples/demos/mcp_server \
 run sk_mcp_server.py --transport sse --port 8000
 ```
 This will start a server that listens for incoming requests on port 8000.
