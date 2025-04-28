@@ -13,7 +13,7 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
-    from semantic_kernel.processes.kernel_process.kernel_process_state_metadata import KernelProcessStateMetadata
+    from semantic_kernel.processes.kernel_process.kernel_process_step_state_metadata import KernelProcessStateMetadata
 
 
 @experimental

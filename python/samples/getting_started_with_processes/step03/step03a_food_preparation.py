@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+from enum import Enum
 from pathlib import Path
 
 from samples.getting_started_with_processes.step03.processes.fish_and_chips_process import FishAndChipsProcess
@@ -14,11 +15,13 @@ from semantic_kernel.processes.kernel_process import KernelProcess, KernelProces
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from semantic_kernel.processes.process_builder import ProcessBuilder
 
-################################################################################################
-# Demonstrate creation of KernelProcess and eliciting different food-related events,           #
-# including load/save steps for state management, mirroring the same approach used in          #
-# the C# sample.                                                                               #
-################################################################################################
+"""
+Demonstrate the creation of KernelProcess and eliciting different food related events.
+This includes load/save steps for state management.
+For visual reference of the processes used here check the diagram in:
+https://github.com/microsoft/semantic-kernel/tree/main/python/samples/
+getting_started_with_processes#step03b_food_ordering
+"""
 
 # region Helper Methods
 
@@ -29,7 +32,7 @@ def _create_kernel_with_chat_completion(service_id: str = "sample") -> Kernel:
     return kernel
 
 
-async def use_prepare_specific_product(process: ProcessBuilder, external_trigger_event: str):
+async def use_prepare_specific_product(process: ProcessBuilder, external_trigger_event: Enum):
     """
     Helper function that:
      1. Builds a KernelProcess from a ProcessBuilder
@@ -43,14 +46,14 @@ async def use_prepare_specific_product(process: ProcessBuilder, external_trigger
     async with await start(
         kernel_process,
         kernel,
-        KernelProcessEvent(id=external_trigger_event, data=[]),
+        KernelProcessEvent(id=external_trigger_event.value, data=[]),
     ):
         pass
     print(f"=== End SK Process '{process.name}' ===\n")
 
 
 async def execute_process_with_state(
-    process: KernelProcess, kernel: Kernel, external_trigger_event: str, order_label: str
+    process: KernelProcess, kernel: Kernel, external_trigger_event: Enum, order_label: str
 ) -> KernelProcess:
     """
     Starts the provided KernelProcess (with optional existing state),
@@ -60,7 +63,7 @@ async def execute_process_with_state(
     async with await start(
         process,
         kernel,
-        KernelProcessEvent(id=external_trigger_event, data=[]),
+        KernelProcessEvent(id=external_trigger_event.value, data=[]),
     ) as running_process:
         return await running_process.get_state()
 
@@ -99,8 +102,7 @@ def load_process_state_metadata(json_filename: str) -> KernelProcessStateMetadat
 
     try:
         with open(file_path, encoding="utf-8") as f:
-            data = json.load(f)
-        return KernelProcessStateMetadata(**data)
+            return KernelProcessStateMetadata.model_validate_json(f)
     except Exception as ex:
         print(f"Error reading state file '{file_path.resolve()}': {ex}")
         return None
@@ -114,22 +116,22 @@ def load_process_state_metadata(json_filename: str) -> KernelProcessStateMetadat
 
 async def use_prepare_fried_fish_process():
     process = FriedFishProcess.create_process()
-    await use_prepare_specific_product(process, FriedFishProcess.ProcessEvents.PrepareFriedFish.value)
+    await use_prepare_specific_product(process, FriedFishProcess.ProcessEvents.PrepareFriedFish)
 
 
 async def use_prepare_potato_fries_process():
     process = PotatoFriesProcess.create_process()
-    await use_prepare_specific_product(process, PotatoFriesProcess.ProcessEvents.PreparePotatoFries.value)
+    await use_prepare_specific_product(process, PotatoFriesProcess.ProcessEvents.PreparePotatoFries)
 
 
 async def use_prepare_fish_sandwich_process():
     process = FishSandwichProcess.create_process()
-    await use_prepare_specific_product(process, FishSandwichProcess.ProcessEvents.PrepareFishSandwich.value)
+    await use_prepare_specific_product(process, FishSandwichProcess.ProcessEvents.PrepareFishSandwich)
 
 
 async def use_prepare_fish_and_chips_process():
     process = FishAndChipsProcess.create_process()
-    await use_prepare_specific_product(process, FishAndChipsProcess.ProcessEvents.PrepareFishAndChips.value)
+    await use_prepare_specific_product(process, FishAndChipsProcess.ProcessEvents.PrepareFishAndChips)
 
 
 # endregion
@@ -144,7 +146,7 @@ async def use_prepare_stateful_fried_fish_process_no_shared_state():
     Each new build has fresh/independent state.
     """
     builder = FriedFishProcess.create_process_with_stateful_steps_v1()
-    event_name = FriedFishProcess.ProcessEvents.PrepareFriedFish.value
+    event_name = FriedFishProcess.ProcessEvents.PrepareFriedFish
     kernel = _create_kernel_with_chat_completion()
 
     print(f"=== Start SK Process '{builder.name}' ===")
@@ -161,7 +163,7 @@ async def use_prepare_stateful_fried_fish_process_shared_state():
     """
     builder = FriedFishProcess.create_process_with_stateful_steps_v2()
     kernel = _create_kernel_with_chat_completion()
-    event_name = FriedFishProcess.ProcessEvents.PrepareFriedFish.value
+    event_name = FriedFishProcess.ProcessEvents.PrepareFriedFish
 
     single_process = builder.build()  # one instance => shared state
     print(f"=== Start SK Process '{builder.name}' ===")
@@ -174,7 +176,7 @@ async def use_prepare_stateful_fried_fish_process_shared_state():
 async def use_prepare_stateful_potato_fries_process_shared_state():
     builder = PotatoFriesProcess.create_process_with_stateful_steps()
     kernel = _create_kernel_with_chat_completion()
-    event_name = PotatoFriesProcess.ProcessEvents.PreparePotatoFries.value
+    event_name = PotatoFriesProcess.ProcessEvents.PreparePotatoFries
 
     shared_process = builder.build()
     print(f"=== Start SK Process '{builder.name}' ===")
@@ -211,7 +213,7 @@ async def run_and_store_stateful_fried_fish_process_state():
 
     print("=== Start run_and_store_stateful_fried_fish_process_state ===")
     final_state = await execute_process_with_state(
-        fried_fish_process, kernel, FriedFishProcess.ProcessEvents.PrepareFriedFish.value, "Order 1"
+        fried_fish_process, kernel, FriedFishProcess.ProcessEvents.PrepareFriedFish, "Order 1"
     )
     process_state_metadata = final_state.to_process_state_metadata()
     dump_process_state_metadata_locally(process_state_metadata, STATEFUL_FRIED_FISH_PROCESS_FILENAME)
@@ -228,7 +230,7 @@ async def run_and_store_stateful_fish_sandwich_process_state():
 
     print("=== Start run_and_store_stateful_fish_sandwich_process_state ===")
     final_state = await execute_process_with_state(
-        fish_sandwich_process, kernel, FishSandwichProcess.ProcessEvents.PrepareFishSandwich.value, "Order 1"
+        fish_sandwich_process, kernel, FishSandwichProcess.ProcessEvents.PrepareFishSandwich, "Order 1"
     )
     process_state_metadata = final_state.to_process_state_metadata()
     dump_process_state_metadata_locally(process_state_metadata, STATEFUL_FISH_SANDWICH_PROCESS_FILENAME)
@@ -236,7 +238,9 @@ async def run_and_store_stateful_fish_sandwich_process_state():
 
 
 async def run_stateful_fried_fish_process_from_file():
-    loaded_metadata = load_process_state_metadata(STATEFUL_FRIED_FISH_PROCESS_FILENAME)
+    loaded_metadata = KernelProcessStateMetadata.load_from_file(
+        json_filename=STATEFUL_FRIED_FISH_PROCESS_FILENAME, directory=PROCESS_STATE_DIRECTORY
+    )
     if not loaded_metadata:
         return
 
@@ -248,14 +252,16 @@ async def run_stateful_fried_fish_process_from_file():
     await execute_process_with_state(
         process_from_file,
         kernel,
-        FriedFishProcess.ProcessEvents.PrepareFriedFish.value,
+        FriedFishProcess.ProcessEvents.PrepareFriedFish,
         "Using Stored State",
     )
     print("=== End run_stateful_fried_fish_process_from_file ===\n")
 
 
 async def run_stateful_fried_fish_process_with_low_stock_from_file():
-    loaded_metadata = load_process_state_metadata(STATEFUL_FRIED_FISH_LOWSTOCK_FILENAME)
+    loaded_metadata = KernelProcessStateMetadata.load_from_file(
+        json_filename=STATEFUL_FRIED_FISH_LOWSTOCK_FILENAME, directory=PROCESS_STATE_DIRECTORY
+    )
     if not loaded_metadata:
         return
 
@@ -267,14 +273,16 @@ async def run_stateful_fried_fish_process_with_low_stock_from_file():
     await execute_process_with_state(
         process_from_file,
         kernel,
-        FriedFishProcess.ProcessEvents.PrepareFriedFish.value,
+        FriedFishProcess.ProcessEvents.PrepareFriedFish,
         "Using Low Stock State",
     )
     print("=== End run_stateful_fried_fish_process_with_low_stock_from_file ===\n")
 
 
 async def run_stateful_fried_fish_process_with_no_stock_from_file():
-    loaded_metadata = load_process_state_metadata(STATEFUL_FRIED_FISH_NOSTOCK_FILENAME)
+    loaded_metadata = KernelProcessStateMetadata.load_from_file(
+        json_filename=STATEFUL_FRIED_FISH_NOSTOCK_FILENAME, directory=PROCESS_STATE_DIRECTORY
+    )
     if not loaded_metadata:
         return
 
@@ -286,14 +294,16 @@ async def run_stateful_fried_fish_process_with_no_stock_from_file():
     await execute_process_with_state(
         process_from_file,
         kernel,
-        FriedFishProcess.ProcessEvents.PrepareFriedFish.value,
+        FriedFishProcess.ProcessEvents.PrepareFriedFish,
         "Using No Stock State",
     )
     print("=== End run_stateful_fried_fish_process_with_no_stock_from_file ===\n")
 
 
 async def run_stateful_fish_sandwich_process_from_file():
-    loaded_metadata = load_process_state_metadata(STATEFUL_FISH_SANDWICH_PROCESS_FILENAME)
+    loaded_metadata = KernelProcessStateMetadata.load_from_file(
+        json_filename=STATEFUL_FISH_SANDWICH_PROCESS_FILENAME, directory=PROCESS_STATE_DIRECTORY
+    )
     if not loaded_metadata:
         return
 
@@ -305,14 +315,16 @@ async def run_stateful_fish_sandwich_process_from_file():
     await execute_process_with_state(
         process_from_file,
         kernel,
-        FishSandwichProcess.ProcessEvents.PrepareFishSandwich.value,
+        FishSandwichProcess.ProcessEvents.PrepareFishSandwich,
         "Using Stored State",
     )
     print("=== End run_stateful_fish_sandwich_process_from_file ===\n")
 
 
 async def run_stateful_fish_sandwich_process_with_low_stock_from_file():
-    loaded_metadata = load_process_state_metadata(STATEFUL_FISH_SANDWICH_LOWSTOCK_FILENAME)
+    loaded_metadata = KernelProcessStateMetadata.load_from_file(
+        json_filename=STATEFUL_FISH_SANDWICH_LOWSTOCK_FILENAME, directory=PROCESS_STATE_DIRECTORY
+    )
     if not loaded_metadata:
         return
 
@@ -324,14 +336,16 @@ async def run_stateful_fish_sandwich_process_with_low_stock_from_file():
     await execute_process_with_state(
         process_from_file,
         kernel,
-        FishSandwichProcess.ProcessEvents.PrepareFishSandwich.value,
+        FishSandwichProcess.ProcessEvents.PrepareFishSandwich,
         "Using Low Stock State",
     )
     print("=== End run_stateful_fish_sandwich_process_with_low_stock_from_file ===\n")
 
 
 async def run_stateful_fried_fish_v2_with_low_stock_v1_state() -> None:
-    state_metadata = load_process_state_metadata(STATEFUL_FRIED_FISH_LOWSTOCK_FILENAME)
+    state_metadata = KernelProcessStateMetadata.load_from_file(
+        json_filename=STATEFUL_FRIED_FISH_LOWSTOCK_FILENAME, directory=PROCESS_STATE_DIRECTORY
+    )
     if not state_metadata:
         return
 
@@ -341,13 +355,15 @@ async def run_stateful_fried_fish_v2_with_low_stock_v1_state() -> None:
     await execute_process_with_state(
         process,
         kernel,
-        FriedFishProcess.ProcessEvents.PrepareFriedFish.value,
+        FriedFishProcess.ProcessEvents.PrepareFriedFish,
         "V2+low-stockV1state",
     )
 
 
 async def run_stateful_fish_sandwich_v2_with_low_stock_v1_state() -> None:
-    state_metadata = load_process_state_metadata(STATEFUL_FISH_SANDWICH_LOWSTOCK_FILENAME)
+    state_metadata = KernelProcessStateMetadata.load_from_file(
+        json_filename=STATEFUL_FISH_SANDWICH_LOWSTOCK_FILENAME, directory=PROCESS_STATE_DIRECTORY
+    )
     if not state_metadata:
         return
 
@@ -357,7 +373,7 @@ async def run_stateful_fish_sandwich_v2_with_low_stock_v1_state() -> None:
     await execute_process_with_state(
         process,
         kernel,
-        FishSandwichProcess.ProcessEvents.PrepareFishSandwich.value,
+        FishSandwichProcess.ProcessEvents.PrepareFishSandwich,
         "V2+low-stockV1state",
     )
 

@@ -5,7 +5,7 @@ from samples.getting_started_with_processes.step03.processes.fried_fish_process 
     FriedFishProcess,
 )
 from samples.getting_started_with_processes.step03.steps.external_step import ExternalStep
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes import ProcessBuilder
 from semantic_kernel.processes.kernel_process import (
     KernelProcessEventVisibility,

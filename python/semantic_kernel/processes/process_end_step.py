@@ -2,17 +2,16 @@
 import sys
 from typing import TYPE_CHECKING, ClassVar
 
+from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
+from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
 from semantic_kernel.processes.kernel_process.kernel_process_step_state_metadata import KernelProcessStepStateMetadata
+from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
-
-from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
-from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
-from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
-from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.functions import KernelFunctionMetadata
