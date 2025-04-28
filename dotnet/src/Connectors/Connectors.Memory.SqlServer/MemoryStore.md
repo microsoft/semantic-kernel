@@ -3,7 +3,7 @@
 This connector uses the SQL Server database engine to implement Semantic Kernel [memory store](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors/memory-stores/?pivots=programming-language-csharp).
 
 > [!IMPORTANT]  
-> The features needed to use this connector are available in preview in Azure SQL only at the moment. Please take a look at the [Announcing EAP for Vector Support in Azure SQL Database](https://devblogs.microsoft.com/azure-sql/announcing-eap-native-vector-support-in-azure-sql-database/) for more information on how to enable the feature.
+> The features needed to use this connector are available in preview in Azure SQL only at the moment. Please take a look at the [Public Preview of Native Vector Support in Azure SQL Database](https://devblogs.microsoft.com/azure-sql/exciting-announcement-public-preview-of-native-vector-support-in-azure-sql-database/) for more information.
 
 ## Quick start
 
