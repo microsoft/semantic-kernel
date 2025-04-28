@@ -7,8 +7,7 @@ using Microsoft.SemanticKernel.Agents;
 
 var builder = Host.CreateEmptyApplicationBuilder(settings: null);
 
-// Load and validate configuration
-(string embeddingModelId, string chatModelId, string apiKey) = GetConfiguration();
+
 
 await builder.Build().RunAsync();
 
@@ -18,15 +17,18 @@ await builder.Build().RunAsync();
 /// <remarks>
 /// The agent is created with an OpenAI chat completion service and a plugin for order processing.
 /// </remarks>
-static Agent CreateSalesAssistantAgent(string chatModelId, string apiKey)
+static Agent CreateSalesAssistantAgent()
 {
+    // Load and validate configuration
+    (string deploymentName, string endPoint, string apiKey) = GetConfiguration();
+
     IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
 
     // Register the SK plugin for the agent to use
     kernelBuilder.Plugins.AddFromType<OrderProcessingUtils>();
 
     // Register chat completion service
-    kernelBuilder.Services.AddOpenAIChatCompletion(chatModelId, apiKey);
+    kernelBuilder.Services.AddAzureOpenAIChatCompletion(deploymentName: deploymentName, endpoint: endPoint, apiKey: apiKey);
 
     // Using a dedicated kernel with the `OrderProcessingUtils` plugin instead of the global kernel has a few advantages:
     // - The agent has access to only relevant plugins, leading to better decision-making regarding which plugin to use.
@@ -49,7 +51,7 @@ static Agent CreateSalesAssistantAgent(string chatModelId, string apiKey)
 /// <summary>
 /// Gets configuration.
 /// </summary>
-static (string EmbeddingModelId, string ChatModelId, string ApiKey) GetConfiguration()
+static (string DeploymentName, string Endpoint, string ApiKey) GetConfiguration()
 {
     // Load and validate configuration
     IConfigurationRoot config = new ConfigurationBuilder()
@@ -57,16 +59,21 @@ static (string EmbeddingModelId, string ChatModelId, string ApiKey) GetConfigura
         .AddEnvironmentVariables()
         .Build();
 
-    if (config["OpenAI:ApiKey"] is not { } apiKey)
+    if (config["AzureOpenAI:Endpoint"] is not { } endpoint)
     {
-        const string Message = "Please provide a valid OpenAI:ApiKey to run this sample. See the associated README.md for more details.";
+        const string Message = "Please provide a valid AzureOpenAI:Endpoint to run this sample.";
         Console.Error.WriteLine(Message);
         throw new InvalidOperationException(Message);
     }
 
-    string embeddingModelId = config["OpenAI:EmbeddingModelId"] ?? "text-embedding-3-small";
+    if (config["AzureOpenAI:ApiKey"] is not { } apiKey)
+    {
+        const string Message = "Please provide a valid AzureOpenAI:ApiKey to run this sample.";
+        Console.Error.WriteLine(Message);
+        throw new InvalidOperationException(Message);
+    }
 
-    string chatModelId = config["OpenAI:ChatModelId"] ?? "gpt-4o-mini";
+    string deploymentName = config["AzureOpenAI:ChatDeploymentName"] ?? "gpt-4o-mini";
 
-    return (embeddingModelId, chatModelId, apiKey);
+    return (deploymentName, endpoint, apiKey);
 }
