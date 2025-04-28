@@ -66,7 +66,7 @@ public sealed class MongoDBVectorStoreCollectionSearchMappingTests
     public void BuilderFilterByDefaultReturnsValidFilter()
     {
         // Arrange
-        var expectedFilter = new BsonDocument() { ["Property1"] = new BsonDocument() { ["$eq"] = "TestValue1" } };
+        var expectedFilter = new BsonDocument() { ["property_1"] = new BsonDocument() { ["$eq"] = "TestValue1" } };
         var vectorSearchFilter = new VectorSearchFilter().EqualTo("Property1", "TestValue1");
 
         // Act
