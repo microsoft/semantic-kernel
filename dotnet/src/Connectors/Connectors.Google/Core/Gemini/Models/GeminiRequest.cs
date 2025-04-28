@@ -305,7 +305,7 @@ internal sealed class GeminiRequest
             CandidateCount = executionSettings.CandidateCount,
             AudioTimestamp = executionSettings.AudioTimestamp,
             ResponseMimeType = executionSettings.ResponseMimeType,
-            ResponseSchema = GetResponseSchemaConfig(executionSettings.ResponseSchema)
+            ResponseSchema = GetResponseSchemaConfig(executionSettings.ResponseSchema),
         };
     }
 
@@ -430,6 +430,11 @@ internal sealed class GeminiRequest
     private static void AddAdditionalBodyFields(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
     {
         request.CachedContent = executionSettings.CachedContent;
+        if (executionSettings.ThinkingConfig is not null)
+        {
+            request.Configuration ??= new ConfigurationElement();
+            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig { ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget };
+        }
     }
 
     internal sealed class ConfigurationElement
@@ -469,5 +474,16 @@ internal sealed class GeminiRequest
         [JsonPropertyName("responseSchema")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonElement? ResponseSchema { get; set; }
+
+        [JsonPropertyName("thinkingConfig")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public GeminiRequestThinkingConfig? ThinkingConfig { get; set; }
+    }
+
+    internal sealed class GeminiRequestThinkingConfig
+    {
+        [JsonPropertyName("thinkingBudget")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? ThinkingBudget { get; set; }
     }
 }
