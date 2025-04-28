@@ -40,7 +40,7 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
                     if (dataModel.TryGetValue(property.ModelName, out var dataValue))
                     {
                         var serializedJsonNode = JsonSerializer.SerializeToNode(dataValue);
-                        storageJsonObject.Add(property.ModelName, serializedJsonNode);
+                        storageJsonObject.Add(property.StorageName, serializedJsonNode);
                     }
                     continue;
 

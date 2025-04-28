@@ -6,7 +6,7 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
-internal class AzureAISearchModelBuilder() : VectorStoreRecordJsonModelBuilder(s_modelBuildingOptions)
+internal class AzureAISearchDynamicModelBuilder() : VectorStoreRecordModelBuilder(s_modelBuildingOptions)
 {
     internal static readonly VectorStoreRecordModelBuildingOptions s_modelBuildingOptions = new()
     {
