@@ -68,7 +68,7 @@ chroma = [
     "chromadb >= 0.5,< 1.1"
 ]
 google = [
-    "google-cloud-aiplatform == 1.89.0",
+    "google-cloud-aiplatform == 1.90.0",
     "google-generativeai ~= 0.8"
 ]
 faiss = [
