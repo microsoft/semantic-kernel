@@ -28,7 +28,6 @@ internal static class SqlServerConstants
         SupportsMultipleVectors = true,
 
         SupportedKeyPropertyTypes =
-
         [
             typeof(int), // INT
             typeof(long), // BIGINT
