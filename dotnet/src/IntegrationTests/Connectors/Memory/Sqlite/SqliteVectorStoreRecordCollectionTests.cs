@@ -439,7 +439,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperWithNumericKeyAsync()
     {
-        const ulong HotelId = 5;
+        const long HotelId = 5;
 
         var options = new SqliteVectorStoreRecordCollectionOptions<Dictionary<string, object?>>
         {
@@ -468,7 +468,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
 
         // Assert
-        Assert.Equal(HotelId, upsertResult);
+        Assert.Equal(HotelId, (long)upsertResult);
 
         Assert.NotNull(localGetResult);
         Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
