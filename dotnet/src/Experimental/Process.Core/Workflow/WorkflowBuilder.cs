@@ -133,6 +133,7 @@ internal class WorkflowBuilder
 
         var agentDefinition = deserializer.Deserialize<AgentDefinition>(rawYaml);
 
+        // TODO: Parse the agent actions and translate them into actions in the next line
         var stepBuilder = processBuilder.AddStepFromDeclarativeAgent(agentDefinition);
         if (stepBuilder is not ProcessAgentBuilder agentBuilder)
         {
