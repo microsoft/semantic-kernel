@@ -2,6 +2,7 @@
 using System;
 using System.Runtime.Serialization;
 using System.Text.Json;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Microsoft.SemanticKernel;
 
@@ -37,11 +38,22 @@ public sealed record KernelProcessEventData
         {
             try
             {
+                if (type == typeof(OpenAIChatMessageContent))
+                {
+                    // Special case for OpenAIChatMessageContent, which only has constructors with parameters
+                    // Instead using base class ChatMessageContent
+                    return JsonSerializer.Deserialize<ChatMessageContent>(this.Content);
+                }
+
                 return JsonSerializer.Deserialize(this.Content, type);
             }
             catch (JsonException)
             {
                 throw new KernelException($"Cannot deserialize object {this.Content}");
+            }
+            catch (NotSupportedException e)
+            {
+                throw new KernelException($"Cannot deserialize object {this.Content}, type {type.FullName} has no parameterless constructor", e);
             }
         }
 

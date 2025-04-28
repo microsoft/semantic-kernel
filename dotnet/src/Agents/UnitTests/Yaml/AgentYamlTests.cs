@@ -100,7 +100,8 @@ public class AgentYamlTests : IDisposable
                     default: input2 default
                     sample: input2 sample
             outputs:
-                - description: output1 description
+                output1:
+                    description: output1 description
             template:
                 format: liquid
                 parser: semantic-kernel
@@ -172,7 +173,7 @@ public class AgentYamlTests : IDisposable
                   type: code_interpreter
             """;
         OpenAIAssistantAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantAgentFactoryTests.OpenAIAssistantResponse);
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantAgentFactoryTests.OpenAIAssistantCreateResponse);
 
         // Act
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
@@ -206,7 +207,7 @@ public class AgentYamlTests : IDisposable
                   type: code_interpreter
             """;
         AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
