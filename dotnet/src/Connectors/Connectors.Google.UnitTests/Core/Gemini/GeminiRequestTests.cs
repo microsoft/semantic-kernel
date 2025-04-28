@@ -584,6 +584,78 @@ public sealed class GeminiRequestTests
         Assert.True(ageProperty.GetProperty("nullable").GetBoolean());
     }
 
+    [Fact]
+    public void ResponseSchemaAddsTypeToEnumProperties()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var schemaWithEnum = """
+            {
+                "properties" : {
+                    "Movies": {
+                        "type" : "array",
+                        "items" : {
+                            "type" : "object",
+                            "properties" : {
+                                "status": {
+                                    "enum": ["active", "inactive", null],
+                                    "description": "user status"
+                                },
+                                "role": {
+                                    "enum": ["admin", "user"],
+                                    "description": "user role"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """;
+
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(schemaWithEnum)
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration?.ResponseSchema);
+        var properties = request.Configuration.ResponseSchema.Value
+            .GetProperty("properties")
+            .GetProperty("Movies")
+            .GetProperty("items")
+            .GetProperty("properties");
+
+        var statusProperty = properties.GetProperty("status");
+        Assert.Equal("string", statusProperty.GetProperty("type").GetString());
+        Assert.Equal(3, statusProperty.GetProperty("enum").GetArrayLength());
+
+        var roleProperty = properties.GetProperty("role");
+        Assert.Equal("string", roleProperty.GetProperty("type").GetString());
+        Assert.Equal(2, roleProperty.GetProperty("enum").GetArrayLength());
+    }
+
+    [Fact]
+    public void FromPromptAndExecutionSettingsWithThinkingConfigReturnsInGenerationConfig()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ModelId = "gemini-2.5-flash-preview-04-17",
+            ThinkingConfig = new GeminiThinkingConfig { ThinkingBudget = 1024 }
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.Equal(executionSettings.ThinkingConfig.ThinkingBudget, request.Configuration?.ThinkingConfig?.ThinkingBudget);
+    }
+
     private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :
         KernelContent(innerContent, modelId, metadata);
 

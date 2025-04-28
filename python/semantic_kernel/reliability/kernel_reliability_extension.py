@@ -18,5 +18,6 @@ class KernelReliabilityExtension(KernelBaseModel, ABC):
 
     retry_mechanism: RetryMechanismBase = Field(
         default_factory=PassThroughWithoutRetry,
+        exclude=True,
         deprecated=deprecated("retry_mechanism is deprecated; This property doesn't have any effect on the kernel."),
     )
