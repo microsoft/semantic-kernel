@@ -14,21 +14,12 @@ internal sealed class WeatherUtils
     /// Gets the current weather for the specified city.
     /// </summary>
     /// <param name="cityName">The name of the city.</param>
-    /// <param name="currentDateTimeInUtc">The current date time in UTC.</param>
     /// <returns>The current weather for the specified city.</returns>
     [KernelFunction, Description("Gets the current weather for the specified city and specified date time.")]
-    public static string GetWeatherForCity(string cityName, string currentDateTimeInUtc)
+    public static async Task<string> GetWeatherForCityAsync(string cityName)
     {
-        return cityName switch
-        {
-            "Boston" => "61 and rainy",
-            "London" => "55 and cloudy",
-            "Miami" => "80 and sunny",
-            "Paris" => "60 and rainy",
-            "Tokyo" => "50 and sunny",
-            "Sydney" => "75 and sunny",
-            "Tel Aviv" => "80 and sunny",
-            _ => "31 and snowing",
-        };
+        using var client = new HttpClient();
+
+        return await client.GetStringAsync(new Uri($"https://wttr.in/{cityName}?format=j1"));
     }
 }
