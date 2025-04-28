@@ -33,9 +33,7 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
 )
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
-from semantic_kernel.connectors.ai.function_calling_utils import (
-    kernel_function_metadata_to_function_call_format,
-)
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
@@ -338,7 +336,7 @@ class AssistantThreadActions:
                         message_id=completed_step.step_details.message_creation.message_id,  # type: ignore
                     )
                     if message:
-                        content = generate_message_content(agent.name, message)
+                        content = generate_message_content(agent.name, message, completed_step)
                         if content and len(content.items) > 0:
                             message_count += 1
                             logger.debug(
