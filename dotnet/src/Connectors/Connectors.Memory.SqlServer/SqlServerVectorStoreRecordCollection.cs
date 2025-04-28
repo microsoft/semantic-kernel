@@ -543,8 +543,8 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
     }
@@ -568,7 +568,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 $"Supported types are: {string.Join(", ", SqlServerConstants.SupportedVectorTypes.Select(l => l.FullName))}");
         }
 #pragma warning disable CS0618 // Type or member is obsolete
-        else if (options is not null && options.OldFilter is not null)
+        else if (options.OldFilter is not null)
 #pragma warning restore CS0618 // Type or member is obsolete
         {
             throw new NotSupportedException("The obsolete Filter is not supported by the SQL Server connector, use NewFilter instead.");
