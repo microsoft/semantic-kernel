@@ -235,6 +235,11 @@ internal class AzureCosmosDBNoSqlFilterTranslator
                 this._sql.Append(')');
                 return;
 
+            // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
+            case ExpressionType.Convert when Nullable.GetUnderlyingType(unary.Type) == unary.Operand.Type:
+                this.Translate(unary.Operand);
+                return;
+
             // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
             case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
                 this.GeneratePropertyAccess(property);
