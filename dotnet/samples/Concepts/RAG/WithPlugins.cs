@@ -6,7 +6,6 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using OpenAI;
@@ -36,7 +35,7 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RAGWithInMemoryVectorStoreAndPluginAsync()
     {
-        var textEmbeddingGenerator =new OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+        var textEmbeddingGenerator = new OpenAIClient(TestConfiguration.OpenAI.ApiKey)
             .GetEmbeddingClient(TestConfiguration.OpenAI.EmbeddingModelId)
             .AsIEmbeddingGenerator();
 
@@ -121,12 +120,14 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
     {
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
+
         [TextSearchResultValue]
         [VectorStoreRecordData]
         public string Text { get; set; } = string.Empty;
+
         [VectorStoreRecordVector(1536)]
         public string Embedding => this.Text;
     }
 
-    #endregion
+    #endregion Custom Plugin
 }
