@@ -109,6 +109,8 @@ public class FilterTranslationPreprocessor : ExpressionVisitor
 
         // Otherwise, transform the node to a QueryParameterExpression which the connector will then translate to a parameter (e.g. SqlParameter).
 
+        // TODO: Share the same parameter when it references the same captured value
+
         // Make sure parameter names are unique.
         var origName = memberInfo.Name;
         var name = origName;

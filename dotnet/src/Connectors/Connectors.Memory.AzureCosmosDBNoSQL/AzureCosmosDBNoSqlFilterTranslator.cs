@@ -6,8 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
@@ -32,9 +30,9 @@ internal class AzureCosmosDBNoSqlFilterTranslator
         this._recordParameter = lambdaExpression.Parameters[0];
 
         var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = true };
-        var preprocessedExpression = preprocessor.Preprocess(lambdaExpression);
+        var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
 
-        this.Translate(lambdaExpression.Body);
+        this.Translate(preprocessedExpression);
 
         return (this._sql.ToString(), this._parameters);
     }
@@ -49,6 +47,10 @@ internal class AzureCosmosDBNoSqlFilterTranslator
 
             case ConstantExpression constant:
                 this.TranslateConstant(constant);
+                return;
+
+            case QueryParameterExpression { Name: var name, Value: var value }:
+                this.TranslateQueryParameter(name, value);
                 return;
 
             case MemberExpression member:
@@ -143,34 +145,13 @@ internal class AzureCosmosDBNoSqlFilterTranslator
 
     private void TranslateMember(MemberExpression memberExpression)
     {
-        switch (memberExpression)
+        if (this.TryBindProperty(memberExpression, out var property))
         {
-            case var _ when this.TryBindProperty(memberExpression, out var property):
-                this.GeneratePropertyAccess(property);
-                return;
-
-            // Identify captured lambda variables, translate to Cosmos parameters (@foo, @bar...)
-            case var _ when TryGetCapturedValue(memberExpression, out var name, out var value):
-                // Duplicate parameter name, create a new parameter with a different name
-                // TODO: Share the same parameter when it references the same captured value
-                if (this._parameters.ContainsKey(name))
-                {
-                    var baseName = name;
-                    var i = 0;
-                    do
-                    {
-                        name = baseName + (i++);
-                    } while (this._parameters.ContainsKey(name));
-                }
-
-                name = '@' + name;
-                this._parameters.Add(name, value);
-                this._sql.Append(name);
-                return;
-
-            default:
-                throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
+            this.GeneratePropertyAccess(property);
+            return;
         }
+
+        throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
 
     private void TranslateNewArray(NewArrayExpression newArray)
@@ -264,6 +245,13 @@ internal class AzureCosmosDBNoSqlFilterTranslator
         }
     }
 
+    protected void TranslateQueryParameter(string name, object? value)
+    {
+        name = '@' + name;
+        this._parameters.Add(name, value);
+        this._sql.Append(name);
+    }
+
     protected virtual void GeneratePropertyAccess(VectorStoreRecordPropertyModel property)
         => this._sql.Append(AzureCosmosDBNoSQLConstants.ContainerAlias).Append("[\"").Append(property.StorageName).Append("\"]");
 
@@ -311,21 +299,5 @@ internal class AzureCosmosDBNoSqlFilterTranslator
         }
 
         return true;
-    }
-
-    private static bool TryGetCapturedValue(Expression expression, [NotNullWhen(true)] out string? name, out object? value)
-    {
-        if (expression is MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
-            && constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
-            && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true))
-        {
-            name = fieldInfo.Name;
-            value = fieldInfo.GetValue(constant.Value);
-            return true;
-        }
-
-        name = null;
-        value = null;
-        return false;
     }
 }
