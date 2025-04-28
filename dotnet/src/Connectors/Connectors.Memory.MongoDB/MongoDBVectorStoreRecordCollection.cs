@@ -314,8 +314,8 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TInput : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         switch (vectorProperty.EmbeddingGenerator)
         {
@@ -362,8 +362,8 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
     }
@@ -373,22 +373,20 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         int top,
         VectorStoreRecordVectorPropertyModel vectorProperty,
         string operationName,
-        MEVD.VectorSearchOptions<TRecord>? options = null,
+        MEVD.VectorSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TVector : notnull
     {
         Array vectorArray = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
 
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-
-        if (searchOptions.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = searchOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._model),
@@ -399,7 +397,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
-        var itemsAmount = searchOptions.Skip + top;
+        var itemsAmount = options.Skip + top;
 
         var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
 
@@ -427,7 +425,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                     .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-                return this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken);
+                return this.EnumerateAndMapSearchResultsAsync(cursor, options.Skip, options.IncludeVectors, cancellationToken);
             },
             cancellationToken).ConfigureAwait(false);
 
@@ -509,12 +507,12 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         Array vectorArray = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
 
-        var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
-        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalProperty);
+        options ??= s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = searchOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._model),
@@ -525,7 +523,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
-        var itemsAmount = searchOptions.Skip + top;
+        var itemsAmount = options.Skip + top;
 
         var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
 
@@ -553,7 +551,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                     .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-                return this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken);
+                return this.EnumerateAndMapSearchResultsAsync(cursor, options.Skip, options.IncludeVectors, cancellationToken);
             },
             cancellationToken).ConfigureAwait(false);
 

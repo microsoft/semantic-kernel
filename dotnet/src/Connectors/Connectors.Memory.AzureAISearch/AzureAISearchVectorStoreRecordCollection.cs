@@ -431,8 +431,8 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         }
 
         // Resolve options.
-        var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>
@@ -442,7 +442,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var filter = internalOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._model),
@@ -456,7 +456,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         {
             VectorSearch = new(),
             Size = top,
-            Skip = internalOptions.Skip,
+            Skip = options.Skip,
         };
 
         if (filter is not null)
@@ -467,7 +467,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
 
         // Filter out vector fields if requested.
-        if (!internalOptions.IncludeVectors)
+        if (!options.IncludeVectors)
         {
             searchOptions.Select.Add(this._model.KeyProperty.StorageName);
 
@@ -477,7 +477,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             }
         }
 
-        return this.SearchAndMapToDataModelAsync(null, searchOptions, internalOptions.IncludeVectors, cancellationToken);
+        return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -493,9 +493,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         Verify.NotLessThan(top, 1);
 
         // Resolve options.
-        var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = internalOptions.VectorProperty });
-        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(internalOptions.AdditionalProperty);
+        options ??= s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>
@@ -505,7 +505,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var filter = internalOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._model),
@@ -519,15 +519,15 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         {
             VectorSearch = new(),
             Size = top,
-            Skip = internalOptions.Skip,
+            Skip = options.Skip,
             Filter = filter,
-            IncludeTotalCount = internalOptions.IncludeTotalCount,
+            IncludeTotalCount = options.IncludeTotalCount,
         };
         searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
         searchOptions.SearchFields.Add(textDataProperty.StorageName);
 
         // Filter out vector fields if requested.
-        if (!internalOptions.IncludeVectors)
+        if (!options.IncludeVectors)
         {
             searchOptions.Select.Add(this._model.KeyProperty.StorageName);
 
@@ -539,7 +539,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
 
         var keywordsCombined = string.Join(" ", keywords);
 
-        return this.SearchAndMapToDataModelAsync(keywordsCombined, searchOptions, internalOptions.IncludeVectors, cancellationToken);
+        return this.SearchAndMapToDataModelAsync(keywordsCombined, searchOptions, options.IncludeVectors, cancellationToken);
     }
 
     /// <inheritdoc />

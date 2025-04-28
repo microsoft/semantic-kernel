@@ -308,8 +308,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TInput : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         switch (vectorProperty.EmbeddingGenerator)
         {
@@ -356,8 +356,8 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
     }
@@ -367,7 +367,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
         int top,
         VectorStoreRecordVectorPropertyModel vectorProperty,
         string operationName,
-        MEVD.VectorSearchOptions<TRecord>? options = null,
+        MEVD.VectorSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -385,14 +385,13 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
                     typeof(ReadOnlyMemory<double>).FullName])}")
         };
 
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        if (searchOptions.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = searchOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.BuildFilter(legacyFilter, this._model),
@@ -403,7 +402,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
-        var itemsAmount = searchOptions.Skip + top;
+        var itemsAmount = options.Skip + top;
 
         var vectorPropertyIndexKind = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetVectorPropertyIndexKind(vectorProperty.IndexKind);
 
@@ -435,7 +434,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
             .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        await foreach (var result in this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions, cancellationToken).ConfigureAwait(false))
+        await foreach (var result in this.EnumerateAndMapSearchResultsAsync(cursor, options, cancellationToken).ConfigureAwait(false))
         {
             yield return result;
         }

@@ -392,8 +392,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TInput : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         switch (vectorProperty.EmbeddingGenerator)
         {
@@ -440,8 +440,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
     }
@@ -451,7 +451,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         int top,
         VectorStoreRecordVectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -460,9 +460,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
 
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-
-        if (searchOptions.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -473,11 +471,11 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             vectorProperty.StorageName,
             s_jsonSerializerOptions,
             top,
-            searchOptions,
+            options,
             this._model,
             this._options.HasNamedVectors);
 
-        return this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken);
+        return this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -517,9 +515,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
 
-        var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
-        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalProperty);
+        options ??= s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
         var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildHybridSearchQuery(
             vector,
@@ -530,10 +528,10 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             vectorProperty,
             textDataProperty,
             s_jsonSerializerOptions,
-            searchOptions,
+            options,
             this._options.HasNamedVectors);
 
-        return this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken);
+        return this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken);
     }
 
     /// <inheritdoc />

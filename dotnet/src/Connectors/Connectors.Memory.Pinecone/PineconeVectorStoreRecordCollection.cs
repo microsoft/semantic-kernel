@@ -394,8 +394,8 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TInput : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         switch (vectorProperty.EmbeddingGenerator)
         {
@@ -428,8 +428,8 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
     }
@@ -439,7 +439,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         int top,
         VectorStoreRecordVectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -451,8 +451,6 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Pinecone connector." +
                 $"Supported types are: {typeof(ReadOnlyMemory<float>).FullName}");
         }
-
-        options ??= s_defaultVectorSearchOptions;
 
         if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {

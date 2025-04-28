@@ -354,8 +354,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TInput : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         switch (vectorProperty.EmbeddingGenerator)
         {
@@ -402,8 +402,8 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
     }
@@ -413,27 +413,25 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
         int top,
         VectorStoreRecordVectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TVector : notnull
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
 
-        var internalOptions = options ?? s_defaultVectorSearchOptions;
-
-        if (internalOptions.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
         // Build query & search.
-        var selectFields = internalOptions.IncludeVectors ? null : this._dataStoragePropertyNamesWithScore;
+        var selectFields = options.IncludeVectors ? null : this._dataStoragePropertyNamesWithScore;
         byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "HashSet");
         var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(
             vectorBytes,
             top,
-            internalOptions,
+            options,
             this._model,
             vectorProperty,
             selectFields);
@@ -459,11 +457,11 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
                 "FT.SEARCH",
                 () =>
                 {
-                    return this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(result.Id), retrievedHashEntries), new() { IncludeVectors = internalOptions.IncludeVectors });
+                    return this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(result.Id), retrievedHashEntries), new() { IncludeVectors = options.IncludeVectors });
                 });
 
             // Process the score of the result item.
-            var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
+            var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
             var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(vectorProperty);
             var score = RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(result["vector_score"].HasValue ? (float)result["vector_score"] : null, distanceFunction);
 

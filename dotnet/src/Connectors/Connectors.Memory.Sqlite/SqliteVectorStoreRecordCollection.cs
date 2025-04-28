@@ -168,8 +168,8 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TInput : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         switch (vectorProperty.EmbeddingGenerator)
         {
@@ -202,8 +202,8 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
     }
@@ -213,7 +213,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         int top,
         VectorStoreRecordVectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -230,9 +230,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                 $"Supported types are: {string.Join(", ", SqliteConstants.SupportedVectorTypes.Select(l => l.FullName))}");
         }
 
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-
-        if (searchOptions.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -241,7 +239,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
-        var limit = top + searchOptions.Skip;
+        var limit = top + options.Skip;
 
         var conditions = new List<SqliteWhereCondition>()
         {
@@ -253,24 +251,24 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         string? extraWhereFilter = null;
         Dictionary<string, object>? extraParameters = null;
 
-        if (searchOptions.OldFilter is not null)
+        if (options.OldFilter is not null)
         {
-            if (searchOptions.Filter is not null)
+            if (options.Filter is not null)
             {
                 throw new ArgumentException("Either Filter or OldFilter can be specified, but not both");
             }
 
             // Old filter, we translate it to a list of SqliteWhereCondition, and merge these into the conditions we already have
-            var filterConditions = this.GetFilterConditions(searchOptions.OldFilter, this._dataTableName);
+            var filterConditions = this.GetFilterConditions(options.OldFilter, this._dataTableName);
 
             if (filterConditions is { Count: > 0 })
             {
                 conditions.AddRange(filterConditions);
             }
         }
-        else if (searchOptions.Filter is not null)
+        else if (options.Filter is not null)
         {
-            SqliteFilterTranslator translator = new(this._model, searchOptions.Filter);
+            SqliteFilterTranslator translator = new(this._model, options.Filter);
             translator.Translate(appendWhere: false);
             extraWhereFilter = translator.Clause.ToString();
             extraParameters = translator.Parameters;
@@ -281,7 +279,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             conditions,
             extraWhereFilter,
             extraParameters,
-            searchOptions,
+            options,
             cancellationToken);
     }
 

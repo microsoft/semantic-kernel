@@ -338,8 +338,8 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TInput : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         switch (vectorProperty.EmbeddingGenerator)
         {
@@ -374,8 +374,8 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
     }
@@ -385,7 +385,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         int top,
         VectorStoreRecordVectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -401,9 +401,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
                 $"Supported types are: {string.Join(", ", PostgresConstants.SupportedVectorTypes.Select(l => l.FullName))}");
         }
 
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-
-        if (searchOptions.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -414,12 +412,12 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
-        var limit = top + searchOptions.Skip;
+        var limit = top + options.Skip;
 
-        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = searchOptions.IncludeVectors };
+        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
 
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
-            this._client.GetNearestMatchesAsync(this.Name, this._model, vectorProperty, pgVector, top, searchOptions, cancellationToken)
+            this._client.GetNearestMatchesAsync(this.Name, this._model, vectorProperty, pgVector, top, options, cancellationToken)
                 .SelectAsync(result =>
                 {
                     var record = VectorStoreErrorHandler.RunModelConversion(

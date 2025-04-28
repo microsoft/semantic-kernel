@@ -509,8 +509,8 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TInput : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         switch (vectorProperty.EmbeddingGenerator)
         {
@@ -554,7 +554,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         int top,
         VectorStoreRecordVectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -574,9 +574,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             throw new NotSupportedException("The obsolete Filter is not supported by the SQL Server connector, use NewFilter instead.");
         }
 
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-
-        if (searchOptions.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -592,11 +590,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             vectorProperty,
             this._model,
             top,
-            searchOptions,
+            options,
             allowed);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        return this.ReadVectorSearchResultsAsync(connection, command, searchOptions.IncludeVectors, cancellationToken);
+        return this.ReadVectorSearchResultsAsync(connection, command, options.IncludeVectors, cancellationToken);
     }
 
     /// <inheritdoc />

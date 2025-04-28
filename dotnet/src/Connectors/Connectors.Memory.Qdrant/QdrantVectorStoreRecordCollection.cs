@@ -516,8 +516,8 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TInput : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         switch (vectorProperty.EmbeddingGenerator)
         {
@@ -550,8 +550,8 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
     }
@@ -561,24 +561,21 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         int top,
         VectorStoreRecordVectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TVector : notnull
     {
         var floatVector = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
 
-        // Resolve options.
-        var internalOptions = options ?? s_defaultVectorSearchOptions;
-
-        if (internalOptions.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
 #pragma warning disable CS0618 // Type or member is obsolete
         // Build filter object.
-        var filter = internalOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._model),
@@ -589,7 +586,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         // Specify whether to include vectors in the search results.
         var vectorsSelector = new WithVectorsSelector();
-        vectorsSelector.Enable = internalOptions.IncludeVectors;
+        vectorsSelector.Enable = options.IncludeVectors;
 
         var query = new Query
         {
@@ -605,7 +602,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                 usingVector: this._options.HasNamedVectors ? vectorProperty.StorageName : null,
                 filter: filter,
                 limit: (ulong)top,
-                offset: (ulong)internalOptions.Skip,
+                offset: (ulong)options.Skip,
                 vectorsSelector: vectorsSelector,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
 
@@ -613,7 +610,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         var mappedResults = points.Select(point => QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult(
                 point,
                 this._mapper,
-                internalOptions.IncludeVectors,
+                options.IncludeVectors,
                 QdrantConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
                 this._collectionName,
@@ -696,14 +693,14 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         Verify.NotLessThan(top, 1);
 
         // Resolve options.
-        var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = internalOptions.VectorProperty });
-        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(internalOptions.AdditionalProperty);
+        options ??= s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
         // Build filter object.
 #pragma warning disable CS0618 // Type or member is obsolete
         // Build filter object.
-        var filter = internalOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._model),
@@ -714,7 +711,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         // Specify whether to include vectors in the search results.
         var vectorsSelector = new WithVectorsSelector();
-        vectorsSelector.Enable = internalOptions.IncludeVectors;
+        vectorsSelector.Enable = options.IncludeVectors;
 
         // Build the vector query.
         var vectorQuery = new PrefetchQuery
@@ -758,7 +755,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                 prefetch: new List<PrefetchQuery>() { vectorQuery, keywordQuery },
                 query: fusionQuery,
                 limit: (ulong)top,
-                offset: (ulong)internalOptions.Skip,
+                offset: (ulong)options.Skip,
                 vectorsSelector: vectorsSelector,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
 
@@ -766,7 +763,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         var mappedResults = points.Select(point => QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult(
                 point,
                 this._mapper,
-                internalOptions.IncludeVectors,
+                options.IncludeVectors,
                 QdrantConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
                 this._collectionName,
