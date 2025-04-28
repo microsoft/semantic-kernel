@@ -2,12 +2,13 @@
 
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using OpenAI;
 using Resources;
 
 namespace RAG;
@@ -34,16 +35,16 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     public async Task RAGWithInMemoryVectorStoreAndPluginAsync()
     {
-        var vectorStore = new InMemoryVectorStore();
-        var textEmbeddingGenerator = new OpenAITextEmbeddingGenerationService(
-            TestConfiguration.OpenAI.EmbeddingModelId,
-            TestConfiguration.OpenAI.ApiKey);
+        var textEmbeddingGenerator = new OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+            .GetEmbeddingClient(TestConfiguration.OpenAI.EmbeddingModelId)
+            .AsIEmbeddingGenerator();
 
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         // Create the collection and add data
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = textEmbeddingGenerator });
         var collection = vectorStore.GetCollection<string, FinanceInfo>("finances");
         await collection.CreateCollectionAsync();
         string[] budgetInfo =
@@ -54,12 +55,11 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
             "The budget for 2023 is EUR 200 000",
             "The budget for 2024 is EUR 364 000"
         };
-        var vectors = await textEmbeddingGenerator.GenerateEmbeddingsAsync(budgetInfo);
-        var records = budgetInfo.Zip(vectors).Select((input, index) => new FinanceInfo { Key = index.ToString(), Text = input.First, Embedding = input.Second }).ToList();
+        var records = budgetInfo.Select((input, index) => new FinanceInfo { Key = index.ToString(), Text = input });
         await collection.UpsertAsync(records);
 
         // Add the collection to the kernel as a plugin.
-        var textSearch = new VectorStoreTextSearch<FinanceInfo>(collection, textEmbeddingGenerator);
+        var textSearch = new VectorStoreTextSearch<FinanceInfo>(collection);
         kernel.Plugins.Add(textSearch.CreateWithSearch("FinanceSearch", "Can search for budget information"));
 
         // Invoke the kernel, using the plugin from within the prompt.
@@ -120,12 +120,14 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
     {
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
+
         [TextSearchResultValue]
         [VectorStoreRecordData]
         public string Text { get; set; } = string.Empty;
+
         [VectorStoreRecordVector(1536)]
-        public ReadOnlyMemory<float> Embedding { get; set; }
+        public string Embedding => this.Text;
     }
 
-    #endregion
+    #endregion Custom Plugin
 }
