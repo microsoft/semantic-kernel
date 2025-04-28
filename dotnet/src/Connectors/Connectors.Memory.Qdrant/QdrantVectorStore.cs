@@ -74,7 +74,8 @@ public sealed class QdrantVectorStore : IVectorStore
         var recordCollection = new QdrantVectorStoreRecordCollection<TKey, TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>()
         {
             HasNamedVectors = this._options.HasNamedVectors,
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+            EmbeddingGenerator = this._options.EmbeddingGenerator
         });
         var castRecordCollection = recordCollection as IVectorStoreRecordCollection<TKey, TRecord>;
         return castRecordCollection!;

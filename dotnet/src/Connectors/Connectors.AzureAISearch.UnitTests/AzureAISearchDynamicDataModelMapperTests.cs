@@ -271,8 +271,9 @@ public class AzureAISearchDynamicDataModelMapperTests
     }
 
     private static VectorStoreRecordModel BuildModel(List<VectorStoreRecordProperty> properties)
-        => new VectorStoreRecordJsonModelBuilder(AzureAISearchConstants.s_modelBuildingOptions)
+        => new VectorStoreRecordJsonModelBuilder(AzureAISearchModelBuilder.s_modelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
-                new() { Properties = properties });
+                new() { Properties = properties },
+                defaultEmbeddingGenerator: null);
 }

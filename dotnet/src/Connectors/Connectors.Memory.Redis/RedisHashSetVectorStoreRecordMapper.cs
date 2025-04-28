@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using StackExchange.Redis;
@@ -17,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(VectorStoreRecordModel model)
 {
     /// <inheritdoc />
-    public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(TConsumerDataModel dataModel)
+    public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(TConsumerDataModel dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         var keyValue = model.KeyProperty.GetValueAsObject(dataModel!) as string ??
             throw new VectorStoreRecordMappingException($"Missing key property {model.KeyProperty.ModelName} on provided record of type '{typeof(TConsumerDataModel).Name}'.");
@@ -29,9 +30,12 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
             hashEntries.Add(new HashEntry(property.StorageName, RedisValue.Unbox(value)));
         }
 
-        foreach (var property in model.VectorProperties)
+        for (var i = 0; i < model.VectorProperties.Count; i++)
         {
-            var value = property.GetValueAsObject(dataModel!);
+            var property = model.VectorProperties[i];
+
+            var value = generatedEmbeddings?[i]?[recordIndex] ?? property.GetValueAsObject(dataModel!);
+
             if (value is not null)
             {
                 // Convert the vector to a byte array and store it in the hash entry.
@@ -45,6 +49,14 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
                     case ReadOnlyMemory<double> rod:
                         hashEntries.Add(new HashEntry(property.StorageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(rod)));
                         continue;
+
+                    case Embedding<float> embedding:
+                        hashEntries.Add(new HashEntry(property.StorageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(embedding.Vector)));
+                        continue;
+                    case Embedding<double> embedding:
+                        hashEntries.Add(new HashEntry(property.StorageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(embedding.Vector)));
+                        continue;
+
                     default:
                         throw new VectorStoreRecordMappingException($"Unsupported vector type '{value.GetType()}'. Only float and double vectors are supported.");
                 }

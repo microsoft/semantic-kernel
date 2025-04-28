@@ -48,10 +48,8 @@ public class SqliteBasicQueryTests(SqliteBasicQueryTests.Fixture fixture)
     {
         public override TestStore TestStore => SqliteTestStore.Instance;
 
-        protected override string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
-
         // Override to remove the string array property, which isn't (currently) supported on SQLite
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties = base.GetRecordDefinition().Properties.Where(p => p.PropertyType != typeof(string[]) && p.PropertyType != typeof(List<string>)).ToList()

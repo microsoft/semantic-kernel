@@ -59,7 +59,11 @@ internal static class PostgresConstants
             typeof(Guid),
         ],
 
-        SupportedVectorPropertyTypes = [typeof(ReadOnlyMemory<float>)]
+        SupportedVectorPropertyTypes =
+        [
+            typeof(ReadOnlyMemory<float>),
+            typeof(ReadOnlyMemory<float>?)
+        ]
     };
 
     /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have.</summary>

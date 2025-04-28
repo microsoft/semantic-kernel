@@ -12,10 +12,13 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.Properties;
 using DistanceFunction = Microsoft.Azure.Cosmos.DistanceFunction;
 using IndexKind = Microsoft.Extensions.VectorData.IndexKind;
+using MEAI = Microsoft.Extensions.AI;
 using SKDistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
@@ -91,13 +94,13 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         this.Name = name;
         this._options = options ?? new();
         var jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
-        this._model = new AzureCosmosDBNoSqlVectorStoreModelBuilder()
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, jsonSerializerOptions);
+        this._model = new AzureCosmosDBNoSQLVectorStoreModelBuilder()
+            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, jsonSerializerOptions);
 
         // Assign mapper.
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? (new AzureCosmosDBNoSQLDynamicDataModelMapper(this._model, jsonSerializerOptions) as ICosmosNoSQLMapper<TRecord>)!
-            : new AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(this._model.KeyProperty, this._options.JsonSerializerOptions);
+            : new AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(this._model, this._options.JsonSerializerOptions);
 
         // Setup partition key property
         if (this._options.PartitionKeyPropertyName is not null)
@@ -236,6 +239,10 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         const string OperationName = "GetItemQueryIterator";
 
         var includeVectors = options?.IncludeVectors ?? false;
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSelectQuery(
             this._model,
@@ -267,12 +274,48 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 
         const string OperationName = "UpsertItem";
 
+        MEAI.Embedding?[]? generatedEmbeddings = null;
+
+        var vectorPropertyCount = this._model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
+        {
+            var vectorProperty = this._model.VectorProperties[i];
+
+            if (vectorProperty.EmbeddingGenerator is null)
+            {
+                continue;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var floatTask))
+            {
+                generatedEmbeddings ??= new MEAI.Embedding?[vectorPropertyCount];
+                generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
+            }
+            else if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<byte>, ReadOnlyMemory<byte>>(record, cancellationToken, out var byteTask))
+            {
+                generatedEmbeddings ??= new MEAI.Embedding?[vectorPropertyCount];
+                generatedEmbeddings[i] = await byteTask.ConfigureAwait(false);
+            }
+            else if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<sbyte>, ReadOnlyMemory<sbyte>>(record, cancellationToken, out var sbyteTask))
+            {
+                generatedEmbeddings ??= new MEAI.Embedding?[vectorPropertyCount];
+                generatedEmbeddings[i] = await sbyteTask.ConfigureAwait(false);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of types '{typeof(Embedding<float>).Name}', '{typeof(Embedding<byte>).Name}' or '{typeof(Embedding<sbyte>).Name}' for the given input type.");
+            }
+        }
+
         var jsonObject = VectorStoreErrorHandler.RunModelConversion(
                 AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
                 this.Name,
                 OperationName,
-                () => this._mapper.MapFromDataToStorageModel(record));
+                () => this._mapper.MapFromDataToStorageModel(record, generatedEmbeddings));
 
         var keyValue = jsonObject.TryGetPropertyValue(this._model.KeyProperty.StorageName!, out var jsonKey) ? jsonKey?.ToString() : null;
         var partitionKeyValue = jsonObject.TryGetPropertyValue(this._partitionKeyProperty.StorageName, out var jsonPartitionKey) ? jsonPartitionKey?.ToString() : null;
@@ -312,12 +355,90 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         return keys.Where(k => k is not null).ToList();
     }
 
+    #region Search
+
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+        TInput value,
+        int top,
+        VectorSearchOptions<TRecord>? options = default,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        switch (vectorProperty.EmbeddingGenerator)
+        {
+            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
+            {
+                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+            }
+
+            case IEmbeddingGenerator<TInput, Embedding<byte>> generator:
+            {
+                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+            }
+
+            case IEmbeddingGenerator<TInput, Embedding<sbyte>> generator:
+            {
+                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+            }
+
+            case null:
+                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
+
+            default:
+                throw new InvalidOperationException(
+                    AzureCosmosDBNoSQLVectorStoreModelBuilder.s_supportedVectorTypes.Contains(typeof(TInput))
+                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
+                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
+        }
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
         VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
+        where TVector : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
+    }
+
+    private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorStoreRecordVectorPropertyModel vectorProperty,
+        string operationName,
+        VectorSearchOptions<TRecord> options,
+        CancellationToken cancellationToken = default)
+        where TVector : notnull
     {
         const string OperationName = "VectorizedSearch";
         const string ScorePropertyName = "SimilarityScore";
@@ -325,8 +446,10 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         this.VerifyVectorType(vector);
         Verify.NotLessThan(top, 1);
 
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
 #pragma warning disable CS0618 // Type or member is obsolete
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
@@ -336,11 +459,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             vectorProperty.StorageName,
             null,
             ScorePropertyName,
-            searchOptions.OldFilter,
-            searchOptions.Filter,
+            options.OldFilter,
+            options.Filter,
             top,
-            searchOptions.Skip,
-            searchOptions.IncludeVectors);
+            options.Skip,
+            options.IncludeVectors);
 #pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
@@ -348,9 +471,17 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             searchResults,
             ScorePropertyName,
             OperationName,
-            searchOptions.IncludeVectors,
+            options.IncludeVectors,
             cancellationToken);
     }
+
+    /// <inheritdoc />
+    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        where TVector : notnull
+        => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
+
+    #endregion Search
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
@@ -394,9 +525,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         this.VerifyVectorType(vector);
         Verify.NotLessThan(top, 1);
 
-        var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
-        var textProperty = this._model.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalProperty);
+        options ??= s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var textProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
 #pragma warning disable CS0618 // Type or member is obsolete
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery<TVector, TRecord>(
@@ -406,11 +537,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             vectorProperty.StorageName,
             textProperty.StorageName,
             ScorePropertyName,
-            searchOptions.OldFilter,
-            searchOptions.Filter,
+            options.OldFilter,
+            options.Filter,
             top,
-            searchOptions.Skip,
-            searchOptions.IncludeVectors);
+            options.Skip,
+            options.IncludeVectors);
 #pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
@@ -418,7 +549,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             searchResults,
             ScorePropertyName,
             OperationName,
-            searchOptions.IncludeVectors,
+            options.IncludeVectors,
             cancellationToken);
     }
 
@@ -443,11 +574,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 
         var vectorType = vector.GetType();
 
-        if (!AzureCosmosDBNoSqlVectorStoreModelBuilder.s_supportedVectorTypes.Contains(vectorType))
+        if (!AzureCosmosDBNoSQLVectorStoreModelBuilder.s_supportedVectorTypes.Contains(vectorType))
         {
             throw new NotSupportedException(
                 $"The provided vector type {vectorType.FullName} is not supported by the Azure CosmosDB NoSQL connector. " +
-                $"Supported types are: {string.Join(", ", AzureCosmosDBNoSqlVectorStoreModelBuilder.s_supportedVectorTypes.Select(l => l.FullName))}");
+                $"Supported types are: {string.Join(", ", AzureCosmosDBNoSQLVectorStoreModelBuilder.s_supportedVectorTypes.Select(l => l.FullName))}");
         }
     }
 
@@ -476,7 +607,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     private ContainerProperties GetContainerProperties()
     {
         // Process Vector properties.
-        var embeddings = new Collection<Embedding>();
+        var embeddings = new Collection<Azure.Cosmos.Embedding>();
         var vectorIndexPaths = new Collection<VectorIndexPath>();
 
         var indexingPolicy = new IndexingPolicy
@@ -497,9 +628,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         {
             var path = $"/{property.StorageName}";
 
-            var embedding = new Embedding
+            var embedding = new Azure.Cosmos.Embedding
             {
-                DataType = GetDataType(property.Type, property.StorageName),
+                DataType = GetDataType(property.EmbeddingType, property.StorageName),
                 Dimensions = (int)property.Dimensions,
                 DistanceFunction = GetDistanceFunction(property.DistanceFunction, property.StorageName),
                 Path = path

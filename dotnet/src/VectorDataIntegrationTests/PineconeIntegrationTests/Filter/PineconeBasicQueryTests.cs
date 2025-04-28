@@ -52,6 +52,6 @@ public class PineconeBasicQueryTests(PineconeBasicQueryTests.Fixture fixture)
         public override TestStore TestStore => PineconeTestStore.Instance;
 
         // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        protected override string CollectionName => "query-tests";
+        public override string CollectionName => "query-tests";
     }
 }

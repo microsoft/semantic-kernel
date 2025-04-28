@@ -46,7 +46,7 @@ public sealed class VectorStoreRecordModelBuildingOptions
     /// <summary>
     /// The set of types that are supported as vector properties.
     /// </summary>
-    public required HashSet<Type>? SupportedVectorPropertyTypes { get; init; }
+    public required HashSet<Type> SupportedVectorPropertyTypes { get; init; }
 
     /// <summary>
     /// Indicates that an external serializer will be used (e.g. System.Text.Json).

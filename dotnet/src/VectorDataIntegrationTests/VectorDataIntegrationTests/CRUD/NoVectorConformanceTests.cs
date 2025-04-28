@@ -143,7 +143,7 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
             }
         ];
 
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties =

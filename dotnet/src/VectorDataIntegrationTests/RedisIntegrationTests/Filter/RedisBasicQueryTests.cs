@@ -72,10 +72,10 @@ public class RedisJsonCollectionBasicQueryTests(RedisJsonCollectionBasicQueryTes
     {
         public override TestStore TestStore => RedisTestStore.JsonInstance;
 
-        protected override string CollectionName => "JsonCollectionQueryTests";
+        public override string CollectionName => "JsonCollectionQueryTests";
 
         // Override to remove the bool property, which isn't (currently) supported on Redis/JSON
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties = base.GetRecordDefinition().Properties.Where(p => p.PropertyType != typeof(bool)).ToList()
@@ -116,10 +116,10 @@ public class RedisHashSetCollectionBasicQueryTests(RedisHashSetCollectionBasicQu
     {
         public override TestStore TestStore => RedisTestStore.HashSetInstance;
 
-        protected override string CollectionName => "HashSetCollectionQueryTests";
+        public override string CollectionName => "HashSetCollectionQueryTests";
 
         // Override to remove the bool property, which isn't (currently) supported on Redis
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties = base.GetRecordDefinition().Properties.Where(p =>

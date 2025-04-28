@@ -10,8 +10,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.Properties;
 using NRedisStack.Json.DataTypes;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
@@ -34,6 +36,14 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
+    internal static readonly HashSet<Type> s_supportedVectorTypes =
+    [
+        typeof(ReadOnlyMemory<float>),
+        typeof(ReadOnlyMemory<double>),
+        typeof(ReadOnlyMemory<float>?),
+        typeof(ReadOnlyMemory<double>?)
+    ];
+
     internal static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
@@ -47,14 +57,6 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
 
         UsesExternalSerializer = true
     };
-
-    internal static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<double>),
-        typeof(ReadOnlyMemory<float>?),
-        typeof(ReadOnlyMemory<double>?)
-    ];
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -104,7 +106,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
         this._options = options ?? new RedisJsonVectorStoreRecordCollectionOptions<TRecord>();
         this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
         this._model = new VectorStoreRecordJsonModelBuilder(ModelBuildingOptions)
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._jsonSerializerOptions);
+            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, this._jsonSerializerOptions);
 
         // Lookup storage property names.
         this._dataStoragePropertyNames = this._model.DataProperties.Select(p => p.StorageName).ToArray();
@@ -205,6 +207,11 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
         var maybePrefixedKey = this.PrefixKeyIfNeeded(stringKey);
         var includeVectors = options?.IncludeVectors ?? false;
 
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
+
         // Get the Redis value.
         var redisResult = await this.RunOperationAsync(
             "GET",
@@ -260,6 +267,10 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
         var maybePrefixedKeys = keysList.Select(key => this.PrefixKeyIfNeeded(key));
         var redisKeys = maybePrefixedKeys.Select(x => new RedisKey(x)).ToArray();
         var includeVectors = options?.IncludeVectors ?? false;
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
         // Get the list of Redis results.
         var redisResults = await this.RunOperationAsync(
@@ -333,6 +344,8 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
         Verify.NotNull(record);
 
         // Map.
+        (_, var generatedEmbeddings) = await RedisVectorStoreRecordFieldMapping.ProcessEmbeddingsAsync<TRecord>(this._model, [record], cancellationToken).ConfigureAwait(false);
+
         var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
             RedisConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
@@ -340,7 +353,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
             "SET",
                 () =>
                 {
-                    var mapResult = this._mapper.MapFromDataToStorageModel(record);
+                    var mapResult = this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings);
                     var serializedRecord = JsonSerializer.Serialize(mapResult.Node, this._jsonSerializerOptions);
                     return new { Key = mapResult.Key, SerializedRecord = serializedRecord };
                 });
@@ -365,7 +378,12 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
         Verify.NotNull(records);
 
         // Map.
+        (records, var generatedEmbeddings) = await RedisVectorStoreRecordFieldMapping.ProcessEmbeddingsAsync<TRecord>(this._model, records, cancellationToken).ConfigureAwait(false);
+
         var redisRecords = new List<(string maybePrefixedKey, string originalKey, string serializedRecord)>();
+
+        var recordIndex = 0;
+
         foreach (var record in records)
         {
             var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
@@ -375,7 +393,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
                 "MSET",
                 () =>
                 {
-                    var mapResult = this._mapper.MapFromDataToStorageModel(record);
+                    var mapResult = this._mapper.MapFromDataToStorageModel(record, recordIndex++, generatedEmbeddings);
                     var serializedRecord = JsonSerializer.Serialize(mapResult.Node, this._jsonSerializerOptions);
                     return new { Key = mapResult.Key, SerializedRecord = serializedRecord };
                 });
@@ -395,21 +413,93 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
         return redisRecords.Select(x => (TKey)(object)x.originalKey).ToList();
     }
 
+    #region Search
+
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+        TInput value,
+        int top,
+        VectorSearchOptions<TRecord>? options = default,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        switch (vectorProperty.EmbeddingGenerator)
+        {
+            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
+            {
+                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+            }
+
+            case IEmbeddingGenerator<TInput, Embedding<double>> generator:
+            {
+                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+            }
+
+            case null:
+                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
+
+            default:
+                throw new InvalidOperationException(
+                    s_supportedVectorTypes.Contains(typeof(TInput))
+                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
+                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
+        }
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorSearchOptions<TRecord>? options = null,
+        CancellationToken cancellationToken = default)
+        where TVector : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
+    }
+
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorStoreRecordVectorPropertyModel vectorProperty,
+        string operationName,
+        VectorSearchOptions<TRecord> options,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TVector : notnull
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
 
-        var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
         // Build query & search.
         byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "JSON");
         var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(
             vectorBytes,
             top,
-            internalOptions,
+            options,
             this._model,
             vectorProperty,
             null);
@@ -433,11 +523,11 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
                     var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
                     return this._mapper.MapFromStorageToDataModel(
                         (this.RemoveKeyPrefixIfNeeded(result.Id), node),
-                        new() { IncludeVectors = internalOptions.IncludeVectors });
+                        new() { IncludeVectors = options.IncludeVectors });
                 });
 
             // Process the score of the result item.
-            var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
+            var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
             var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(vectorProperty);
             var score = RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(result["vector_score"].HasValue ? (float)result["vector_score"] : null, distanceFunction);
 
@@ -451,11 +541,24 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
+    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        where TVector : notnull
+        => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
+
+    #endregion Search
+
+    /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
         GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
+
+        if (options?.IncludeVectors == true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
         Query query = RedisVectorStoreCollectionSearchMapping.BuildQuery(filter, top, options ??= new(), this._model);
 

@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using Google.Protobuf.Collections;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client.Grpc;
@@ -17,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model, bool hasNamedVectors)
 {
     /// <inheritdoc />
-    public PointStruct MapFromDataToStorageModel(TRecord dataModel)
+    public PointStruct MapFromDataToStorageModel(TRecord dataModel, int recordIndex, GeneratedEmbeddings<Embedding<float>>?[]? generatedEmbeddings)
     {
         var keyProperty = model.KeyProperty;
 
@@ -54,14 +55,18 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
         if (hasNamedVectors)
         {
             var namedVectors = new NamedVectors();
-            foreach (var property in model.VectorProperties)
+
+            for (var i = 0; i < model.VectorProperties.Count; i++)
             {
-                var propertyValue = property.GetValueAsObject(dataModel!);
-                if (propertyValue is not null)
-                {
-                    var castPropertyValue = (ReadOnlyMemory<float>)propertyValue;
-                    namedVectors.Vectors.Add(property.StorageName, castPropertyValue.ToArray());
-                }
+                var property = model.VectorProperties[i];
+
+                namedVectors.Vectors.Add(
+                    property.StorageName,
+                    GetVector(
+                        property,
+                        generatedEmbeddings?[i] is GeneratedEmbeddings<Embedding<float>> e
+                            ? e[recordIndex]
+                            : property.GetValueAsObject(dataModel!)));
             }
 
             pointStruct.Vectors.Vectors_ = namedVectors;
@@ -69,18 +74,25 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
         else
         {
             // We already verified in the constructor via FindProperties that there is exactly one vector property when not using named vectors.
-            var property = model.VectorProperty;
-            if (property.GetValueAsObject(dataModel!) is ReadOnlyMemory<float> floatROM)
-            {
-                pointStruct.Vectors.Vector = floatROM.ToArray();
-            }
-            else
-            {
-                throw new VectorStoreRecordMappingException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null when not using named vectors.");
-            }
+            Debug.Assert(
+                generatedEmbeddings is null || generatedEmbeddings.Length == 1 && generatedEmbeddings[0] is not null,
+                "There should be exactly one generated embedding when not using named vectors (single vector property).");
+            pointStruct.Vectors.Vector = GetVector(
+                model.VectorProperty,
+                generatedEmbeddings is null
+                    ? model.VectorProperty.GetValueAsObject(dataModel!)
+                    : generatedEmbeddings[0]![recordIndex].Vector);
         }
 
         return pointStruct;
+
+        Vector GetVector(VectorStoreRecordPropertyModel property, object? embedding)
+            => embedding switch
+            {
+                ReadOnlyMemory<float> floatVector => floatVector.ToArray(),
+                null => throw new VectorStoreRecordMappingException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null when not using named vectors."),
+                var unknownEmbedding => throw new VectorStoreRecordMappingException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' has unsupported embedding type '{unknownEmbedding.GetType().Name}'.")
+            };
     }
 
     /// <inheritdoc />

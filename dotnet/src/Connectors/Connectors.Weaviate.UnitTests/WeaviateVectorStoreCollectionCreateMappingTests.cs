@@ -30,7 +30,8 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                         new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
                         new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { IndexKind = "non-existent-index-kind" }
                     ]
-                });
+                },
+                defaultEmbeddingGenerator: null);
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => WeaviateVectorStoreCollectionCreateMapping.MapToSchema(collectionName: "CollectionName", HasNamedVectors, model));
@@ -53,7 +54,8 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                         new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
                         new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { IndexKind = indexKind }
                     ]
-                });
+                },
+                defaultEmbeddingGenerator: null);
 
         // Act
         var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(collectionName: "CollectionName", HasNamedVectors, model);
@@ -77,7 +79,8 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                         new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
                         new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { DistanceFunction = "unsupported-distance-function" }
                     ]
-                });
+                },
+                defaultEmbeddingGenerator: null);
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => WeaviateVectorStoreCollectionCreateMapping.MapToSchema(collectionName: "CollectionName", HasNamedVectors, model));
@@ -102,7 +105,8 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                         new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
                         new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { DistanceFunction = distanceFunction }
                     ]
-                });
+                },
+                defaultEmbeddingGenerator: null);
 
         // Act
         var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(collectionName: "CollectionName", HasNamedVectors, model);
@@ -175,6 +179,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                         new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
                     ]
                 },
+                defaultEmbeddingGenerator: null,
                 new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
         // Act
@@ -209,7 +214,8 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                             IndexKind = IndexKind.Hnsw
                         }
                     ]
-                });
+                },
+                defaultEmbeddingGenerator: null);
 
         // Act
         var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(collectionName: "CollectionName", hasNamedVectors, model);

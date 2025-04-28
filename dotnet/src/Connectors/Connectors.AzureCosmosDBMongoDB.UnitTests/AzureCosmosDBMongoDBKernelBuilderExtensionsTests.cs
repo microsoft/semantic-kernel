@@ -84,7 +84,7 @@ public sealed class AzureCosmosDBMongoDBKernelBuilderExtensionsTests
         Assert.NotNull(collection);
         Assert.IsType<AzureCosmosDBMongoDBVectorStoreRecordCollection<string, TestRecord>>(collection);
 
-        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<AzureCosmosDBMongoDBVectorStoreRecordCollection<string, TestRecord>>(vectorizedSearch);
     }

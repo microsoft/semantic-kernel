@@ -18,18 +18,19 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
 {
     private const string ScorePropertyName = "TestScore";
 
-    private readonly VectorStoreRecordModel _model = new AzureCosmosDBNoSqlVectorStoreModelBuilder().Build(
+    private readonly VectorStoreRecordModel _model = new AzureCosmosDBNoSQLVectorStoreModelBuilder().Build(
         typeof(Dictionary<string, object?>),
         new()
         {
             Properties =
             [
                 new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordVectorProperty("TestProperty1", typeof(string), 10) { StoragePropertyName = "test_property_1" },
+                new VectorStoreRecordVectorProperty("TestProperty1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "test_property_1" },
                 new VectorStoreRecordDataProperty("TestProperty2", typeof(string)) { StoragePropertyName = "test_property_2" },
                 new VectorStoreRecordDataProperty("TestProperty3", typeof(string)) { StoragePropertyName = "test_property_3" }
             ]
-        });
+        },
+        defaultEmbeddingGenerator: null);
 
     [Fact]
     public void BuildSearchQueryByDefaultReturnsValidQueryDefinition()
@@ -192,7 +193,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         const string KeyStoragePropertyName = "id";
         const string PartitionKeyPropertyName = "TestProperty1";
 
-        var model = new AzureCosmosDBNoSqlVectorStoreModelBuilder().Build(
+        var model = new AzureCosmosDBNoSQLVectorStoreModelBuilder().Build(
             typeof(Dictionary<string, object?>),
             new()
             {
@@ -202,7 +203,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
                     new VectorStoreRecordDataProperty("TestProperty1", typeof(string)),
                     new VectorStoreRecordDataProperty("TestProperty2", typeof(string))
                 ]
-            });
+            },
+            defaultEmbeddingGenerator: null);
         var keys = new List<AzureCosmosDBNoSQLCompositeKey> { new("id", "TestProperty1") };
 
         // Act

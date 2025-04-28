@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
@@ -9,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal sealed class RecordMapper<TRecord>(VectorStoreRecordModel model)
 {
-    public IDictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
+    public IDictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         Dictionary<string, object?> map = new(StringComparer.Ordinal);
 
@@ -20,10 +22,18 @@ internal sealed class RecordMapper<TRecord>(VectorStoreRecordModel model)
             map[property.StorageName] = property.GetValueAsObject(dataModel!);
         }
 
-        foreach (var property in model.VectorProperties)
+        for (var i = 0; i < model.VectorProperties.Count; i++)
         {
-            // We restrict the vector properties to ReadOnlyMemory<float> so the cast here is safe.
-            map[property.StorageName] = (ReadOnlyMemory<float>)property.GetValueAsObject(dataModel!)!;
+            var property = model.VectorProperties[i];
+
+            // We restrict the vector properties to ReadOnlyMemory<float> in model validation
+            map[property.StorageName] = generatedEmbeddings?[i] is IReadOnlyList<Embedding> e
+                ? e[recordIndex] switch
+                {
+                    Embedding<float> fe => fe.Vector,
+                    _ => throw new UnreachableException()
+                }
+                : (ReadOnlyMemory<float>)property.GetValueAsObject(dataModel!)!;
         }
 
         return map;

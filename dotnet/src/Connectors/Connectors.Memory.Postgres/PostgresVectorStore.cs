@@ -84,7 +84,12 @@ public sealed class PostgresVectorStore : IVectorStore
         var recordCollection = new PostgresVectorStoreRecordCollection<TKey, TRecord>(
             this._postgresClient,
             name,
-            new PostgresVectorStoreRecordCollectionOptions<TRecord>() { Schema = this._options.Schema, VectorStoreRecordDefinition = vectorStoreRecordDefinition }
+            new PostgresVectorStoreRecordCollectionOptions<TRecord>()
+            {
+                Schema = this._options.Schema,
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._options.EmbeddingGenerator,
+            }
         );
 
         return recordCollection as IVectorStoreRecordCollection<TKey, TRecord> ?? throw new InvalidOperationException("Failed to cast record collection.");

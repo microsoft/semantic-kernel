@@ -69,6 +69,6 @@ public class PineconeBasicFilterTests(PineconeBasicFilterTests.Fixture fixture)
         public override TestStore TestStore => PineconeTestStore.Instance;
 
         // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        protected override string CollectionName => "filter-tests";
+        public override string CollectionName => "filter-tests";
     }
 }
