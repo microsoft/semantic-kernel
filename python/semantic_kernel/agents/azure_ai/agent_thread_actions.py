@@ -42,13 +42,10 @@ from semantic_kernel.agents.azure_ai.agent_content_generation import (
     get_function_call_contents,
 )
 from semantic_kernel.agents.azure_ai.azure_ai_agent_utils import AzureAIAgentUtils
-from semantic_kernel.agents.open_ai.assistant_content_generation import (
-    merge_streaming_function_results,
-)
+from semantic_kernel.agents.open_ai.assistant_content_generation import merge_streaming_function_results
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
-from semantic_kernel.connectors.ai.function_calling_utils import (
-    kernel_function_metadata_to_function_call_format,
-)
+from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -106,6 +103,7 @@ class AgentThreadActions:
         | None = None,
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Invoke the message in the thread.
@@ -130,6 +128,8 @@ class AgentThreadActions:
             response_format: The response format.
             parallel_tool_calls: The parallel tool calls.
             metadata: The metadata.
+            polling_options: The polling options defined at the run-level. These will override the agent-level
+                polling options.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -178,7 +178,9 @@ class AgentThreadActions:
         function_steps: dict[str, "FunctionCallContent"] = {}
 
         while run.status != "completed":
-            run = await cls._poll_run_status(agent=agent, run=run, thread_id=thread_id)
+            run = await cls._poll_run_status(
+                agent=agent, run=run, thread_id=thread_id, polling_options=polling_options or agent.polling_options
+            )
 
             if run.status in cls.error_message_states:
                 error_message = ""
@@ -214,6 +216,7 @@ class AgentThreadActions:
                         tool_outputs=tool_outputs,  # type: ignore
                     )
                     logger.debug(f"Submitted tool outputs for agent `{agent.name}` and thread `{thread_id}`")
+                    continue
 
             steps_response = await agent.client.agents.list_run_steps(run_id=run.id, thread_id=thread_id)
             logger.debug(f"Called for steps_response for run [{run.id}] agent `{agent.name}` and thread `{thread_id}`")
@@ -297,7 +300,7 @@ class AgentThreadActions:
                             message_id=message_call_details.message_creation.message_id,  # type: ignore
                         )
                         if message:
-                            content = generate_message_content(agent.name, message)
+                            content = generate_message_content(agent.name, message, completed_step)
                             if content and len(content.items) > 0:
                                 message_count += 1
                                 logger.debug(
@@ -458,14 +461,19 @@ class AgentThreadActions:
                         if not details:
                             continue
                         if isinstance(details, RunStepDeltaToolCallObject) and details.tool_calls:
+                            content_is_visible = False
                             for tool_call in details.tool_calls:
                                 content = None
                                 if tool_call.type == "function":
                                     content = generate_streaming_function_content(agent.name, details)
                                 elif tool_call.type == "code_interpreter":
                                     content = generate_streaming_code_interpreter_content(agent.name, details)
+                                    content_is_visible = True
                                 if content:
-                                    yield content
+                                    if output_messages is not None:
+                                        output_messages.append(content)
+                                    if content_is_visible:
+                                        yield content
 
                     elif event_type == AgentStreamEvent.THREAD_RUN_REQUIRES_ACTION:
                         run = cast(ThreadRun, event_data)
@@ -772,16 +780,18 @@ class AgentThreadActions:
         return [cls._prepare_tool_definition(tool) for tool in tools]
 
     @classmethod
-    async def _poll_run_status(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str) -> ThreadRun:
+    async def _poll_run_status(
+        cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str, polling_options: RunPollingOptions
+    ) -> ThreadRun:
         """Poll the run status."""
         logger.info(f"Polling run status: {run.id}, threadId: {thread_id}")
         try:
             run = await asyncio.wait_for(
-                cls._poll_loop(agent=agent, run=run, thread_id=thread_id),
-                timeout=agent.polling_options.run_polling_timeout.total_seconds(),
+                cls._poll_loop(agent=agent, run=run, thread_id=thread_id, polling_options=polling_options),
+                timeout=polling_options.run_polling_timeout.total_seconds(),
             )
         except asyncio.TimeoutError:
-            timeout_duration = agent.polling_options.run_polling_timeout
+            timeout_duration = polling_options.run_polling_timeout
             error_message = (
                 f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` "
                 f"after waiting {timeout_duration}."
@@ -792,11 +802,13 @@ class AgentThreadActions:
         return run
 
     @classmethod
-    async def _poll_loop(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str) -> ThreadRun:
+    async def _poll_loop(
+        cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str, polling_options: RunPollingOptions
+    ) -> ThreadRun:
         """Continuously poll the run status until it is no longer pending."""
         count = 0
         while True:
-            await asyncio.sleep(agent.polling_options.get_polling_interval(count).total_seconds())
+            await asyncio.sleep(polling_options.get_polling_interval(count).total_seconds())
             count += 1
             try:
                 run = await agent.client.agents.get_run(run_id=run.id, thread_id=thread_id)

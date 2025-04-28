@@ -9,6 +9,8 @@ from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.functions import kernel_function
 from tests.integration.agents.agent_test_base import AgentTestBase
 
@@ -80,6 +82,8 @@ class TestAzureAIAgentIntegration:
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
         assert response.message.content is not None
+        assert "thread_id" in response.message.metadata
+        assert "run_id" in response.message.metadata
 
     async def test_get_response_with_thread(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test get response of the agent with a thread."""
@@ -238,6 +242,7 @@ Dolphin  2
             messages="What is the weather in Seattle?",
         )
         assert isinstance(response.message, ChatMessageContent)
+        assert all(isinstance(item, TextContent) for item in response.items)
         assert response.message.role == AuthorRole.ASSISTANT
         assert "sunny" in response.message.content
 
@@ -251,6 +256,7 @@ Dolphin  2
         assert len(responses) > 0
         for response in responses:
             assert isinstance(response.message, ChatMessageContent)
+            assert all(isinstance(item, TextContent) for item in response.items)
             assert response.message.role == AuthorRole.ASSISTANT
             assert "sunny" in response.message.content
 
@@ -264,6 +270,7 @@ Dolphin  2
         assert len(responses) > 0
         for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
+            assert all(isinstance(item, StreamingTextContent) for item in response.items)
             assert response.message.role == AuthorRole.ASSISTANT
             full_message += response.message.content
         assert "sunny" in full_message
