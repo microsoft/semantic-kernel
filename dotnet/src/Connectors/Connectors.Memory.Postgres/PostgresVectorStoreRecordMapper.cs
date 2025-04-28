@@ -43,7 +43,7 @@ internal sealed class PostgresVectorStoreRecordMapper<TRecord>(VectorStoreRecord
                             Embedding<float> fe => fe.Vector,
                             _ => throw new UnreachableException()
                         }
-                        : (ReadOnlyMemory<float>)property.GetValueAsObject(dataModel!)!));
+                        : (ReadOnlyMemory<float>?)property.GetValueAsObject(dataModel!)!));
         }
 
         return properties;
