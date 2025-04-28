@@ -8,8 +8,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.Properties;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -49,7 +51,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         Verify.NotNull(name);
 
         this._model = new VectorStoreRecordModelBuilder(SqlServerConstants.ModelBuildingOptions)
-            .Build(typeof(TRecord), options?.RecordDefinition);
+            .Build(typeof(TRecord), options?.RecordDefinition, options?.EmbeddingGenerator);
 
         this._connectionString = connectionString;
         this.Name = name;
@@ -233,6 +235,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
         bool includeVectors = options?.IncludeVectors is true;
 
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
+
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.SelectSingle(
             connection,
@@ -268,6 +275,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         Verify.NotNull(keys);
 
         bool includeVectors = options?.IncludeVectors is true;
+
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = connection.CreateCommand();
@@ -322,13 +334,39 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     {
         Verify.NotNull(record);
 
+        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
+
+        var vectorPropertyCount = this._model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
+        {
+            var vectorProperty = this._model.VectorProperties[i];
+
+            if (vectorProperty.EmbeddingGenerator is null)
+            {
+                continue;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var floatTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = [await floatTask.ConfigureAwait(false)];
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
+            }
+        }
+
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(
             connection,
             this._options.Schema,
             this.Name,
             this._model,
-            this._mapper.MapFromDataToStorageModel(record));
+            this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings));
 
         return await ExceptionWrapper.WrapAsync(connection, command,
             async static (cmd, ct) =>
@@ -347,6 +385,49 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
+
+        IReadOnlyList<TRecord>? recordsList = null;
+
+        // If an embedding generator is defined, invoke it once per property for all records.
+        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
+
+        var vectorPropertyCount = this._model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
+        {
+            var vectorProperty = this._model.VectorProperties[i];
+
+            if (vectorProperty.EmbeddingGenerator is null)
+            {
+                continue;
+            }
+
+            // We have a property with embedding generation; materialize the records' enumerable if needed, to
+            // prevent multiple enumeration.
+            if (recordsList is null)
+            {
+                recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+
+                if (recordsList.Count == 0)
+                {
+                    return [];
+                }
+
+                records = recordsList;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var floatTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
+            }
+        }
 
         using SqlConnection connection = new(this._connectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
@@ -373,7 +454,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                         this._model,
                         records.Skip(taken)
                                .Take(SqlServerConstants.MaxParameterCount / parametersPerRecord)
-                               .Select(this._mapper.MapFromDataToStorageModel)))
+                               .Select((r, i) => this._mapper.MapFromDataToStorageModel(r, taken + i, generatedEmbeddings))))
                     {
                         break; // records is empty
                     }
@@ -418,8 +499,64 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         return records.Select(r => (TKey)keyProperty.GetValueAsObject(r)!).ToList();
     }
 
-    /// <inheritdoc/>
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    #region Search
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+        TInput value,
+        int top,
+        VectorSearchOptions<TRecord>? options = default,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        switch (vectorProperty.EmbeddingGenerator)
+        {
+            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
+                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+
+            case null:
+                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
+
+            default:
+                throw new InvalidOperationException(
+                    SqlServerConstants.SupportedVectorTypes.Contains(typeof(TInput))
+                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
+                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
+        }
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorSearchOptions<TRecord>? options = null,
+        CancellationToken cancellationToken = default)
+        where TVector : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
+    }
+
+    private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorStoreRecordVectorPropertyModel vectorProperty,
+        string operationName,
+        VectorSearchOptions<TRecord> options,
+        CancellationToken cancellationToken = default)
+        where TVector : notnull
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -431,14 +568,16 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 $"Supported types are: {string.Join(", ", SqlServerConstants.SupportedVectorTypes.Select(l => l.FullName))}");
         }
 #pragma warning disable CS0618 // Type or member is obsolete
-        else if (options is not null && options.OldFilter is not null)
+        else if (options.OldFilter is not null)
 #pragma warning restore CS0618 // Type or member is obsolete
         {
             throw new NotSupportedException("The obsolete Filter is not supported by the SQL Server connector, use NewFilter instead.");
         }
 
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // Connection and command are going to be disposed by the ReadVectorSearchResultsAsync,
@@ -451,12 +590,20 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             vectorProperty,
             this._model,
             top,
-            searchOptions,
+            options,
             allowed);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        return this.ReadVectorSearchResultsAsync(connection, command, searchOptions.IncludeVectors, cancellationToken);
+        return this.ReadVectorSearchResultsAsync(connection, command, options.IncludeVectors, cancellationToken);
     }
+
+    /// <inheritdoc />
+    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        where TVector : notnull
+        => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
+
+    #endregion Search
 
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)

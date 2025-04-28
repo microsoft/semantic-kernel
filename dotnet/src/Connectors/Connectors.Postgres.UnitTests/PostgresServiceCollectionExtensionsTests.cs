@@ -51,7 +51,7 @@ public sealed class PostgresServiceCollectionExtensionsTests
         Assert.NotNull(collection);
         Assert.IsType<PostgresVectorStoreRecordCollection<string, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<PostgresVectorStoreRecordCollection<string, TestRecord>>(vectorizedSearch);
     }

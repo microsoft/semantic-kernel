@@ -490,8 +490,8 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
     }
 
     [Theory]
-    [MemberData(nameof(VectorizedSearchVectorTypeData))]
-    public async Task VectorizedSearchThrowsExceptionWithInvalidVectorTypeAsync(object vector, bool exceptionExpected)
+    [MemberData(nameof(SearchEmbeddingVectorTypeData))]
+    public async Task SearchEmbeddingThrowsExceptionWithInvalidVectorTypeAsync(object vector, bool exceptionExpected)
     {
         // Arrange
         this.MockCollectionForSearch();
@@ -503,18 +503,18 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         // Act & Assert
         if (exceptionExpected)
         {
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await sut.VectorizedSearchAsync(vector, top: 3).ToListAsync());
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await sut.SearchEmbeddingAsync(vector, top: 3).ToListAsync());
         }
         else
         {
-            Assert.NotNull(await sut.VectorizedSearchAsync(vector, top: 3).FirstOrDefaultAsync());
+            Assert.NotNull(await sut.SearchEmbeddingAsync(vector, top: 3).FirstOrDefaultAsync());
         }
     }
 
     [Theory]
     [InlineData("TestEmbedding1", "TestEmbedding1", 3, 3)]
     [InlineData("TestEmbedding2", "test_embedding_2", 4, 4)]
-    public async Task VectorizedSearchUsesValidQueryAsync(
+    public async Task SearchEmbeddingUsesValidQueryAsync(
         string? vectorPropertyName,
         string expectedVectorPropertyName,
         int actualTop,
@@ -562,7 +562,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         };
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(vector, top: actualTop, new()
+        var actual = await sut.SearchEmbeddingAsync(vector, top: actualTop, new()
         {
             VectorProperty = vectorSelector,
         }).FirstOrDefaultAsync();
@@ -578,7 +578,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
     }
 
     [Fact]
-    public async Task VectorizedSearchThrowsExceptionWithNonExistentVectorPropertyNameAsync()
+    public async Task SearchEmbeddingThrowsExceptionWithNonExistentVectorPropertyNameAsync()
     {
         // Arrange
         this.MockCollectionForSearch();
@@ -590,11 +590,11 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         var options = new MEVD.VectorSearchOptions<MongoDBHotelModel> { VectorProperty = r => "non-existent-property" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, options).FirstOrDefaultAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, options).FirstOrDefaultAsync());
     }
 
     [Fact]
-    public async Task VectorizedSearchReturnsRecordWithScoreAsync()
+    public async Task SearchEmbeddingReturnsRecordWithScoreAsync()
     {
         // Arrange
         this.MockCollectionForSearch();
@@ -604,7 +604,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var result = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3).FirstOrDefaultAsync();
+        var result = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3).FirstOrDefaultAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -625,7 +625,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         { [], 1 }
     };
 
-    public static TheoryData<object, bool> VectorizedSearchVectorTypeData => new()
+    public static TheoryData<object, bool> SearchEmbeddingVectorTypeData => new()
     {
         { new ReadOnlyMemory<float>([1f, 2f, 3f]), false },
         { new ReadOnlyMemory<double>([1f, 2f, 3f]), false },

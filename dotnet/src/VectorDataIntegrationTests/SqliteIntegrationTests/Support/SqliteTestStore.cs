@@ -10,6 +10,9 @@ internal sealed class SqliteTestStore : TestStore
 {
     private string? _databasePath;
 
+    private string? _connectionString;
+    public string ConnectionString => this._connectionString ?? throw new InvalidOperationException("Not initialized");
+
     public static SqliteTestStore Instance { get; } = new();
 
     private SqliteVectorStore? _defaultVectorStore;
@@ -18,6 +21,9 @@ internal sealed class SqliteTestStore : TestStore
 
     public override string DefaultDistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
 
+    public SqliteVectorStore GetVectorStore(SqliteVectorStoreOptions options)
+        => new(this.ConnectionString, options);
+
     private SqliteTestStore()
     {
     }
@@ -25,7 +31,8 @@ internal sealed class SqliteTestStore : TestStore
     protected override Task StartAsync()
     {
         this._databasePath = Path.GetTempFileName();
-        this._defaultVectorStore = new SqliteVectorStore($"Data Source={this._databasePath}");
+        this._connectionString = $"Data Source={this._databasePath}";
+        this._defaultVectorStore = new SqliteVectorStore(this._connectionString);
         return Task.CompletedTask;
     }
 

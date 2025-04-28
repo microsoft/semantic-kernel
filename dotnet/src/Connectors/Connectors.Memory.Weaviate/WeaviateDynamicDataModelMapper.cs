@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
@@ -52,7 +53,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
             WeaviateConstants.ReservedSingleVectorPropertyName;
     }
 
-    public JsonObject MapFromDataToStorageModel(Dictionary<string, object?> dataModel)
+    public JsonObject MapFromDataToStorageModel(Dictionary<string, object?> dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         Verify.NotNull(dataModel);
 
@@ -77,24 +78,35 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
         if (this._hasNamedVectors)
         {
             vectorNode = new JsonObject();
-            foreach (var property in this._model.VectorProperties)
+
+            for (var i = 0; i < this._model.VectorProperties.Count; i++)
             {
-                if (dataModel.TryGetValue(property.ModelName, out var vectorValue))
+                var property = this._model.VectorProperties[i];
+
+                var vectorValue = generatedEmbeddings?[i] switch
                 {
-                    vectorNode[property.StorageName] = vectorValue is null
-                        ? null
-                        : JsonSerializer.SerializeToNode(vectorValue, property.Type, this._jsonSerializerOptions);
-                }
+                    IReadOnlyList<Embedding<float>> e => e[recordIndex].Vector,
+                    IReadOnlyList<Embedding<double>> e => e[recordIndex].Vector,
+                    null => dataModel.TryGetValue(property.ModelName, out var v) ? v : null,
+                    _ => throw new NotSupportedException($"Unsupported embedding type '{generatedEmbeddings?[i]?.GetType().Name}' for property '{property.ModelName}'.")
+                };
+
+                vectorNode[property.StorageName] = vectorValue is null
+                    ? null
+                    : JsonSerializer.SerializeToNode(vectorValue, property.EmbeddingType, this._jsonSerializerOptions);
             }
         }
         else
         {
-            if (dataModel.TryGetValue(this._model.VectorProperty.ModelName, out var vectorValue))
-            {
-                vectorNode = vectorValue is null
-                    ? null
-                    : JsonSerializer.SerializeToNode(vectorValue, this._model.VectorProperty.Type, this._jsonSerializerOptions);
-            }
+            var vectorValue = generatedEmbeddings?[0] is IReadOnlyList<Embedding<float>> e
+                ? e[recordIndex].Vector
+                : dataModel.TryGetValue(this._model.VectorProperty.ModelName, out var v)
+                    ? v
+                    : null;
+
+            vectorNode = vectorValue is null
+                ? null
+                : JsonSerializer.SerializeToNode(vectorValue, this._model.VectorProperty.EmbeddingType, this._jsonSerializerOptions);
         }
 
         return new JsonObject

@@ -10,8 +10,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.Properties;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 
@@ -96,7 +98,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         this._options = options ?? new QdrantVectorStoreRecordCollectionOptions<TRecord>();
 
         this._model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(this._options.HasNamedVectors))
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
+            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
 
         this._mapper = new QdrantVectorStoreRecordMapper<TRecord>(this._model, this._options.HasNamedVectors);
 
@@ -288,6 +290,10 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         }
 
         var includeVectors = options?.IncludeVectors ?? false;
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
         // Retrieve data points.
         var retrievedPoints = await this.RunOperationAsync(
@@ -421,25 +427,9 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     {
         Verify.NotNull(record);
 
-        // Create point from record.
-        var pointStruct = VectorStoreErrorHandler.RunModelConversion(
-            QdrantConstants.VectorStoreSystemName,
-            this._collectionMetadata.VectorStoreName,
-            this._collectionName,
-            UpsertName,
-            () => this._mapper.MapFromDataToStorageModel(record));
+        var keys = await this.UpsertAsync([record], cancellationToken).ConfigureAwait(false);
 
-        // Upsert.
-        await this.RunOperationAsync(
-            UpsertName,
-            () => this._qdrantClient.UpsertAsync(this._collectionName, [pointStruct], true, cancellationToken: cancellationToken)).ConfigureAwait(false);
-
-        return pointStruct.Id switch
-        {
-            { HasNum: true } => (TKey)(object)pointStruct.Id.Num,
-            { HasUuid: true } => (TKey)(object)Guid.Parse(pointStruct.Id.Uuid),
-            _ => throw new UnreachableException("The Qdrant point ID is neither a number nor a UUID.")
-        };
+        return keys.Single();
     }
 
     /// <inheritdoc />
@@ -447,13 +437,54 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     {
         Verify.NotNull(records);
 
+        IReadOnlyList<TRecord>? recordsList = null;
+
+        // If an embedding generator is defined, invoke it once per property for all records.
+        GeneratedEmbeddings<Embedding<float>>?[]? generatedEmbeddings = null;
+
+        var vectorPropertyCount = this._model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
+        {
+            var vectorProperty = this._model.VectorProperties[i];
+
+            if (vectorProperty.EmbeddingGenerator is null)
+            {
+                continue;
+            }
+
+            if (recordsList is null)
+            {
+                recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+
+                if (recordsList.Count == 0)
+                {
+                    return [];
+                }
+
+                records = recordsList;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var task))
+            {
+                generatedEmbeddings ??= new GeneratedEmbeddings<Embedding<float>>?[vectorPropertyCount];
+                generatedEmbeddings[i] = await task.ConfigureAwait(false);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
+            }
+        }
+
         // Create points from records.
         var pointStructs = VectorStoreErrorHandler.RunModelConversion(
             QdrantConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
             this._collectionName,
             UpsertName,
-            () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
+            () => records.Select((r, i) => this._mapper.MapFromDataToStorageModel(r, i, generatedEmbeddings)).ToList());
 
         if (pointStructs is { Count: 0 })
         {
@@ -475,19 +506,76 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             };
     }
 
+    #region Search
+
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+        TInput value,
+        int top,
+        VectorSearchOptions<TRecord>? options = default,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        switch (vectorProperty.EmbeddingGenerator)
+        {
+            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
+                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+
+            case null:
+                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
+
+            default:
+                throw new InvalidOperationException(
+                    QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes.Contains(typeof(TInput))
+                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
+                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
+        }
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorSearchOptions<TRecord>? options = null,
+        CancellationToken cancellationToken = default)
+        where TVector : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
+    }
+
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorStoreRecordVectorPropertyModel vectorProperty,
+        string operationName,
+        VectorSearchOptions<TRecord> options,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TVector : notnull
     {
         var floatVector = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
 
-        // Resolve options.
-        var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
 #pragma warning disable CS0618 // Type or member is obsolete
         // Build filter object.
-        var filter = internalOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._model),
@@ -498,7 +586,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         // Specify whether to include vectors in the search results.
         var vectorsSelector = new WithVectorsSelector();
-        vectorsSelector.Enable = internalOptions.IncludeVectors;
+        vectorsSelector.Enable = options.IncludeVectors;
 
         var query = new Query
         {
@@ -507,14 +595,14 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         // Execute Search.
         var points = await this.RunOperationAsync(
-            "Query",
+            operationName,
             () => this._qdrantClient.QueryAsync(
                 this.Name,
                 query: query,
                 usingVector: this._options.HasNamedVectors ? vectorProperty.StorageName : null,
                 filter: filter,
                 limit: (ulong)top,
-                offset: (ulong)internalOptions.Skip,
+                offset: (ulong)options.Skip,
                 vectorsSelector: vectorsSelector,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
 
@@ -522,7 +610,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         var mappedResults = points.Select(point => QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult(
                 point,
                 this._mapper,
-                internalOptions.IncludeVectors,
+                options.IncludeVectors,
                 QdrantConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
                 this._collectionName,
@@ -533,6 +621,14 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             yield return result;
         }
     }
+
+    /// <inheritdoc />
+    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        where TVector : notnull
+        => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
+
+    #endregion Search
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
@@ -597,14 +693,14 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         Verify.NotLessThan(top, 1);
 
         // Resolve options.
-        var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = internalOptions.VectorProperty });
-        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(internalOptions.AdditionalProperty);
+        options ??= s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
         // Build filter object.
 #pragma warning disable CS0618 // Type or member is obsolete
         // Build filter object.
-        var filter = internalOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._model),
@@ -615,7 +711,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         // Specify whether to include vectors in the search results.
         var vectorsSelector = new WithVectorsSelector();
-        vectorsSelector.Enable = internalOptions.IncludeVectors;
+        vectorsSelector.Enable = options.IncludeVectors;
 
         // Build the vector query.
         var vectorQuery = new PrefetchQuery
@@ -659,7 +755,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                 prefetch: new List<PrefetchQuery>() { vectorQuery, keywordQuery },
                 query: fusionQuery,
                 limit: (ulong)top,
-                offset: (ulong)internalOptions.Skip,
+                offset: (ulong)options.Skip,
                 vectorsSelector: vectorsSelector,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
 
@@ -667,7 +763,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         var mappedResults = points.Select(point => QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult(
                 point,
                 this._mapper,
-                internalOptions.IncludeVectors,
+                options.IncludeVectors,
                 QdrantConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
                 this._collectionName,

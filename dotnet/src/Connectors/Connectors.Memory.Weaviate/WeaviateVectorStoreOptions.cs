@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -34,4 +35,9 @@ public sealed class WeaviateVectorStoreOptions
     /// <see href="https://weaviate.io/developers/weaviate/config-refs/schema/multi-vector"/>.
     /// </summary>
     public bool HasNamedVectors { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

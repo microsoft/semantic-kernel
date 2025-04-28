@@ -61,7 +61,11 @@ public sealed class PineconeVectorStore : IVectorStore
         return (new PineconeVectorStoreRecordCollection<TKey, TRecord>(
             this._pineconeClient,
             name,
-            new PineconeVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>)!;
+            new PineconeVectorStoreRecordCollectionOptions<TRecord>()
+            {
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._options.EmbeddingGenerator
+            }) as IVectorStoreRecordCollection<TKey, TRecord>)!;
     }
 
     /// <inheritdoc />

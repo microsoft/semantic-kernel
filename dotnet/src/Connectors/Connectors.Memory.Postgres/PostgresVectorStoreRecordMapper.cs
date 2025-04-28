@@ -2,41 +2,48 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
-
-#pragma warning disable SKEXP0020
 
 /// <summary>
 /// A mapper class that handles the conversion between data models and storage models for Postgres vector store.
 /// </summary>
 /// <typeparam name="TRecord">The type of the data model record.</typeparam>
 internal sealed class PostgresVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model)
+    where TRecord : notnull
 {
-    public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
+    public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         var keyProperty = model.KeyProperty;
 
         var properties = new Dictionary<string, object?>
         {
-            { keyProperty.StorageName, keyProperty.GetValueAsObject(dataModel!) }
+            { keyProperty.StorageName, keyProperty.GetValueAsObject(dataModel) }
         };
 
         foreach (var property in model.DataProperties)
         {
-            properties.Add(property.StorageName, property.GetValueAsObject(dataModel!));
+            properties.Add(property.StorageName, property.GetValueAsObject(dataModel));
         }
 
-        foreach (var property in model.VectorProperties)
+        for (var i = 0; i < model.VectorProperties.Count; i++)
         {
-            var propertyValue = property.GetValueAsObject(dataModel!);
+            var property = model.VectorProperties[i];
 
             properties.Add(
                 property.StorageName,
-                 PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(
-                    property.GetValueAsObject(dataModel!)));
+                PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(
+                    generatedEmbeddings?[i] is IReadOnlyList<Embedding> e
+                        ? e[recordIndex] switch
+                        {
+                            Embedding<float> fe => fe.Vector,
+                            _ => throw new UnreachableException()
+                        }
+                        : (ReadOnlyMemory<float>)property.GetValueAsObject(dataModel!)!));
         }
 
         return properties;

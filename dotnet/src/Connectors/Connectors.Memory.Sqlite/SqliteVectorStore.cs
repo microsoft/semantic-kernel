@@ -85,7 +85,8 @@ public sealed class SqliteVectorStore : IVectorStore
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 VectorSearchExtensionName = this._options.VectorSearchExtensionName,
-                VectorVirtualTableName = this._options.VectorVirtualTableName
+                VectorVirtualTableName = this._options.VectorVirtualTableName,
+                EmbeddingGenerator = this._options.EmbeddingGenerator
             }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
         return recordCollection!;

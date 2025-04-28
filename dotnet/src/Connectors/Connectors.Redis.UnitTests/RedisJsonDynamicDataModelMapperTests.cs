@@ -33,7 +33,8 @@ public class RedisJsonDynamicDataModelMapperTests
                         new VectorStoreRecordDataProperty("ComplexObjectData", typeof(ComplexObject)),
                         new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
                     ]
-                });
+                },
+                defaultEmbeddingGenerator: null);
 
     [Fact]
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
@@ -51,7 +52,7 @@ public class RedisJsonDynamicDataModelMapperTests
         };
 
         // Act.
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", storageModel.Key);
@@ -78,7 +79,7 @@ public class RedisJsonDynamicDataModelMapperTests
         };
 
         // Act.
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", storageModel.Key);
@@ -149,7 +150,7 @@ public class RedisJsonDynamicDataModelMapperTests
         var dataModel = new Dictionary<string, object?> { ["Key"] = "key" };
 
         // Act.
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", storageModel.Key);

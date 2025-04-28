@@ -23,7 +23,7 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
         => throw new NotSupportedException("Unsupported Contains expression");
 
-    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
+    protected override void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value)
     {
         if (value is not IEnumerable elements)
         {
@@ -51,11 +51,11 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    protected override void TranslateCapturedVariable(string name, object? capturedValue)
+    protected override void TranslateQueryParameter(string name, object? value)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)
-        if (capturedValue is null)
+        if (value is null)
         {
             this._sql.Append("NULL");
         }
@@ -73,7 +73,7 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
                 } while (this._parameters.ContainsKey(name));
             }
 
-            this._parameters.Add(name, capturedValue);
+            this._parameters.Add(name, value);
             this._sql.Append('@').Append(name);
         }
     }

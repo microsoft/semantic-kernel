@@ -2,6 +2,7 @@
 
 using System;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -46,4 +47,9 @@ public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord>
     /// <see href="https://weaviate.io/developers/weaviate/config-refs/schema/multi-vector"/>.
     /// </summary>
     public bool HasNamedVectors { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

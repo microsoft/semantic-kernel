@@ -20,7 +20,7 @@ public class Step4_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFi
     /// docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
     /// </summary>
     [Fact]
-    public async Task SearchAVectorStoreWithGenericDataModelAsync()
+    public async Task SearchAVectorStoreWithDynamicMappingAsync()
     {
         // Construct a redis vector store.
         var vectorStore = new RedisVectorStore(ConnectionMultiplexer.Connect("localhost:6379").GetDatabase());
@@ -56,7 +56,7 @@ public class Step4_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFi
         var searchVector = await fixture.TextEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
 
         // Search the generic data model collection and get the single most relevant result.
-        var searchResultItems = await dynamicDataModelCollection.VectorizedSearchAsync(
+        var searchResultItems = await dynamicDataModelCollection.SearchEmbeddingAsync(
             searchVector,
             top: 1).ToListAsync();
 

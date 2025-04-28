@@ -17,6 +17,6 @@ public class WeaviateNoVectorConformanceTests_NamedVectors(WeaviateNoVectorConfo
         /// <summary>
         /// Weaviate collections must start with an uppercase letter.
         /// </summary>
-        protected override string CollectionName => "NoVectorNamedCollection";
+        public override string CollectionName => "NoVectorNamedCollection";
     }
 }

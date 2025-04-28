@@ -60,7 +60,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
         => throw new NotSupportedException("Unsupported Contains expression");
 
-    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
+    protected override void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value)
     {
         if (value is not IEnumerable elements)
         {
@@ -88,17 +88,17 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    protected override void TranslateCapturedVariable(string name, object? capturedValue)
+    protected override void TranslateQueryParameter(string name, object? value)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)
-        if (capturedValue is null)
+        if (value is null)
         {
             this._sql.Append("NULL");
         }
         else
         {
-            this._parameterValues.Add(capturedValue);
+            this._parameterValues.Add(value);
             // SQL Server parameters can't start with a digit (but underscore is OK).
             this._sql.Append("@_").Append(this._parameterIndex++);
         }

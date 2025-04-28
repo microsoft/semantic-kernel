@@ -71,6 +71,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
                     new VectorStoreRecordVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?), 10)
                 ]
             },
+            defaultEmbeddingGenerator: null,
             s_jsonSerializerOptions);
 
     private static readonly float[] s_floatVector = [1.0f, 2.0f, 3.0f];
@@ -121,7 +122,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
         ;
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal(key, (Guid?)storageModel["id"]);
@@ -187,7 +188,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
         var sut = new WeaviateDynamicDataModelMapper("Collection", HasNamedVectors, s_model, s_jsonSerializerOptions);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Null(storageModel["StringDataProp"]);
@@ -348,7 +349,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
             ]
         };
 
-        var model = new WeaviateModelBuilder(HasNamedVectors).Build(typeof(Dictionary<string, object?>), recordDefinition, s_jsonSerializerOptions);
+        var model = new WeaviateModelBuilder(HasNamedVectors).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null, s_jsonSerializerOptions);
 
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 
@@ -356,7 +357,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
         var sut = new WeaviateDynamicDataModelMapper("Collection", HasNamedVectors, model, s_jsonSerializerOptions);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(record);
+        var storageModel = sut.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal(key, (Guid?)storageModel["id"]);
@@ -379,7 +380,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
             ]
         };
 
-        var model = new WeaviateModelBuilder(HasNamedVectors).Build(typeof(Dictionary<string, object?>), recordDefinition, s_jsonSerializerOptions);
+        var model = new WeaviateModelBuilder(HasNamedVectors).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null, s_jsonSerializerOptions);
 
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 
@@ -414,7 +415,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
             ]
         };
 
-        var model = new WeaviateModelBuilder(hasNamedVectors).Build(typeof(Dictionary<string, object?>), recordDefinition, s_jsonSerializerOptions);
+        var model = new WeaviateModelBuilder(hasNamedVectors).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null, s_jsonSerializerOptions);
 
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 
@@ -422,7 +423,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
         var sut = new WeaviateDynamicDataModelMapper("Collection", hasNamedVectors, model, s_jsonSerializerOptions);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(record);
+        var storageModel = sut.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         var vectorProperty = hasNamedVectors ? storageModel["vectors"]!["floatVector"] : storageModel["vector"];
@@ -446,7 +447,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
             ]
         };
 
-        var model = new WeaviateModelBuilder(hasNamedVectors).Build(typeof(Dictionary<string, object?>), recordDefinition, s_jsonSerializerOptions);
+        var model = new WeaviateModelBuilder(hasNamedVectors).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null, s_jsonSerializerOptions);
 
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 

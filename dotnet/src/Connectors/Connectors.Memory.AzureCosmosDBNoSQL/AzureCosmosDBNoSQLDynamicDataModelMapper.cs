@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
@@ -22,43 +23,58 @@ internal sealed class AzureCosmosDBNoSQLDynamicDataModelMapper(VectorStoreRecord
         Converters = { new AzureCosmosDBNoSQLReadOnlyMemoryByteConverter() }
     };
 
-    public JsonObject MapFromDataToStorageModel(Dictionary<string, object?> dataModel)
+    public JsonObject MapFromDataToStorageModel(Dictionary<string, object?> dataModel, MEAI.Embedding?[]? generatedEmbeddings)
     {
         Verify.NotNull(dataModel);
 
         var jsonObject = new JsonObject();
 
-        // Loop through all known properties and map each from the data model to the storage model.
-        foreach (var property in model.Properties)
-        {
-            switch (property)
+        jsonObject[AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
+            ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
+            : keyValue switch
             {
-                case VectorStoreRecordKeyPropertyModel keyProperty:
-                    jsonObject[AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName] = (string)(dataModel[keyProperty.ModelName]
-                        ?? throw new InvalidOperationException($"Key property '{keyProperty.ModelName}' is null."));
+                string s => s,
+                null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
+                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
+            };
 
-                    break;
+        foreach (var dataProperty in model.DataProperties)
+        {
+            if (dataModel.TryGetValue(dataProperty.StorageName, out var dataValue))
+            {
+                jsonObject[dataProperty.StorageName] = dataValue is not null ?
+                    JsonSerializer.SerializeToNode(dataValue, dataProperty.Type, jsonSerializerOptions) :
+                    null;
+            }
+        }
 
-                case VectorStoreRecordDataPropertyModel dataProperty:
-                    if (dataModel.TryGetValue(dataProperty.StorageName, out var dataValue))
+        for (var i = 0; i < model.VectorProperties.Count; i++)
+        {
+            var property = model.VectorProperties[i];
+
+            if (generatedEmbeddings?[i] is null)
+            {
+                // No generated embedding, read the vector directly from the data model
+                if (dataModel.TryGetValue(property.ModelName, out var sourceValue))
+                {
+                    jsonObject.Add(property.StorageName, sourceValue is null
+                        ? null
+                        : JsonSerializer.SerializeToNode(sourceValue, property.Type, s_vectorJsonSerializerOptions));
+                }
+            }
+            else
+            {
+                Debug.Assert(property.EmbeddingGenerator is not null);
+                var embedding = generatedEmbeddings[i];
+                jsonObject.Add(
+                    property.StorageName,
+                    embedding switch
                     {
-                        jsonObject[dataProperty.StorageName] = dataValue is not null ?
-                            JsonSerializer.SerializeToNode(dataValue, property.Type, jsonSerializerOptions) :
-                            null;
-                    }
-                    break;
-
-                case VectorStoreRecordVectorPropertyModel vectorProperty:
-                    if (dataModel.TryGetValue(vectorProperty.StorageName, out var vectorValue))
-                    {
-                        jsonObject[vectorProperty.StorageName] = vectorValue is not null ?
-                            JsonSerializer.SerializeToNode(vectorValue, property.Type, s_vectorJsonSerializerOptions) :
-                            null;
-                    }
-                    break;
-
-                default:
-                    throw new UnreachableException();
+                        MEAI.Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, s_vectorJsonSerializerOptions),
+                        MEAI.Embedding<byte> e => JsonSerializer.SerializeToNode(e.Vector, s_vectorJsonSerializerOptions),
+                        MEAI.Embedding<sbyte> e => JsonSerializer.SerializeToNode(e.Vector, s_vectorJsonSerializerOptions),
+                        _ => throw new UnreachableException()
+                    });
             }
         }
 

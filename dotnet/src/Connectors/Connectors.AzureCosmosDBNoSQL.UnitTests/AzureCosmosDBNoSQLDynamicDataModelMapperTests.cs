@@ -19,7 +19,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = JsonSerializerOptions.Default;
 
-    private static readonly VectorStoreRecordModel s_model = new AzureCosmosDBNoSqlVectorStoreModelBuilder()
+    private static readonly VectorStoreRecordModel s_model = new AzureCosmosDBNoSQLVectorStoreModelBuilder()
         .Build(
             typeof(Dictionary<string, object?>),
             new VectorStoreRecordDefinition
@@ -41,10 +41,6 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
                     new VectorStoreRecordDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
                     new VectorStoreRecordDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
                     new VectorStoreRecordDataProperty("TagListDataProp", typeof(List<string>)),
-        #if NET5_0_OR_GREATER
-                    new VectorStoreRecordVectorProperty("HalfVector", typeof(ReadOnlyMemory<Half>), 10),
-                    new VectorStoreRecordVectorProperty("NullableHalfVector", typeof(ReadOnlyMemory<Half>?), 10),
-        #endif
                     new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
                     new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
                     new VectorStoreRecordVectorProperty("ByteVector", typeof(ReadOnlyMemory<byte>), 10),
@@ -52,11 +48,9 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
                     new VectorStoreRecordVectorProperty("SByteVector", typeof(ReadOnlyMemory<sbyte>), 10),
                     new VectorStoreRecordVectorProperty("NullableSByteVector", typeof(ReadOnlyMemory<sbyte>?), 10),
                 },
-            });
+            },
+            defaultEmbeddingGenerator: null);
 
-#if NET5_0_OR_GREATER
-    private static readonly Half[] s_halfVector = [(Half)1.0f, (Half)2.0f, (Half)3.0f];
-#endif
     private static readonly float[] s_floatVector = [1.0f, 2.0f, 3.0f];
     private static readonly byte[] s_byteVector = [1, 2, 3];
     private static readonly sbyte[] s_sbyteVector = [1, 2, 3];
@@ -87,10 +81,6 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
             ["NullableDateTimeOffsetDataProp"] = new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero),
             ["TagListDataProp"] = s_taglist,
 
-#if NET5_0_OR_GREATER
-            ["HalfVector"] = new ReadOnlyMemory<Half>(s_halfVector),
-            ["NullableHalfVector"] = new ReadOnlyMemory<Half>(s_halfVector),
-#endif
             ["FloatVector"] = new ReadOnlyMemory<float>(s_floatVector),
             ["NullableFloatVector"] = new ReadOnlyMemory<float>(s_floatVector),
             ["ByteVector"] = new ReadOnlyMemory<byte>(s_byteVector),
@@ -100,7 +90,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         };
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", (string?)storageModel["id"]);
@@ -118,10 +108,6 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         Assert.Equal(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero), (DateTimeOffset?)storageModel["DateTimeOffsetDataProp"]);
         Assert.Equal(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero), (DateTimeOffset?)storageModel["NullableDateTimeOffsetDataProp"]);
         Assert.Equal(s_taglist, storageModel["TagListDataProp"]!.AsArray().GetValues<string>().ToArray());
-#if NET5_0_OR_GREATER
-        Assert.Equal(s_halfVector, storageModel["HalfVector"]!.AsArray().Select(l => (Half)(float)l!).ToArray());
-        Assert.Equal(s_halfVector, storageModel["NullableHalfVector"]!.AsArray().Select(l => (Half)(float)l!).ToArray());
-#endif
         Assert.Equal(s_floatVector, storageModel["FloatVector"]!.AsArray().GetValues<float>().ToArray());
         Assert.Equal(s_floatVector, storageModel["NullableFloatVector"]!.AsArray().GetValues<float>().ToArray());
         Assert.Equal(s_byteVector, storageModel["ByteVector"]!.AsArray().GetValues<byte>().ToArray());
@@ -156,7 +142,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         var sut = new AzureCosmosDBNoSQLDynamicDataModelMapper(s_model, s_jsonSerializerOptions);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, generatedEmbeddings: null);
 
         // Assert
         Assert.Null(storageModel["StringDataProp"]);
@@ -187,10 +173,6 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
             ["DateTimeOffsetDataProp"] = new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero),
             ["NullableDateTimeOffsetDataProp"] = new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero),
             ["TagListDataProp"] = new JsonArray(s_taglist.Select(l => (JsonValue)l).ToArray()),
-#if NET5_0_OR_GREATER
-            ["HalfVector"] = new JsonArray(s_halfVector.Select(l => (JsonValue)(float)l).ToArray()),
-            ["NullableHalfVector"] = new JsonArray(s_halfVector.Select(l => (JsonValue)(float)l).ToArray()),
-#endif
             ["FloatVector"] = new JsonArray(s_floatVector.Select(l => (JsonValue)l).ToArray()),
             ["NullableFloatVector"] = new JsonArray(s_floatVector.Select(l => (JsonValue)l).ToArray()),
             ["ByteVector"] = new JsonArray(s_byteVector.Select(l => (JsonValue)l).ToArray()),
@@ -218,10 +200,6 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         Assert.Equal(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero), dataModel["DateTimeOffsetDataProp"]);
         Assert.Equal(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero), dataModel["NullableDateTimeOffsetDataProp"]);
         Assert.Equal(s_taglist, dataModel["TagListDataProp"]);
-#if NET5_0_OR_GREATER
-        Assert.Equal(s_halfVector, ((ReadOnlyMemory<Half>)dataModel["HalfVector"]!).ToArray());
-        Assert.Equal(s_halfVector, ((ReadOnlyMemory<Half>)dataModel["NullableHalfVector"]!)!.ToArray());
-#endif
         Assert.Equal(s_floatVector, ((ReadOnlyMemory<float>)dataModel["FloatVector"]!).ToArray());
         Assert.Equal(s_floatVector, ((ReadOnlyMemory<float>)dataModel["NullableFloatVector"]!)!.ToArray());
         Assert.Equal(s_byteVector, ((ReadOnlyMemory<byte>)dataModel["ByteVector"]!).ToArray());
@@ -296,7 +274,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         var sut = new AzureCosmosDBNoSQLDynamicDataModelMapper(s_model, s_jsonSerializerOptions);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", (string?)storageModel["id"]);

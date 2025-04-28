@@ -12,6 +12,6 @@ public class CosmosNoSQLNoDataConformanceTests(CosmosNoSQLNoDataConformanceTests
 {
     public new class Fixture : NoDataConformanceTests<string>.Fixture
     {
-        public override TestStore TestStore => CosmosNoSqlTestStore.Instance;
+        public override TestStore TestStore => CosmosNoSQLTestStore.Instance;
     }
 }

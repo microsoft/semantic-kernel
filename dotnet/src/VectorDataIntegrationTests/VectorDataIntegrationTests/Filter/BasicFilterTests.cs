@@ -308,7 +308,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     protected virtual async Task<List<FilterRecord>> GetRecords(
         Expression<Func<FilterRecord, bool>> filter, int top, ReadOnlyMemory<float> vector)
-        => await fixture.Collection.VectorizedSearchAsync(
+        => await fixture.Collection.SearchEmbeddingAsync(
                 vector,
                 top: top,
                 new() { Filter = filter })
@@ -316,7 +316,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     protected virtual async Task<List<Dictionary<string, object?>>> GetDynamicRecords(
         Expression<Func<Dictionary<string, object?>, bool>> dynamicFilter, int top, ReadOnlyMemory<float> vector)
-        => await fixture.DynamicCollection.VectorizedSearchAsync(
+        => await fixture.DynamicCollection.SearchEmbeddingAsync(
                 vector,
                 top: top,
                 new() { Filter = dynamicFilter })
@@ -423,7 +423,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     public abstract class Fixture : VectorStoreCollectionFixture<TKey, FilterRecord>
     {
-        protected override string CollectionName => "FilterTests";
+        public override string CollectionName => "FilterTests";
 
         protected virtual ReadOnlyMemory<float> GetVector(int count)
             // All records have the same vector - this fixture is about testing criteria filtering only
@@ -444,7 +444,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             }
         }
 
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties =

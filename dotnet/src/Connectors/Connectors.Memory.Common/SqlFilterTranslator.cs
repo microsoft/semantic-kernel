@@ -6,10 +6,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
 
 namespace Microsoft.SemanticKernel.Connectors;
 
@@ -43,7 +42,10 @@ internal abstract class SqlFilterTranslator
             this._sql.Append("WHERE ");
         }
 
-        this.Translate(this._lambdaExpression.Body, isSearchCondition: true);
+        var preprocessor = new FilterTranslationPreprocessor { TransformCapturedVariablesToQueryParameterExpressions = true };
+        var preprocessedExpression = preprocessor.Visit(this._lambdaExpression.Body);
+
+        this.Translate(preprocessedExpression, isSearchCondition: true);
     }
 
     protected void Translate(Expression? node, bool isSearchCondition = false)
@@ -56,6 +58,10 @@ internal abstract class SqlFilterTranslator
 
             case ConstantExpression constant:
                 this.TranslateConstant(constant.Value);
+                return;
+
+            case QueryParameterExpression { Name: var name, Value: var value }:
+                this.TranslateQueryParameter(name, value);
                 return;
 
             case MemberExpression member:
@@ -127,8 +133,7 @@ internal abstract class SqlFilterTranslator
         this._sql.Append(')');
 
         static bool IsNull(Expression expression)
-            => expression is ConstantExpression { Value: null }
-               || (TryGetCapturedValue(expression, out _, out var capturedValue) && capturedValue is null);
+            => expression is ConstantExpression { Value: null } or QueryParameterExpression { Value: null };
     }
 
     protected virtual void TranslateConstant(object? value)
@@ -175,25 +180,19 @@ internal abstract class SqlFilterTranslator
 
     private void TranslateMember(MemberExpression memberExpression, bool isSearchCondition)
     {
-        switch (memberExpression)
+        if (this.TryBindProperty(memberExpression, out var property))
         {
-            case var _ when this.TryBindProperty(memberExpression, out var property):
-                this.GenerateColumn(property.StorageName, isSearchCondition);
-                return;
-
-            case var _ when TryGetCapturedValue(memberExpression, out var name, out var value):
-                this.TranslateCapturedVariable(name, value);
-                return;
-
-            default:
-                throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
+            this.GenerateColumn(property.StorageName, isSearchCondition);
+            return;
         }
+
+        throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
 
     protected virtual void GenerateColumn(string column, bool isSearchCondition = false)
         => this._sql.Append('"').Append(column.Replace("\"", "\"\"")).Append('"');
 
-    protected abstract void TranslateCapturedVariable(string name, object? capturedValue);
+    protected abstract void TranslateQueryParameter(string name, object? value);
 
     private void TranslateMethodCall(MethodCallExpression methodCall, bool isSearchCondition = false)
     {
@@ -262,8 +261,8 @@ internal abstract class SqlFilterTranslator
                 return;
 
             // Contains over captured array (r => arrayLocalVariable.Contains(r.String))
-            case var _ when TryGetCapturedValue(source, out _, out var value):
-                this.TranslateContainsOverCapturedArray(source, item, value);
+            case QueryParameterExpression { Value: var value }:
+                this.TranslateContainsOverParameterizedArray(source, item, value);
                 return;
 
             default:
@@ -273,7 +272,7 @@ internal abstract class SqlFilterTranslator
 
     protected abstract void TranslateContainsOverArrayColumn(Expression source, Expression item);
 
-    protected abstract void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value);
+    protected abstract void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value);
 
     private void TranslateUnary(UnaryExpression unary, bool isSearchCondition)
     {
@@ -350,21 +349,5 @@ internal abstract class SqlFilterTranslator
         }
 
         return true;
-    }
-
-    private static bool TryGetCapturedValue(Expression expression, [NotNullWhen(true)] out string? name, out object? value)
-    {
-        if (expression is MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
-            && constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
-            && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true))
-        {
-            name = fieldInfo.Name;
-            value = fieldInfo.GetValue(constant.Value);
-            return true;
-        }
-
-        name = null;
-        value = null;
-        return false;
     }
 }

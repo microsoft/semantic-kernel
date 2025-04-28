@@ -15,6 +15,8 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 /// </summary>
 public sealed class InMemoryVectorStore : IVectorStore
 {
+    private readonly InMemoryVectorStoreOptions _options;
+
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
 
@@ -27,27 +29,15 @@ public sealed class InMemoryVectorStore : IVectorStore
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryVectorStore"/> class.
     /// </summary>
-    public InMemoryVectorStore()
+    /// <param name="options">Optional configuration options for this class</param>
+    public InMemoryVectorStore(InMemoryVectorStoreOptions? options = default)
     {
+        this._options = options ?? new InMemoryVectorStoreOptions();
         this._internalCollections = new();
 
         this._metadata = new()
         {
             VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
-        };
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InMemoryVectorStore"/> class.
-    /// </summary>
-    /// <param name="internalCollection">Allows passing in the dictionary used for storage, for testing purposes.</param>
-    internal InMemoryVectorStore(ConcurrentDictionary<string, ConcurrentDictionary<object, object>> internalCollection)
-    {
-        this._internalCollections = internalCollection;
-
-        this._metadata = new()
-        {
-            VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName
         };
     }
 
@@ -65,7 +55,11 @@ public sealed class InMemoryVectorStore : IVectorStore
             this._internalCollections,
             this._internalCollectionTypes,
             name,
-            new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            new()
+            {
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._options.EmbeddingGenerator
+            }) as IVectorStoreRecordCollection<TKey, TRecord>;
         return collection!;
     }
 

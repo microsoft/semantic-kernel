@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED
+
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
@@ -141,9 +143,9 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>
-    /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
+    /// Decorator for a <see cref="IVectorSearch{TRecord}"/> that generates embeddings for text search queries.
     /// </summary>
-    private sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
+    private sealed class VectorizedSearchWrapper<TRecord>(IVectorSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
     {
         /// <inheritdoc/>
         public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -188,3 +190,5 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
 }
+
+#endif
