@@ -8,6 +8,11 @@ from microsoft.agents.copilotstudio.client import (
 
 from semantic_kernel.agents import CopilotStudioAgent
 
+"""
+This sample demonstrates how to use the Copilot Studio agent to answer questions about physics.
+It does not use a thread to maintain context between user inputs.
+"""
+
 
 async def main() -> None:
     client: CopilotClient = CopilotStudioAgent.setup_resources()
@@ -15,7 +20,7 @@ async def main() -> None:
     agent = CopilotStudioAgent(
         client=client,
         name="PhysicsAgent",
-        instructions="You are help answer questions about physics. ",
+        instructions="You help answer questions about physics. ",
     )
 
     USER_INPUTS = [

@@ -16,6 +16,8 @@ _AGENTS = {
     "ChatCompletionAgent": ".chat_completion.chat_completion_agent",
     "ChatHistoryAgentThread": ".chat_completion.chat_completion_agent",
     "CopilotStudioAgent": ".copilot_studio.copilot_studio_agent",
+    "CopilotStudioAgentAuthMode": ".copilot_studio.copilot_studio_agent_settings",
+    "CopilotStudioAgentSettings": ".copilot_studio.copilot_studio_agent_settings",
     "CopilotStudioAgentThread": ".copilot_studio.copilot_studio_agent",
     "AgentChat": ".group_chat.agent_chat",
     "AgentGroupChat": ".group_chat.agent_group_chat",

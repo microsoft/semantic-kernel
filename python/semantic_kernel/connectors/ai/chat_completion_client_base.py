@@ -136,6 +136,7 @@ class ChatCompletionClientBase(AIServiceClientBase, ABC):
         # Auto invoke loop
         with use_span(self._start_auto_function_invocation_activity(kernel, settings), end_on_exit=True) as _:
             for request_index in range(settings.function_choice_behavior.maximum_auto_invoke_attempts):
+                print(f"**** ---> request_index: {request_index}")
                 completions = await self._inner_get_chat_message_contents(chat_history, settings)
                 # Get the function call contents from the chat message. There is only one chat message,
                 # which should be checked in the `_verify_function_choice_settings` method.
