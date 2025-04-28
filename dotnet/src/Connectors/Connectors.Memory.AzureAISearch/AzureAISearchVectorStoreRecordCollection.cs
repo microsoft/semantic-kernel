@@ -87,8 +87,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         this._options = options ?? new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>();
         this._searchClient = this._searchIndexClient.GetSearchClient(name);
 
-        this._model = new AzureAISearchModelBuilder()
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, this._options.JsonSerializerOptions);
+        this._model = typeof(TRecord) == typeof(Dictionary<string, object?>) ?
+            new AzureAISearchDynamicModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator) :
+            new AzureAISearchModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, this._options.JsonSerializerOptions);
 
         // Resolve mapper.
         // If they didn't provide a custom mapper, and the record type is the generic data model, use the built in mapper for that.

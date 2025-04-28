@@ -132,14 +132,14 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             DescriptionEmbedding = embedding,
             Tags = new[] { "pool", "air conditioning", "concierge" },
             FTSTags = new[] { "pool", "air conditioning", "concierge" },
-            ParkingIncluded = true,
+            parking_is_included = true,
             LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
             Rating = 3.6,
             Address = address
         });
-        await this.Database.JSON().SetAsync("jsonhotels:BaseSet-2", "$", new { HotelName = "My Hotel 2", HotelCode = 2, Description = "This is a great hotel.", DescriptionEmbedding = embedding, ParkingIncluded = false });
-        await this.Database.JSON().SetAsync("jsonhotels:BaseSet-3", "$", new { HotelName = "My Hotel 3", HotelCode = 3, Description = "This is a great hotel.", DescriptionEmbedding = embedding, ParkingIncluded = false });
-        await this.Database.JSON().SetAsync("jsonhotels:BaseSet-4-Invalid", "$", new { HotelId = "AnotherId", HotelName = "My Invalid Hotel", HotelCode = 4, Description = "This is an invalid hotel.", DescriptionEmbedding = embedding, ParkingIncluded = false });
+        await this.Database.JSON().SetAsync("jsonhotels:BaseSet-2", "$", new { HotelName = "My Hotel 2", HotelCode = 2, Description = "This is a great hotel.", DescriptionEmbedding = embedding, parking_is_included = false });
+        await this.Database.JSON().SetAsync("jsonhotels:BaseSet-3", "$", new { HotelName = "My Hotel 3", HotelCode = 3, Description = "This is a great hotel.", DescriptionEmbedding = embedding, parking_is_included = false });
+        await this.Database.JSON().SetAsync("jsonhotels:BaseSet-4-Invalid", "$", new { HotelId = "AnotherId", HotelName = "My Invalid Hotel", HotelCode = 4, Description = "This is an invalid hotel.", DescriptionEmbedding = embedding, parking_is_included = false });
 
         // Add hashset test data.
         await this.Database.HashSetAsync("hashhotels:HBaseSet-1", new HashEntry[]
@@ -148,7 +148,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             new("HotelCode", 1),
             new("Description", "This is a great hotel."),
             new("DescriptionEmbedding", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(embedding)).ToArray()),
-            new("ParkingIncluded", true),
+            new("parking_is_included", true),
             new("Rating", 3.6)
         });
         await this.Database.HashSetAsync("hashhotels:HBaseSet-2", new HashEntry[]
@@ -157,7 +157,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             new("HotelCode", 2),
             new("Description", "This is a great hotel."),
             new("DescriptionEmbedding", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(embedding)).ToArray()),
-            new("ParkingIncluded", false),
+            new("parking_is_included", false),
         });
         await this.Database.HashSetAsync("hashhotels:HBaseSet-3", new HashEntry[]
         {
@@ -165,7 +165,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             new("HotelCode", 3),
             new("Description", "This is a great hotel."),
             new("DescriptionEmbedding", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(embedding)).ToArray()),
-            new("ParkingIncluded", false),
+            new("parking_is_included", false),
         });
         await this.Database.HashSetAsync("hashhotels:HBaseSet-4-Invalid", new HashEntry[]
         {
@@ -174,7 +174,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             new("HotelCode", 4),
             new("Description", "This is an invalid hotel."),
             new("DescriptionEmbedding", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(embedding)).ToArray()),
-            new("ParkingIncluded", false),
+            new("parking_is_included", false),
         });
     }
 

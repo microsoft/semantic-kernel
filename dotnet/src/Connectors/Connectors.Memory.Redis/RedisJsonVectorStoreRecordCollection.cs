@@ -100,19 +100,22 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
             throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping).");
         }
 
+        var isDynamic = typeof(TRecord) == typeof(Dictionary<string, object?>);
+
         // Assign.
         this._database = database;
         this._collectionName = name;
         this._options = options ?? new RedisJsonVectorStoreRecordCollectionOptions<TRecord>();
         this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
-        this._model = new VectorStoreRecordJsonModelBuilder(ModelBuildingOptions)
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, this._jsonSerializerOptions);
+        this._model = isDynamic ?
+            new VectorStoreRecordModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator) :
+            new VectorStoreRecordJsonModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, this._jsonSerializerOptions);
 
         // Lookup storage property names.
         this._dataStoragePropertyNames = this._model.DataProperties.Select(p => p.StorageName).ToArray();
 
         // Assign Mapper.
-        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
+        this._mapper = isDynamic
             ? (IRedisJsonMapper<TRecord>)new RedisJsonDynamicDataModelMapper(this._model, this._jsonSerializerOptions)
             : new RedisJsonVectorStoreRecordMapper<TRecord>(this._model, this._jsonSerializerOptions);
 

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 using DistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction;
 using IndexKind = Microsoft.Extensions.VectorData.IndexKind;
@@ -20,11 +21,10 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 /// Integration tests for <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 [Collection("AzureCosmosDBNoSQLVectorStoreCollection")]
+[AzureCosmosDBNoSQLConnectionStringSetCondition]
 public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosmosDBNoSQLVectorStoreFixture fixture)
 {
-    private const string? SkipReason = "Azure CosmosDB NoSQL cluster is required";
-
-    [Fact(Skip = SkipReason)]
+    [VectorStoreFact]
     public async Task ItCanCreateCollectionAsync()
     {
         // Arrange
@@ -37,7 +37,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.True(await sut.CollectionExistsAsync());
     }
 
-    [Theory(Skip = SkipReason)]
+    [VectorStoreTheory]
     [InlineData("sk-test-hotels", true)]
     [InlineData("nonexistentcollection", false)]
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
@@ -57,7 +57,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.Equal(expectedExists, actual);
     }
 
-    [Theory(Skip = SkipReason)]
+    [VectorStoreTheory]
     [InlineData(true, true)]
     [InlineData(true, false)]
     [InlineData(false, true)]
@@ -112,7 +112,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         }
     }
 
-    [Fact(Skip = SkipReason)]
+    [VectorStoreFact]
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
@@ -130,7 +130,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.False(await sut.CollectionExistsAsync());
     }
 
-    [Theory(Skip = SkipReason)]
+    [VectorStoreTheory]
     [InlineData("consistent-mode-collection", IndexingMode.Consistent)]
     [InlineData("lazy-mode-collection", IndexingMode.Lazy)]
     [InlineData("none-mode-collection", IndexingMode.None)]
@@ -162,7 +162,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.Null(getResult);
     }
 
-    [Fact(Skip = SkipReason)]
+    [VectorStoreFact]
     public async Task ItCanGetAndDeleteRecordWithPartitionKeyAsync()
     {
         // Arrange
@@ -197,7 +197,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.Null(getResult);
     }
 
-    [Fact(Skip = SkipReason)]
+    [VectorStoreFact]
     public async Task ItCanGetAndDeleteBatchAsync()
     {
         // Arrange
@@ -231,7 +231,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.Empty(getResults);
     }
 
-    [Fact(Skip = SkipReason)]
+    [VectorStoreFact]
     public async Task ItCanUpsertRecordAsync()
     {
         // Arrange
@@ -261,7 +261,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.Equal(10, getResult.HotelRating);
     }
 
-    [Fact(Skip = SkipReason)]
+    [VectorStoreFact]
     public async Task VectorizedSearchReturnsValidResultsByDefaultAsync()
     {
         // Arrange
@@ -291,7 +291,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.Equal(1, searchResults.First(l => l.Record.HotelId == "key1").Score);
     }
 
-    [Fact(Skip = SkipReason)]
+    [VectorStoreFact]
     public async Task VectorizedSearchReturnsValidResultsWithOffsetAsync()
     {
         // Arrange
@@ -322,7 +322,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.DoesNotContain("key2", ids);
     }
 
-    [Theory(Skip = SkipReason)]
+    [VectorStoreTheory]
     [MemberData(nameof(VectorizedSearchWithFilterData))]
     public async Task VectorizedSearchReturnsValidResultsWithFilterAsync(VectorSearchFilter filter, List<string> expectedIds)
     {
@@ -350,7 +350,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.Equal(expectedIds, actualIds);
     }
 
-    [Fact(Skip = SkipReason)]
+    [VectorStoreFact]
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
@@ -383,7 +383,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 
         // Assert
         Assert.NotNull(upsertResult);
-        Assert.Equal(HotelId, upsertResult);
+        var upsertCompositeKey = (AzureCosmosDBNoSQLCompositeKey)upsertResult;
+        Assert.Equal(HotelId, upsertCompositeKey.PartitionKey);
+        Assert.Equal(HotelId, upsertCompositeKey.RecordKey);
 
         Assert.NotNull(localGetResult);
         Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);

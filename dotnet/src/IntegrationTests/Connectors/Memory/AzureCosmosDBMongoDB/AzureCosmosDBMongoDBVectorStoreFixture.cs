@@ -32,10 +32,11 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(
                 path: "testsettings.development.json",
-                optional: false,
+                optional: true,
                 reloadOnChange: true
             )
             .AddEnvironmentVariables()
+            .AddUserSecrets<AzureCosmosDBMongoDBVectorStoreFixture>()
             .Build();
 
         var connectionString = GetConnectionString(configuration);

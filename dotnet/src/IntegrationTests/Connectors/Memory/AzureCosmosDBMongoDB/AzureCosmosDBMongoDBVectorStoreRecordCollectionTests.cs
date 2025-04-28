@@ -38,13 +38,21 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     public async Task ItCanCreateCollectionAsync()
     {
         // Arrange
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "sk-test-create-collection");
 
-        // Act
-        await sut.CreateCollectionAsync();
+        try
+        {
+            // Act
+            await sut.CreateCollectionAsync();
 
-        // Assert
-        Assert.True(await sut.CollectionExistsAsync());
+            // Assert
+            Assert.True(await sut.CollectionExistsAsync());
+        }
+        finally
+        {
+            // Clean up
+            await sut.DeleteCollectionAsync();
+        }
     }
 
     [Theory(Skip = SkipReason)]

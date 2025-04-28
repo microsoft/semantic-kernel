@@ -193,7 +193,7 @@ public class VectorStoreRecordModelBuilder
                 continue;
             }
 
-            this.SetPropertyStorageName(property, storageName);
+            this.SetPropertyStorageName(property, storageName, type);
 
             property.PropertyInfo = clrProperty;
             this.PropertyMap.Add(clrProperty.Name, property);
@@ -252,7 +252,7 @@ public class VectorStoreRecordModelBuilder
             }
 
             property.Type = definitionProperty.PropertyType;
-            this.SetPropertyStorageName(property, definitionProperty.StoragePropertyName);
+            this.SetPropertyStorageName(property, definitionProperty.StoragePropertyName, type);
 
             switch (definitionProperty)
             {
@@ -344,7 +344,7 @@ public class VectorStoreRecordModelBuilder
         }
     }
 
-    private void SetPropertyStorageName(VectorStoreRecordPropertyModel property, string? storageName)
+    private void SetPropertyStorageName(VectorStoreRecordPropertyModel property, string? storageName, Type? type)
     {
         if (property is VectorStoreRecordKeyPropertyModel && this.Options.ReservedKeyStorageName is not null)
         {
@@ -362,7 +362,7 @@ public class VectorStoreRecordModelBuilder
         // our model needs to be in sync with the serializer's behavior (for e.g. storage names in filters).
         // So we ignore the config here as well.
         // TODO: Consider throwing here instead of ignoring
-        if (this.Options.UsesExternalSerializer)
+        if (this.Options.UsesExternalSerializer && type != null)
         {
             return;
         }
