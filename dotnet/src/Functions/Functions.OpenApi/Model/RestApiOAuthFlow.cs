@@ -3,14 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// REST API OAuth Flow.
 /// </summary>
-[Experimental("SKEXP0040")]
 public sealed class RestApiOAuthFlow
 {
     /// <summary>
