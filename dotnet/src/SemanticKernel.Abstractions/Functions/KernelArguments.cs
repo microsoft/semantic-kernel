@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel;
 /// A <see cref="KernelArguments"/> is a dictionary of argument names and values. It also carries a
 /// <see cref="PromptExecutionSettings"/>, accessible via the <see cref="ExecutionSettings"/> property.
 /// </remarks>
-public sealed class KernelArguments : AIFunctionArgumentsV2
+public sealed class KernelArguments : AIFunctionArguments
 {
     private IReadOnlyDictionary<string, PromptExecutionSettings>? _executionSettings;
 

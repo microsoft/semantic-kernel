@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to automatic function invocation.
 /// </summary>
-public class AutoFunctionInvocationContext : FunctionInvocationContextV2
+public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInvocationContext
 {
     private ChatHistory? _chatHistory;
     private KernelFunction? _kernelFunction;
@@ -108,7 +108,7 @@ public class AutoFunctionInvocationContext : FunctionInvocationContextV2
     /// <summary>
     /// Get the <see cref="Microsoft.Extensions.AI.AIFunctionArgumentsV2"/> with which this filter is associated.
     /// </summary>
-    public AIFunctionArgumentsV2 AIArguments
+    public AIFunctionArguments AIArguments
     {
         get => base.Arguments;
         init => base.Arguments = value;

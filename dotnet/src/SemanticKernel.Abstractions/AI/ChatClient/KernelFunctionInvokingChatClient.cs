@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,9 +12,9 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// Specialization of <see cref="FunctionInvokingChatClientV2"/> that uses <see cref="KernelFunction"/> and supports <see cref="IAutoFunctionInvocationFilter"/>.
+/// Specialization of <see cref="FunctionInvokingChatClient"/> that uses <see cref="KernelFunction"/> and supports <see cref="IAutoFunctionInvocationFilter"/>.
 /// </summary>
-internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatClientV2
+internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatClient
 {
     /// <inheritdoc/>
     public KernelFunctionInvokingChatClient(IChatClient innerClient, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
@@ -56,91 +55,14 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
 
     /// <inheritdoc/>
     protected override async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
-        ChatResponse response, List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount, bool isStreaming, CancellationToken cancellationToken)
+        ChatResponse response, IList<ChatMessage> messages, ChatOptions options, IList<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount, bool isStreaming, CancellationToken cancellationToken)
     {
         // Prepare the options for the next auto function invocation iteration.
         UpdateOptionsForAutoFunctionInvocation(ref options!, response.Messages.Last().ToChatMessageContent(), isStreaming: false);
 
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
-        (bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded) result;
-        Debug.Assert(functionCallContents.Count > 0, "Expected at least one function call.");
-        var shouldTerminate = false;
-
-        var captureCurrentIterationExceptions = consecutiveErrorCount < this.MaximumConsecutiveErrorsPerRequest;
-
-        // Process all functions. If there's more than one and concurrent invocation is enabled, do so in parallel.
-        if (functionCallContents.Count == 1)
-        {
-            FunctionInvocationResult functionResult = await this.ProcessFunctionCallAsync(
-                messages, options, functionCallContents, iteration, 0, captureCurrentIterationExceptions, isStreaming, cancellationToken).ConfigureAwait(false);
-
-            IList<ChatMessage> added = this.CreateResponseMessages([functionResult]);
-            this.ThrowIfNoFunctionResultsAdded(added);
-            this.UpdateConsecutiveErrorCountOrThrow(added, ref consecutiveErrorCount);
-
-            messages.AddRange(added);
-            result = (functionResult.ShouldTerminate, consecutiveErrorCount, added);
-        }
-        else
-        {
-            List<FunctionInvocationResult> results = [];
-
-            var terminationRequested = false;
-            if (this.AllowConcurrentInvocation)
-            {
-                // Rather than awaiting each function before invoking the next, invoke all of them
-                // and then await all of them. We avoid forcibly introducing parallelism via Task.Run,
-                // but if a function invocation completes asynchronously, its processing can overlap
-                // with the processing of other the other invocation invocations.
-                results.AddRange(await Task.WhenAll(
-                    from i in Enumerable.Range(0, functionCallContents.Count)
-                    select this.ProcessFunctionCallAsync(
-                        messages, options, functionCallContents,
-                        iteration, i, captureExceptions: true, isStreaming, cancellationToken)).ConfigureAwait(false));
-
-                terminationRequested = results.Any(r => r.ShouldTerminate);
-            }
-            else
-            {
-                // Invoke each function serially.
-                for (int i = 0; i < functionCallContents.Count; i++)
-                {
-                    var functionResult = await this.ProcessFunctionCallAsync(
-                        messages, options, functionCallContents,
-                        iteration, i, captureCurrentIterationExceptions, isStreaming, cancellationToken).ConfigureAwait(false);
-
-                    results.Add(functionResult);
-
-                    // Differently from the original FunctionInvokingChatClient, as soon the termination is requested,
-                    // we stop and don't continue, if that can be parametrized, this override won't be needed
-                    if (functionResult.ShouldTerminate)
-                    {
-                        shouldTerminate = true;
-                        terminationRequested = true;
-                        break;
-                    }
-                }
-            }
-
-            IList<ChatMessage> added = this.CreateResponseMessages(results);
-            this.ThrowIfNoFunctionResultsAdded(added);
-            this.UpdateConsecutiveErrorCountOrThrow(added, ref consecutiveErrorCount);
-
-            messages.AddRange(added);
-
-            if (!terminationRequested)
-            {
-                // If any function requested termination, we'll terminate.
-                shouldTerminate = false;
-                foreach (FunctionInvocationResult fir in results)
-                {
-                    shouldTerminate = shouldTerminate || fir.ShouldTerminate;
-                }
-            }
-
-            result = (shouldTerminate, consecutiveErrorCount, added);
-        }
+        var result = await base.ProcessFunctionCallsAsync(response, messages, options, functionCallContents, iteration, consecutiveErrorCount, isStreaming, cancellationToken).ConfigureAwait(false);
 
         // Clear the auto function invocation options.
         ClearOptionsForAutoFunctionInvocation(ref options);
@@ -150,7 +72,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
 
     /// <inheritdoc/>
     protected override async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
-        List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> callContents,
+        IList<ChatMessage> messages, ChatOptions options, IList<FunctionCallContent> callContents,
         int iteration, int functionCallIndex, bool captureExceptions, bool isStreaming, CancellationToken cancellationToken)
     {
         var callContent = callContents[functionCallIndex];
@@ -177,7 +99,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
         object? result;
         try
         {
-            result = await this.InvokeFunctionAsync(context, cancellationToken).ConfigureAwait(false);
+            result = await base.InvokeFunctionAsync(context, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e) when (!cancellationToken.IsCancellationRequested)
         {
@@ -200,49 +122,6 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
             callContent,
             result,
             exception: null);
-    }
-
-    /// <summary>Creates one or more response messages for function invocation results.</summary>
-    /// <param name="results">Information about the function call invocations and results.</param>
-    /// <returns>A list of all chat messages created from <paramref name="results"/>.</returns>
-    private IList<ChatMessage> CreateResponseMessages(List<FunctionInvocationResult> results)
-    {
-        var contents = new List<AIContent>(results.Count);
-        for (int i = 0; i < results.Count; i++)
-        {
-            contents.Add(CreateFunctionResultContent(results[i]));
-        }
-
-        return [new(ChatRole.Tool, contents)];
-
-        FunctionResultContent CreateFunctionResultContent(FunctionInvocationResult result)
-        {
-            Verify.NotNull(result);
-
-            object? functionResult;
-            if (result.Status == FunctionInvocationStatus.RanToCompletion)
-            {
-                functionResult = result.Result ?? "Success: Function completed.";
-            }
-            else
-            {
-                string message = result.Status switch
-                {
-                    FunctionInvocationStatus.NotFound => $"Error: Requested function \"{result.CallContent.Name}\" not found.",
-                    FunctionInvocationStatus.Exception => "Error: Function failed.",
-                    _ => "Error: Unknown error.",
-                };
-
-                if (this.IncludeDetailedErrors && result.Exception is not null)
-                {
-                    message = $"{message} Exception: {result.Exception.Message}";
-                }
-
-                functionResult = message;
-            }
-
-            return new FunctionResultContent(result.CallContent.CallId, functionResult) { Exception = result.Exception };
-        }
     }
 
     /// <summary>
@@ -288,7 +167,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
     }
 
     /// <inheritdoc/>
-    protected override async Task<(FunctionInvocationContextV2 context, object? result)> TryInvokeFunctionAsync(FunctionInvocationContextV2 context, CancellationToken cancellationToken)
+    protected override async Task<(FunctionInvocationContext context, object? result)> InvokeFunctionCoreAsync(Microsoft.Extensions.AI.FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         object? result = null;
         if (context is AutoFunctionInvocationContext autoContext)
