@@ -51,7 +51,7 @@ const string EmbeddingModelDeploymentName = "text-embedding-3-small";
 const string ChatModelDeploymentName = "gpt-4";
 
 // Complete with your Azure SQL connection string
-const string ConnectionString = "Data Source=.database.windows.net;Initial Catalog=;Authentication=Active Directory Default;Connection Timeout=30";
+const string ConnectionString = "Data Source=`<your-prefix-here>`.database.windows.net;Initial Catalog=`<your-database-here>`;Authentication=Active Directory Default;Connection Timeout=30";
 
 // Table where memories will be stored
 const string TableName = "ChatMemories";
