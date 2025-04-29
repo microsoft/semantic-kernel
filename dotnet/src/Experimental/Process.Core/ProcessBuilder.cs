@@ -210,9 +210,29 @@ public sealed class ProcessBuilder : ProcessStepBuilder
             throw new ArgumentException("AgentDefinition.Name cannot be null or empty.", nameof(agentDefinition));
         }
 
-        ProcessAgentBuilder stepBuilder = new ProcessAgentBuilder(agentDefinition);
+        ProcessAgentBuilder stepBuilder = new(agentDefinition);
         return this.AddStep(stepBuilder, aliases);
     }
+
+    /// <summary>
+    /// Adds a step to the process from an agent.
+    /// </summary>
+    /// <param name="agent"></param>
+    /// <param name="onComplete"></param>
+    /// <param name="onError"></param>
+    /// <param name="aliases"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    //public ProcessStepBuilder AddStepFromAgent(Agent agent, Action<object?, KernelProcessStepContext> onComplete, Action<object?, KernelProcessStepContext> onError, IReadOnlyList<string>? aliases = null)
+    //{
+    //    Verify.NotNull(agent, nameof(agent));
+    //    if (string.IsNullOrWhiteSpace(agent.Id))
+    //    {
+    //        throw new ArgumentException("Agent.Id cannot be null or empty.", nameof(agent));
+    //    }
+    //    ProcessStepBuilder stepBuilder = new ProcessAgentBuilder(agent);
+    //    return this.AddStep(stepBuilder, aliases);
+    //}
 
     /// <summary>
     /// Adds a step to the process that represents the end of the process.

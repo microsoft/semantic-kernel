@@ -8,6 +8,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.VisualStudio.Threading;
@@ -227,15 +228,11 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         ExternalMessageChannel = this.ExternalMessageChannel,
                     };
             }
-            //else if (step is KernelProcessStepInfo stepInfo)
-            //{
-            //    localStep =
-            //        new LocalStep(stepInfo, this._kernel)
-            //        {
-            //            ParentProcessId = this.Id,
-            //            EventProxy = this.EventProxy,
-            //        };
-            //}
+            else if (step is KernelProcessAgentStep agentStep)
+            {
+                localStep =
+                    new LocalAgentStep(agentStep, this.AgentFactory, this._kernel, this.ParentProcessId);
+            }
             else
             {
                 // The current step should already have an Id.

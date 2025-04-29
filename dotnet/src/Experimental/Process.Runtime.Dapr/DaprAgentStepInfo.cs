@@ -14,6 +14,7 @@ namespace Microsoft.SemanticKernel;
 [KnownType(typeof(KernelProcessStepState))]
 [KnownType(typeof(KernelProcessStepState<KernelProcessAgentExecutorState>))]
 [KnownType(typeof(KernelProcessAgentExecutorState))]
+[KnownType(typeof(ProcessAgentActions))]
 public sealed record DaprAgentStepInfo : DaprStepInfo
 {
     /// <summary>
@@ -22,14 +23,9 @@ public sealed record DaprAgentStepInfo : DaprStepInfo
     public required AgentDefinition AgentDefinition { get; init; }
 
     /// <summary>
-    /// The optional handler group for OnComplete events.
+    /// The handler group for code-based actions.
     /// </summary>
-    public KernelProcessDeclarativeConditionHandler? OnComplete { get; init; }
-
-    /// <summary>
-    /// The optional handler group for OnError events.
-    /// </summary>
-    public KernelProcessDeclarativeConditionHandler? OnError { get; init; }
+    public required ProcessAgentActions Actions { get; init; }
 
     /// <summary>
     /// The inputs for this agent.
@@ -49,7 +45,7 @@ public sealed record DaprAgentStepInfo : DaprStepInfo
             throw new KernelException($"Unable to read state from agent step with name '{this.State.Name}', Id '{this.State.Id}' and type {this.State.GetType()}.");
         }
 
-        return new KernelProcessAgentStep(this.AgentDefinition, this.State, this.Edges);
+        return new KernelProcessAgentStep(this.AgentDefinition, this.Actions, this.State, this.Edges);
     }
 
     /// <summary>
@@ -70,8 +66,7 @@ public sealed record DaprAgentStepInfo : DaprStepInfo
             Edges = agentStepInfo.Edges,
             AgentDefinition = kernelAgentStepInfo.AgentDefinition,
             Inputs = kernelAgentStepInfo.Inputs,
-            OnComplete = kernelAgentStepInfo.OnComplete,
-            OnError = kernelAgentStepInfo.OnError,
+            Actions = kernelAgentStepInfo.Actions,
         };
     }
 }

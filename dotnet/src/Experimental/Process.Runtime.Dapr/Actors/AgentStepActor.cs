@@ -35,7 +35,7 @@ internal sealed class AgentStepActor : StepActor, IAgentStep
 
     internal override KernelProcessStep GetStepInstance()
     {
-        return (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._innerStepType!, this._agentFactory);
+        return (KernelProcessAgentExecutor)ActivatorUtilities.CreateInstance(this._kernel.Services, this._innerStepType!, this._agentFactory, this._daprAgentStepInfo.ToKernelProcessAgentStep());
     }
 
     internal override Dictionary<string, Dictionary<string, object?>?> GenerateInitialInputs()

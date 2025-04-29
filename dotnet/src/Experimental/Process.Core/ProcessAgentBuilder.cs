@@ -32,6 +32,16 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// <summary>
     /// The optional handler group for OnComplete events.
     /// </summary>
+    public Action<object?, KernelProcessStepContext>? OnCompleteCodeAction { get; init; }
+
+    /// <summary>
+    /// The optional handler group for OnError events.
+    /// </summary>
+    public Action<object?, KernelProcessStepContext>? OnErrorCodeAction { get; init; }
+
+    /// <summary>
+    /// The optional handler group for OnComplete events.
+    /// </summary>
     public DeclarativeEventHandlerGroupBuilder? OnCompleteBuilder { get; internal set; }
 
     /// <summary>
@@ -85,12 +95,22 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
 
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
+        var agentActions = new ProcessAgentActions(
+            codeActions: new ProcessAgentCodeActions
+            {
+                OnComplete = this.OnCompleteCodeAction,
+                OnError = this.OnCompleteCodeAction
+            },
+            declarativeActions: new ProcessAgentDeclarativeActions
+            {
+                OnComplete = this.OnCompleteBuilder?.Build(),
+                OnError = this.OnErrorBuilder?.Build()
+            });
+
         var state = new KernelProcessStepState<KernelProcessAgentExecutorState>(this.Name, "1.0", this.Id);
 
-        return new KernelProcessAgentStep(this._agentDefinition, state, builtEdges)
+        return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges)
         {
-            OnComplete = this.OnCompleteBuilder?.Build(),
-            OnError = this.OnErrorBuilder?.Build(),
             Inputs = this.Inputs,
         };
     }
