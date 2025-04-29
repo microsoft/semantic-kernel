@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if NETSTANDARD2_0
+#if !NET8_0_OR_GREATER
 
 // Polyfill for using Index and Range with .NET Standard 2.0 (see https://www.meziantou.net/how-to-use-csharp-8-indices-and-ranges-in-dotnet-standard-2-0-and-dotn.htm)
 

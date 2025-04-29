@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.InMemory;
@@ -23,6 +25,11 @@ public sealed class InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
 
     /// <summary>
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+
+    /// <summary>
     /// An optional function that can be used to look up vectors from a record.
     /// </summary>
     /// <remarks>
@@ -30,6 +37,7 @@ public sealed class InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>
     /// using reflection. This delegate can be used to provide a custom implementation if
     /// the vector properties are located somewhere else on the record.
     /// </remarks>
+    [Experimental("MEVD9000")]
     public InMemoryVectorStoreVectorResolver<TRecord>? VectorResolver { get; init; } = null;
 
     /// <summary>
@@ -40,5 +48,6 @@ public sealed class InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>
     /// using reflection. This delegate can be used to provide a custom implementation if
     /// the key property is located somewhere else on the record.
     /// </remarks>
+    [Experimental("MEVD9000")]
     public InMemoryVectorStoreKeyResolver<TKey, TRecord>? KeyResolver { get; init; } = null;
 }

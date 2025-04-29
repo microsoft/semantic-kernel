@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
-    <NoWarn>$(NoWarn);CA2007;CS0612;VSTHRD111;SKEXP0070;SKEXP0050;SKEXP0001;SKEXP0020</NoWarn>
+    <NoWarn>$(NoWarn);CA2007;CS0612;VSTHRD111;SKEXP0070;SKEXP0050;SKEXP0001</NoWarn>
     <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
   </PropertyGroup>
 

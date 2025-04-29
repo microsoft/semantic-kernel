@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Data;
-using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Sqlite.UnitTests;
@@ -18,23 +15,11 @@ public sealed class SqliteServiceCollectionExtensionsTests
 {
     private readonly IServiceCollection _serviceCollection = new ServiceCollection();
 
-    [Theory]
-    [InlineData(ConnectionState.Open)]
-    [InlineData(ConnectionState.Closed)]
-    public void AddVectorStoreRegistersClass(ConnectionState connectionState)
+    [Fact]
+    public void AddVectorStoreRegistersClass()
     {
-        // Arrange
-        var expectedOpenCalls = connectionState == ConnectionState.Closed ? 1 : 0;
-
-        var mockConnection = new Mock<SqliteConnection>();
-
-        mockConnection.Setup(l => l.State).Returns(connectionState);
-        mockConnection.Setup(l => l.Open());
-
-        this._serviceCollection.AddTransient<SqliteConnection>((_) => mockConnection.Object);
-
         // Act
-        this._serviceCollection.AddSqliteVectorStore();
+        this._serviceCollection.AddSqliteVectorStore("Data Source=:memory:");
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
         var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
@@ -42,78 +27,42 @@ public sealed class SqliteServiceCollectionExtensionsTests
         // Assert
         Assert.NotNull(vectorStore);
         Assert.IsType<SqliteVectorStore>(vectorStore);
-
-        mockConnection.Verify(l => l.Open(), Times.Exactly(expectedOpenCalls));
     }
 
-    [Theory]
-    [InlineData(ConnectionState.Open)]
-    [InlineData(ConnectionState.Closed)]
-    public void AddVectorStoreRecordCollectionWithStringKeyRegistersClass(ConnectionState connectionState)
+    [Fact]
+    public void AddVectorStoreRecordCollectionWithStringKeyRegistersClass()
     {
-        // Arrange
-        var expectedOpenCalls = connectionState == ConnectionState.Closed ? 1 : 0;
-
-        var mockConnection = new Mock<SqliteConnection>();
-
-        mockConnection.SetupSequence(l => l.State)
-            .Returns(connectionState)
-            .Returns(ConnectionState.Open);
-
-        mockConnection.Setup(l => l.Open());
-
-        this._serviceCollection.AddTransient<SqliteConnection>((_) => mockConnection.Object);
-
         // Act
-        this._serviceCollection.AddSqliteVectorStoreRecordCollection<string, TestRecord>("testcollection");
+        this._serviceCollection.AddSqliteVectorStoreRecordCollection<string, TestRecord>("testcollection", "Data Source=:memory:");
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
         // Assert
         var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<SqliteVectorStoreRecordCollection<TestRecord>>(collection);
+        Assert.IsType<SqliteVectorStoreRecordCollection<string, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<SqliteVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
-
-        mockConnection.Verify(l => l.Open(), Times.Exactly(expectedOpenCalls));
+        Assert.IsType<SqliteVectorStoreRecordCollection<string, TestRecord>>(vectorizedSearch);
     }
 
-    [Theory]
-    [InlineData(ConnectionState.Open)]
-    [InlineData(ConnectionState.Closed)]
-    public void AddVectorStoreRecordCollectionWithNumericKeyRegistersClass(ConnectionState connectionState)
+    [Fact]
+    public void AddVectorStoreRecordCollectionWithNumericKeyRegistersClass()
     {
-        // Arrange
-        var expectedOpenCalls = connectionState == ConnectionState.Closed ? 1 : 0;
-
-        var mockConnection = new Mock<SqliteConnection>();
-
-        mockConnection.SetupSequence(l => l.State)
-            .Returns(connectionState)
-            .Returns(ConnectionState.Open);
-
-        mockConnection.Setup(l => l.Open());
-
-        this._serviceCollection.AddTransient<SqliteConnection>((_) => mockConnection.Object);
-
         // Act
-        this._serviceCollection.AddSqliteVectorStoreRecordCollection<ulong, TestRecord>("testcollection");
+        this._serviceCollection.AddSqliteVectorStoreRecordCollection<ulong, TestRecord>("testcollection", "Data Source=:memory:");
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
         // Assert
         var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<ulong, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<SqliteVectorStoreRecordCollection<TestRecord>>(collection);
+        Assert.IsType<SqliteVectorStoreRecordCollection<ulong, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<SqliteVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
-
-        mockConnection.Verify(l => l.Open(), Times.Exactly(expectedOpenCalls));
+        Assert.IsType<SqliteVectorStoreRecordCollection<ulong, TestRecord>>(vectorizedSearch);
     }
 
     #region private

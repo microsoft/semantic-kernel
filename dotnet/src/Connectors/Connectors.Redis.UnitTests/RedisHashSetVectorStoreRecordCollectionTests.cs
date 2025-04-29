@@ -15,7 +15,7 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 
 /// <summary>
-/// Contains tests for the <see cref="RedisHashSetVectorStoreRecordCollection{TRecord}"/> class.
+/// Contains tests for the <see cref="RedisHashSetVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 public class RedisHashSetVectorStoreRecordCollectionTests
 {
@@ -28,6 +28,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     public RedisHashSetVectorStoreRecordCollectionTests()
     {
         this._redisDatabaseMock = new Mock<IDatabase>(MockBehavior.Strict);
+        this._redisDatabaseMock.Setup(l => l.Database).Returns(0);
 
         var batchMock = new Mock<IBatch>();
         this._redisDatabaseMock.Setup(x => x.CreateBatch(It.IsAny<object>())).Returns(batchMock.Object);
@@ -47,7 +48,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         {
             SetupExecuteMock(this._redisDatabaseMock, new RedisServerException("Unknown index name"));
         }
-        var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel>(
             this._redisDatabaseMock.Object,
             collectionName);
 
@@ -70,7 +71,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     {
         // Arrange.
         SetupExecuteMock(this._redisDatabaseMock, string.Empty);
-        var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(this._redisDatabaseMock.Object, TestCollectionName);
+        var sut = new RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel>(this._redisDatabaseMock.Object, TestCollectionName);
 
         // Act.
         await sut.CreateCollectionAsync();
@@ -216,7 +217,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
-        var actual = await sut.GetBatchAsync(
+        var actual = await sut.GetAsync(
             [TestRecordKey1, TestRecordKey2],
             new() { IncludeVectors = true }).ToListAsync();
 
@@ -234,55 +235,6 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         Assert.Equal("data 2", actual[1].OriginalNameData);
         Assert.Equal("data 2", actual[1].Data);
         Assert.Equal(new float[] { 5, 6, 7, 8 }, actual[1].Vector!.Value.ToArray());
-    }
-
-    [Fact]
-    public async Task CanGetRecordWithCustomMapperAsync()
-    {
-        // Arrange.
-        var hashEntries = new HashEntry[]
-        {
-            new("OriginalNameData", "data 1"),
-            new("data_storage_name", "data 1"),
-            new("vector_storage_name", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).ToArray())
-        };
-        this._redisDatabaseMock.Setup(x => x.HashGetAllAsync(It.IsAny<RedisKey>(), CommandFlags.None)).ReturnsAsync(hashEntries);
-
-        // Arrange mapper mock from JsonNode to data model.
-        var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel, (string key, HashEntry[] hashEntries)>>(MockBehavior.Strict);
-        mapperMock.Setup(
-            x => x.MapFromStorageToDataModel(
-                It.IsAny<(string key, HashEntry[] hashEntries)>(),
-                It.IsAny<StorageToDataModelMapperOptions>()))
-            .Returns(CreateModel(TestRecordKey1, true));
-
-        // Arrange target with custom mapper.
-        var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
-            this._redisDatabaseMock.Object,
-            TestCollectionName,
-            new()
-            {
-                HashEntriesCustomMapper = mapperMock.Object
-            });
-
-        // Act
-        var actual = await sut.GetAsync(
-            TestRecordKey1,
-            new() { IncludeVectors = true });
-
-        // Assert
-        Assert.NotNull(actual);
-        Assert.Equal(TestRecordKey1, actual.Key);
-        Assert.Equal("data 1", actual.OriginalNameData);
-        Assert.Equal("data 1", actual.Data);
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector!.Value.ToArray());
-
-        mapperMock
-            .Verify(
-                x => x.MapFromStorageToDataModel(
-                    It.Is<(string key, HashEntry[] hashEntries)>(x => x.key == TestRecordKey1),
-                    It.Is<StorageToDataModelMapperOptions>(x => x.IncludeVectors)),
-                Times.Once);
     }
 
     [Theory]
@@ -311,7 +263,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
-        await sut.DeleteBatchAsync([TestRecordKey1, TestRecordKey2]);
+        await sut.DeleteAsync([TestRecordKey1, TestRecordKey2]);
 
         // Assert
         this._redisDatabaseMock.Verify(x => x.KeyDeleteAsync(TestRecordKey1, CommandFlags.None), Times.Once);
@@ -353,7 +305,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act
-        var actual = await sut.UpsertBatchAsync([model1, model2]).ToListAsync();
+        var actual = await sut.UpsertAsync([model1, model2]);
 
         // Assert
         Assert.NotNull(actual);
@@ -373,46 +325,6 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                 It.Is<HashEntry[]>(x => x.Length == 3 && x[0].Name == "OriginalNameData" && x[1].Name == "data_storage_name" && x[2].Name == "vector_storage_name"),
                 CommandFlags.None),
             Times.Once);
-    }
-
-    [Fact]
-    public async Task CanUpsertRecordWithCustomMapperAsync()
-    {
-        // Arrange.
-        this._redisDatabaseMock.Setup(x => x.HashSetAsync(It.IsAny<RedisKey>(), It.IsAny<HashEntry[]>(), CommandFlags.None)).Returns(Task.CompletedTask);
-
-        // Arrange mapper mock from data model to JsonNode.
-        var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel, (string key, HashEntry[] hashEntries)>>(MockBehavior.Strict);
-        var hashEntries = new HashEntry[]
-        {
-            new("OriginalNameData", "data 1"),
-            new("data_storage_name", "data 1"),
-            new("vector_storage_name", "[1,2,3,4]"),
-            new("NotAnnotated", RedisValue.Null)
-        };
-        mapperMock
-            .Setup(x => x.MapFromDataToStorageModel(It.IsAny<SinglePropsModel>()))
-            .Returns((TestRecordKey1, hashEntries));
-
-        // Arrange target with custom mapper.
-        var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
-            this._redisDatabaseMock.Object,
-            TestCollectionName,
-            new()
-            {
-                HashEntriesCustomMapper = mapperMock.Object
-            });
-
-        var model = CreateModel(TestRecordKey1, true);
-
-        // Act
-        await sut.UpsertAsync(model);
-
-        // Assert
-        mapperMock
-            .Verify(
-                x => x.MapFromDataToStorageModel(It.Is<SinglePropsModel>(x => x == model)),
-                Times.Once);
     }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
@@ -446,15 +358,15 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel.Data), "data 1");
 
         // Act.
-        var actual = await sut.VectorizedSearchAsync(
+        var results = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
+            top: 5,
             new()
             {
                 IncludeVectors = includeVectors,
                 OldFilter = filter,
-                Top = 5,
                 Skip = 2
-            });
+            }).ToListAsync();
 
         // Assert.
         var expectedArgsPart1 = new object[]
@@ -494,7 +406,6 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                     It.Is<object[]>(x => x.Where(y => !(y is byte[])).SequenceEqual(expectedArgs.Where(y => !(y is byte[]))))),
                 Times.Once);
 
-        var results = await actual.Results.ToListAsync();
         Assert.Single(results);
         Assert.Equal(TestRecordKey1, results.First().Record.Key);
         Assert.Equal(0.25d, results.First().Score);
@@ -511,6 +422,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
     /// In this case, the expectation is that a custom mapper will be provided to map between the
@@ -524,22 +436,23 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+                new VectorStoreRecordKeyProperty(nameof(SinglePropsModel.Key), typeof(string)),
+                new VectorStoreRecordDataProperty(nameof(SinglePropsModel.OriginalNameData), typeof(string)),
+                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel.Vector), typeof(ReadOnlyMemory<float>?), 4),
             }
         };
 
         // Act.
-        var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
-            new() { VectorStoreRecordDefinition = definition, HashEntriesCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel, (string key, HashEntry[] hashEntries)>>() });
+            new() { VectorStoreRecordDefinition = definition });
     }
+#pragma warning restore CS0618
 
-    private RedisHashSetVectorStoreRecordCollection<SinglePropsModel> CreateRecordCollection(bool useDefinition)
+    private RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel> CreateRecordCollection(bool useDefinition)
     {
-        return new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
+        return new RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()
@@ -618,7 +531,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)),
             new VectorStoreRecordDataProperty("Data", typeof(string)) { StoragePropertyName = "data_storage_name" },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector_storage_name", DistanceFunction = DistanceFunction.CosineDistance }
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector_storage_name", DistanceFunction = DistanceFunction.CosineDistance }
         ]
     };
 
@@ -627,15 +540,15 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string OriginalNameData { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_data_json_name")]
-        [VectorStoreRecordData(IsFilterable = true, StoragePropertyName = "data_storage_name")]
+        [VectorStoreRecordData(IsIndexed = true, StoragePropertyName = "data_storage_name")]
         public string Data { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_vector_json_name")]
-        [VectorStoreRecordVector(4, DistanceFunction.CosineDistance, StoragePropertyName = "vector_storage_name")]
+        [VectorStoreRecordVector(4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "vector_storage_name")]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

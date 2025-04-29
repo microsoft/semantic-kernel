@@ -7,31 +7,35 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 internal class AzureAISearchFilterTranslator
 {
-    private IReadOnlyDictionary<string, string> _storagePropertyNames = null!;
+    private VectorStoreRecordModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
     private readonly StringBuilder _filter = new();
 
     private static readonly char[] s_searchInDefaultDelimiter = [' ', ','];
 
-    internal string Translate(LambdaExpression lambdaExpression, IReadOnlyDictionary<string, string> storagePropertyNames)
+    internal string Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
     {
         Debug.Assert(this._filter.Length == 0);
 
-        this._storagePropertyNames = storagePropertyNames;
+        this._model = model;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        this.Translate(lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = true };
+        var preprocessedExpression = preprocessor.Visit(lambdaExpression.Body);
+
+        this.Translate(preprocessedExpression);
+
         return this._filter.ToString();
     }
 
@@ -138,26 +142,24 @@ internal class AzureAISearchFilterTranslator
 
     private void TranslateMember(MemberExpression memberExpression)
     {
-        switch (memberExpression)
+        if (this.TryBindProperty(memberExpression, out var property))
         {
-            case var _ when this.TryGetField(memberExpression, out var column):
-                this._filter.Append(column); // TODO: Escape
-                return;
-
-            // Identify captured lambda variables, inline them as constants
-            case var _ when TryGetCapturedValue(memberExpression, out var capturedValue):
-                this.GenerateLiteral(capturedValue);
-                return;
-
-            default:
-                throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
+            this._filter.Append(property.StorageName); // TODO: Escape
+            return;
         }
+
+        throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
         switch (methodCall)
         {
+            // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
+            case MethodCallExpression when this.TryBindProperty(methodCall, out var property):
+                this._filter.Append(property.StorageName); // TODO: Escape
+                return;
+
             // Enumerable.Contains()
             case { Method.Name: nameof(Enumerable.Contains), Arguments: [var source, var item] } contains
                 when contains.Method.DeclaringType == typeof(Enumerable):
@@ -188,7 +190,7 @@ internal class AzureAISearchFilterTranslator
         switch (source)
         {
             // Contains over array field (r => r.Strings.Contains("foo"))
-            case var _ when this.TryGetField(source, out _):
+            case var _ when this.TryBindProperty(source, out _):
                 this.Translate(source);
                 this._filter.Append("/any(t: t eq ");
                 this.Translate(item);
@@ -201,9 +203,14 @@ internal class AzureAISearchFilterTranslator
 
                 for (var i = 0; i < newArray.Expressions.Count; i++)
                 {
-                    if (!TryGetConstant(newArray.Expressions[i], out var elementValue))
+                    if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })
                     {
                         throw new NotSupportedException("Invalid element in array");
+                    }
+
+                    if (elementValue is not string)
+                    {
+                        throw new NotSupportedException("Contains over non-string arrays is not supported");
                     }
 
                     elements[i] = elementValue;
@@ -212,9 +219,7 @@ internal class AzureAISearchFilterTranslator
                 ProcessInlineEnumerable(elements, item);
                 return;
 
-            // Contains over captured enumerable (we inline)
-            case var _ when TryGetConstant(source, out var constantEnumerable)
-                            && constantEnumerable is IEnumerable enumerable and not string:
+            case ConstantExpression { Value: IEnumerable enumerable and not string }:
                 ProcessInlineEnumerable(enumerable, item);
                 return;
 
@@ -224,11 +229,6 @@ internal class AzureAISearchFilterTranslator
 
         void ProcessInlineEnumerable(IEnumerable elements, Expression item)
         {
-            if (item.Type != typeof(string))
-            {
-                throw new NotSupportedException("Contains over non-string arrays is not supported");
-            }
-
             this._filter.Append("search.in(");
             this.Translate(item);
             this._filter.Append(", '");
@@ -311,56 +311,59 @@ RestartLoop:
                 this._filter.Append(')');
                 return;
 
+            // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
+            case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
+                this._filter.Append(property.StorageName); // TODO: Escape
+                return;
+
             default:
                 throw new NotSupportedException("Unsupported unary expression node type: " + unary.NodeType);
         }
     }
 
-    private bool TryGetField(Expression expression, [NotNullWhen(true)] out string? field)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
     {
-        if (expression is MemberExpression member && member.Expression == this._recordParameter)
+        Type? convertedClrType = null;
+
+        if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
         {
-            if (!this._storagePropertyNames.TryGetValue(member.Member.Name, out field))
+            expression = unary.Operand;
+            convertedClrType = unary.Type;
+        }
+
+        var modelName = expression switch
+        {
+            // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
+            MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
+                => memberExpression.Member.Name,
+
+            // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
+            MethodCallExpression
             {
-                throw new InvalidOperationException($"Property name '{member.Member.Name}' provided as part of the filter clause is not a valid property name.");
-            }
+                Method: { Name: "get_Item", DeclaringType: var declaringType },
+                Arguments: [ConstantExpression { Value: string keyName }]
+            } methodCall when methodCall.Object == this._recordParameter && declaringType == typeof(Dictionary<string, object?>)
+                => keyName,
 
-            return true;
-        }
+            _ => null
+        };
 
-        field = null;
-        return false;
-    }
-
-    private static bool TryGetCapturedValue(Expression expression, out object? capturedValue)
-    {
-        if (expression is MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
-            && constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
-            && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true))
+        if (modelName is null)
         {
-            capturedValue = fieldInfo.GetValue(constant.Value);
-            return true;
+            property = null;
+            return false;
         }
 
-        capturedValue = null;
-        return false;
-    }
-
-    private static bool TryGetConstant(Expression expression, out object? constantValue)
-    {
-        switch (expression)
+        if (!this._model.PropertyMap.TryGetValue(modelName, out property))
         {
-            case ConstantExpression { Value: var v }:
-                constantValue = v;
-                return true;
-
-            case var _ when TryGetCapturedValue(expression, out var capturedValue):
-                constantValue = capturedValue;
-                return true;
-
-            default:
-                constantValue = null;
-                return false;
+            throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
         }
+
+        if (convertedClrType is not null && convertedClrType != property.Type)
+        {
+            throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convertedClrType.Name}', but its configured type is '{property.Type.Name}'.");
+        }
+
+        return true;
     }
 }

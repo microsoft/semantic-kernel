@@ -6,28 +6,31 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 internal class RedisFilterTranslator
 {
-    private IReadOnlyDictionary<string, string> _storagePropertyNames = null!;
+    private VectorStoreRecordModel _model = null!;
     private ParameterExpression _recordParameter = null!;
     private readonly StringBuilder _filter = new();
 
-    internal string Translate(LambdaExpression lambdaExpression, IReadOnlyDictionary<string, string> storagePropertyNames)
+    internal string Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
     {
         Debug.Assert(this._filter.Length == 0);
 
-        this._storagePropertyNames = storagePropertyNames;
+        this._model = model;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        this.Translate(lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = true };
+        var preprocessedExpression = preprocessor.Visit(lambdaExpression.Body);
+
+        this.Translate(preprocessedExpression);
         return this._filter.ToString();
     }
 
@@ -67,7 +70,7 @@ internal class RedisFilterTranslator
                 return;
 
             // MemberExpression is generally handled within e.g. TranslateEqual; this is used to translate direct bool inside filter (e.g. Filter => r => r.Bool)
-            case MemberExpression member when member.Type == typeof(bool) && this.TryTranslateFieldAccess(member, out _):
+            case MemberExpression member when member.Type == typeof(bool) && this.TryBindProperty(member, out _):
             {
                 this.TranslateEqualityComparison(Expression.Equal(member, Expression.Constant(true)));
                 return;
@@ -92,8 +95,7 @@ internal class RedisFilterTranslator
         bool TryProcessEqualityComparison(Expression first, Expression second)
         {
             // TODO: Nullable
-            if (this.TryTranslateFieldAccess(first, out var storagePropertyName)
-                && TryGetConstant(second, out var constantValue))
+            if (this.TryBindProperty(first, out var property) && second is ConstantExpression { Value: var constantValue })
             {
                 // Numeric negation has a special syntax (!=), for the rest we nest in a NOT
                 if (binary.NodeType is ExpressionType.NotEqual && constantValue is not int or long or float or double)
@@ -103,17 +105,17 @@ internal class RedisFilterTranslator
                 }
 
                 // https://redis.io/docs/latest/develop/interact/search-and-query/query/exact-match
-                this._filter.Append('@').Append(storagePropertyName);
+                this._filter.Append('@').Append(property.StorageName);
 
                 this._filter.Append(
                     binary.NodeType switch
                     {
                         ExpressionType.Equal when constantValue is int or long or float or double => $" == {constantValue}",
                         ExpressionType.Equal when constantValue is string stringValue
-#if NETSTANDARD2_0
-                            => $$""":{"{{stringValue.Replace("\"", "\"\"")}}"}""",
-#else
+#if NET8_0_OR_GREATER
                             => $$""":{"{{stringValue.Replace("\"", "\\\"", StringComparison.Ordinal)}}"}""",
+#else
+                            => $$""":{"{{stringValue.Replace("\"", "\"\"")}}"}""",
 #endif
                         ExpressionType.Equal when constantValue is null => throw new NotSupportedException("Null value type not supported"), // TODO
 
@@ -175,13 +177,11 @@ internal class RedisFilterTranslator
     private void TranslateContains(Expression source, Expression item)
     {
         // Contains over tag field
-        if (this.TryTranslateFieldAccess(source, out var storagePropertyName)
-            && TryGetConstant(item, out var itemConstant)
-            && itemConstant is string stringConstant)
+        if (this.TryBindProperty(source, out var property) && item is ConstantExpression { Value: string stringConstant })
         {
             this._filter
                 .Append('@')
-                .Append(storagePropertyName)
+                .Append(property.StorageName)
                 .Append(":{")
                 .Append(stringConstant)
                 .Append('}');
@@ -191,40 +191,49 @@ internal class RedisFilterTranslator
         throw new NotSupportedException("Contains supported only over tag field");
     }
 
-    private bool TryTranslateFieldAccess(Expression expression, [NotNullWhen(true)] out string? storagePropertyName)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
     {
-        if (expression is MemberExpression memberExpression && memberExpression.Expression == this._recordParameter)
+        Type? convertedClrType = null;
+
+        if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
         {
-            if (!this._storagePropertyNames.TryGetValue(memberExpression.Member.Name, out storagePropertyName))
+            expression = unary.Operand;
+            convertedClrType = unary.Type;
+        }
+
+        var modelName = expression switch
+        {
+            // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
+            MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
+                => memberExpression.Member.Name,
+
+            // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
+            MethodCallExpression
             {
-                throw new InvalidOperationException($"Property name '{memberExpression.Member.Name}' provided as part of the filter clause is not a valid property name.");
-            }
+                Method: { Name: "get_Item", DeclaringType: var declaringType },
+                Arguments: [ConstantExpression { Value: string keyName }]
+            } methodCall when methodCall.Object == this._recordParameter && declaringType == typeof(Dictionary<string, object?>)
+                => keyName,
 
-            return true;
-        }
+            _ => null
+        };
 
-        storagePropertyName = null;
-        return false;
-    }
-
-    private static bool TryGetConstant(Expression expression, out object? constantValue)
-    {
-        switch (expression)
+        if (modelName is null)
         {
-            case ConstantExpression { Value: var v }:
-                constantValue = v;
-                return true;
-
-            // This identifies compiler-generated closure types which contain captured variables.
-            case MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
-                when constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
-                     && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true):
-                constantValue = fieldInfo.GetValue(constant.Value);
-                return true;
-
-            default:
-                constantValue = null;
-                return false;
+            property = null;
+            return false;
         }
+
+        if (!this._model.PropertyMap.TryGetValue(modelName, out property))
+        {
+            throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
+        }
+
+        if (convertedClrType is not null && convertedClrType != property.Type)
+        {
+            throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convertedClrType.Name}', but its configured type is '{property.Type.Name}'.");
+        }
+
+        return true;
     }
 }

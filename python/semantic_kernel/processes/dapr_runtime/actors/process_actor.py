@@ -220,7 +220,7 @@ class ProcessActor(StepActor, ProcessInterface):
         if self.process.inner_step_python_type is None:
             raise ValueError("The inner step type must be defined before converting to DaprProcessInfo.")
 
-        process_state = KernelProcessState(name=self.name, id=self.id.id)
+        process_state = KernelProcessState(name=self.name, version=self.process.state.version, id=self.id.id)
 
         step_tasks = [step.to_dapr_step_info() for step in self.steps]
         steps_as_dicts = await asyncio.gather(*step_tasks)

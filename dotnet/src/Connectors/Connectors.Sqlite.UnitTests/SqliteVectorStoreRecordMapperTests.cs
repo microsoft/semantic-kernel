@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Xunit;
 
@@ -18,13 +19,13 @@ public sealed class SqliteVectorStoreRecordMapperTests
     {
         // Arrange
         var definition = GetRecordDefinition<string>();
-        var propertyReader = GetPropertyReader<TestRecord<string>>(definition);
+        var model = BuildModel(typeof(TestRecord<string>), definition);
         var dataModel = GetDataModel<string>("key");
 
-        var mapper = new SqliteVectorStoreRecordMapper<TestRecord<string>>(propertyReader);
+        var mapper = new SqliteVectorStoreRecordMapper<TestRecord<string>>(model);
 
         // Act
-        var result = mapper.MapFromDataToStorageModel(dataModel);
+        var result = mapper.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", result["Key"]);
@@ -42,13 +43,13 @@ public sealed class SqliteVectorStoreRecordMapperTests
     {
         // Arrange
         var definition = GetRecordDefinition<ulong>();
-        var propertyReader = GetPropertyReader<TestRecord<ulong>>(definition);
+        var model = BuildModel(typeof(TestRecord<ulong>), definition);
         var dataModel = GetDataModel<ulong>(1);
 
-        var mapper = new SqliteVectorStoreRecordMapper<TestRecord<ulong>>(propertyReader);
+        var mapper = new SqliteVectorStoreRecordMapper<TestRecord<ulong>>(model);
 
         // Act
-        var result = mapper.MapFromDataToStorageModel(dataModel);
+        var result = mapper.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal((ulong)1, result["Key"]);
@@ -64,7 +65,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void MapFromStorageToDataModelWithStringKeyReturnsValidGenericModel(bool includeVectors)
+    public void MapFromStorageToDataModelWithStringKeyReturnsValidDynamicModel(bool includeVectors)
     {
         // Arrange
         var vector = new ReadOnlyMemory<float>([1.1f, 2.2f, 3.3f, 4.4f]);
@@ -79,9 +80,9 @@ public sealed class SqliteVectorStoreRecordMapperTests
         };
 
         var definition = GetRecordDefinition<string>();
-        var propertyReader = GetPropertyReader<TestRecord<string>>(definition);
+        var model = BuildModel(typeof(TestRecord<string>), definition);
 
-        var mapper = new SqliteVectorStoreRecordMapper<TestRecord<string>>(propertyReader);
+        var mapper = new SqliteVectorStoreRecordMapper<TestRecord<string>>(model);
 
         // Act
         var result = mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors });
@@ -105,7 +106,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void MapFromStorageToDataModelWithNumericKeyReturnsValidGenericModel(bool includeVectors)
+    public void MapFromStorageToDataModelWithNumericKeyReturnsValidDynamicModel(bool includeVectors)
     {
         // Arrange
         var vector = new ReadOnlyMemory<float>([1.1f, 2.2f, 3.3f, 4.4f]);
@@ -120,9 +121,9 @@ public sealed class SqliteVectorStoreRecordMapperTests
         };
 
         var definition = GetRecordDefinition<ulong>();
-        var propertyReader = GetPropertyReader<TestRecord<ulong>>(definition);
+        var model = BuildModel(typeof(TestRecord<ulong>), definition);
 
-        var mapper = new SqliteVectorStoreRecordMapper<TestRecord<ulong>>(propertyReader);
+        var mapper = new SqliteVectorStoreRecordMapper<TestRecord<ulong>>(model);
 
         // Act
         var result = mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors });
@@ -154,7 +155,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
                 new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
                 new VectorStoreRecordDataProperty("StringProperty", typeof(string)),
                 new VectorStoreRecordDataProperty("IntProperty", typeof(int)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
             }
         };
     }
@@ -170,15 +171,8 @@ public sealed class SqliteVectorStoreRecordMapperTests
         };
     }
 
-    private static VectorStoreRecordPropertyReader GetPropertyReader<TRecord>(VectorStoreRecordDefinition definition)
-    {
-        return new VectorStoreRecordPropertyReader(typeof(TRecord), definition, new()
-        {
-            RequiresAtLeastOneVector = false,
-            SupportsMultipleKeys = false,
-            SupportsMultipleVectors = true
-        });
-    }
+    private static VectorStoreRecordModel BuildModel(Type type, VectorStoreRecordDefinition definition)
+        => new VectorStoreRecordModelBuilder(SqliteConstants.ModelBuildingOptions).Build(type, definition, defaultEmbeddingGenerator: null);
 
 #pragma warning disable CA1812
     private sealed class TestRecord<TKey>
@@ -192,7 +186,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
         [VectorStoreRecordData]
         public int? IntProperty { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? FloatVector { get; set; }
     }
 #pragma warning restore CA1812
