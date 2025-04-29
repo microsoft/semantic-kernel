@@ -39,7 +39,8 @@ public class TeacherStudentInteractionService : GrpcTeacherStudentInteraction.Gr
     public override async Task<ProcessDetails> StartProcess(ProcessDetails request, ServerCallContext context)
     {
         var processId = string.IsNullOrEmpty(request.ProcessId) ? Guid.NewGuid().ToString() : request.ProcessId;
-        var process = TeacherStudentProcess.CreateProcessBuilder().Build();
+        // line below is no longer needed after addition of keyed processes
+        //var process = TeacherStudentProcess.CreateProcessBuilder().Build();
 
         var processContext = await this._kernelProcessFactory.StartAsync(TeacherStudentProcess.Key, processId, new KernelProcessEvent()
         {

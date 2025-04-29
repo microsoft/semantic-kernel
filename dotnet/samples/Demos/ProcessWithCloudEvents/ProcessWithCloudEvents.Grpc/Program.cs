@@ -40,6 +40,7 @@ builder.Services.AddTransient<AgentFactory, OpenAIAssistantAgentFactory>();
 builder.Services.AddSingleton<DocumentGenerationService>();
 builder.Services.AddSingleton<TeacherStudentInteractionService>();
 // Injecting SK Process custom grpc client IExternalKernelProcessMessageChannel implementation
+// TODO: Add similar keyed singleton approach to support multiple grpc clients, for now uncomment/use only one grpc client at the time
 //builder.Services.AddSingleton<IExternalKernelProcessMessageChannel, DocumentGenerationGrpcClient>();
 builder.Services.AddSingleton<IExternalKernelProcessMessageChannel, TeacherStudentInteractionGrpcClient>();
 

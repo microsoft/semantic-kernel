@@ -70,11 +70,13 @@ public static class TeacherStudentProcess
         // Orchestrate the external input events
         processBuilder
             .OnInputEvent(ProcessEvents.StartProcess)
-            .SendEventTo(new(studentAgentStep));
+            //.SendEventTo(new(studentAgentStep, parameterName: "message"));
+            .SentToAgentStep(studentAgentStep);
 
         processBuilder
             .OnInputEvent(ProcessEvents.TeacherAskedQuestion)
-            .SendEventTo(new(studentAgentStep));
+            //.SendEventTo(new(studentAgentStep, parameterName: "message"));
+            .SentToAgentStep(studentAgentStep);
 
         studentAgentStep
             .OnFunctionResult()

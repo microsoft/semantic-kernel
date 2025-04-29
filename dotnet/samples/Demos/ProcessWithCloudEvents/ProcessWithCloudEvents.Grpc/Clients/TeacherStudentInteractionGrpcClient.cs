@@ -47,6 +47,7 @@ public class TeacherStudentInteractionGrpcClient : IExternalKernelProcessMessage
                         {
                             User = User.Student,
                             Content = agentResponse.Content,
+                            ProcessId = message.ProcessId,
                         });
                     }
                     return;
@@ -59,6 +60,7 @@ public class TeacherStudentInteractionGrpcClient : IExternalKernelProcessMessage
                         {
                             User = User.Student,
                             Content = $"ERROR: {agentErrorResponse}",
+                            ProcessId = message.ProcessId,
                         });
                     }
                     return;

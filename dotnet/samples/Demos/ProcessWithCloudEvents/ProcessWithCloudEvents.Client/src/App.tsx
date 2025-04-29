@@ -28,6 +28,12 @@ import GenerateDocsChat, {
     NewDocument,
 } from "./components/GenerateDocumentsChat";
 import { ExitIcon } from "./components/Icons";
+import TeacherStudentInteractionChat, {
+    StudentTeacherEntry,
+    TeacherStudentInteractionUser,
+} from "./components/TeacherStudentInteractionChat";
+import { grpcTeacherStudentService } from "./services/grpc/grpcClients";
+import { User } from "./services/grpc/gen/teacherStudentInteraction";
 
 interface AppProps {
     grpcDocClient?: GrpcDocumentationGenerationClient;
@@ -77,12 +83,16 @@ const App: React.FC<AppProps> = ({ grpcDocClient }) => {
     const [selectedAppPage, setSelectedAppPage] = useState<AppPages>(
         AppPages.DocumentGeneration
     );
+    // generated documents related
     const [generatedDocuments, setGeneratedDocuments] = useState<NewDocument[]>(
         []
     );
     const [publishedDocuments, setPublishedDocuments] = useState<NewDocument[]>(
         []
     );
+    // teacher student interaction related
+    const [studentAgentInteractionMessages, setStudentAgentInteractionMessages] =
+        useState<StudentTeacherEntry[]>([]);
 
     const [hasGrpcError, setHasGrpcError] = useState(false);
 
@@ -196,7 +206,9 @@ const App: React.FC<AppProps> = ({ grpcDocClient }) => {
         }
     };
 
-    const subscribeToSpecificProcessId = async (processId: string) => {
+    const subscribeToSpecificProcessIdForDocumentGeneration = async (
+        processId: string
+    ) => {
         subscribeReceiveDocumentForReview(processId);
         subscribeToReceivePublishedDocument(processId);
         return Promise.all([
@@ -206,6 +218,109 @@ const App: React.FC<AppProps> = ({ grpcDocClient }) => {
             return;
         });
     };
+
+    // teacher student interaction related
+
+    const onUserStartedTeacherInteractionProcess = (
+        processId: string
+    ): Promise<boolean> => {
+        if (selectedCloudTech == CloudTechnology.GRPC) {
+            if (grpcTeacherStudentService) {
+                return grpcTeacherStudentService
+                    .startProcess({
+                        processId: processId,
+                    })
+                    .then(() => {
+                        console.log(
+                            "[GRPC] User student interaction process started"
+                        );
+                        setHasGrpcError(false);
+                        return true;
+                    })
+                    .catch((error) => {
+                        console.error(
+                            "[GRPC] Error starting student interaction process",
+                            error
+                        );
+                        setHasGrpcError(true);
+                        return false;
+                    });
+            }
+        }
+        return new Promise((resolve) => resolve(false));
+    };
+
+    const onSendTeacherQuestion = (
+        teacherInteraction: StudentTeacherEntry
+    ): Promise<boolean> => {
+        if (selectedCloudTech == CloudTechnology.GRPC) {
+            if (grpcTeacherStudentService) {
+                return grpcTeacherStudentService
+                    .requestStudentAgentResponse({
+                        processId: teacherInteraction.processId,
+                        content: teacherInteraction.content!,
+                        user: User.TEACHER,
+                    })
+                    .then(() => {
+                        console.log(
+                            "[GRPC] User teacher question sent to student agent"
+                        );
+                        setHasGrpcError(false);
+                        return true;
+                    })
+                    .catch((error) => {
+                        console.error(
+                            "[GRPC] Error sending teacher question to student agent",
+                            error
+                        );
+                        setHasGrpcError(true);
+                        return false;
+                    });
+            }
+        }
+        return new Promise((resolve) => resolve(false));
+    };
+
+    const subscribeToStudentAgentResponses = async (processId: string) => {
+        if (selectedCloudTech == CloudTechnology.GRPC) {
+            if (grpcTeacherStudentService) {
+                // grpc stream for receiving published document
+                const studentResponseStream =
+                    grpcTeacherStudentService.receiveStudentAgentResponse({
+                        processId: processId,
+                    });
+                for await (const message of studentResponseStream.responses) {
+                    setStudentAgentInteractionMessages((prevMessages) => [
+                        ...prevMessages,
+                        {
+                            processId: message.processId,
+                            content: message.content,
+                            user: TeacherStudentInteractionUser.STUDENT,
+                        },
+                    ]);
+                    console.log(
+                        "[GRPC] Student interaction received: ",
+                        message
+                    );
+                }
+            }
+        }
+    };
+
+    const subscribeToSpecificProcessIdForTeacherStudentInteraction = async (
+        processId: string
+    ) => {
+        subscribeReceiveDocumentForReview(processId);
+        subscribeToReceivePublishedDocument(processId);
+        return Promise.all([subscribeToStudentAgentResponses(processId)]).then(
+            () => {
+                return;
+            }
+        );
+    };
+
+    const getCloudTechnologyName = () =>
+        CloudTechnologiesDetails.get(selectedCloudTech)!.name;
 
     return (
         <div className={styles.root}>
@@ -285,17 +400,29 @@ const App: React.FC<AppProps> = ({ grpcDocClient }) => {
                 )}
                 {selectedAppPage == AppPages.DocumentGeneration && (
                     <GenerateDocsChat
-                        cloudTechnologyName={
-                            CloudTechnologiesDetails.get(selectedCloudTech)!
-                                .name
-                        }
+                        cloudTechnologyName={getCloudTechnologyName()}
                         onCreateNewDocument={onCreateDocumentRequest}
                         onUserReviewedDocument={onUserReviewedDocument}
                         subscribeToSpecificProcessId={
-                            subscribeToSpecificProcessId
+                            subscribeToSpecificProcessIdForDocumentGeneration
                         }
                         generatedDocuments={generatedDocuments}
                         publishedDocuments={publishedDocuments}
+                    />
+                )}
+                {selectedAppPage == AppPages.TeacherStudentInteraction && (
+                    <TeacherStudentInteractionChat
+                        cloudTechnologyName={getCloudTechnologyName()}
+                        newStudentAgentResponses={
+                            studentAgentInteractionMessages
+                        }
+                        onStartNewProcess={
+                            onUserStartedTeacherInteractionProcess
+                        }
+                        onSendTeacherQuestion={onSendTeacherQuestion}
+                        subscribeToSpecificProcessId={
+                            subscribeToSpecificProcessIdForTeacherStudentInteraction
+                        }
                     />
                 )}
             </div>
