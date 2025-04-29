@@ -17,6 +17,11 @@ public sealed record KernelProcess : KernelProcessStepInfo
     public IList<KernelProcessStepInfo> Steps { get; }
 
     /// <summary>
+    /// The collection of Threads in the Process.
+    /// </summary>
+    public IReadOnlyDictionary<string, KernelProcessAgentThread> Threads { get; init; } = new Dictionary<string, KernelProcessAgentThread>();
+
+    /// <summary>
     /// Captures Kernel Process State into <see cref="KernelProcessStateMetadata"/> after process has run
     /// </summary>
     /// <returns><see cref="KernelProcessStateMetadata"/></returns>

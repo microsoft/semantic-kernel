@@ -1,0 +1,28 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+namespace Microsoft.SemanticKernel;
+
+/// <summary>
+/// Represents a thread in the process.
+/// </summary>
+public class KernelProcessAgentThread
+{
+    /// <summary>
+    /// The policy describing how the thread is created and managed in the process.
+    /// </summary>
+    public KernelProcessThreadPolicy ThreadPolicy { get; init; } = KernelProcessThreadPolicy.New;
+
+    /// <summary>
+    /// The type of the thread. This is used to identify the underlying thread type.
+    /// </summary>
+    public KernelProcessThreadType ThreadType { get; init; } = KernelProcessThreadType.AzureAI;
+
+    /// <summary>
+    /// The id of the thread. This may be null if the thread is not existing when the Process is created.
+    public string? ThreadId { get; init; }
+
+    /// <summary>
+    /// The name of the thread. This is used to identify the thread in the process.
+    /// </summary>
+    public string ThreadName { get; init; } = string.Empty;
+}

@@ -6,8 +6,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Azure;
+using Azure.AI.Projects;
+using Json.Schema;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.VisualStudio.Threading;
@@ -22,6 +27,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
     private readonly Lazy<ValueTask> _initializeTask;
+    private readonly Dictionary<string, string> _threads = [];
 
     internal readonly List<KernelProcessStepInfo> _stepsInfos;
     internal readonly List<LocalStep> _steps = [];
@@ -178,10 +184,46 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     /// Loads the process and initializes the steps. Once this is complete the process can be started.
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
-    private ValueTask InitializeProcessAsync()
+    private async ValueTask InitializeProcessAsync()
     {
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
+
+        // Initialize threads. TODO: Need to implement state management here.
+        foreach (var threadDefinition in this._process.Threads)
+        {
+            if (string.IsNullOrEmpty(threadDefinition.Value.ThreadId))
+            {
+                if (threadDefinition.Value.ThreadPolicy == KernelProcessThreadPolicy.New)
+                {
+                    // Create the thread.
+                    switch (threadDefinition.Value.ThreadType)
+                    {
+                        case KernelProcessThreadType.AzureAI:
+                            const string ErrorMessage = "The thread could not be created due to an error response from the service.";
+                            var client = this._kernel.Services.GetService<AgentsClient>() ?? throw new KernelException("The AzureAI thread type requires an AgentsClient to be registered in the kernel.").Log(this._logger);
+                            try
+                            {
+                                var threadResponse = await client.CreateThreadAsync().ConfigureAwait(false);
+                                this._threads.Add(threadDefinition.Key, threadResponse.Value.Id);
+                            }
+                            catch (RequestFailedException ex)
+                            {
+                                throw new KernelException(ErrorMessage, ex);
+                            }
+                            catch (AggregateException ex)
+                            {
+                                throw new KernelException(ErrorMessage, ex);
+                            }
+                            break;
+
+                        default:
+                            throw new KernelException($"Thread type {threadDefinition.Value.ThreadType} is not supported.").Log(this._logger);
+
+                    }
+                }
+            }
+        }
 
         // Initialize the steps within this process
         foreach (var step in this._stepsInfos)
@@ -206,6 +248,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         RootProcessId = this.RootProcessId,
                         EventProxy = this.EventProxy,
                         ExternalMessageChannel = this.ExternalMessageChannel,
+                        AgentFactory = this.AgentFactory,
                     };
             }
             else if (step is KernelProcessMap mapStep)
@@ -226,15 +269,16 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         ExternalMessageChannel = this.ExternalMessageChannel,
                     };
             }
-            //else if (step is KernelProcessStepInfo stepInfo)
-            //{
-            //    localStep =
-            //        new LocalStep(stepInfo, this._kernel)
-            //        {
-            //            ParentProcessId = this.Id,
-            //            EventProxy = this.EventProxy,
-            //        };
-            //}
+            else if (step is KernelProcessAgentStep agentStep)
+            {
+                string? threadId = null;
+                if (this._threads.TryGetValue(agentStep.ThreadName, out string? threadIdValue))
+                {
+                    threadId = threadIdValue;
+                }
+                localStep =
+                    new LocalAgentStep(agentStep, this.AgentFactory, this._kernel, this.ParentProcessId, threadId: threadId);
+            }
             else
             {
                 // The current step should already have an Id.
@@ -245,13 +289,12 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     {
                         ParentProcessId = this.Id,
                         EventProxy = this.EventProxy,
+                        AgentFactory = this.AgentFactory,
                     };
             }
 
             this._steps.Add(localStep);
         }
-
-        return default;
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
@@ -24,6 +25,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
 
     /// <summary>Maps external input event Ids to the target entry step for the event.</summary>
     private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
+
+    /// <summary>
+    /// The collection of threads within this process.
+    /// </summary>
+    private readonly Dictionary<string, KernelProcessAgentThread> _threads = [];
 
     /// <summary>
     /// A boolean indicating if the current process is a step within another process.
@@ -198,21 +204,50 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <summary>
     /// Adds a step to the process from a declarative agent.
     /// </summary>
-    /// <param name="agentDefinition"></param>
+    /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
+    /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessStepBuilder AddStepFromDeclarativeAgent(AgentDefinition agentDefinition, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder AddStepFromDeclarativeAgent(AgentDefinition agentDefinition, string? threadName = null, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
-        if (string.IsNullOrWhiteSpace(agentDefinition.Id))
+
+        if (string.IsNullOrWhiteSpace(agentDefinition.Name))
         {
-            throw new ArgumentException("AgentDefinition.Id cannot be null or empty.", nameof(agentDefinition));
+            throw new ArgumentException("AgentDefinition.Name cannot be null or empty.", nameof(agentDefinition));
         }
 
-        ProcessStepBuilder stepBuilder = new ProcessAgentBuilder(agentDefinition);
+        if (string.IsNullOrWhiteSpace(threadName))
+        {
+            // No thread name was specified so add a new thread for the agent.
+            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadPolicy.New);
+            threadName = agentDefinition.Name;
+        }
+
+        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName);
         return this.AddStep(stepBuilder, aliases);
     }
+
+    /// <summary>
+    /// Adds a step to the process from an agent.
+    /// </summary>
+    /// <param name="agent"></param>
+    /// <param name="onComplete"></param>
+    /// <param name="onError"></param>
+    /// <param name="aliases"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    //public ProcessStepBuilder AddStepFromAgent(Agent agent, Action<object?, KernelProcessStepContext> onComplete, Action<object?, KernelProcessStepContext> onError, IReadOnlyList<string>? aliases = null)
+    //{
+    //    Verify.NotNull(agent, nameof(agent));
+    //    if (string.IsNullOrWhiteSpace(agent.Id))
+    //    {
+    //        throw new ArgumentException("Agent.Id cannot be null or empty.", nameof(agent));
+    //    }
+    //    ProcessStepBuilder stepBuilder = new ProcessAgentBuilder(agent);
+    //    return this.AddStep(stepBuilder, aliases);
+    //}
 
     /// <summary>
     /// Adds a step to the process that represents the end of the process.
@@ -313,7 +348,17 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns></returns>
     public ProcessBuilder AddThread<T>(string threadName, string threadId) where T : AgentThread
     {
-        // TODO: Do it.
+        Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
+        Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
+
+        var threadType = typeof(T) switch
+        {
+            Type t when t == typeof(AzureAIAgentThread) => KernelProcessThreadType.AzureAI,
+            _ => throw new ArgumentException($"Unsupported thread type: {typeof(T).Name}")
+        };
+
+        var processThread = new KernelProcessAgentThread() { ThreadName = threadName, ThreadId = threadId, ThreadType = threadType };
+        this._threads[threadName] = processThread;
         return this;
     }
 
@@ -326,7 +371,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns></returns>
     public ProcessBuilder AddThread<T>(string threadName, KernelProcessThreadPolicy threadPolicy) where T : AgentThread
     {
-        // TODO: Do it.
+        Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
+        Verify.NotNull(threadPolicy, nameof(threadPolicy));
+
+        var processThread = new KernelProcessAgentThread() { ThreadName = threadName, ThreadPolicy = threadPolicy };
+        this._threads[threadName] = processThread;
         return this;
     }
 
@@ -397,7 +446,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
 
         // Create the process
         KernelProcessState state = new(this.Name, version: this.Version, id: this.HasParentProcess ? this.Id : null);
-        KernelProcess process = new(state, builtSteps, builtEdges);
+        KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads };
 
         return process;
     }

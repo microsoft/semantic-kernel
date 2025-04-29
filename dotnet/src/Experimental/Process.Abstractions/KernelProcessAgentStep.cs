@@ -15,14 +15,25 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
     /// Initializes a new instance of the <see cref="KernelProcessAgentStep"/> class.
     /// </summary>
     /// <param name="agentDefinition"></param>
+    /// <param name="agentActions"></param>
     /// <param name="state"></param>
     /// <param name="edges"></param>
+    /// <param name="threadName"></param>
     /// <param name="incomingEdgeGroups"></param>
-    public KernelProcessAgentStep(AgentDefinition agentDefinition, KernelProcessStepState state, Dictionary<string, List<KernelProcessEdge>> edges, Dictionary<string, KernelProcessEdgeGroup>? incomingEdgeGroups = null) : base(typeof(KernelProcessAgentExecutor), state, edges, incomingEdgeGroups)
+    public KernelProcessAgentStep(AgentDefinition agentDefinition, ProcessAgentActions agentActions, KernelProcessStepState state, Dictionary<string, List<KernelProcessEdge>> edges, string threadName, Dictionary<string, KernelProcessEdgeGroup>? incomingEdgeGroups = null) : base(typeof(KernelProcessAgentExecutor), state, edges, incomingEdgeGroups)
     {
         Verify.NotNull(agentDefinition);
+        Verify.NotNull(agentActions);
+
         this.AgentDefinition = agentDefinition;
+        this.Actions = agentActions;
+        this.ThreadName = threadName;
     }
+
+    /// <summary>
+    /// The name of the thread this agent is associated with. Will be null if not associated with a specific thread instance.
+    /// </summary>
+    public string ThreadName { get; init; }
 
     /// <summary>
     /// The agent definition associated with this step.
@@ -30,17 +41,12 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
     public AgentDefinition AgentDefinition { get; init; }
 
     /// <summary>
-    /// The optional handler group for OnComplete events.
-    /// </summary>
-    public KernelProcessDeclarativeConditionHandler? OnComplete { get; init; }
-
-    /// <summary>
-    /// The optional handler group for OnError events.
-    /// </summary>
-    public KernelProcessDeclarativeConditionHandler? OnError { get; init; }
-
-    /// <summary>
     /// The inputs for this agent.
     /// </summary>
     public Dictionary<string, JsonSchema>? Inputs { get; init; }
+
+    /// <summary>
+    /// The handler group for code-based actions.
+    /// </summary>
+    public ProcessAgentActions Actions { get; init; }
 }

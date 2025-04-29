@@ -1,13 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.Identity;
+using System.ClientModel;
 using Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
+using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Process;
+using OpenAI;
 using SharedSteps;
 using Step04.Plugins;
 using Step04.Steps;
@@ -18,8 +23,20 @@ namespace Step04;
 /// Demonstrate creation of a <see cref="KernelProcess"/> that orchestrates an <see cref="Agent"/> conversation.
 /// For visual reference of the process check <see href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/samples/GettingStartedWithProcesses/README.md#step04_agentorchestration" >diagram</see>.
 /// </summary>
-public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
+public class Step04_AgentOrchestration : BaseTest
 {
+    public Step04_AgentOrchestration(ITestOutputHelper output) : base(output, redirectSystemConsoleOutput: true)
+    {
+        this.Client =
+    this.UseOpenAIConfig ?
+        OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
+        !string.IsNullOrWhiteSpace(this.ApiKey) ?
+            OpenAIAssistantAgent.CreateAzureOpenAIClient(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
+            OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(this.Endpoint!));
+    }
+
+    protected OpenAIClient Client { get; init; }
+
     // Target Open AI Services
     protected override bool ForceOpenAI => true;
 
@@ -36,6 +53,35 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
 
         // Execute process
         await RunProcessAsync(process);
+    }
+
+    [Fact]
+    public async Task SingleTeacherStudentAgentCallAsync()
+    {
+        // Define process
+        KernelProcess process = SetupSingleAgentProcess<BasicTeacherAgentInput>(nameof(SingleTeacherStudentAgentCallAsync));
+
+        // Setup kernel with OpenAI Client
+        Kernel kernel = SetupKernel();
+        OpenAIAssistantAgentFactory agentFactory = new();
+
+        // Execute process
+        await using LocalKernelProcessContext localProcess =
+            await process.StartAsync(
+                kernel,
+                new KernelProcessEvent()
+                {
+                    Id = AgentOrchestrationEvents.StartProcess
+                }, agentFactory: agentFactory);
+
+        // Cleaning up created agents
+        var processState = await localProcess.GetStateAsync();
+        var agentState = (KernelProcessStepState<KernelProcessAgentExecutorState>)processState.Steps.Where(step => step.State.Id == "Student").FirstOrDefault()!.State;
+        var agentId = agentState?.State?.AgentId;
+        if (agentId != null)
+        {
+            await this.Client.GetAssistantClient().DeleteAssistantAsync(agentId);
+        }
     }
 
     private sealed class BasicAgentChatUserInput : ScriptedUserInputStep
@@ -55,6 +101,23 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
             state.UserInputs.Add("Sounds good, add the soonest option without conflicts to my calendar");
             state.UserInputs.Add("Correct");
             state.UserInputs.Add("That's all, thank you");
+        }
+    }
+
+    private sealed class BasicTeacherAgentInput : ScriptedUserInputStep
+    {
+        public BasicTeacherAgentInput()
+        {
+            this.SuppressOutput = true;
+        }
+
+        public override void PopulateUserInputs(UserInputState state)
+        {
+            state.UserInputs.Add("What is 2+2");
+            state.UserInputs.Add("What is 2+2");
+            state.UserInputs.Add("What is the name of a shape with 3 consecutive sides");
+            state.UserInputs.Add("What is the internal angle of a square");
+            state.UserInputs.Add("What is a parallellogram");
         }
     }
 
@@ -79,6 +142,48 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
         {
             RenderMessageStep.Render(message);
         }
+    }
+
+    private KernelProcess SetupSingleAgentProcess<TUserInputStep>(string processName) where TUserInputStep : ScriptedUserInputStep
+    {
+        ProcessBuilder process = new(processName);
+
+        var userInputStep = process.AddStepFromType<TUserInputStep>();
+        var renderMessageStep = process.AddStepFromType<RenderMessageStep>();
+        var agentStep = process.AddStepFromDeclarativeAgent(new()
+        {
+            Name = "Student",
+            // On purpose not assigning AgentId, if not provided a new agent is created
+            Description = "Solves problem given",
+            Instructions = "Solve the problem given, if the question is repeated mention something like I already answered but here is the answer with a bit of humor",
+            Model = new()
+            {
+                Id = "gpt-4o",
+            },
+            Type = OpenAIAssistantAgentFactory.OpenAIAssistantAgentType,
+        });
+
+        // Entry point
+        process.OnInputEvent(AgentOrchestrationEvents.StartProcess)
+            .SendEventTo(new(userInputStep));
+
+        // Pass user input to primary agent
+        userInputStep
+            .OnEvent(CommonEvents.UserInputReceived)
+            .SendEventTo(new(agentStep, parameterName: "message"))
+            .SendEventTo(new(renderMessageStep, RenderMessageStep.Functions.RenderUserText));
+
+        agentStep
+            .OnFunctionResult()
+            .SendEventTo(new(userInputStep))
+            .SendEventTo(new(renderMessageStep, RenderMessageStep.Functions.RenderMessage));
+
+        agentStep
+            .OnFunctionError()
+            .SendEventTo(new(renderMessageStep, RenderMessageStep.Functions.RenderError, "error"))
+            .StopProcess();
+
+        return process.Build();
     }
 
     private KernelProcess SetupAgentProcess<TUserInputStep>(string processName) where TUserInputStep : ScriptedUserInputStep
@@ -170,6 +275,19 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
                     .StopProcess();
             }
         }
+    }
+
+    private Kernel SetupKernel()
+    {
+        IKernelBuilder builder = Kernel.CreateBuilder();
+        // Add Chat Completion to Kernel
+        this.AddChatCompletionToKernel(builder);
+        builder.Services.AddSingleton<OpenAIClient>(this.Client);
+
+        // NOTE: Uncomment to see process logging
+        //builder.Services.AddSingleton<ILoggerFactory>(this.LoggerFactory);
+
+        return builder.Build();
     }
 
     private Kernel SetupKernel(ChatHistory history)

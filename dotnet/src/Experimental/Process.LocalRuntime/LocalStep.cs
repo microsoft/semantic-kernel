@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
@@ -18,8 +20,8 @@ namespace Microsoft.SemanticKernel;
 internal class LocalStep : IKernelProcessMessageChannel
 {
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
-    private readonly Lazy<ValueTask> _initializeTask;
-    private readonly ILogger _logger;
+    protected readonly Lazy<ValueTask> _initializeTask;
+    protected readonly ILogger _logger;
 
     protected readonly Kernel _kernel;
     protected readonly Dictionary<string, KernelFunction> _functions = [];
@@ -83,6 +85,8 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// An event proxy that can be used to intercept events emitted by the step.
     /// </summary>
     internal ProcessEventProxy? EventProxy { get; init; }
+
+    internal AgentFactory? AgentFactory { get; init; }
 
     internal IExternalKernelProcessMessageChannel? ExternalMessageChannel { get; init; }
 
@@ -272,7 +276,16 @@ internal class LocalStep : IKernelProcessMessageChannel
     protected virtual async ValueTask InitializeStepAsync()
     {
         // Instantiate an instance of the inner step object
-        this._stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
+        if (this._stepInfo.InnerStepType == typeof(KernelProcessAgentExecutor))
+        {
+            // Only KernelStep that has a constructor with parameters - used to pass the already initialized agent
+            this._stepInstance = (KernelProcessStep<KernelProcessAgentExecutorState>)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType, parameters: this.AgentFactory!);
+        }
+        else
+        {
+            this._stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
+        }
+
         var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
 
         // Load the kernel functions
@@ -282,7 +295,15 @@ internal class LocalStep : IKernelProcessMessageChannel
         }
 
         // Initialize the input channels
-        this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel);
+        if (this._stepInfo is KernelProcessAgentStep agentStep)
+        {
+            this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel, agentStep.AgentDefinition);
+        }
+        else
+        {
+            this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel);
+        }
+
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
@@ -325,7 +346,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <param name="kernel">The kernel to use for invocation.</param>
     /// <param name="arguments">The arguments to invoke with.</param>
     /// <returns>A <see cref="Task"/> containing the result of the function invocation.</returns>
-    private Task<FunctionResult> InvokeFunction(KernelFunction function, Kernel kernel, KernelArguments arguments)
+    protected Task<FunctionResult> InvokeFunction(KernelFunction function, Kernel kernel, KernelArguments arguments)
     {
         return kernel.InvokeAsync(function, arguments: arguments);
     }
