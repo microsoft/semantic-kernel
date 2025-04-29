@@ -14,7 +14,6 @@ from semantic_kernel.data import (
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
 from semantic_kernel.data.text_search import (
     KernelSearchResults,
-    SearchFilter,
     SearchOptions,
     TextSearchOptions,
     TextSearchResult,

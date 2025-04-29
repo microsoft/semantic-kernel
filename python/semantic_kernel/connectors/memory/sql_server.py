@@ -22,13 +22,8 @@ from semantic_kernel.data.record_definition import (
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, KernelSearchResults
-from semantic_kernel.data.vector_search import (
-    VectorizedSearchMixin,
-    VectorSearchFilter,
-    VectorSearchOptions,
-    VectorSearchResult,
-)
+from semantic_kernel.data.text_search import KernelSearchResults
+from semantic_kernel.data.vector_search import VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import GetFilteredRecordOptions, VectorStore, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorStoreOperationException
 from semantic_kernel.exceptions.vector_store_exceptions import (
@@ -43,6 +38,7 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
+
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
@@ -264,7 +260,7 @@ async def _get_mssql_connection(settings: SqlSettings) -> "Connection":
 @experimental
 class SqlServerCollection(
     VectorStoreRecordCollection[TKey, TModel],
-    VectorizedSearchMixin[TKey, TModel],
+    VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """SQL collection implementation."""

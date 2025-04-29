@@ -11,13 +11,8 @@ from chromadb.config import Settings
 
 from semantic_kernel.data.const import DistanceFunction
 from semantic_kernel.data.record_definition import VectorStoreRecordDataField, VectorStoreRecordDefinition
-from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, KernelSearchResults
-from semantic_kernel.data.vector_search import (
-    VectorizedSearchMixin,
-    VectorSearchFilter,
-    VectorSearchOptions,
-    VectorSearchResult,
-)
+from semantic_kernel.data.text_search import KernelSearchResults
+from semantic_kernel.data.vector_search import VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
     TKey,
@@ -51,7 +46,7 @@ DISTANCE_FUNCTION_MAP = {
 @experimental
 class ChromaCollection(
     VectorStoreRecordCollection[TKey, TModel],
-    VectorizedSearchMixin[TKey, TModel],
+    VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """Chroma vector store collection."""

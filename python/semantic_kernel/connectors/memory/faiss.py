@@ -8,19 +8,17 @@ import faiss
 import numpy as np
 from pydantic import Field
 
-from semantic_kernel.connectors.memory.in_memory.in_memory_collection import (
+from semantic_kernel.connectors.memory.in_memory import (
     IN_MEMORY_SCORE_KEY,
     InMemoryVectorCollection,
+    InMemoryVectorStore,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
 from semantic_kernel.data.text_search import KernelSearchResults
 from semantic_kernel.data.vector_search import VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import TKey, TModel, VectorStore
-from semantic_kernel.exceptions import (
-    VectorStoreInitializationException,
-    VectorStoreOperationException,
-)
+from semantic_kernel.data.vector_storage import TKey, TModel
+from semantic_kernel.exceptions import VectorStoreInitializationException, VectorStoreOperationException
 
 if TYPE_CHECKING:
     from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
@@ -221,12 +219,8 @@ class FaissCollection(InMemoryVectorCollection[TKey, TModel], Generic[TKey, TMod
         )
 
 
-class FaissStore(VectorStore):
+class FaissStore(InMemoryVectorStore):
     """Create a Faiss store."""
-
-    @override
-    async def list_collection_names(self, **kwargs) -> Sequence[str]:
-        return list(self.vector_record_collections.keys())
 
     @override
     def get_collection(
@@ -236,10 +230,9 @@ class FaissStore(VectorStore):
         data_model_definition=None,
         **kwargs,
     ) -> "VectorStoreRecordCollection":
-        self.vector_record_collections[collection_name] = FaissCollection(
+        return FaissCollection(
             collection_name=collection_name,
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             **kwargs,
         )
-        return self.vector_record_collections[collection_name]

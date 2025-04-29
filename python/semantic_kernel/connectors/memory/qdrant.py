@@ -3,29 +3,41 @@
 import logging
 import sys
 from collections.abc import Callable, Mapping, Sequence
-from typing import Any, ClassVar, Generic
+from typing import Any, ClassVar, Final, Generic
 
-from pydantic import ValidationError
+from pydantic import HttpUrl, SecretStr, ValidationError, model_validator
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
-from qdrant_client.models import FieldCondition, Filter, MatchAny, PointStruct, QueryResponse, ScoredPoint, VectorParams
-
-from semantic_kernel.connectors.memory.qdrant.const import DISTANCE_FUNCTION_MAP, TYPE_MAPPER_VECTOR
-from semantic_kernel.connectors.memory.qdrant.utils import AsyncQdrantClientWrapper
-from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
-from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import (
-    VectorizedSearchMixin,
-    VectorSearchFilter,
-    VectorSearchOptions,
-    VectorSearchResult,
+from qdrant_client.models import (
+    Datatype,
+    Distance,
+    FieldCondition,
+    Filter,
+    MatchAny,
+    PointStruct,
+    QueryResponse,
+    ScoredPoint,
+    VectorParams,
 )
-from semantic_kernel.data.vector_storage import GetFilteredRecordOptions, TKey, TModel, VectorStoreRecordCollection
+from typing_extensions import override
+
+from semantic_kernel.data.const import DistanceFunction
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.text_search import KernelSearchResults
+from semantic_kernel.data.vector_search import VectorSearch, VectorSearchOptions, VectorSearchResult
+from semantic_kernel.data.vector_storage import (
+    GetFilteredRecordOptions,
+    TKey,
+    TModel,
+    VectorStore,
+    VectorStoreRecordCollection,
+)
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
     VectorStoreModelValidationError,
     VectorStoreOperationException,
 )
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
@@ -37,11 +49,64 @@ else:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, Distance]] = {
+    DistanceFunction.COSINE_SIMILARITY: Distance.COSINE,
+    DistanceFunction.DOT_PROD: Distance.DOT,
+    DistanceFunction.EUCLIDEAN_DISTANCE: Distance.EUCLID,
+    DistanceFunction.MANHATTAN: Distance.MANHATTAN,
+    DistanceFunction.DEFAULT: Distance.COSINE,
+}
+TYPE_MAPPER_VECTOR: Final[dict[str, Datatype]] = {
+    "float": Datatype.FLOAT32,
+    "int": Datatype.UINT8,
+    "binary": Datatype.UINT8,
+    "default": Datatype.FLOAT32,
+}
+IN_MEMORY_STRING: Final[str] = ":memory:"
+
+
+@experimental
+class QdrantSettings(KernelBaseSettings):
+    """Qdrant settings currently used by the Qdrant Vector Record Store."""
+
+    env_prefix: ClassVar[str] = "QDRANT_"
+
+    url: HttpUrl | None = None
+    api_key: SecretStr | None = None
+    host: str | None = None
+    port: int | None = None
+    grpc_port: int | None = None
+    path: str | None = None
+    location: str | None = None
+    prefer_grpc: bool = False
+
+    @model_validator(mode="before")
+    def validate_settings(cls, values: dict):
+        """Validate the settings."""
+        if (
+            isinstance(values, dict)
+            and "url" not in values
+            and "host" not in values
+            and "path" not in values
+            and "location" not in values
+        ):
+            values["location"] = IN_MEMORY_STRING
+        return values
+
+    def model_dump(self, **kwargs):
+        """Dump the model."""
+        dump = super().model_dump(**kwargs)
+        if "api_key" in dump:
+            dump["api_key"] = dump["api_key"].get_secret_value()
+        if "url" in dump:
+            dump["url"] = str(dump["url"])
+        return dump
+
 
 @experimental
 class QdrantCollection(
     VectorStoreRecordCollection[TKey, TModel],
-    VectorizedSearchMixin[TKey, TModel],
+    VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """A QdrantCollection is a memory collection that uses Qdrant as the backend."""
@@ -109,7 +174,7 @@ class QdrantCollection(
             )
             return
 
-        from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
+        from semantic_kernel.connectors.memory.qdrant import QdrantSettings
 
         try:
             settings = QdrantSettings(
@@ -130,7 +195,7 @@ class QdrantCollection(
             kwargs.setdefault("metadata", {})
             kwargs["metadata"] = prepend_semantic_kernel_to_user_agent(kwargs["metadata"])
         try:
-            client = AsyncQdrantClientWrapper(**settings.model_dump(exclude_none=True), **kwargs)
+            client = AsyncQdrantClient(**settings.model_dump(exclude_none=True), **kwargs)
         except ValueError as ex:
             raise VectorStoreInitializationException("Failed to create Qdrant client.", ex) from ex
         super().__init__(
@@ -243,7 +308,10 @@ class QdrantCollection(
                 id=record.pop(self._key_field_name),
                 vector=record.pop(self.data_model_definition.vector_field_names[0])
                 if not self.named_vectors
-                else {field: record.pop(field) for field in self.data_model_definition.vector_field_names},
+                else {
+                    field.storage_property_name or field.name: record.pop(field.name)
+                    for field in self.data_model_definition.vector_fields
+                },
                 payload=record,
             )
             for record in records
@@ -283,24 +351,25 @@ class QdrantCollection(
         if "vectors_config" not in kwargs:
             vectors_config: VectorParams | Mapping[str, VectorParams] = {}
             if self.named_vectors:
-                for field in self.data_model_definition.vector_field_names:
-                    vector = self.data_model_definition.fields[field]
-                    assert isinstance(vector, VectorStoreRecordVectorField)  # nosec
-                    if not vector.dimensions:
-                        raise VectorStoreOperationException("Vector field must have dimensions.")
-                    vectors_config[field] = VectorParams(
-                        size=vector.dimensions,
-                        distance=DISTANCE_FUNCTION_MAP[vector.distance_function or "default"],
-                        datatype=TYPE_MAPPER_VECTOR[vector.property_type or "default"],
+                for field in self.data_model_definition.vector_fields:
+                    if field.distance_function not in DISTANCE_FUNCTION_MAP:
+                        raise VectorStoreOperationException(
+                            f"Distance function {field.distance_function} is not supported."
+                        )
+                    vectors_config[field.storage_property_name or field.name] = VectorParams(
+                        size=field.dimensions,
+                        distance=DISTANCE_FUNCTION_MAP[field.distance_function],
+                        datatype=TYPE_MAPPER_VECTOR[field.property_type or "default"],
                     )
             else:
-                vector = self.data_model_definition.fields[self.data_model_definition.vector_field_names[0]]
-                assert isinstance(vector, VectorStoreRecordVectorField)  # nosec
-                if not vector.dimensions:
-                    raise VectorStoreOperationException("Vector field must have dimensions.")
+                vector = self.data_model_definition.vector_fields[0]
+                if vector.distance_function not in DISTANCE_FUNCTION_MAP:
+                    raise VectorStoreOperationException(
+                        f"Distance function {vector.distance_function} is not supported."
+                    )
                 vectors_config = VectorParams(
                     size=vector.dimensions,
-                    distance=DISTANCE_FUNCTION_MAP[vector.distance_function or "default"],
+                    distance=DISTANCE_FUNCTION_MAP[vector.distance_function],
                     datatype=TYPE_MAPPER_VECTOR[vector.property_type or "default"],
                 )
             kwargs["vectors_config"] = vectors_config
@@ -330,5 +399,112 @@ class QdrantCollection(
     @override
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         """Exit the context manager."""
+        if self.managed_client:
+            await self.qdrant_client.close()
+
+
+@experimental
+class QdrantStore(VectorStore):
+    """A QdrantStore is a memory store that uses Qdrant as the backend."""
+
+    qdrant_client: AsyncQdrantClient
+
+    def __init__(
+        self,
+        url: str | None = None,
+        api_key: str | None = None,
+        host: str | None = None,
+        port: int | None = None,
+        grpc_port: int | None = None,
+        path: str | None = None,
+        location: str | None = None,
+        prefer_grpc: bool | None = None,
+        client: AsyncQdrantClient | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Initializes a new instance of the QdrantVectorRecordStore.
+
+        When using qdrant client, make sure to supply url and api_key.
+        When using qdrant server, make sure to supply url or host and optionally port.
+        When using qdrant local, either supply path to use a persisted qdrant instance
+            or set location to ":memory:" to use an in-memory qdrant instance.
+        When nothing is supplied, it defaults to an in-memory qdrant instance.
+        You can also supply a async qdrant client directly.
+
+        Args:
+            url: The URL of the Qdrant server (default: {None}).
+            api_key: The API key for the Qdrant server (default: {None}).
+            host: The host of the Qdrant server (default: {None}).
+            port: The port of the Qdrant server (default: {None}).
+            grpc_port: The gRPC port of the Qdrant server (default: {None}).
+            path: The path of the Qdrant server (default: {None}).
+            location: The location of the Qdrant server (default: {None}).
+            prefer_grpc: If true, gRPC will be preferred (default: {None}).
+            client: The Qdrant client to use (default: {None}).
+            env_file_path: Use the environment settings file as a fallback to environment variables.
+            env_file_encoding: The encoding of the environment settings file.
+            **kwargs: Additional keyword arguments passed to the client constructor.
+
+        """
+        if client:
+            super().__init__(qdrant_client=client, managed_client=False, **kwargs)
+            return
+
+        try:
+            settings = QdrantSettings(
+                url=url,
+                api_key=api_key,
+                host=host,
+                port=port,
+                grpc_port=grpc_port,
+                path=path,
+                location=location,
+                prefer_grpc=prefer_grpc,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise VectorStoreInitializationException("Failed to create Qdrant settings.", ex) from ex
+        if APP_INFO:
+            kwargs.setdefault("metadata", {})
+            kwargs["metadata"] = prepend_semantic_kernel_to_user_agent(kwargs["metadata"])
+        try:
+            client = AsyncQdrantClient(**settings.model_dump(exclude_none=True), **kwargs)
+        except ValueError as ex:
+            raise VectorStoreInitializationException("Failed to create Qdrant client.", ex) from ex
+        super().__init__(qdrant_client=client)
+
+    def get_collection(
+        self,
+        collection_name: str,
+        data_model_type: type[TModel],
+        data_model_definition: VectorStoreRecordDefinition | None = None,
+        **kwargs: Any,
+    ) -> "VectorStoreRecordCollection":
+        """Get a QdrantCollection tied to a collection.
+
+        Args:
+            collection_name (str): The name of the collection.
+            data_model_type (type[TModel]): The type of the data model.
+            data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
+            **kwargs: Additional keyword arguments, passed to the collection constructor.
+        """
+        return QdrantCollection(
+            data_model_type=data_model_type,
+            data_model_definition=data_model_definition,
+            collection_name=collection_name,
+            client=self.qdrant_client,
+            **kwargs,
+        )
+
+    @override
+    async def list_collection_names(self, **kwargs: Any) -> Sequence[str]:
+        collections = await self.qdrant_client.get_collections()
+        return [collection.name for collection in collections.collections]
+
+    @override
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         if self.managed_client:
             await self.qdrant_client.close()

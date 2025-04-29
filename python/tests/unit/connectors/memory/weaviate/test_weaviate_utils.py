@@ -4,7 +4,7 @@
 import pytest
 from weaviate.collections.classes.config_vectorizers import VectorDistances
 
-from semantic_kernel.connectors.memory.weaviate.utils import to_weaviate_vector_distance
+from semantic_kernel.connectors.memory.weaviate import to_weaviate_vector_distance
 from semantic_kernel.data.const import DistanceFunction
 
 

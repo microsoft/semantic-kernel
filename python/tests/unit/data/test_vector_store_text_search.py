@@ -6,9 +6,8 @@ from pydantic import BaseModel
 from pytest import fixture, raises
 
 from semantic_kernel.connectors.ai.open_ai import AzureTextEmbedding
-from semantic_kernel.data import VectorStoreTextSearch
 from semantic_kernel.data.text_search import TextSearchResult
-from semantic_kernel.data.vector_search import VectorSearchOptions, VectorSearchResult
+from semantic_kernel.data.vector_search import VectorSearchOptions, VectorSearchResult, VectorStoreTextSearch
 from semantic_kernel.exceptions import VectorStoreInitializationException
 from semantic_kernel.utils.list_handler import desync_list
 

@@ -12,15 +12,7 @@ from semantic_kernel.connectors.search.google.const import CUSTOM_SEARCH_URL, QU
 from semantic_kernel.connectors.search.google.google_search_response import GoogleSearchResponse
 from semantic_kernel.connectors.search.google.google_search_result import GoogleSearchResult
 from semantic_kernel.connectors.search.google.google_search_settings import GoogleSearchSettings
-from semantic_kernel.data.text_search import (
-    AnyTagsEqualTo,
-    EqualTo,
-    KernelSearchResults,
-    SearchFilter,
-    TextSearch,
-    TextSearchOptions,
-    TextSearchResult,
-)
+from semantic_kernel.data.text_search import KernelSearchResults, TextSearch, TextSearchOptions, TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.feature_stage_decorator import experimental

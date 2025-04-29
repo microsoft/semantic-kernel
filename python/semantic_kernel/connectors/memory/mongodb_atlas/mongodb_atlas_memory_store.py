@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from collections.abc import Mapping
 from importlib import metadata
 from typing import Any
@@ -11,10 +12,10 @@ from pydantic import ValidationError
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 from pymongo.driver_info import DriverInfo
 
+from semantic_kernel.connectors.memory.mongodb import NUM_CANDIDATES_SCALAR
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     MONGODB_FIELD_EMBEDDING,
     MONGODB_FIELD_ID,
-    NUM_CANDIDATES_SCALAR,
     document_to_memory_record,
     memory_record_to_mongo_document,
 )
@@ -22,12 +23,16 @@ from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 12):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@deprecated("MongoDBAtlasMemoryStore is deprecated. Use MongoDBMemoryStore instead.")
 class MongoDBAtlasMemoryStore(MemoryStoreBase):
     """Memory Store for MongoDB Atlas Vector Search Connections."""
 
@@ -51,7 +56,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             env_file_encoding (str): The encoding of the .env file.
 
         """
-        from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import MongoDBAtlasSettings
+        from semantic_kernel.connectors.memory.mongodb import MongoDBAtlasSettings
 
         try:
             mongodb_settings = MongoDBAtlasSettings(

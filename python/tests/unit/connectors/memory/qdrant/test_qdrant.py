@@ -6,8 +6,7 @@ from pytest import fixture, mark, raises
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Datatype, Distance, FieldCondition, Filter, MatchAny, VectorParams
 
-from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
-from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
+from semantic_kernel.connectors.memory.qdrant import QdrantCollection, QdrantStore
 from semantic_kernel.data.record_definition import VectorStoreRecordVectorField
 from semantic_kernel.data.vector_search import VectorSearchFilter, VectorSearchOptions
 from semantic_kernel.exceptions import (

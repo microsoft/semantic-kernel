@@ -4,28 +4,17 @@ import logging
 import sys
 from collections.abc import Callable, Sequence
 from inspect import isawaitable
-from typing import Any, ClassVar, Generic
+from typing import Any, ClassVar, Final, Generic
 
 from pinecone import IndexModel, Metric, PineconeAsyncio, ServerlessSpec, Vector
 from pinecone.data.index_asyncio import _IndexAsyncio as IndexAsyncio
 from pinecone.grpc import GRPCIndex, GRPCVector, PineconeGRPC
-from pydantic import ValidationError
+from pydantic import SecretStr, ValidationError
 
-from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordVectorField,
-)
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
 from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import (
-    VectorizableTextSearchMixin,
-    VectorizedSearchMixin,
-    VectorSearchFilter,
-    VectorSearchOptions,
-    VectorSearchResult,
-)
+from semantic_kernel.data.vector_search import VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
     TKey,
@@ -37,7 +26,9 @@ from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -47,17 +38,36 @@ else:
 logger = logging.getLogger(__name__)
 
 
-DISTANCE_METRIC_MAP = {
+DISTANCE_METRIC_MAP: Final[dict[DistanceFunction, Metric]] = {
     DistanceFunction.COSINE_SIMILARITY: Metric.COSINE,
     DistanceFunction.EUCLIDEAN_DISTANCE: Metric.EUCLIDEAN,
     DistanceFunction.DOT_PROD: Metric.DOTPRODUCT,
+    DistanceFunction.DEFAULT: Metric.COSINE,
 }
 
 
+class PineconeSettings(KernelBaseSettings):
+    """Pinecone model settings.
+
+    Args:
+    - api_key: SecretStr - Pinecone API key
+        (Env var PINECONE_API_KEY)
+    - namespace: str - Pinecone namespace (optional, default is "")
+    - embed_model: str - Embedding model (optional, default is None)
+        (Env var PINECONE_EMBED_MODEL)
+    """
+
+    env_prefix: ClassVar[str] = "PINECONE_"
+
+    api_key: SecretStr
+    namespace: str = ""
+    embed_model: str | None = None
+
+
+@release_candidate
 class PineconeCollection(
     VectorStoreRecordCollection[TKey, TModel],
-    VectorizedSearchMixin[TKey, TModel],
-    VectorizableTextSearchMixin[TKey, TModel],
+    VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """Interact with a Pinecone Index."""
@@ -207,20 +217,20 @@ class PineconeCollection(
             embed = kwargs.pop("embed", {})
         cloud = kwargs.pop("cloud", "aws")
         region = kwargs.pop("region", "us-east-1")
-        if "metric" not in embed:
-            if vector_field and vector_field.distance_function:
-                if vector_field.distance_function not in DISTANCE_METRIC_MAP:
-                    raise VectorStoreOperationException(
-                        f"Distance function {vector_field.distance_function} is not supported by Pinecone."
-                    )
-                embed["metric"] = DISTANCE_METRIC_MAP[vector_field.distance_function]
-            else:
-                logger.info("Metric not set, defaulting to cosine.")
-                embed["metric"] = Metric.COSINE
+        if "metric" not in embed and vector_field and vector_field.distance_function:
+            if vector_field.distance_function not in DISTANCE_METRIC_MAP:
+                raise VectorStoreOperationException(
+                    f"Distance function {vector_field.distance_function} is not supported by Pinecone."
+                )
+            embed["metric"] = DISTANCE_METRIC_MAP[vector_field.distance_function]
         if "field_map" not in embed:
-            for field in self.data_model_definition.fields.values():
-                if isinstance(field, VectorStoreRecordDataField) and field.has_embedding:
-                    embed["field_map"] = {"text": field.name}
+            for field in self.data_model_definition.fields:
+                if (
+                    isinstance(field, VectorStoreRecordVectorField)
+                    and not field.embedding_generator
+                    and not self.embedding_generator
+                ):
+                    embed["field_map"] = {"text": field.storage_property_name or field.name}
                     break
         index_creation_args = {
             "name": self.collection_name,
@@ -238,14 +248,10 @@ class PineconeCollection(
             raise VectorStoreOperationException(
                 "Pinecone collection needs a vector field, when not using the integrated embeddings."
             )
-        if vector_field.distance_function:
-            metric = DISTANCE_METRIC_MAP.get(vector_field.distance_function, None)
-            if not metric:
-                raise VectorStoreOperationException(
-                    f"Distance function {vector_field.distance_function} is not supported by Pinecone."
-                )
-        else:
-            metric = Metric.COSINE
+        if vector_field.distance_function not in DISTANCE_METRIC_MAP:
+            raise VectorStoreOperationException(
+                f"Distance function {vector_field.distance_function} is not supported by Pinecone."
+            )
         cloud = kwargs.pop("cloud", "aws")
         region = kwargs.pop("region", "us-east-1")
         spec = kwargs.pop("spec", ServerlessSpec(cloud=cloud, region=region))
@@ -253,7 +259,7 @@ class PineconeCollection(
             "name": self.collection_name,
             "spec": spec,
             "dimension": vector_field.dimensions,
-            "metric": metric,
+            "metric": DISTANCE_METRIC_MAP[vector_field.distance_function],
             "vector_type": "dense",
         }
         index_creation_args.update(kwargs)

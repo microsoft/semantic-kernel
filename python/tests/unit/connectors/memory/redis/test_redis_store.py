@@ -6,13 +6,13 @@ import numpy as np
 from pytest import fixture, mark, raises
 from redis.asyncio.client import Redis
 
-from semantic_kernel.connectors.memory.redis.const import RedisCollectionTypes
-from semantic_kernel.connectors.memory.redis.redis_collection import RedisHashsetCollection, RedisJsonCollection
-from semantic_kernel.connectors.memory.redis.redis_store import RedisStore
-from semantic_kernel.exceptions import (
-    VectorStoreInitializationException,
-    VectorStoreOperationException,
+from semantic_kernel.connectors.memory.redis import (
+    RedisCollectionTypes,
+    RedisHashsetCollection,
+    RedisJsonCollection,
+    RedisStore,
 )
+from semantic_kernel.exceptions import VectorStoreInitializationException, VectorStoreOperationException
 
 BASE_PATH = "redis.asyncio.client.Redis"
 BASE_PATH_FT = "redis.commands.search.AsyncSearch"

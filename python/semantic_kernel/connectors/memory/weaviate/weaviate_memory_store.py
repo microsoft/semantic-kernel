@@ -123,8 +123,6 @@ class WeaviateMemoryStore(MemoryStoreBase):
             env_file_path (str): Whether to use the environment settings (.env) file.
             env_file_encoding (str): The encoding of the environment settings (.env) file. Defaults to 'utf-8'.
         """
-        from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
-
         self.settings = WeaviateSettings(
             url=url,
             api_key=api_key,

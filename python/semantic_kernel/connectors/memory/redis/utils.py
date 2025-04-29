@@ -1,34 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
-import contextlib
 import json
-from collections.abc import Callable
 from datetime import datetime
 from typing import Any
 
 import numpy as np
 from redis.asyncio.client import Redis
 from redis.commands.search.document import Document
-from redis.commands.search.field import Field as RedisField
-from redis.commands.search.field import NumericField, TagField, TextField, VectorField
-from redisvl.query.filter import FilterExpression, Num, Tag, Text
 
-from semantic_kernel.connectors.memory.redis.const import (
-    DISTANCE_FUNCTION_MAP,
-    TYPE_MAPPER_VECTOR,
-    RedisCollectionTypes,
-)
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
-)
-from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo
-from semantic_kernel.data.vector_search import VectorSearchFilter
-from semantic_kernel.exceptions import VectorSearchOptionsException
-from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
@@ -130,108 +109,3 @@ def deserialize_document_to_record(
         record._embedding = np.frombuffer(eb, dtype=vector_type).astype(float)
 
     return record
-
-
-class RedisWrapper(Redis):
-    """Wrapper to make sure the connection is closed when the object is deleted."""
-
-    def __del__(self) -> None:
-        """Close connection, done when the object is deleted, used when SK creates a client."""
-        with contextlib.suppress(Exception):
-            asyncio.get_running_loop().create_task(self.aclose())
-
-
-def data_model_definition_to_redis_fields(
-    data_model_definition: VectorStoreRecordDefinition, collection_type: RedisCollectionTypes
-) -> list[RedisField]:
-    """Create a list of fields for Redis from a data_model_definition."""
-    fields: list[RedisField] = []
-    for name, field in data_model_definition.fields.items():
-        if isinstance(field, VectorStoreRecordKeyField):
-            continue
-        if collection_type == RedisCollectionTypes.HASHSET:
-            fields.append(_field_to_redis_field_hashset(name, field))
-        elif collection_type == RedisCollectionTypes.JSON:
-            fields.append(_field_to_redis_field_json(name, field))
-    return fields
-
-
-def _field_to_redis_field_hashset(
-    name: str, field: VectorStoreRecordVectorField | VectorStoreRecordDataField
-) -> RedisField:
-    if isinstance(field, VectorStoreRecordVectorField):
-        return VectorField(
-            name=name,
-            algorithm=field.index_kind.value.upper() if field.index_kind else "HNSW",
-            attributes={
-                "type": TYPE_MAPPER_VECTOR[field.property_type or "default"],
-                "dim": field.dimensions,
-                "distance_metric": DISTANCE_FUNCTION_MAP[field.distance_function or "default"],
-            },
-        )
-    if field.property_type in ["int", "float"]:
-        return NumericField(name=name)
-    if field.is_full_text_indexed:
-        return TextField(name=name)
-    return TagField(name=name)
-
-
-def _field_to_redis_field_json(
-    name: str, field: VectorStoreRecordVectorField | VectorStoreRecordDataField
-) -> RedisField:
-    if isinstance(field, VectorStoreRecordVectorField):
-        return VectorField(
-            name=f"$.{name}",
-            algorithm=field.index_kind.value.upper() if field.index_kind else "HNSW",
-            attributes={
-                "type": TYPE_MAPPER_VECTOR[field.property_type or "default"],
-                "dim": field.dimensions,
-                "distance_metric": DISTANCE_FUNCTION_MAP[field.distance_function or "default"],
-            },
-            as_name=name,
-        )
-    if field.property_type in ["int", "float"]:
-        return NumericField(name=f"$.{name}", as_name=name)
-    if field.is_full_text_indexed:
-        return TextField(name=f"$.{name}", as_name=name)
-    return TagField(name=f"$.{name}", as_name=name)
-
-
-def _filters_to_redis_filters(
-    filters: VectorSearchFilter | Callable,
-    data_model_definition: VectorStoreRecordDefinition,
-) -> FilterExpression | None:
-    """Convert filters to Redis filters."""
-    if not isinstance(filters, VectorSearchFilter):
-        raise VectorStoreOperationException("Lambda filters are not supported yet.")
-    if not filters.filters:
-        return None
-    expression: FilterExpression | None = None
-    for filter in filters.filters:
-        new: FilterExpression | None = None
-        field = data_model_definition.fields.get(filter.field_name)
-        text_field = (field.is_full_text_indexed if isinstance(field, VectorStoreRecordDataField) else False) or False
-        match filter:
-            case EqualTo():
-                match filter.value:
-                    case int() | float():
-                        new = (
-                            Num(filter.field_name) == filter.value  # type: ignore
-                            if text_field
-                            else Tag(filter.field_name) == filter.value
-                        )
-                    case str():
-                        new = (
-                            Text(filter.field_name) == filter.value
-                            if text_field
-                            else Tag(filter.field_name) == filter.value
-                        )
-                    case _:
-                        raise VectorSearchOptionsException(f"Unsupported filter value type: {type(filter.value)}")
-            case AnyTagsEqualTo():
-                new = Text(filter.field_name) == filter.value
-            case _:
-                raise VectorSearchOptionsException(f"Unsupported filter type: {type(filter)}")
-        if new:
-            expression = expression & new if expression else new
-    return expression

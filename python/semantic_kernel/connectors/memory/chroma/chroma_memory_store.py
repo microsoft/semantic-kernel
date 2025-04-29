@@ -15,17 +15,21 @@ from semantic_kernel.connectors.memory.chroma.utils import chroma_compute_simila
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     import chromadb
     import chromadb.config
     from chromadb.api.models.Collection import Collection
 
+if sys.version_info >= (3, 12):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
+
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@deprecated("ChromaMemoryStore is deprecated and will be removed in a future version.Use ChromaStore instead.")
 class ChromaMemoryStore(MemoryStoreBase):
     """ChromaMemoryStore provides an interface to store and retrieve data using ChromaDB."""
 
