@@ -25,7 +25,7 @@ internal sealed class AgentStepActor : StepActor, IAgentStep
     /// <param name="host">The Dapr host actor</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
     /// <param name="registeredProcesses">The registered processes</param>
-    /// <param name="agentFactory">An instnace of <see cref="AgentFactory"/></param>
+    /// <param name="agentFactory">An instance of <see cref="AgentFactory"/></param>
     public AgentStepActor(ActorHost host, Kernel kernel, IReadOnlyDictionary<string, KernelProcess> registeredProcesses, AgentFactory agentFactory)
         : base(host, kernel, registeredProcesses)
     {

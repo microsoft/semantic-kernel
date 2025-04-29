@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ClientModel;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.OpenAI;
+using OpenAI;
 using ProcessWithCloudEvents.Grpc.Clients;
 using ProcessWithCloudEvents.Grpc.Extensions;
 using ProcessWithCloudEvents.Grpc.Options;
 using ProcessWithCloudEvents.Grpc.Services;
 using ProcessWithCloudEvents.Processes;
-using Microsoft.SemanticKernel.Agents.OpenAI;
-using OpenAI;
-using System.ClientModel;
-using Microsoft.SemanticKernel.Agents;
 
 var builder = WebApplication.CreateBuilder(args);
 
