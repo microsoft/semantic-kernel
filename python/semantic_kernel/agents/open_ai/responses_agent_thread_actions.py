@@ -55,6 +55,7 @@ if TYPE_CHECKING:
     from openai.types.responses.tool_param import ToolParam
 
     from semantic_kernel.agents.open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
+    from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
     from semantic_kernel.contents.function_call_content import FunctionCallContent
     from semantic_kernel.kernel import Kernel
 
@@ -94,6 +95,7 @@ class ResponsesAgentThreadActions:
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
+        polling_options: "RunPollingOptions | None" = None,
         reasoning: Literal["low", "medium", "high"] | None = None,
         text: "ResponseTextConfigParam | None" = None,
         tools: "list[ToolParam] | None" = None,
@@ -118,6 +120,8 @@ class ResponsesAgentThreadActions:
             metadata: The metadata.
             model: The model.
             parallel_tool_calls: The parallel tool calls.
+            polling_options: The polling options defined at the run-level. These will override the agent-level
+                polling options.
             reasoning: The reasoning effort.
             text: The response format.
             tools: The tools.
@@ -196,7 +200,7 @@ class ResponsesAgentThreadActions:
 
             try:
                 response = await asyncio.wait_for(
-                    cls._poll_until_completed(agent, response),
+                    cls._poll_until_completed(agent, response, polling_options or agent.polling_options),
                     timeout=agent.polling_options.run_polling_timeout.total_seconds(),
                 )
             except asyncio.TimeoutError:
@@ -515,10 +519,18 @@ class ResponsesAgentThreadActions:
         return response
 
     @classmethod
-    async def _poll_until_completed(cls: type[_T], agent: "OpenAIResponsesAgent", response: Response):
+    async def _poll_until_completed(
+        cls: type[_T],
+        agent: "OpenAIResponsesAgent",
+        response: Response,
+        polling_options: "RunPollingOptions",
+    ):
+        count = 0
+        print(f"Response status: {response.status}")
         while response.status != "completed":
-            await asyncio.sleep(agent.polling_options.default_polling_interval.total_seconds())
+            await asyncio.sleep(polling_options.get_polling_interval(count).total_seconds())
             response = await agent.client.responses.retrieve(response.id)
+            count += 1
         return response
 
     @classmethod

@@ -36,14 +36,14 @@ public abstract class TestsBase
         this._configuration.GetSection("VertexAI").Bind(this._vertexAI);
     }
 
-    protected IChatCompletionService GetChatService(ServiceType serviceType, bool isBeta = false) => serviceType switch
+    protected IChatCompletionService GetChatService(ServiceType serviceType, bool isBeta = false, string? overrideModelId = null) => serviceType switch
     {
         ServiceType.GoogleAI => new GoogleAIGeminiChatCompletionService(
-            this.GoogleAI.Gemini.ModelId,
+            overrideModelId ?? this.GoogleAI.Gemini.ModelId,
             this.GoogleAI.ApiKey,
             isBeta ? GoogleAIVersion.V1_Beta : GoogleAIVersion.V1),
         ServiceType.VertexAI => new VertexAIGeminiChatCompletionService(
-            modelId: this.VertexAI.Gemini.ModelId,
+            modelId: overrideModelId ?? this.VertexAI.Gemini.ModelId,
             bearerKey: this.VertexAI.BearerKey,
             location: this.VertexAI.Location,
             projectId: this.VertexAI.ProjectId,
