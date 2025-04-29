@@ -13,6 +13,18 @@ namespace Microsoft.SemanticKernel.Process;
 /// </summary>
 public class KernelProcessAgentExecutor : KernelProcessStep<KernelProcessAgentExecutorState>
 {
+    /// <summary>
+    /// SK Function names in this SK Step as entry points
+    /// </summary>
+    public static class Functions
+    {
+        /// <summary>
+        /// Function name used to emit events externally
+        /// </summary>
+        public const string InvokeAgent = nameof(InvokeAgent);
+        public const string ResetThreadId = nameof(ResetThreadId);
+    }
+
     private readonly AgentFactory? _agentFactory;
 
     internal KernelProcessAgentExecutorState _state = new();
@@ -41,8 +53,8 @@ public class KernelProcessAgentExecutor : KernelProcessStep<KernelProcessAgentEx
     /// <param name="agentDefinition">definition of agent</param>
     /// <param name="message">incoming message to be processed by agent</param>
     /// <returns></returns>
-    [KernelFunction]
-    public async Task<ChatMessageContent?> InvokeAsync(Kernel kernel, AgentDefinition agentDefinition, object? message = null)
+    [KernelFunction(Functions.InvokeAgent)]
+    public async Task<ChatMessageContent?> InvokeAsync(Kernel kernel, AgentDefinition agentDefinition, object? message)
     {
         if (this._agentFactory == null)
         {

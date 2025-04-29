@@ -94,6 +94,16 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
             Inputs = this.Inputs,
         };
     }
+
+    internal ProcessFunctionTargetBuilder GetInvokeAgentFunctionTargetBuilder()
+    {
+        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.Functions.InvokeAgent, parameterName: "message");
+    }
+
+    internal ProcessFunctionTargetBuilder GetResetAgentThreadIdFunctionTargetBuilder()
+    {
+        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.Functions.ResetThreadId);
+    }
 }
 
 /// <summary>

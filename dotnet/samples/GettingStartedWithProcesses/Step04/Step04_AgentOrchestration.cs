@@ -170,7 +170,7 @@ public class Step04_AgentOrchestration : BaseTest
         // Pass user input to primary agent
         userInputStep
             .OnEvent(CommonEvents.UserInputReceived)
-            .SendEventTo(new(agentStep, parameterName: "message"))
+            .SentToAgentStep(agentStep)
             .SendEventTo(new(renderMessageStep, RenderMessageStep.Functions.RenderUserText));
 
         agentStep
