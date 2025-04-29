@@ -10,7 +10,7 @@ from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFo
 from semantic_kernel.connectors.memory.azure_cosmos_db import (
     COSMOS_ITEM_ID_PROPERTY_NAME,
     AzureCosmosDBNoSQLCollection,
-    _create_default_indexing_policy,
+    _create_default_indexing_policy_nosql,
     _create_default_vector_embedding_policy,
 )
 from semantic_kernel.exceptions import VectorStoreInitializationException
@@ -228,7 +228,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection(
     mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
         id=collection_name,
         partition_key=vector_collection.partition_key,
-        indexing_policy=_create_default_indexing_policy(vector_collection.data_model_definition),
+        indexing_policy=_create_default_indexing_policy_nosql(vector_collection.data_model_definition),
         vector_embedding_policy=_create_default_vector_embedding_policy(vector_collection.data_model_definition),
     )
 
@@ -288,7 +288,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
     mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
         id=collection_name,
         partition_key=vector_collection.partition_key,
-        indexing_policy=_create_default_indexing_policy(vector_collection.data_model_definition),
+        indexing_policy=_create_default_indexing_policy_nosql(vector_collection.data_model_definition),
         vector_embedding_policy={"vectorEmbeddings": []},
     )
 
