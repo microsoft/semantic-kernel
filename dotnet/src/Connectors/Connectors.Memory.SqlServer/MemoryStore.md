@@ -111,8 +111,10 @@ while (true)
     Console.WriteLine();
     chat.AddAssistantMessage(builder.ToString());
 
-    if (contextToRemove >= 0)
+    if (contextToRemove >= 0) 
+    {
         chat.RemoveAt(contextToRemove);
+    }
 
     Console.WriteLine();
 }
