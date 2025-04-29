@@ -317,6 +317,14 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 await proxyActor.InitializeProxyAsync(proxyStep, this.Id.GetId()).ConfigureAwait(false);
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedProxyId, nameof(ProxyActor));
             }
+            else if (step is DaprAgentStepInfo agentStepInfo)
+            {
+                // Initialize the step as a proxy
+                ActorId scopedAgentStepId = this.ScopedActorId(new ActorId(agentStepInfo.State.Id!));
+                IAgentStep agentActor = this.ProxyFactory.CreateActorProxy<IAgentStep>(scopedAgentStepId, nameof(AgentStepActor));
+                await agentActor.InitializeAgentStepAsync(agentStepInfo, this.Id.GetId()).ConfigureAwait(false);
+                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedAgentStepId, nameof(AgentStepActor));
+            }
             else
             {
                 // The current step should already have an Id.

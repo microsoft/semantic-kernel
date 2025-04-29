@@ -27,21 +27,6 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
         this._agentDefinition = agentDefinition;
     }
 
-    /// <summary>
-    /// Creates a new instance of the <see cref="ProcessAgentBuilder"/> class.
-    /// </summary>
-    /// <param name="agentDefinition"></param>
-    /// <param name="onComplete"></param>
-    /// <param name="onError"></param>
-    /// <exception cref="KernelException"></exception>
-    public ProcessAgentBuilder(AgentDefinition agentDefinition, Action<object?, KernelProcessStepContext> onComplete, Action<object?, KernelProcessStepContext> onError) : base(agentDefinition.Id ?? throw new KernelException("AgentDefinition Id must be set"))
-    {
-        Verify.NotNull(agentDefinition);
-        this._agentDefinition = agentDefinition;
-        this.OnCompleteCodeAction = onComplete;
-        this.OnErrorCodeAction = onError;
-    }
-
     #region Public Interface
 
     /// <summary>
@@ -73,22 +58,22 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
     /// </summary>
     /// <returns></returns>
-    public ProcessAgentBuilder OnComplete(List<DeclarativeProcessCondition> conditions)
+    public DeclarativeEventHandlerGroupBuilder OnComplete(List<DeclarativeProcessCondition> conditions)
     {
         var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
         this.OnCompleteBuilder = builder;
-        return this;
+        return builder;
     }
 
     /// <summary>
     /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
     /// </summary>
     /// <returns></returns>
-    public ProcessAgentBuilder OnError(List<DeclarativeProcessCondition> conditions)
+    public DeclarativeEventHandlerGroupBuilder OnError(List<DeclarativeProcessCondition> conditions)
     {
         var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
         this.OnErrorBuilder = builder;
-        return this;
+        return builder;
     }
 
     /// <summary>
@@ -128,6 +113,16 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
         {
             Inputs = this.Inputs,
         };
+    }
+
+    internal ProcessFunctionTargetBuilder GetInvokeAgentFunctionTargetBuilder()
+    {
+        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.Functions.InvokeAgent, parameterName: "message");
+    }
+
+    internal ProcessFunctionTargetBuilder GetResetAgentThreadIdFunctionTargetBuilder()
+    {
+        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.Functions.ResetThreadId);
     }
 }
 

@@ -38,5 +38,6 @@ internal static class ProcessConstants
         Process,
         Map,
         Proxy,
+        AgentStep,
     }
 }

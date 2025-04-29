@@ -13,6 +13,18 @@ namespace Microsoft.SemanticKernel.Process;
 /// </summary>
 public class KernelProcessAgentExecutor : KernelProcessStep<KernelProcessAgentExecutorState>
 {
+    /// <summary>
+    /// SK Function names in this SK Step as entry points
+    /// </summary>
+    public static class Functions
+    {
+        /// <summary>
+        /// Function name used to emit events externally
+        /// </summary>
+        public const string InvokeAgent = nameof(InvokeAgent);
+        public const string ResetThreadId = nameof(ResetThreadId);
+    }
+
     private readonly AgentFactory? _agentFactory;
     private readonly KernelProcessAgentStep _agentStep;
 
@@ -35,7 +47,7 @@ public class KernelProcessAgentExecutor : KernelProcessStep<KernelProcessAgentEx
     /// <inheritdoc/>
     public override ValueTask ActivateAsync(KernelProcessStepState<KernelProcessAgentExecutorState> state)
     {
-        this._state = state.State!;
+        this._state = state.State ?? new();
 
         return base.ActivateAsync(state);
     }
@@ -46,7 +58,7 @@ public class KernelProcessAgentExecutor : KernelProcessStep<KernelProcessAgentEx
     /// <param name="kernel">instance of <see cref="Kernel"/></param>
     /// <param name="message">incoming message to be processed by agent</param>
     /// <returns></returns>
-    [KernelFunction]
+    [KernelFunction(Functions.InvokeAgent)]
     public async Task<ChatMessageContent?> InvokeAsync(Kernel kernel, object? message = null)
     {
         try
@@ -96,7 +108,6 @@ public class KernelProcessAgentExecutor : KernelProcessStep<KernelProcessAgentEx
         }
         catch (System.Exception)
         {
-
             throw;
         }
     }

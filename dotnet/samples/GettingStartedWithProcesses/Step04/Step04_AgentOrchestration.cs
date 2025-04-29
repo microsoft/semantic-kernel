@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure.Identity;
 using System.ClientModel;
+using Azure.Identity;
 using Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -170,7 +170,7 @@ public class Step04_AgentOrchestration : BaseTest
         // Pass user input to primary agent
         userInputStep
             .OnEvent(CommonEvents.UserInputReceived)
-            .SendEventTo(new(agentStep, parameterName: "message"))
+            .SentToAgentStep(agentStep)
             .SendEventTo(new(renderMessageStep, RenderMessageStep.Functions.RenderUserText));
 
         agentStep

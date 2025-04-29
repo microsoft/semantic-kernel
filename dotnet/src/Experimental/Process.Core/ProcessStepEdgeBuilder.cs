@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
@@ -109,6 +110,17 @@ public class ProcessStepEdgeBuilder
 
         // 2. Regular SK step link step functions/edge connection
         var targetBuilder = proxyStep.GetExternalFunctionTargetBuilder();
+
+        return this.SendEventTo(targetBuilder);
+    }
+
+    /// <summary>
+    /// Emit the SK step event as an external event with specific topic name
+    /// </summary>
+    /// <returns></returns>
+    public ProcessStepEdgeBuilder SentToAgentStep(ProcessAgentBuilder agentStep)
+    {
+        var targetBuilder = agentStep.GetInvokeAgentFunctionTargetBuilder();
 
         return this.SendEventTo(targetBuilder);
     }

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Grpc.Net.Client;
 using Microsoft.SemanticKernel;
-using ProcessWithCloudEvents.Grpc.DocumentationGenerator;
+using ProcessWithCloudEvents.Grpc.Contract;
 using ProcessWithCloudEvents.Processes;
 using ProcessWithCloudEvents.Processes.Models;
 

@@ -35,11 +35,11 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         var processBuilder = new ProcessBuilder("foundry_agents");
 
-        var agent1 = processBuilder.AddStepFromDeclarativeAgent(foundryAgentDefinition1)
-            .OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent1Complete" }] }]);
+        var agent1 = processBuilder.AddStepFromDeclarativeAgent(foundryAgentDefinition1);
+        agent1.OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent1Complete" }] }]);
 
-        var agent2 = processBuilder.AddStepFromDeclarativeAgent(foundryAgentDefinition2)
-            .OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent2Complete" }] }]);
+        var agent2 = processBuilder.AddStepFromDeclarativeAgent(foundryAgentDefinition2);
+        agent2.OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent2Complete" }] }]);
 
         processBuilder.OnInputEvent("start").SendEventTo(new(agent1)); // Change to ListenForInput?
 
