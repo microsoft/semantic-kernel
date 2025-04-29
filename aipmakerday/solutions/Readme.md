@@ -1,8 +1,8 @@
 
-The projects here demonstrate some approaches to create an agent using the suggested "Outdoor Planner" agent.
+The projects here demonstrate some approaches to create an agent using the suggested "Outdoor Activites Planner" agent.
 
 - All projects results in the same functionality, only with different approaches
-- Each project uses the same pattern, regardless of agent-type or service-type.
+- Usage an agent follows the same pattern, regardless of agent-type or service-type.
 
 ### `ChatCompletion.Direct` (Recommended Approach)
 

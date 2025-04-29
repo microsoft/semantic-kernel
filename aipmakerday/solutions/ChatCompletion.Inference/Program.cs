@@ -10,7 +10,7 @@ FoundrySettings settings = ConfigurationServices.GetFoundrySettings();
 // Define kernel with openai service connector
 IKernelBuilder builder =
     Kernel.CreateBuilder()
-        .AddAzureOpenAIChatCompletion(settings.ChatDeploymentName, settings.Endpoint, settings.ApiKey);
+        .AddAzureAIInferenceChatCompletion(settings.ChatDeploymentName, settings.ApiKey, new Uri(settings.Endpoint));
 
 // Add logging services
 builder.Services.AddSingleton(loggerFactory);
