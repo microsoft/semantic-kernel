@@ -285,17 +285,24 @@ class AzureAIAgent(Agent):
 
     @classmethod
     def resolve_placeholders(cls, yaml_str: str, settings: Any) -> str:
-        """Resolve placeholders in the YAML string."""
+        """Resolve placeholders in the YAML string using AzureAIAgentSettings."""
         import re
 
         pattern = re.compile(r"\$\{([^}]+)\}")
+
+        # Explicit mapping from placeholder keys -> settings fields
+        field_mapping = {
+            "ChatModelId": getattr(settings, "model_deployment_name", None),
+            "ConnectionString": getattr(settings, "project_connection_string", None),
+            "AgentId": getattr(settings, "agent_id", None),
+        }
 
         def replacer(match):
             full_key = match.group(1)
             section, _, key = full_key.partition(":")
             if section != "AzureAI":
                 return match.group(0)
-            return getattr(settings, key.lower(), match.group(0)) or match.group(0)
+            return field_mapping.get(key, match.group(0)) or match.group(0)
 
         return pattern.sub(replacer, yaml_str)
 
