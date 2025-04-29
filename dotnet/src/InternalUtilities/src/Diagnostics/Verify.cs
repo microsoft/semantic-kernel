@@ -185,7 +185,7 @@ internal static partial class Verify
 #endif
 
     [DoesNotReturn]
-    private static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>
+    internal static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>
         throw new ArgumentException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.", paramName);
 
     [DoesNotReturn]
@@ -240,6 +240,14 @@ internal static partial class Verify
         if (!System.Text.RegularExpressions.Regex.IsMatch(hostNameSegment, @"^[a-zA-Z0-9][a-zA-Z0-9\-_]*[a-zA-Z0-9]$"))
         {
             throw new ArgumentException($"The location '{hostNameSegment}' is not valid. Location must start and end with alphanumeric characters and can contain hyphens and underscores.", paramName);
+        }
+    }
+
+    internal static void NotLessThan(int value, int limit, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        if (value < limit)
+        {
+            throw new ArgumentOutOfRangeException(paramName, $"{paramName} must be greater than or equal to {limit}.");
         }
     }
 }

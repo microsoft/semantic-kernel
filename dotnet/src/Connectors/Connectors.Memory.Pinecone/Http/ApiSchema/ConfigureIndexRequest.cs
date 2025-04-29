@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// This operation specifies the pod type and number of replicas for an index.
 /// See https://docs.pinecone.io/reference/configure_index
 /// </summary>
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and PineconeVectorStore")]
 internal sealed class ConfigureIndexRequest
 {
     public string IndexName { get; set; }

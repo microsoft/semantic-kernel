@@ -533,6 +533,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <summary>
     /// Captures usage details, including token information.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     private void CaptureUsageDetails(string? modelId, IReadOnlyDictionary<string, object?>? metadata, ILogger logger)
     {
         if (!logger.IsEnabled(LogLevel.Information) &&

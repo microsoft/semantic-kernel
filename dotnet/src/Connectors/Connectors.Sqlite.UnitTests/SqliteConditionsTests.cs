@@ -22,9 +22,9 @@ public sealed class SqliteConditionsTests
     }
 
     [Theory]
-    [InlineData(null, "Name = @Name0")]
-    [InlineData("", "Name = @Name0")]
-    [InlineData("TableName", "TableName.Name = @Name0")]
+    [InlineData(null, "\"Name\" = @Name0")]
+    [InlineData("", "\"Name\" = @Name0")]
+    [InlineData("TableName", "\"TableName\".\"Name\" = @Name0")]
     public void SqliteWhereEqualsConditionBuildsValidQuery(string? tableName, string expectedQuery)
     {
         // Arrange
@@ -48,9 +48,9 @@ public sealed class SqliteConditionsTests
     }
 
     [Theory]
-    [InlineData(null, "Name IN (@Name0, @Name1)")]
-    [InlineData("", "Name IN (@Name0, @Name1)")]
-    [InlineData("TableName", "TableName.Name IN (@Name0, @Name1)")]
+    [InlineData(null, "\"Name\" IN (@Name0, @Name1)")]
+    [InlineData("", "\"Name\" IN (@Name0, @Name1)")]
+    [InlineData("TableName", "\"TableName\".\"Name\" IN (@Name0, @Name1)")]
     public void SqliteWhereInConditionBuildsValidQuery(string? tableName, string expectedQuery)
     {
         // Arrange
@@ -74,9 +74,9 @@ public sealed class SqliteConditionsTests
     }
 
     [Theory]
-    [InlineData(null, "Name MATCH @Name0")]
-    [InlineData("", "Name MATCH @Name0")]
-    [InlineData("TableName", "TableName.Name MATCH @Name0")]
+    [InlineData(null, "\"Name\" MATCH @Name0")]
+    [InlineData("", "\"Name\" MATCH @Name0")]
+    [InlineData("TableName", "\"TableName\".\"Name\" MATCH @Name0")]
     public void SqliteWhereMatchConditionBuildsValidQuery(string? tableName, string expectedQuery)
     {
         // Arrange

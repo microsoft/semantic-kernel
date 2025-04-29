@@ -15,6 +15,6 @@ internal abstract class SqliteWhereCondition(string operand, List<object> values
     public abstract string BuildQuery(List<string> parameterNames);
 
     protected string GetOperand() => !string.IsNullOrWhiteSpace(this.TableName) ?
-        $"{this.TableName}.{this.Operand}" :
-        this.Operand;
+        $"\"{this.TableName}\".\"{this.Operand}\"" :
+        $"\"{this.Operand}\"";
 }

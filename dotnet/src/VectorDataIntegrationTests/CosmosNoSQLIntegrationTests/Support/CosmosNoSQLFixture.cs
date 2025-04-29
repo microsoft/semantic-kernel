@@ -6,5 +6,5 @@ namespace CosmosNoSQLIntegrationTests.Support;
 
 public class CosmosNoSQLFixture : VectorStoreFixture
 {
-    public override TestStore TestStore => CosmosNoSqlTestStore.Instance;
+    public override TestStore TestStore => CosmosNoSQLTestStore.Instance;
 }

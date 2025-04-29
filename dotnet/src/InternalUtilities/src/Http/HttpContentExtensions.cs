@@ -24,11 +24,7 @@ internal static class HttpContentExtensions
     {
         try
         {
-#if NET5_0_OR_GREATER
             return await httpContent.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-#else
-            return await httpContent.ReadAsStringAsync().ConfigureAwait(false);
-#endif
         }
         catch (HttpRequestException ex)
         {
@@ -46,11 +42,7 @@ internal static class HttpContentExtensions
     {
         try
         {
-#if NET5_0_OR_GREATER
             return await httpContent.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-#else
-            return await httpContent.ReadAsStreamAsync().ConfigureAwait(false);
-#endif
         }
         catch (HttpRequestException ex)
         {
@@ -68,11 +60,7 @@ internal static class HttpContentExtensions
     {
         try
         {
-#if NET5_0_OR_GREATER
             return await httpContent.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
-#else
-            return await httpContent.ReadAsByteArrayAsync().ConfigureAwait(false);
-#endif
         }
         catch (HttpRequestException ex)
         {

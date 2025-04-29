@@ -20,6 +20,7 @@ namespace SemanticKernel.Connectors.Qdrant.UnitTests;
 /// <summary>
 /// Tests for <see cref="QdrantMemoryStore"/> Search operations.
 /// </summary>
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class QdrantMemoryStoreTests3
 {
     private readonly string _id = "Id";

@@ -46,7 +46,7 @@ internal sealed class VectorStoreTextSearchTests
         };
         var vectorizableTextSearch = new MockVectorizableTextSearch<DataModel>(testData);
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton<IVectorizableTextSearch<DataModel>>(vectorizableTextSearch);
+        serviceCollection.AddSingleton<IVectorSearch<DataModel>>(vectorizableTextSearch);
 
         // Act
         serviceCollection.AddVectorStoreTextSearch<DataModel>();

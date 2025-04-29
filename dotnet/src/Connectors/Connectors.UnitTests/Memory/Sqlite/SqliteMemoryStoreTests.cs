@@ -16,6 +16,7 @@ namespace SemanticKernel.Connectors.UnitTests.Sqlite;
 /// Unit tests of <see cref="SqliteMemoryStore"/>.
 /// </summary>
 [Collection("Sequential")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public sealed class SqliteMemoryStoreTests : IDisposable
 {
     private const string DatabaseFile = "SqliteMemoryStoreTests.db";

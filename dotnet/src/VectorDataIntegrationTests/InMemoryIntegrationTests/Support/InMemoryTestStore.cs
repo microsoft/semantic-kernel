@@ -10,9 +10,12 @@ internal sealed class InMemoryTestStore : TestStore
 {
     public static InMemoryTestStore Instance { get; } = new();
 
-    private InMemoryVectorStore _vectorStore = new();
+    private InMemoryVectorStore _defaultVectorStore = new();
 
-    public override IVectorStore DefaultVectorStore => this._vectorStore;
+    public override IVectorStore DefaultVectorStore => this._defaultVectorStore;
+
+    public InMemoryVectorStore GetVectorStore(InMemoryVectorStoreOptions options)
+        => new(new() { EmbeddingGenerator = options.EmbeddingGenerator });
 
     private InMemoryTestStore()
     {
@@ -20,7 +23,7 @@ internal sealed class InMemoryTestStore : TestStore
 
     protected override Task StartAsync()
     {
-        this._vectorStore = new InMemoryVectorStore();
+        this._defaultVectorStore = new InMemoryVectorStore();
 
         return Task.CompletedTask;
     }
