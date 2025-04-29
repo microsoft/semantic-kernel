@@ -480,7 +480,10 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        var records = this.GetCollectionDictionary().Values.Cast<TRecord>()
+        var records = this.GetCollectionDictionary()
+            .Values
+            .Cast<InMemoryVectorRecordWrapper<TRecord>>()
+            .Select(x => x.Record)
             .AsQueryable()
             .Where(filter);
 
