@@ -25,7 +25,7 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
     private readonly IVectorStore _vectorStore;
     private readonly ITextEmbeddingGenerationService _textEmbeddingGenerationService;
     private readonly int _vectorDimensions;
-    private readonly string? _searchNamespace;
+    private readonly TextRagStoreOptions _options;
 
     private readonly Lazy<IVectorStoreRecordCollection<TKey, TextRagStorageDocument<TKey>>> _vectorStoreRecordCollection;
     private readonly SemaphoreSlim _collectionInitializationLock = new(1, 1);
@@ -39,14 +39,14 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
     /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings for the memories.</param>
     /// <param name="collectionName">The name of the collection in the vector store to store and read the memories from.</param>
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
-    /// <param name="searchNamespace">An optional namespace to filter search results to.</param>
+    /// <param name="options">Options to configure the behavior of this class.</param>
     /// <exception cref="NotSupportedException">Thrown if the key type provided is not supported.</exception>
     public TextRagStore(
         IVectorStore vectorStore,
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
         string collectionName,
         int vectorDimensions,
-        string? searchNamespace)
+        TextRagStoreOptions? options)
     {
         Verify.NotNull(vectorStore);
         Verify.NotNull(textEmbeddingGenerationService);
@@ -56,11 +56,16 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
         this._vectorStore = vectorStore;
         this._textEmbeddingGenerationService = textEmbeddingGenerationService;
         this._vectorDimensions = vectorDimensions;
-        this._searchNamespace = searchNamespace;
+        this._options = options ?? new TextRagStoreOptions();
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(Guid))
         {
             throw new NotSupportedException($"Unsupported key of type '{typeof(TKey).Name}'");
+        }
+
+        if (typeof(TKey) != typeof(string) && this._options.UseSourceIdAsPrimaryKey is true)
+        {
+            throw new NotSupportedException($"The {nameof(TextRagStoreOptions.UseSourceIdAsPrimaryKey)} option can only be used when the key type is 'string'.");
         }
 
         VectorStoreRecordDefinition ragDocumentDefinition = new()
@@ -89,11 +94,16 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
     /// <returns>A task that completes when the documents have been upserted.</returns>
     public async Task UpsertDocumentsAsync(IEnumerable<TextRagDocument> documents, CancellationToken cancellationToken = default)
     {
-        var vectorStoreRecordCollection = await this.EnsureCollectionCreatedAsync(cancellationToken).ConfigureAwait(false);
+        var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         var storageDocumentsTasks = documents.Select(async document =>
         {
-            var key = GenerateUniqueKey<TKey>(document.SourceId);
+            if (string.IsNullOrWhiteSpace(document.Text) && string.IsNullOrWhiteSpace(document.SourceId) && string.IsNullOrWhiteSpace(document.SourceLink))
+            {
+                throw new ArgumentException($"Either the document {nameof(TextRagDocument.Text)}, {nameof(TextRagDocument.SourceId)} or {nameof(TextRagDocument.SourceLink)} properties must be set.", nameof(document));
+            }
+
+            var key = GenerateUniqueKey<TKey>(this._options.UseSourceIdAsPrimaryKey ?? false ? document.SourceId : null);
             var textEmbedding = await this._textEmbeddingGenerationService.GenerateEmbeddingAsync(document.Text).ConfigureAwait(false);
 
             return new TextRagStorageDocument<TKey>
@@ -103,7 +113,7 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
                 SourceId = document.SourceId,
                 Text = document.Text,
                 SourceName = document.SourceName,
-                SourceReference = document.SourceReference,
+                SourceLink = document.SourceLink,
                 TextEmbedding = textEmbedding
             };
         });
@@ -115,6 +125,13 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
+        var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+        var textSearch = new VectorStoreTextSearch<TextRagStorageDocument<TKey>>(
+            vectorStoreRecordCollection,
+            this._textEmbeddingGenerationService,
+            r => r is TextRagStorageDocument<TKey> doc ? doc.Text ?? string.Empty : string.Empty,
+            r => r is TextRagStorageDocument<TKey> doc ? new TextSearchResult(doc.Text ?? string.Empty) { Name = doc.SourceName, Link = doc.SourceLink } : new TextSearchResult(string.Empty));
+
         var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         return new(searchResult.Results.SelectAsync(x => x.Record.Text ?? string.Empty, cancellationToken));
@@ -125,12 +142,12 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
     {
         var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        var results = searchResult.Results.SelectAsync(x => new TextSearchResult(x.Record.Text ?? string.Empty) { Name = x.Record.SourceName, Link = x.Record.SourceReference }, cancellationToken);
+        var results = searchResult.Results.SelectAsync(x => new TextSearchResult(x.Record.Text ?? string.Empty) { Name = x.Record.SourceName, Link = x.Record.SourceLink }, cancellationToken);
         return new(searchResult.Results.SelectAsync(x =>
             new TextSearchResult(x.Record.Text ?? string.Empty)
             {
                 Name = x.Record.SourceName,
-                Link = x.Record.SourceReference
+                Link = x.Record.SourceLink
             }, cancellationToken));
     }
 
@@ -150,10 +167,10 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
     /// <returns>The search results.</returns>
     private async Task<VectorSearchResults<TextRagStorageDocument<TKey>>> SearchInternalAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var vectorStoreRecordCollection = await this.EnsureCollectionCreatedAsync(cancellationToken).ConfigureAwait(false);
+        var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         // Optional filter to limit the search to a specific namespace.
-        Expression<Func<TextRagStorageDocument<TKey>, bool>>? filter = string.IsNullOrWhiteSpace(this._searchNamespace) ? null : x => x.Namespaces.Contains(this._searchNamespace);
+        Expression<Func<TextRagStorageDocument<TKey>, bool>>? filter = string.IsNullOrWhiteSpace(this._options.SearchNamespace) ? null : x => x.Namespaces.Contains(this._options.SearchNamespace);
 
         var vector = await this._textEmbeddingGenerationService.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
         var searchResult = await vectorStoreRecordCollection.VectorizedSearchAsync(
@@ -173,7 +190,7 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The created collection.</returns>
-    private async Task<IVectorStoreRecordCollection<TKey, TextRagStorageDocument<TKey>>> EnsureCollectionCreatedAsync(CancellationToken cancellationToken)
+    private async Task<IVectorStoreRecordCollection<TKey, TextRagStorageDocument<TKey>>> EnsureCollectionExistsAsync(CancellationToken cancellationToken)
     {
         var vectorStoreRecordCollection = this._vectorStoreRecordCollection.Value;
 
@@ -267,6 +284,11 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
         public List<string> Namespaces { get; set; } = [];
 
         /// <summary>
+        /// Gets or sets the content as text.
+        /// </summary>
+        public string? Text { get; set; }
+
+        /// <summary>
         /// Gets or sets an optional source ID for the document.
         /// </summary>
         /// <remarks>
@@ -278,11 +300,6 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
         public string? SourceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the content as text.
-        /// </summary>
-        public string? Text { get; set; }
-
-        /// <summary>
         /// Gets or sets an optional name for the source document.
         /// </summary>
         /// <remarks>
@@ -292,13 +309,13 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
         public string? SourceName { get; set; }
 
         /// <summary>
-        /// Gets or sets an optional reference back to the source of the document.
+        /// Gets or sets an optional link back to the source of the document.
         /// </summary>
         /// <remarks>
         /// This can be used to provide citation links when the document is referenced as
         /// part of a response to a query.
         /// </remarks>
-        public string? SourceReference { get; set; }
+        public string? SourceLink { get; set; }
 
         /// <summary>
         /// Gets or sets the embedding for the text content.

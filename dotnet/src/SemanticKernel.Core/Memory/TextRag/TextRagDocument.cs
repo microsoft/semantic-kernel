@@ -12,23 +12,17 @@ namespace Microsoft.SemanticKernel.Memory.TextRag;
 public class TextRagDocument
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="TextRagDocument"/> class.
-    /// </summary>
-    /// <param name="text">The text content.</param>
-    public TextRagDocument(string text)
-    {
-        Verify.NotNullOrWhiteSpace(text);
-
-        this.Text = text;
-    }
-
-    /// <summary>
     /// Gets or sets an optional list of namespaces that the document should belong to.
     /// </summary>
     /// <remarks>
     /// A namespace is a logical grouping of documents, e.g. may include a group id to scope the document to a specific group of users.
     /// </remarks>
     public List<string> Namespaces { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the content as text.
+    /// </summary>
+    public string? Text { get; set; }
 
     /// <summary>
     /// Gets or sets an optional source ID for the document.
@@ -42,11 +36,6 @@ public class TextRagDocument
     public string? SourceId { get; set; }
 
     /// <summary>
-    /// Gets or sets the content as text.
-    /// </summary>
-    public string Text { get; set; }
-
-    /// <summary>
     /// Gets or sets an optional name for the source document.
     /// </summary>
     /// <remarks>
@@ -56,11 +45,11 @@ public class TextRagDocument
     public string? SourceName { get; set; }
 
     /// <summary>
-    /// Gets or sets an optional reference back to the source of the document.
+    /// Gets or sets an optional link back to the source of the document.
     /// </summary>
     /// <remarks>
     /// This can be used to provide citation links when the document is referenced as
     /// part of a response to a query.
     /// </remarks>
-    public string? SourceReference { get; set; }
+    public string? SourceLink { get; set; }
 }
