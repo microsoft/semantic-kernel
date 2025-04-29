@@ -5,8 +5,10 @@ from typing import Any
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.processes.kernel_process.kernel_process_message_channel import KernelProcessMessageChannel
 from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
+@experimental
 def find_input_channels(
     channel: KernelProcessMessageChannel, functions: dict[str, KernelFunction]
 ) -> dict[str, dict[str, Any | None]]:
@@ -31,6 +33,7 @@ def find_input_channels(
     return inputs
 
 
+@experimental
 def get_fully_qualified_name(cls) -> str:
     """Gets the fully qualified name of a class."""
     return f"{cls.__module__}.{cls.__name__}"
