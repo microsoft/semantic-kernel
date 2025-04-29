@@ -842,7 +842,8 @@ class VectorStore(KernelBaseModel):
     @abstractmethod
     def get_collection(
         self,
-        data_model_type: type[object],
+        data_model_type: type[TModel],
+        *,
         data_model_definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,

@@ -14,6 +14,7 @@ from pymongo.asynchronous.database import AsyncDatabase
 from pymongo.driver_info import DriverInfo
 from pymongo.operations import SearchIndexModel
 
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
 from semantic_kernel.data.text_search import KernelSearchResults
@@ -24,12 +25,14 @@ from semantic_kernel.data.vector_storage import (
     TModel,
     VectorStore,
     VectorStoreRecordCollection,
+    _get_collection_name_from_model,
 )
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
+from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
@@ -139,9 +142,9 @@ class MongoDBAtlasCollection(
 
     def __init__(
         self,
-        collection_name: str,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
         index_name: str | None = None,
         mongo_client: AsyncMongoClient | None = None,
         connection_string: str | None = None,
@@ -167,6 +170,8 @@ class MongoDBAtlasCollection(
             env_file_encoding: str | None = None
             **kwargs: Additional keyword arguments
         """
+        if not collection_name:
+            collection_name = _get_collection_name_from_model(data_model_type, data_model_definition)
         managed_client = kwargs.get("managed_client", not mongo_client)
         if mongo_client:
             super().__init__(
@@ -330,6 +335,10 @@ class MongoDBAtlasCollection(
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         collection = self._get_collection()
         vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        if not vector_field:
+            raise VectorStoreModelException(
+                f"Vector field '{options.vector_field_name}' not found in the data model definition."
+            )
         if not vector:
             vector = await self._generate_vector_from_values(values, options)
         vector_search_query: dict[str, Any] = {
@@ -555,16 +564,19 @@ class MongoDBAtlasStore(VectorStore):
     def get_collection(
         self,
         data_model_type: type[TModel],
+        *,
         data_model_definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> "VectorStoreRecordCollection":
         """Get a MongoDBAtlasCollection tied to a collection.
 
         Args:
-            collection_name (str): The name of the collection.
-            data_model_type (type[TModel]): The type of the data model.
-            data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
+            data_model_type: The type of the data model.
+            data_model_definition: The model fields, optional.
+            collection_name: The name of the collection.
+            embedding_generator: The embedding generator, optional.
             **kwargs: Additional keyword arguments, passed to the collection constructor.
         """
         return MongoDBAtlasCollection(
@@ -573,6 +585,7 @@ class MongoDBAtlasStore(VectorStore):
             mongo_client=self.mongo_client,
             collection_name=collection_name,
             database_name=self.database_name,
+            embedding_generator=embedding_generator,
             **kwargs,
         )
 

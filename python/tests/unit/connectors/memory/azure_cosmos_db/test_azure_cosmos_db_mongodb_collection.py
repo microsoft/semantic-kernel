@@ -7,8 +7,8 @@ from pydantic import BaseModel, ValidationError
 from pydantic_core import InitErrorDetails
 from pymongo import AsyncMongoClient
 
-import semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_mongodb_collection as cosmos_collection
-import semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_mongodb_settings as cosmos_settings
+import semantic_kernel.connectors.memory.azure_cosmos_db as cosmos_collection
+import semantic_kernel.connectors.memory.azure_cosmos_db as cosmos_settings
 from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,

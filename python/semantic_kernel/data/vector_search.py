@@ -179,6 +179,8 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         if isinstance(results, Sequence):
             results = desync_list(results)
         async for result in results:
+            if not result:
+                continue
             try:
                 record = self.deserialize(
                     self._get_record_from_result(result), include_vectors=options.include_vectors if options else True
