@@ -27,6 +27,9 @@
     <None Include="../shared/*.json" Link="%(RecursiveDir)%(Filename)%(Extension)">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="../Readme.md" Link="%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
