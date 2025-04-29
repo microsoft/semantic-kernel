@@ -8,7 +8,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);SKEXP0001,SKEXP0020,VSTHRD111,CA2007</NoWarn>
+    <NoWarn>$(NoWarn);SKEXP0001,VSTHRD111,CA2007</NoWarn>
+    <NoWarn>$(NoWarn);MEVD9001</NoWarn> <!-- Experimental MEVD connector-facing APIs -->
   </PropertyGroup>
 
   <ItemGroup>

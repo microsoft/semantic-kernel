@@ -3,9 +3,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Npgsql;
 using NpgsqlTypes;
 using Pgvector;
@@ -14,50 +16,20 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 internal static class PostgresVectorStoreRecordPropertyMapping
 {
-    internal static float[] GetOrCreateArray(ReadOnlyMemory<float> memory) =>
-        MemoryMarshal.TryGetArray(memory, out ArraySegment<float> array) &&
-        array.Count == array.Array!.Length ?
-            array.Array :
-            memory.ToArray();
-
-    public static Vector? MapVectorForStorageModel<TVector>(TVector vector)
-    {
-        if (vector == null)
+    public static Vector? MapVectorForStorageModel(object? vector)
+        => vector switch
         {
-            return null;
-        }
+            ReadOnlyMemory<float> floatMemory
+                => new Pgvector.Vector(
+                    MemoryMarshal.TryGetArray(floatMemory, out ArraySegment<float> segment) &&
+                    segment.Count == segment.Array!.Length ? segment.Array : floatMemory.ToArray()),
 
-        if (vector is ReadOnlyMemory<float> floatMemory)
-        {
-            var vecArray = MemoryMarshal.TryGetArray(floatMemory, out ArraySegment<float> array) &&
-                array.Count == array.Array!.Length ?
-                        array.Array :
-                        floatMemory.ToArray();
-            return new Vector(vecArray);
-        }
+            // TODO: Implement support for Half, binary, sparse embeddings (#11083)
 
-        throw new NotSupportedException($"Mapping for type {typeof(TVector).FullName} to a vector is not supported.");
-    }
+            null => null,
 
-    public static ReadOnlyMemory<float>? MapVectorForDataModel(object? vector)
-    {
-        var pgVector = vector is Vector pgv ? pgv : null;
-        if (pgVector == null) { return null; }
-        var vecArray = pgVector.ToArray();
-        return vecArray != null && vecArray.Length != 0 ? (ReadOnlyMemory<float>)vecArray : null;
-    }
-
-    public static TPropertyType? GetPropertyValue<TPropertyType>(NpgsqlDataReader reader, string propertyName)
-    {
-        int propertyIndex = reader.GetOrdinal(propertyName);
-
-        if (reader.IsDBNull(propertyIndex))
-        {
-            return default;
-        }
-
-        return reader.GetFieldValue<TPropertyType>(propertyIndex);
-    }
+            var value => throw new NotSupportedException($"Mapping for type '{value.GetType().Name}' to a vector is not supported.")
+        };
 
     public static object? GetPropertyValue(NpgsqlDataReader reader, string propertyName, Type propertyType)
     {
@@ -164,14 +136,9 @@ internal static class PostgresVectorStoreRecordPropertyMapping
     /// </summary>
     /// <param name="vectorProperty">The vector property.</param>
     /// <returns>The PostgreSQL vector type name.</returns>
-    public static (string PgType, bool IsNullable) GetPgVectorTypeName(VectorStoreRecordVectorProperty vectorProperty)
+    public static (string PgType, bool IsNullable) GetPgVectorTypeName(VectorStoreRecordVectorPropertyModel vectorProperty)
     {
-        if (vectorProperty.Dimensions <= 0)
-        {
-            throw new ArgumentException("Vector property must have a positive number of dimensions.");
-        }
-
-        return ($"VECTOR({vectorProperty.Dimensions})", Nullable.GetUnderlyingType(vectorProperty.PropertyType) != null);
+        return ($"VECTOR({vectorProperty.Dimensions})", Nullable.GetUnderlyingType(vectorProperty.EmbeddingType) != null);
     }
 
     public static NpgsqlParameter GetNpgsqlParameter(object? value)
@@ -199,42 +166,59 @@ internal static class PostgresVectorStoreRecordPropertyMapping
     }
 
     /// <summary>
-    /// Returns information about vector indexes to create, validating that the dimensions of the vector are supported.
+    /// Returns information about indexes to create, validating that the dimensions of the vector are supported.
     /// </summary>
     /// <param name="properties">The properties of the vector store record.</param>
-    /// <returns>A list of tuples containing the column name, index kind, and distance function for each vector property.</returns>
+    /// <returns>A list of tuples containing the column name, index kind, and distance function for each property.</returns>
     /// <remarks>
     /// The default index kind is "Flat", which prevents the creation of an index.
     /// </remarks>
-    public static List<(string column, string kind, string function)> GetVectorIndexInfo(IReadOnlyList<VectorStoreRecordProperty> properties)
+    public static List<(string column, string kind, string function, bool isVector)> GetIndexInfo(IReadOnlyList<VectorStoreRecordPropertyModel> properties)
     {
-        var vectorIndexesToCreate = new List<(string column, string kind, string function)>();
+        var vectorIndexesToCreate = new List<(string column, string kind, string function, bool isVector)>();
         foreach (var property in properties)
         {
-            if (property is VectorStoreRecordVectorProperty vectorProperty)
+            switch (property)
             {
-                var vectorColumnName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
-                var indexKind = vectorProperty.IndexKind ?? PostgresConstants.DefaultIndexKind;
-                var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
+                case VectorStoreRecordKeyPropertyModel:
+                    // There is no need to create a separate index for the key property.
+                    break;
 
-                // Index kind of "Flat" to prevent the creation of an index. This is the default behavior.
-                // Otherwise, the index will be created with the specified index kind and distance function, if supported.
-                if (indexKind != IndexKind.Flat)
-                {
-                    // Ensure the dimensionality of the vector is supported for indexing.
-                    if (PostgresConstants.IndexMaxDimensions.TryGetValue(indexKind, out int maxDimensions) && vectorProperty.Dimensions > maxDimensions)
+                case VectorStoreRecordVectorPropertyModel vectorProperty:
+                    var indexKind = vectorProperty.IndexKind ?? PostgresConstants.DefaultIndexKind;
+                    var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
+
+                    // Index kind of "Flat" to prevent the creation of an index. This is the default behavior.
+                    // Otherwise, the index will be created with the specified index kind and distance function, if supported.
+                    if (indexKind != IndexKind.Flat)
                     {
-                        throw new NotSupportedException(
-                            $"The provided vector property {vectorProperty.DataModelPropertyName} has {vectorProperty.Dimensions} dimensions, " +
-                            $"which is not supported by the {indexKind} index. The maximum number of dimensions supported by the {indexKind} index " +
-                            $"is {maxDimensions}. Please reduce the number of dimensions or use a different index."
-                        );
+                        // Ensure the dimensionality of the vector is supported for indexing.
+                        if (PostgresConstants.IndexMaxDimensions.TryGetValue(indexKind, out int maxDimensions) && vectorProperty.Dimensions > maxDimensions)
+                        {
+                            throw new NotSupportedException(
+                                $"The provided vector property {vectorProperty.ModelName} has {vectorProperty.Dimensions} dimensions, " +
+                                $"which is not supported by the {indexKind} index. The maximum number of dimensions supported by the {indexKind} index " +
+                                $"is {maxDimensions}. Please reduce the number of dimensions or use a different index."
+                            );
+                        }
+
+                        vectorIndexesToCreate.Add((vectorProperty.StorageName, indexKind, distanceFunction, isVector: true));
                     }
 
-                    vectorIndexesToCreate.Add((vectorColumnName, indexKind, distanceFunction));
-                }
+                    break;
+
+                case VectorStoreRecordDataPropertyModel dataProperty:
+                    if (dataProperty.IsIndexed)
+                    {
+                        vectorIndexesToCreate.Add((dataProperty.StorageName, "", "", isVector: false));
+                    }
+                    break;
+
+                default:
+                    throw new UnreachableException();
             }
         }
+
         return vectorIndexesToCreate;
     }
 

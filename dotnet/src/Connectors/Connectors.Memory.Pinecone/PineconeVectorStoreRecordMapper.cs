@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -10,52 +12,32 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// Mapper between a Pinecone record and the consumer data model that uses json as an intermediary to allow supporting a wide range of models.
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
-internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, Vector>
+internal sealed class PineconeVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model)
 {
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PineconeVectorStoreRecordMapper{TDataModel}"/> class.
-    /// </summary>
-    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
-    public PineconeVectorStoreRecordMapper(
-        VectorStoreRecordPropertyReader propertyReader)
-    {
-        // Validate property types.
-        propertyReader.VerifyHasParameterlessConstructor();
-        propertyReader.VerifyKeyProperties(PineconeVectorStoreRecordFieldMapping.s_supportedKeyTypes);
-        propertyReader.VerifyDataProperties(PineconeVectorStoreRecordFieldMapping.s_supportedDataTypes, PineconeVectorStoreRecordFieldMapping.s_supportedEnumerableDataElementTypes);
-        propertyReader.VerifyVectorProperties(PineconeVectorStoreRecordFieldMapping.s_supportedVectorTypes);
-
-        // Assign.
-        this._propertyReader = propertyReader;
-    }
-
     /// <inheritdoc />
-    public Vector MapFromDataToStorageModel(TRecord dataModel)
+    public Vector MapFromDataToStorageModel(TRecord dataModel, Embedding<float>? generatedEmbedding)
     {
-        var keyObject = this._propertyReader.KeyPropertyInfo.GetValue(dataModel);
+        var keyObject = model.KeyProperty.GetValueAsObject(dataModel!);
         if (keyObject is null)
         {
-            throw new VectorStoreRecordMappingException($"Key property {this._propertyReader.KeyPropertyName} on provided record of type {typeof(TRecord).FullName} may not be null.");
+            throw new VectorStoreRecordMappingException($"Key property '{model.KeyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null.");
         }
 
         var metadata = new Metadata();
-        foreach (var dataPropertyInfo in this._propertyReader.DataPropertiesInfo)
+        foreach (var property in model.DataProperties)
         {
-            var propertyName = this._propertyReader.GetStoragePropertyName(dataPropertyInfo.Name);
-            var propertyValue = dataPropertyInfo.GetValue(dataModel);
-            if (propertyValue != null)
+            if (property.GetValueAsObject(dataModel!) is { } value)
             {
-                metadata[propertyName] = PineconeVectorStoreRecordFieldMapping.ConvertToMetadataValue(propertyValue);
+                metadata[property.StorageName] = PineconeVectorStoreRecordFieldMapping.ConvertToMetadataValue(value);
             }
         }
 
-        var valuesObject = this._propertyReader.FirstVectorPropertyInfo!.GetValue(dataModel);
-        if (valuesObject is not ReadOnlyMemory<float> values)
+        var values = (generatedEmbedding?.Vector ?? model.VectorProperty!.GetValueAsObject(dataModel!)) switch
         {
-            throw new VectorStoreRecordMappingException($"Vector property {this._propertyReader.FirstVectorPropertyName} on provided record of type {typeof(TRecord).FullName} may not be null.");
-        }
+            ReadOnlyMemory<float> floats => floats,
+            null => throw new VectorStoreRecordMappingException($"Vector property '{model.VectorProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null."),
+            _ => throw new VectorStoreRecordMappingException($"Unsupported vector type '{model.VectorProperty.Type.Name}' for vector property '{model.VectorProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
+        };
 
         // TODO: what about sparse values?
         var result = new Vector
@@ -72,29 +54,27 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     /// <inheritdoc />
     public TRecord MapFromStorageToDataModel(Vector storageModel, StorageToDataModelMapperOptions options)
     {
-        // Construct the output record.
-        var outputRecord = (TRecord)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
+        var outputRecord = model.CreateRecord<TRecord>()!;
 
-        // Set Key.
-        this._propertyReader.KeyPropertyInfo.SetValue(outputRecord, storageModel.Id);
+        model.KeyProperty.SetValueAsObject(outputRecord, storageModel.Id);
 
-        // Set Vector.
         if (options?.IncludeVectors is true)
         {
-            this._propertyReader.FirstVectorPropertyInfo!.SetValue(
+            model.VectorProperty.SetValueAsObject(
                 outputRecord,
                 storageModel.Values);
         }
 
-        // Set Data.
         if (storageModel.Metadata != null)
         {
-            VectorStoreRecordMapping.SetValuesOnProperties(
-                outputRecord,
-                this._propertyReader.DataPropertiesInfo,
-                this._propertyReader.StoragePropertyNamesMap,
-                storageModel.Metadata,
-                PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType!);
+            foreach (var property in model.DataProperties)
+            {
+                property.SetValueAsObject(
+                    outputRecord,
+                    storageModel.Metadata.TryGetValue(property.StorageName, out var metadataValue) && metadataValue is not null
+                        ? PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType(metadataValue, property.Type)
+                        : null);
+            }
         }
 
         return outputRecord;

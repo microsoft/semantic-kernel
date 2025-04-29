@@ -3,6 +3,7 @@
 using System.Text;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
 using Xunit;
 
@@ -34,7 +35,7 @@ public class SqlServerCommandBuilderTests
     {
         StringBuilder builder = new();
         StringBuilder expectedBuilder = new();
-        VectorStoreRecordKeyProperty keyProperty = new(propertyName, typeof(string));
+        VectorStoreRecordKeyPropertyModel keyProperty = new(propertyName, typeof(string));
 
         int paramIndex = 0; // we need a dedicated variable to ensure that AppendParameterName increments the index
         for (int i = 0; i < 10; i++)
@@ -107,23 +108,17 @@ public class SqlServerCommandBuilderTests
     [InlineData(false)]
     public void CreateTable(bool ifNotExists)
     {
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
-        VectorStoreRecordDataProperty[] dataProperties =
-        [
-            new VectorStoreRecordDataProperty("simpleName", typeof(string)),
-            new VectorStoreRecordDataProperty("with space", typeof(int))
-        ];
-        VectorStoreRecordVectorProperty[] vectorProperties =
-        [
-            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
-            {
-                Dimensions = 10
-            }
-        ];
+        var model = BuildModel(
+            [
+                new VectorStoreRecordKeyProperty("id", typeof(long)),
+                new VectorStoreRecordDataProperty("simpleName", typeof(string)),
+                new VectorStoreRecordDataProperty("with space", typeof(int)) { IsIndexed = true },
+                new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
+            ]);
+
         using SqlConnection connection = CreateConnection();
 
-        using SqlCommand command = SqlServerCommandBuilder.CreateTable(connection, "schema", "table",
-            ifNotExists, keyProperty, dataProperties, vectorProperties);
+        using SqlCommand command = SqlServerCommandBuilder.CreateTable(connection, "schema", "table", ifNotExists, model);
 
         string expectedCommand =
         """
@@ -135,6 +130,7 @@ public class SqlServerCommandBuilderTests
         [embedding] VECTOR(10),
         PRIMARY KEY ([id])
         );
+        CREATE INDEX index_table_withspace ON [schema].[table]([with space]);
         END;
         """;
         if (ifNotExists)
@@ -142,27 +138,22 @@ public class SqlServerCommandBuilderTests
             expectedCommand = "IF OBJECT_ID(N'[schema].[table]', N'U') IS NULL" + Environment.NewLine + expectedCommand;
         }
 
-        AssertEqualIgnoreNewLines(expectedCommand, command.CommandText);
+        Assert.Equal(expectedCommand, command.CommandText, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
     public void MergeIntoSingle()
     {
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
-        VectorStoreRecordProperty[] properties =
-        [
-            keyProperty,
-            new VectorStoreRecordDataProperty("simpleString", typeof(string)),
-            new VectorStoreRecordDataProperty("simpleInt", typeof(int)),
-            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
-            {
-                Dimensions = 10
-            }
-        ];
+        var model = BuildModel(
+            [
+                new VectorStoreRecordKeyProperty("id", typeof(long)),
+                new VectorStoreRecordDataProperty("simpleString", typeof(string)),
+                new VectorStoreRecordDataProperty("simpleInt", typeof(int)),
+                new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
+            ]);
 
         using SqlConnection connection = CreateConnection();
-        using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(connection, "schema", "table",
-            keyProperty, properties,
+        using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(connection, "schema", "table", model,
             new Dictionary<string, object?>
             {
                 { "id", null },
@@ -184,7 +175,7 @@ public class SqlServerCommandBuilderTests
         OUTPUT inserted.[id];
         """";
 
-        AssertEqualIgnoreNewLines(expectedCommand, command.CommandText);
+        Assert.Equal(expectedCommand, command.CommandText, ignoreLineEndingDifferences: true);
         Assert.Equal("@id_0", command.Parameters[0].ParameterName);
         Assert.Equal(DBNull.Value, command.Parameters[0].Value);
         Assert.Equal("@simpleString_1", command.Parameters[1].ParameterName);
@@ -198,17 +189,14 @@ public class SqlServerCommandBuilderTests
     [Fact]
     public void MergeIntoMany()
     {
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
-        VectorStoreRecordProperty[] properties =
-        [
-            keyProperty,
-            new VectorStoreRecordDataProperty("simpleString", typeof(string)),
-            new VectorStoreRecordDataProperty("simpleInt", typeof(int)),
-            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
-            {
-                Dimensions = 10
-            }
-        ];
+        var model = BuildModel(
+            [
+                new VectorStoreRecordKeyProperty("id", typeof(long)),
+                new VectorStoreRecordDataProperty("simpleString", typeof(string)),
+                new VectorStoreRecordDataProperty("simpleInt", typeof(int)),
+                new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
+            ]);
+
         Dictionary<string, object?>[] records =
         [
             new Dictionary<string, object?>
@@ -230,8 +218,7 @@ public class SqlServerCommandBuilderTests
         using SqlConnection connection = CreateConnection();
         using SqlCommand command = connection.CreateCommand();
 
-        Assert.True(SqlServerCommandBuilder.MergeIntoMany(command, "schema", "table",
-            keyProperty, properties, records));
+        Assert.True(SqlServerCommandBuilder.MergeIntoMany(command, "schema", "table", model, records));
 
         string expectedCommand =
         """"
@@ -250,7 +237,7 @@ public class SqlServerCommandBuilderTests
         SELECT KeyColumn FROM @InsertedKeys;
         """";
 
-        AssertEqualIgnoreNewLines(expectedCommand, command.CommandText);
+        Assert.Equal(expectedCommand, command.CommandText, ignoreLineEndingDifferences: true);
 
         for (int i = 0; i < records.Length; i++)
         {
@@ -268,7 +255,7 @@ public class SqlServerCommandBuilderTests
     [Fact]
     public void DeleteSingle()
     {
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
+        VectorStoreRecordKeyPropertyModel keyProperty = new("id", typeof(long));
         using SqlConnection connection = CreateConnection();
 
         using SqlCommand command = SqlServerCommandBuilder.DeleteSingle(connection,
@@ -283,7 +270,7 @@ public class SqlServerCommandBuilderTests
     public void DeleteMany()
     {
         string[] keys = ["key1", "key2"];
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(string));
+        VectorStoreRecordKeyPropertyModel keyProperty = new("id", typeof(string));
         using SqlConnection connection = CreateConnection();
         using SqlCommand command = connection.CreateCommand();
 
@@ -300,27 +287,24 @@ public class SqlServerCommandBuilderTests
     [Fact]
     public void SelectSingle()
     {
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
-        VectorStoreRecordProperty[] properties = [
-            keyProperty,
-            new VectorStoreRecordDataProperty("name", typeof(string)),
-            new VectorStoreRecordDataProperty("age", typeof(int)),
-            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
-            {
-                Dimensions = 10
-            }
-        ];
+        var model = BuildModel(
+            [
+                new VectorStoreRecordKeyProperty("id", typeof(long)),
+                new VectorStoreRecordDataProperty("name", typeof(string)),
+                new VectorStoreRecordDataProperty("age", typeof(int)),
+                new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
+            ]);
+
         using SqlConnection connection = CreateConnection();
 
-        using SqlCommand command = SqlServerCommandBuilder.SelectSingle(connection,
-            "schema", "tableName", keyProperty, properties, 123L, includeVectors: true);
+        using SqlCommand command = SqlServerCommandBuilder.SelectSingle(connection, "schema", "tableName", model, 123L, includeVectors: true);
 
-        AssertEqualIgnoreNewLines(
+        Assert.Equal(
         """""
         SELECT [id],[name],[age],[embedding]
         FROM [schema].[tableName]
         WHERE [id] = @id_0
-        """"", command.CommandText);
+        """"", command.CommandText, ignoreLineEndingDifferences: true);
         Assert.Equal(123L, command.Parameters[0].Value);
         Assert.Equal("@id_0", command.Parameters[0].ParameterName);
     }
@@ -328,29 +312,27 @@ public class SqlServerCommandBuilderTests
     [Fact]
     public void SelectMany()
     {
-        VectorStoreRecordKeyProperty keyProperty = new("id", typeof(long));
-        VectorStoreRecordProperty[] properties = [
-            keyProperty,
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("id", typeof(long)),
             new VectorStoreRecordDataProperty("name", typeof(string)),
             new VectorStoreRecordDataProperty("age", typeof(int)),
-            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
-            {
-                Dimensions = 10
-            }
-        ];
+            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
+        ]);
+
         long[] keys = [123L, 456L, 789L];
         using SqlConnection connection = CreateConnection();
         using SqlCommand command = connection.CreateCommand();
 
         Assert.True(SqlServerCommandBuilder.SelectMany(command,
-            "schema", "tableName", keyProperty, properties, keys, includeVectors: true));
+            "schema", "tableName", model, keys, includeVectors: true));
 
-        AssertEqualIgnoreNewLines(
+        Assert.Equal(
         """""
         SELECT [id],[name],[age],[embedding]
         FROM [schema].[tableName]
         WHERE [id] IN (@id_0,@id_1,@id_2)
-        """"", command.CommandText);
+        """"", command.CommandText, ignoreLineEndingDifferences: true);
         for (int i = 0; i < keys.Length; i++)
         {
             Assert.Equal(keys[i], command.Parameters[i].Value);
@@ -358,13 +340,14 @@ public class SqlServerCommandBuilderTests
         }
     }
 
-    // This repo is configured with eol=lf, so the expected string should always use \n
-    // as long given IDE does not use \r\n.
-    // The actual string may use \r\n, so we just normalize both.
-    private static void AssertEqualIgnoreNewLines(string expected, string actual)
-        => Assert.Equal(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
-
     // We create a connection using a fake connection string just to be able to create the SqlCommand.
     private static SqlConnection CreateConnection()
         => new("Server=localhost;Database=master;Integrated Security=True;");
+
+    private static VectorStoreRecordModel BuildModel(List<VectorStoreRecordProperty> properties)
+        => new VectorStoreRecordModelBuilder(SqlServerConstants.ModelBuildingOptions)
+            .Build(
+                typeof(Dictionary<string, object?>),
+                new() { Properties = properties },
+                defaultEmbeddingGenerator: null);
 }

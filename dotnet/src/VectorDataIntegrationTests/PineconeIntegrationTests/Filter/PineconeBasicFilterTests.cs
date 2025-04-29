@@ -8,13 +8,17 @@ using Xunit;
 
 namespace PineconeIntegrationTests.Filter;
 
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+
 public class PineconeBasicFilterTests(PineconeBasicFilterTests.Fixture fixture)
     : BasicFilterTests<string>(fixture), IClassFixture<PineconeBasicFilterTests.Fixture>
 {
     // Specialized Pinecone syntax for NOT over Contains ($nin)
     [ConditionalFact]
     public virtual Task Not_over_Contains()
-        => this.TestFilterAsync(r => !new[] { 8, 10 }.Contains(r.Int));
+        => this.TestFilterAsync(
+            r => !new[] { 8, 10 }.Contains(r.Int),
+            r => !new[] { 8, 10 }.Contains((int)r["Int"]));
 
     #region Null checking
 
@@ -65,6 +69,6 @@ public class PineconeBasicFilterTests(PineconeBasicFilterTests.Fixture fixture)
         public override TestStore TestStore => PineconeTestStore.Instance;
 
         // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
-        protected override string CollectionName => "filter-tests";
+        public override string CollectionName => "filter-tests";
     }
 }
