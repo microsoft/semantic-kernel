@@ -108,7 +108,6 @@ public class KernelProcessAgentExecutor : KernelProcessStep<KernelProcessAgentEx
         }
         catch (System.Exception)
         {
-
             throw;
         }
     }
