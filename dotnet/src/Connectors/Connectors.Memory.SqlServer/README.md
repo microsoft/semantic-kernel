@@ -5,5 +5,5 @@ This connector uses the SQL Server database engine to implement the Semantic Ker
 > [!IMPORTANT]  
 > The features needed to use this connector are available in preview in Azure SQL only at the moment. Please take a look at the [Public Preview of Native Vector Support in Azure SQL Database](https://devblogs.microsoft.com/azure-sql/exciting-announcement-public-preview-of-native-vector-support-in-azure-sql-database/) for more information.
 
-- [Vector Store sample](./VectorStore.md)
-- [Memory Store (legacy) sample](./MemoryStore.md)
+- [Vector Store sample](https://github.com/Azure-Samples/azure-sql-db-vector-search/tree/main/SemanticKernel/dotnet)
+- [Memory Store (legacy) sample](https://github.com/Azure-Samples/azure-sql-db-vector-search/tree/main/SemanticKernel/dotnet)
