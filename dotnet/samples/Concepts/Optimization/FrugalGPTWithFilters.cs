@@ -210,14 +210,14 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
                 var collection = vectorStore.GetCollection<string, ExampleRecord>(CollectionName);
                 await collection.CreateCollectionIfNotExistsAsync(context.CancellationToken);
 
-                await collection.UpsertBatchAsync(exampleRecords, cancellationToken: context.CancellationToken).ToListAsync(context.CancellationToken);
+                await collection.UpsertAsync(exampleRecords, cancellationToken: context.CancellationToken);
 
                 // Generate embedding for original request.
                 var requestEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(request, cancellationToken: context.CancellationToken);
 
                 // Find top N examples which are similar to original request.
-                var searchResults = await collection.VectorizedSearchAsync(requestEmbedding, new() { Top = TopN }, cancellationToken: context.CancellationToken);
-                var topNExamples = (await searchResults.Results.ToListAsync(context.CancellationToken)).Select(l => l.Record).ToList();
+                var topNExamples = (await collection.SearchEmbeddingAsync(requestEmbedding, top: TopN, cancellationToken: context.CancellationToken)
+                    .ToListAsync(context.CancellationToken)).Select(l => l.Record).ToList();
 
                 // Override arguments to use only top N examples, which will be sent to LLM.
                 context.Arguments["Examples"] = topNExamples.Select(l => l.Example);
@@ -323,7 +323,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
         [VectorStoreRecordData]
         public string Example { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(1536)]
         public ReadOnlyMemory<float> ExampleEmbedding { get; set; }
     }
 }

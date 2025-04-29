@@ -101,28 +101,28 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
 
         try
         {
-            await collection.UpsertBatchAsync(insertedRecords).ToArrayAsync();
+            await collection.UpsertAsync(insertedRecords);
 
-            var searchResult = await collection.VectorizedSearchAsync(baseVector);
-            var results = await searchResult.Results.ToListAsync();
+            var searchResult = collection.SearchEmbeddingAsync(baseVector, top: 3);
+            var results = await searchResult.ToListAsync();
             VerifySearchResults(expectedRecords, expectedScores, results, includeVectors: false);
 
-            searchResult = await collection.VectorizedSearchAsync(baseVector, new() { IncludeVectors = true });
-            results = await searchResult.Results.ToListAsync();
+            searchResult = collection.SearchEmbeddingAsync(baseVector, top: 3, new() { IncludeVectors = true });
+            results = await searchResult.ToListAsync();
             VerifySearchResults(expectedRecords, expectedScores, results, includeVectors: true);
 
             for (int skip = 0; skip <= insertedRecords.Count; skip++)
             {
                 for (int top = Math.Max(1, skip); top <= insertedRecords.Count; top++)
                 {
-                    searchResult = await collection.VectorizedSearchAsync(baseVector,
+                    searchResult = collection.SearchEmbeddingAsync(baseVector,
+                        top: top,
                         new()
                         {
                             Skip = skip,
-                            Top = top,
                             IncludeVectors = true
                         });
-                    results = await searchResult.Results.ToListAsync();
+                    results = await searchResult.ToListAsync();
 
                     VerifySearchResults(
                         expectedRecords.Skip(skip).Take(top).ToArray(),
@@ -165,14 +165,13 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
             Properties =
             [
                 new VectorStoreRecordKeyProperty(nameof(SearchRecord.Key), typeof(TKey)),
-                new VectorStoreRecordVectorProperty(nameof(SearchRecord.Vector), typeof(ReadOnlyMemory<float>))
+                new VectorStoreRecordVectorProperty(nameof(SearchRecord.Vector), typeof(ReadOnlyMemory<float>), 4)
                 {
-                    Dimensions = 4,
                     DistanceFunction = distanceFunction,
                     IndexKind = this.IndexKind
                 },
-                new VectorStoreRecordDataProperty(nameof(SearchRecord.Int), typeof(int)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty(nameof(SearchRecord.String), typeof(string)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty(nameof(SearchRecord.Int), typeof(int)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty(nameof(SearchRecord.String), typeof(string)) { IsIndexed = true },
             ]
         };
 

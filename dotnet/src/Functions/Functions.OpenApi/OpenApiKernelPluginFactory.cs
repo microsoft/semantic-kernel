@@ -36,7 +36,7 @@ public static partial class OpenApiKernelPluginFactory
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.ValidPluginName(pluginName);
+        KernelVerify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient);
@@ -73,7 +73,7 @@ public static partial class OpenApiKernelPluginFactory
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.ValidPluginName(pluginName);
+        KernelVerify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient);
@@ -114,7 +114,7 @@ public static partial class OpenApiKernelPluginFactory
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.ValidPluginName(pluginName);
+        KernelVerify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient);
@@ -143,7 +143,7 @@ public static partial class OpenApiKernelPluginFactory
         RestApiSpecification specification,
         OpenApiFunctionExecutionParameters? executionParameters = null)
     {
-        Verify.ValidPluginName(pluginName);
+        KernelVerify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(executionParameters?.HttpClient);
@@ -391,7 +391,7 @@ public static partial class OpenApiKernelPluginFactory
     {
         try
         {
-            Verify.ValidFunctionName(operationId);
+            KernelVerify.ValidFunctionName(operationId);
             return operationId;
         }
         catch (ArgumentException)

@@ -15,6 +15,8 @@ internal sealed class RedisTestStore : TestStore
 
     private readonly RedisContainer _container = new RedisBuilder()
         .WithImage("redis/redis-stack")
+        .WithPortBinding(6379, assignRandomHostPort: true)
+        .WithPortBinding(8001, assignRandomHostPort: true)
         .Build();
 
     private readonly RedisStorageType _storageType;
