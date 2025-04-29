@@ -849,7 +849,7 @@ class AzureCosmosDBNoSQLCollection(
         match node:
             case ast.Compare():
                 if len(node.ops) > 1:
-                    # Chain comparisons (e.g., a < b < c) become ANDed comparisons
+                    # Chain comparisons (e.g., a < b < c) become AND-ed comparisons
                     values = []
                     for idx in range(len(node.ops)):
                         if idx == 0:
