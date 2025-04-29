@@ -39,7 +39,7 @@ using Microsoft.SemanticKernel.Memory;
 #pragma warning disable SKEXP0001, SKEXP0010, SKEXP0020
 
 // Replace with your Azure OpenAI endpoint
-const string AzureOpenAIEndpoint = "https://.openai.azure.com/";
+const string AzureOpenAIEndpoint = "https://`<your-endpoint-prefix-here>`.openai.azure.com/";
 
 // Replace with your Azure OpenAI API key
 const string AzureOpenAIApiKey = "";
