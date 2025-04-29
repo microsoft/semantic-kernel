@@ -10,13 +10,11 @@ using ILoggerFactory loggerFactory = LoggingServices.CreateLoggerFactory();
 FoundrySettings settings = ConfigurationServices.GetFoundrySettings();
 
 // Create the project client, with credential.  Note, can use `AzureCliCredential` with `az login`.
-//AIProjectClient projectClient = new(settings.ConnectionString, new DefaultAzureCredential()); // %%% ENABLE
-AIProjectClient projectClient = new(settings.ConnectionString, new AzureCliCredential()); // %%% REMOVE
+AIProjectClient projectClient = new(settings.ConnectionString, new DefaultAzureCredential());
 
 // Retrieve definition
 AgentsClient agentsClient = projectClient.GetAgentsClient();
-//Agent definition = await agentsClient.GetAgentAsync("<agent-id>"); // %%% ENABLE
-Agent definition = await agentsClient.GetAgentAsync("asst_73PN08duH4K42Oy1xLEoKRr1"); // %%% REMOVE
+Agent definition = await agentsClient.GetAgentAsync("<agent-id>");
 
 // Define kernel with logging services
 IKernelBuilder builder = Kernel.CreateBuilder();

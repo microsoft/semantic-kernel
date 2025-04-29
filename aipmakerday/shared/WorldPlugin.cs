@@ -16,7 +16,7 @@ internal sealed class WorldPlugin(ILoggerFactory loggerFactory)
     }
 
     [KernelFunction]
-    [Description("Provides the information about the current location.")]
+    [Description("Provides the information about the current location (permission already granted).")]
     public async Task<string> WhereAsync()
     {
         using HttpClient client = new();
