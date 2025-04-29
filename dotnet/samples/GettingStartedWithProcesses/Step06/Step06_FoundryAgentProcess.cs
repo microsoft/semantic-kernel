@@ -62,4 +62,40 @@ public class Step06_FoundryAgentProcess : BaseTest
         Assert.NotNull(context);
         Assert.NotNull(agent1Result);
     }
+
+    [Fact]
+    public async Task ProcessWithExistingFoundryAgentsAndSharedThreadAsync()
+    {
+        var foundryAgentDefinition1 = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
+
+        var processBuilder = new ProcessBuilder("foundry_agents");
+
+        var agent1 = processBuilder.AddStepFromDeclarativeAgent(foundryAgentDefinition1)
+            .OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent1Complete" }] }]);
+
+        var agent2 = processBuilder.AddStepFromDeclarativeAgent(foundryAgentDefinition2)
+            .OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent2Complete" }] }]);
+
+        processBuilder.OnInputEvent("start").SendEventTo(new(agent1)); // Change to ListenForInput?
+
+        processBuilder.ListenFor().Message("Agent1Complete", agent1).SendEventTo(new(agent2, (output) => output));
+        processBuilder.ListenFor().Message("Agent2Complete", agent2).StopProcess();
+
+        var process = processBuilder.Build();
+
+        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
+        var agentsClient = foundryClient.GetAgentsClient();
+
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.Services.AddSingleton(agentsClient);
+        kernelBuilder.Services.AddSingleton(foundryClient);
+        var kernel = kernelBuilder.Build();
+
+        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" }, agentFactory: new AzureAIAgentFactory());
+        var agent1Result = await context.GetStateAsync();
+
+        Assert.NotNull(context);
+        Assert.NotNull(agent1Result);
+    }
 }

@@ -199,10 +199,11 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// Adds a step to the process from a declarative agent.
     /// </summary>
     /// <param name="agentDefinition"></param>
+    /// <param name="thread"></param>
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromDeclarativeAgent(AgentDefinition agentDefinition, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder AddStepFromDeclarativeAgent(AgentDefinition agentDefinition, string? thread = null, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
         if (string.IsNullOrWhiteSpace(agentDefinition.Name))
@@ -212,6 +213,16 @@ public sealed class ProcessBuilder : ProcessStepBuilder
 
         ProcessAgentBuilder stepBuilder = new(agentDefinition);
         return this.AddStep(stepBuilder, aliases);
+    }
+
+    public ProcessBuilder AddAgentThread(string threadName, string id)
+    {
+        Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
+        Verify.NotNullOrWhiteSpace(id, nameof(id));
+
+        //ProcessAgentThreadBuilder threadBuilder = new(threadName, id);
+        //this._steps.Add(threadBuilder);
+        return this;
     }
 
     /// <summary>
