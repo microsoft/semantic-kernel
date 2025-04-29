@@ -2,28 +2,28 @@
 
 import sys
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
-from typing import Any, ClassVar, Generic
+from typing import Any, ClassVar, Final, Generic
 
+from numpy import dot
 from pydantic import Field
+from scipy.spatial.distance import cityblock, cosine, euclidean, hamming, sqeuclidean
+from typing_extensions import override
 
-from semantic_kernel.connectors.memory.in_memory.const import DISTANCE_FUNCTION_MAP
 from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDefinition,
-    VectorStoreRecordVectorField,
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
+from semantic_kernel.data.text_search import KernelSearchResults
+from semantic_kernel.data.vector_search import VectorSearch, VectorSearchOptions, VectorSearchResult
+from semantic_kernel.data.vector_storage import (
+    GetFilteredRecordOptions,
+    TKey,
+    TModel,
+    VectorStore,
+    VectorStoreRecordCollection,
 )
-from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, FilterClauseBase, KernelSearchResults
-from semantic_kernel.data.vector_search import (
-    VectorizedSearchMixin,
-    VectorSearchFilter,
-    VectorSearchOptions,
-    VectorSearchResult,
-    VectorTextSearchMixin,
-)
-from semantic_kernel.data.vector_storage import GetFilteredRecordOptions, TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.list_handler import empty_generator
 
 if sys.version_info >= (3, 12):
@@ -32,13 +32,22 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 
-IN_MEMORY_SCORE_KEY = "in_memory_search_score"
+IN_MEMORY_SCORE_KEY: Final[str] = "in_memory_search_score"
+DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction | str, Callable[..., Any]]] = {
+    DistanceFunction.COSINE_DISTANCE: cosine,
+    DistanceFunction.COSINE_SIMILARITY: cosine,
+    DistanceFunction.EUCLIDEAN_DISTANCE: euclidean,
+    DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE: sqeuclidean,
+    DistanceFunction.MANHATTAN: cityblock,
+    DistanceFunction.HAMMING: hamming,
+    DistanceFunction.DOT_PROD: dot,
+    DistanceFunction.DEFAULT: cosine,
+}
 
 
 class InMemoryVectorCollection(
     VectorStoreRecordCollection[TKey, TModel],
-    VectorTextSearchMixin[TKey, TModel],
-    VectorizedSearchMixin[TKey, TModel],
+    VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """In Memory Collection."""
@@ -251,3 +260,26 @@ class InMemoryVectorCollection(
 
     def _get_score_from_result(self, result: Any) -> float | None:
         return result.get(IN_MEMORY_SCORE_KEY)
+
+
+@experimental
+class InMemoryVectorStore(VectorStore):
+    """Create a In Memory Vector Store."""
+
+    @override
+    async def list_collection_names(self, **kwargs) -> Sequence[str]:
+        return []
+
+    @override
+    def get_collection(
+        self,
+        collection_name: str,
+        data_model_type: type[TModel],
+        data_model_definition: VectorStoreRecordDefinition | None = None,
+        **kwargs: Any,
+    ) -> "VectorStoreRecordCollection":
+        return InMemoryVectorCollection(
+            data_model_type=data_model_type,
+            data_model_definition=data_model_definition,
+            collection_name=collection_name,
+        )

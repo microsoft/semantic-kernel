@@ -8,7 +8,7 @@ from semantic_kernel.data import VectorStore
 
 
 def get_redis_store():
-    from semantic_kernel.connectors.memory.redis.redis_store import RedisStore
+    from semantic_kernel.connectors.memory.redis import RedisStore
 
     return RedisStore()
 
@@ -20,27 +20,25 @@ def get_azure_ai_search_store():
 
 
 def get_qdrant_store():
-    from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
+    from semantic_kernel.connectors.memory.qdrant import QdrantStore
 
     return QdrantStore()
 
 
 def get_qdrant_store_in_memory():
-    from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
+    from semantic_kernel.connectors.memory.qdrant import QdrantStore
 
     return QdrantStore(location=":memory:")
 
 
 def get_weaviate_store():
-    from semantic_kernel.connectors.memory.weaviate.weaviate_store import WeaviateStore
+    from semantic_kernel.connectors.memory.weaviate import WeaviateStore
 
     return WeaviateStore(local_host="localhost")
 
 
 def get_azure_cosmos_db_no_sql_store():
-    from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_store import (
-        AzureCosmosDBNoSQLStore,
-    )
+    from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBNoSQLStore
 
     return AzureCosmosDBNoSQLStore(database_name="test_database", create_database=True)
 

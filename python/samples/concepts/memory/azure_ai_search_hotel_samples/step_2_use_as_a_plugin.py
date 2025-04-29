@@ -28,16 +28,10 @@ from semantic_kernel.contents import ChatHistory
 # This sample assumes the index is deployed, and the vectors have been filled.
 # Use the step_1_interact_with_the_collection.py sample, with `first_run = True` to fill the vectors.
 ###
-from semantic_kernel.data import (
-    VectorSearchFilter,
-    VectorSearchOptions,
-)
+from semantic_kernel.data import VectorSearchOptions
 from semantic_kernel.data.text_search import SearchOptions
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
-from semantic_kernel.functions import (
-    KernelArguments,
-    KernelParameterMetadata,
-)
+from semantic_kernel.functions import KernelArguments, KernelParameterMetadata
 
 # Note: you may need to update this `collection_name` depending upon how your index is named.
 COLLECTION_NAME = "hotels-sample-index"
@@ -56,7 +50,7 @@ kernel.add_service(embeddings)
 collection = AzureAISearchCollection[str, HotelSampleClass](
     collection_name=COLLECTION_NAME, data_model_type=HotelSampleClass
 )
-text_search = collection.create_text_search_from_vector_text_search()
+text_search = collection.as_text_search()
 
 
 # Before we create the plugin, we want to create a function that will help the plugin work the way we want it to.

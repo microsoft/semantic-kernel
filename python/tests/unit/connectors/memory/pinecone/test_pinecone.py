@@ -14,8 +14,8 @@ from pinecone.core.openapi.db_data.models import (
 from pinecone.data.index_asyncio import _IndexAsyncio
 from pytest import fixture, mark, raises
 
+from semantic_kernel.connectors.memory._pinecone import PineconeCollection
 from semantic_kernel.connectors.memory.pinecone import PineconeStore
-from semantic_kernel.connectors.memory.pinecone._pinecone import PineconeCollection
 from semantic_kernel.data.vector_search import VectorSearchFilter, VectorSearchOptions
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreInitializationException
 

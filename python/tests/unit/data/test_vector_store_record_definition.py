@@ -3,11 +3,7 @@
 from pydantic import ValidationError
 from pytest import raises
 
-from semantic_kernel.data import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordKeyField,
-)
+from semantic_kernel.data import VectorStoreRecordDataField, VectorStoreRecordDefinition, VectorStoreRecordKeyField
 from semantic_kernel.data.record_definition import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import VectorStoreModelException
 
@@ -58,7 +54,7 @@ def test_vector_and_non_vector_field_names():
         }
     )
     assert definition.vector_field_names == ["vector"]
-    assert definition.non_vector_field_names == ["id", "content"]
+    assert definition.data_field_names == ["id", "content"]
 
 
 def test_try_get_vector_field():

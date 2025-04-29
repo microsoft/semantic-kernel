@@ -11,7 +11,7 @@ from semantic_kernel.connectors.search.google.google_search_response import (
     GoogleSearchResponse,
 )
 from semantic_kernel.connectors.search.google.google_search_result import GoogleSearchResult
-from semantic_kernel.data.text_search import AnyTagsEqualTo, SearchFilter, TextSearchOptions
+from semantic_kernel.data.text_search import TextSearchOptions
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 

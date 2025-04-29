@@ -2,121 +2,52 @@
 
 import json
 import logging
-import sys
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from copy import deepcopy
-from typing import Annotated, Any, ClassVar, Generic, Protocol, TypeVar
+from typing import Annotated, Any, Generic, Protocol, TypeVar
 
 from pydantic import BaseModel, Field, ValidationError
 
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME, TextSearchFunctions
 from semantic_kernel.exceptions import TextSearchException
-from semantic_kernel.exceptions.search_exceptions import SearchException
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
-
 TSearchResult = TypeVar("TSearchResult")
-TSearchFilter = TypeVar("TSearchFilter", bound="SearchFilter")
 TSearchOptions = TypeVar("TSearchOptions", bound="SearchOptions")
 TMapInput = TypeVar("TMapInput")
 
 logger = logging.getLogger(__name__)
-
-# region: Filters
-
-
-@experimental
-class FilterClauseBase(ABC, KernelBaseModel):
-    """A base for all filter clauses."""
-
-    filter_clause_type: ClassVar[str] = "FilterClauseBase"
-    field_name: str
-    value: Any
-
-    def __str__(self) -> str:
-        """Return a string representation of the filter clause."""
-        return f"filter_clause_type='{self.filter_clause_type}' field_name='{self.field_name}' value='{self.value}'"
-
-
-@experimental
-class AnyTagsEqualTo(FilterClauseBase):
-    """A filter clause for a any tags equals comparison.
-
-    Args:
-        field_name: The name of the field containing the list of tags.
-        value: The value to compare against the list of tags.
-    """
-
-    filter_clause_type: ClassVar[str] = "any_tags_equal_to"
-
-
-@experimental
-class EqualTo(FilterClauseBase):
-    """A filter clause for an equals comparison.
-
-    Args:
-        field_name: The name of the field to compare.
-        value: The value to compare against the field.
-
-    """
-
-    filter_clause_type: ClassVar[str] = "equal_to"
-
-
-@experimental
-class SearchFilter:
-    """A filter clause for a search."""
-
-    def __init__(self) -> None:
-        """Initialize a new instance of SearchFilter."""
-        self.filters: list[FilterClauseBase] = []
-        self.group_type = "AND"
-        self.equal_to = self.__equal_to
-
-    def __equal_to(self, field_name: str, value: str) -> Self:
-        """Add an equals filter clause."""
-        self.filters.append(EqualTo(field_name=field_name, value=value))
-        return self
-
-    @classmethod
-    def equal_to(cls: type[TSearchFilter], field_name: str, value: str) -> TSearchFilter:
-        """Add an equals filter clause."""
-        filter = cls()
-        filter.equal_to(field_name, value)
-        return filter
-
-    def __str__(self) -> str:
-        """Return a string representation of the filter."""
-        return f"{f' {self.group_type} '.join(f'({f!s})' for f in self.filters)}"
-
 
 # region: Options
 
 
 @experimental
 class SearchOptions(ABC, KernelBaseModel):
-    """Options for a search."""
+    """Options for a search.
 
-    filter: SearchFilter | Callable | None = None
+    When multiple filters are used, they are combined with an AND operator.
+    """
+
+    filter: OneOrMany[Callable | str] | None = None
+    skip: Annotated[int, Field(ge=0)] = 0
     include_total_count: bool = False
 
 
 @experimental
 class TextSearchOptions(SearchOptions):
-    """Options for a text search."""
+    """Options for a text search.
+
+    When multiple filters are used, they are combined with an AND operator.
+    """
 
     top: Annotated[int, Field(gt=0)] = 5
-    skip: Annotated[int, Field(ge=0)] = 0
 
 
 # region: Results
@@ -225,20 +156,19 @@ def default_options_update_function(
         assert param.name  # nosec, when used param name is always set
         if param.name in {"query", "top", "skip"}:
             continue
+        filter = None
         if param.name in kwargs:
-            if options.filter is None:
-                options.filter = SearchFilter.equal_to(param.name, kwargs[param.name])
-            elif isinstance(options.filter, SearchFilter):
-                options.filter.equal_to(param.name, kwargs[param.name])
-            else:
-                raise SearchException("Callable filters are not yet supported.")
-        if param.default_value:
-            if options.filter is None:
-                options.filter = SearchFilter.equal_to(param.name, param.default_value)
-            elif isinstance(options.filter, SearchFilter):
-                options.filter.equal_to(param.name, param.default_value)
-            else:
-                raise SearchException("Callable filters are not yet supported.")
+            filter = f"lambda x: x.{param.name} == '{kwargs[param.name]}'"
+        elif param.default_value:
+            filter = f"lambda x: x.{param.name} == '{param.default_value}'"
+        if not filter:
+            continue
+        if options.filter is None:
+            options.filter = filter
+        elif isinstance(options.filter, list):
+            options.filter.append(filter)
+        else:
+            options.filter = [options.filter, filter]
 
     return query, options
 

@@ -9,10 +9,7 @@ from uuid import uuid4
 from samples.concepts.memory.utils import print_record
 from samples.concepts.resources.utils import Colors, print_with_color
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAIEmbeddingPromptExecutionSettings,
-    OpenAITextEmbedding,
-)
+from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings, OpenAITextEmbedding
 from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
 from semantic_kernel.data import (
     VectorSearchFilter,
@@ -23,7 +20,7 @@ from semantic_kernel.data import (
     vectorstoremodel,
 )
 from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction, IndexKind
-from semantic_kernel.data.vector_search import add_vector_to_records
+from semantic_kernel.data.vector_storage import add_vector_to_records
 
 # This is the most basic example of a vector store and collection
 # For a more complex example, using different collection types, see "complex_memory.py"

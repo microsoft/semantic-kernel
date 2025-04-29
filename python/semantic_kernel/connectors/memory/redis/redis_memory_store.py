@@ -1,33 +1,45 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+from typing import ClassVar
 
 import numpy as np
 import redis
 from numpy import ndarray
-from pydantic import ValidationError
+from pydantic import SecretStr, ValidationError
 from redis.commands.search.field import TextField, VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 from redis.exceptions import ResponseError
 
-from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
 from semantic_kernel.connectors.memory.redis.utils import (
     deserialize_document_to_record,
     deserialize_redis_to_record,
     get_redis_key,
     serialize_record_to_redis,
 )
-from semantic_kernel.exceptions import (
-    ServiceResourceNotFoundError,
-    ServiceResponseException,
-)
+from semantic_kernel.exceptions import ServiceResourceNotFoundError, ServiceResponseException
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+@experimental
+class RedisSettings(KernelBaseSettings):
+    """Redis model settings.
+
+    Args:
+    - connection_string (str | None):
+        Redis connection string (Env var REDIS_CONNECTION_STRING)
+    """
+
+    env_prefix: ClassVar[str] = "REDIS_"
+
+    connection_string: SecretStr
 
 
 @experimental

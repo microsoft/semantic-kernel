@@ -5,11 +5,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from semantic_kernel.data.vector_search import VectorSearchBase, VectorSearchOptions
+from semantic_kernel.data.vector_search import VectorSearch, VectorSearchOptions
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelDeserializationException
 
 
-async def test_search(vector_store_record_collection: VectorSearchBase):
+async def test_search(vector_store_record_collection: VectorSearch):
     record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     await vector_store_record_collection.upsert(record)
     results = await vector_store_record_collection._inner_search(options=VectorSearchOptions(), keywords="test_content")
@@ -18,7 +18,7 @@ async def test_search(vector_store_record_collection: VectorSearchBase):
 
 
 @pytest.mark.parametrize("include_vectors", [True, False])
-async def test_get_vector_search_results(vector_store_record_collection: VectorSearchBase, include_vectors: bool):
+async def test_get_vector_search_results(vector_store_record_collection: VectorSearch, include_vectors: bool):
     options = VectorSearchOptions(include_vectors=include_vectors)
     results = [{"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}]
     async for result in vector_store_record_collection._get_vector_search_results_from_results(
@@ -28,7 +28,7 @@ async def test_get_vector_search_results(vector_store_record_collection: VectorS
         break
 
 
-async def test_get_vector_search_results_fail(vector_store_record_collection: VectorSearchBase):
+async def test_get_vector_search_results_fail(vector_store_record_collection: VectorSearch):
     vector_store_record_collection.data_model_definition.vector_fields[0].deserialize_function = MagicMock(
         side_effect=Exception
     )

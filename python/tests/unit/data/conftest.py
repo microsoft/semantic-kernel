@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from pytest import fixture
 
 from semantic_kernel.data import (
-    VectorSearchBase,
+    VectorSearch,
     VectorStoreRecordDataField,
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
@@ -19,23 +19,16 @@ from semantic_kernel.data import (
 )
 from semantic_kernel.data.record_definition import vectorstoremodel
 from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import (
-    VectorizableTextSearchMixin,
-    VectorizedSearchMixin,
-    VectorSearchResult,
-    VectorTextSearchMixin,
-)
+from semantic_kernel.data.vector_search import VectorSearch, VectorSearchResult
 from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
 from semantic_kernel.kernel_types import OptionalOneOrMany
 
 
 @fixture
-def DictVectorStoreRecordCollection() -> type[VectorSearchBase]:
+def DictVectorStoreRecordCollection() -> type[VectorSearch]:
     class DictVectorStoreRecordCollection(
         VectorStoreRecordCollection[str, Any],
-        VectorizedSearchMixin[str, Any],
-        VectorizableTextSearchMixin[str, Any],
-        VectorTextSearchMixin[str, Any],
+        VectorSearch[str, Any],
     ):
         inner_storage: dict[str, Any] = Field(default_factory=dict)
 
@@ -388,7 +381,7 @@ def vector_store_record_collection(
     data_model_type_dataclass,
     data_model_type_vector_array,
     request,
-) -> VectorSearchBase:
+) -> VectorSearch:
     item = request.param if request and hasattr(request, "param") else "definition_basic"
     defs = {
         "definition_basic": data_model_definition,

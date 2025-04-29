@@ -1,29 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 import logging
 import random
+import re
 import string
 import sys
 from collections.abc import AsyncGenerator, Callable, Sequence
-from typing import Any, ClassVar, Generic
+from typing import TYPE_CHECKING, Any, ClassVar, Final, Generic
 
 from psycopg import sql
+from psycopg.conninfo import conninfo_to_dict
 from psycopg_pool import AsyncConnectionPool
-from pydantic import PrivateAttr
+from pydantic import Field, PrivateAttr, SecretStr
 
-from semantic_kernel.connectors.memory.postgres.constants import (
-    DEFAULT_SCHEMA,
-    DISTANCE_COLUMN_NAME,
-    MAX_DIMENSIONALITY,
-)
-from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
-from semantic_kernel.connectors.memory.postgres.utils import (
-    convert_dict_to_row,
-    convert_row_to_dict,
-    get_vector_distance_ops_str,
-    get_vector_index_ops_str,
-    python_type_to_postgres,
-)
 from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.record_definition import (
     VectorStoreRecordDefinition,
@@ -31,18 +21,24 @@ from semantic_kernel.data.record_definition import (
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, KernelSearchResults
-from semantic_kernel.data.vector_search import (
-    VectorizedSearchMixin,
-    VectorSearchFilter,
-    VectorSearchOptions,
-    VectorSearchResult,
+from semantic_kernel.data.text_search import KernelSearchResults
+from semantic_kernel.data.vector_search import VectorSearch, VectorSearchOptions, VectorSearchResult
+from semantic_kernel.data.vector_storage import (
+    GetFilteredRecordOptions,
+    TKey,
+    TModel,
+    VectorStore,
+    VectorStoreRecordCollection,
 )
-from semantic_kernel.data.vector_storage import GetFilteredRecordOptions, TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorStoreModelValidationError, VectorStoreOperationException
+from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorConnectionException
 from semantic_kernel.exceptions.vector_store_exceptions import VectorSearchExecutionException
-from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
+from semantic_kernel.kernel_types import OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if TYPE_CHECKING:
+    from psycopg_pool.abc import ACT
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -50,13 +46,260 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 
-logger: logging.Logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
+
+# region: Constants
+
+DEFAULT_SCHEMA: Final[str] = "public"
+# Limitation based on pgvector documentation https://github.com/pgvector/pgvector#what-if-i-want-to-index-vectors-with-more-than-2000-dimensions
+MAX_DIMENSIONALITY: Final[int] = 2000
+# The name of the column that returns distance value in the database.
+# It is used in the similarity search query. Must not conflict with model property.
+DISTANCE_COLUMN_NAME: Final[str] = "sk_pg_distance"
+# Environment Variables
+PGHOST_ENV_VAR: Final[str] = "PGHOST"
+PGPORT_ENV_VAR: Final[str] = "PGPORT"
+PGDATABASE_ENV_VAR: Final[str] = "PGDATABASE"
+PGUSER_ENV_VAR: Final[str] = "PGUSER"
+PGPASSWORD_ENV_VAR: Final[str] = "PGPASSWORD"
+PGSSL_MODE_ENV_VAR: Final[str] = "PGSSL_MODE"
+
+
+DISTANCE_FUNCTION_STRING_MAPPER: Final[dict[DistanceFunction, str]] = {
+    DistanceFunction.COSINE_DISTANCE: "vector_cosine_ops",
+    DistanceFunction.COSINE_SIMILARITY: "vector_cosine_ops",
+    DistanceFunction.DOT_PROD: "vector_ip_ops",
+    DistanceFunction.EUCLIDEAN_DISTANCE: "vector_l2_ops",
+    DistanceFunction.MANHATTAN: "vector_l1_ops",
+    DistanceFunction.DEFAULT: "vector_cosine_ops",
+}
+
+DISTANCE_FUNCTION_OPS_MAPPER: Final[dict[DistanceFunction, str]] = {
+    DistanceFunction.COSINE_DISTANCE: "<=>",
+    DistanceFunction.COSINE_SIMILARITY: "<=>",
+    DistanceFunction.DOT_PROD: "<#>",
+    DistanceFunction.EUCLIDEAN_DISTANCE: "<->",
+    DistanceFunction.MANHATTAN: "<+>",
+    DistanceFunction.DEFAULT: "<=>",
+}
+
+# region: Helpers
+
+
+def _python_type_to_postgres(python_type_str: str) -> str | None:
+    """Convert a string representation of a Python type to a PostgreSQL data type.
+
+    Args:
+        python_type_str: The string representation of the Python type (e.g., "int", "List[str]").
+
+    Returns:
+        Corresponding PostgreSQL data type as a string, if found. If the type is not found, return None.
+    """
+    # Basic type mapping from Python types (in string form) to PostgreSQL types
+    type_mapping = {
+        "str": "TEXT",
+        "int": "INTEGER",
+        "float": "DOUBLE PRECISION",
+        "bool": "BOOLEAN",
+        "dict": "JSONB",
+        "datetime": "TIMESTAMP",
+        "bytes": "BYTEA",
+        "NoneType": "NULL",
+    }
+
+    # Regular expression to detect lists, e.g., "List[str]" or "List[int]"
+    list_pattern = re.compile(r"(?i)List\[(.*)\]")
+
+    # Check if the type is a list
+    match = list_pattern.match(python_type_str)
+    if match:
+        # Extract the inner type of the list and convert it to a PostgreSQL array type
+        element_type_str = match.group(1)
+        postgres_element_type = _python_type_to_postgres(element_type_str)
+        return f"{postgres_element_type}[]"
+
+    # Handle basic types
+    if python_type_str in type_mapping:
+        return type_mapping[python_type_str]
+
+    return None
+
+
+def _convert_row_to_dict(
+    row: tuple[Any, ...], fields: list[tuple[str, VectorStoreRecordField | None]]
+) -> dict[str, Any]:
+    """Convert a row from a PostgreSQL query to a dictionary.
+
+    Uses the field information to map the row values to the corresponding field names.
+
+    Args:
+        row: A row from a PostgreSQL query, represented as a tuple.
+        fields: A list of tuples, where each tuple contains the field name and field definition.
+
+    Returns:
+        A dictionary representation of the row.
+    """
+
+    def _convert(v: Any | None, field: VectorStoreRecordField | None) -> Any | None:
+        if v is None:
+            return None
+        if isinstance(field, VectorStoreRecordVectorField) and isinstance(v, str):
+            # psycopg returns vector as a string if pgvector is not loaded.
+            # If pgvector is registered with the connection, no conversion is required.
+            return json.loads(v)
+        return v
+
+    return {field_name: _convert(value, field) for (field_name, field), value in zip(fields, row)}
+
+
+def _convert_dict_to_row(record: dict[str, Any], fields: list[tuple[str, VectorStoreRecordField]]) -> tuple[Any, ...]:
+    """Convert a dictionary to a row for a PostgreSQL query.
+
+    Args:
+        record: A dictionary representing a record.
+        fields: A list of tuples, where each tuple contains the field name and field definition.
+
+    Returns:
+        A tuple representing the record.
+    """
+
+    def _convert(v: Any | None) -> Any | None:
+        if isinstance(v, dict):
+            # psycopg requires serializing dicts as strings.
+            return json.dumps(v)
+        return v
+
+    return tuple(_convert(record.get(field.name)) for _, field in fields)
+
+
+async def ensure_open(connection_pool: AsyncConnectionPool) -> AsyncConnectionPool:
+    """Ensure the connection pool is open.
+
+    It is safe to call open on an already open connection pool.
+    Use this wrapper to ensure the connection pool is open before using it.
+
+    Args:
+        connection_pool: The connection pool to ensure is open.
+
+    Returns:
+        The connection pool, after ensuring it is open
+    """
+    await connection_pool.open()
+    return connection_pool
+
+
+# region: Settings
+
+
+@experimental
+class PostgresSettings(KernelBaseSettings):
+    """Postgres model settings.
+
+    This class is used to configure the Postgres connection pool
+    and other settings related to the Postgres store.
+
+    The settings that match what can be configured on tools such as
+    psql, pg_dump, pg_restore, pgbench, createdb, and
+    `libpq <https://www.postgresql.org/docs/current/libpq-envars.html>`_
+    match the environment variables used by those tools. This includes
+    PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD, and PGSSL_MODE.
+    Other settings follow the standard pattern of Pydantic settings,
+    e.g. POSTGRES_CONNECTION_STRING.
+
+    Args:
+        connection_string: Postgres connection string
+        (Env var POSTGRES_CONNECTION_STRING)
+        host: Postgres host (Env var PGHOST)
+        port: Postgres port (Env var PGPORT)
+        dbname: Postgres database name (Env var PGDATABASE)
+        user: Postgres user (Env var PGUSER)
+        password: Postgres password (Env var PGPASSWORD)
+        sslmode: Postgres sslmode (Env var PGSSL_MODE)
+            Use "require" to require SSL, "disable" to disable SSL, or "prefer" to prefer
+            SSL but allow a connection without it. Defaults to "prefer".
+        min_pool: Minimum connection pool size. Defaults to 1.
+            (Env var POSTGRES_MIN_POOL)
+        max_pool: Maximum connection pool size. Defaults to 5.
+            (Env var POSTGRES_MAX_POOL)
+        default_dimensionality: Default dimensionality for vectors. Defaults to 100.
+            (Env var POSTGRES_DEFAULT_DIMENSIONALITY)
+        max_rows_per_transaction: Maximum number of rows to process in a single transaction. Defaults to 1000.
+            (Env var POSTGRES_MAX_ROWS_PER_TRANSACTION)
+    """
+
+    env_prefix: ClassVar[str] = "POSTGRES_"
+
+    connection_string: SecretStr | None = None
+    host: str | None = Field(default=None, alias=PGHOST_ENV_VAR)
+    port: int | None = Field(default=5432, alias=PGPORT_ENV_VAR)
+    dbname: str | None = Field(default=None, alias=PGDATABASE_ENV_VAR)
+    user: str | None = Field(default=None, alias=PGUSER_ENV_VAR)
+    password: SecretStr | None = Field(default=None, alias=PGPASSWORD_ENV_VAR)
+    sslmode: str | None = Field(default=None, alias=PGSSL_MODE_ENV_VAR)
+
+    min_pool: int = 1
+    max_pool: int = 5
+
+    default_dimensionality: int = 100
+    max_rows_per_transaction: int = 1000
+
+    def get_connection_args(self) -> dict[str, Any]:
+        """Get connection arguments."""
+        result = conninfo_to_dict(self.connection_string.get_secret_value()) if self.connection_string else {}
+
+        if self.host:
+            result["host"] = self.host
+        if self.port:
+            result["port"] = self.port
+        if self.dbname:
+            result["dbname"] = self.dbname
+        if self.user:
+            result["user"] = self.user
+        if self.password:
+            result["password"] = self.password.get_secret_value()
+
+        return result
+
+    async def create_connection_pool(
+        self, connection_class: type["ACT"] | None = None, **kwargs: Any
+    ) -> AsyncConnectionPool:
+        """Creates a connection pool based off of settings.
+
+        Args:
+            connection_class: The connection class to use.
+            kwargs: Additional keyword arguments to pass to the connection class.
+
+        Returns:
+            The connection pool.
+        """
+        try:
+            # Only pass connection_class if it specified, or else allow psycopg to use the default connection class
+            extra_args: dict[str, Any] = {} if connection_class is None else {"connection_class": connection_class}
+
+            pool = AsyncConnectionPool(
+                min_size=self.min_pool,
+                max_size=self.max_pool,
+                open=False,
+                # kwargs are passed to the connection class
+                kwargs={
+                    **self.get_connection_args(),
+                    **kwargs,
+                },
+                **extra_args,
+            )
+            await pool.open()
+        except Exception as e:
+            raise MemoryConnectorConnectionException("Error creating connection pool.") from e
+        return pool
+
+
+# region: Collection
 
 
 @experimental
 class PostgresCollection(
     VectorStoreRecordCollection[TKey, TModel],
-    VectorizedSearchMixin[TKey, TModel],
+    VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """PostgreSQL collection implementation."""
@@ -72,8 +315,8 @@ class PostgresCollection(
 
     def __init__(
         self,
-        collection_name: str,
         data_model_type: type[TModel],
+        collection_name: str | None = None,
         data_model_definition: VectorStoreRecordDefinition | None = None,
         connection_pool: AsyncConnectionPool | None = None,
         db_schema: str = DEFAULT_SCHEMA,
@@ -127,8 +370,6 @@ class PostgresCollection(
             if tries > 10:
                 raise VectorStoreModelValidationError("Unable to generate a unique distance column name.")
         self._distance_column_name = distance_column_name
-
-    # region: VectorStoreRecordCollection implementation
 
     @override
     async def __aenter__(self) -> "PostgresCollection":
@@ -194,7 +435,7 @@ class PostgresCollection(
 
                 fields = list(self.data_model_definition.fields.items())
 
-                row_values = [convert_dict_to_row(record, fields) for record in record_batch]
+                row_values = [_convert_dict_to_row(record, fields) for record in record_batch]
 
                 # Execute the INSERT statement for each batch
                 await cur.executemany(
@@ -248,7 +489,7 @@ class PostgresCollection(
             rows = await cur.fetchall()
             if not rows:
                 return None
-            return [convert_row_to_dict(row, fields) for row in rows]
+            return [_convert_row_to_dict(row, fields) for row in rows]
 
     @override
     async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
@@ -321,7 +562,7 @@ class PostgresCollection(
                 raise ValueError(f"Property type is not defined for field '{field_name}'")
 
             # If the property type represents a Python type, convert it to a PostgreSQL type
-            property_type = python_type_to_postgres(field.property_type) or field.property_type.upper()
+            property_type = _python_type_to_postgres(field.property_type) or field.property_type.upper()
 
             # For Vector fields with dimensions, use pgvector's VECTOR type
             # Note that other vector types are supported in pgvector (e.g. halfvec),
@@ -424,13 +665,11 @@ class PostgresCollection(
             )
 
         # Require the distance function to be set for HNSW indexes
-        if not vector_field.distance_function:
+        if vector_field.distance_function not in DISTANCE_FUNCTION_STRING_MAPPER:
             raise VectorStoreOperationException(
                 "Distance function must be set for HNSW indexes. "
                 "Please set the distance function in the vector field definition."
             )
-
-        ops_str = get_vector_index_ops_str(vector_field.distance_function)
 
         async with self.connection_pool.connection() as conn, conn.cursor() as cur:
             await cur.execute(
@@ -440,15 +679,12 @@ class PostgresCollection(
                     table=sql.Identifier(table_name),
                     index_kind=sql.SQL(vector_field.index_kind),
                     column_name=sql.Identifier(column_name),
-                    op=sql.SQL(ops_str),
+                    op=sql.SQL(DISTANCE_FUNCTION_STRING_MAPPER[vector_field.distance_function]),
                 )
             )
             await conn.commit()
 
         logger.info(f"Index '{index_name}' created successfully on column '{column_name}'.")
-
-    # endregion
-    # region: VectorSearchBase implementation
 
     @override
     async def _inner_search(
@@ -477,7 +713,7 @@ class PostgresCollection(
                 await cur.execute(query, params)
                 # Fetch all results to get total count.
                 rows = await cur.fetchall()
-                row_dicts = [convert_row_to_dict(row, return_fields) for row in rows]
+                row_dicts = [_convert_row_to_dict(row, return_fields) for row in rows]
                 return KernelSearchResults(
                     results=self._get_vector_search_results_from_results(row_dicts, options), total_count=len(row_dicts)
                 )
@@ -489,7 +725,7 @@ class PostgresCollection(
                 async with connection_pool.connection() as conn, conn.cursor() as cur:
                     await cur.execute(query, params)
                     async for row in cur:
-                        yield convert_row_to_dict(row, return_fields)
+                        yield _convert_row_to_dict(row, return_fields)
 
             return KernelSearchResults(
                 results=self._get_vector_search_results_from_results(fetch_results(), options),
@@ -514,26 +750,24 @@ class PostgresCollection(
         """
         # Get the vector field we will be searching against,
         # defaulting to the first vector field if not specified
-        vector_fields = self.data_model_definition.vector_fields
-        if not vector_fields:
-            raise VectorSearchExecutionException("No vector fields defined.")
-        if options.vector_field_name:
-            vector_field = next((f for f in vector_fields if f.name == options.vector_field_name), None)
-            if not vector_field:
-                raise VectorSearchExecutionException(f"Vector field '{options.vector_field_name}' not found.")
-        else:
-            vector_field = vector_fields[0]
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        if not vector_field:
+            raise VectorStoreOperationException(
+                f"Vector field '{options.vector_field_name}' not found in the data model."
+            )
 
-        # Default to cosine distance if not set
-        distance_function = vector_field.distance_function or DistanceFunction.COSINE_DISTANCE
-        ops_str = get_vector_distance_ops_str(distance_function)
+        if vector_field.distance_function not in DISTANCE_FUNCTION_OPS_MAPPER:
+            raise VectorStoreOperationException(
+                f"Distance function '{vector_field.distance_function}' is not supported. "
+                "Please set the distance function in the vector field definition."
+            )
 
         # Select all fields except all vector fields if include_vectors is False
         select_list = self.data_model_definition.get_field_names(include_vector_fields=options.include_vectors)
         query = sql.SQL("SELECT {select_list}, {vec_col} {dist_op} %s as {dist_col} FROM {schema}.{table}").format(
             select_list=sql.SQL(", ").join(sql.Identifier(name) for name in select_list),
             vec_col=sql.Identifier(vector_field.name),
-            dist_op=sql.SQL(ops_str),
+            dist_op=sql.SQL(DISTANCE_FUNCTION_OPS_MAPPER[vector_field.distance_function]),
             dist_col=sql.Identifier(self._distance_column_name),
             schema=sql.Identifier(self.db_schema),
             table=sql.Identifier(self.collection_name),
@@ -553,7 +787,7 @@ class PostgresCollection(
         # For cosine similarity, we need to take 1 - cosine distance.
         # However, we can't use an expression in the ORDER BY clause or else the index won't be used.
         # Instead we'll wrap the query in a subquery and modify the distance in the outer query.
-        if distance_function == DistanceFunction.COSINE_SIMILARITY:
+        if vector_field.distance_function == DistanceFunction.COSINE_SIMILARITY:
             query = sql.SQL(
                 "SELECT subquery.*, 1 - subquery.{subquery_dist_col} AS {dist_col} FROM ({subquery}) AS subquery"
             ).format(
@@ -565,7 +799,7 @@ class PostgresCollection(
         # For inner product, we need to take -1 * inner product.
         # However, we can't use an expression in the ORDER BY clause or else the index won't be used.
         # Instead we'll wrap the query in a subquery and modify the distance in the outer query.
-        if distance_function == DistanceFunction.DOT_PROD:
+        if vector_field.distance_function == DistanceFunction.DOT_PROD:
             query = sql.SQL(
                 "SELECT subquery.*, -1 * subquery.{subquery_dist_col} AS {dist_col} FROM ({subquery}) AS subquery"
             ).format(
@@ -581,7 +815,7 @@ class PostgresCollection(
             query,
             params,
             [
-                *((name, f) for (name, f) in self.data_model_definition.fields.items() if name in select_list),
+                *((field.name, field) for field in self.data_model_definition.fields if field.name in select_list),
                 (self._distance_column_name, None),
             ],
         )
@@ -630,4 +864,53 @@ class PostgresCollection(
     def _get_score_from_result(self, result: Any) -> float | None:
         return result.pop(self._distance_column_name, None)
 
-    # endregion
+
+# region: Store
+
+
+@experimental
+class PostgresStore(VectorStore):
+    """PostgreSQL store implementation."""
+
+    connection_pool: AsyncConnectionPool
+    db_schema: str = DEFAULT_SCHEMA
+    tables: list[str] | None = None
+    """Tables to consider as collections. Default is all tables in the schema."""
+
+    @override
+    async def list_collection_names(self, **kwargs: Any) -> list[str]:
+        async with self.connection_pool.connection() as conn, conn.cursor() as cur:
+            base_query = sql.SQL("""
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_schema = {}
+            """).format(sql.Placeholder())
+
+            params = [self.db_schema]
+
+            if self.tables:
+                table_placeholders = sql.SQL(", ").join(sql.Placeholder() * len(self.tables))
+                base_query += sql.SQL(" AND table_name IN ({})").format(table_placeholders)
+                params.extend(self.tables)
+
+            await cur.execute(base_query, params)
+            rows = await cur.fetchall()
+            return [row[0] for row in rows]
+
+    @override
+    def get_collection(
+        self,
+        collection_name: str,
+        data_model_type: type[TModel],
+        data_model_definition: VectorStoreRecordDefinition | None = None,
+        **kwargs: Any,
+    ) -> VectorStoreRecordCollection:
+        return PostgresCollection(
+            connection_pool=self.connection_pool,
+            db_schema=self.db_schema,
+            collection_name=collection_name,
+            data_model_type=data_model_type,
+            # data model definition will be validated in the collection
+            data_model_definition=data_model_definition,  # type: ignore
+            **kwargs,
+        )

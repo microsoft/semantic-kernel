@@ -11,7 +11,7 @@ from semantic_kernel.data import (
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.data.vector_search import add_vector_to_records
+from semantic_kernel.data.vector_storage import add_vector_to_records
 from semantic_kernel.exceptions import VectorStoreModelException
 
 

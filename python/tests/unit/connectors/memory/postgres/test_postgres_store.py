@@ -14,10 +14,12 @@ from pytest import fixture
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIEmbeddingPromptExecutionSettings,
 )
-from semantic_kernel.connectors.memory.postgres.constants import DISTANCE_COLUMN_NAME
-from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection
-from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
-from semantic_kernel.connectors.memory.postgres.postgres_store import PostgresStore
+from semantic_kernel.connectors.memory.postgres import (
+    DISTANCE_COLUMN_NAME,
+    PostgresCollection,
+    PostgresSettings,
+    PostgresStore,
+)
 from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,

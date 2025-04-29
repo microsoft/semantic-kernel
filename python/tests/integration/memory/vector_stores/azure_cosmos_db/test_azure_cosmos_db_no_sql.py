@@ -9,10 +9,7 @@ import pytest
 from azure.cosmos.aio import CosmosClient
 from azure.cosmos.partition_key import PartitionKey
 
-from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_composite_key import (
-    AzureCosmosDBNoSQLCompositeKey,
-)
-from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_store import AzureCosmosDBNoSQLStore
+from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLStore
 from semantic_kernel.data.vector_storage import VectorStore
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorException
 from tests.integration.memory.vector_stores.vector_store_test_base import VectorStoreTestBase

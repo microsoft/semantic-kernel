@@ -1,32 +1,32 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import logging
 import sys
 from abc import abstractmethod
-from collections.abc import Awaitable, Callable, Mapping, Sequence
-from contextlib import suppress
+from collections.abc import Mapping, Sequence
 from typing import Any, ClassVar, Generic, TypeVar, overload
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, model_validator
 from pydantic.dataclasses import dataclass
 
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.data.record_definition import (
     SerializeMethodProtocol,
-    ToDictMethodProtocol,
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions import (
     VectorStoreModelDeserializationException,
+    VectorStoreModelException,
     VectorStoreModelSerializationException,
     VectorStoreModelValidationError,
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import experimental, release_candidate
 
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
@@ -43,6 +43,18 @@ TKey = TypeVar("TKey")
 _T = TypeVar("_T", bound="VectorStoreRecordHandler")
 
 logger = logging.getLogger(__name__)
+
+
+def _get_collection_name_from_model(
+    data_model_type: type[TModel] | None = None,
+    data_model_definition: VectorStoreRecordDefinition | None = None,
+) -> str | None:
+    """Get the collection name from the data model type or definition."""
+    if data_model_type and not data_model_definition:
+        data_model_definition = getattr(data_model_type, "__kernel_vectorstoremodel_definition__", None)
+    if data_model_definition and data_model_definition.collection_name:
+        return data_model_definition.collection_name
+    return None
 
 
 @dataclass
@@ -62,6 +74,7 @@ class GetFilteredRecordOptions:
     order_by: OptionalOneOrMany[OrderBy] = None
 
 
+@release_candidate
 class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
     """Vector Store Record Handler class.
 
@@ -74,6 +87,7 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
     data_model_definition: VectorStoreRecordDefinition
     supported_key_types: ClassVar[list[str] | None] = None
     supported_vector_types: ClassVar[list[str] | None] = None
+    embedding_generator: EmbeddingGeneratorBase | None = None
 
     @property
     def _key_field_name(self) -> str:
@@ -121,13 +135,6 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
                 f"Key field must be one of {self.supported_key_types}, "
                 f"got {self.data_model_definition.key_field.property_type}"
             )
-        if not self.supported_vector_types:
-            return
-        for field in self.data_model_definition.vector_fields:
-            if field.property_type and field.property_type not in self.supported_vector_types:
-                raise VectorStoreModelValidationError(
-                    f"Vector field {field.name} must be one of {self.supported_vector_types}, got {field.property_type}"
-                )
 
     @abstractmethod
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
@@ -213,28 +220,13 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
         """
         if self.data_model_definition.to_dict:
             return self.data_model_definition.to_dict(record, **kwargs)
-        if isinstance(record, ToDictMethodProtocol):
-            return self._serialize_vectors(record.to_dict())
-        if isinstance(record, BaseModel):
-            return self._serialize_vectors(record.model_dump())
 
         store_model = {}
-        for field_name, field in self.data_model_definition.fields.items():
-            value = record.get(field_name, None) if isinstance(record, Mapping) else getattr(record, field_name)
-            if isinstance(field, VectorStoreRecordVectorField):
-                if (func := getattr(field, "serialize_function", None)) and value is not None:
-                    value = func(value)
-            elif value is None:
-                # if the field is not a vector field, then it should have a value.
-                raise VectorStoreModelSerializationException(f"Field {field_name} is None, cannot serialize.")
-            store_model[field_name] = value
+        for field in self.data_model_definition.fields:
+            store_model[field.storage_property_name or field.name] = (
+                record.get(field.name, None) if isinstance(record, Mapping) else getattr(record, field.name)
+            )
         return store_model
-
-    def _serialize_vectors(self, record: dict[str, Any]) -> dict[str, Any]:
-        for field in self.data_model_definition.vector_fields:
-            if field.serialize_function:
-                record[field.name or ""] = field.serialize_function(record[field.name or ""])
-        return record
 
     # region Deserialization methods
 
@@ -298,7 +290,6 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
 
         The input of this should come from the _deserialized_store_model_to_dict function.
         """
-        include_vectors = kwargs.get("include_vectors", True)
         if self.data_model_definition.from_dict:
             if isinstance(record, Sequence):
                 return self.data_model_definition.from_dict(record, **kwargs)
@@ -311,42 +302,144 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
                 )
             record = record[0]
         if func := getattr(self.data_model_type, "from_dict", None):
-            if include_vectors:
-                record = self._deserialize_vector(record)
             return func(record)
         if issubclass(self.data_model_type, BaseModel):
-            if include_vectors:
-                record = self._deserialize_vector(record)
+            for field in self.data_model_definition.fields:
+                if field.storage_property_name and field.storage_property_name in record:
+                    record[field.name] = record.pop(field.storage_property_name)
             return self.data_model_type.model_validate(record)  # type: ignore
         data_model_dict: dict[str, Any] = {}
-        for field_name, field in self.data_model_definition.fields.items():
-            value = record.get(field_name, None)
-            if isinstance(field, VectorStoreRecordVectorField):
-                if not include_vectors:
-                    continue
-                if field.deserialize_function and value is not None:
-                    value = field.deserialize_function(value)
-            elif value is None:
-                # if the field is not a vector field, then it should have a value.
-                raise VectorStoreModelDeserializationException(f"Field {field_name} is None, cannot deserialize.")
-            data_model_dict[field_name] = value
+        for field in self.data_model_definition.fields:
+            value = record.get(field.storage_property_name or field.name, None)
+            if isinstance(field, VectorStoreRecordVectorField) and not kwargs.get("include_vectors"):
+                continue
+            data_model_dict[field.name] = value
         if self.data_model_type is dict:
             return data_model_dict  # type: ignore
         return self.data_model_type(**data_model_dict)
 
-    def _deserialize_vector(self, record: dict[str, Any]) -> dict[str, Any]:
+    # region: add_vector_to_records
+
+    @experimental
+    async def _add_vectors_to_records(
+        self,
+        records: OneOrMany[dict[str, Any]],
+        **kwargs,
+    ) -> OneOrMany[dict[str, Any]]:
+        """Vectorize the vector record.
+
+        This function can be passed to upsert or upsert batch of a VectorStoreRecordCollection.
+
+        Loops through the fields of the data model definition,
+        looks at data fields, if they have a vector field,
+        looks up that vector field and checks if is a local embedding.
+
+        If so adds that to a list of embeddings to make.
+
+        Finally calls Kernel add_embedding_to_object with the list of embeddings to make.
+
+        Optional arguments are passed onto the Kernel add_embedding_to_object call.
+        """
+        # dict of embedding_field.name and tuple of record, settings, field_name
+        embeddings_to_make: list[tuple[str, int, EmbeddingGeneratorBase]] = []
+
         for field in self.data_model_definition.vector_fields:
-            if field.deserialize_function:
-                record[field.name] = field.deserialize_function(record[field.name])
-        return record
+            embedding_generator = field.embedding_generator or self.embedding_generator
+            if not embedding_generator:
+                raise VectorStoreModelException(
+                    "Embedding generator must be set, either on the field or the collection."
+                )
+            embeddings_to_make.append((
+                field.storage_property_name or field.name,
+                field.dimensions,
+                embedding_generator,
+            ))
+
+        for field_name, dimensions, embedder in embeddings_to_make:
+            await self._add_embedding_to_object(
+                inputs=records,
+                field_name=field_name,
+                dimensions=dimensions,
+                embedding_generator=embedder,
+                container_mode=self.data_model_definition.container_mode,
+                **kwargs,
+            )
+        return records
+
+    async def _add_embedding_to_object(
+        self,
+        inputs: OneOrMany[TModel],
+        field_name: str,
+        dimensions: int,
+        embedding_generator: EmbeddingGeneratorBase,
+        container_mode: bool = False,
+        **kwargs: Any,
+    ):
+        """Gather all fields to embed, batch the embedding generation and store."""
+        contents: list[Any] = []
+        dict_like = (getter := getattr(inputs, "get", False)) and callable(getter)
+        list_of_dicts: bool = False
+        if container_mode:
+            contents = inputs[field_name].tolist()  # type: ignore
+        elif isinstance(inputs, list):
+            list_of_dicts = (getter := getattr(inputs[0], "get", False)) and callable(getter)
+            for record in inputs:
+                if list_of_dicts:
+                    contents.append(record.get(field_name))  # type: ignore
+                else:
+                    contents.append(getattr(record, field_name))
+        else:
+            if dict_like:
+                contents.append(inputs.get(field_name))  # type: ignore
+            else:
+                contents.append(getattr(inputs, field_name))
+
+        vectors = await embedding_generator.generate_raw_embeddings(
+            texts=contents, settings=PromptExecutionSettings(dimensions=dimensions), **kwargs
+        )  # type: ignore
+        if vectors is None:
+            raise VectorStoreOperationException("No vectors were generated.")
+        if container_mode:
+            inputs[field_name] = vectors  # type: ignore
+            return
+        if isinstance(inputs, list):
+            for record, vector in zip(inputs, vectors):
+                if list_of_dicts:
+                    record[field_name] = vector  # type: ignore
+                else:
+                    setattr(record, field_name, vector)
+            return
+        if dict_like:
+            inputs[field_name] = vectors[0]  # type: ignore
+            return
+        setattr(inputs, field_name, vectors[0])
+
+
+# region: VectorStoreRecordCollection
 
 
 @experimental
 class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel]):
     """Base class for a vector store record collection."""
 
-    collection_name: str
+    collection_name: str = ""
     managed_client: bool = True
+
+    @model_validator(mode="before")
+    @classmethod
+    def _ensure_collection_name(cls: type[_T], data: Any) -> dict[str, Any]:
+        """Ensure there is a collection name, if it isn't passed, try to get it from the data model type."""
+        if (
+            isinstance(data, dict)
+            and not data.get("collection_name")
+            and (
+                collection_name := _get_collection_name_from_model(
+                    data.get("data_model_type"), data.get("data_model_definition")
+                )
+            )
+        ):
+            data["collection_name"] = collection_name
+        return data
 
     async def __aenter__(self) -> Self:
         """Enter the context manager."""
@@ -497,63 +590,33 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
         """Upsert a batch of records, this method is deprecated, use upsert instead."""
         return await self.upsert(*args, **kwargs)
 
-    @overload
     async def upsert(
         self,
-        record: TModel = ...,
-        embedding_generation_function: Callable[
-            [TModel, type[TModel] | None, VectorStoreRecordDefinition | None], Awaitable[TModel]
-        ]
-        | None = None,
-        **kwargs: Any,
-    ) -> OneOrMany[TKey] | None: ...
-
-    @overload
-    async def upsert(
-        self,
-        records: OneOrMany[TModel] = ...,
-        embedding_generation_function: Callable[
-            [OneOrMany[TModel], type[TModel] | None, VectorStoreRecordDefinition | None], Awaitable[OneOrMany[TModel]]
-        ]
-        | None = None,
-        **kwargs: Any,
-    ) -> Sequence[TKey]: ...
-
-    async def upsert(self, record=None, records=None, embedding_generation_function=None, **kwargs):
-        """Upsert a one or more records.
+        records: OneOrMany[TModel],
+        **kwargs,
+    ) -> OneOrMany[TKey]:
+        """Upsert one or more records.
 
         If the key of the record already exists, the existing record will be updated.
         If the key does not exist, a new record will be created.
 
         Args:
-            record: The record to upsert, can be a list of records, or a single container.
-            records: The records to upsert, can be a list of records, or a single container,
-                if supplied, record is ignored.
-            embedding_generation_function: Supply this function to generate embeddings.
-                This will be called with the data model definition and the records,
-                should return the records with vectors.
-                This can be supplied by using the add_vector_to_records method.
+            records: The records to upsert, can be a single record, a list of records, or a single container.
+                If a single record is passed, a single key is returned, instead of a list of keys.
             **kwargs: Additional arguments.
 
         Returns:
-            Sequence[TKey]: The keys of the upserted records, this is always a list,
-            corresponds to the input or the items in the container.
+            OneOrMany[TKey]: The keys of the upserted records.
 
         Raises:
             VectorStoreModelSerializationException: If an error occurs during serialization.
             VectorStoreOperationException: If an error occurs during upserting.
         """
         batch = True
-        if records is None and record is not None:
-            if not isinstance(record, list) and not self._container_mode:
-                records = [record]
-                batch = False
-            else:
-                records = record
+        if not isinstance(records, list) and not self._container_mode:
+            batch = False
         if records is None:
             raise VectorStoreOperationException("Either record or records must be provided.")
-        if embedding_generation_function:
-            records = await embedding_generation_function(records, self.data_model_type, self.data_model_definition)
 
         try:
             data = self.serialize(records)
@@ -561,6 +624,14 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
         except VectorStoreModelSerializationException:
             raise
 
+        try:
+            data = await self._add_vectors_to_records(data)
+        except (VectorStoreModelException, VectorStoreOperationException):
+            raise
+        except Exception as exc:
+            raise VectorStoreOperationException(
+                "Exception occurred while trying to add the vectors to the records."
+            ) from exc
         try:
             results = await self._inner_upsert(data, **kwargs)  # type: ignore
         except Exception as exc:
@@ -577,25 +648,94 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
     @overload
     async def get(
         self,
-        include_vectors: bool = True,
         top: int = ...,
         skip: int = ...,
         order_by: OptionalOneOrMany[OrderBy | dict[str, Any] | list[dict[str, Any]]] = None,
-    ) -> TModel | None: ...
+        include_vectors: bool = False,
+        **kwargs: Any,
+    ) -> Sequence[TModel] | None:
+        """Get records based on the ordering and selection criteria.
 
-    @overload
-    async def get(self, key: TKey = ..., include_vectors: bool = True, **kwargs: Any) -> TModel | None: ...
+        Args:
+            include_vectors: Include the vectors in the response. Default is True.
+                Some vector stores do not support retrieving without vectors, even when set to false.
+                Some vector stores have specific parameters to control that behavior, when
+                that parameter is set, include_vectors is ignored.
+            top: The number of records to return.
+                Only used if keys are not provided.
+            skip: The number of records to skip.
+                Only used if keys are not provided.
+            order_by: The order by clause, this is a list of dicts with the field name and ascending flag,
+                (default is True, which means ascending).
+                Only used if keys are not provided.
+            **kwargs: Additional arguments.
+
+        Returns:
+            The records, either a list of TModel or the container type.
+
+        Raises:
+            VectorStoreOperationException: If an error occurs during the get.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+        """
+        ...
 
     @overload
     async def get(
-        self, keys: Sequence[TKey] = ..., include_vectors: bool = True, **kwargs: Any
-    ) -> OneOrMany[TModel] | None: ...
+        self,
+        key: TKey = ...,
+        include_vectors: bool = False,
+        **kwargs: Any,
+    ) -> TModel | None:
+        """Get a record if it exists.
+
+        Args:
+            key: The key to get.
+            include_vectors: Include the vectors in the response. Default is True.
+                Some vector stores do not support retrieving without vectors, even when set to false.
+                Some vector stores have specific parameters to control that behavior, when
+                that parameter is set, include_vectors is ignored.
+            **kwargs: Additional arguments.
+
+        Returns:
+            The records, either a list of TModel or the container type.
+
+        Raises:
+            VectorStoreOperationException: If an error occurs during the get.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+        """
+        ...
+
+    @overload
+    async def get(
+        self,
+        keys: Sequence[TKey] = ...,
+        include_vectors: bool = False,
+        **kwargs: Any,
+    ) -> OneOrMany[TModel] | None:
+        """Get a batch of records whose keys exist in the collection, i.e. keys that do not exist are ignored.
+
+        Args:
+            keys: The keys to get, if keys are provided, key is ignored.
+            include_vectors: Include the vectors in the response. Default is True.
+                Some vector stores do not support retrieving without vectors, even when set to false.
+                Some vector stores have specific parameters to control that behavior, when
+                that parameter is set, include_vectors is ignored.
+            **kwargs: Additional arguments.
+
+        Returns:
+            The records, either a list of TModel or the container type.
+
+        Raises:
+            VectorStoreOperationException: If an error occurs during the get.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+        """
+        ...
 
     async def get(
         self,
         key=None,
         keys=None,
-        include_vectors=True,
+        include_vectors=False,
         **kwargs,
     ):
         """Get a batch of records whose keys exist in the collection, i.e. keys that do not exist are ignored.
@@ -673,57 +813,39 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
         """Delete a batch of records, this method is deprecated, use delete instead."""
         return await self.delete(*args, **kwargs)
 
-    @overload
-    async def delete(self, key: TKey = ..., **kwargs: Any) -> None: ...
-
-    @overload
-    async def delete(self, keys: Sequence[TKey] = ..., **kwargs: Any) -> None: ...
-
-    async def delete(self, key=None, keys=None, **kwargs):
-        """Delete a one or more records.
+    async def delete(self, keys: OneOrMany[TKey], **kwargs):
+        """Delete one or more records by key.
 
         An exception will be raised at the end if any record does not exist.
 
         Args:
-            key: The key to delete.
-            keys: The keys, if keys are provided, key is ignored.
+            keys: The key or keys to be deleted.
             **kwargs: Additional arguments.
         Exceptions:
             VectorStoreOperationException: If an error occurs during deletion or a record does not exist.
         """
-        if not keys:
-            if key and not isinstance(key, list):
-                keys = [key]
-            elif isinstance(key, list):
-                keys = key
-            else:
-                raise VectorStoreOperationException("Either key or keys must be provided.")
+        if isinstance(keys, list):
+            keys = [keys]
         try:
             await self._inner_delete(keys, **kwargs)
         except Exception as exc:
             raise VectorStoreOperationException(f"Error deleting record(s): {exc}") from exc
-
-    # region Internal Functions
-
-    def __del__(self):
-        """Delete the instance."""
-        with suppress(Exception):
-            asyncio.get_running_loop().create_task(self.__aexit__(None, None, None))
 
 
 @experimental
 class VectorStore(KernelBaseModel):
     """Base class for vector stores."""
 
-    vector_record_collections: dict[str, VectorStoreRecordCollection] = Field(default_factory=dict)
     managed_client: bool = True
+    embedding_generator: EmbeddingGeneratorBase | None = None
 
     @abstractmethod
     def get_collection(
         self,
-        collection_name: str,
         data_model_type: type[object],
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> "VectorStoreRecordCollection":
         """Get a vector record store."""
@@ -740,13 +862,9 @@ class VectorStore(KernelBaseModel):
         This is a wrapper around the get_collection method, to check if the collection exists.
         """
         try:
-            data_model = VectorStoreRecordDefinition(
-                fields={"id": VectorStoreRecordKeyField()},
-            )
+            data_model = VectorStoreRecordDefinition(fields=[VectorStoreRecordKeyField(name="id")])
             collection = self.get_collection(collection_name, data_model_type=dict, data_model_definition=data_model)
-            exists = await collection.does_collection_exist()
-            del self.vector_record_collections[collection_name]
-            return exists
+            return await collection.does_collection_exist()
         except VectorStoreOperationException:
             return False
 
@@ -756,12 +874,9 @@ class VectorStore(KernelBaseModel):
         This is a wrapper around the get_collection method, to delete the collection.
         """
         try:
-            data_model = VectorStoreRecordDefinition(
-                fields={"id": VectorStoreRecordKeyField()},
-            )
+            data_model = VectorStoreRecordDefinition(fields=[VectorStoreRecordKeyField(name="id")])
             collection = self.get_collection(collection_name, data_model_type=dict, data_model_definition=data_model)
             await collection.delete_collection()
-            del self.vector_record_collections[collection_name]
         except VectorStoreOperationException:
             pass
 

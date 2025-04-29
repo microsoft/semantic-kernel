@@ -12,8 +12,8 @@ from semantic_kernel.connectors.memory.azure_ai_search import (
     AzureAISearchCollection,
     AzureAISearchSettings,
     AzureAISearchStore,
-    data_model_definition_to_azure_ai_search_index,
-    get_search_index_client,
+    _data_model_definition_to_azure_ai_search_index,
+    _get_search_index_client,
 )
 from semantic_kernel.data.vector_search import VectorSearchOptions
 from semantic_kernel.exceptions import (
@@ -273,7 +273,7 @@ async def test_create_index_from_index_fail(collection, mock_create_collection):
 
 @mark.parametrize("distance_function", [("cosine_distance")])
 def test_data_model_definition_to_azure_ai_search_index(data_model_definition):
-    index = data_model_definition_to_azure_ai_search_index("test", data_model_definition)
+    index = _data_model_definition_to_azure_ai_search_index("test", data_model_definition)
     assert index is not None
     assert index.name == "test"
     assert len(index.fields) == 3
@@ -332,12 +332,12 @@ def test_get_search_index_client(azure_ai_search_unit_test_env):
     settings = AzureAISearchSettings(**azure_ai_search_unit_test_env, env_file_path="test.env")
 
     azure_credential = MagicMock(spec=AzureKeyCredential)
-    client = get_search_index_client(settings, azure_credential=azure_credential)
+    client = _get_search_index_client(settings, azure_credential=azure_credential)
     assert client is not None
     assert client._credential == azure_credential
 
     token_credential = MagicMock(spec=TokenCredential)
-    client2 = get_search_index_client(
+    client2 = _get_search_index_client(
         settings,
         token_credential=token_credential,
     )
@@ -345,7 +345,7 @@ def test_get_search_index_client(azure_ai_search_unit_test_env):
     assert client2._credential == token_credential
 
     with raises(ServiceInitializationError):
-        get_search_index_client(settings)
+        _get_search_index_client(settings)
 
 
 @mark.parametrize("include_vectors", [True, False])
