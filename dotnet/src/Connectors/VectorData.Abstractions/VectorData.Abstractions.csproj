@@ -11,7 +11,7 @@
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
-    <PackageVersion>9.0.0-preview.1.25161.1</PackageVersion>
+    <PackageVersion>9.0.0-preview.1.25229.1</PackageVersion>
     <AssemblyVersion>9.0.0.0</AssemblyVersion>
     <!-- Package validation. Baseline Version should be the latest version available on NuGet. -->
     <PackageValidationBaselineVersion>9.0.0-preview.1.25161.1</PackageValidationBaselineVersion>
