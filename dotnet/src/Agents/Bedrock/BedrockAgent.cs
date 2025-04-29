@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
@@ -117,11 +118,18 @@ public sealed class BedrockAgent : Agent
             () => new BedrockAgentThread(this.RuntimeClient),
             cancellationToken).ConfigureAwait(false);
 
+        // Get the conversation state extensions context contributions and register plugins from the extensions.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var extensionsContext = await bedrockThread.StateParts.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
         // Ensure that the last message provided is a user message
         string? message = this.ExtractUserMessage(messages.Last());
 
-        // Build session state with conversation history if needed
+        // Build session state with conversation history and override instructions if needed
         SessionState sessionState = this.ExtractSessionState(messages);
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext);
+        sessionState.PromptSessionAttributes = new() { ["AdditionalInstructions"] = mergedAdditionalInstructions };
 
         // Configure the agent request with the provided options
         var invokeAgentRequest = this.ConfigureAgentRequest(options, () =>
@@ -346,11 +354,18 @@ public sealed class BedrockAgent : Agent
             () => new BedrockAgentThread(this.RuntimeClient),
             cancellationToken).ConfigureAwait(false);
 
+        // Get the conversation state extensions context contributions and register plugins from the extensions.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var extensionsContext = await bedrockThread.StateParts.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
         // Ensure that the last message provided is a user message
         string? message = this.ExtractUserMessage(messages.Last());
 
-        // Build session state with conversation history if needed
+        // Build session state with conversation history and override instructions if needed
         SessionState sessionState = this.ExtractSessionState(messages);
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext);
+        sessionState.PromptSessionAttributes = new() { ["AdditionalInstructions"] = mergedAdditionalInstructions };
 
         // Configure the agent request with the provided options
         var invokeAgentRequest = this.ConfigureAgentRequest(options, () =>
@@ -639,20 +654,35 @@ public sealed class BedrockAgent : Agent
 
         async IAsyncEnumerable<StreamingChatMessageContent> InvokeInternal()
         {
+            var combinedResponseMessageBuilder = new StringBuilder();
+            StreamingChatMessageContent? lastMessage = null;
+
             // The Bedrock agent service has the same API for both streaming and non-streaming responses.
             // We are invoking the same method as the non-streaming response with the streaming configuration set,
             // and converting the chat message content to streaming chat message content.
             await foreach (var chatMessageContent in this.InternalInvokeAsync(invokeAgentRequest, arguments, cancellationToken).ConfigureAwait(false))
             {
-                await this.NotifyThreadOfNewMessage(thread, chatMessageContent, cancellationToken).ConfigureAwait(false);
-                yield return new StreamingChatMessageContent(chatMessageContent.Role, chatMessageContent.Content)
+                lastMessage = new StreamingChatMessageContent(chatMessageContent.Role, chatMessageContent.Content)
                 {
                     AuthorName = chatMessageContent.AuthorName,
                     ModelId = chatMessageContent.ModelId,
                     InnerContent = chatMessageContent.InnerContent,
                     Metadata = chatMessageContent.Metadata,
                 };
+                yield return lastMessage;
+
+                combinedResponseMessageBuilder.Append(chatMessageContent.Content);
             }
+
+            // Build a combined message containing the text from all response parts
+            // to send to the thread.
+            var combinedMessage = new ChatMessageContent(AuthorRole.Assistant, combinedResponseMessageBuilder.ToString())
+            {
+                AuthorName = lastMessage?.AuthorName,
+                ModelId = lastMessage?.ModelId,
+                Metadata = lastMessage?.Metadata,
+            };
+            await this.NotifyThreadOfNewMessage(thread, combinedMessage, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -726,4 +756,19 @@ public sealed class BedrockAgent : Agent
     }
 
     #endregion
+
+    private static string MergeAdditionalInstructions(string? optionsAdditionalInstructions, string extensionsContext) =>
+        (optionsAdditionalInstructions, extensionsContext) switch
+        {
+            (string ai, string ec) when !string.IsNullOrWhiteSpace(ai) && !string.IsNullOrWhiteSpace(ec) => string.Concat(
+                ai,
+                Environment.NewLine,
+                Environment.NewLine,
+                ec),
+            (string ai, string ec) when string.IsNullOrWhiteSpace(ai) => ec,
+            (string ai, string ec) when string.IsNullOrWhiteSpace(ec) => ai,
+            (null, string ec) => ec,
+            (string ai, null) => ai,
+            _ => string.Empty
+        };
 }

@@ -18,7 +18,7 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 
-internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
+public sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)

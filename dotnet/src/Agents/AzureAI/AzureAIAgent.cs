@@ -194,9 +194,10 @@ public sealed partial class AzureAIAgent : Agent
         azureAIAgentThread.StateParts.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext);
         var extensionsContextOptions = options is null ?
-            new AzureAIAgentInvokeOptions() { AdditionalInstructions = extensionsContext } :
-            new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = extensionsContext };
+            new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
+            new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
 
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
@@ -323,9 +324,10 @@ public sealed partial class AzureAIAgent : Agent
         azureAIAgentThread.StateParts.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext);
         var extensionsContextOptions = options is null ?
-            new AzureAIAgentInvokeOptions() { AdditionalInstructions = extensionsContext } :
-            new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = extensionsContext };
+            new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
+            new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
 
 #pragma warning disable CS0618 // Type or member is obsolete
         // Invoke the Agent with the thread that we already added our message to.
@@ -461,4 +463,19 @@ public sealed partial class AzureAIAgent : Agent
 
         return new AzureAIChannel(this.Client, thread.Id);
     }
+
+    private static string MergeAdditionalInstructions(string? optionsAdditionalInstructions, string extensionsContext) =>
+        (optionsAdditionalInstructions, extensionsContext) switch
+        {
+            (string ai, string ec) when !string.IsNullOrWhiteSpace(ai) && !string.IsNullOrWhiteSpace(ec) => string.Concat(
+                ai,
+                Environment.NewLine,
+                Environment.NewLine,
+                ec),
+            (string ai, string ec) when string.IsNullOrWhiteSpace(ai) => ec,
+            (string ai, string ec) when string.IsNullOrWhiteSpace(ec) => ai,
+            (null, string ec) => ec,
+            (string ai, null) => ai,
+            _ => string.Empty
+        };
 }
