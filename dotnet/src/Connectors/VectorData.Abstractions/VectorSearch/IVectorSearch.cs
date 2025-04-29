@@ -66,6 +66,5 @@ public interface IVectorSearch<TRecord>
     /// including itself or any services it might be wrapping. For example, to access the <see cref="VectorStoreRecordCollectionMetadata"/> for the instance,
     /// <see cref="GetService"/> may be used to request it.
     /// </remarks>
-    [Experimental("MEVD9000")]
     object? GetService(Type serviceType, object? serviceKey = null);
 }
