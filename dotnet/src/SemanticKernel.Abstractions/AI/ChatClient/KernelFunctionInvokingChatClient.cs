@@ -20,6 +20,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
     public KernelFunctionInvokingChatClient(IChatClient innerClient, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
         : base(innerClient, loggerFactory, functionInvocationServices)
     {
+        this.MaximumIterationsPerRequest = 128;
     }
 
     private static void UpdateOptionsForAutoFunctionInvocation(ref ChatOptions options, ChatMessageContent content, bool isStreaming)
