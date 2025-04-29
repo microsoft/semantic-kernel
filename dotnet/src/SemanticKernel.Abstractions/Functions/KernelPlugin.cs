@@ -99,11 +99,24 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// </param>
     /// <returns>An enumerable of <see cref="AIFunction"/> instances, one for each <see cref="KernelFunction"/> in this plugin.</returns>
     [Experimental("SKEXP0001")]
+    [Obsolete("This method is obsolete and will be removed in a future version. Use the KernelPlugin directly or if you need to provide a Kernel at the function creation use CloneFunctions(Kernel) instead.")]
     public IEnumerable<AIFunction> AsAIFunctions(Kernel? kernel = null)
     {
         foreach (KernelFunction function in this)
         {
             yield return function.AsAIFunction(kernel);
+        }
+    }
+
+    /// <summary>Produces a cloned iteration of <see cref="KernelFunction"/> attached to a provided <see cref="Kernel"/> for every <see cref="KernelFunction"/> in this plugin.</summary>
+    /// <param name="kernel">The <see cref="Kernel"/> instance to pass to the <see cref="KernelFunction"/>s when invoked as part of the <see cref="AIFunction"/>'s invocation.</param>
+    /// <returns>An enumerable of <see cref="KernelFunction"/> instances, one for each <see cref="KernelFunction"/> in this plugin.</returns>
+    [Experimental("SKEXP0001")]
+    public IEnumerable<KernelFunction> CloneFunctions(Kernel? kernel)
+    {
+        foreach (KernelFunction function in this)
+        {
+            yield return function.Clone(kernel);
         }
     }
 

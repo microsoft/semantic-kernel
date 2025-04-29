@@ -19,7 +19,7 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
     private readonly AIFunction _aiFunction;
 
     public AIFunctionKernelFunction(AIFunction aiFunction) :
-        base(aiFunction.Name,
+        base(aiFunction is KernelFunction kf && kf.PluginName is not null ? $"{kf.PluginName}_{kf.Name}" : aiFunction.Name,
             aiFunction.Description,
             MapParameterMetadata(aiFunction),
             aiFunction.JsonSerializerOptions,

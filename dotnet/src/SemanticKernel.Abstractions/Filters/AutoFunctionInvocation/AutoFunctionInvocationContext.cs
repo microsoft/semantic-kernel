@@ -77,7 +77,7 @@ public class AutoFunctionInvocationContext
         this._chatHistory = chatHistory;
         this._invocationContext.Messages = chatHistory.ToChatMessageList();
         chatHistory.SetChatMessageHandlers(this._invocationContext.Messages);
-        this._invocationContext.Function = function.AsAIFunction();
+        this._invocationContext.Function = function;
         this.Result = result;
     }
 
@@ -239,7 +239,7 @@ public class AutoFunctionInvocationContext
     {
         // Compares the schemas, should be similar.
         return string.Equals(
-            kernelFunction.AsAIFunction().JsonSchema.ToString(),
+            kernelFunction.JsonSchema.ToString(),
             aiFunction.JsonSchema.ToString(),
             StringComparison.OrdinalIgnoreCase);
 

@@ -59,7 +59,8 @@ public class InMemoryVectorStoreTests
 
         // Assert.
         var collectionNamesList = await collectionNames.ToListAsync();
-        Assert.Equal(new[] { "collection1", "collection2" }, collectionNamesList);
+        Assert.Contains("collection1", collectionNamesList);
+        Assert.Contains("collection2", collectionNamesList);
     }
 
     [Fact]

@@ -19,6 +19,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions;
 
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -26,6 +28,8 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public abstract class KernelFunction : AIFunction
 {
+    private static readonly JsonElement s_defaultSchema = JsonDocument.Parse("{}").RootElement;
+
     /// <summary>The measurement tag name for the function name.</summary>
     private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
 
@@ -46,8 +50,14 @@ public abstract class KernelFunction : AIFunction
     protected MethodInfo? _underlyingMethod;
 #pragma warning restore CA1051
 
-    /// <summary>The <see cref="Kernel"/> this instance will prioritize to use.</summary>
-    internal Kernel? Kernel;
+    /// <summary>The <see cref="Kernel"/> instance that will be prioritized when invoking without a provided <see cref="Kernel"/> argument.</summary>
+    /// <remarks>This will be normally used when the function is invoked using the <see cref="AIFunction.InvokeAsync(AIFunctionArguments?, CancellationToken)"/> interface.</remarks>
+    internal Kernel? Kernel { get; set; }
+
+    /// <summary>
+    /// Indicates when retrieving the <see cref="KernelFunction.Name"/> it should be fully qualified (including plugin name) just the function name.
+    /// </summary>
+    internal bool UseFullyQualifiedName { get; set; } = false;
 
     /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
@@ -73,7 +83,10 @@ public abstract class KernelFunction : AIFunction
     /// should be invoked when, or as part of lookups in a plugin's function collection. Function names are generally
     /// handled in an ordinal case-insensitive manner.
     /// </remarks>
-    public override string Name => this.Metadata.Name;
+    public override string Name
+        => this.UseFullyQualifiedName && !string.IsNullOrWhiteSpace(this.Metadata.PluginName)
+            ? $"{this.Metadata.PluginName}_{this.Metadata.Name}"
+            : this.Metadata.Name;
 
     /// <summary>
     /// Gets the name of the plugin this function was added to.
@@ -171,6 +184,8 @@ public abstract class KernelFunction : AIFunction
             AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary,
         };
 
+        this.BuildFunctionSchema();
+
         if (executionSettings is not null)
         {
             this.ExecutionSettings = executionSettings.ToDictionary(
@@ -178,6 +193,9 @@ public abstract class KernelFunction : AIFunction
                 entry => { var clone = entry.Value.Clone(); clone.Freeze(); return clone; });
         }
     }
+
+    /// <inheritdoc/>
+    public override JsonElement JsonSchema => this._jsonSchema;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -208,6 +226,8 @@ public abstract class KernelFunction : AIFunction
             AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary,
         };
 
+        this.BuildFunctionSchema();
+
         if (executionSettings is not null)
         {
             this.ExecutionSettings = executionSettings.ToDictionary(
@@ -237,6 +257,7 @@ public abstract class KernelFunction : AIFunction
         KernelArguments? arguments = null,
         CancellationToken cancellationToken = default)
     {
+        kernel ??= this.Kernel;
         Verify.NotNull(kernel);
 
         using var activity = s_activitySource.StartActivity(this.Name);
@@ -339,6 +360,7 @@ public abstract class KernelFunction : AIFunction
         KernelArguments? arguments = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        kernel ??= this.Kernel;
         Verify.NotNull(kernel);
 
         using var activity = s_activitySource.StartActivity(this.Name);
@@ -522,6 +544,26 @@ public abstract class KernelFunction : AIFunction
         }
     }
 
+    private void BuildFunctionSchema()
+    {
+        KernelFunctionSchemaModel schemaModel = new()
+        {
+            Type = "object",
+            Description = this.Description,
+        };
+
+        foreach (var parameter in this.Metadata.Parameters)
+        {
+            schemaModel.Properties[parameter.Name] = parameter.Schema?.RootElement ?? s_defaultSchema;
+            if (parameter.IsRequired)
+            {
+                (schemaModel.Required ??= []).Add(parameter.Name);
+            }
+        }
+
+        this._jsonSchema = JsonSerializer.SerializeToElement(schemaModel, AbstractionsJsonContext.Default.KernelFunctionSchemaModel);
+    }
+
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     private void LogFunctionArguments(ILogger logger, string? pluginName, string functionName, KernelArguments arguments)
@@ -556,10 +598,15 @@ public abstract class KernelFunction : AIFunction
     /// </param>
     /// <returns>An instance of <see cref="AIFunction"/> that, when invoked, will in turn invoke the current <see cref="KernelFunction"/>.</returns>
     [Experimental("SKEXP0001")]
+    [Obsolete("Use the kernel function directly or for similar behavior use Clone(Kernel) method instead.")]
     public AIFunction AsAIFunction(Kernel? kernel = null)
     {
         return new KernelAIFunction(this, kernel);
     }
+
+    #region Private
+
+    private JsonElement _jsonSchema;
 
     /// <summary>An <see cref="AIFunction"/> wrapper around a <see cref="KernelFunction"/>.</summary>
     private sealed class KernelAIFunction : AIFunction
@@ -623,4 +670,6 @@ public abstract class KernelFunction : AIFunction
             return JsonSerializer.SerializeToElement(schemaModel, AbstractionsJsonContext.Default.KernelFunctionSchemaModel);
         }
     }
+
+    #endregion
 }
