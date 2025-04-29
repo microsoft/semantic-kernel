@@ -461,6 +461,16 @@ internal sealed class GeminiRequest
             request.Configuration ??= new ConfigurationElement();
             request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig { ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget };
         }
+
+        if (executionSettings.GroundingConfig?.GoogleSearch is not null)
+        {
+            request.Tools ??= [];
+            if (request.Tools.Count == 0)
+            {
+                request.Tools.Add(new GeminiTool());
+            }
+            request.Tools[0].GoogleSearch = new GeminiTool.GoogleSearchProperties();
+        }
     }
 
     internal sealed class ConfigurationElement

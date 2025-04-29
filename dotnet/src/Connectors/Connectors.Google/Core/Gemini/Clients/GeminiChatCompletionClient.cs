@@ -691,6 +691,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             PromptFeedbackBlockReason = geminiResponse.PromptFeedback?.BlockReason,
             PromptFeedbackSafetyRatings = geminiResponse.PromptFeedback?.SafetyRatings.ToList(),
             ResponseSafetyRatings = candidate.SafetyRatings?.ToList(),
+            GroundingMetadata = candidate.GroundingMetadata
         };
 
     private sealed class ChatCompletionState
