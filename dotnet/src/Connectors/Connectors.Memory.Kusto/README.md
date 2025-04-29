@@ -7,7 +7,6 @@ This connector uses [Azure Data Explorer (Kusto)](https://learn.microsoft.com/en
 1. Create a cluster and database in Azure Data Explorer (Kusto) - see https://learn.microsoft.com/en-us/azure/data-explorer/create-cluster-and-database?tabs=free
 
 2. To use Kusto as a semantic memory store, use the following code:
-   > See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
 
 ```csharp
 using Kusto.Data;
