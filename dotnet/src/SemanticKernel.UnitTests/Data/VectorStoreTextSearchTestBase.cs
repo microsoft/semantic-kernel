@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.InMemory;
@@ -22,31 +23,31 @@ public class VectorStoreTextSearchTestBase
     /// <summary>
     /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorizedSearch{TRecord}"/>.
     /// </summary>
-    public static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchFromVectorizedSearchAsync()
+    [Obsolete("VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete")]
+    public static async Task<VectorStoreTextSearch<DataModelWithRawEmbedding>> CreateVectorStoreTextSearchWithEmbeddingGenerationServiceAsync()
     {
         var vectorStore = new InMemoryVectorStore();
-        var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
+        var vectorSearch = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
-        var embeddingService = new MockTextEmbeddingGenerationService();
+        using var embeddingService = new MockTextEmbeddingGenerator();
         await AddRecordsAsync(vectorSearch, embeddingService);
-        var sut = new VectorStoreTextSearch<DataModel>(vectorSearch, embeddingService, stringMapper, resultMapper);
+        var sut = new VectorStoreTextSearch<DataModelWithRawEmbedding>(vectorSearch, embeddingService, stringMapper, resultMapper);
         return sut;
     }
 
     /// <summary>
     /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorizedSearch{TRecord}"/>.
     /// </summary>
-    public static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchFromVectorizableTextSearchAsync()
+    public static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchAsync()
     {
-        var vectorStore = new InMemoryVectorStore();
+        using var embeddingGenerator = new MockTextEmbeddingGenerator();
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
-        var embeddingService = new MockTextEmbeddingGenerationService();
-        await AddRecordsAsync(vectorSearch, embeddingService);
-        var vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorSearch, new MockTextEmbeddingGenerationService());
-        var sut = new VectorStoreTextSearch<DataModel>(vectorizableTextSearch, stringMapper, resultMapper);
+        await AddRecordsAsync(vectorSearch);
+        var sut = new VectorStoreTextSearch<DataModel>(vectorSearch, stringMapper, resultMapper);
         return sut;
     }
 
@@ -55,13 +56,34 @@ public class VectorStoreTextSearchTestBase
     /// </summary>
     public static async Task AddRecordsAsync(
         IVectorStoreRecordCollection<Guid, DataModel> recordCollection,
-        ITextEmbeddingGenerationService embeddingService,
         int? count = 10)
     {
         await recordCollection.CreateCollectionIfNotExistsAsync();
         for (var i = 0; i < count; i++)
         {
             DataModel dataModel = new()
+            {
+                Key = Guid.NewGuid(),
+                Text = $"Record {i}",
+                Tag = i % 2 == 0 ? "Even" : "Odd",
+                Embedding = $"Record {i}"
+            };
+            await recordCollection.UpsertAsync(dataModel);
+        }
+    }
+
+    /// <summary>
+    /// Add sample records to the vector store record collection.
+    /// </summary>
+    public static async Task AddRecordsAsync(
+        IVectorStoreRecordCollection<Guid, DataModelWithRawEmbedding> recordCollection,
+        ITextEmbeddingGenerationService embeddingService,
+        int? count = 10)
+    {
+        await recordCollection.CreateCollectionIfNotExistsAsync();
+        for (var i = 0; i < count; i++)
+        {
+            DataModelWithRawEmbedding dataModel = new()
             {
                 Key = Guid.NewGuid(),
                 Text = $"Record {i}",
@@ -79,13 +101,12 @@ public class VectorStoreTextSearchTestBase
     {
         /// <inheritdoc />
         public string MapFromResultToString(object result)
-        {
-            if (result is DataModel dataModel)
+            => result switch
             {
-                return dataModel.Text;
-            }
-            throw new ArgumentException("Invalid result type.");
-        }
+                DataModel dataModel => dataModel.Text,
+                DataModelWithRawEmbedding dataModelWithRawEmbedding => dataModelWithRawEmbedding.Text,
+                _ => throw new ArgumentException("Invalid result type.")
+            };
     }
 
     /// <summary>
@@ -95,20 +116,26 @@ public class VectorStoreTextSearchTestBase
     {
         /// <inheritdoc />
         public TextSearchResult MapFromResultToTextSearchResult(object result)
-        {
-            if (result is DataModel dataModel)
+            => result switch
             {
-                return new TextSearchResult(value: dataModel.Text) { Name = dataModel.Key.ToString() };
-            }
-            throw new ArgumentException("Invalid result type.");
-        }
+                DataModel dataModel => new TextSearchResult(value: dataModel.Text) { Name = dataModel.Key.ToString() },
+                DataModelWithRawEmbedding dataModelWithRawEmbedding => new TextSearchResult(value: dataModelWithRawEmbedding.Text) { Name = dataModelWithRawEmbedding.Key.ToString() },
+                _ => throw new ArgumentException("Invalid result type.")
+            };
     }
 
     /// <summary>
     /// Mock implementation of <see cref="ITextEmbeddingGenerationService"/>.
     /// </summary>
-    public sealed class MockTextEmbeddingGenerationService : ITextEmbeddingGenerationService
+    public sealed class MockTextEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>, ITextEmbeddingGenerationService
     {
+        public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(new GeneratedEmbeddings<Embedding<float>>([new(new float[] { 0, 1, 2, 3 })]));
+
+        public void Dispose() { }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+
         /// <inheritdoc />
         public IReadOnlyDictionary<string, object?> Attributes { get; } = ReadOnlyDictionary<string, object?>.Empty;
 
@@ -117,19 +144,6 @@ public class VectorStoreTextSearchTestBase
         {
             IList<ReadOnlyMemory<float>> result = [new float[] { 0, 1, 2, 3 }];
             return Task.FromResult(result);
-        }
-    }
-
-    /// <summary>
-    /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
-    /// </summary>
-    public sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
-    {
-        /// <inheritdoc/>
-        public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        {
-            var vectorizedQuery = await textEmbeddingGeneration!.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
-            return await vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, options, cancellationToken);
         }
     }
 
@@ -150,7 +164,31 @@ public class VectorStoreTextSearchTestBase
         [VectorStoreRecordData]
         public required string Text { get; init; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
+        public required string Tag { get; init; }
+
+        [VectorStoreRecordVector(1536)]
+        public string? Embedding { get; init; }
+    }
+
+    /// <summary>
+    /// Sample model class that represents a record entry.
+    /// </summary>
+    /// <remarks>
+    /// Note that each property is decorated with an attribute that specifies how the property should be treated by the vector store.
+    /// This allows us to create a collection in the vector store and upsert and retrieve instances of this class without any further configuration.
+    /// </remarks>
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    public sealed class DataModelWithRawEmbedding
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+    {
+        [VectorStoreRecordKey]
+        public Guid Key { get; init; }
+
+        [VectorStoreRecordData]
+        public required string Text { get; init; }
+
+        [VectorStoreRecordData(IsIndexed = true)]
         public required string Tag { get; init; }
 
         [VectorStoreRecordVector(1536)]

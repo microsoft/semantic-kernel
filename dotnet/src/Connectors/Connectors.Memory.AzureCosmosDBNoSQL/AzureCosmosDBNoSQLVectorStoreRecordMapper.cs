@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
+using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
@@ -11,45 +14,51 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// Class for mapping between a json node stored in Azure CosmosDB NoSQL and the consumer data model.
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
-internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, JsonObject>
+internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model, JsonSerializerOptions? jsonSerializerOptions)
+    : ICosmosNoSQLMapper<TRecord>
 {
-    /// <summary>The JSON serializer options to use when converting between the data model and the Azure CosmosDB NoSQL record.</summary>
-    private readonly JsonSerializerOptions _jsonSerializerOptions;
+    private readonly VectorStoreRecordKeyPropertyModel _keyProperty = model.KeyProperty;
 
-    /// <summary>The storage property name of the key field of consumer data model.</summary>
-    private readonly string _keyStoragePropertyName;
-
-    /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it to json for data and vector properties.</summary>
-    private readonly Dictionary<string, string> _storagePropertyNames = [];
-
-    public AzureCosmosDBNoSQLVectorStoreRecordMapper(
-        string keyStoragePropertyName,
-        Dictionary<string, string> storagePropertyNames,
-        JsonSerializerOptions jsonSerializerOptions)
+    public JsonObject MapFromDataToStorageModel(TRecord dataModel, MEAI.Embedding?[]? generatedEmbeddings)
     {
-        Verify.NotNull(jsonSerializerOptions);
+        var jsonObject = JsonSerializer.SerializeToNode(dataModel, jsonSerializerOptions)!.AsObject();
 
-        this._keyStoragePropertyName = keyStoragePropertyName;
-        this._storagePropertyNames = storagePropertyNames;
-        this._jsonSerializerOptions = jsonSerializerOptions;
-    }
+        // The key property in Azure CosmosDB NoSQL is always named 'id'.
+        // But the external JSON serializer used just above isn't aware of that, and will produce a JSON object with another name, taking into
+        // account e.g. naming policies. TemporaryStorageName gets populated in the model builder - containing that name - once VectorStoreModelBuildingOptions.ReservedKeyPropertyName is set
+        RenameJsonProperty(jsonObject, this._keyProperty.TemporaryStorageName!, AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName);
 
-    public JsonObject MapFromDataToStorageModel(TRecord dataModel)
-    {
-        var jsonObject = JsonSerializer.SerializeToNode(dataModel, this._jsonSerializerOptions)!.AsObject();
-
-        // Key property in Azure CosmosDB NoSQL has a reserved name.
-        RenameJsonProperty(jsonObject, this._keyStoragePropertyName, AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName);
+        // Go over the vector properties; those which have an embedding generator configured on them will have embedding generators, overwrite
+        // the value in the JSON object with that.
+        if (generatedEmbeddings is not null)
+        {
+            for (var i = 0; i < model.VectorProperties.Count; i++)
+            {
+                if (generatedEmbeddings[i] is not null)
+                {
+                    var property = model.VectorProperties[i];
+                    Debug.Assert(property.EmbeddingGenerator is not null);
+                    var embedding = generatedEmbeddings[i];
+                    jsonObject[property.StorageName] = embedding switch
+                    {
+                        Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
+                        Embedding<byte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
+                        Embedding<sbyte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
+                        _ => throw new UnreachableException()
+                    };
+                }
+            }
+        }
 
         return jsonObject;
     }
 
     public TRecord MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
     {
-        // Rename key property for valid deserialization.
-        RenameJsonProperty(storageModel, AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName, this._keyStoragePropertyName);
+        // See above comment.
+        RenameJsonProperty(storageModel, AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName, this._keyProperty.TemporaryStorageName!);
 
-        return storageModel.Deserialize<TRecord>(this._jsonSerializerOptions)!;
+        return storageModel.Deserialize<TRecord>(jsonSerializerOptions)!;
     }
 
     #region private

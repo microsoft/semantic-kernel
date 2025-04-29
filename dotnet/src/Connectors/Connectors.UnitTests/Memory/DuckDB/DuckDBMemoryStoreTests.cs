@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace SemanticKernel.Connectors.UnitTests.DuckDB;
 /// <summary>
 /// Unit tests of <see cref="DuckDBMemoryStore"/>.
 /// </summary>
+[Experimental("SKEXP0020")]
 [Collection("Sequential")]
 public class DuckDBMemoryStoreTests
 {
