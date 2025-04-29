@@ -54,6 +54,39 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     }
 
     [Fact]
+    public virtual async Task StatePartReceivesMessagesFromAgentWhenStreamingAsync()
+    {
+        // Arrange
+        var mockStatePart = new Mock<ConversationStatePart>() { CallBase = true };
+        mockStatePart.Setup(x => x.OnNewMessageAsync(It.IsAny<string>(), It.IsAny<ChatMessage>(), It.IsAny<CancellationToken>()));
+
+        var agent = this.Fixture.Agent;
+
+        var agentThread = this.Fixture.GetNewThread();
+
+        try
+        {
+            agentThread.StateParts.Add(mockStatePart.Object);
+
+            // Act
+            var inputMessage = "What is the capital of France?";
+            var asyncResults1 = agent.InvokeStreamingAsync(inputMessage, agentThread);
+            var results = await asyncResults1.ToListAsync();
+
+            // Assert
+            var responseMessage = string.Concat(results.Select(x => x.Message.Content));
+            Assert.Contains("Paris", responseMessage);
+            mockStatePart.Verify(x => x.OnNewMessageAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == inputMessage), It.IsAny<CancellationToken>()), Times.Once);
+            mockStatePart.Verify(x => x.OnNewMessageAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == responseMessage), It.IsAny<CancellationToken>()), Times.Once);
+        }
+        finally
+        {
+            // Cleanup
+            await this.Fixture.DeleteThread(agentThread);
+        }
+    }
+
+    [Fact]
     public virtual async Task StatePartPreInvokeStateIsUsedByAgentAsync()
     {
         // Arrange
@@ -75,6 +108,37 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
 
             // Assert
             Assert.Contains("Caoimhe", result.Message.Content);
+        }
+        finally
+        {
+            // Cleanup
+            await this.Fixture.DeleteThread(agentThread);
+        }
+    }
+
+    [Fact]
+    public virtual async Task StatePartPreInvokeStateIsUsedByAgentWhenStreamingAsync()
+    {
+        // Arrange
+        var mockStatePart = new Mock<ConversationStatePart>() { CallBase = true };
+        mockStatePart.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync("User name is Caoimhe");
+
+        var agent = this.Fixture.Agent;
+
+        var agentThread = this.Fixture.GetNewThread();
+
+        try
+        {
+            agentThread.StateParts.Add(mockStatePart.Object);
+
+            // Act
+            var inputMessage = "What is my name?.";
+            var asyncResults1 = agent.InvokeStreamingAsync(inputMessage, agentThread);
+            var results = await asyncResults1.ToListAsync();
+
+            // Assert
+            var responseMessage = string.Concat(results.Select(x => x.Message.Content));
+            Assert.Contains("Caoimhe", responseMessage);
         }
         finally
         {
