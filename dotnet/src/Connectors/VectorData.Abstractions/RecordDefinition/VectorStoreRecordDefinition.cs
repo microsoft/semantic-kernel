@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -19,4 +20,9 @@ public sealed class VectorStoreRecordDefinition
     /// Gets or sets the list of properties that are stored in the record.
     /// </summary>
     public IReadOnlyList<VectorStoreRecordProperty> Properties { get; init; } = s_emptyFields;
+
+    /// <summary>
+    /// Gets or sets the default embedding generator for vector properties in this collection.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

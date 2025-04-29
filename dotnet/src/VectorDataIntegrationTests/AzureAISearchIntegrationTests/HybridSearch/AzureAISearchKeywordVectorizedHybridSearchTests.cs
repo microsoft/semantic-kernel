@@ -28,7 +28,7 @@ public class AzureAISearchKeywordVectorizedHybridSearchTests(
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
 
         // Azure AI search only supports lowercase letters, digits or dashes.
-        protected override string CollectionName => "vecstring-hybrid-search-" + _testIndexPostfix;
+        public override string CollectionName => "vecstring-hybrid-search-" + _testIndexPostfix;
     }
 
     public new class MultiTextFixture : KeywordVectorizedHybridSearchComplianceTests<string>.MultiTextFixture
@@ -36,6 +36,6 @@ public class AzureAISearchKeywordVectorizedHybridSearchTests(
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
 
         // Azure AI search only supports lowercase letters, digits or dashes.
-        protected override string CollectionName => "multitext-hybrid-search-" + _testIndexPostfix;
+        public override string CollectionName => "multitext-hybrid-search-" + _testIndexPostfix;
     }
 }

@@ -7,9 +7,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using Google.Protobuf.Collections;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
 using Qdrant.Client.Grpc;
 using Range = Qdrant.Client.Grpc.Range;
 
@@ -17,17 +17,20 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal class QdrantFilterTranslator
 {
-    private IReadOnlyDictionary<string, string> _storagePropertyNames = null!;
+    private VectorStoreRecordModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
-    internal Filter Translate(LambdaExpression lambdaExpression, IReadOnlyDictionary<string, string> storagePropertyNames)
+    internal Filter Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
     {
-        this._storagePropertyNames = storagePropertyNames;
+        this._model = model;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        return this.Translate(lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = true };
+        var preprocessedExpression = preprocessor.Visit(lambdaExpression.Body);
+
+        return this.Translate(preprocessedExpression);
     }
 
     private Filter Translate(Expression? node)
@@ -46,9 +49,9 @@ internal class QdrantFilterTranslator
             BinaryExpression { NodeType: ExpressionType.OrElse } orElse => this.TranslateOrElse(orElse.Left, orElse.Right),
             UnaryExpression { NodeType: ExpressionType.Not } not => this.TranslateNot(not.Operand),
 
-            // MemberExpression is generally handled within e.g. TranslateEqual; this is used to translate direct bool inside filter (e.g. Filter => r => r.Bool)
-            MemberExpression member when member.Type == typeof(bool) && this.TryTranslateFieldAccess(member, out _)
-                => this.TranslateEqual(member, Expression.Constant(true)),
+            // Special handling for bool constant as the filter expression (r => r.Bool)
+            Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
+                => this.GenerateEqual(property.StorageName, value: true),
 
             MethodCallExpression methodCall => this.TranslateMethodCall(methodCall),
 
@@ -56,53 +59,45 @@ internal class QdrantFilterTranslator
         };
 
     private Filter TranslateEqual(Expression left, Expression right, bool negated = false)
+        => this.TryBindProperty(left, out var property) && right is ConstantExpression { Value: var rightConstant }
+            ? this.GenerateEqual(property.StorageName, rightConstant, negated)
+            : this.TryBindProperty(right, out property) && left is ConstantExpression { Value: var leftConstant }
+                ? this.GenerateEqual(property.StorageName, leftConstant, negated)
+                : throw new NotSupportedException("Invalid equality/comparison");
+
+    private Filter GenerateEqual(string propertyStorageName, object? value, bool negated = false)
     {
-        return TryProcessEqual(left, right, out var result)
-            ? result
-            : TryProcessEqual(right, left, out result)
-                ? result
-                : throw new NotSupportedException("Equality expression not supported by Qdrant");
-
-        bool TryProcessEqual(Expression first, Expression second, [NotNullWhen(true)] out Filter? result)
-        {
-            // TODO: Nullable
-            if (this.TryTranslateFieldAccess(first, out var storagePropertyName)
-                && TryGetConstant(second, out var constantValue))
+        var condition = value is null
+            ? new Condition { IsNull = new() { Key = propertyStorageName } }
+            : new Condition
             {
-                var condition = constantValue is null
-                    ? new Condition { IsNull = new() { Key = storagePropertyName } }
-                    : new Condition
+                Field = new FieldCondition
+                {
+                    Key = propertyStorageName,
+                    Match = value switch
                     {
-                        Field = new FieldCondition
-                        {
-                            Key = storagePropertyName,
-                            Match = constantValue switch
-                            {
-                                string stringValue => new Match { Keyword = stringValue },
-                                int intValue => new Match { Integer = intValue },
-                                long longValue => new Match { Integer = longValue },
-                                bool boolValue => new Match { Boolean = boolValue },
+                        string stringValue => new Match { Keyword = stringValue },
+                        int intValue => new Match { Integer = intValue },
+                        long longValue => new Match { Integer = longValue },
+                        bool boolValue => new Match { Boolean = boolValue },
 
-                                _ => throw new InvalidOperationException($"Unsupported filter value type '{constantValue.GetType().Name}'.")
-                            }
-                        }
-                    };
-
-                result = new Filter();
-                if (negated)
-                {
-                    result.MustNot.Add(condition);
+                        _ => throw new InvalidOperationException($"Unsupported filter value type '{value.GetType().Name}'.")
+                    }
                 }
-                else
-                {
-                    result.Must.Add(condition);
-                }
-                return true;
-            }
+            };
 
-            result = null;
-            return false;
+        var result = new Filter();
+
+        if (negated)
+        {
+            result.MustNot.Add(condition);
         }
+        else
+        {
+            result.Must.Add(condition);
+        }
+
+        return result;
     }
 
     private Filter TranslateComparison(BinaryExpression comparison)
@@ -116,8 +111,7 @@ internal class QdrantFilterTranslator
         bool TryProcessComparison(Expression first, Expression second, [NotNullWhen(true)] out Filter? result)
         {
             // TODO: Nullable
-            if (this.TryTranslateFieldAccess(first, out var storagePropertyName)
-                && TryGetConstant(second, out var constantValue))
+            if (this.TryBindProperty(first, out var property) && second is ConstantExpression { Value: var constantValue })
             {
                 double doubleConstantValue = constantValue switch
                 {
@@ -132,7 +126,7 @@ internal class QdrantFilterTranslator
                 {
                     Field = new FieldCondition
                     {
-                        Key = storagePropertyName,
+                        Key = property.StorageName,
                         Range = comparison.NodeType switch
                         {
                             ExpressionType.GreaterThan => new Range { Gt = doubleConstantValue },
@@ -279,7 +273,7 @@ internal class QdrantFilterTranslator
         switch (source)
         {
             // Contains over field enumerable
-            case var _ when this.TryTranslateFieldAccess(source, out _):
+            case var _ when this.TryBindProperty(source, out _):
                 // Oddly, in Qdrant, tag list contains is handled using a Match condition, just like equality.
                 return this.TranslateEqual(source, item);
 
@@ -289,9 +283,9 @@ internal class QdrantFilterTranslator
 
                 for (var i = 0; i < newArray.Expressions.Count; i++)
                 {
-                    if (!TryGetConstant(newArray.Expressions[i], out var elementValue))
+                    if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })
                     {
-                        throw new NotSupportedException("Invalid element in array");
+                        throw new NotSupportedException("Inline array elements must be constants");
                     }
 
                     elements[i] = elementValue;
@@ -299,9 +293,7 @@ internal class QdrantFilterTranslator
 
                 return ProcessInlineEnumerable(elements, item);
 
-            // Contains over captured enumerable (we inline)
-            case var _ when TryGetConstant(source, out var constantEnumerable)
-                            && constantEnumerable is IEnumerable enumerable and not string:
+            case ConstantExpression { Value: IEnumerable enumerable and not string }:
                 return ProcessInlineEnumerable(enumerable, item);
 
             default:
@@ -310,77 +302,86 @@ internal class QdrantFilterTranslator
 
         Filter ProcessInlineEnumerable(IEnumerable elements, Expression item)
         {
-            if (!this.TryTranslateFieldAccess(item, out var storagePropertyName))
+            if (!this.TryBindProperty(item, out var property))
             {
                 throw new NotSupportedException("Unsupported item type in Contains");
             }
 
-            if (item.Type == typeof(string))
+            switch (property.Type)
             {
-                var strings = new RepeatedStrings();
+                case var t when t == typeof(string):
+                    var strings = new RepeatedStrings();
 
-                foreach (var value in elements)
-                {
-                    strings.Strings.Add(value is string or null
-                        ? (string?)value
-                        : throw new ArgumentException("Non-string element in string Contains array"));
-                }
+                    foreach (var value in elements)
+                    {
+                        strings.Strings.Add(value is string or null
+                            ? (string?)value
+                            : throw new ArgumentException("Non-string element in string Contains array"));
+                    }
 
-                return new Filter { Must = { new Condition { Field = new FieldCondition { Key = storagePropertyName, Match = new Match { Keywords = strings } } } } };
+                    return new Filter { Must = { new Condition { Field = new FieldCondition { Key = property.StorageName, Match = new Match { Keywords = strings } } } } };
+
+                case var t when t == typeof(int):
+                    var ints = new RepeatedIntegers();
+
+                    foreach (var value in elements)
+                    {
+                        ints.Integers.Add(value is int intValue
+                            ? intValue
+                            : throw new ArgumentException("Non-int element in string Contains array"));
+                    }
+
+                    return new Filter { Must = { new Condition { Field = new FieldCondition { Key = property.StorageName, Match = new Match { Integers = ints } } } } };
+
+                default:
+                    throw new NotSupportedException("Contains only supported over array of ints or strings");
             }
-
-            if (item.Type == typeof(int))
-            {
-                var ints = new RepeatedIntegers();
-
-                foreach (var value in elements)
-                {
-                    ints.Integers.Add(value is int intValue
-                        ? intValue
-                        : throw new ArgumentException("Non-int element in string Contains array"));
-                }
-
-                return new Filter { Must = { new Condition { Field = new FieldCondition { Key = storagePropertyName, Match = new Match { Integers = ints } } } } };
-            }
-
-            throw new NotSupportedException("Contains only supported over array of ints or strings");
         }
     }
 
-    private bool TryTranslateFieldAccess(Expression expression, [NotNullWhen(true)] out string? storagePropertyName)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
     {
-        if (expression is MemberExpression memberExpression && memberExpression.Expression == this._recordParameter)
+        Type? convertedClrType = null;
+
+        if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
         {
-            if (!this._storagePropertyNames.TryGetValue(memberExpression.Member.Name, out storagePropertyName))
+            expression = unary.Operand;
+            convertedClrType = unary.Type;
+        }
+
+        var modelName = expression switch
+        {
+            // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
+            MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
+                => memberExpression.Member.Name,
+
+            // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
+            MethodCallExpression
             {
-                throw new InvalidOperationException($"Property name '{memberExpression.Member.Name}' provided as part of the filter clause is not a valid property name.");
-            }
+                Method: { Name: "get_Item", DeclaringType: var declaringType },
+                Arguments: [ConstantExpression { Value: string keyName }]
+            } methodCall when methodCall.Object == this._recordParameter && declaringType == typeof(Dictionary<string, object?>)
+                => keyName,
 
-            return true;
-        }
+            _ => null
+        };
 
-        storagePropertyName = null;
-        return false;
-    }
-
-    private static bool TryGetConstant(Expression expression, out object? constantValue)
-    {
-        switch (expression)
+        if (modelName is null)
         {
-            case ConstantExpression { Value: var v }:
-                constantValue = v;
-                return true;
-
-            // This identifies compiler-generated closure types which contain captured variables.
-            case MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
-                when constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
-                     && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true):
-                constantValue = fieldInfo.GetValue(constant.Value);
-                return true;
-
-            default:
-                constantValue = null;
-                return false;
+            property = null;
+            return false;
         }
+
+        if (!this._model.PropertyMap.TryGetValue(modelName, out property))
+        {
+            throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
+        }
+
+        if (convertedClrType is not null && convertedClrType != property.Type)
+        {
+            throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convertedClrType.Name}', but its configured type is '{property.Type.Name}'.");
+        }
+
+        return true;
     }
 }

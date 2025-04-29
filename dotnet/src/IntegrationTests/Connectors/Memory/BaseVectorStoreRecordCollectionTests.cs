@@ -24,7 +24,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
 
     protected abstract HashSet<string> GetSupportedDistanceFunctions();
 
-    protected abstract IVectorStoreRecordCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition);
+    protected abstract IVectorStoreRecordCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TRecord : notnull;
 
     protected virtual int DelayAfterIndexCreateInMilliseconds { get; } = 0;
 
@@ -93,14 +93,13 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
             Vector = orthogonalVector,
         };
 
-        await sut.UpsertBatchAsync([baseRecord, oppositeRecord, orthogonalRecord]).ToListAsync();
+        await sut.UpsertAsync([baseRecord, oppositeRecord, orthogonalRecord]);
         await Task.Delay(this.DelayAfterUploadInMilliseconds);
 
         // Act
-        var searchResult = await sut.VectorizedSearchAsync(baseVector);
+        var results = await sut.SearchEmbeddingAsync(baseVector, top: 3).ToListAsync();
 
         // Assert
-        var results = await searchResult.Results.ToListAsync();
         Assert.Equal(3, results.Count);
 
         Assert.Equal(keyDictionary[resultOrder[0]], results[0].Record.Key);
@@ -123,7 +122,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
             Properties =
             [
                 new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = vectorDimensions, DistanceFunction = distanceFunction },
+                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), vectorDimensions) { DistanceFunction = distanceFunction },
             ],
         };
 

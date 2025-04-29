@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -28,11 +29,12 @@ public static class QdrantServiceCollectionExtensions
             (sp, obj) =>
             {
                 var qdrantClient = sp.GetRequiredService<QdrantClient>();
-                var selectedOptions = options ?? sp.GetService<QdrantVectorStoreOptions>();
+                options ??= sp.GetService<QdrantVectorStoreOptions>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new QdrantVectorStore(
-                    qdrantClient,
-                    selectedOptions);
+                return new QdrantVectorStore(qdrantClient, options);
             });
 
         return services;
@@ -55,18 +57,19 @@ public static class QdrantServiceCollectionExtensions
             (sp, obj) =>
             {
                 var qdrantClient = new QdrantClient(host, port, https, apiKey);
-                var selectedOptions = options ?? sp.GetService<QdrantVectorStoreOptions>();
+                options ??= sp.GetService<QdrantVectorStoreOptions>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new QdrantVectorStore(
-                    qdrantClient,
-                    selectedOptions);
+                return new QdrantVectorStore(qdrantClient, options);
             });
 
         return services;
     }
 
     /// <summary>
-    /// Register a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
+    /// Register a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID
     /// and where the Qdrant <see cref="QdrantClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
@@ -82,15 +85,19 @@ public static class QdrantServiceCollectionExtensions
         QdrantVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
+        where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<TKey, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var qdrantClient = sp.GetRequiredService<QdrantClient>();
-                var selectedOptions = options ?? sp.GetService<QdrantVectorStoreRecordCollectionOptions<TRecord>>();
+                options ??= sp.GetService<QdrantVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return (new QdrantVectorStoreRecordCollection<TRecord>(qdrantClient, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
+                return (new QdrantVectorStoreRecordCollection<TKey, TRecord>(qdrantClient, collectionName, options) as IVectorStoreRecordCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);
@@ -99,7 +106,7 @@ public static class QdrantServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
+    /// Register a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID
     /// and where the Qdrant <see cref="QdrantClient"/> is constructed using the provided parameters.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
@@ -123,15 +130,19 @@ public static class QdrantServiceCollectionExtensions
         QdrantVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
+        where TRecord : notnull
     {
         services.AddKeyedSingleton<IVectorStoreRecordCollection<TKey, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var qdrantClient = new QdrantClient(host, port, https, apiKey);
-                var selectedOptions = options ?? sp.GetService<QdrantVectorStoreRecordCollectionOptions<TRecord>>();
+                options ??= sp.GetService<QdrantVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return (new QdrantVectorStoreRecordCollection<TRecord>(qdrantClient, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
+                return (new QdrantVectorStoreRecordCollection<TKey, TRecord>(qdrantClient, collectionName, options) as IVectorStoreRecordCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);
@@ -140,7 +151,7 @@ public static class QdrantServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -148,8 +159,9 @@ public static class QdrantServiceCollectionExtensions
     /// <param name="serviceId">The service id that the registrations should use.</param>
     private static void AddVectorizedSearch<TKey, TRecord>(IServiceCollection services, string? serviceId)
         where TKey : notnull
+        where TRecord : notnull
     {
-        services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
+        services.AddKeyedTransient<IVectorSearch<TRecord>>(
             serviceId,
             (sp, obj) =>
             {

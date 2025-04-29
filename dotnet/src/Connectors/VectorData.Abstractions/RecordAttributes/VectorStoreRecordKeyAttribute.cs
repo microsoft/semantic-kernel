@@ -19,5 +19,5 @@ public sealed class VectorStoreRecordKeyAttribute : Attribute
     /// <remarks>
     /// For example, the property name might be "MyProperty" and the storage name might be "my_property".
     /// </remarks>
-    public string? StoragePropertyName { get; set; }
+    public string? StoragePropertyName { get; init; }
 }

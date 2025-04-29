@@ -36,7 +36,7 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
 using Microsoft.SemanticKernel.Memory;
 
-#pragma warning disable SKEXP0001, SKEXP0010, SKEXP0020
+#pragma warning disable SKEXP0001, SKEXP0010
 
 // Replace with your Azure OpenAI endpoint
 const string AzureOpenAIEndpoint = "https://.openai.azure.com/";

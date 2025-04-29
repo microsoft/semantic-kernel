@@ -206,7 +206,7 @@ class LocalProcess(LocalStep):
         """Builds a KernelProcess from the current LocalProcess."""
         from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 
-        process_state = KernelProcessState(name=self.name, id=self.id)
+        process_state = KernelProcessState(name=self.name, version=self.step_state.version, id=self.id)
         step_tasks = [step.to_kernel_process_step_info() for step in self.steps]
         steps = await asyncio.gather(*step_tasks)
         return KernelProcess(state=process_state, steps=steps, edges=self.output_edges)

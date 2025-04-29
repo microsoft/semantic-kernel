@@ -82,6 +82,8 @@ class TestAzureAIAgentIntegration:
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
         assert response.message.content is not None
+        assert "thread_id" in response.message.metadata
+        assert "run_id" in response.message.metadata
 
     async def test_get_response_with_thread(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test get response of the agent with a thread."""

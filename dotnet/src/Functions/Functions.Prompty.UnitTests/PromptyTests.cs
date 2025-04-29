@@ -33,8 +33,8 @@ public sealed class PromptyTests
         Assert.Equal("Contoso_Chat_Prompt", kernelFunction.Name);
         Assert.Equal("A retail assistant for Contoso Outdoors products retailer.", kernelFunction.Description);
 
-        // chat prompty doesn't contain input parameters
-        Assert.Empty(kernelFunction.Metadata.Parameters);
+        // chat prompty does contain input parameters
+        Assert.Equal(5, kernelFunction.Metadata.Parameters.Count);
     }
 
     [Fact]
@@ -342,7 +342,7 @@ public sealed class PromptyTests
             ---
             name: MyPrompt
             inputs:
-              - name: question
+              question:
                 description: What is the color of the sky?
             ---
             {{a}} {{b}} {{c}}
@@ -367,9 +367,9 @@ public sealed class PromptyTests
             description: This is the description.
             model:
                 api: chat
-                configuration:
+                connection:
                     type: azure_openai_beta
-                parameters:
+                options:
                     logprobs: true
                     top_logprobs: 2
                     top_p: 1.0
@@ -440,6 +440,32 @@ public sealed class PromptyTests
         Assert.True(executionSettings!.ContainsKey("default"));
         var defaultExecutionSetting = executionSettings["default"];
         Assert.Equal("gpt-35-turbo", defaultExecutionSetting.ModelId);
+    }
+
+    [Fact]
+    public void JsonSchemaTest()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
+        var promptyTemplate = File.ReadAllText(chatPromptyPath);
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPrompty(promptyTemplate);
+
+        // Assert
+        var firstName = kernelFunction.Metadata.Parameters.First(p => p.Name == "firstName");
+        Assert.NotNull(firstName);
+        Assert.NotNull(firstName.Schema);
+        Assert.Equal("{\"type\":\"string\"}", firstName.Schema.ToString());
+        var answer = kernelFunction.Metadata.Parameters.First(p => p.Name == "answer");
+        Assert.NotNull(answer);
+        Assert.NotNull(answer.Schema);
+        Assert.Equal("{\"type\":\"object\",\"properties\":{\"answer\":{\"type\":\"string\"},\"citations\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"format\":\"uri\"}}},\"required\":[\"answer\",\"citations\"],\"additionalProperties\":false}", answer.Schema.ToString());
+        var other = kernelFunction.Metadata.Parameters.First(p => p.Name == "other");
+        Assert.NotNull(other);
+        Assert.NotNull(other.Schema);
+        Assert.Equal("{\"type\":\"object\",\"properties\":{\"answer\":{\"type\":\"string\"},\"citations\":{\"type\":\"array\",\"items\":{\"type\":\"string\",\"format\":\"uri\"}}},\"required\":[\"answer\",\"citations\"],\"additionalProperties\":\"false\"}", other.Schema.ToString());
     }
 
     private sealed class EchoTextGenerationService : ITextGenerationService

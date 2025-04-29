@@ -51,12 +51,12 @@ async def test_initialize_process(actor_context):
     input_data = {
         "process_info": {
             "type": "DaprProcessInfo",
-            "state": {"type": "KernelProcessState", "name": "Test Process", "id": "proc_123"},
+            "state": {"type": "KernelProcessState", "name": "Test Process", "version": "1.0", "id": "proc_123"},
             "steps": [
                 {
                     "type": "DaprStepInfo",
                     "inner_step_python_type": "SomeStepType",
-                    "state": {"type": "KernelProcessState", "name": "Step1", "id": "step_123"},
+                    "state": {"type": "KernelProcessState", "name": "Step1", "version": "1.0", "id": "step_123"},
                 }
             ],
             "inner_step_python_type": "SomeProcessType",
@@ -69,12 +69,12 @@ async def test_initialize_process(actor_context):
 
     dapr_process_info_instance = DaprProcessInfo(
         inner_step_python_type="SomeProcessType",
-        state=KernelProcessState(name="Test Process", id="proc_123"),
+        state=KernelProcessState(name="Test Process", version="1.0", id="proc_123"),
         edges={},
         steps=[
             DaprStepInfo(
                 inner_step_python_type="SomeStepType",
-                state=KernelProcessState(name="Step1", id="step_123"),
+                state=KernelProcessState(name="Step1", version="1.0", id="step_123"),
                 edges={},
             )
         ],
