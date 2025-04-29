@@ -65,6 +65,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Testcontainers.Milvus" />
+    <PackageReference Include="Testcontainers.MongoDB"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Agents\AzureAI\Agents.AzureAI.csproj" />
