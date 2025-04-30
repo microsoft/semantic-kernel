@@ -119,9 +119,9 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         var credential = new AzureCliCredential();
 
-        AccessToken toke = await credential.GetTokenAsync(new Azure.Core.TokenRequestContext([resource])).ConfigureAwait(false);
+        AccessToken token = await credential.GetTokenAsync(new Azure.Core.TokenRequestContext([resource])).ConfigureAwait(false);
 
-        return toke.Token;
+        return token.Token;
     }
 
     public void Dispose()
