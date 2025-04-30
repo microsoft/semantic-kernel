@@ -91,7 +91,7 @@ internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model
                 case VectorStoreRecordKeyPropertyModel keyProperty:
                     result[keyProperty.ModelName] = storageModel.TryGetValue(MongoDBConstants.MongoReservedKeyPropertyName, out var keyValue)
                         ? keyValue.AsString
-                        : throw new VectorStoreRecordMappingException("No key property was found in the record retrieved from storage.");
+                        : throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
                     continue;
 
                 case VectorStoreRecordDataPropertyModel dataProperty:

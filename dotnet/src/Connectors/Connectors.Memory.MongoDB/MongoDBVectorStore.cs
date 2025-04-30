@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
@@ -76,9 +77,13 @@ public sealed class MongoDBVectorStore : IVectorStore
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using var cursor = await this._mongoDatabase
-            .ListCollectionNamesAsync(cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        const string OperationName = "ListCollectionNames";
+
+        using var cursor = await VectorStoreErrorHandler.RunOperationAsync<IAsyncCursor<string>, MongoException>(
+            this._metadata,
+            OperationName,
+            () => this._mongoDatabase.ListCollectionNamesAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
+        using var errorHandlingAsyncCursor = new ErrorHandlingAsyncCursor<string>(cursor, this._metadata, OperationName);
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
         {

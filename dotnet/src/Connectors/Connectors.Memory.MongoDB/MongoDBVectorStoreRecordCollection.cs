@@ -166,8 +166,6 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
     /// <inheritdoc />
     public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        const string OperationName = "Find";
-
         var stringKey = this.GetStringKey(key);
 
         var includeVectors = options?.IncludeVectors ?? false;
@@ -176,26 +174,18 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        var record = await this.RunOperationAsync(OperationName, async () =>
-        {
-            using var cursor = await this
-                .FindAsync(this.GetFilterById(stringKey), options, cancellationToken)
-                .ConfigureAwait(false);
+        using var cursor = await this
+            .FindAsync(this.GetFilterById(stringKey), top: 1, skip: null, includeVectors, sortDefinition: null, cancellationToken)
+            .ConfigureAwait(false);
 
-            return await cursor.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
-        }).ConfigureAwait(false);
+        var record = await cursor.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
         if (record is null)
         {
             return default;
         }
 
-        return VectorStoreErrorHandler.RunModelConversion(
-            MongoDBConstants.VectorStoreSystemName,
-            this._collectionMetadata.VectorStoreName,
-            this.Name,
-            OperationName,
-            () => this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors }));
+        return this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors });
     }
 
     /// <inheritdoc />
@@ -206,8 +196,6 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
     {
         Verify.NotNull(keys);
 
-        const string OperationName = "Find";
-
         if (options?.IncludeVectors == true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
@@ -216,7 +204,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
 
         using var cursor = await this
-            .FindAsync(this.GetFilterByIds(stringKeys), options, cancellationToken)
+            .FindAsync(this.GetFilterByIds(stringKeys), top: null, skip: null, options?.IncludeVectors ?? false, sortDefinition: null, cancellationToken)
             .ConfigureAwait(false);
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
@@ -225,12 +213,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
             {
                 if (record is not null)
                 {
-                    yield return VectorStoreErrorHandler.RunModelConversion(
-                        MongoDBConstants.VectorStoreSystemName,
-                        this._collectionMetadata.VectorStoreName,
-                        this.Name,
-                        OperationName,
-                        () => this._mapper.MapFromStorageToDataModel(record, new()));
+                    yield return this._mapper.MapFromStorageToDataModel(record, new());
                 }
             }
         }
@@ -415,21 +398,18 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
 
         BsonDocument[] pipeline = [searchQuery, projectionQuery];
 
-        var results = await this.RunOperationWithRetryAsync(
-            "VectorizedSearch",
+        const string OperationName = "Aggregate";
+        using var cursor = await this.RunOperationWithRetryAsync(
+            OperationName,
             this._options.MaxRetries,
             this._options.DelayInMilliseconds,
-            async () =>
-            {
-                var cursor = await this._mongoCollection
-                    .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-
-                return this.EnumerateAndMapSearchResultsAsync(cursor, options.Skip, options.IncludeVectors, cancellationToken);
-            },
+            () => this._mongoCollection.AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken),
             cancellationToken).ConfigureAwait(false);
 
-        await foreach (var result in results.ConfigureAwait(false))
+        var errorHandlingAsyncCursor = new ErrorHandlingAsyncCursor<BsonDocument>(cursor, this._collectionMetadata, OperationName);
+        var mappedResults = this.EnumerateAndMapSearchResultsAsync(errorHandlingAsyncCursor, options.Skip, options.IncludeVectors, cancellationToken);
+
+        await foreach (var result in mappedResults.ConfigureAwait(false))
         {
             yield return result;
         }
@@ -444,8 +424,11 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
     #endregion Search
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(
+        Expression<Func<TRecord, bool>> filter,
+        int top,
+        GetFilteredRecordOptions<TRecord>? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -468,33 +451,19 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                 }));
         }
 
-        using IAsyncCursor<BsonDocument> cursor = await this.RunOperationWithRetryAsync(
-            "GetAsync",
-            this._options.MaxRetries,
-            this._options.DelayInMilliseconds,
-            async () =>
-            {
-                return await this._mongoCollection.FindAsync(translatedFilter,
-                    new()
-                    {
-                        Limit = top,
-                        Skip = options.Skip,
-                        Sort = sortDefinition
-                    },
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
-            },
+        using IAsyncCursor<BsonDocument> cursor = await this.FindAsync(
+            translatedFilter,
+            top,
+            options.Skip,
+            options.IncludeVectors,
+            sortDefinition,
             cancellationToken).ConfigureAwait(false);
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
         {
             foreach (var response in cursor.Current)
             {
-                var record = VectorStoreErrorHandler.RunModelConversion(
-                    MongoDBConstants.VectorStoreSystemName,
-                    this._collectionMetadata.VectorStoreName,
-                    this.Name,
-                    "GetAsync",
-                    () => this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors }));
+                var record = this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors });
 
                 yield return record;
             }
@@ -643,12 +612,18 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         }
     }
 
-    private async Task<IAsyncCursor<BsonDocument>> FindAsync(FilterDefinition<BsonDocument> filter, GetRecordOptions? options, CancellationToken cancellationToken)
+    private async Task<IAsyncCursor<BsonDocument>> FindAsync(
+        FilterDefinition<BsonDocument> filter,
+        int? top,
+        int? skip,
+        bool includeVectors,
+        SortDefinition<BsonDocument>? sortDefinition,
+        CancellationToken cancellationToken)
     {
+        const string OperationName = "Find";
+
         ProjectionDefinitionBuilder<BsonDocument> projectionBuilder = Builders<BsonDocument>.Projection;
         ProjectionDefinition<BsonDocument>? projectionDefinition = null;
-
-        var includeVectors = options?.IncludeVectors ?? false;
 
         if (!includeVectors)
         {
@@ -661,10 +636,13 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         }
 
         var findOptions = projectionDefinition is not null ?
-            new FindOptions<BsonDocument> { Projection = projectionDefinition } :
-            null;
+            new FindOptions<BsonDocument> { Projection = projectionDefinition, Limit = top, Skip = skip, Sort = sortDefinition } :
+            new FindOptions<BsonDocument> { Limit = top, Skip = skip, Sort = sortDefinition };
 
-        return await this._mongoCollection.FindAsync(filter, findOptions, cancellationToken).ConfigureAwait(false);
+        var cursor = await this.RunOperationAsync(OperationName, () =>
+            this._mongoCollection.FindAsync(filter, findOptions, cancellationToken)).ConfigureAwait(false);
+
+        return new ErrorHandlingAsyncCursor<BsonDocument>(cursor, this._collectionMetadata, OperationName);
     }
 
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> EnumerateAndMapSearchResultsAsync(
@@ -673,8 +651,6 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         bool includeVectors,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        const string OperationName = "Aggregate";
-
         var skipCounter = 0;
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
@@ -684,12 +660,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                 if (skipCounter >= skip)
                 {
                     var score = response[ScorePropertyName].AsDouble;
-                    var record = VectorStoreErrorHandler.RunModelConversion(
-                        MongoDBConstants.VectorStoreSystemName,
-                        this._collectionMetadata.VectorStoreName,
-                        this.Name,
-                        OperationName,
-                        () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new() { IncludeVectors = includeVectors }));
+                    var record = this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new() { IncludeVectors = includeVectors });
 
                     yield return new VectorSearchResult<TRecord>(record, score);
                 }
@@ -715,77 +686,25 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         return await cursor.AnyAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task RunOperationAsync(string operationName, Func<Task> operation)
-    {
-        try
-        {
-            await operation.Invoke().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
-                OperationName = operationName
-            };
-        }
-    }
+    private Task RunOperationAsync(string operationName, Func<Task> operation)
+        => VectorStoreErrorHandler.RunOperationAsync<MongoException>(this._collectionMetadata, operationName, operation);
 
-    private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
-    {
-        try
-        {
-            return await operation.Invoke().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
-                OperationName = operationName
-            };
-        }
-    }
+    private Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
+        => VectorStoreErrorHandler.RunOperationAsync<T, MongoException>(this._collectionMetadata, operationName, operation);
 
-    private async Task RunOperationWithRetryAsync(
+    private Task RunOperationWithRetryAsync(
         string operationName,
         int maxRetries,
         int delayInMilliseconds,
         Func<Task> operation,
         CancellationToken cancellationToken)
-    {
-        var retries = 0;
-
-        while (retries < maxRetries)
-        {
-            try
-            {
-                await operation.Invoke().ConfigureAwait(false);
-                return;
-            }
-            catch (Exception ex)
-            {
-                retries++;
-
-                if (retries >= maxRetries)
-                {
-                    throw new VectorStoreOperationException("Call to vector store failed.", ex)
-                    {
-                        VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
-                        VectorStoreName = this._collectionMetadata.VectorStoreName,
-                        CollectionName = this.Name,
-                        OperationName = operationName
-                    };
-                }
-
-                await Task.Delay(delayInMilliseconds, cancellationToken).ConfigureAwait(false);
-            }
-        }
-    }
+        => VectorStoreErrorHandler.RunOperationWithRetryAsync<MongoException>(
+            this._collectionMetadata,
+            operationName,
+            maxRetries,
+            delayInMilliseconds,
+            operation,
+            cancellationToken);
 
     private async Task<T> RunOperationWithRetryAsync<T>(
         string operationName,
@@ -793,36 +712,13 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         int delayInMilliseconds,
         Func<Task<T>> operation,
         CancellationToken cancellationToken)
-    {
-        var retries = 0;
-
-        while (retries < maxRetries)
-        {
-            try
-            {
-                return await operation.Invoke().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                retries++;
-
-                if (retries >= maxRetries)
-                {
-                    throw new VectorStoreOperationException("Call to vector store failed.", ex)
-                    {
-                        VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
-                        VectorStoreName = this._collectionMetadata.VectorStoreName,
-                        CollectionName = this.Name,
-                        OperationName = operationName
-                    };
-                }
-
-                await Task.Delay(delayInMilliseconds, cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        throw new VectorStoreOperationException("Retry logic failed.");
-    }
+        => await VectorStoreErrorHandler.RunOperationWithRetryAsync<T, MongoException>(
+            this._collectionMetadata,
+            operationName,
+            maxRetries,
+            delayInMilliseconds,
+            operation,
+            cancellationToken).ConfigureAwait(false);
 
     private static Array VerifyVectorParam<TVector>(TVector vector)
     {

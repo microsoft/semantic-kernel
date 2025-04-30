@@ -67,7 +67,7 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
             {
                 case VectorStoreRecordKeyPropertyModel keyProperty:
                     result[keyProperty.ModelName] = (string?)storageModel[keyProperty.StorageName]
-                        ?? throw new VectorStoreRecordMappingException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
+                        ?? throw new InvalidOperationException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
 
                     continue;
 

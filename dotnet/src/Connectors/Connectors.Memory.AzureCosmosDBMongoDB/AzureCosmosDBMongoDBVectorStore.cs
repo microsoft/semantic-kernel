@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
@@ -76,11 +77,15 @@ public sealed class AzureCosmosDBMongoDBVectorStore : IVectorStore
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using var cursor = await this._mongoDatabase
-            .ListCollectionNamesAsync(cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+        const string OperationName = "ListCollectionNames";
 
-        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        using var cursor = await VectorStoreErrorHandler.RunOperationAsync<IAsyncCursor<string>, MongoException>(
+            this._metadata,
+            OperationName,
+            () => this._mongoDatabase.ListCollectionNamesAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
+        using var errorHandlingAsyncCursor = new ErrorHandlingAsyncCursor<string>(cursor, this._metadata, OperationName);
+
+        while (await errorHandlingAsyncCursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
         {
             foreach (var name in cursor.Current)
             {
