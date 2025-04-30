@@ -51,7 +51,7 @@ public class FunctionCallStepwisePlanning(ITestOutputHelper output) : BaseTest(o
             .Build();
 
         kernel.ImportPluginFromType<Plugins.EmailPlugin>();
-         kernel.ImportPluginFromType<MathPlugin>();
+        kernel.ImportPluginFromType<MathPlugin>();
         kernel.ImportPluginFromType<TimePlugin>();
 
         return kernel;
