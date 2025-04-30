@@ -46,7 +46,7 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
         string collectionName,
         int vectorDimensions,
-        TextRagStoreOptions? options)
+        TextRagStoreOptions? options = default)
     {
         Verify.NotNull(vectorStore);
         Verify.NotNull(textEmbeddingGenerationService);
@@ -90,31 +90,44 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
     /// Upserts a batch of documents into the vector store.
     /// </summary>
     /// <param name="documents">The documents to upload.</param>
+    /// <param name="options">Optional options to control the upsert behavior.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the documents have been upserted.</returns>
-    public async Task UpsertDocumentsAsync(IEnumerable<TextRagDocument> documents, CancellationToken cancellationToken = default)
+    public async Task UpsertDocumentsAsync(IEnumerable<TextRagDocument> documents, TextRagStoreUpsertOptions? options = null, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(documents);
+
         var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         var storageDocumentsTasks = documents.Select(async document =>
         {
-            if (string.IsNullOrWhiteSpace(document.Text) && string.IsNullOrWhiteSpace(document.SourceId) && string.IsNullOrWhiteSpace(document.SourceLink))
+            if (document is null)
             {
-                throw new ArgumentException($"Either the document {nameof(TextRagDocument.Text)}, {nameof(TextRagDocument.SourceId)} or {nameof(TextRagDocument.SourceLink)} properties must be set.", nameof(document));
+                throw new ArgumentNullException(nameof(documents), "One of the provided documents is null.");
+            }
+
+            if (string.IsNullOrWhiteSpace(document.Text))
+            {
+                throw new ArgumentException($"The {nameof(TextRagDocument.Text)} property must be set.", nameof(document));
+            }
+
+            if (options?.PersistSourceText is false && string.IsNullOrWhiteSpace(document.SourceId) && string.IsNullOrWhiteSpace(document.SourceLink))
+            {
+                throw new ArgumentException($"Either the {nameof(TextRagDocument.SourceId)} or {nameof(TextRagDocument.SourceLink)} properties must be set when the {nameof(TextRagStoreUpsertOptions.PersistSourceText)} setting is false.", nameof(document));
             }
 
             var key = GenerateUniqueKey<TKey>(this._options.UseSourceIdAsPrimaryKey ?? false ? document.SourceId : null);
-            var textEmbedding = await this._textEmbeddingGenerationService.GenerateEmbeddingAsync(document.Text).ConfigureAwait(false);
+            var textEmbeddings = await this._textEmbeddingGenerationService.GenerateEmbeddingsAsync([document.Text!]).ConfigureAwait(false);
 
             return new TextRagStorageDocument<TKey>
             {
                 Key = key,
                 Namespaces = document.Namespaces,
                 SourceId = document.SourceId,
-                Text = document.Text,
+                Text = options?.PersistSourceText is false ? null : document.Text,
                 SourceName = document.SourceName,
                 SourceLink = document.SourceLink,
-                TextEmbedding = textEmbedding
+                TextEmbedding = textEmbeddings.Single()
             };
         });
 
@@ -268,7 +281,7 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
     /// The data model to use for storing RAG documents in the vector store.
     /// </summary>
     /// <typeparam name="TDocumentKey">The type of the key to use, since different databases require/support different keys.</typeparam>
-    private sealed class TextRagStorageDocument<TDocumentKey>
+    internal sealed class TextRagStorageDocument<TDocumentKey>
     {
         /// <summary>
         /// Gets or sets a unique identifier for the memory document.
