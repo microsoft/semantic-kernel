@@ -20,7 +20,7 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord>(VectorStoreRecord
         var keyObject = model.KeyProperty.GetValueAsObject(dataModel!);
         if (keyObject is null)
         {
-            throw new VectorStoreRecordMappingException($"Key property '{model.KeyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null.");
+            throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null.");
         }
 
         var metadata = new Metadata();
@@ -35,8 +35,8 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord>(VectorStoreRecord
         var values = (generatedEmbedding?.Vector ?? model.VectorProperty!.GetValueAsObject(dataModel!)) switch
         {
             ReadOnlyMemory<float> floats => floats,
-            null => throw new VectorStoreRecordMappingException($"Vector property '{model.VectorProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null."),
-            _ => throw new VectorStoreRecordMappingException($"Unsupported vector type '{model.VectorProperty.Type.Name}' for vector property '{model.VectorProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
+            null => throw new InvalidOperationException($"Vector property '{model.VectorProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null."),
+            _ => throw new InvalidOperationException($"Unsupported vector type '{model.VectorProperty.Type.Name}' for vector property '{model.VectorProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
         };
 
         // TODO: what about sparse values?

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.VectorData;
 
@@ -68,7 +69,12 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
     {
         const string Query = "SELECT VALUE(c.id) FROM c";
 
-        using var feedIterator = this._database.GetContainerQueryIterator<string>(Query);
+        const string OperationName = "ListCollectionNamesAsync";
+        using var feedIterator = VectorStoreErrorHandler.RunOperation<FeedIterator<string>, CosmosException>(
+            this._metadata,
+            OperationName,
+            () => this._database.GetContainerQueryIterator<string>(Query));
+        using var errorHandlingFeedIterator = new ErrorHandlingFeedIterator<string>(feedIterator, this._metadata, OperationName);
 
         while (feedIterator.HasMoreResults)
         {

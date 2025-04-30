@@ -21,7 +21,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
     public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(TConsumerDataModel dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         var keyValue = model.KeyProperty.GetValueAsObject(dataModel!) as string ??
-            throw new VectorStoreRecordMappingException($"Missing key property {model.KeyProperty.ModelName} on provided record of type '{typeof(TConsumerDataModel).Name}'.");
+            throw new InvalidOperationException($"Missing key property {model.KeyProperty.ModelName} on provided record of type '{typeof(TConsumerDataModel).Name}'.");
 
         var hashEntries = new List<HashEntry>();
         foreach (var property in model.DataProperties)
@@ -58,7 +58,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
                         continue;
 
                     default:
-                        throw new VectorStoreRecordMappingException($"Unsupported vector type '{value.GetType()}'. Only float and double vectors are supported.");
+                        throw new InvalidOperationException($"Unsupported vector type '{value.GetType()}'. Only float and double vectors are supported.");
                 }
             }
         }
@@ -96,7 +96,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
                             => new ReadOnlyMemory<float>(MemoryMarshal.Cast<byte, float>((byte[])vector!).ToArray()),
                         Type t when t == typeof(ReadOnlyMemory<double>) || t == typeof(ReadOnlyMemory<double>?)
                             => new ReadOnlyMemory<double>(MemoryMarshal.Cast<byte, double>((byte[])vector!).ToArray()),
-                        _ => throw new VectorStoreRecordMappingException($"Unsupported vector type '{property.Type}'. Only float and double vectors are supported.")
+                        _ => throw new InvalidOperationException($"Unsupported vector type '{property.Type}'. Only float and double vectors are supported.")
                     });
                 }
             }

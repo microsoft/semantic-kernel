@@ -132,28 +132,30 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc />
-    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("GetContainerQueryIterator", async () =>
+        const string OperationName = "ListCollectionNamesAsync";
+        const string Query = "SELECT VALUE(c.id) FROM c WHERE c.id = @collectionName";
+        var queryDefinition = new QueryDefinition(Query).WithParameter("@collectionName", this.Name);
+
+        using var feedIterator = VectorStoreErrorHandler.RunOperation<FeedIterator<string>, CosmosException>(
+            this._collectionMetadata,
+            OperationName,
+            () => this._database.GetContainerQueryIterator<string>(queryDefinition));
+
+        using var errorHandlingFeedIterator = new ErrorHandlingFeedIterator<string>(feedIterator, this._collectionMetadata, OperationName);
+
+        while (feedIterator.HasMoreResults)
         {
-            const string Query = "SELECT VALUE(c.id) FROM c WHERE c.id = @collectionName";
+            var next = await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
 
-            var queryDefinition = new QueryDefinition(Query).WithParameter("@collectionName", this.Name);
-
-            using var feedIterator = this._database.GetContainerQueryIterator<string>(queryDefinition);
-
-            while (feedIterator.HasMoreResults)
+            foreach (var containerName in next.Resource)
             {
-                var next = await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
-
-                foreach (var containerName in next.Resource)
-                {
-                    return true;
-                }
+                return true;
             }
+        }
 
-            return false;
-        });
+        return false;
     }
 
     /// <inheritdoc />
@@ -251,14 +253,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             GetCompositeKeys(keys).ToList(),
             includeVectors);
 
-        await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken).ConfigureAwait(false))
+        await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken).ConfigureAwait(false))
         {
-            var record = VectorStoreErrorHandler.RunModelConversion(
-                AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
-                OperationName,
-                () => this._mapper.MapFromStorageToDataModel(jsonObject, includeVectors));
+            var record = this._mapper.MapFromStorageToDataModel(jsonObject, includeVectors);
 
             if (record is not null)
             {
@@ -310,12 +307,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             }
         }
 
-        var jsonObject = VectorStoreErrorHandler.RunModelConversion(
-                AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
-                OperationName,
-                () => this._mapper.MapFromDataToStorageModel(record, generatedEmbeddings));
+        var jsonObject = this._mapper.MapFromDataToStorageModel(record, generatedEmbeddings);
 
         var keyValue = jsonObject.TryGetPropertyValue(this._model.KeyProperty.StorageName!, out var jsonKey) ? jsonKey?.ToString() : null;
         var partitionKeyValue = jsonObject.TryGetPropertyValue(this._partitionKeyProperty.StorageName, out var jsonPartitionKey) ? jsonPartitionKey?.ToString() : null;
@@ -466,7 +458,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             options.IncludeVectors);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
+        var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken);
         return this.MapSearchResultsAsync(
             searchResults,
             ScorePropertyName,
@@ -490,6 +482,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
+        const string OperationName = "GetAsync";
+
         options ??= new();
 
         var (whereClause, filterParameters) = new AzureCosmosDBNoSqlFilterTranslator().Translate(filter, this._model);
@@ -501,16 +495,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             options,
             top);
 
-        var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
+        var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken);
 
         await foreach (var jsonObject in searchResults.ConfigureAwait(false))
         {
-            var record = VectorStoreErrorHandler.RunModelConversion(
-                AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
-                "GetAsync",
-                () => this._mapper.MapFromStorageToDataModel(jsonObject, options.IncludeVectors));
+            var record = this._mapper.MapFromStorageToDataModel(jsonObject, options.IncludeVectors);
 
             yield return record;
         }
@@ -544,7 +533,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             options.IncludeVectors);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
+        var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken);
         return this.MapSearchResultsAsync(
             searchResults,
             ScorePropertyName,
@@ -582,23 +571,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         }
     }
 
-    private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
-    {
-        try
-        {
-            return await operation.Invoke().ConfigureAwait(false);
-        }
-        catch (CosmosException ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
-                OperationName = operationName
-            };
-        }
-    }
+    private Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
+        => VectorStoreErrorHandler.RunOperationAsync<T, CosmosException>(
+            this._collectionMetadata,
+            operationName,
+            operation);
 
     /// <summary>
     /// Returns instance of <see cref="ContainerProperties"/> with applied indexing policy.
@@ -727,15 +704,19 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             _ => throw new InvalidOperationException($"Data type '{vectorDataType}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB NoSQL VectorStore.")
         };
 
-    private async IAsyncEnumerable<T> GetItemsAsync<T>(QueryDefinition queryDefinition, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<T> GetItemsAsync<T>(QueryDefinition queryDefinition, string operationName, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var iterator = this._database
-            .GetContainer(this.Name)
-            .GetItemQueryIterator<T>(queryDefinition);
+        using var feedIterator = VectorStoreErrorHandler.RunOperation<FeedIterator<T>, CosmosException>(
+            this._collectionMetadata,
+            operationName,
+            () => this._database
+                .GetContainer(this.Name)
+                .GetItemQueryIterator<T>(queryDefinition));
+        using var errorHandlingFeedIterator = new ErrorHandlingFeedIterator<T>(feedIterator, this._collectionMetadata, operationName);
 
-        while (iterator.HasMoreResults)
+        while (errorHandlingFeedIterator.HasMoreResults)
         {
-            var response = await iterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
+            var response = await errorHandlingFeedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
 
             foreach (var record in response.Resource)
             {
@@ -761,12 +742,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             // Remove score from result object for mapping.
             jsonObject.Remove(scorePropertyName);
 
-            var record = VectorStoreErrorHandler.RunModelConversion(
-                AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
-                operationName,
-                () => this._mapper.MapFromStorageToDataModel(jsonObject, includeVectors));
+            var record = this._mapper.MapFromStorageToDataModel(jsonObject, includeVectors);
 
             yield return new VectorSearchResult<TRecord>(record, score);
         }

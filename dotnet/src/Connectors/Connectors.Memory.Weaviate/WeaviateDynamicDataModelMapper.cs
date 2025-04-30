@@ -129,7 +129,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
 
         if (!key.HasValue)
         {
-            throw new VectorStoreRecordMappingException("No key property was found in the record retrieved from storage.");
+            throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
         }
 
         result[this._model.KeyProperty.ModelName] = key.Value;

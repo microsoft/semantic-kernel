@@ -303,12 +303,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         // Convert the retrieved points to the target data model.
         foreach (var retrievedPoint in retrievedPoints)
         {
-            yield return VectorStoreErrorHandler.RunModelConversion(
-                QdrantConstants.VectorStoreSystemName,
-                this._collectionMetadata.VectorStoreName,
-                this._collectionName,
-                OperationName,
-                () => this._mapper.MapFromStorageToDataModel(retrievedPoint.Id, retrievedPoint.Payload, retrievedPoint.Vectors, includeVectors));
+            yield return this._mapper.MapFromStorageToDataModel(retrievedPoint.Id, retrievedPoint.Payload, retrievedPoint.Vectors, includeVectors);
         }
     }
 
@@ -479,12 +474,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         }
 
         // Create points from records.
-        var pointStructs = VectorStoreErrorHandler.RunModelConversion(
-            QdrantConstants.VectorStoreSystemName,
-            this._collectionMetadata.VectorStoreName,
-            this._collectionName,
-            UpsertName,
-            () => records.Select((r, i) => this._mapper.MapFromDataToStorageModel(r, i, generatedEmbeddings)).ToList());
+        var pointStructs = records.Select((r, i) => this._mapper.MapFromDataToStorageModel(r, i, generatedEmbeddings)).ToList();
 
         if (pointStructs is { Count: 0 })
         {
@@ -794,23 +784,11 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     /// <param name="operationName">The type of database operation being run.</param>
     /// <param name="operation">The operation to run.</param>
     /// <returns>The result of the operation.</returns>
-    private async Task RunOperationAsync(string operationName, Func<Task> operation)
-    {
-        try
-        {
-            await operation.Invoke().ConfigureAwait(false);
-        }
-        catch (RpcException ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this._collectionName,
-                OperationName = operationName
-            };
-        }
-    }
+    private Task RunOperationAsync(string operationName, Func<Task> operation)
+        => VectorStoreErrorHandler.RunOperationAsync<RpcException>(
+            this._collectionMetadata,
+            operationName,
+            operation);
 
     /// <summary>
     /// Run the given operation and wrap any <see cref="RpcException"/> with <see cref="VectorStoreOperationException"/>."/>
@@ -819,23 +797,11 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     /// <param name="operationName">The type of database operation being run.</param>
     /// <param name="operation">The operation to run.</param>
     /// <returns>The result of the operation.</returns>
-    private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
-    {
-        try
-        {
-            return await operation.Invoke().ConfigureAwait(false);
-        }
-        catch (RpcException ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this._collectionName,
-                OperationName = operationName
-            };
-        }
-    }
+    private Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
+        => VectorStoreErrorHandler.RunOperationAsync<T, RpcException>(
+            this._collectionMetadata,
+            operationName,
+            operation);
 
     private static ReadOnlyMemory<float> VerifyVectorParam<TVector>(TVector vector)
     {

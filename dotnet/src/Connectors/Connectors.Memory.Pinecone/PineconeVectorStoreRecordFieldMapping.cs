@@ -59,7 +59,7 @@ internal static class PineconeVectorStoreRecordFieldMapping
             double doubleValue => ConvertToNumericValue(doubleValue, targetType),
             MetadataValue[] array => VectorStoreRecordMapping.CreateEnumerable(array.Select(x => ConvertFromMetadataValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))), targetType),
             List<MetadataValue> list => VectorStoreRecordMapping.CreateEnumerable(list.Select(x => ConvertFromMetadataValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))), targetType),
-            _ => throw new VectorStoreRecordMappingException($"Unsupported metadata type: '{metadataValue.Value?.GetType().FullName}'."),
+            _ => throw new InvalidOperationException($"Unsupported metadata type: '{metadataValue.Value?.GetType().FullName}'."),
         };
 
     public static MetadataValue ConvertToMetadataValue(object? sourceValue)
@@ -79,7 +79,7 @@ internal static class PineconeVectorStoreRecordFieldMapping
             int intValue => intValue,
             long longValue => longValue,
             float floatValue => floatValue,
-            _ => throw new VectorStoreRecordMappingException($"Unsupported source value type '{sourceValue?.GetType().FullName}'.")
+            _ => throw new InvalidOperationException($"Unsupported source value type '{sourceValue?.GetType().FullName}'.")
         };
 
     private static object? ConvertToNumericValue(object? number, Type targetType)
@@ -96,7 +96,7 @@ internal static class PineconeVectorStoreRecordFieldMapping
             Type floatType when floatType == typeof(float) || floatType == typeof(float?) => Convert.ToSingle(number),
             Type doubleType when doubleType == typeof(double) || doubleType == typeof(double?) => Convert.ToDouble(number),
             Type decimalType when decimalType == typeof(decimal) || decimalType == typeof(decimal?) => Convert.ToDecimal(number),
-            _ => throw new VectorStoreRecordMappingException($"Unsupported target numeric type '{targetType.FullName}'."),
+            _ => throw new InvalidOperationException($"Unsupported target numeric type '{targetType.FullName}'."),
         };
     }
 }
