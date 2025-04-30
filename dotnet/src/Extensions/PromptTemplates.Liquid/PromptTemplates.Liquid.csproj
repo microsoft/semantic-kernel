@@ -7,7 +7,6 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn)</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>1.47.0-preview</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
