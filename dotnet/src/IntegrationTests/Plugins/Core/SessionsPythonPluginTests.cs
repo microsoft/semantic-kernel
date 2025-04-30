@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Xunit;
 using Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 using Microsoft.Extensions.Configuration;
-using SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using System.Net.Http;
 using Azure.Identity;
@@ -16,6 +15,8 @@ namespace SemanticKernel.IntegrationTests.Plugins.Core;
 
 public sealed class SessionsPythonPluginTests : IDisposable
 {
+    private const string SkipReason = "For manual verification only";
+
     private readonly SessionsPythonSettings _settings;
     private readonly HttpClientFactory _httpClientFactory;
     private readonly SessionsPythonPlugin _sut;
@@ -26,7 +27,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
             .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<AzureOpenAIAudioToTextTests>()
+            .AddUserSecrets<SessionsPythonPluginTests>()
             .Build();
 
         var _configuration = configurationRoot
@@ -44,7 +45,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         this._sut = new SessionsPythonPlugin(this._settings, this._httpClientFactory, GetAuthTokenAsync);
     }
 
-    [Fact(Skip = "For manual verification only")]
+    [Fact(Skip = SkipReason)]
     public async Task ItShouldUploadFileAsync()
     {
         // Act
@@ -57,7 +58,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal("/mnt/data/test_file.txt", result.FullPath);
     }
 
-    [Fact(Skip = "For manual verification only")]
+    [Fact(Skip = SkipReason)]
     public async Task ItShouldDownloadFileAsync()
     {
         // Arrange
@@ -70,7 +71,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(322, fileContent.Length);
     }
 
-    [Fact(Skip = "For manual verification only")]
+    [Fact(Skip = SkipReason)]
     public async Task ItShouldListFilesAsync()
     {
         // Arrange
@@ -96,7 +97,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal("/mnt/data/test_file_2.txt", secondFile.FullPath);
     }
 
-    [Fact(Skip = "For manual verification only")]
+    [Fact(Skip = SkipReason)]
     public async Task ItShouldExecutePythonCodeAsync()
     {
         // Arrange
