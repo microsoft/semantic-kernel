@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a step in a process that executes an agent.
 /// </summary>
-public partial class KernelProcessAgentExecutor : KernelProcessStep<KernelProcessAgentExecutorState>
+public partial class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProcessAgentExecutorState>
 {
     private readonly AgentFactory? _agentFactory;
     private readonly KernelProcessAgentStep _agentStep;
@@ -26,7 +26,7 @@ public partial class KernelProcessAgentExecutor : KernelProcessStep<KernelProces
     /// <param name="agentFactory"></param>
     /// <param name="agentStep"></param>
     /// <param name="processThread"></param>
-    public KernelProcessAgentExecutor(AgentFactory? agentFactory, KernelProcessAgentStep agentStep, KernelProcessAgentThread processThread)
+    public KernelProcessAgentExecutorInternal(AgentFactory? agentFactory, KernelProcessAgentStep agentStep, KernelProcessAgentThread processThread)
     {
         //Verify.NotNull(agentStep);
         //Verify.NotNull(agentStep.AgentDefinition); // TODO: Fix issue
