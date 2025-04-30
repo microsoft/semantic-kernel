@@ -4,7 +4,7 @@ status: { proposed }
 contact: { Tao Chen }
 date: { 2025-04-30 }
 deciders: { Ben Thomas, Mark Wallace }
-consulted: { Chris Rickman, Evan Mattson }
+consulted: { Chris Rickman, Evan Mattson, Jack Gerrits, Eric Zhu }
 informed: {}
 ---
 
