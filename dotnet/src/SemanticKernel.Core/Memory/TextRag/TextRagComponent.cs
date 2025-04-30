@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// A component that does a search based on any messages that the AI model is invoked with and injects the results into the AI model invocation context.
 /// </summary>
 [Experimental("SKEXP0130")]
-public class TextRagComponent : ConversationStatePart
+public sealed class TextRagComponent : ConversationStatePart
 {
     private const string DefaultPluginSearchFunctionName = "Search";
     private const string DefaultPluginSearchFunctionDescription = "Allows searching for additional information to help answer the user question.";
