@@ -37,7 +37,6 @@ public sealed class KernelParameterMetadata
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
     /// <exception cref="ArgumentException">The <paramref name="name"/> was empty or composed entirely of whitespace.</exception>
-    [Experimental("SKEXP0120")]
     public KernelParameterMetadata(string name, JsonSerializerOptions jsonSerializerOptions)
     {
         this.Name = name;
@@ -66,7 +65,6 @@ public sealed class KernelParameterMetadata
     /// <param name="metadata">The metadata to copy.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
     /// <remarks>This creates a shallow clone of <paramref name="metadata"/>.</remarks>
-    [Experimental("SKEXP0120")]
     public KernelParameterMetadata(KernelParameterMetadata metadata, JsonSerializerOptions jsonSerializerOptions)
     {
         Verify.NotNull(metadata);

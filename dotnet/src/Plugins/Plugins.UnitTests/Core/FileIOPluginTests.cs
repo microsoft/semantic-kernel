@@ -89,4 +89,36 @@ public class FileIOPluginTests
         // Assert
         _ = await Assert.ThrowsAsync<UnauthorizedAccessException>(Fn);
     }
+
+    [Fact]
+    public async Task ItCannotWriteToDisallowedFoldersAsync()
+    {
+        // Arrange
+        var plugin = new FileIOPlugin()
+        {
+            AllowedFolders = [Path.GetTempPath()]
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.WriteAsync(Path.Combine("C:", Path.GetRandomFileName()), "hello world"));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await plugin.WriteAsync(Path.Combine(Path.GetRandomFileName()), "hello world"));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await plugin.WriteAsync(Path.Combine("\\\\UNC\\server\\folder\\myfile.txt", Path.GetRandomFileName()), "hello world"));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await plugin.WriteAsync(Path.Combine("", Path.GetRandomFileName()), "hello world"));
+    }
+
+    [Fact]
+    public async Task ItCannotReadFromDisallowedFoldersAsync()
+    {
+        // Arrange
+        var plugin = new FileIOPlugin()
+        {
+            AllowedFolders = [Path.GetTempPath()]
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.ReadAsync(Path.Combine("C:", Path.GetRandomFileName())));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await plugin.ReadAsync(Path.Combine(Path.GetRandomFileName())));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await plugin.ReadAsync(Path.Combine("\\\\UNC\\server\\folder\\myfile.txt", Path.GetRandomFileName())));
+        await Assert.ThrowsAsync<ArgumentException>(async () => await plugin.ReadAsync(Path.Combine("", Path.GetRandomFileName())));
+    }
 }

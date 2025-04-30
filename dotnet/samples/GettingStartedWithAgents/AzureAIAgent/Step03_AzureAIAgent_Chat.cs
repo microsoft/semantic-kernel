@@ -36,7 +36,7 @@ public class Step03_AzureAIAgent_Chat(ITestOutputHelper output) : BaseAzureAgent
         """;
 
     [Fact]
-    public async Task UseGroupChatWithTwoAgentsAsync()
+    public async Task UseGroupChatWithTwoAgents()
     {
         // Define the agents
         Agent reviewerModel = await this.AgentsClient.CreateAgentAsync(

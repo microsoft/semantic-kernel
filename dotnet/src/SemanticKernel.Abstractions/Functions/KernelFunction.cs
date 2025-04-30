@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -99,6 +100,15 @@ public abstract class KernelFunction
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
     /// <summary>
+    /// Gets the underlying <see cref="MethodInfo"/> that this function might be wrapping.
+    /// </summary>
+    /// <remarks>
+    /// Provides additional metadata on the function and its signature. Implementations not wrapping .NET methods may return null.
+    /// </remarks>
+    [Experimental("SKEXP0001")]
+    public MethodInfo? UnderlyingMethod { get; internal init; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
     /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
@@ -151,7 +161,7 @@ public abstract class KernelFunction
     internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
     {
         Verify.NotNull(name);
-        Verify.ParametersUniqueness(parameters);
+        KernelVerify.ParametersUniqueness(parameters);
 
         this.Metadata = new KernelFunctionMetadata(name)
         {
@@ -187,7 +197,7 @@ public abstract class KernelFunction
     internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, JsonSerializerOptions jsonSerializerOptions, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
     {
         Verify.NotNull(name);
-        Verify.ParametersUniqueness(parameters);
+        KernelVerify.ParametersUniqueness(parameters);
         Verify.NotNull(jsonSerializerOptions);
 
         this.Metadata = new KernelFunctionMetadata(name)
@@ -538,8 +548,7 @@ public abstract class KernelFunction
         public override string Description => this._kernelFunction.Description;
         public override JsonSerializerOptions JsonSerializerOptions => this._kernelFunction.JsonSerializerOptions ?? base.JsonSerializerOptions;
 
-        protected override async Task<object?> InvokeCoreAsync(
-            IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
+        protected override async ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
         {
             Verify.NotNull(arguments);
 

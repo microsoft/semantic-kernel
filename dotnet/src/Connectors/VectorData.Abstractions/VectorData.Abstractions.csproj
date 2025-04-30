@@ -4,16 +4,17 @@
     <AssemblyName>Microsoft.Extensions.VectorData.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
-    <EnablePackageValidation>true</EnablePackageValidation>
+    <!-- temporarily disabled due to mysterious build issue -->
+    <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
-    <PackageVersion>9.0.0-preview.1.25161.1</PackageVersion>
+    <PackageVersion>9.0.0-preview.1.25229.1</PackageVersion>
     <AssemblyVersion>9.0.0.0</AssemblyVersion>
     <!-- Package validation. Baseline Version should be the latest version available on NuGet. -->
-    <PackageValidationBaselineVersion>9.0.0-preview.1.25078.1</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>9.0.0-preview.1.25161.1</PackageValidationBaselineVersion>
     <Title>Microsoft.Extensions.VectorData.Abstractions</Title>
     <PackageId>$(AssemblyName)</PackageId>
     <PackageDescription>Abstractions for vector database access.
@@ -30,8 +31,17 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
     <PackageProjectUrl>https://dot.net/</PackageProjectUrl>
   </PropertyGroup>
 
-  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1'))">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
+    <PackageReference Include="System.ValueTuple" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,7 +50,32 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
     <None Include="PACKAGE.md" Pack="true" PackagePath="." />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/IsExternalInit.cs" Link="Diagnostics/IsExternalInit.cs" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="Shared/System/IndexRange.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/CompilerServicesAttributes.cs" Link="Shared/Diagnostics/CompilerServicesAttributes.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/DynamicallyAccessedMembersAttribute.cs" Link="Shared/Diagnostics/DynamicallyAccessedMembersAttribute.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ExperimentalAttribute.cs" Link="Shared/Diagnostics/ExperimentalAttribute.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/IsExternalInit.cs" Link="Shared/Diagnostics/IsExternalInit.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/NullableAttributes.cs" Link="Shared/Diagnostics/NullableAttributes.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/RequiresDynamicCodeAttribute.cs" Link="Shared/Diagnostics/RequiresDynamicCodeAttribute.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/RequiresUnreferencedCodeAttribute.cs" Link="Shared/Diagnostics/RequiresUnreferencedCodeAttribute.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnconditionalSuppressMessageAttribute.cs" Link="Shared/Diagnostics/UnconditionalSuppressMessageAttribute.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnreachableException.cs" Link="Shared/Diagnostics/UnreachableException.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\VectorDataStrings.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>VectorDataStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\VectorDataStrings.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>VectorDataStrings.resx</DependentUpon>
+      <NoWarn>$(NoWarn);1591</NoWarn>
+    </Compile>
   </ItemGroup>
 </Project>

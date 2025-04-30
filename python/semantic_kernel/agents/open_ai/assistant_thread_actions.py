@@ -29,22 +29,18 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_streaming_message_content,
     get_function_call_contents,
     get_message_contents,
-)
-from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
-from semantic_kernel.connectors.ai.function_calling_utils import (
-    kernel_function_metadata_to_function_call_format,
     merge_streaming_function_results,
 )
+from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
+from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import (
-    AgentExecutionException,
-    AgentInvokeException,
-)
+from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException, AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
@@ -59,6 +55,9 @@ if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+    from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+        AutoFunctionInvocationContext,
+    )
     from semantic_kernel.kernel import Kernel
 
 _T = TypeVar("_T", bound="AssistantThreadActions")
@@ -66,7 +65,7 @@ _T = TypeVar("_T", bound="AssistantThreadActions")
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@release_candidate
 class AssistantThreadActions:
     """Assistant Thread Actions class."""
 
@@ -149,6 +148,7 @@ class AssistantThreadActions:
         temperature: float | None = None,
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Invoke the assistant.
@@ -172,6 +172,8 @@ class AssistantThreadActions:
             temperature: The temperature.
             top_p: The top p.
             truncation_strategy: The truncation strategy.
+            polling_options: The polling options defined at the run-level. These will override the agent-level
+                polling options.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -222,7 +224,9 @@ class AssistantThreadActions:
         function_steps: dict[str, "FunctionCallContent"] = {}
 
         while run.status != "completed":
-            run = await cls._poll_run_status(agent=agent, run=run, thread_id=thread_id)
+            run = await cls._poll_run_status(
+                agent=agent, run=run, thread_id=thread_id, polling_options=polling_options or agent.polling_options
+            )
 
             if run.status in cls.error_message_states:
                 error_message = ""
@@ -261,6 +265,7 @@ class AssistantThreadActions:
                         tool_outputs=tool_outputs,  # type: ignore
                     )
                     logger.debug(f"Submitted tool outputs for agent `{agent.name}` and thread `{thread_id}`")
+                    continue
 
             steps_response = await agent.client.beta.threads.runs.steps.list(run_id=run.id, thread_id=thread_id)
             logger.debug(f"Called for steps_response for run [{run.id}] agent `{agent.name}` and thread `{thread_id}`")
@@ -331,7 +336,7 @@ class AssistantThreadActions:
                         message_id=completed_step.step_details.message_creation.message_id,  # type: ignore
                     )
                     if message:
-                        content = generate_message_content(agent.name, message)
+                        content = generate_message_content(agent.name, message, completed_step)
                         if content and len(content.items) > 0:
                             message_count += 1
                             logger.debug(
@@ -467,12 +472,17 @@ class AssistantThreadActions:
                         if isinstance(details, ToolCallDeltaObject) and details.tool_calls:
                             for tool_call in details.tool_calls:
                                 tool_content = None
+                                content_is_visible = False
                                 if tool_call.type == "function":
                                     tool_content = generate_streaming_function_content(agent.name, step_details)
                                 elif tool_call.type == "code_interpreter":
                                     tool_content = generate_streaming_code_interpreter_content(agent.name, step_details)
+                                    content_is_visible = True
                                 if tool_content:
-                                    yield tool_content
+                                    if output_messages is not None:
+                                        output_messages.append(tool_content)
+                                    if content_is_visible:
+                                        yield tool_content
                     elif event.event == "thread.run.requires_action":
                         run = event.data
                         function_action_result = await cls._handle_streaming_requires_action(
@@ -487,12 +497,6 @@ class AssistantThreadActions:
                                 f"Function call required but no function steps found for agent `{agent.name}` "
                                 f"thread: {thread_id}."
                             )
-                        if function_action_result.function_result_streaming_content:
-                            # Yield the function result content to the caller
-                            yield function_action_result.function_result_streaming_content
-                            if output_messages is not None:
-                                # Add the function result content to the messages list, if it exists
-                                output_messages.append(function_action_result.function_result_streaming_content)
                         if function_action_result.function_call_streaming_content:
                             if output_messages is not None:
                                 output_messages.append(function_action_result.function_call_streaming_content)
@@ -501,7 +505,10 @@ class AssistantThreadActions:
                                 thread_id=thread_id,
                                 tool_outputs=function_action_result.tool_outputs,  # type: ignore
                             )
-                            break
+                        if function_action_result.function_result_streaming_content and output_messages is not None:
+                            # Add the function result content to the messages list, if it exists
+                            output_messages.append(function_action_result.function_result_streaming_content)
+                        break
                     elif event.event == "thread.run.completed":
                         run = event.data
                         logger.info(f"Run completed with ID: {run.id}")
@@ -549,13 +556,19 @@ class AssistantThreadActions:
             from semantic_kernel.contents.chat_history import ChatHistory
 
             chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
-            _ = await cls._invoke_function_calls(
+            results = await cls._invoke_function_calls(
                 kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
             )
-            function_result_streaming_content = merge_streaming_function_results(chat_history.messages)[0]
+
+            function_result_streaming_content = merge_streaming_function_results(
+                messages=chat_history.messages[-len(results) :],
+                name=agent_name,
+            )
             tool_outputs = cls._format_tool_outputs(fccs, chat_history)
             return FunctionActionResult(
-                function_call_streaming_content, function_result_streaming_content, tool_outputs
+                function_call_streaming_content,
+                function_result_streaming_content,
+                tool_outputs,
             )
         return None
 
@@ -639,13 +652,18 @@ class AssistantThreadActions:
         fccs: list["FunctionCallContent"],
         chat_history: "ChatHistory",
         arguments: KernelArguments,
-    ) -> list[Any]:
+    ) -> list["AutoFunctionInvocationContext | None"]:
         """Invoke the function calls."""
-        tasks = [
-            kernel.invoke_function_call(function_call=function_call, chat_history=chat_history, arguments=arguments)
-            for function_call in fccs
-        ]
-        return await asyncio.gather(*tasks)
+        return await asyncio.gather(
+            *[
+                kernel.invoke_function_call(
+                    function_call=function_call,
+                    chat_history=chat_history,
+                    arguments=arguments,
+                )
+                for function_call in fccs
+            ],
+        )
 
     @classmethod
     def _format_tool_outputs(
@@ -667,17 +685,19 @@ class AssistantThreadActions:
         ]
 
     @classmethod
-    async def _poll_run_status(cls: type[_T], agent: "OpenAIAssistantAgent", run: "Run", thread_id: str) -> "Run":
+    async def _poll_run_status(
+        cls: type[_T], agent: "OpenAIAssistantAgent", run: "Run", thread_id: str, polling_options: RunPollingOptions
+    ) -> "Run":
         """Poll the run status."""
         logger.info(f"Polling run status: {run.id}, threadId: {thread_id}")
 
         try:
             run = await asyncio.wait_for(
-                cls._poll_loop(agent, run, thread_id),
-                timeout=agent.polling_options.run_polling_timeout.total_seconds(),
+                cls._poll_loop(agent, run, thread_id, polling_options),
+                timeout=polling_options.run_polling_timeout.total_seconds(),
             )
         except asyncio.TimeoutError:
-            timeout_duration = agent.polling_options.run_polling_timeout
+            timeout_duration = polling_options.run_polling_timeout
             error_message = f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` after waiting {timeout_duration}."  # noqa: E501
             logger.error(error_message)
             raise AgentInvokeException(error_message)
@@ -686,11 +706,13 @@ class AssistantThreadActions:
         return run
 
     @classmethod
-    async def _poll_loop(cls: type[_T], agent: "OpenAIAssistantAgent", run: "Run", thread_id: str) -> "Run":
+    async def _poll_loop(
+        cls: type[_T], agent: "OpenAIAssistantAgent", run: "Run", thread_id: str, polling_options: RunPollingOptions
+    ) -> "Run":
         """Internal polling loop."""
         count = 0
         while True:
-            await asyncio.sleep(agent.polling_options.get_polling_interval(count).total_seconds())
+            await asyncio.sleep(polling_options.get_polling_interval(count).total_seconds())
             count += 1
 
             try:

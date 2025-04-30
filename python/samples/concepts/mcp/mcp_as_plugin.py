@@ -1,12 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import logging
+import os
 
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
 from semantic_kernel.contents import ChatHistory
+from semantic_kernel.utils.logging import setup_logging
 
 """
 This sample demonstrates how to build a conversational chatbot
@@ -32,6 +35,9 @@ You are a chat bot. And you help users interact with Github.
 You are especially good at answering questions about the Microsoft semantic-kernel project.
 You can call functions to get the information you need.
 """
+
+setup_logging()
+logging.getLogger("semantic_kernel.connectors.mcp").setLevel(logging.DEBUG)
 
 # Create and configure the kernel.
 kernel = Kernel()
@@ -94,8 +100,9 @@ async def main() -> None:
     async with MCPStdioPlugin(
         name="Github",
         description="Github Plugin",
-        command="npx",
-        args=["-y", "@modelcontextprotocol/server-github"],
+        command="docker",
+        args=["run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server"],
+        env={"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")},
     ) as github_plugin:
         # instead of using this async context manager, you can also use:
         # await github_plugin.connect()

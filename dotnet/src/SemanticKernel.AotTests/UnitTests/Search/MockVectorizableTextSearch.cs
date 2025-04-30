@@ -4,25 +4,42 @@ using Microsoft.Extensions.VectorData;
 
 namespace SemanticKernel.AotTests.UnitTests.Search;
 
-internal sealed class MockVectorizableTextSearch<TRecord> : IVectorizableTextSearch<TRecord>
+internal sealed class MockVectorizableTextSearch<TRecord> : IVectorSearch<TRecord>
 {
     private readonly IAsyncEnumerable<VectorSearchResult<TRecord>> _searchResults;
 
     public MockVectorizableTextSearch(IEnumerable<VectorSearchResult<TRecord>> searchResults)
     {
-        this._searchResults = ToAsyncEnumerable(searchResults);
+        this._searchResults = searchResults.ToAsyncEnumerable();
     }
 
-    public Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+        TInput value,
+        int top,
+        VectorSearchOptions<TRecord>? options = default,
+        CancellationToken cancellationToken = default)
+        where TInput : notnull
     {
-        return Task.FromResult(new VectorSearchResults<TRecord>(this._searchResults));
+        return this._searchResults;
     }
 
-    private static async IAsyncEnumerable<VectorSearchResult<TRecord>> ToAsyncEnumerable(IEnumerable<VectorSearchResult<TRecord>> searchResults)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorSearchOptions<TRecord>? options = default,
+        CancellationToken cancellationToken = default)
+        where TVector : notnull
     {
-        foreach (var result in searchResults)
-        {
-            yield return result;
-        }
+        return this._searchResults;
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        ArgumentNullException.ThrowIfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

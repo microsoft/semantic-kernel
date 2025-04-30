@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from unittest.mock import MagicMock
+
 from azure.ai.projects.models import (
     MessageDelta,
     MessageDeltaChunk,
@@ -24,6 +26,7 @@ from azure.ai.projects.models import (
     MessageTextFilePathDetails,
     MessageTextUrlCitationAnnotation,
     MessageTextUrlCitationDetails,
+    RequiredFunctionToolCall,
     RunStep,
     RunStepDeltaFunction,
     RunStepDeltaFunctionToolCall,
@@ -256,27 +259,24 @@ def test_get_function_call_contents_no_action():
 
 
 def test_get_function_call_contents_submit_tool_outputs():
-    class FakeFunction:
-        name = "test_function"
-        arguments = {"arg": "val"}
+    fake_function = MagicMock()
+    fake_function.name = "test_function"
+    fake_function.arguments = {"arg": "val"}
 
-    class FakeToolCall:
-        id = "tool_id"
-        function = FakeFunction()
+    fake_tool_call = MagicMock(spec=RequiredFunctionToolCall)
+    fake_tool_call.id = "tool_id"
+    fake_tool_call.function = fake_function
 
-    run = type(
-        "ThreadRunFake",
-        (),
-        {
-            "required_action": type(
-                "RequiredAction", (), {"submit_tool_outputs": type("FakeSubmit", (), {"tool_calls": [FakeToolCall()]})}
-            )
-        },
-    )()
+    run = MagicMock()
+    run.required_action.submit_tool_outputs.tool_calls = [fake_tool_call]
+
     function_steps = {}
     fc = get_function_call_contents(run, function_steps)
+
     assert len(fc) == 1
-    assert function_steps["tool_id"].function_name == "test_function"
+    assert fc[0].id == "tool_id"
+    assert fc[0].name == "test_function"
+    assert fc[0].arguments == {"arg": "val"}
 
 
 def test_generate_function_call_content():

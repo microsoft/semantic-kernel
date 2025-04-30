@@ -78,7 +78,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             env_file_encoding: The encoding of the .env file.
         """
         try:
-            bedrock_settings = BedrockSettings.create(
+            bedrock_settings = BedrockSettings(
                 chat_model_id=model_id,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,

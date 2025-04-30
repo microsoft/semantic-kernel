@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.AI.OpenAI;
 using Azure.AI.OpenAI.Chat;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Text;
@@ -16,6 +17,25 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSettings
 {
+    /// <summary>
+    /// Get/Set the user security context which contains several parameters that describe the AI application itself, and the end user that interacts with the AI application.
+    /// These fields assist your security operations teams to investigate and mitigate security incidents by providing a comprehensive approach to protecting your AI applications.
+    /// <see href="https://learn.microsoft.com/en-us/azure/defender-for-cloud/gain-end-user-context-ai">Learn more</see> about protecting AI applications using Microsoft Defender for Cloud.
+    /// </summary>
+    [JsonIgnore]
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    [Experimental("SKEXP0010")]
+    public UserSecurityContext? UserSecurityContext
+    {
+        get => this._userSecurityContext;
+        set
+        {
+            this.ThrowIfFrozen();
+            this._userSecurityContext = value;
+        }
+    }
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
     /// <summary>
     /// Enabling this property will enforce the new <c>max_completion_tokens</c> parameter to be send the Azure OpenAI API.
     /// </summary>
@@ -59,6 +79,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
         var settings = base.Clone<AzureOpenAIPromptExecutionSettings>();
         settings.AzureChatDataSource = this.AzureChatDataSource;
         settings.SetNewMaxCompletionTokensEnabled = this.SetNewMaxCompletionTokensEnabled;
+        settings.UserSecurityContext = this.UserSecurityContext;
         return settings;
     }
 
@@ -125,6 +146,9 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     [Experimental("SKEXP0010")]
     private AzureSearchChatDataSource? _azureChatDataSource;
     private bool _setNewMaxCompletionTokensEnabled;
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    private UserSecurityContext? _userSecurityContext;
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     #endregion
 }

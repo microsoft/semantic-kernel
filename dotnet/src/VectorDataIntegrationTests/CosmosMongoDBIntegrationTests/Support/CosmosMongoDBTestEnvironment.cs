@@ -18,6 +18,7 @@ public static class CosmosMongoDBTestEnvironment
             .AddJsonFile(path: "testsettings.json", optional: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true)
             .AddEnvironmentVariables()
+            .AddUserSecrets<CosmosConnectionStringRequiredAttribute>()
             .Build();
 
         ConnectionString = configuration["AzureCosmosDBMongoDB:ConnectionString"];

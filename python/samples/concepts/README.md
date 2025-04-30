@@ -7,12 +7,16 @@
 #### [Azure AI Agent](../../semantic_kernel/agents/azure_ai/azure_ai_agent.py)
 
 - [Azure AI Agent as Kernel Function](./agents/azure_ai_agent/azure_ai_agent_as_kernel_function.py)
+- [Azure AI Agent with Auto Function Invocation Filter Streaming](./agents/azure_ai_agent/azure_ai_agent_auto_func_invocation_filter_streaming.py)
+- [Azure AI Agent with Auto Function Invocation Filter](./agents/azure_ai_agent/azure_ai_agent_auto_func_invocation_filter.py)
 - [Azure AI Agent with Azure AI Search](./agents/azure_ai_agent/azure_ai_agent_azure_ai_search.py)
 - [Azure AI Agent File Manipulation](./agents/azure_ai_agent/azure_ai_agent_file_manipulation.py)
 - [Azure AI Agent Prompt Templating](./agents/azure_ai_agent/azure_ai_agent_prompt_templating.py)
-- [Azure AI Agent Chat History Callback](./agents/azure_ai_agent/azure_ai_agent_streaming_chat_history_callback.py)
+- [Azure AI Agent Message Callback Streaming](./agents/azure_ai_agent/azure_ai_agent_message_callback_streaming.py)
+- [Azure AI Agent Message Callback](./agents/azure_ai_agent/azure_ai_agent_message_callback.py)
 - [Azure AI Agent Streaming](./agents/azure_ai_agent/azure_ai_agent_streaming.py)
 - [Azure AI Agent Structured Outputs](./agents/azure_ai_agent/azure_ai_agent_structured_outputs.py)
+- [Azure AI Agent Truncation Strategy](./agents/azure_ai_agent/azure_ai_agent_truncation_strategy.py)
 
 #### [Bedrock Agent](../../semantic_kernel/agents/bedrock/bedrock_agent.py)
 
@@ -31,6 +35,8 @@
 - [Chat Completion Agent as Kernel Function](./agents/chat_completion_agent/chat_completion_agent_as_kernel_function.py)
 - [Chat Completion Agent Function Termination](./agents/chat_completion_agent/chat_completion_agent_function_termination.py)
 - [Chat Completion Agent Templating](./agents/chat_completion_agent/chat_completion_agent_prompt_templating.py)
+- [Chat Completion Agent Message Callback Streaming](./agents/chat_completion_agent/chat_completion_agent_message_callback_streaming.py)
+- [Chat Completion Agent Message Callback](./agents/chat_completion_agent/chat_completion_agent_message_callback.py)
 - [Chat Completion Agent Summary History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_agent_summary_history_reducer_agent_chat.py)
 - [Chat Completion Agent Summary History Reducer Single Agent](./agents/chat_completion_agent/chat_completion_agent_summary_history_reducer_single_agent.py)
 - [Chat Completion Agent Truncate History Reducer Agent Chat](./agents/chat_completion_agent/chat_completion_agent_truncate_history_reducer_agent_chat.py)
@@ -47,13 +53,15 @@
 
 #### [OpenAI Assistant Agent](../../semantic_kernel/agents/open_ai/open_ai_assistant_agent.py)
 
+- [OpenAI Assistant Auto Function Invocation Filter Streaming](./agents/openai_assistant/openai_assistant_auto_func_invocation_filter_streaming.py)
+- [OpenAI Assistant Auto Function Invocation Filter](./agents/openai_assistant/openai_assistant_auto_func_invocation_filter.py)
 - [OpenAI Assistant Chart Maker Streaming](./agents/openai_assistant/openai_assistant_chart_maker_streaming.py)
 - [OpenAI Assistant Chart Maker](./agents/openai_assistant/openai_assistant_chart_maker.py)
 - [OpenAI Assistant File Manipulation Streaming](./agents/openai_assistant/openai_assistant_file_manipulation_streaming.py)
 - [OpenAI Assistant File Manipulation](./agents/openai_assistant/openai_assistant_file_manipulation.py)
-- [OpenAI Assistant File Manipulation Streaming](./agents/openai_assistant/openai_assistant_file_manipulation_streaming.py)
 - [OpenAI Assistant Retrieval](./agents/openai_assistant/openai_assistant_retrieval.py)
-- [OpenAI Assistant Streaming Chat History Callback](./agents/openai_assistant/openai_assistant_streaming_chat_history_callback.py)
+- [OpenAI Assistant Message Callback Streaming](./agents/openai_assistant/openai_assistant_message_callback_streaming.py)
+- [OpenAI Assistant Message Callback](./agents/openai_assistant/openai_assistant_message_callback.py)
 - [OpenAI Assistant Streaming](./agents/openai_assistant/openai_assistant_streaming.py)
 - [OpenAI Assistant Structured Outputs](./agents/openai_assistant/openai_assistant_structured_outputs.py)
 - [OpenAI Assistant Templating Streaming](./agents/openai_assistant/openai_assistant_templating_streaming.py)
@@ -189,6 +197,7 @@
 ### Search - Using [`Search`](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/connectors/search) services information
 
 - [Bing Text Search as Plugin](./search/bing_text_search_as_plugin.py)
+- [Brave Text Search as Plugin](./search/brave_text_search_as_plugin.py)
 - [Google Text Search as Plugin](./search/google_text_search_as_plugin.py)
 
 ### Service Selector - Shows how to create and use a custom service selector class

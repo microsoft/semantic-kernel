@@ -60,7 +60,9 @@ async def test_open_ai_assistant_agent_init(openai_client, assistant_definition)
 
 
 def test_open_ai_settings_create_throws(openai_unit_test_env):
-    with patch("semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings.OpenAISettings.create") as mock_create:
+    with patch(
+        "semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings.OpenAISettings.__init__"
+    ) as mock_create:
         mock_create.side_effect = ValidationError.from_exception_data("test", line_errors=[], input_type="python")
 
         with pytest.raises(AgentInitializationException, match="Failed to create OpenAI settings."):
@@ -254,7 +256,7 @@ async def test_open_ai_assistant_agent_invoke_stream(arguments, include_args, op
         pytest.param(None, False),
     ],
 )
-async def test_open_ai_assistant_agent_invoke_stream_with_on_complete_callback(
+async def test_open_ai_assistant_agent_invoke_stream_with_on_new_message_callback(
     arguments, include_args, openai_client, assistant_definition
 ):
     agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
@@ -263,8 +265,8 @@ async def test_open_ai_assistant_agent_invoke_stream_with_on_complete_callback(
 
     final_chat_history = ChatHistory()
 
-    def handle_stream_completion(history: ChatHistory) -> None:
-        final_chat_history.messages.extend(history.messages)
+    async def handle_stream_completion(message: ChatMessageContent) -> None:
+        final_chat_history.add_message(message)
 
     # Fake collected messages
     fake_message = StreamingChatMessageContent(role=AuthorRole.ASSISTANT, content="fake content", choice_index=0)
@@ -283,7 +285,7 @@ async def test_open_ai_assistant_agent_invoke_stream_with_on_complete_callback(
         side_effect=fake_invoke,
     ):
         async for item in agent.invoke_stream(
-            messages="test", thread=mock_thread, on_complete=handle_stream_completion, **(kwargs or {})
+            messages="test", thread=mock_thread, on_intermediate_message=handle_stream_completion, **(kwargs or {})
         ):
             results.append(item)
 

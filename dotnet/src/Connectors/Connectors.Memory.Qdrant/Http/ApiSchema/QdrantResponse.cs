@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// <summary>
 /// Base class for Qdrant response schema.
 /// </summary>
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and QdrantVectorStore")]
 internal abstract class QdrantResponse
 {
     /// <summary>

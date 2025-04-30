@@ -28,7 +28,6 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <para>- <see cref="string"/> values: <c>"low"</c>, <c>"medium"</c>, <c>"high"</c>;</para>
     /// <para>- <see cref="ChatReasoningEffortLevel"/> object;</para>
     /// </remarks>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("reasoning_effort")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? ReasoningEffort
@@ -175,7 +174,6 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <para>- <see cref="ChatResponseFormat"/> object;</para>
     /// <para>- <see cref="Type"/> object, which will be used to automatically create a JSON schema.</para>
     /// </remarks>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("response_format")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? ResponseFormat
@@ -284,6 +282,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse
     /// </summary>
+    [JsonPropertyName("user")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? User
     {
         get => this._user;
@@ -299,9 +299,9 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Whether to return log probabilities of the output tokens or not.
     /// If true, returns the log probabilities of each output token returned in the `content` of `message`.
     /// </summary>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("logprobs")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? Logprobs
     {
         get => this._logprobs;
@@ -316,7 +316,6 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// An integer specifying the number of most likely tokens to return at each token position, each with an associated log probability.
     /// </summary>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("top_logprobs")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? TopLogprobs
@@ -333,7 +332,6 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Developer-defined tags and values used for filtering completions in the OpenAI dashboard.
     /// </summary>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("metadata")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, string>? Metadata
@@ -350,9 +348,9 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Whether or not to store the output of this chat completion request for use in the OpenAI model distillation or evals products.
     /// </summary>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("store")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? Store
     {
         get => this._store;

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
@@ -28,11 +29,12 @@ public static class RedisServiceCollectionExtensions
             (sp, obj) =>
             {
                 var database = sp.GetRequiredService<IDatabase>();
-                var selectedOptions = options ?? sp.GetService<RedisVectorStoreOptions>();
+                options ??= sp.GetService<RedisVectorStoreOptions>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new RedisVectorStore(
-                    database,
-                    selectedOptions);
+                return new RedisVectorStore(database, options);
             });
 
         return services;
@@ -55,11 +57,12 @@ public static class RedisServiceCollectionExtensions
             (sp, obj) =>
             {
                 var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
-                var selectedOptions = options ?? sp.GetService<RedisVectorStoreOptions>();
+                options ??= sp.GetService<RedisVectorStoreOptions>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new RedisVectorStore(
-                    database,
-                    selectedOptions);
+                return new RedisVectorStore(database, options);
             });
 
         return services;
@@ -80,15 +83,19 @@ public static class RedisServiceCollectionExtensions
         string collectionName,
         RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var database = sp.GetRequiredService<IDatabase>();
-                var selectedOptions = options ?? sp.GetService<RedisHashSetVectorStoreRecordCollectionOptions<TRecord>>();
+                options ??= sp.GetService<RedisHashSetVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new RedisHashSetVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new RedisHashSetVectorStoreRecordCollection<string, TRecord>(database, collectionName, options);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -113,15 +120,19 @@ public static class RedisServiceCollectionExtensions
         string redisConnectionConfiguration,
         RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
-                var selectedOptions = options ?? sp.GetService<RedisHashSetVectorStoreRecordCollectionOptions<TRecord>>();
+                options ??= sp.GetService<RedisHashSetVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new RedisHashSetVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new RedisHashSetVectorStoreRecordCollection<string, TRecord>(database, collectionName, options);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -144,15 +155,19 @@ public static class RedisServiceCollectionExtensions
         string collectionName,
         RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var database = sp.GetRequiredService<IDatabase>();
-                var selectedOptions = options ?? sp.GetService<RedisJsonVectorStoreRecordCollectionOptions<TRecord>>();
+                options ??= sp.GetService<RedisJsonVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new RedisJsonVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new RedisJsonVectorStoreRecordCollection<string, TRecord>(database, collectionName, options);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -177,15 +192,19 @@ public static class RedisServiceCollectionExtensions
         string redisConnectionConfiguration,
         RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
-                var selectedOptions = options ?? sp.GetService<RedisJsonVectorStoreRecordCollectionOptions<TRecord>>();
+                options ??= sp.GetService<RedisJsonVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new RedisJsonVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new RedisJsonVectorStoreRecordCollection<string, TRecord>(database, collectionName, options);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -194,14 +213,14 @@ public static class RedisServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
     {
-        services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
+        services.AddKeyedTransient<IVectorSearch<TRecord>>(
             serviceId,
             (sp, obj) =>
             {

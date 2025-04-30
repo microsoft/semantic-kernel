@@ -24,7 +24,7 @@ public static class PineconeFactory
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("Content", typeof(string)) { StoragePropertyName = "text" },
             new VectorStoreRecordDataProperty("Source", typeof(string)) { StoragePropertyName = "source" },
-            new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "embedding", Dimensions = 1536 }
+            new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 1536) { StoragePropertyName = "embedding" }
         }
     };
 
@@ -34,14 +34,18 @@ public static class PineconeFactory
     /// <param name="pineconeClient">Pinecone client that can be used to manage the collections and points in a Pinecone store.</param>
     /// <returns>The <see cref="IVectorStore"/>.</returns>
     public static IVectorStore CreatePineconeLangchainInteropVectorStore(Sdk.PineconeClient pineconeClient)
-        => new PineconeLangchainInteropVectorStore(pineconeClient);
+        => new PineconeLangchainInteropVectorStore(new PineconeVectorStore(pineconeClient), pineconeClient);
 
-    private sealed class PineconeLangchainInteropVectorStore(Sdk.PineconeClient pineconeClient)
-        : PineconeVectorStore(pineconeClient)
+    private sealed class PineconeLangchainInteropVectorStore(
+        IVectorStore innerStore,
+        Sdk.PineconeClient pineconeClient)
+        : IVectorStore
     {
         private readonly Sdk.PineconeClient _pineconeClient = pineconeClient;
 
-        public override IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+            where TKey : notnull
+            where TRecord : notnull
         {
             if (typeof(TKey) != typeof(string) || typeof(TRecord) != typeof(LangchainDocument<string>))
             {
@@ -51,7 +55,7 @@ public static class PineconeFactory
             // Create a Pinecone collection and pass in our custom record definition that matches
             // the schema used by Langchain so that the default mapper can use the storage names
             // in it, to map to the storage scheme.
-            return (new PineconeVectorStoreRecordCollection<TRecord>(
+            return (new PineconeVectorStoreRecordCollection<TKey, TRecord>(
                 _pineconeClient,
                 name,
                 new()
@@ -59,5 +63,13 @@ public static class PineconeFactory
                     VectorStoreRecordDefinition = s_recordDefinition
                 }) as IVectorStoreRecordCollection<TKey, TRecord>)!;
         }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);
+
+        public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => innerStore.ListCollectionNamesAsync(cancellationToken);
+
+        public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) => innerStore.CollectionExistsAsync(name, cancellationToken);
+
+        public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default) => innerStore.DeleteCollectionAsync(name, cancellationToken);
     }
 }

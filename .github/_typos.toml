@@ -43,6 +43,7 @@ ist = "ist"               # German language
 dall = "dall"             # OpenAI model name
 pn = "pn"                 # Kiota parameter
 nin = "nin"               # MongoDB "not in" operator
+asend = "asend"           # Async generator method
 Magentic = "Magentic"     # Magentic is a name of an agentic pattern
 
 [default.extend-identifiers]

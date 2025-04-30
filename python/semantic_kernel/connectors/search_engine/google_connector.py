@@ -37,7 +37,7 @@ class GoogleConnector(ConnectorBase):
             env_file_encoding (str | None): The optional encoding of the .env file.
         """
         try:
-            self._settings = GoogleSearchSettings.create(
+            self._settings = GoogleSearchSettings(
                 search_api_key=api_key,
                 search_engine_id=search_engine_id,
                 env_file_path=env_file_path,
@@ -82,8 +82,6 @@ class GoogleConnector(ConnectorBase):
             f"&key={self._settings.search_api_key.get_secret_value()}&cx={self._settings.search_engine_id}"
             f"&num={num_results}&start={offset}"
         )
-
-        logger.info("Sending GET request to Google Search API.")
 
         logger.info("Sending GET request to Google Search API.")
 

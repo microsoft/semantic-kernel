@@ -10,21 +10,23 @@ using Microsoft.SemanticKernel.Embeddings;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Data;
+
 public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchTestBase
 {
     [Fact]
-    public void AddVectorStoreTextSearchWithIVectorizableTextSearch()
+    public void AddVectorStoreTextSearch()
     {
         // Arrange
+        using var embeddingGenerator = new MockTextEmbeddingGenerator();
+
         var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore();
-        var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+        var collection = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
-        var vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorSearch, new MockTextEmbeddingGenerationService());
 
         // Act
-        services.AddSingleton<IVectorizableTextSearch<DataModel>>(vectorizableTextSearch);
+        services.AddSingleton<IVectorSearch<DataModel>>(collection);
         services.AddSingleton<ITextSearchStringMapper>(stringMapper);
         services.AddSingleton<ITextSearchResultMapper>(resultMapper);
         services.AddVectorStoreTextSearch<DataModel>();
@@ -36,21 +38,17 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     }
 
     [Fact]
-    public void AddVectorStoreTextSearchWithIVectorizedSearch()
+    public void AddVectorStoreTextSearchWithNoMappers()
     {
         // Arrange
+        using var embeddingGenerator = new MockTextEmbeddingGenerator();
+
         var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore();
-        var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
-        var stringMapper = new DataModelTextSearchStringMapper();
-        var resultMapper = new DataModelTextSearchResultMapper();
-        var textGeneration = new MockTextEmbeddingGenerationService();
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+        var collection = vectorStore.GetCollection<Guid, DataModel>("records");
 
         // Act
-        services.AddSingleton<IVectorizedSearch<DataModel>>(vectorSearch);
-        services.AddSingleton<ITextEmbeddingGenerationService>(textGeneration);
-        services.AddSingleton<ITextSearchStringMapper>(stringMapper);
-        services.AddSingleton<ITextSearchResultMapper>(resultMapper);
+        services.AddSingleton<IVectorSearch<DataModel>>(collection);
         services.AddVectorStoreTextSearch<DataModel>();
 
         // Assert
@@ -60,17 +58,18 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     }
 
     [Fact]
-    public void AddVectorStoreTextSearchWithIVectorizableTextSearchAndNoMappers()
+    public void AddVectorStoreTextSearchWithKeyedIVectorSearch()
     {
         // Arrange
+        using var embeddingGenerator = new MockTextEmbeddingGenerator();
+
         var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore();
-        var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
-        var vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorSearch, new MockTextEmbeddingGenerationService());
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+        var collection = vectorStore.GetCollection<Guid, DataModel>("records");
 
         // Act
-        services.AddSingleton<IVectorizableTextSearch<DataModel>>(vectorizableTextSearch);
-        services.AddVectorStoreTextSearch<DataModel>();
+        services.AddKeyedSingleton<IVectorSearch<DataModel>>("vs1", collection);
+        services.AddVectorStoreTextSearch<DataModel>("vs1");
 
         // Assert
         var serviceProvider = services.BuildServiceProvider();
@@ -79,101 +78,64 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     }
 
     [Fact]
-    public void AddVectorStoreTextSearchWithIVectorizedSearchAndNoMappers()
+    public void AddVectorStoreTextSearchFailsMissingKeyedIVectorSearch()
     {
         // Arrange
+        using var embeddingGenerator = new MockTextEmbeddingGenerator();
+
         var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore();
-        var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
-        var textGeneration = new MockTextEmbeddingGenerationService();
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+        var collection = vectorStore.GetCollection<Guid, DataModel>("records");
 
         // Act
-        services.AddSingleton<IVectorizedSearch<DataModel>>(vectorSearch);
-        services.AddSingleton<ITextEmbeddingGenerationService>(textGeneration);
-        services.AddVectorStoreTextSearch<DataModel>();
-
-        // Assert
-        var serviceProvider = services.BuildServiceProvider();
-        var result = serviceProvider.GetRequiredService<VectorStoreTextSearch<DataModel>>();
-        Assert.NotNull(result);
-    }
-
-    [Fact]
-    public void AddVectorStoreTextSearchWithKeyedIVectorizableTextSearch()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore();
-        var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
-        var vectorizableTextSearch1 = new VectorizedSearchWrapper<DataModel>(vectorSearch, new MockTextEmbeddingGenerationService());
-
-        // Act
-        services.AddKeyedSingleton<IVectorizableTextSearch<DataModel>>("vts1", vectorizableTextSearch1);
-        services.AddVectorStoreTextSearch<DataModel>("vts1");
-
-        // Assert
-        var serviceProvider = services.BuildServiceProvider();
-        var result = serviceProvider.GetRequiredService<VectorStoreTextSearch<DataModel>>();
-        Assert.NotNull(result);
-    }
-
-    [Fact]
-    public void AddVectorStoreTextSearchFailsMissingKeyedVectorizableTextSearch()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore();
-        var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
-        var vectorizableTextSearch1 = new VectorizedSearchWrapper<DataModel>(vectorSearch, new MockTextEmbeddingGenerationService());
-
-        // Act
-        services.AddKeyedSingleton<IVectorizableTextSearch<DataModel>>("vts1", vectorizableTextSearch1);
-        services.AddVectorStoreTextSearch<DataModel>("vts2");
+        services.AddKeyedSingleton<IVectorSearch<DataModel>>("vs1", collection);
+        services.AddVectorStoreTextSearch<DataModel>("vs2");
 
         // Assert
         var serviceProvider = services.BuildServiceProvider();
         Assert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService<VectorStoreTextSearch<DataModel>>());
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     [Fact]
-    public void AddVectorStoreTextSearchWithKeyedIVectorizedSearch()
+    public void AddVectorStoreTextSearchWithKeyedVectorSearchAndEmbeddingGenerationService()
     {
         // Arrange
         var services = new ServiceCollection();
         var vectorStore = new InMemoryVectorStore();
-        var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
-        var textGeneration = new MockTextEmbeddingGenerationService();
+        var collection = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
+        using var generator = new MockTextEmbeddingGenerator();
 
         // Act
-        services.AddKeyedSingleton<IVectorizedSearch<DataModel>>("vs1", vectorSearch);
-        services.AddKeyedSingleton<ITextEmbeddingGenerationService>("tegs1", textGeneration);
+        services.AddKeyedSingleton<IVectorSearch<DataModelWithRawEmbedding>>("vs1", collection);
+        services.AddKeyedSingleton<ITextEmbeddingGenerationService>("tegs1", generator);
 
-        services.AddVectorStoreTextSearch<DataModel>("vs1", "tegs1");
+        services.AddVectorStoreTextSearch<DataModelWithRawEmbedding>("vs1", "tegs1");
 
         // Assert
         var serviceProvider = services.BuildServiceProvider();
-        var result = serviceProvider.GetRequiredService<VectorStoreTextSearch<DataModel>>();
+        var result = serviceProvider.GetRequiredService<VectorStoreTextSearch<DataModelWithRawEmbedding>>();
         Assert.NotNull(result);
     }
 
     [Fact]
-    public void AddVectorStoreTextSearchFailsMissingKeyedVectorizedSearch()
+    public void AddVectorStoreTextSearchFailsMissingKeyedVectorSearch()
     {
         // Arrange
         var services = new ServiceCollection();
         var vectorStore = new InMemoryVectorStore();
-        var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
-        var textGeneration = new MockTextEmbeddingGenerationService();
+        var collection = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
+        using var textGeneration = new MockTextEmbeddingGenerator();
 
         // Act
-        services.AddKeyedSingleton<IVectorizedSearch<DataModel>>("vs1", vectorSearch);
+        services.AddKeyedSingleton<IVectorSearch<DataModelWithRawEmbedding>>("vs1", collection);
         services.AddKeyedSingleton<ITextEmbeddingGenerationService>("tegs1", textGeneration);
 
-        services.AddVectorStoreTextSearch<DataModel>("vs2", "tegs1");
+        services.AddVectorStoreTextSearch<DataModelWithRawEmbedding>("vs2", "tegs1");
 
         // Assert
         var serviceProvider = services.BuildServiceProvider();
-        Assert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService<VectorStoreTextSearch<DataModel>>());
+        Assert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService<VectorStoreTextSearch<DataModelWithRawEmbedding>>());
     }
 
     [Fact]
@@ -182,17 +144,18 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
         // Arrange
         var services = new ServiceCollection();
         var vectorStore = new InMemoryVectorStore();
-        var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
-        var textGeneration = new MockTextEmbeddingGenerationService();
+        var vectorSearch = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
+        using var textGeneration = new MockTextEmbeddingGenerator();
 
         // Act
-        services.AddKeyedSingleton<IVectorizedSearch<DataModel>>("vs1", vectorSearch);
+        services.AddKeyedSingleton<IVectorSearch<DataModelWithRawEmbedding>>("vs1", vectorSearch);
         services.AddKeyedSingleton<ITextEmbeddingGenerationService>("tegs1", textGeneration);
 
-        services.AddVectorStoreTextSearch<DataModel>("vs1", "tegs2");
+        services.AddVectorStoreTextSearch<DataModelWithRawEmbedding>("vs1", "tegs2");
 
         // Assert
         var serviceProvider = services.BuildServiceProvider();
-        Assert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService<VectorStoreTextSearch<DataModel>>());
+        Assert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService<VectorStoreTextSearch<DataModelWithRawEmbedding>>());
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

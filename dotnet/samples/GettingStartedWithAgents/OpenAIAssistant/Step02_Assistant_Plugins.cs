@@ -15,7 +15,7 @@ namespace GettingStarted.OpenAIAssistants;
 public class Step02_Assistant_Plugins(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     [Fact]
-    public async Task UseAssistantWithPluginAsync()
+    public async Task UseAssistantWithPlugin()
     {
         // Define the agent
         OpenAIAssistantAgent agent = await CreateAssistantAgentAsync(
@@ -42,7 +42,7 @@ public class Step02_Assistant_Plugins(ITestOutputHelper output) : BaseAssistantT
     }
 
     [Fact]
-    public async Task UseAssistantWithPluginEnumParameterAsync()
+    public async Task UseAssistantWithPluginEnumParameter()
     {
         // Define the agent
         OpenAIAssistantAgent agent = await CreateAssistantAgentAsync(plugin: KernelPluginFactory.CreateFromType<WidgetFactory>());
