@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// Contains options for the <see cref="TextRagComponent"/>.
 /// </summary>
 [Experimental("SKEXP0130")]
-public class TextRagComponentOptions
+public sealed class TextRagComponentOptions
 {
     private int _top = 3;
 

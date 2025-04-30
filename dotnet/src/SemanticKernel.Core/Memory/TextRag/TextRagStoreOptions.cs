@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// Contains options for the <see cref="TextRagStore{TKey}"/>.
 /// </summary>
-public class TextRagStoreOptions
+public sealed class TextRagStoreOptions
 {
     /// <summary>
     /// Gets or sets an optional namespace to pre-filter the possible

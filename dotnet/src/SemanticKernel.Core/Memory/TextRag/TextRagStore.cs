@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// </summary>
 /// <typeparam name="TKey">The key type to use with the vector store.</typeparam>
 [Experimental("SKEXP0130")]
-public class TextRagStore<TKey> : ITextSearch, IDisposable
+public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
     where TKey : notnull
 {
     private readonly IVectorStore _vectorStore;
@@ -243,7 +243,7 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
         };
 
     /// <inheritdoc/>
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (!this._disposedValue)
         {

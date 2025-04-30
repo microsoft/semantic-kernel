@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Memory.TextRag;
 /// Represents a document that can be used for Retrieval Augmented Generation (RAG).
 /// </summary>
 [Experimental("SKEXP0130")]
-public class TextRagDocument
+public sealed class TextRagDocument
 {
     /// <summary>
     /// Gets or sets an optional list of namespaces that the document should belong to.
