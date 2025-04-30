@@ -81,7 +81,7 @@ Each DB has different keyword search capabilities. Some only support a very basi
 
 |Feature|Azure AI Search|Weaviate|PostgreSql|Qdrant|Elasticsearch|CosmosDB NoSql|MongoDB|
 |-|-|-|-|-|-|-|-|
-|<p>string[] keyword</p><p>One word per element</p><p>Any matching word boosts ranking.</p>|Y|Y (have to join with spaces)|[Y (have to join with spaces)](https://www.postgresql.org/docs/current/textsearch-controls.html)|Y (via filter with multiple OR'd matches)|Y|Y|[Y (have to join with spaces)](https://www.mongodb.com/docs/drivers/node/current/fundamentals/crud/read-operations/text/)|
+|<p>string[] keyword</p><p>One word per element</p><p>Any matching word boosts ranking.</p>|Y|Y (have to join with spaces)|[Y (have to join with spaces)](https://www.postgresql.org/docs/current/textsearch-controls.html)|Y (via filter with multiple OR'd matches)|Y|Y|[Y (have to join with spaces)](https://pymongo.readthedocs.io/en/stable/api/pymongo/collection.html#pymongo.collection.Collection.find_one)|
 |<p>string[] keyword</p><p>One or more words per element</p><p>All words in a single element have to be present to boost the ranking.</p>|Y|N|Y|Y (via filter with multiple OR'd matches and FTS Index)|-|N|N|
 |<p>string[] keyword</p><p>One or more words per element</p><p>Multiple words in a single element is a phrase that must match exactly to boost the ranking.</p>|Y|N|Y|Only via filter with multiple OR'd matches and NO Index|-|N|Y|
 |<p>string keyword</p><p>Space separated words</p><p>Any matching word boosts ranking.</p>|Y|Y|Y|N (would need to split words)|-|N (would need to split words)|Y|
