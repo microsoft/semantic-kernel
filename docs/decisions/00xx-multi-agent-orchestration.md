@@ -20,7 +20,7 @@ In addition, the recent collaboration with the AutoGen team that resulted in the
 
 ## Problem Statement
 
-The current state of the Semantic Kernel Agent Framework is limited to single agents. We need to extend it to support multi-agent orchestration, which will allow our customers to unlock more possibilities using Semantic Kernel agents. Please continue to the [Considerations](#considerations) section to see success criteria for this proposal.
+The current state of the Semantic Kernel Agent Framework is limited to single agents, i.e. agents cannot work collaboratively to solve user requests. We need to extend it to support multi-agent orchestration, which will allow our customers to unlock more possibilities using Semantic Kernel agents. Please refer to the [Considerations](#considerations) section to see success criteria for this proposal.
 
 ## Background Knowledge
 
@@ -36,48 +36,31 @@ Before we dive into the details, let's clarify some terminologies that will be u
 | **Agent**                                                                                                            | A Semantic Kernel agent.                                                                   |
 | **Orchestration**                                                                                                    | Contains actors and rules on how they will interact with each others.                      |
 
-> We are using the term "actor" to avoid confusion with the term "agent" used in the Semantic Kernel Agent Framework. You may see the name "actor" interchangeably with "agent" in the runtime documentation. To learn more about "actor"s in software design, please refer to: https://en.wikipedia.org/wiki/Actor_model.
+> We are using the term "actor" to avoid confusion with the term "agent" used in the Semantic Kernel Agent Framework. You may see the name "actor" interchangeably with "agent" in the runtime documentation. To learn more about "actor"s in software design, please refer to: <https://en.wikipedia.org/wiki/Actor_model>.
 
 > You may hear the term "pattern" in other contexts. "Pattern" is almost semantically identical to "orchestration" where the latter implies the management and execution of patterns. You can also think of "patterns" as types of "orchestrations". For example, "concurrent orchestration" is a type of orchestration that follows the concurrent pattern.
 
 ### The shared runtime abstraction from AutoGen
 
-> The runtime abstraction serves as the foundational layer for the system. A basic understanding of how orchestrations interact with the runtime is recommended. For more details, refer to the [AutoGen Core User Guide](https://microsoft.github.io/autogen/stable/user-guide/core-user-guide/index.html).
+> The runtime abstraction serves as the foundational layer for the system. A basic understanding of the runtime is recommended. For more details, refer to the [AutoGen Core User Guide](https://microsoft.github.io/autogen/stable/user-guide/core-user-guide/index.html).
 
 The AutoGen team has built a runtime abstraction (along with an in-process runtime implementation) that supports pub-sub communication between actors in a system. We have had the opportunity to leverage this work, which led to a shared agent runtime abstraction which Semantic Kernel will depend on.
 
-Depending on the actual runtime implementation, actors can be local or distributed. Our agent framework is **not** tied to a specific runtime implementation, aka runtime agnostic.
-
-### Messages
-
-Actors communicate via messages. The runtime is responsible for routing messages to the correct actor(s). In essence, messages define the internal contract of an orchestration. For example, actors in the concurrent orchestration will communicate by `ConcurrentRequestMessage`, `ConcurrentResponseMessage`, and `ConcurrentResultMessage` types, while actors in the sequential orchestration will use the `SequentialRequestMessage` and `SequentialResultMessage` types.
-
-> PLease see Appendix A for additional details on the message types for the pre-built orchestrations.
-
-It will a best practice for orchestration developers will need to define the messages for their orchestrations, uniquely identifiable via namespaces or class names, to avoid unexpected collisions, even when the message data structures are the same.
+Depending on the actual runtime implementation, actors can be local or distributed. Our agent framework is **not** tied to a specific runtime implementation, a.k.a **runtime agnostic**.
 
 ## Considerations
 
-### Developer experience
+### Orchestrations
 
-It is important to consider the developer experience when designing the multi-agent orchestration framework. We want to make it easy for developers to **create** and **use** orchestrations. To achieve this, we need to consider the following:
+The first version of the multi-agent orchestration framework will provide a set of pre-built orchestrations that cover the most common patterns. As time goes on, we will add more orchestrations based on customer feedback and will allow customers to easily create their own orchestrations using the building blocks provided by the framework.
 
-- **Orchestration developers**: Developers who will create orchestrations using the framework. This will require the framework to offer a set of building blocks and establish clear patterns for creating orchestrations.
-- **Orchestration consumers**: Developers who will use the orchestrations created by orchestration developers. This will require the framwork to offer a set of consistant, simple and intuitive APIs for using orchestrations.
-
-It is possible that the same developer will be both an orchestration developer and an orchestration consumer.
-
-### Pre-built orchestrations and custom orchestrations
-
-To help people get started quickly, we should provide a list of pre-built orchestrations that cover common patterns.
-
-| **Orchestrations** | **Description**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Concurrent**     | - Consists of multiple actors that run in parallel. <br> - Tasks are broadcasted to all actors. <br> - The results are collected and returned to the caller when all actors finish. <br> - The order of the results is not guaranteed.                                                                                                                                                                                                                                                                         |
-| **Sequential**     | - Consists of multiple actors that run in sequence. <br> - The output of the previous actor is the input of the next actor. <br> - The result is collected and returned to the caller when the last actor finishes.                                                                                                                                                                                                                                                                                            |
-| **Handoff**        | - Consists of multiple actors. <br> - The actors can decide the next actor to send the task to. <br> - The full context (conversation) of the previous actor is passed to the next actor. <br> - The result is collected and returned to the caller when the orchestration finishes.                                                                                                                                                                                                                           |
-| **GroupChat**      | - Consists of multiple actors. <br> - A group manager actor is responsible for managing the state of the group chat. <br> - **Key Features:** <br> &nbsp;&nbsp;&nbsp;&nbsp;- User input: Requests input from the user. <br> &nbsp;&nbsp;&nbsp;&nbsp;- Termination: Ends when a termination condition is met, and results are returned. <br> &nbsp;&nbsp;&nbsp;&nbsp;- Next actor: Decides the next actor to invoke. <br> - The result is collected and returned to the caller when the orchestration finishes. |
-| **Magentic One**   | - Group chat-like orchestration with unique features. <br> - Inspired by [Magentic One](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/).                                                                                                                                                                                                                                                                                            |
+| **Orchestrations** | **Description** |
+| ------------------ | ----------------------------------------------- |
+| **Concurrent**     | Useful for tasks that will benefit from independent analysis from multiple angles. |
+| **Sequential**     | Useful for tasks that require a well-defined step-by-step approach. |
+| **Handoff**        | Useful for tasks that are dynamic in nature and don't have a well-defined step-by-step approach. |
+| **GroupChat**      | Useful for tasks that will benefit from inputs from multiple agents and a highly configurable conversation flow. |
+| **Magentic One**   | Inspired by [Magentic One](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/). |
 
 > Please see Appendix A for a more detailed descriptions of the pre-built orchestrations.
 
@@ -87,20 +70,17 @@ Using an orchestration should be as simple as the following:
 agent_1 = ChatCompletionAgent(...)
 agent_2 = ChatCompletionAgent(...)
 
-group_chat = GroupChatOrchestration(members=[agent_1, agent_2])
+group_chat = GroupChatOrchestration(members=[agent_1, agent_2], manager=RoundRobinGroupChatManager())
 
 runtime = SingleThreadedAgentRuntime()
 runtime.start()
 
-task = await group_chat.invoke(task="Hello world", runtime=runtime)
-result = await task.result
+orchestration_result = await group_chat.invoke(task="Hello world", runtime=runtime)
+result = await orchestration_result.get(timeout=20)
+print(result)
 
 await runtime.stop_when_idle()
 ```
-
-> This document uses Python as the primary language for examples. However, the concepts are not language-specific and can be applied to other languages as well.
-
-We should also provide a set of building blocks for customers to create more advanced orchestrations for their specific needs. These building blocks will be the same building blocks we use to build the pre-built orchestrations.
 
 ### Application responsibilities
 
@@ -114,7 +94,7 @@ We should consider an orchestration as a template that describes how the agents 
 - Actors are registered to the runtime before execution starts, not when the orchestration is created.
 - The runtime is responsible for creating the actors and managing their lifecycle.
 
-### Independent & Isolated invocations
+### Independent & isolated invocations
 
 An orchestration can be invoked multiple times and each invocation should be independent and isolated from each other. Invocations can also share the same runtime instance. This will require us to define clear invocation boundaries to avoid collisions, such as actor names or IDs.
 
@@ -124,7 +104,7 @@ For example, in the following code snippet, the `task_1` and `task_2` are indepe
 agent_1 = ChatCompletionAgent(...)
 agent_2 = ChatCompletionAgent(...)
 
-group_chat = GroupChatOrchestration(members=[agent_1, agent_2])
+group_chat = GroupChatOrchestration(members=[agent_1, agent_2], manager=RoundRobinGroupChatManager())
 
 runtime = SingleThreadedAgentRuntime()
 runtime.start()
@@ -132,75 +112,19 @@ runtime.start()
 task_1 = await group_chat.invoke(task=TASK_1, runtime=runtime)
 task_2 = await group_chat.invoke(task=TASK_2, runtime=runtime)
 
+result_1 = await task_1.get(timeout=20)
+result_2 = await task_2.get(timeout=20)
+
 await runtime.stop_when_idle()
 ```
 
-### Support nested orchestrations
-
-Support for nesting orchestrations is a critical feature, as it allows for more complex orchestrations to be built using simpler orchestrations.
-
-Example:
-
-```mermaid
-graph TD
-  subgraph Concurrent
-    A@{ shape: circle, label: "Start" }
-    subgraph Sequential_0
-        AgentA_0
-        AgentB_0
-        AgentA_0 --> AgentB_0
-    end
-
-    subgraph Sequential_1
-        AgentA_1
-        AgentB_1
-        AgentA_1 --> AgentB_1
-    end
-    B@{ shape: circle, label: "End" }
-
-    A --> Sequential_0
-    A --> Sequential_1
-    A --> AgentC_0
-    Sequential_0 --> B
-    Sequential_1 --> B
-    AgentC_0 --> B
-  end
-
-  External0[External] --> A
-  B --> External1[External]
-```
-
-> The two external nodes represent the same object external to the concurrent orchestration. Separating them is just for a cleaner diagram.
-
-The above shows a simple nested orchestration that has two sequential orchestrations and an agent in the concurrent orchestration. By providing a way to nest orchestrations, our customers can create larger, more complex orchestrations using existing ones that fit their needs.
-
 ### Support structured input and output types
 
-It will be useful for orchestrations to accept structured inputs and return structured outputs. Chat messages may not be sufficient to represent complex inputs and outputs, and structured data is generally easier to work with from a code perspective. This will become more obvious as orchestrations become more complex. In addition, nested orchestrations will benefit from structured inputs and outputs, because the data flow between orchestrations will be easier to manage.
-
-> Types must be serializable.
-
-### State management
-
-Definitions for `resume` and `restart` before proceeding:
-
-- **Resume**: The process is still active but at an idle state waiting for some events to continue. The runtime resumes the process from the idle state.
-- **Restart**: The process is no longer running. It has been stopped manually or errors occured. The orchestration can be restarted from scratch, or from a previous checkpoint. Restarting is idempotent, meaning that the orchestration can be restarted multiple times from the same checkpoint without side effects on the orchestration, runtime, and agents.
-
-Orchestrations can be long-running, hours, days, and even years. And they can be short-lived, minutes or seconds or less. The states of an orchestration can mean the following:
-
-- An actively running orchestration that is in an idle state waiting for user input or other events to continue.
-- An orchestration that enters an error state.
-- etc.
-
-**Resuming** from an idle state will be handled by the runtime. The runtime is responsible for saving the state of the actors and rehydrating them when the orchestration is resumed.
-
-Another type of states are the agents' conversational context. There is an active discussion on agent **threads** and **memories**, and we should consider how these concepts fit into the framework. Ideally, we want the ability to **restart** an orchestration on some existing agent context. Please refer to [Agent context](#agent-context) in the [Open Discussions](#open-discussions) section for further discussion.
+We need the orchestrations to accept structured inputs and return structured outputs, so that they will be easier to work with from a code perspective.
 
 ## Out of Scope
 
 - The runtime implementation is out of scope for this proposal.
-- Specific orchestration implementations are out of scope for this proposal.
 - Topics mentioned in the [Open Discussions](#open-discussions) section will not be addressed in the initial implementation of the multi-agent orchestration framework. However, we will keep them in mind for future iterations and we should leave enough room for future extensions.
 
 ## Proposals
@@ -209,25 +133,17 @@ Another type of states are the agents' conversational context. There is an activ
 
 ### Building blocks
 
-| **Component**            | **Details**                                                                                                                                                                                                                                                                                                                                                                               |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Agent actor**          | - Semantic Kernel agent <br> - Agent context                                                                                                                                                                                                                                                                                                                                              |
-| **Data transform logic** | - Provide hooks to transform the input and output of the orchestration to **custom types** and for nesting orchestrations.                                                                                                                                                                                                                                                                |
-| **Orchestration actor**  | - Broadcast messages to an external topic (e.g., the result of the orchestration) <br> - Send directly to an actor external to the orchestration (e.g., the result of the orchestration) <br> - Receive messages from an external topic (e.g., the start of the orchestration) <br> - Receive messages from an actor external to the orchestration (e.g., the start of the orchestration) |
-| **Orchestration**        | - Consists of one orchestration actor and multiple agent actors and other orchestrations.                                                                                                                                                                                                                                                                                                 |
+| **Component**            | **Details** |
+| ------------------------ | ------------------------------------------------------------------ |
+| **Agent actor**          | - Semantic Kernel agent <br> - Agent context |
+| **Data transform logic** | - Provide hooks to transform the input and output of the orchestration to **custom types**. |
+| **Orchestration**        | - Consists of one orchestration actor and multiple agent actors and other orchestrations. |
+| **Optional actors**      | - Other actors that are not agent actors. <br> - For example, a group manager actor in the group chat orchestration. |
 
 ```mermaid
 graph TD
-  %% External
-  EXT_Topic[External Topic]
-  EXT_Actor[External Actor]
-
   %% Outer Block
   subgraph Orchestration
-    subgraph OA[Orchestration Actor]
-      InputTransform[Input Transform]
-      OutputTransform[Output Transform]
-    end
 
     subgraph Members[Members]
       subgraph AA0[Agent Actor]
@@ -237,30 +153,24 @@ graph TD
         AG1[agent 1]
       end
 
-      SO0[sub orchestration 0]
-      SO1[sub orchestration 1]
-      IT[Internal Topic]
     end
+    
+    IT[Internal Topic]
+
+    OA[Optional Actor]
 
   end
 
   %% Connections
-  EXT_Topic <-.Broadcast.-> OA
-  EXT_Actor <-.Direct messaging.-> OA
-  OA <-.Broadcast.-> IT
 
-  OA <-.Direct messaging.-> AA0
-  OA <-.Direct messaging.-> AA1
-  OA <-.Direct messaging.-> SO0
-  OA <-.Direct messaging.-> SO1
+  AA0 <-.Direct messaging.-> AA1
+  AA0 <-.Direct messaging.-> OA
+  AA1 <-.Direct messaging.-> OA
 
   IT <-.Broadcast.-> AA0
   IT <-.Broadcast.-> AA1
-  IT <-.Broadcast.-> SO0
-  IT <-.Broadcast.-> SO1
+  IT <-.Broadcast.-> OA
 ```
-
-To support structured input&output types and nesting, this proposal heavily relies on generics, which provides enough flexibility to build complex orchestrations while keeping the system relatively simple. We will also offer a set of defaults and overloads to make it easy for users who don't need the full flexibility.
 
 #### Agent Actor
 
@@ -278,10 +188,13 @@ class AgentActorBase(RoutedAgent):
         """
         self._agent = agent
         self._agent_thread = None
+        # Chat history to temporarily store messages before the agent thread is created
+        self._chat_history = ChatHistory()
+
         RoutedAgent.__init__(self, description=agent.description or "Semantic Kernel Agent")
 ```
 
-Orchestrations will have their own implementations of the agent actor because each orchestration can have its own message types (explained in [Messages](#messages)).
+Orchestrations will have their own agent actor that extends the `AgentActorBase` because each orchestration can have its own set of message handlers.
 
 For example, for the group chat orchestration, the agent actor will look like this:
 
@@ -290,242 +203,198 @@ class GroupChatAgentActor(AgentActorBase):
     """An agent actor for agents that process messages in a group chat."""
 
     @message_handler
-    async def _on_group_chat_reset(self, message: GroupChatResetMessage, ctx: MessageContext) -> None:
+    async def _handle_start_message(self, message: GroupChatStartMessage, ctx: MessageContext) -> None:
+        """Handle the initial message(s) provided by the user."""
         ...
 
     @message_handler
-    async def _on_group_chat_message(self, message: GroupChatResponseMessage, ctx: MessageContext) -> None:
+    async def _handle_response_message(self, message: GroupChatResponseMessage, ctx: MessageContext) -> None:
+        """Handle the response message from other agents in the group chat."""
         ...
 
     @message_handler
-    async def _on_request_to_speak(self, message: GroupChatRequestMessage, ctx: MessageContext) -> None:
+    async def _handle_request_message(self, message: GroupChatRequestMessage, ctx: MessageContext) -> None:
+        """Handle the request message from the group manager."""
         ...
 ```
 
-Agent actors in another orchestration will handle different message types or different number of message types. This proposal doesn't make any restrictions on how agent actors interact with each other inside an orchestration.
+Agent actors in other orchestrations will handle different message types or different number of message types. This proposal doesn't make any restrictions on how agent actors interact with each other inside an orchestration.
 
 #### Data Transform Logic
 
 The signature of the data transform logic will be as follows:
 
 ```python
-input_transform: Callable[[TExternalIn], Awaitable[TInternalIn] | TInternalIn]
-output_transform: Callable[[TInternalOut], Awaitable[TExternalOut] | TExternalOut]
+DefaultTypeAlias = Union[ChatMessageContent, list[ChatMessageContent]]
+
+TIn = TypeVar("TIn", default=DefaultTypeAlias)
+TOut = TypeVar("TOut", default=DefaultTypeAlias)
+
+input_transform: Callable[[TIn], Awaitable[DefaultTypeAlias] | DefaultTypeAlias]
+output_transform: Callable[[DefaultTypeAlias], Awaitable[TOut] | TOut]
 ```
 
-`TExternalIn` denotes the type of input the orchestration will receive. `TInternalIn` denotes the type of input the orchestration expects. `TInternalOut` denotes the type of output the orchestration will produce. `TExternalOut` denotes the type of output the orchestration will return to the caller. `TExternalIn` and `TInternalIn` can be the same type, but they are not required to be. The same applies to `TExternalOut` and `TInternalOut`.
-
-Derived classes will set `TInternalIn` and `TInternalOut` while orchestration consumers will set `TExternalIn` and `TExternalOut`.
+`TIn` denotes the type of input the orchestration will receive, while `TOut` denotes the type of output the orchestration will return to the caller. By default, we will use `ChatMessageContent` and `list[ChatMessageContent]` as the default types. This means that the orchestration will accept a single chat message or a list of chat messages as input and return a single chat message or a list of chat messages as output.
 
 > We can offer a set of default transforms to improve the developer quality of life. We can also have LLMs that automatically perform the transforms given the types.
 
-#### Orchestration Actor
-
-This is the actor that will be responsible for relaying messages. The data transforms happen in this actor so it must hold the input and output transforms:
-
-```python
-class OrchestrationActorBase(
-    BaseAgent,
-    Generic[TExternalIn, TInternalIn, TInternalOut, TExternalOut],
-):
-    ...
-
-    @override
-    async def on_message_impl(self, message: Any, ctx: MessageContext) -> None:
-        if isinstance(message, self._external_input_message_type):
-            if inspect.isawaitable(self._input_transform):
-                transition_message = await self._input_transform(message)
-            else:
-                transition_message = self._input_transform(message)
-            await self._handle_orchestration_input_message(transition_message, ctx)
-        elif isinstance(message, self._internal_output_message_type):
-            await self._handle_orchestration_output_message(message, ctx)
-
-    @abstractmethod
-    async def _handle_orchestration_input_message(
-        self,
-        message: TExternalIn,
-        ctx: MessageContext,
-    ) -> None:
-        """Handle the orchestration input message."""
-        pass
-
-    @abstractmethod
-    async def _handle_orchestration_output_message(
-        self,
-        message: TInternalOut,
-        ctx: MessageContext,
-    ) -> None:
-        """Handle the orchestration output message."""
-        pass
-```
-
-> `BaseAgent` is an AutoGen abstraction that provides the basic functionality for sending and receiving messages. Derived classes must implement the `on_message_impl` method to handle incoming messages.
-
 #### Orchestration
 
-An orchestration is simply a collection of Semantic Kernel agents and child orchestrations. Concrete implementations have to provide logic for how to start and prepare the orchestration. "Preparing" an orchestration simply means registering the actors with the runtime and setting up the communication channels between them based on the orchestration type.
+An orchestration is simply a collection of Semantic Kernel agents. Concrete implementations have to provide logic for how to start and prepare an invocation of the orchestration. "Preparing" an invocation simply means registering the actors with the runtime and setting up the communication channels between them based on the orchestration type.
 
 ```python
-class OrchestrationBase(
-    ABC,
-    Generic[TExternalIn, TInternalIn, TInternalOut, TExternalOut],
-):
+class OrchestrationBase(ABC, Generic[TIn, TOut]):
     def __init__(
         self,
-        members: list[Union[Agent, "OrchestrationBase"]],
+        members: list[Agent],
+        input_transform: Callable[[TIn], Awaitable[DefaultTypeAlias] | DefaultTypeAlias]
+        | None = None,
+        output_transform: Callable[[DefaultTypeAlias], Awaitable[TOut] | TOut] | None = None,
     ) -> None:
-        """Initialize the orchestration base."""
-        self._members = members
+        """Initialize the orchestration base.
 
-    async def invoke(self, runtime: AgentRuntime, ...) -> OrchestrationResult:
+        Args:
+            members (list[Agent]): The list of agents or orchestrations to be used.
+            input_transform (Callable | None): A function that transforms the external input message.
+            output_transform (Callable | None): A function that transforms the internal output message.
+        """
+        ...
+
+    async def invoke(
+        self,
+        task: str | DefaultTypeAlias | TIn,
+        runtime: AgentRuntime,
+    ) -> OrchestrationResult:
         """Invoke the orchestration and return an result immediately which can be awaited later.
 
         The runtime is supplied by the application at invocation time, not at creation time.
         Orchestrations are runtime-agnostic and can be used with any runtime that implements the runtime abstraction.
         """
+        orchestration_result = OrchestrationResult[TOut]()
+
+        async def result_callback(result: DefaultTypeAlias) -> None:
+            """Callback function that is called when the result is ready."""
+            ...
+
         ...
 
-    async def prepare(self, runtime: AgentRuntime, ...) -> str:
-        """Register actors and return the orchestration actor id.
+        # This unique topic type is used to isolate the invocation from others.
+        internal_topic_type = uuid.uuid4().hex
 
-        Use when the orchestration is nested inside another orchestration. The parent orchestration will call this method to prepare the internal actors with the runtime and add necessary subscriptions according to the orchestration.
-        """
+        await self._prepare(runtime, internal_topic_type, result_callback)
+
+        ...
+
+        await self._start(runtime, internal_topic_type, orchestration_result.cancellation_token)
+
+        return orchestration_result
+
+    @abstractmethod
+    async def _start(
+        self,
+        runtime: AgentRuntime,
+        internal_topic_type: str,
+        cancellation_token: CancellationToken,
+    ) -> None:
         ...
 
     @abstractmethod
-    async def _start(self, runtime: AgentRuntime, ...) -> None:
-        """Start the orchestration."""
-        ...
-
-    @abstractmethod
-    async def _prepare(self, runtime: AgentRuntime, internal_topic_type: str, ...) -> str:
-        """Register actors and return the orchestration actor id.
-
-        The internal topic type is an unique identifier that is used to isolate the invocations of the orchestrations.
-        All agent actors internal to the orchestration will be bound to this topic.
-        """
+    async def _prepare(
+        self, runtime: AgentRuntime,
+        internal_topic_type: str,
+        result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
+    ) -> str:
         ...
 ```
 
-Concrete implementations will set `TInternalIn` and `TInternalOut`. For example,
+When using the orchestration, the user will can optionally set `TIn` and `TOut` and provide the input and output transforms. For example, in Python, the user can do the following:
 
 ```python
-class SequentialOrchestration(OrchestrationBase[TExternalIn, SequentialRequestMessage, SequentialResultMessage, TExternalOut]):
-    ...
-```
+class MyTypeA:
+    pass
 
-When using the orchestration, the user will only need to set `TExternalIn` and `TExternalOut`:
+class MyTypeB:
+    pass
 
-```python
-sequential_orchestration = SequentialOrchestration[ConcurrentRequestMessage, ConcurrentResponseMessage](
+sequential_orchestration = SequentialOrchestration[MyTypeA, MyTypeB](
     members=[agent_0, agent_1],
-    input_transition=input_transition_func,
-    output_transition=output_transition_func,
+    input_transform=input_transform_func,
+    output_transform=output_transform_func,
 )
 ```
 
-And depending on the language, we can offer defaults so that only advanced users will need to set `TExternalIn` and `TExternalOut`. For example, in Python, we can do the following:
+And depending on the language, we can offer defaults so that only advanced users will need to set `TIn` and `TOut`. For example, in Python, we can do the following:
 
 ```python
-TExternalIn = TypeVar("TExternalIn", default=SequentialRequestMessage)
-TExternalOut = TypeVar("TExternalOut", default=SequentialResultMessage)
+DefaultTypeAlias = Union[ChatMessageContent, list[ChatMessageContent]]
+
+TIn = TypeVar("TIn", default=DefaultTypeAlias)
+TOut = TypeVar("TOut", default=DefaultTypeAlias)
 ```
 
 And in .Net, we can do the following:
 
 ```csharp
-public class SequentialOrchestration<TExternalIn, TExternalOut>
-    : AgentOrchestration<TExternalIn, SequentialRequestMessage, SequentialResultMessage, TExternalOut>
+public class SequentialOrchestration<TIn, TOut> : AgentOrchestration<TIn, TOut>
 {
     ...
 }
 
-public sealed class SequentialOrchestration : SequentialOrchestration<SequentialRequestMessage, SequentialResultMessage>
+public sealed class SequentialOrchestration : SequentialOrchestration<ChatMessageContent, ChatMessageContent>
 {
     ...
 }
 ```
 
-### Nesting orchestrations
-
-As mentioned above, the internal communication between actors within an orchestration depends on the specific orchestration type. This means the `TInternalIn` and `TInternalOut` can vary for each orchestration. However, input and output transforms provide a seamless way to "bridge" different orchestrations, enabling them to work together.
-
-For example, in the nested orchestration shown in [Support nested orchestrations](#support-nested-orchestrations), two sequential orchestrations are embedded within the concurrent orchestration. To enable this, the sequential orchestrations must accept the same input type as the concurrent orchestration actor and produce the same output type. This is achieved by defining the sequential orchestration as follows:
+The orchestration result will be represented as such:
 
 ```python
-sequential_orchestration = SequentialOrchestration[ConcurrentRequestMessage, ConcurrentResponseMessage](
-  ...,
-  input_transform=...,
-  output_transform=...,
-)
-```
+class OrchestrationResult(KernelBaseModel, Generic[TOut]):
 
-Here’s how it works:
+    value: TOut | None = None
+    event: asyncio.Event = Field(default_factory=lambda: asyncio.Event())
+    cancellation_token: CancellationToken = Field(default_factory=lambda: CancellationToken())
 
-1. The orchestration actor in the sequential orchestration listens for messages of type `ConcurrentRequestMessage`.
-2. It uses the `input_transform` to convert these messages into `SequentialRequestMessage` for internal processing.
-3. Once the sequential orchestration completes, the orchestration actor receives a `SequentialResultMessage`.
-4. It then applies the `output_transform` to convert the result into a `ConcurrentResponseMessage` and outputs it.
+    async def get(self, timeout: float | None = None) -> TOut:
+        """Get the result of the orchestration.
 
-This approach ensures that different orchestrations can interoperate smoothly, even when their internal message types differ.
+        Args:
+            timeout (float | None): The timeout in seconds. If None, wait indefinitely.
 
-In nested orchestrations, the orchestration actor also acts as a message broker between its orchestrations and the parent orchestration, because orchestrations have invocation boundaries, as explained in [Independent & Isolated invocations](#independent--isolated-invocations), requiring internal actors to be isolated from external actors. A more detailed diagram of the one shown in [Support nested orchestrations](#support-nested-orchestrations) is shown below:
+        Returns:
+            TOut: The result of the orchestration.
+        """
+        ...
 
-```mermaid
-graph TD
-  subgraph Concurrent
-    OA0@{ shape: tag-rect, label: "Orchestration Actor" }
-    OA1@{ shape: tag-rect, label: "Orchestration Actor" }
+    def cancel(self) -> None:
+        """Cancel the orchestration.
 
-    subgraph Sequential_0
-        OA_Seq0_0@{ shape: tag-rect, label: "Orchestration Actor" }
-        OA_Seq0_1@{ shape: tag-rect, label: "Orchestration Actor" }
-        subgraph AA_S0_A[Agent Actor]
-            AgentA_0
-        end
-        subgraph AA_S0_B[Agent Actor]
-            AgentB_0
-        end
-        OA_Seq0_0 --> AA_S0_A
-        AA_S0_A --> AA_S0_B
-        AA_S0_B --> OA_Seq0_1
-    end
-
-    subgraph Sequential_1
-        OA_Seq1_0@{ shape: tag-rect, label: "Orchestration Actor" }
-        OA_Seq1_1@{ shape: tag-rect, label: "Orchestration Actor" }
-        subgraph AA_S1_A[Agent Actor]
-            AgentA_1
-        end
-        subgraph AA_S1_B[Agent Actor]
-            AgentB_1
-        end
-        OA_Seq1_0 --> AA_S1_A
-        AA_S1_A --> AA_S1_B
-        AA_S1_B --> OA_Seq1_1
-    end
-    B@{ shape: circle, label: "End" }
-
-    subgraph AA_C[Agent Actor]
-        AgentC_0
-    end
-
-    OA0 --> OA_Seq0_0
-    OA0 --> OA_Seq1_0
-    OA0 --> AA_C
-    OA_Seq0_1 --> OA1
-    OA_Seq1_1 --> OA1
-    AA_C --> OA1
-  end
-
-  External0[External] --> OA0
-  OA1 --> External1[External]
+        This method will cancel the orchestration and set the cancellation token.
+        Actors that have received messages will continue to process them, but no new messages will be processed.
+          """
+        ...
 ```
 
 ## Open Discussions
 
 The following items are important topics we need to consider and need further discussion. However, they shouldn't block the initial implementation of the multi-agent orchestration framework.
+
+### State management
+
+Definitions for `resume` and `restart` before proceeding:
+
+- **Resume**: The process is still active but at an idle state waiting for some events to continue. The runtime resumes the process from the idle state.
+- **Restart**: The process is no longer running. It has been stopped manually or errors had occurred. The orchestration can be restarted from scratch, or from a previous checkpoint. Restarting is idempotent, meaning that the orchestration can be restarted multiple times from the same checkpoint without side effects on the orchestration, runtime, and agents.
+
+Orchestrations can be long-running, hours, days, and even years. And they can be short-lived, minutes or seconds or less. The states of an orchestration can mean the following:
+
+- An actively running orchestration that is in an idle state waiting for user input or other events to continue.
+- An orchestration that has entered an error state.
+- etc.
+
+**Resuming** from an idle state will be handled by the runtime. The runtime is responsible for saving the state of the actors and rehydrating them when the orchestration is resumed.
+
+Another type of states are the agents' conversational context. There is active work on agent **threads** and **memories**, and we should consider how these concepts fit into the framework. Ideally, we want the ability to **restart** an orchestration on some existing agent context. Please refer to [Agent context](#agent-context) for further discussion.
 
 ### Agent context
 
@@ -535,24 +404,31 @@ An option is to have a context provider that provides agent contexts given an ag
 
 ### Human in the loop
 
-Human-in-the-loop is a critical in any autonomous system. We need to consider how to support human-in-the-loop in the multi-agent orchestration framework.
+Human-in-the-loop is a critical component in autonomous systems. We need to consider how to support human-in-the-loop in the multi-agent orchestration framework.
 
 - Support cancellation of an invocation
 - Notify the user of important events
 - Support distributed use cases. For example, the client may live on a different system than the orchestration.
-- Support nested orchestrations. For example, a nested orchestration may request human input.
+
+### Composition
+
+Composition allows users to take existing orchestrations and use them to build more powerful orchestrations. Think of replacing an agent in an orchestration with another orchestration. This will unlock more complex scenarios with less effort. However, this comes with challenges, including:
+
+- The handling of mismatched input and output types of orchestrations.
+- The communication between actors and orchestrations.
+- The handling of the lifecycle of the orchestrations that is inside another orchestration.
+- The propagation of events from an orchestration that is nested inside another orchestration.
 
 ### Distributed orchestrations
 
 Although orchestrations are not tied to a specific runtime, we need to understand how actors and orchestrations will be distributed if a runtime allows distribution. The following questions need to be answered:
 
 - Actor registrations happen locally on the same machine with the runtime via a factory. Does the factory need to be distributed?
-- Can nested orchestrations be distributed?
-- How will the runtime handle actor failures?
+- How will the runtime handle distributed actor failures?
 
 ### Support declarative orchestrations
 
-Declarative orchestrations provide a low-code solution for orchestration consumers. We are already working on declarative agents, and we can leverage this work to create declarative orchestrations.
+Declarative orchestrations provide a low-code solution for users. We are already working on declarative agents, and we can leverage that work to create declarative orchestrations.
 
 ### Guardrails
 
@@ -570,191 +446,158 @@ SK being an enterprise solution, we should also consider observability.
 
 We can consider adding a layer before the runtime that standardize all messages between actors for the following benefits:
 
-- Runtime/domain decoupling: actors focus on business-logic objects (like `ConcurrentRequestMessage`). The runtime only sees envelopes, so changing transports (in-proc, distributed) or injecting middleware (tracing, guardrails) requires no orchestration code changes.
-- Built-in idempotency & retries: the standardized message type carries id, causation_id, retry_count, ttl, which can enable deterministic deduplication, causal graphs for telemetry, and safe redelivery (dead letter queue support if we or someone ever went down that route).
+- Built-in idempotency & retries: the standardized message type carries id, causation_id, retry_count, ttl, which can enable deterministic deduplication, causal graphs for telemetry, and safe redelivery.
 - First-class observability: standardized message fields can map 1:1 to OpenTelemetry attributes for traceability and metrics on every hop.
-- Cross-language portability: a single JSON/Protobuf schema allows, for example, Python and C# SK agents to interoperate on the same message bus; envelope remains the same, payloads are language-specific.
 - Persistence/rehydration: standardized messages can be serialized to storage and deserialized as needed.
-- Testing: unit tests can inject mock standardized messages into an in-memory bus to validate orchestration graphs without creating real agents or LLM calls.
 - Guardrails: the uniform wrapper allows policy/guardrail checks to be centralized in the runtime, so no payload reaches an agent unchecked.
-
-For example:
 
 ## Appendix A: Pre-built orchestrations
 
 ### Concurrent Orchestration
 
-The concurrent orchestration operates on the following message types:
+The concurrent orchestration works in the following steps:
 
-```python
-@datamodel
-class ConcurrentRequestMessage:
-  body: ChatMessageContent
-
-@datamodel
-class ConcurrentResponseMessage:
-  body: ChatMessageContent
-
-@datamodel
-class ConcurrentResultMessage:
-  body: dict[str, ChatMessageContent]
-```
+1. The orchestration is invoked with a task.
+2. The orchestration broadcasts the task to all actors.
+3. Actors start processing the task and send the result to the result collector.
+4. The result collector collects the results and when the expected number of results are received, it calls the callback function to signal the end of the orchestration.
 
 ```mermaid
 graph TD
-  %% External
-  EXT_Topic[External Topic]
-  EXT_Actor[External Actor]
-
   %% Outer Block
   subgraph Concurrent Orchestration
-    subgraph OA[Orchstration Actor]
-      InputTransform[Input Transform]
-      OutputTransform[Output Transform]
-    end
-
     subgraph Members[Members]
       AG0[agent 0]
       AG1[agent 1]
-      SO0[sub orchestration 0]
-      SO1[sub orchestration 1]
-      IT0@{ shape: tag-rect, label: "Internal Topic" }
-      IT1@{ shape: tag-rect, label: "Internal Topic" }
-      RC[Result Collector]
     end
 
+    IT[Internal Topic]
+    RC[Result Collector]
   end
 
-  %% Connections
-  EXT_Topic <--> |Broadcast| OA
-  EXT_Actor <--> |Direct messaging| OA
-  OA <--> IT0
-
-  IT0 --> |ConcurrentRequestMessage| AG0
-  IT0 --> |ConcurrentRequestMessage| AG1
-  IT0 --> |ConcurrentRequestMessage| SO0
-  IT0 --> |ConcurrentRequestMessage| SO1
+  IT --> |ConcurrentRequestMessage| AG0
+  IT --> |ConcurrentRequestMessage| AG1
 
   AG0 --> |ConcurrentResponseMessage| RC
   AG1 --> |ConcurrentResponseMessage| RC
-  SO0 --> |ConcurrentResponseMessage| RC
-  SO1 --> |ConcurrentResponseMessage| RC
-
-  RC --> |ConcurrentResultMessage| IT1
 ```
 
 ### Sequential Orchestration
 
-The sequential orchestration operates on the following message types:
+The sequential orchestration works in the following steps:
 
-```python
-@datamodel
-class SequentialRequestMessage:
-  body: ChatMessageContent
-
-@datamodel
-class SequentialResultMessage:
-  body: ChatMessageContent
-```
+1. The orchestration is invoked with a task.
+2. The orchestration sends the task to the first actor.
+3. The first actor processes the task and sends the result to the next actor.
+4. The next actor processes the result and sends the result to the next actor.
+5. The last actor processes the result and sends the result to the result collector.
+6. The result collector calls the callback function to signal the end of the orchestration.
 
 ```mermaid
 graph TD
-  %% External
-  EXT_Topic[External Topic]
-  EXT_Actor[External Actor]
-
   %% Outer Block
   subgraph Sequential Orchestration
-    subgraph OA0[Orchestration Actor]
-      InputTransform[Input Transform]
-      OutputTransform[Output Transform]
-    end
 
     subgraph Members[Members]
       AG0[agent 0]
-      SO0[sub orchestration 0]
       AG1[agent 1]
-      SO1[sub orchestration 1]
     end
 
-    OA1@{ shape: tag-rect, label: "Orchestration Actor" }
+    RC[Result Collector]
   end
 
   %% Connections
-  EXT_Topic <--> |Broadcast| OA0
-  EXT_Actor <--> |Direct messaging| OA0
-  OA0 --> |SequentialRequestMessage| AG0
-  AG0 --> |SequentialResponseMessage| SO0
-  SO0 --> |SequentialResponseMessage| AG1
-  AG1 --> |SequentialResponseMessage| SO1
-  SO1 --> |SequentialResponseMessage| OA1
+  AG0 --> |SequentialRequestMessage| AG1
+  AG1 --> |SequentialResponseMessage| RC
 ```
 
 ### Handoff Orchestration
 
-WIP
+The handoff orchestration works in the following steps:
 
-### Group Chat Orchestration
-
-The group chat orchestration operates on the following message types:
-
-```python
-@datamodel
-class GroupChatRequestMessage:
-  body: ChatMessageContent
-
-@datamodel
-class GroupChatResponseMessage:
-  body: ChatMessageContent
-
-@datamodel
-class GroupChatResetMessage:
-  pass
-```
+1. The orchestration is invoked with a task.
+2. The orchestration sends the task to all actors.
+3. The orchestration sends a "request to speak" message to the first actor.
+4. The first actor processes the task, broadcast the conversation context, and decides if it needs to delegate the task to another actor.
+5. If the first actor decides to delegate the task, it sends a "request to speak" message to the other actor.
+6. The other actor processes the task and decides if it needs to delegate the task to another actor.
+7. The process continues until the last actor decides that the task is complete and calls the callback function to signal the end of the orchestration.
 
 ```mermaid
 graph TD
-  %% External
-  EXT_Topic[External Topic]
-  EXT_Actor[External Actor]
-
   %% Outer Block
-  subgraph Grou Chat Orchestration
-    subgraph OA[Orchstration Actor]
-      InputTransform[Input Transform]
-      OutputTransform[Output Transform]
-    end
+  subgraph Handoff Orchestration
 
     subgraph Members[Members]
       AG0[agent 0]
-      SO0[sub orchestration 0]
       AG1[agent 1]
-      SO1[sub orchestration 1]
-      GM[Group manager]
-      IT[Internal Topic]
     end
+
+    IT[Internal Topic]
   end
 
   %% Connections
-  EXT_Topic <--> |Broadcast| OA
-  EXT_Actor <--> |Direct messaging| OA
-  OA <--> |Direct messaging| GM
-
   IT <--> |Broadcast| AG0
   IT <--> |Broadcast| AG1
-  IT <--> |Broadcast| SO0
-  IT <--> |Broadcast| SO1
+```
+
+### Group Chat Orchestration
+
+The group chat orchestration works in the following steps:
+
+1. The orchestration is invoked with a task.
+2. The orchestration sends the task to all actors.
+3. The orchestration sends the task to the group manager, which will trigger the group chat manager to start the orchestration.
+4. The group manager decides if the conversation is over or if it needs to continue.
+5. If the conversation needs to continue, the group manager picks the next actor and sends a "request to speak" message to the actor.
+6. The actor processes the request and broadcasts the response to the internal topic.
+7. All other actors receive the response and add the response to their conversation context.
+8. The group manager receives the response and continues from step 4.
+9. If the conversation is over, the group manager calls the a callback function to signal the end of the orchestration.
+
+```mermaid
+graph TD
+
+  %% Outer Block
+  subgraph Group Chat Orchestration
+
+    subgraph Members[Members]
+      AG0[agent 0]
+      AG1[agent 1]
+    end
+
+    IT[Internal Topic]
+    GM[Group Manager]
+  end
+
+  %% Connections
+  IT <--> |Broadcast| AG0
+  IT <--> |Broadcast| AG1
   IT <--> |Broadcast| GM
 ```
 
-The group chat orchestration works according to the following rules:
+The group chat manager is responsible for managing the conversation flow. It will have the following responsibilities:
 
-1. The group manager decides the next actor to speak based on the conversation context and by sending a direct "request to speak" message to the next actor.
-2. The group manager decides when the orchestration ends by user-defined criteria and returns the result to the orchestration actor.
-3. Actors are not allowed to speak to each other directly.
-4. Actors are not allowed to speak unless requested by the group manager.
-5. All actors and the group manager subscribe to the internal topic to receive "response" messages from other actors. Whenever the group manager receives a "response" message, it triggers the next iteration.
-6. Each actors maintains a copy of the conversation context and they are not shared.
+```python
+class GroupChatManager(KernelBaseModel, ABC):
+    """A group chat manager that manages the flow of a group chat."""
+
+    @abstractmethod
+    async def should_request_user_input(self, chat_history: ChatHistory) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def should_terminate(self, chat_history: ChatHistory) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def select_next_agent(self, chat_history: ChatHistory, participant_descriptions: dict[str, str]) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def filter_results(self, chat_history: ChatHistory) -> ChatMessageContent:
+        raise NotImplementedError
+```
 
 ### Magentic One Orchestration
 
