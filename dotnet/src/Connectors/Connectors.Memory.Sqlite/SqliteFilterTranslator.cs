@@ -13,7 +13,7 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
     private readonly Dictionary<string, object> _parameters = new();
 
     internal SqliteFilterTranslator(VectorStoreRecordModel model, LambdaExpression lambdaExpression)
-        : base(model, lambdaExpression, sql: null)
+        : base(model, lambdaExpression, startParamIndex: 0, sql: null)
     {
     }
 
@@ -61,20 +61,10 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
         }
         else
         {
-            // Duplicate parameter name, create a new parameter with a different name
             // TODO: Share the same parameter when it references the same captured value
-            if (this._parameters.ContainsKey(name))
-            {
-                var baseName = name;
-                var i = 0;
-                do
-                {
-                    name = baseName + (i++);
-                } while (this._parameters.ContainsKey(name));
-            }
-
-            this._parameters.Add(name, value);
-            this._sql.Append('@').Append(name);
+            string paramName = $"@{this._parameterIndex++}";
+            this._parameters.Add(paramName, value);
+            this._sql.Append(paramName);
         }
     }
 }

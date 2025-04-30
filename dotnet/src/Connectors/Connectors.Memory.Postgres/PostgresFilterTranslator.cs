@@ -10,15 +10,13 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 internal sealed class PostgresFilterTranslator : SqlFilterTranslator
 {
     private readonly List<object> _parameterValues = new();
-    private int _parameterIndex;
 
     internal PostgresFilterTranslator(
         VectorStoreRecordModel model,
         LambdaExpression lambdaExpression,
         int startParamIndex,
-        StringBuilder? sql = null) : base(model, lambdaExpression, sql)
+        StringBuilder? sql = null) : base(model, lambdaExpression, startParamIndex, sql)
     {
-        this._parameterIndex = startParamIndex;
     }
 
     internal List<object> ParameterValues => this._parameterValues;

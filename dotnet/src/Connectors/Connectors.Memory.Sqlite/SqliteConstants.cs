@@ -53,6 +53,10 @@ internal static class SqliteConstants
         SupportedEnumerableDataPropertyElementTypes = [],
         SupportedVectorPropertyTypes = SupportedVectorTypes,
 
-        EscapeIdentifier = SqliteVectorStoreCollectionCommandBuilder.EscapeIdentifier
+        EscapeIdentifier = Escape
     };
+
+    internal static string Escape(string value) => value.Replace("\"", "\"\"");
+
+    internal static string Unescape(string value) => value.Replace("\"\"", "\"");
 }

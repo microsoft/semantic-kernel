@@ -30,6 +30,17 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             r => r["String"] == "foo");
 
     [ConditionalFact]
+    public virtual Task Equal_with_string_sql_injection()
+    {
+        string sqlInjection = $"foo; DROP TABLE {fixture.Collection.Name};";
+
+        return this.TestFilterAsync(
+            r => r.String == sqlInjection,
+            r => r["String"] == sqlInjection,
+            expectZeroResults: true);
+    }
+
+    [ConditionalFact]
     public virtual Task Equal_with_string_containing_special_characters()
         => this.TestFilterAsync(
             r => r.String == """with some special"characters'and\stuff""",

@@ -60,6 +60,12 @@ internal static class SqlServerConstants
 
         SupportedEnumerableDataPropertyElementTypes = [],
 
-        SupportedVectorPropertyTypes = SupportedVectorTypes
+        SupportedVectorPropertyTypes = SupportedVectorTypes,
+
+        EscapeIdentifier = Escape
     };
+
+    internal static string Escape(string input) => input.Replace("]", "]]");
+
+    internal static string Unescape(string input) => input.Replace("]]", "]");
 }

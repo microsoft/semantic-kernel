@@ -345,7 +345,7 @@ internal static class SqlServerCommandBuilder
         sb.AppendFormat("SELECT ");
         sb.AppendColumnNames(model.Properties, includeVectors: options.IncludeVectors);
         sb.AppendLine(",");
-        sb.AppendFormat("VECTOR_DISTANCE('{0}', {1}, CAST(@vector AS VECTOR({2}))) AS [score]",
+        sb.AppendFormat("VECTOR_DISTANCE('{0}', [{1}], CAST(@vector AS VECTOR({2}))) AS [score]",
             distanceMetric, vectorProperty.StorageName, vector.Length);
         sb.AppendLine();
         sb.Append("FROM ");

@@ -20,16 +20,19 @@ internal abstract class SqlFilterTranslator
     private readonly LambdaExpression _lambdaExpression;
     private readonly ParameterExpression _recordParameter;
     protected readonly StringBuilder _sql;
+    protected int _parameterIndex;
 
     internal SqlFilterTranslator(
         VectorStoreRecordModel model,
         LambdaExpression lambdaExpression,
+        int startParamIndex,
         StringBuilder? sql = null)
     {
         this._model = model;
         this._lambdaExpression = lambdaExpression;
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
+        this._parameterIndex = startParamIndex;
         this._sql = sql ?? new();
     }
 
@@ -182,15 +185,16 @@ internal abstract class SqlFilterTranslator
     {
         if (this.TryBindProperty(memberExpression, out var property))
         {
-            this.GenerateColumn(property.StorageName, isSearchCondition);
+            this.GenerateColumn(property, isSearchCondition);
             return;
         }
 
         throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
 
-    protected virtual void GenerateColumn(string column, bool isSearchCondition = false)
-        => this._sql.Append('"').Append(column.Replace("\"", "\"\"")).Append('"');
+    protected virtual void GenerateColumn(VectorStoreRecordPropertyModel column, bool isSearchCondition = false)
+        // all SQL-based connectors are required to escape values returned by StorageName property
+        => this._sql.Append('"').Append(column.StorageName).Append('"');
 
     protected abstract void TranslateQueryParameter(string name, object? value);
 
@@ -200,7 +204,7 @@ internal abstract class SqlFilterTranslator
         {
             // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
             case MethodCallExpression when this.TryBindProperty(methodCall, out var property):
-                this.GenerateColumn(property.StorageName, isSearchCondition);
+                this.GenerateColumn(property, isSearchCondition);
                 return;
 
             // Enumerable.Contains()
@@ -297,7 +301,7 @@ internal abstract class SqlFilterTranslator
 
             // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
             case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
-                this.GenerateColumn(property.StorageName, isSearchCondition);
+                this.GenerateColumn(property, isSearchCondition);
                 return;
 
             default:
