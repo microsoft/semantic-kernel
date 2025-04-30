@@ -5,12 +5,12 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a thread in the process.
 /// </summary>
-public class KernelProcessAgentThread
+public record KernelProcessAgentThread
 {
     /// <summary>
     /// The policy describing how the thread is created and managed in the process.
     /// </summary>
-    public KernelProcessThreadPolicy ThreadPolicy { get; init; } = KernelProcessThreadPolicy.New;
+    public KernelProcessThreadLifetime ThreadPolicy { get; init; } = KernelProcessThreadLifetime.Scoped;
 
     /// <summary>
     /// The type of the thread. This is used to identify the underlying thread type.

@@ -6,12 +6,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Azure;
-using Azure.AI.Projects;
-using Json.Schema;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
@@ -26,8 +23,8 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
-    private readonly Lazy<ValueTask> _initializeTask;
-    private readonly Dictionary<string, string> _threads = [];
+    private new readonly Lazy<ValueTask> _initializeTask;
+    private readonly Dictionary<string, KernelProcessAgentThread> _threads = [];
 
     internal readonly List<KernelProcessStepInfo> _stepsInfos;
     internal readonly List<LocalStep> _steps = [];
@@ -190,39 +187,34 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
 
         // Initialize threads. TODO: Need to implement state management here.
-        foreach (var threadDefinition in this._process.Threads)
+        foreach (var kvp in this._process.Threads)
         {
-            if (string.IsNullOrEmpty(threadDefinition.Value.ThreadId))
+            var threadDefinition = kvp.Value;
+            KernelProcessAgentThread? processThread = null;
+            if (threadDefinition.ThreadPolicy == KernelProcessThreadLifetime.Scoped)
             {
-                if (threadDefinition.Value.ThreadPolicy == KernelProcessThreadPolicy.New)
+                // Create scoped threads now as they may be shared across steps
+                AgentThread thread = await threadDefinition.CreateAgentThreadAsync(this._kernel).ConfigureAwait(false);
+                processThread = new KernelProcessAgentThread
                 {
-                    // Create the thread.
-                    switch (threadDefinition.Value.ThreadType)
-                    {
-                        case KernelProcessThreadType.AzureAI:
-                            const string ErrorMessage = "The thread could not be created due to an error response from the service.";
-                            var client = this._kernel.Services.GetService<AgentsClient>() ?? throw new KernelException("The AzureAI thread type requires an AgentsClient to be registered in the kernel.").Log(this._logger);
-                            try
-                            {
-                                var threadResponse = await client.CreateThreadAsync().ConfigureAwait(false);
-                                this._threads.Add(threadDefinition.Key, threadResponse.Value.Id);
-                            }
-                            catch (RequestFailedException ex)
-                            {
-                                throw new KernelException(ErrorMessage, ex);
-                            }
-                            catch (AggregateException ex)
-                            {
-                                throw new KernelException(ErrorMessage, ex);
-                            }
-                            break;
-
-                        default:
-                            throw new KernelException($"Thread type {threadDefinition.Value.ThreadType} is not supported.").Log(this._logger);
-
-                    }
-                }
+                    ThreadId = thread.Id,
+                    ThreadName = kvp.Key,
+                    ThreadType = threadDefinition.ThreadType,
+                    ThreadPolicy = threadDefinition.ThreadPolicy
+                };
             }
+            else
+            {
+                var thread = new KernelProcessAgentThread
+                {
+                    ThreadId = null,
+                    ThreadName = kvp.Key,
+                    ThreadType = threadDefinition.ThreadType,
+                    ThreadPolicy = threadDefinition.ThreadPolicy
+                };
+            }
+
+            this._threads.Add(kvp.Key, processThread ?? throw new KernelException("Failed to create process thread."));
         }
 
         // Initialize the steps within this process
@@ -271,13 +263,13 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             }
             else if (step is KernelProcessAgentStep agentStep)
             {
-                string? threadId = null;
-                if (this._threads.TryGetValue(agentStep.ThreadName, out string? threadIdValue))
+                if (!this._threads.TryGetValue(agentStep.ThreadName, out KernelProcessAgentThread? thread) || thread is null)
                 {
-                    threadId = threadIdValue;
+                    throw new KernelException($"The thread name {agentStep.ThreadName} does not have a matching thread variable defined.").Log(this._logger);
                 }
-                localStep =
-                    new LocalAgentStep(agentStep, this.AgentFactory, this._kernel, this.ParentProcessId, threadId: threadId);
+
+                // TODO: Figure out how the AgentFactory should be passed in to the process. Seems not quite right at this point.
+                localStep = new LocalAgentStep(agentStep, this.AgentFactory, this._kernel, thread, this.ParentProcessId);
             }
             else
             {

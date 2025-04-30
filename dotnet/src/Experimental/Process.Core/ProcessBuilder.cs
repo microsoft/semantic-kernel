@@ -209,7 +209,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromDeclarativeAgent(AgentDefinition agentDefinition, string? threadName = null, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? threadName = null, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
 
@@ -221,7 +221,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         if (string.IsNullOrWhiteSpace(threadName))
         {
             // No thread name was specified so add a new thread for the agent.
-            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadPolicy.New);
+            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
             threadName = agentDefinition.Name;
         }
 
@@ -369,7 +369,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <param name="threadName">The name of the thread.</param>
     /// <param name="threadPolicy">The policy that determines the lifetime of the <see cref="AgentThread"/></param>
     /// <returns></returns>
-    public ProcessBuilder AddThread<T>(string threadName, KernelProcessThreadPolicy threadPolicy) where T : AgentThread
+    public ProcessBuilder AddThread<T>(string threadName, KernelProcessThreadLifetime threadPolicy) where T : AgentThread
     {
         Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
         Verify.NotNull(threadPolicy, nameof(threadPolicy));

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
 
-namespace Microsoft.SemanticKernel.Process;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents a step in a process that is an agent.

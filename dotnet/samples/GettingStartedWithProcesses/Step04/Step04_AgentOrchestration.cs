@@ -150,7 +150,7 @@ public class Step04_AgentOrchestration : BaseTest
 
         var userInputStep = process.AddStepFromType<TUserInputStep>();
         var renderMessageStep = process.AddStepFromType<RenderMessageStep>();
-        var agentStep = process.AddStepFromDeclarativeAgent(new()
+        var agentStep = process.AddStepFromAgent(new()
         {
             Name = "Student",
             // On purpose not assigning AgentId, if not provided a new agent is created

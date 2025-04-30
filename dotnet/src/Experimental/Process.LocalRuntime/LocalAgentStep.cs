@@ -11,18 +11,18 @@ internal class LocalAgentStep : LocalStep
 {
     private readonly AgentFactory _agentFactory;
     private new readonly KernelProcessAgentStep _stepInfo;
-    private readonly string? _threadId;
+    private readonly KernelProcessAgentThread _agentThread;
 
-    public LocalAgentStep(KernelProcessAgentStep stepInfo, AgentFactory agentFactory, Kernel kernel, string? parentProcessId = null, string? threadId = null) : base(stepInfo, kernel, parentProcessId)
+    public LocalAgentStep(KernelProcessAgentStep stepInfo, AgentFactory agentFactory, Kernel kernel, KernelProcessAgentThread agentThread, string? parentProcessId = null) : base(stepInfo, kernel, parentProcessId)
     {
         this._agentFactory = agentFactory;
         this._stepInfo = stepInfo;
-        this._threadId = threadId;
+        this._agentThread = agentThread;
     }
 
     protected override ValueTask InitializeStepAsync()
     {
-        this._stepInstance = new KernelProcessAgentExecutor(this._agentFactory, this._stepInfo, this._threadId);
+        this._stepInstance = new KernelProcessAgentExecutor(this._agentFactory, this._stepInfo, this._agentThread);
         var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
 
         // Load the kernel functions

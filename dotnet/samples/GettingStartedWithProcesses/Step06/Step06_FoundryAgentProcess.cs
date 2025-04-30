@@ -28,17 +28,17 @@ public class Step06_FoundryAgentProcess : BaseTest
     protected override bool ForceOpenAI => true;
 
     [Fact]
-    public async Task ProcessWithExistingFoundryAgentsAsync()
+    public async Task ProcessWithExistingFoundryAgentsAndSeparateThreadsAsync()
     {
         var foundryAgentDefinition1 = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
         var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         var processBuilder = new ProcessBuilder("foundry_agents");
 
-        var agent1 = processBuilder.AddStepFromDeclarativeAgent(foundryAgentDefinition1)
+        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1)
             .OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent1Complete" }] }]);
 
-        var agent2 = processBuilder.AddStepFromDeclarativeAgent(foundryAgentDefinition2)
+        var agent2 = processBuilder.AddStepFromAgent(foundryAgentDefinition2)
             .OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent2Complete" }] }]);
 
         processBuilder.OnInputEvent("start").SendEventTo(new(agent1)); // Change to ListenForInput?
@@ -71,15 +71,15 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         var processBuilder = new ProcessBuilder("foundry_agents");
 
-        processBuilder.AddThread<AzureAIAgentThread>("shared_thread", KernelProcessThreadPolicy.New);
+        processBuilder.AddThread<AzureAIAgentThread>("shared_thread", KernelProcessThreadLifetime.Scoped);
 
-        var agent1 = processBuilder.AddStepFromDeclarativeAgent(foundryAgentDefinition1, threadName: "shared_thread")
+        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, threadName: "shared_thread")
             .OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent1Complete" }] }]);
 
-        var agent2 = processBuilder.AddStepFromDeclarativeAgent(foundryAgentDefinition2, threadName: "shared_thread")
+        var agent2 = processBuilder.AddStepFromAgent(foundryAgentDefinition2, threadName: "shared_thread")
             .OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent2Complete" }] }]);
 
-        processBuilder.OnInputEvent("start").SendEventTo(new(agent1)); // Change to ListenForInput?
+        processBuilder.OnInputEvent("start").SendEventTo(new(agent1));
 
         processBuilder.ListenFor().Message("Agent1Complete", agent1).SendEventTo(new(agent2, (output) => output));
         processBuilder.ListenFor().Message("Agent2Complete", agent2).StopProcess();

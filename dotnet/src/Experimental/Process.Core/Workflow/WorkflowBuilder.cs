@@ -125,7 +125,7 @@ internal class WorkflowBuilder
         }
 
         AgentDefinition? agentDefinition = node.Agent ?? throw new KernelException("Declarative steps must have an agent defined.");
-        var stepBuilder = processBuilder.AddStepFromDeclarativeAgent(agentDefinition);
+        var stepBuilder = processBuilder.AddStepFromAgent(agentDefinition);
         if (stepBuilder is not ProcessAgentBuilder agentBuilder)
         {
             throw new KernelException($"Failed to build step from agent definition: {node.Id}");

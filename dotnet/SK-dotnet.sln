@@ -547,6 +547,30 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.InProcess", "src\Ag
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.InProcess.Tests", "src\Agents\Runtime\InProcess.Tests\Runtime.InProcess.Tests.csproj", "{DA6B4ED4-ED0B-D25C-889C-9F940E714891}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "process", "process", "{B97D1BCF-60F3-4331-AF75-D55CABCA747D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "runtime", "runtime", "{5679A130-CD48-4F30-AC68-908EADF85CEA}"
+	ProjectSection(SolutionItems) = preProject
+		AgentThreadFactory.cs = AgentThreadFactory.cs
+		src\InternalUtilities\process\Runtime\KernelProcessProxyMessageFactory.cs = src\InternalUtilities\process\Runtime\KernelProcessProxyMessageFactory.cs
+		src\InternalUtilities\process\Runtime\MapExtensions.cs = src\InternalUtilities\process\Runtime\MapExtensions.cs
+		src\InternalUtilities\process\Runtime\ProcessEvent.cs = src\InternalUtilities\process\Runtime\ProcessEvent.cs
+		src\InternalUtilities\process\Runtime\ProcessMessage.cs = src\InternalUtilities\process\Runtime\ProcessMessage.cs
+		src\InternalUtilities\process\Runtime\ProcessMessageFactory.cs = src\InternalUtilities\process\Runtime\ProcessMessageFactory.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "abstractions", "abstractions", "{B59A89DC-4E53-4E7D-B89A-FE3ABB86BDF8}"
+	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\process\Abstractions\AgentThreadFactory.cs = src\InternalUtilities\process\Abstractions\AgentThreadFactory.cs
+		src\InternalUtilities\process\Abstractions\ExceptionExtensions.cs = src\InternalUtilities\process\Abstractions\ExceptionExtensions.cs
+		src\InternalUtilities\process\Abstractions\KernelProcessStateMetadataFactory.cs = src\InternalUtilities\process\Abstractions\KernelProcessStateMetadataFactory.cs
+		src\InternalUtilities\process\Abstractions\KernelProcessStepExtension.cs = src\InternalUtilities\process\Abstractions\KernelProcessStepExtension.cs
+		src\InternalUtilities\process\Abstractions\MapExtensions.cs = src\InternalUtilities\process\Abstractions\MapExtensions.cs
+		src\InternalUtilities\process\Abstractions\ProcessConstants.cs = src\InternalUtilities\process\Abstractions\ProcessConstants.cs
+		src\InternalUtilities\process\Abstractions\ProcessExtensions.cs = src\InternalUtilities\process\Abstractions\ProcessExtensions.cs
+		src\InternalUtilities\process\Abstractions\StepExtensions.cs = src\InternalUtilities\process\Abstractions\StepExtensions.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1713,6 +1737,9 @@ Global
 		{A4F05541-7D23-A5A9-033D-382F1E13D0FE} = {A70ED5A7-F8E1-4A57-9455-3C05989542DA}
 		{CCC909E4-5269-A31E-0BFD-4863B4B29BBB} = {A70ED5A7-F8E1-4A57-9455-3C05989542DA}
 		{DA6B4ED4-ED0B-D25C-889C-9F940E714891} = {A70ED5A7-F8E1-4A57-9455-3C05989542DA}
+		{B97D1BCF-60F3-4331-AF75-D55CABCA747D} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
+		{5679A130-CD48-4F30-AC68-908EADF85CEA} = {B97D1BCF-60F3-4331-AF75-D55CABCA747D}
+		{B59A89DC-4E53-4E7D-B89A-FE3ABB86BDF8} = {B97D1BCF-60F3-4331-AF75-D55CABCA747D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
