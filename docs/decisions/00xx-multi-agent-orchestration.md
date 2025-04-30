@@ -1,10 +1,10 @@
 ---
 # These are optional elements. Feel free to remove any of them.
 status: { proposed }
-contact: {}
-date: { 2025-04-11 }
-deciders: {}
-consulted: {}
+contact: { Tao Chen }
+date: { 2025-04-30 }
+deciders: { Ben Thomas, Mark Wallace }
+consulted: { Chris Rickman, Evan Mattson }
 informed: {}
 ---
 
@@ -36,7 +36,7 @@ Before we dive into the details, let's clarify some terminologies that will be u
 | **Agent**                                                                                                            | A Semantic Kernel agent.                                                                   |
 | **Orchestration**                                                                                                    | Contains actors and rules on how they will interact with each others.                      |
 
-> We are using the term "actor" to avoid confusion with the term "agent" used in the Semantic Kernel Agent Framework. You may see the name "actor" interchangeably with "agent" in the runtime documentation. To learn more about "actor"s in software design, please refer to: <https://en.wikipedia.org/wiki/Actor_model>.
+> We are using the term "actor" to avoid confusion with the term "agent" used in the Semantic Kernel Agent Framework. You may see the name "actor" used interchangeably with "agent" in the runtime documentation. To learn more about "actor"s in software design, please refer to: <https://en.wikipedia.org/wiki/Actor_model>.
 
 > You may hear the term "pattern" in other contexts. "Pattern" is almost semantically identical to "orchestration" where the latter implies the management and execution of patterns. You can also think of "patterns" as types of "orchestrations". For example, "concurrent orchestration" is a type of orchestration that follows the concurrent pattern.
 
@@ -52,17 +52,17 @@ Depending on the actual runtime implementation, actors can be local or distribut
 
 ### Orchestrations
 
-The first version of the multi-agent orchestration framework will provide a set of pre-built orchestrations that cover the most common patterns. As time goes on, we will add more orchestrations based on customer feedback and will allow customers to easily create their own orchestrations using the building blocks provided by the framework.
+The first version of the multi-agent orchestration framework will provide a set of pre-built orchestrations that cover the most common patterns listed below. As time goes on, we will add more orchestrations based on customer feedback and will allow customers to easily create their own orchestrations using the building blocks provided by the framework.
 
 | **Orchestrations** | **Description** |
 | ------------------ | ----------------------------------------------- |
-| **Concurrent**     | Useful for tasks that will benefit from independent analysis from multiple angles. |
+| **Concurrent**     | Useful for tasks that will benefit from independent analysis from multiple agents. |
 | **Sequential**     | Useful for tasks that require a well-defined step-by-step approach. |
 | **Handoff**        | Useful for tasks that are dynamic in nature and don't have a well-defined step-by-step approach. |
 | **GroupChat**      | Useful for tasks that will benefit from inputs from multiple agents and a highly configurable conversation flow. |
-| **Magentic One**   | Inspired by [Magentic One](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/). |
+| **Magentic One**   | GroupChat like with a planner based manager. Inspired by [Magentic One](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/). |
 
-> Please see Appendix A for a more detailed descriptions of the pre-built orchestrations.
+> Please see [Appendix A](#appendix-a-pre-built-orchestrations) for a more detailed descriptions of the pre-built orchestrations.
 
 Using an orchestration should be as simple as the following:
 
@@ -84,7 +84,7 @@ await runtime.stop_when_idle()
 
 ### Application responsibilities
 
-- The lifecycle of an runtime instance should be managed by the application and should be external to any orchestrations.
+- The lifecycle of a runtime instance should be managed by the application and should be external to any orchestrations.
 - Orchestrations require a runtime instance only when they are invoked, not when they are created.
 
 ### Graph-like structure with lazy evaluation
@@ -120,7 +120,7 @@ await runtime.stop_when_idle()
 
 ### Support structured input and output types
 
-We need the orchestrations to accept structured inputs and return structured outputs, so that they will be easier to work with from a code perspective.
+We need the orchestrations to accept structured inputs and return structured outputs, so that they will be easier to work with from a code perspective. This will also make it easier for developers to work with orchestrations that are not chat-based (although internally the agents will still be chat-based).
 
 ## Out of Scope
 
@@ -135,9 +135,9 @@ We need the orchestrations to accept structured inputs and return structured out
 
 | **Component**            | **Details** |
 | ------------------------ | ------------------------------------------------------------------ |
-| **Agent actor**          | - Semantic Kernel agent <br> - Agent context |
-| **Data transform logic** | - Provide hooks to transform the input and output of the orchestration to **custom types**. |
-| **Orchestration**        | - Consists of one orchestration actor and multiple agent actors and other orchestrations. |
+| **Agent actor**          | - Semantic Kernel agent <br> - Agent context: thread and history |
+| **Data transform logic** | - Provide hooks to transform the input/output of the orchestration from/to custom types. |
+| **Orchestration**        | - Consists of multiple agent actors and other optional orchestration-specific actors. |
 | **Optional actors**      | - Other actors that are not agent actors. <br> - For example, a group manager actor in the group chat orchestration. |
 
 ```mermaid
@@ -174,7 +174,7 @@ graph TD
 
 #### Agent Actor
 
-This is a wrapper around a Semantic Kernel agent so that it can send and receive messages from the runtime. We will have a base class that wraps a Semantic Kernel agent and inherits from [`RoutedAgent`](https://microsoft.github.io/autogen/stable/reference/python/autogen_core.html#autogen_core.RoutedAgent):
+This is a wrapper around a Semantic Kernel agent so that the agent can send and receive messages from the runtime. The `AgentActorBase` will inherit the [`RoutedAgent`](https://microsoft.github.io/autogen/stable/reference/python/autogen_core.html#autogen_core.RoutedAgent) class:
 
 ```python
 class AgentActorBase(RoutedAgent):
@@ -218,7 +218,7 @@ class GroupChatAgentActor(AgentActorBase):
         ...
 ```
 
-Agent actors in other orchestrations will handle different message types or different number of message types. This proposal doesn't make any restrictions on how agent actors interact with each other inside an orchestration.
+Agent actors in other orchestrations will handle different message types or different number of message types. This proposal doesn't make any restrictions on how agent actors interact with each other inside an orchestration, i.e. rules are defined by individual orchestrations.
 
 #### Data Transform Logic
 
@@ -234,13 +234,13 @@ input_transform: Callable[[TIn], Awaitable[DefaultTypeAlias] | DefaultTypeAlias]
 output_transform: Callable[[DefaultTypeAlias], Awaitable[TOut] | TOut]
 ```
 
-`TIn` denotes the type of input the orchestration will receive, while `TOut` denotes the type of output the orchestration will return to the caller. By default, we will use `ChatMessageContent` and `list[ChatMessageContent]` as the default types. This means that the orchestration will accept a single chat message or a list of chat messages as input and return a single chat message or a list of chat messages as output.
+`TIn` denotes the type of input the orchestration will take, while `TOut` denotes the type of output the orchestration will return to the caller. We will use `ChatMessageContent` and `list[ChatMessageContent]` as the default types. This means that the orchestration will accept a single chat message or a list of chat messages as input and return a single chat message or a list of chat messages as output.
 
 > We can offer a set of default transforms to improve the developer quality of life. We can also have LLMs that automatically perform the transforms given the types.
 
 #### Orchestration
 
-An orchestration is simply a collection of Semantic Kernel agents. Concrete implementations have to provide logic for how to start and prepare an invocation of the orchestration. "Preparing" an invocation simply means registering the actors with the runtime and setting up the communication channels between them based on the orchestration type.
+An orchestration is simply a collection of Semantic Kernel agents and the rules that govern how they will interact with each other. Concrete implementations have to provide logic for how to start and prepare an invocation of the orchestration. "Preparing" an invocation simply means registering the actors with the runtime and setting up the communication channels between them based on the orchestration type.
 
 ```python
 class OrchestrationBase(ABC, Generic[TIn, TOut]):
@@ -371,7 +371,7 @@ class OrchestrationResult(KernelBaseModel, Generic[TOut]):
 
         This method will cancel the orchestration and set the cancellation token.
         Actors that have received messages will continue to process them, but no new messages will be processed.
-          """
+        """
         ...
 ```
 
@@ -410,6 +410,8 @@ Human-in-the-loop is a critical component in autonomous systems. We need to cons
 - Notify the user of important events
 - Support distributed use cases. For example, the client may live on a different system than the orchestration.
 
+> The group chat orchestration has an experimental feature that allows input from users. Please refer to the [Group Chat Orchestration](#group-chat-orchestration) section for more details.
+
 ### Composition
 
 Composition allows users to take existing orchestrations and use them to build more powerful orchestrations. Think of replacing an agent in an orchestration with another orchestration. This will unlock more complex scenarios with less effort. However, this comes with challenges, including:
@@ -418,6 +420,8 @@ Composition allows users to take existing orchestrations and use them to build m
 - The communication between actors and orchestrations.
 - The handling of the lifecycle of the orchestrations that is inside another orchestration.
 - The propagation of events from an orchestration that is nested inside another orchestration.
+- Simplicity of use: user don't have to understand the inner workings of the orchestrations to use them.
+- Simplicity of implementation: developers can create new orchestrations with the same building blocks as the existing orchestrations.
 
 ### Distributed orchestrations
 
@@ -460,7 +464,7 @@ The concurrent orchestration works in the following steps:
 1. The orchestration is invoked with a task.
 2. The orchestration broadcasts the task to all actors.
 3. Actors start processing the task and send the result to the result collector.
-4. The result collector collects the results and when the expected number of results are received, it calls the callback function to signal the end of the orchestration.
+4. The result collector collects the results and when the expected number of results are received, it calls a callback function to signal the end of the orchestration.
 
 ```mermaid
 graph TD
@@ -489,9 +493,8 @@ The sequential orchestration works in the following steps:
 1. The orchestration is invoked with a task.
 2. The orchestration sends the task to the first actor.
 3. The first actor processes the task and sends the result to the next actor.
-4. The next actor processes the result and sends the result to the next actor.
-5. The last actor processes the result and sends the result to the result collector.
-6. The result collector calls the callback function to signal the end of the orchestration.
+4. The last actor processes the result and sends the result to the result collector.
+5. The result collector calls a callback function to signal the end of the orchestration.
 
 ```mermaid
 graph TD
@@ -521,7 +524,7 @@ The handoff orchestration works in the following steps:
 4. The first actor processes the task, broadcast the conversation context, and decides if it needs to delegate the task to another actor.
 5. If the first actor decides to delegate the task, it sends a "request to speak" message to the other actor.
 6. The other actor processes the task and decides if it needs to delegate the task to another actor.
-7. The process continues until the last actor decides that the task is complete and calls the callback function to signal the end of the orchestration.
+7. The process continues until the last actor decides that the task is complete and calls a callback function to signal the end of the orchestration.
 
 ```mermaid
 graph TD
@@ -548,12 +551,15 @@ The group chat orchestration works in the following steps:
 1. The orchestration is invoked with a task.
 2. The orchestration sends the task to all actors.
 3. The orchestration sends the task to the group manager, which will trigger the group chat manager to start the orchestration.
-4. The group manager decides if the conversation is over or if it needs to continue.
+4. The group manager decides the state of the conversation from one of the following:
+   - Request User Input -> calls a callback function and waits for user input.
+   - Terminate
+   - Next Actor
 5. If the conversation needs to continue, the group manager picks the next actor and sends a "request to speak" message to the actor.
 6. The actor processes the request and broadcasts the response to the internal topic.
 7. All other actors receive the response and add the response to their conversation context.
 8. The group manager receives the response and continues from step 4.
-9. If the conversation is over, the group manager calls the a callback function to signal the end of the orchestration.
+9. If the conversation is over, the group manager retrieves a result and calls a callback function to signal the end of the orchestration.
 
 ```mermaid
 graph TD
@@ -581,6 +587,8 @@ The group chat manager is responsible for managing the conversation flow. It wil
 ```python
 class GroupChatManager(KernelBaseModel, ABC):
     """A group chat manager that manages the flow of a group chat."""
+
+    user_input_func: Callable[[ChatHistory], Awaitable[str]] | None = None
 
     @abstractmethod
     async def should_request_user_input(self, chat_history: ChatHistory) -> bool:
