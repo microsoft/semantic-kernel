@@ -189,7 +189,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
             this._collectionMetadata.VectorStoreName,
             this.Name,
             OperationName,
-            () => this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors }));
+            () => this._mapper.MapFromStorageToDataModel(record, includeVectors));
     }
 
     /// <inheritdoc />
@@ -511,7 +511,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
                     this._collectionMetadata.VectorStoreName,
                     this.Name,
                     "GetAsync",
-                    () => this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors }));
+                    () => this._mapper.MapFromStorageToDataModel(response, options.IncludeVectors));
 
                 yield return record;
             }

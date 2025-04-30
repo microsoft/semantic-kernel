@@ -594,7 +594,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
                 this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 OperationName,
-                () => (TRecord)(object)this._dynamicMapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
+                () => (TRecord)(object)this._dynamicMapper!.MapFromStorageToDataModel(jsonObject, includeVectors));
         }
 
         // Use the built in Azure AI Search mapper.
@@ -697,7 +697,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
                 this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 operationName,
-                () => (TRecord)(object)this._dynamicMapper!.MapFromStorageToDataModel(result.Document, new() { IncludeVectors = includeVectors }));
+                () => (TRecord)(object)this._dynamicMapper!.MapFromStorageToDataModel(result.Document, includeVectors));
             yield return new VectorSearchResult<TRecord>(document, result.Score);
         }
     }

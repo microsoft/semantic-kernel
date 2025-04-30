@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -12,12 +10,6 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// </summary>
 public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
 {
-    /// <summary>
-    /// Gets or sets an optional custom mapper to use when converting between the data model and the Pinecone vector.
-    /// </summary>
-    [Obsolete("Custom mappers are no longer supported.", error: true)]
-    public IVectorStoreRecordMapper<TRecord, Vector>? VectorCustomMapper { get; init; } = null;
-
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>

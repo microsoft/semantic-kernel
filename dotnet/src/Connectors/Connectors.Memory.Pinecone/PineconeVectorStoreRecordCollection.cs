@@ -158,7 +158,8 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        if (options?.IncludeVectors is true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        var includeVectors = options?.IncludeVectors is true;
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -179,13 +180,12 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             return default;
         }
 
-        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options?.IncludeVectors is true };
         return VectorStoreErrorHandler.RunModelConversion(
             PineconeConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
             this.Name,
             "Get",
-            () => this._mapper.MapFromStorageToDataModel(result, mapperOptions));
+            () => this._mapper.MapFromStorageToDataModel(result, includeVectors));
     }
 
     /// <inheritdoc />
@@ -196,7 +196,8 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         Verify.NotNull(keys);
 
-        if (options?.IncludeVectors is true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        var includeVectors = options?.IncludeVectors is true;
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -229,13 +230,12 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             yield break;
         }
 
-        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options?.IncludeVectors is true };
         var records = VectorStoreErrorHandler.RunModelConversion(
             PineconeConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
             this.Name,
             "GetBatch",
-            () => response.Vectors.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)));
+            () => response.Vectors.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, includeVectors)));
 
         foreach (var record in records)
         {
@@ -490,7 +490,6 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         var skippedResults = response.Matches
             .Skip(options.Skip);
 
-        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors is true };
         var records = VectorStoreErrorHandler.RunModelConversion(
             PineconeConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
@@ -502,7 +501,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
                 Values = x.Values ?? Array.Empty<float>(),
                 Metadata = x.Metadata,
                 SparseValues = x.SparseValues
-            }, mapperOptions), x.Score)));
+            }, options.IncludeVectors), x.Score)));
 
         foreach (var record in records)
         {
@@ -558,7 +557,6 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             yield break;
         }
 
-        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors is true };
         var records = VectorStoreErrorHandler.RunModelConversion(
             PineconeConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
@@ -570,7 +568,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
                 Values = x.Values ?? Array.Empty<float>(),
                 Metadata = x.Metadata,
                 SparseValues = x.SparseValues
-            }, mapperOptions)));
+            }, options.IncludeVectors)));
 
         foreach (var record in records)
         {

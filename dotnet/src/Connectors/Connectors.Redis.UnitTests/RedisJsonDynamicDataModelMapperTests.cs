@@ -105,7 +105,7 @@ public class RedisJsonDynamicDataModelMapperTests
         };
 
         // Act.
-        var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), new() { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), includeVectors: true);
 
         // Assert.
         Assert.Equal("key", dataModel["Key"]);
@@ -131,7 +131,7 @@ public class RedisJsonDynamicDataModelMapperTests
         };
 
         // Act.
-        var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), new() { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), includeVectors: true);
 
         // Assert.
         Assert.Equal("key", dataModel["Key"]);
@@ -166,7 +166,7 @@ public class RedisJsonDynamicDataModelMapperTests
         var sut = new RedisJsonDynamicDataModelMapper(s_model, JsonSerializerOptions.Default);
 
         // Act.
-        var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), new() { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), includeVectors: true);
 
         // Assert.
         Assert.Equal("key", dataModel["Key"]);

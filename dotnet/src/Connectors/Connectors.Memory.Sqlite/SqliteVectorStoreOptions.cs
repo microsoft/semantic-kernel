@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
@@ -10,12 +9,6 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </summary>
 public sealed class SqliteVectorStoreOptions
 {
-    /// <summary>
-    /// An optional factory to use for constructing <see cref="SqliteVectorStoreRecordCollection{TKey, TRecord}"/> instances, if a custom record collection is required.
-    /// </summary>
-    [Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
-    public ISqliteVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
-
     /// <summary>
     /// SQLite extension name for vector search operations.
     /// If not specified, the default "vec0" extension name will be used.

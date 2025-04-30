@@ -73,15 +73,7 @@ public sealed class PostgresVectorStore : IVectorStore
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
-    {
-#pragma warning disable CS0618 // IPostgresVectorStoreRecordCollectionFactory is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
-        {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._postgresClient.DataSource, name, vectorStoreRecordDefinition);
-        }
-#pragma warning restore CS0618
-
-        var recordCollection = new PostgresVectorStoreRecordCollection<TKey, TRecord>(
+        => new PostgresVectorStoreRecordCollection<TKey, TRecord>(
             this._postgresClient,
             name,
             new PostgresVectorStoreRecordCollectionOptions<TRecord>()
@@ -91,9 +83,6 @@ public sealed class PostgresVectorStore : IVectorStore
                 EmbeddingGenerator = this._options.EmbeddingGenerator,
             }
         );
-
-        return recordCollection as IVectorStoreRecordCollection<TKey, TRecord> ?? throw new InvalidOperationException("Failed to cast record collection.");
-    }
 
     /// <inheritdoc />
     public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)

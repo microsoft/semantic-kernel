@@ -342,7 +342,6 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         using (command)
         {
-            StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
             using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
@@ -350,7 +349,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                     "Get",
                     reader,
                     this._model.Properties,
-                    mapperOptions);
+                    options.IncludeVectors);
             }
         }
     }
@@ -595,7 +594,6 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
-        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = searchOptions.IncludeVectors };
         for (var recordCounter = 0; await reader.ReadAsync(cancellationToken).ConfigureAwait(false); recordCounter++)
         {
             if (recordCounter >= searchOptions.Skip)
@@ -606,7 +604,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                     OperationName,
                     reader,
                     this._model.Properties,
-                    mapperOptions);
+                    searchOptions.IncludeVectors);
 
                 yield return new VectorSearchResult<TRecord>(record, score);
             }
@@ -699,8 +697,6 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         using (command)
         {
-            StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = includeVectors };
-
             using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
             while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -709,7 +705,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                     OperationName,
                     reader,
                     this._model.Properties,
-                    mapperOptions);
+                    includeVectors);
             }
         }
     }
@@ -802,13 +798,13 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         string operationName,
         DbDataReader reader,
         IReadOnlyList<VectorStoreRecordPropertyModel> properties,
-        StorageToDataModelMapperOptions options)
+        bool includeVectors)
     {
         var storageModel = new Dictionary<string, object?>();
 
         foreach (var property in properties)
         {
-            if (options.IncludeVectors || property is not VectorStoreRecordVectorPropertyModel)
+            if (includeVectors || property is not VectorStoreRecordVectorPropertyModel)
             {
                 var propertyValue = SqliteVectorStoreRecordPropertyMapping.GetPropertyValue(reader, property.StorageName, property.Type);
                 storageModel.Add(property.StorageName, propertyValue);
@@ -820,7 +816,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             this._collectionMetadata.VectorStoreName,
             this.Name,
             operationName,
-            () => this._mapper.MapFromStorageToDataModel(storageModel, options));
+            () => this._mapper.MapFromStorageToDataModel(storageModel, includeVectors));
     }
 
     private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)

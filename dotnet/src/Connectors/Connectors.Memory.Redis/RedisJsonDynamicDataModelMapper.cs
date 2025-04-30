@@ -65,7 +65,7 @@ internal class RedisJsonDynamicDataModelMapper(VectorStoreRecordModel model, Jso
     }
 
     /// <inheritdoc />
-    public Dictionary<string, object?> MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, StorageToDataModelMapperOptions options)
+    public Dictionary<string, object?> MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, bool includeVectors)
     {
         var dataModel = new Dictionary<string, object?>
         {

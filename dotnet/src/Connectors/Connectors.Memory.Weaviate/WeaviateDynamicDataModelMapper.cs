@@ -118,7 +118,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
         };
     }
 
-    public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
+    public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
         Verify.NotNull(storageModel);
 
@@ -146,7 +146,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
         }
 
         // Populate vector properties.
-        if (options.IncludeVectors)
+        if (includeVectors)
         {
             if (this._hasNamedVectors)
             {

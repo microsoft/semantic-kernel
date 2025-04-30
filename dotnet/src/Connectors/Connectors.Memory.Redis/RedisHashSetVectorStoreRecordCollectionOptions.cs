@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using StackExchange.Redis;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -21,12 +19,6 @@ public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
     /// You can either pass in keys that are already prefixed, or set this option to true to have the collection name prefixed to the key names automatically.
     /// </remarks>
     public bool PrefixCollectionNameToKeyNames { get; init; } = true;
-
-    /// <summary>
-    /// Gets or sets an optional custom mapper to use when converting between the data model and the Redis record.
-    /// </summary>
-    [Obsolete("Custom mappers are no longer supported.", error: true)]
-    public IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)>? HashEntriesCustomMapper { get; init; } = null;
 
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

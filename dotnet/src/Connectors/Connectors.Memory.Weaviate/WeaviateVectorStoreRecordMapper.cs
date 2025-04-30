@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -119,7 +118,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IWeaviateMapper
         return weaviateObjectModel;
     }
 
-    public TRecord MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
+    public TRecord MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
         Verify.NotNull(storageModel);
 
@@ -145,7 +144,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IWeaviateMapper
         }
 
         // Populate vector properties.
-        if (options.IncludeVectors)
+        if (includeVectors)
         {
             if (this._hasNamedVectors)
             {
