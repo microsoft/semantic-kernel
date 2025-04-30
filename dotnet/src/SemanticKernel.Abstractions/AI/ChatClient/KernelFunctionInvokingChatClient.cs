@@ -23,106 +23,15 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
         this.MaximumIterationsPerRequest = 128;
     }
 
-    private static void UpdateOptionsForAutoFunctionInvocation(ref ChatOptions options, ChatMessageContent content, bool isStreaming)
+    private static void UpdateOptionsForAutoFunctionInvocation(ChatOptions options, ChatMessageContent content)
     {
-        if (options.AdditionalProperties?.ContainsKey(ChatOptionsExtensions.IsStreamingKey) ?? false)
-        {
-            throw new KernelException($"The reserved key name '{ChatOptionsExtensions.IsStreamingKey}' is already specified in the options. Avoid using this key name.");
-        }
-
         if (options.AdditionalProperties?.ContainsKey(ChatOptionsExtensions.ChatMessageContentKey) ?? false)
         {
-            throw new KernelException($"The reserved key name '{ChatOptionsExtensions.ChatMessageContentKey}' is already specified in the options. Avoid using this key name.");
+            return;
         }
 
         options.AdditionalProperties ??= [];
-
-        options.AdditionalProperties[ChatOptionsExtensions.IsStreamingKey] = isStreaming;
         options.AdditionalProperties[ChatOptionsExtensions.ChatMessageContentKey] = content;
-    }
-
-    private static void ClearOptionsForAutoFunctionInvocation(ref ChatOptions options)
-    {
-        if (options.AdditionalProperties?.ContainsKey(ChatOptionsExtensions.IsStreamingKey) ?? false)
-        {
-            options.AdditionalProperties.Remove(ChatOptionsExtensions.IsStreamingKey);
-        }
-
-        if (options.AdditionalProperties?.ContainsKey(ChatOptionsExtensions.ChatMessageContentKey) ?? false)
-        {
-            options.AdditionalProperties.Remove(ChatOptionsExtensions.ChatMessageContentKey);
-        }
-    }
-
-    /// <inheritdoc/>
-    protected override async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
-        ChatResponse response, IList<ChatMessage> messages, ChatOptions options, IList<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount, bool isStreaming, CancellationToken cancellationToken)
-    {
-        // Prepare the options for the next auto function invocation iteration.
-        UpdateOptionsForAutoFunctionInvocation(ref options!, response.Messages.Last().ToChatMessageContent(), isStreaming: false);
-
-        // We must add a response for every tool call, regardless of whether we successfully executed it or not.
-        // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
-        var result = await base.ProcessFunctionCallsAsync(response, messages, options, functionCallContents, iteration, consecutiveErrorCount, isStreaming, cancellationToken).ConfigureAwait(false);
-
-        // Clear the auto function invocation options.
-        ClearOptionsForAutoFunctionInvocation(ref options);
-
-        return result;
-    }
-
-    /// <inheritdoc/>
-    protected override async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
-        IList<ChatMessage> messages, ChatOptions options, IList<FunctionCallContent> callContents,
-        int iteration, int functionCallIndex, bool captureExceptions, bool isStreaming, CancellationToken cancellationToken)
-    {
-        var callContent = callContents[functionCallIndex];
-
-        // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == callContent.Name);
-        if (function is null)
-        {
-            return new(shouldTerminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
-        }
-
-        var context = new AutoFunctionInvocationContext(options)
-        {
-            AIFunction = function,
-            Arguments = new KernelArguments(callContent.Arguments ?? new Dictionary<string, object?>()) { Services = this.FunctionInvocationServices },
-            Messages = messages,
-            CallContent = callContent,
-            Iteration = iteration,
-            FunctionCallIndex = functionCallIndex,
-            FunctionCount = callContents.Count,
-            IsStreaming = isStreaming
-        };
-
-        object? result;
-        try
-        {
-            result = await base.InvokeFunctionAsync(context, cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception e) when (!cancellationToken.IsCancellationRequested)
-        {
-            if (!captureExceptions)
-            {
-                throw;
-            }
-
-            return new(
-                shouldTerminate: false,
-                FunctionInvocationStatus.Exception,
-                callContent,
-                result: null,
-                exception: e);
-        }
-
-        return new(
-            shouldTerminate: context.Terminate,
-            FunctionInvocationStatus.RanToCompletion,
-            callContent,
-            result,
-            exception: null);
     }
 
     /// <summary>
@@ -168,34 +77,48 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
     }
 
     /// <inheritdoc/>
-    protected override async Task<(FunctionInvocationContext context, object? result)> InvokeFunctionCoreAsync(Microsoft.Extensions.AI.FunctionInvocationContext context, CancellationToken cancellationToken)
+    protected override async Task<object?> InvokeFunctionAsync(Microsoft.Extensions.AI.FunctionInvocationContext context, CancellationToken cancellationToken)
     {
+        if (context.Options is null)
+        {
+            return await context.Function.InvokeAsync(context.Arguments, cancellationToken).ConfigureAwait(false);
+        }
+
         object? result = null;
-        if (context is AutoFunctionInvocationContext autoContext)
+
+        UpdateOptionsForAutoFunctionInvocation(context.Options, context.Messages.Last().ToChatMessageContent());
+        var autoContext = new AutoFunctionInvocationContext(context.Options)
         {
-            context = await this.OnAutoFunctionInvocationAsync(
-                autoContext,
-                async (ctx) =>
+            AIFunction = context.Function,
+            Arguments = new KernelArguments(context.Arguments) { Services = this.FunctionInvocationServices },
+            Messages = context.Messages,
+            CallContent = context.CallContent,
+            Iteration = context.Iteration,
+            FunctionCallIndex = context.FunctionCallIndex,
+            FunctionCount = context.FunctionCount,
+            IsStreaming = context.IsStreaming
+        };
+
+        autoContext = await this.OnAutoFunctionInvocationAsync(
+            autoContext,
+            async (ctx) =>
+            {
+                // Check if filter requested termination
+                if (ctx.Terminate)
                 {
-                    // Check if filter requested termination
-                    if (ctx.Terminate)
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
-                    // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
-                    // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                    result = await autoContext.AIFunction.InvokeAsync(new(context.Arguments), cancellationToken).ConfigureAwait(false);
-                    ctx.Result = new FunctionResult(ctx.Function, result);
-                }).ConfigureAwait(false);
-            result = autoContext.Result.GetValue<object>();
-        }
-        else
-        {
-            result = await context.Function.InvokeAsync(new(context.Arguments), cancellationToken).ConfigureAwait(false);
-        }
+                // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
+                // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
+                // as the called function could in turn telling the model about itself as a possible candidate for invocation.
+                result = await autoContext.AIFunction.InvokeAsync(autoContext.Arguments, cancellationToken).ConfigureAwait(false);
+                ctx.Result = new FunctionResult(ctx.Function, result);
+            }).ConfigureAwait(false);
+        result = autoContext.Result.GetValue<object>();
 
-        return (context, result);
+        context.Terminate = autoContext.Terminate;
+
+        return result;
     }
 }

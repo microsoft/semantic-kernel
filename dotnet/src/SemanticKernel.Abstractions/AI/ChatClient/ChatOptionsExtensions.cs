@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 internal static class ChatOptionsExtensions
 {
     internal const string KernelKey = "AutoInvokingKernel";
-    internal const string IsStreamingKey = "AutoInvokingIsStreaming";
     internal const string ChatMessageContentKey = "AutoInvokingChatCompletionContent";
     internal const string PromptExecutionSettingsKey = "AutoInvokingPromptExecutionSettings";
 
