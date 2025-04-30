@@ -32,7 +32,6 @@ from semantic_kernel.agents.copilot_studio.copilot_studio_agent_settings import 
     CopilotStudioAgentSettings,
 )
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
     AgentInitializationException,
@@ -55,6 +54,7 @@ else:  # pragma: no cover
     from typing_extensions import override
 
 if TYPE_CHECKING:  # pragma: no cover
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -139,6 +139,10 @@ class _CopilotStudioAgentTokenFactory:
         if self.client_secret:
             kwargs["client_credential"] = self.client_secret
         else:  # certificate
+            if not self.client_cert_path:
+                raise AgentInitializationException(
+                    "If no client_secret is provided, a client_certificate is required for service-to-service auth."
+                )
             kwargs["client_credential"] = {
                 "private_key": Path(self.client_cert_path).read_text(),
                 "thumbprint": self._cert_thumbprint(self.client_cert_path),
@@ -507,16 +511,17 @@ class CopilotStudioAgent(Agent):
         ):
             yield AgentResponseItem(message=response, thread=thread)
 
-    @trace_agent_invocation
     @override
-    async def invoke_stream(
+    def invoke_stream(
         self,
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
-        **kwargs,
-    ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        **kwargs: Any,
+    ) -> AsyncIterable[AgentResponseItem["StreamingChatMessageContent"]]:
         raise NotImplementedError("Streaming is not supported for Copilot Studio agents.")
 
     # endregion

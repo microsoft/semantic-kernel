@@ -73,9 +73,11 @@ azure = [
 chroma = [
     "chromadb >= 0.5,< 1.1"
 ]
+# Temporary: use direct Test PyPI links until packages are published to Public PyPI
+# Once published, these will simplify to just "microsoft-agents-core" and "microsoft-agents-copilotstudio-client"
 copilot_studio = [
-  "microsoft-agents-core",
-  "microsoft-agents-copilotstudio-client",
+  "microsoft-agents-core @ https://test-files.pythonhosted.org/packages/17/ae/c87bfb943e75fac50522e2598232fc386b0d7f09a2dd462bbdc63cb83602/microsoft_agents_core-0.0.0a2-py3-none-any.whl",
+  "microsoft-agents-copilotstudio-client @ https://test-files.pythonhosted.org/packages/47/de/9f9e0a0c57132363154dcf197bf2ce0ed33e9c986a8df8573091bcc79b54/microsoft_agents_copilotstudio_client-0.0.0a2-py3-none-any.whl"
 ]
 dapr = [
     "dapr>=1.14.0",
@@ -245,7 +247,3 @@ name = "semantic_kernel"
 [build-system]
 requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
-
-[tool.uv.sources]
-microsoft-agents-core = { git = "https://github.com/microsoft/Agents-for-python", rev = "main", subdirectory = "libraries/Core/microsoft-agents-core" }
-microsoft-agents-copilotstudio-client = { git = "https://github.com/microsoft/Agents-for-python", rev = "main", subdirectory = "libraries/Client/microsoft-agents-copilotstudio-client" }
