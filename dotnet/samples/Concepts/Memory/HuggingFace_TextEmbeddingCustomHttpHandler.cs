@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Embeddings;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
@@ -31,14 +32,29 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
             })
         );
 
-        var sqliteMemory = await SqliteMemoryStore.ConnectAsync("./../../../Sqlite.sqlite");
+        var sqliteCollection = new SqliteVectorStoreRecordCollection<string, Record>(
+            "Data Source=./../../../Sqlite.sqlite",
+            name: "Test",
+            new() { EmbeddingGenerator = hf.AsEmbeddingGenerator() });
 
-        var skMemory = new MemoryBuilder()
-            .WithTextEmbeddingGeneration(hf)
-            .WithMemoryStore(sqliteMemory)
-            .Build();
+        await sqliteCollection.UpsertAsync(new Record
+        {
+            Id = "1",
+            Text = "THIS IS A SAMPLE",
+            Embedding = "An embedding will be generated from this text"
+        });
+    }
 
-        await skMemory.SaveInformationAsync("Test", "THIS IS A SAMPLE", "sample", "TEXT");
+    public class Record
+    {
+        [VectorStoreRecordKey]
+        public string Id { get; set; }
+
+        [VectorStoreRecordData]
+        public string Text { get; set; }
+
+        [VectorStoreRecordVector(Dimensions: 768)]
+        public string Embedding { get; set; }
     }
 
     private sealed class CustomHttpClientHandler : HttpClientHandler

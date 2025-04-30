@@ -43,7 +43,7 @@ public class VectorStore_VectorSearch_MultiStore_AzureAISearch(ITestOutputHelper
             credential: new AzureCliCredential());
 
         // Register the Azure AI Search VectorStore.
-        kernelBuilder.AddAzureAISearchVectorStore(
+        kernelBuilder.Services.AddAzureAISearchVectorStore(
             new Uri(TestConfiguration.AzureAISearch.Endpoint),
             new AzureKeyCredential(TestConfiguration.AzureAISearch.ApiKey));
 

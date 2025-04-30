@@ -46,7 +46,7 @@ public class VectorStore_VectorSearch_MultiStore_Redis(ITestOutputHelper output,
 
         // Initialize the Redis docker container via the fixtures and register the Redis VectorStore with the preferred storage type.
         await redisFixture.ManualInitializeAsync();
-        kernelBuilder.AddRedisVectorStore("localhost:6379", new() { StorageType = redisStorageType });
+        kernelBuilder.Services.AddRedisVectorStore("localhost:6379", new() { StorageType = redisStorageType });
 
         // Register the test output helper common processor with the DI container.
         kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
