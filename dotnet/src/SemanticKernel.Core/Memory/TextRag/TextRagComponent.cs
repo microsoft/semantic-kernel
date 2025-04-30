@@ -22,7 +22,7 @@ public class TextRagComponent : ConversationStatePart
 {
     private const string DefaultPluginSearchFunctionName = "Search";
     private const string DefaultPluginSearchFunctionDescription = "Allows searching for additional information to help answer the user question.";
-    private const string DefaultContextPrompt = "Consider the following source information when responding to the user:";
+    private const string DefaultContextPrompt = "Consider the following information when responding to the user:";
     private const string DefaultIncludeCitationsPrompt = "Include citations to the relevant information where it is referenced in the response.";
 
     private readonly ITextSearch _textSearch;
@@ -115,17 +115,28 @@ public class TextRagComponent : ConversationStatePart
     /// <returns>The formatted results.</returns>
     private string FormatResults(List<TextSearchResult> results)
     {
+        if (this.Options.ContextFormatter is not null)
+        {
+            return this.Options.ContextFormatter(results);
+        }
+
+        if (results.Count == 0)
+        {
+            return string.Empty;
+        }
+
         var sb = new StringBuilder();
         sb.AppendLine(this.Options.ContextPrompt ?? DefaultContextPrompt);
-        foreach (var result in results)
+        for (int i = 0; i < results.Count; i++)
         {
-            sb.AppendLine($"    Source Document Name: {result.Name}");
-            sb.AppendLine($"    Source Document Link: {result.Link}");
-            sb.AppendLine($"    Source Document Contents: {result.Value}");
-            sb.AppendLine("    -----------------");
+            var result = results[i];
+            sb.AppendLine($"Item {i + 1}:");
+            sb.AppendLine($"Name: {result.Name}");
+            sb.AppendLine($"Link: {result.Link}");
+            sb.AppendLine($"Contents: {result.Value}");
         }
         sb.AppendLine(this.Options.IncludeCitationsPrompt ?? DefaultIncludeCitationsPrompt);
-        sb.AppendLine("-------------------");
+        sb.AppendLine();
         return sb.ToString();
     }
 }
