@@ -15,7 +15,9 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 [Collection("WeaviateVectorStoreCollection")]
 public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreFixture fixture)
 {
-    [Fact]
+    private const string SkipReason = "Weaviate tests are failing on the build server with connection reset errors, but passing locally.";
+
+    [Fact(Skip = SkipReason)]
     public async Task ItCanCreateCollectionAsync()
     {
         // Arrange
@@ -28,7 +30,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.True(await sut.CollectionExistsAsync());
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData("ExistingCollection", true)]
     [InlineData("NonExistentCollection", false)]
     public async Task ItCanCheckIfCollectionExistsAsync(string collectionName, bool collectionExists)
@@ -48,7 +50,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal(collectionExists, result);
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData("CollectionWithVectorAndDefinition", true, true)]
     [InlineData("CollectionWithVector", true, false)]
     [InlineData("CollectionWithDefinition", false, true)]
@@ -98,7 +100,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         }
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
@@ -117,7 +119,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.False(await sut.CollectionExistsAsync());
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanDeleteRecordAsync()
     {
         // Arrange
@@ -144,7 +146,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Null(getResult);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndGetAndDeleteBatchAsync()
     {
         // Arrange
@@ -178,7 +180,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Empty(getResults);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertRecordAsync()
     {
         // Arrange
@@ -208,7 +210,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal(10, getResult.HotelRating);
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
     public async Task VectorizedSearchReturnsValidResultsByDefaultAsync(bool includeVectors)
@@ -247,7 +249,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal(includeVectors, searchResults.All(l => l.Record.DescriptionEmbedding is not null));
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task VectorizedSearchReturnsValidResultsWithOffsetAsync()
     {
         // Arrange
@@ -278,7 +280,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.DoesNotContain("22222222-2222-2222-2222-222222222222", ids);
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [MemberData(nameof(VectorizedSearchWithFilterData))]
     public async Task VectorizedSearchReturnsValidResultsWithFilterAsync(VectorSearchFilter filter, List<string> expectedIds)
     {
@@ -306,7 +308,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal(expectedIds, actualIds);
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [MemberData(nameof(VectorizedSearchWithFilterAndDifferentDataTypesData))]
     public async Task VectorizedSearchReturnsValidResultsWithFilterAndDifferentDataTypesAsync(VectorSearchFilter filter)
     {
@@ -351,7 +353,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal(expectedId, actualIds[0]);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndRetrieveUsingDynamicMappingAsync()
     {
         // Arrange
