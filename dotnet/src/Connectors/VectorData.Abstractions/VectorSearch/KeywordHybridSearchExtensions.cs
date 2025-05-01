@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>Provides a collection of static methods for extending <see cref="IKeywordHybridSearch{TRecord}"/> instances.</summary>
-[Experimental("MEVD9000")]
 public static class KeywordHybridSearchExtensions
 {
     /// <summary>
