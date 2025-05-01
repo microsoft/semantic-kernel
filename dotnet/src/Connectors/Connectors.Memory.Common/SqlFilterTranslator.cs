@@ -42,8 +42,8 @@ internal abstract class SqlFilterTranslator
             this._sql.Append("WHERE ");
         }
 
-        var preprocessor = new FilterTranslationPreprocessor { TransformCapturedVariablesToQueryParameterExpressions = true };
-        var preprocessedExpression = preprocessor.Visit(this._lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = true };
+        var preprocessedExpression = preprocessor.Preprocess(this._lambdaExpression.Body);
 
         this.Translate(preprocessedExpression, isSearchCondition: true);
     }

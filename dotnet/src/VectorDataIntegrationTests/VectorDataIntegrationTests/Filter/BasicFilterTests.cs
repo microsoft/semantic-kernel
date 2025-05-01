@@ -263,8 +263,10 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     #endregion Contains
 
+    #region Variable types
+
     [ConditionalFact]
-    public virtual Task Captured_variable()
+    public virtual Task Captured_local_variable()
     {
         // ReSharper disable once ConvertToConstant.Local
         var i = 8;
@@ -273,6 +275,59 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             r => r.Int == i,
             r => (int)r["Int"] == i);
     }
+
+    [ConditionalFact]
+    public virtual Task Member_field()
+        => this.TestFilterAsync(
+            r => r.Int == this._memberField,
+            r => (int)r["Int"] == this._memberField);
+
+    [ConditionalFact]
+    public virtual Task Member_readonly_field()
+        => this.TestFilterAsync(
+            r => r.Int == this._memberReadOnlyField,
+            r => (int)r["Int"] == this._memberReadOnlyField);
+
+    [ConditionalFact]
+    public virtual Task Member_static_field()
+        => this.TestFilterAsync(
+            r => r.Int == _staticMemberField,
+            r => (int)r["Int"] == _staticMemberField);
+
+    [ConditionalFact]
+    public virtual Task Member_static_readonly_field()
+        => this.TestFilterAsync(
+            r => r.Int == _staticMemberReadOnlyField,
+            r => (int)r["Int"] == _staticMemberReadOnlyField);
+
+    [ConditionalFact]
+    public virtual Task Member_nested_access()
+        => this.TestFilterAsync(
+            r => r.Int == this._someWrapper.SomeWrappedValue,
+            r => (int)r["Int"] == this._someWrapper.SomeWrappedValue);
+
+#pragma warning disable RCS1169 // Make field read-only
+#pragma warning disable IDE0044 // Make field read-only
+#pragma warning disable RCS1187 // Use constant instead of field
+#pragma warning disable CA1802 // Use literals where appropriate
+    private int _memberField = 8;
+    private readonly int _memberReadOnlyField = 8;
+
+    private static int _staticMemberField = 8;
+    private static readonly int _staticMemberReadOnlyField = 8;
+
+    private SomeWrapper _someWrapper = new();
+#pragma warning restore CA1802
+#pragma warning restore RCS1187
+#pragma warning restore RCS1169
+#pragma warning restore IDE0044
+
+    private sealed class SomeWrapper
+    {
+        public int SomeWrappedValue = 8;
+    }
+
+    #endregion Variable types
 
     #region Legacy filter support
 

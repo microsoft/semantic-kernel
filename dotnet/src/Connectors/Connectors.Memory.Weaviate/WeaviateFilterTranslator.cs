@@ -29,8 +29,8 @@ internal class WeaviateFilterTranslator
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = true };
-        var preprocessedExpression = preprocessor.Visit(lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = false };
+        var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
 
         this.Translate(preprocessedExpression);
         return this._filter.ToString();
