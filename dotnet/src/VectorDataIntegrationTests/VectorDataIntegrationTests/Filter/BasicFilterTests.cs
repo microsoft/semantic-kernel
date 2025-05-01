@@ -65,6 +65,56 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
     }
 
     [ConditionalFact]
+    public virtual Task Equal_int_property_with_nonnull_nullable_int()
+    {
+        int? i = 8;
+
+        return this.TestFilterAsync(
+            r => r.Int == i,
+            r => (int)r["Int"] == i);
+    }
+
+    [ConditionalFact]
+    public virtual Task Equal_int_property_with_null_nullable_int()
+    {
+        int? i = null;
+
+        return this.TestFilterAsync(
+            r => r.Int == i,
+            r => (int)r["Int"] == i,
+            expectZeroResults: true);
+    }
+
+    [ConditionalFact]
+    public virtual Task Equal_int_property_with_nonnull_nullable_int_Value()
+    {
+        int? i = 8;
+
+        return this.TestFilterAsync(
+            r => r.Int == i.Value,
+            r => (int)r["Int"] == i.Value);
+    }
+
+#pragma warning disable CS8629 // Nullable value type may be null.
+    [ConditionalFact]
+    public virtual async Task Equal_int_property_with_null_nullable_int_Value()
+    {
+        int? i = null;
+
+        // TODO: Some connectors wrap filter translation exceptions in a VectorStoreOperationException (#11766)
+        var exception = await Assert.ThrowsAnyAsync<Exception>(() => this.TestFilterAsync(
+            r => r.Int == i.Value,
+            r => (int)r["Int"] == i.Value,
+            expectZeroResults: true));
+
+        if (exception is not InvalidOperationException and not VectorStoreOperationException { InnerException: InvalidOperationException })
+        {
+            Assert.Fail($"Expected {nameof(InvalidOperationException)} or {nameof(VectorStoreOperationException)} but got {exception.GetType()}");
+        }
+    }
+#pragma warning restore CS8629
+
+    [ConditionalFact]
     public virtual Task NotEqual_with_int()
         => this.TestFilterAsync(
             r => r.Int != 8,
@@ -387,12 +437,20 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         if (expected.Count == 0 && !expectZeroResults)
         {
-            Assert.Fail("The test returns zero results, and so is unreliable");
+            Assert.Fail("The test returns zero results, and so may be unreliable");
+        }
+        else if (expectZeroResults && expected.Count != 0)
+        {
+            Assert.Fail($"{nameof(expectZeroResults)} was true, but the test returned {expected.Count} results.");
         }
 
         if (expected.Count == fixture.TestData.Count && !expectAllResults)
         {
-            Assert.Fail("The test returns all results, and so is unreliable");
+            Assert.Fail("The test returns all results, and so may be unreliable");
+        }
+        else if (expectAllResults && expected.Count != fixture.TestData.Count)
+        {
+            Assert.Fail($"{nameof(expectAllResults)} was true, but the test returned {expected.Count} results instead of the expected {fixture.TestData.Count}.");
         }
 
         // Execute the query against the vector store, once using the strongly typed filter

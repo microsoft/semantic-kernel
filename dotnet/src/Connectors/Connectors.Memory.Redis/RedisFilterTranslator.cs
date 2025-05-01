@@ -69,6 +69,11 @@ internal class RedisFilterTranslator
                 this.TranslateNot(not.Operand);
                 return;
 
+            // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
+            case UnaryExpression { NodeType: ExpressionType.Convert } convert when Nullable.GetUnderlyingType(convert.Type) == convert.Operand.Type:
+                this.Translate(convert.Operand);
+                return;
+
             // MemberExpression is generally handled within e.g. TranslateEqual; this is used to translate direct bool inside filter (e.g. Filter => r => r.Bool)
             case MemberExpression member when member.Type == typeof(bool) && this.TryBindProperty(member, out _):
             {
@@ -193,15 +198,13 @@ internal class RedisFilterTranslator
 
     private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
     {
-        Type? convertedClrType = null;
-
-        if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
+        var unwrappedExpression = expression;
+        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
-            expression = unary.Operand;
-            convertedClrType = unary.Type;
+            unwrappedExpression = convert.Operand;
         }
 
-        var modelName = expression switch
+        var modelName = unwrappedExpression switch
         {
             // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
             MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
@@ -229,9 +232,17 @@ internal class RedisFilterTranslator
             throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
         }
 
-        if (convertedClrType is not null && convertedClrType != property.Type)
+        // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
+        unwrappedExpression = expression;
+        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
-            throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convertedClrType.Name}', but its configured type is '{property.Type.Name}'.");
+            var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
+            if (convertType != property.Type && convertType != typeof(object))
+            {
+                throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
+            }
+
+            unwrappedExpression = convert.Operand;
         }
 
         return true;

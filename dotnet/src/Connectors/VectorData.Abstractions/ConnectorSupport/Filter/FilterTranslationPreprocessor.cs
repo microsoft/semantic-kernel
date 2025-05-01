@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
@@ -94,6 +95,10 @@ public class FilterTranslationPreprocessor : ExpressionVisitor
             case FieldInfo fieldInfo:
                 evaluatedValue = fieldInfo.GetValue(baseValue);
                 break;
+
+            case PropertyInfo { GetMethod.IsStatic: false } propertyInfo when baseValue is null:
+                throw new InvalidOperationException($"Cannot access member '{propertyInfo.Name}' on null object.");
+
             case PropertyInfo propertyInfo:
                 evaluatedValue = propertyInfo.GetValue(baseValue);
                 break;
