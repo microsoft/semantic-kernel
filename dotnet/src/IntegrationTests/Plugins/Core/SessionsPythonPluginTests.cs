@@ -10,6 +10,10 @@ using System.Net.Http;
 using Azure.Identity;
 using Azure.Core;
 using System.Collections.Generic;
+using Microsoft.SemanticKernel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 namespace SemanticKernel.IntegrationTests.Plugins.Core;
 
@@ -20,21 +24,22 @@ public sealed class SessionsPythonPluginTests : IDisposable
     private readonly SessionsPythonSettings _settings;
     private readonly HttpClientFactory _httpClientFactory;
     private readonly SessionsPythonPlugin _sut;
+    private readonly IConfigurationRoot _configurationRoot;
 
     public SessionsPythonPluginTests()
     {
-        var configurationRoot = new ConfigurationBuilder()
+        this._configurationRoot = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .AddUserSecrets<SessionsPythonPluginTests>()
             .Build();
 
-        var _configuration = configurationRoot
+        var _spConfiguration = this._configurationRoot
             .GetSection("AzureContainerAppSessionPool")
             .Get<AzureContainerAppSessionPoolConfiguration>()!;
 
-        this._settings = new(sessionId: Guid.NewGuid().ToString(), endpoint: new Uri(_configuration.Endpoint))
+        this._settings = new(sessionId: Guid.NewGuid().ToString(), endpoint: new Uri(_spConfiguration.Endpoint))
         {
             CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
             CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
@@ -52,10 +57,11 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var result = await this._sut.UploadFileAsync("test_file.txt", @"TestData\SessionsPythonPlugin\file_to_upload_1.txt");
 
         // Assert
-        Assert.Equal("test_file.txt", result.Filename);
+        Assert.Equal("test_file.txt", result.Name);
         Assert.Equal(322, result.Size);
+        Assert.Equal("file", result.Type);
+        Assert.Equal("text/plain; charset=utf-8", result.ContentType);
         Assert.NotNull(result.LastModifiedTime);
-        Assert.Equal("/mnt/data/test_file.txt", result.FullPath);
     }
 
     [Fact(Skip = SkipReason)]
@@ -85,16 +91,18 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(2, files.Count);
 
         var firstFile = files[0];
-        Assert.Equal("test_file_1.txt", firstFile.Filename);
+        Assert.Equal("test_file_1.txt", firstFile.Name);
         Assert.Equal(322, firstFile.Size);
+        Assert.Equal("file", firstFile.Type);
+        Assert.Equal("text/plain; charset=utf-8", firstFile.ContentType);
         Assert.NotNull(firstFile.LastModifiedTime);
-        Assert.Equal("/mnt/data/test_file_1.txt", firstFile.FullPath);
 
         var secondFile = files[1];
-        Assert.Equal("test_file_2.txt", secondFile.Filename);
+        Assert.Equal("test_file_2.txt", secondFile.Name);
         Assert.Equal(336, secondFile.Size);
+        Assert.Equal("file", secondFile.Type);
+        Assert.Equal("text/plain; charset=utf-8", secondFile.ContentType);
         Assert.NotNull(secondFile.LastModifiedTime);
-        Assert.Equal("/mnt/data/test_file_2.txt", secondFile.FullPath);
     }
 
     [Fact(Skip = SkipReason)]
@@ -108,7 +116,31 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         // Assert
         Assert.Contains("8", result);
-        Assert.Contains("Success", result);
+        Assert.Contains("Succeeded", result);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task LlmShouldUploadFileAndAccessItFromCodeInterpreterAsync()
+    {
+        // Arrange
+        Kernel kernel = this.InitializeKernel();
+        kernel.Plugins.AddFromObject(this._sut);
+
+        var chatCompletionService = kernel.Services.GetRequiredService<IChatCompletionService>();
+
+        AzureOpenAIPromptExecutionSettings settings = new()
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage(@"Upload the local file TestData\SessionsPythonPlugin\file_to_upload_1.txt and use python code to count number of words in it.");
+
+        // Act
+        var result = await chatCompletionService.GetChatMessageContentAsync(chatHistory, settings, kernel);
+
+        // Assert
+        Assert.Contains("52", result.ToString());
     }
 
     /// <summary>
@@ -123,6 +155,24 @@ public sealed class SessionsPythonPluginTests : IDisposable
         AccessToken token = await credential.GetTokenAsync(new Azure.Core.TokenRequestContext([resource])).ConfigureAwait(false);
 
         return token.Token;
+    }
+
+    private Kernel InitializeKernel()
+    {
+        var azureOpenAIConfiguration = this._configurationRoot.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
+        Assert.NotNull(azureOpenAIConfiguration);
+        Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
+        Assert.NotNull(azureOpenAIConfiguration.Endpoint);
+
+        var kernelBuilder = Kernel.CreateBuilder();
+
+        kernelBuilder.AddAzureOpenAIChatCompletion(
+            deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
+            modelId: azureOpenAIConfiguration.ChatModelId,
+            endpoint: azureOpenAIConfiguration.Endpoint,
+            credentials: new AzureCliCredential());
+
+        return kernelBuilder.Build();
     }
 
     public void Dispose()
