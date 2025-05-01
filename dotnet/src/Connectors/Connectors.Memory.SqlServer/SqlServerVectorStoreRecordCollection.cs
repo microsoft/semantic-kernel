@@ -95,7 +95,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
                 return await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
             },
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -120,7 +120,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this._collectionMetadata,
             "CreateCollection",
             () => command.ExecuteNonQueryAsync(cancellationToken),
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -134,7 +134,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this._collectionMetadata,
             "DeleteCollection",
             () => command.ExecuteNonQueryAsync(cancellationToken),
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -154,7 +154,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this._collectionMetadata,
             "Delete",
             () => command.ExecuteNonQueryAsync(cancellationToken),
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -265,7 +265,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
                 return reader;
             },
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         return reader.HasRows
             ? this._mapper.MapFromStorageToDataModel(
@@ -318,7 +318,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 this._collectionMetadata,
                 operationName: "GetBatch",
                 () => command.ExecuteReaderAsync(cancellationToken),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
 
             while (await reader.ReadWithErrorHandlingAsync(
                 this._collectionMetadata,
@@ -643,13 +643,13 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 this._collectionMetadata,
                 operationName: "VectorizedSearch",
                 () => command.ExecuteReaderAsync(cancellationToken),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
 
             int scoreIndex = -1;
             while (await reader.ReadWithErrorHandlingAsync(
                 this._collectionMetadata,
                 operationName: "VectorizedSearch",
-                cancellationToken: cancellationToken).ConfigureAwait(false))
+                cancellationToken).ConfigureAwait(false))
             {
                 if (scoreIndex < 0)
                 {
@@ -691,14 +691,14 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this._collectionMetadata,
             operationName: "GetAsync",
             () => command.ExecuteReaderAsync(cancellationToken),
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         var vectorProperties = options.IncludeVectors ? this._model.VectorProperties : [];
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
         while (await reader.ReadWithErrorHandlingAsync(
                 this._collectionMetadata,
                 operationName: "GetAsync",
-                cancellationToken: cancellationToken).ConfigureAwait(false))
+                cancellationToken).ConfigureAwait(false))
         {
             yield return this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorProperties), mapperOptions);
         }

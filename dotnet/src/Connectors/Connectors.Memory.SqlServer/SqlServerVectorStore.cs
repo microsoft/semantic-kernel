@@ -82,7 +82,7 @@ public sealed class SqlServerVectorStore : IVectorStore
         while (await reader.ReadWithErrorHandlingAsync(
             this._metadata,
             operationName: "ListCollectionNames",
-            cancellationToken: cancellationToken).ConfigureAwait(false))
+            cancellationToken).ConfigureAwait(false))
         {
             yield return reader.GetString(reader.GetOrdinal("table_name"));
         }
