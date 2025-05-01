@@ -95,7 +95,7 @@ public abstract class KernelFunction : AIFunction
     /// The plugin name will be null if the function has not been added to a plugin.
     /// When a function is added to a plugin it will be cloned and the plugin name will be set.
     /// </remarks>
-    public string? PluginName => this.Metadata.PluginName;
+    public string? PluginName => this.UseFullyQualifiedName ? null : this.Metadata.PluginName;
 
     /// <summary>
     /// Gets a description of the function.
@@ -498,7 +498,10 @@ public abstract class KernelFunction : AIFunction
 
         var result = await this.InvokeCoreAsync(kernel, kernelArguments, cancellationToken).ConfigureAwait(false);
 
-        return result.Value;
+        // Serialize the result to JSON, as with AIFunctionFactory.Create AIFunctions.
+        return result.Value is object value ?
+            JsonSerializer.SerializeToElement(value, AbstractionsJsonContext.GetTypeInfo(value.GetType(), this.JsonSerializerOptions)) :
+            null;
     }
 
     /// <summary>

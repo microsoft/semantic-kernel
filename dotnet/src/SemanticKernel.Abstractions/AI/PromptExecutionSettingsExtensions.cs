@@ -152,7 +152,6 @@ public static class PromptExecutionSettingsExtensions
             foreach (var function in functions)
             {
                 var functionClone = function.Clone(kernel);
-                functionClone.UseFullyQualifiedName = true;
                 options.Tools.Add(functionClone);
             }
         }

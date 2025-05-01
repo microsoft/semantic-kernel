@@ -108,15 +108,18 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
         }
     }
 
-    /// <summary>Produces a cloned iteration of <see cref="KernelFunction"/> attached to a provided <see cref="Kernel"/> for every <see cref="KernelFunction"/> in this plugin.</summary>
+    /// <summary>Produces a cloned iteration of <see cref="AIFunction"/> attached to a provided <see cref="Kernel"/> for every <see cref="KernelFunction"/> in this plugin.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> instance to pass to the <see cref="KernelFunction"/>s when invoked as part of the <see cref="AIFunction"/>'s invocation.</param>
+    /// <param name="useFullyQualifiedName">Indicates when retrieving the <see cref="KernelFunction.Name"/> if it should be fully qualified (including the plugin name as a prefix). Defaults to true.</param>
     /// <returns>An enumerable of <see cref="KernelFunction"/> instances, one for each <see cref="KernelFunction"/> in this plugin.</returns>
     [Experimental("SKEXP0001")]
-    public IEnumerable<KernelFunction> CloneFunctions(Kernel? kernel)
+    public IEnumerable<AIFunction> CloneFunctions(Kernel? kernel, bool useFullyQualifiedName = true)
     {
         foreach (KernelFunction function in this)
         {
-            yield return function.Clone(kernel);
+            var functionClone = function.Clone(kernel);
+            functionClone.UseFullyQualifiedName = useFullyQualifiedName;
+            yield return functionClone;
         }
     }
 

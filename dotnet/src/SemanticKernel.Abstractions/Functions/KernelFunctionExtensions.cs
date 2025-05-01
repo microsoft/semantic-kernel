@@ -22,6 +22,7 @@ public static class KernelFunctionExtensions
     public static KernelFunction Clone(this KernelFunction kernelFunction, Kernel? kernel = null, string? pluginName = null)
     {
         var clone = kernelFunction.Clone(pluginName ?? kernelFunction.PluginName);
+        clone.UseFullyQualifiedName = true;
         clone.Kernel = kernel;
 
         return clone;
