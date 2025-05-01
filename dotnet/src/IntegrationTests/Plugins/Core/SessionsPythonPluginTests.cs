@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Threading.Tasks;
-using Xunit;
-using Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
-using Microsoft.Extensions.Configuration;
-using SemanticKernel.IntegrationTests.TestSettings;
-using System.Net.Http;
-using Azure.Identity;
-using Azure.Core;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Azure.Core;
+using Azure.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
+using SemanticKernel.IntegrationTests.TestSettings;
+using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Plugins.Core;
 

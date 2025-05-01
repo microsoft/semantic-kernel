@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using Google.Protobuf.Collections;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client.Grpc;
 

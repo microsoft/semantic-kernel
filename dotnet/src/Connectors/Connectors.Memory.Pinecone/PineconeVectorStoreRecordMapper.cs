@@ -2,7 +2,6 @@
 
 using System;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Pinecone;
 
