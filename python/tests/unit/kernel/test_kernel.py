@@ -296,6 +296,70 @@ async def test_invoke_function_call(kernel: Kernel, get_tool_call_mock):
         )
 
 
+class LightsPlugin:
+    lights = [
+        {"id": 1, "name": "Table Lamp", "is_on": False},
+        {"id": 2, "name": "Porch light", "is_on": False},
+        {"id": 3, "name": "Chandelier", "is_on": False},
+    ]
+
+    @kernel_function(
+        name="get_lights_states",
+        description="Gets a list of lights and their current state",
+    )
+    def get_lights_states(self) -> list[dict]:
+        """Return a list of lights and their states (read-only)."""
+        return self.lights  # returns by reference, but deep-copy fix will snapshot it
+
+
+@pytest.mark.asyncio
+async def test_kernel_invoke_deep_copy_preserves_previous_state():
+    kernel = Kernel()
+    plugin = LightsPlugin()
+    kernel.add_plugin(plugin, plugin_name="lights")
+
+    func_call = FunctionCallContent(
+        plugin_name="lights", function_name="get_lights_states", name="get_lights_states", arguments={}
+    )
+
+    chat_history = ChatHistory()
+
+    # 1st invocation: capture snapshot of the list
+    _ = await kernel.invoke_function_call(
+        function_call=func_call,
+        chat_history=chat_history,
+        arguments=None,
+        function_call_count=1,
+        request_index=0,
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+    snapshot1 = chat_history.messages[-1].items[0].result
+
+    # Mutate the plugin's internal state after the first call
+    plugin.lights.append({"id": 4, "name": "Desk lamp", "is_on": True})
+
+    # The snapshot from the first invocation did not change
+    assert snapshot1 == [
+        {"id": 1, "name": "Table Lamp", "is_on": False},
+        {"id": 2, "name": "Porch light", "is_on": False},
+        {"id": 3, "name": "Chandelier", "is_on": False},
+    ]
+
+    # 2nd invocation: should pick up the new item
+    _ = await kernel.invoke_function_call(
+        function_call=func_call,
+        chat_history=chat_history,
+        arguments=None,
+        function_call_count=1,
+        request_index=1,
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+    snapshot2 = chat_history.messages[-1].items[0].result
+
+    # The new invoke reflects the mutated state
+    assert snapshot2[-1] == {"id": 4, "name": "Desk lamp", "is_on": True}
+
+
 async def test_invoke_function_call_throws_during_invoke(kernel: Kernel, get_tool_call_mock):
     tool_call_mock = get_tool_call_mock
     result_mock = MagicMock(spec=ChatMessageContent)
