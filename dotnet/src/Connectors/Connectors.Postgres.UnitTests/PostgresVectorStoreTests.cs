@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Postgres;
 using Moq;
+using Npgsql;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Postgres.UnitTests;
@@ -100,7 +101,7 @@ public class PostgresVectorStoreTests
         {
             if (itemIndex == 1)
             {
-                throw new InvalidOperationException("Test exception");
+                throw new NpgsqlException("Test exception");
             }
             yield return item;
             itemIndex++;
