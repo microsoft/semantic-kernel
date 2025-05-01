@@ -40,7 +40,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(s_model);
 
         // Act.
-        var actual = sut.MapFromStorageToDataModel(("test key", RedisHashSetVectorStoreMappingTestHelpers.CreateHashSet()), new() { IncludeVectors = true });
+        var actual = sut.MapFromStorageToDataModel(("test key", RedisHashSetVectorStoreMappingTestHelpers.CreateHashSet()), includeVectors: true);
 
         // Assert.
         Assert.NotNull(actual);

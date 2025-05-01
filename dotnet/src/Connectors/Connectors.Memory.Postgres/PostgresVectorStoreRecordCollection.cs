@@ -273,7 +273,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
                 this._collectionMetadata.VectorStoreName,
                 this.Name,
                 OperationName,
-                () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors }));
+                () => this._mapper.MapFromStorageToDataModel(row, includeVectors));
         });
     }
 
@@ -299,7 +299,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
                         this._collectionMetadata.VectorStoreName,
                         this.Name,
                         OperationName,
-                        () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors })),
+                        () => this._mapper.MapFromStorageToDataModel(row, includeVectors)),
                     cancellationToken
                 ),
             OperationName,
@@ -414,8 +414,6 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
         var limit = top + options.Skip;
 
-        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
-
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._client.GetNearestMatchesAsync(this.Name, this._model, vectorProperty, pgVector, top, options, cancellationToken)
                 .SelectAsync(result =>
@@ -425,7 +423,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
                         this._collectionMetadata.VectorStoreName,
                         this.Name,
                         operationName,
-                        () => this._mapper.MapFromStorageToDataModel(result.Row, mapperOptions));
+                        () => this._mapper.MapFromStorageToDataModel(result.Row, options.IncludeVectors));
 
                     return new VectorSearchResult<TRecord>(record, result.Distance);
                 }, cancellationToken),
@@ -452,8 +450,6 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         options ??= new();
 
-        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
-
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._client.GetMatchingRecordsAsync(this.Name, this._model, filter, top, options, cancellationToken)
                 .SelectAsync(dictionary =>
@@ -463,7 +459,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
                         this._collectionMetadata.VectorStoreName,
                         this.Name,
                         "Get",
-                        () => this._mapper.MapFromStorageToDataModel(dictionary, mapperOptions));
+                        () => this._mapper.MapFromStorageToDataModel(dictionary, options.IncludeVectors));
                 }, cancellationToken),
             "Get",
             this._collectionMetadata.VectorStoreName,

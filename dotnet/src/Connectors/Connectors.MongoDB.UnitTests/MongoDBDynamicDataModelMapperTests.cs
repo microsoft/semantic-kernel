@@ -166,7 +166,7 @@ public sealed class MongoDBDynamicDataModelMapperTests
         };
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal("key", dataModel["Key"]);
@@ -215,7 +215,7 @@ public sealed class MongoDBDynamicDataModelMapperTests
         var sut = new MongoDBDynamicDataModelMapper(model);
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal("key", dataModel["Key"]);
@@ -233,7 +233,7 @@ public sealed class MongoDBDynamicDataModelMapperTests
 
         // Act & Assert
         var exception = Assert.Throws<VectorStoreRecordMappingException>(
-            () => sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true }));
+            () => sut.MapFromStorageToDataModel(storageModel, includeVectors: true));
     }
 
     [Fact]
@@ -278,7 +278,7 @@ public sealed class MongoDBDynamicDataModelMapperTests
         var sut = new MongoDBDynamicDataModelMapper(model);
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal("key", dataModel["Key"]);

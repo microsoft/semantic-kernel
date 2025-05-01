@@ -110,7 +110,7 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 vectorStoreName,
                 collectionName,
                 operationName,
-                () => mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors })),
+                () => mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, includeVectors)),
             point.Score);
     }
 
@@ -129,6 +129,6 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 vectorStoreName,
                 collectionName,
                 operationName,
-                () => mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors }));
+                () => mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, includeVectors));
     }
 }

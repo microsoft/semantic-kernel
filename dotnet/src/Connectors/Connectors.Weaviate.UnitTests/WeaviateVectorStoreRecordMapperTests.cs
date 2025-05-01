@@ -89,7 +89,7 @@ public sealed class WeaviateVectorStoreRecordMapperTests
         var sut = GetMapper(hasNamedVectors);
 
         // Act
-        var hotel = sut.MapFromStorageToDataModel(document, new() { IncludeVectors = true });
+        var hotel = sut.MapFromStorageToDataModel(document, includeVectors: true);
 
         // Assert
         Assert.NotNull(hotel);

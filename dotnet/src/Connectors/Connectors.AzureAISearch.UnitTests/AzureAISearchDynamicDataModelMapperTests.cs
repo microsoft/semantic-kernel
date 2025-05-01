@@ -148,7 +148,7 @@ public class AzureAISearchDynamicDataModelMapperTests
         storageModel["NullableFloatVector"] = new JsonArray { 4.0f, 5.0f, 6.0f };
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal("key", dataModel["Key"]);
@@ -191,7 +191,7 @@ public class AzureAISearchDynamicDataModelMapperTests
         var sut = new AzureAISearchDynamicDataModelMapper(model);
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal("key", dataModel["Key"]);
@@ -216,7 +216,7 @@ public class AzureAISearchDynamicDataModelMapperTests
         var storageModel = new JsonObject();
 
         // Act
-        var exception = Assert.Throws<VectorStoreRecordMappingException>(() => sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true }));
+        var exception = Assert.Throws<VectorStoreRecordMappingException>(() => sut.MapFromStorageToDataModel(storageModel, includeVectors: true));
 
         // Assert
         Assert.Equal("The key property 'Key' is missing from the record retrieved from storage.", exception.Message);
@@ -262,7 +262,7 @@ public class AzureAISearchDynamicDataModelMapperTests
         var sut = new AzureAISearchDynamicDataModelMapper(model);
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal("key", dataModel["Key"]);

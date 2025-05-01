@@ -96,7 +96,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
     }
 
     /// <inheritdoc />
-    public TRecord MapFromStorageToDataModel(PointId pointId, MapField<string, Value> payload, VectorsOutput vectorsOutput, StorageToDataModelMapperOptions options)
+    public TRecord MapFromStorageToDataModel(PointId pointId, MapField<string, Value> payload, VectorsOutput vectorsOutput, bool includeVectors)
     {
         var outputRecord = model.CreateRecord<TRecord>()!;
 
@@ -109,7 +109,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
         });
 
         // Set each vector property if embeddings are included in the point.
-        if (options?.IncludeVectors is true)
+        if (includeVectors)
         {
             if (hasNamedVectors)
             {

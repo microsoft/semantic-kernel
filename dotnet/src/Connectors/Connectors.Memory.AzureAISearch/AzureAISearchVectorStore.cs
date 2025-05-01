@@ -54,15 +54,7 @@ public sealed class AzureAISearchVectorStore : IVectorStore
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
-    {
-#pragma warning disable CS0618 // IAzureAISearchVectorStoreRecordCollectionFactor is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
-        {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._searchIndexClient, name, vectorStoreRecordDefinition);
-        }
-#pragma warning restore CS0618
-
-        var recordCollection = new AzureAISearchVectorStoreRecordCollection<TKey, TRecord>(
+        => new AzureAISearchVectorStoreRecordCollection<TKey, TRecord>(
             this._searchIndexClient,
             name,
             new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>()
@@ -70,10 +62,7 @@ public sealed class AzureAISearchVectorStore : IVectorStore
                 JsonSerializerOptions = this._options.JsonSerializerOptions,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
-
-        return recordCollection!;
-    }
+            });
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

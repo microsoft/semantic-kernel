@@ -39,7 +39,7 @@ internal sealed class RecordMapper<TRecord>(VectorStoreRecordModel model)
         return map;
     }
 
-    public TRecord MapFromStorageToDataModel(IDictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
+    public TRecord MapFromStorageToDataModel(IDictionary<string, object?> storageModel, bool includeVectors)
     {
         var record = model.CreateRecord<TRecord>()!;
 
@@ -50,7 +50,7 @@ internal sealed class RecordMapper<TRecord>(VectorStoreRecordModel model)
             SetValue(storageModel, record, property, storageModel[property.StorageName]);
         }
 
-        if (options.IncludeVectors)
+        if (includeVectors)
         {
             foreach (var property in model.VectorProperties)
             {

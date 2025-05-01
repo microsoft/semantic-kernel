@@ -64,7 +64,7 @@ internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel>(
     }
 
     /// <inheritdoc />
-    public TConsumerDataModel MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, StorageToDataModelMapperOptions options)
+    public TConsumerDataModel MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, bool includeVectors)
     {
         // The redis result can have one of three different formats:
         // 1. a single object
@@ -93,7 +93,7 @@ internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel>(
         // For vector properties which have embedding generation configured, we need to remove the embeddings before deserializing
         // (we can't go back from an embedding to e.g. string).
         // For other cases (no embedding generation), we leave the properties even if IncludeVectors is false.
-        if (!options.IncludeVectors)
+        if (!includeVectors)
         {
             foreach (var vectorProperty in model.VectorProperties)
             {

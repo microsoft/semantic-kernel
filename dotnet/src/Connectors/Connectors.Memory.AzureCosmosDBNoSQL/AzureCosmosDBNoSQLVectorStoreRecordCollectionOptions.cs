@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
@@ -14,15 +12,6 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// </summary>
 public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>
 {
-    /// <summary>
-    /// Gets or sets an optional custom mapper to use when converting between the data model and the Azure CosmosDB NoSQL record.
-    /// </summary>
-    /// <remarks>
-    /// If not set, the default mapper that is provided by the Azure CosmosDB NoSQL client SDK will be used.
-    /// </remarks>
-    [Obsolete("Custom mappers are no longer supported.", error: true)]
-    public IVectorStoreRecordMapper<TRecord, JsonObject>? JsonObjectCustomMapper { get; init; } = null;
-
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>

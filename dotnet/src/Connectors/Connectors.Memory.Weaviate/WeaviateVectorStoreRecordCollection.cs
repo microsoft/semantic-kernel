@@ -259,7 +259,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
                 this._collectionMetadata.VectorStoreName,
                 this.Name,
                 OperationName,
-                () => this._mapper.MapFromStorageToDataModel(jsonObject!, new() { IncludeVectors = includeVectors }));
+                () => this._mapper.MapFromStorageToDataModel(jsonObject!, includeVectors));
         });
     }
 
@@ -579,7 +579,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
                     this._collectionMetadata.VectorStoreName,
                     this.Name,
                     operationName,
-                    () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
+                    () => this._mapper.MapFromStorageToDataModel(storageModel, includeVectors));
 
                 yield return new VectorSearchResult<TRecord>(record, score);
             }
