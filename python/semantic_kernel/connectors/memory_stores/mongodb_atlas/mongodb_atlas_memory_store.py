@@ -12,7 +12,7 @@ from pydantic import ValidationError
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 from pymongo.driver_info import DriverInfo
 
-from semantic_kernel.connectors.memory_stores.mongodb import NUM_CANDIDATES_SCALAR
+from semantic_kernel.connectors.memory.mongodb import NUM_CANDIDATES_SCALAR
 from semantic_kernel.connectors.memory_stores.mongodb_atlas.utils import (
     MONGODB_FIELD_EMBEDDING,
     MONGODB_FIELD_ID,

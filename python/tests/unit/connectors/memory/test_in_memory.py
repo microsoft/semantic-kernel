@@ -2,23 +2,23 @@
 
 from pytest import fixture, mark
 
-from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection, InMemoryVectorStore
+from semantic_kernel.connectors.memory.in_memory import InMemoryCollection, InMemoryStore
 from semantic_kernel.data.const import DistanceFunction
 from semantic_kernel.data.vector_search import VectorSearchOptions
 
 
 @fixture
 def collection(data_model_definition):
-    return InMemoryVectorCollection("test", dict, data_model_definition)
+    return InMemoryCollection("test", dict, data_model_definition)
 
 
 def test_store_init():
-    store = InMemoryVectorStore()
+    store = InMemoryStore()
     assert store is not None
 
 
 def test_store_get_collection(data_model_definition):
-    store = InMemoryVectorStore()
+    store = InMemoryStore()
     collection = store.get_collection("test", dict, data_model_definition)
     assert collection.collection_name == "test"
     assert collection.data_model_type is dict

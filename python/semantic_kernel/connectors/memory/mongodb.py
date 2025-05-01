@@ -34,7 +34,7 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if sys.version_info >= (3, 11):
@@ -52,7 +52,7 @@ DEFAULT_SEARCH_INDEX_NAME: Final[str] = "default"
 MONGODB_ID_FIELD: Final[str] = "_id"
 MONGODB_SCORE_FIELD: Final[str] = "score"
 NUM_CANDIDATES_SCALAR: Final[int] = 10
-DISTANCE_FUNCTION_MAPPING: Final[dict[DistanceFunction, str]] = {
+DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, str]] = {
     DistanceFunction.EUCLIDEAN_DISTANCE: "euclidean",
     DistanceFunction.COSINE_SIMILARITY: "cosine",
     DistanceFunction.DOT_PROD: "dotProduct",
@@ -62,7 +62,7 @@ DISTANCE_FUNCTION_MAPPING: Final[dict[DistanceFunction, str]] = {
 logger = logging.getLogger(__name__)
 
 
-@experimental
+@release_candidate
 class MongoDBAtlasSettings(KernelBaseSettings):
     """MongoDB Atlas model settings.
 
@@ -91,42 +91,59 @@ def _create_vector_field(field: VectorStoreRecordVectorField) -> dict:
     Returns:
         dict: The vector field.
     """
-    if field.distance_function and field.distance_function not in DISTANCE_FUNCTION_MAPPING:
+    if field.distance_function not in DISTANCE_FUNCTION_MAP:
         raise VectorStoreInitializationException(
             f"Distance function {field.distance_function} is not supported. "
-            f"Supported distance functions are: {list(DISTANCE_FUNCTION_MAPPING.keys())}"
+            f"Supported distance functions are: {list(DISTANCE_FUNCTION_MAP.keys())}"
         )
     return {
         "type": "vector",
         "numDimensions": field.dimensions,
         "path": field.storage_property_name or field.name,
-        "similarity": DISTANCE_FUNCTION_MAPPING[field.distance_function or DistanceFunction.DEFAULT],
+        "similarity": DISTANCE_FUNCTION_MAP[field.distance_function],
     }
 
 
-def _create_index_definition(record_definition: VectorStoreRecordDefinition, index_name: str) -> SearchIndexModel:
-    """Create an index definition.
+def _create_index_definitions(
+    record_definition: VectorStoreRecordDefinition, index_name: str
+) -> list[SearchIndexModel]:
+    """Create the index definitions."""
+    indexes = []
+    if record_definition.vector_fields:
+        vector_fields = [_create_vector_field(field) for field in record_definition.vector_fields]
+        filterable_fields = [
+            {"path": field.storage_property_name or field.name, "type": "filter"}
+            for field in record_definition.data_fields
+            if field.is_indexed
+        ]
+        filterable_fields.append({"path": record_definition.key_field.name, "type": "filter"})
+        indexes.append(
+            SearchIndexModel(
+                type="vectorSearch",
+                name=index_name,
+                definition={"fields": vector_fields + filterable_fields},
+            )
+        )
+    if record_definition.data_fields:
+        ft_indexed_fields = [
+            {field.storage_property_name or field.name: {"type": "string"}}
+            for field in record_definition.data_fields
+            if field.is_full_text_indexed
+        ]
+        if ft_indexed_fields:
+            indexes.append(
+                SearchIndexModel(
+                    type="search",
+                    name=f"{index_name}_ft",
+                    definition={
+                        "mapping": {"dynamic": True, "fields": ft_indexed_fields},
+                    },
+                )
+            )
+    return indexes
 
-    Args:
-        record_definition (VectorStoreRecordDefinition): The record definition.
-        index_name (str): The index name.
 
-    Returns:
-        SearchIndexModel: The index definition.
-    """
-    vector_fields = [_create_vector_field(field) for field in record_definition.vector_fields]
-    data_fields = [
-        {"path": field.storage_property_name or field.name, "type": "filter"}
-        for field in record_definition.data_fields
-        if field.is_indexed or field.is_full_text_indexed
-    ]
-    key_field = [{"path": record_definition.key_field.name, "type": "filter"}]
-    return SearchIndexModel(
-        type="vectorSearch", name=index_name, definition={"fields": vector_fields + data_fields + key_field}
-    )
-
-
-@experimental
+@release_candidate
 class MongoDBAtlasCollection(
     VectorStoreRecordCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
@@ -137,8 +154,9 @@ class MongoDBAtlasCollection(
     mongo_client: AsyncMongoClient
     database_name: str
     index_name: str
-    supported_key_types: ClassVar[list[str] | None] = ["str"]
-    supported_vector_types: ClassVar[list[str] | None] = ["float", "int"]
+    supported_key_types: ClassVar[set[str] | None] = {"str"}
+    supported_vector_types: ClassVar[set[str] | None] = {"float", "int"}
+    supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR, SearchType.KEYWORD_HYBRID}
 
     def __init__(
         self,
@@ -151,6 +169,7 @@ class MongoDBAtlasCollection(
         database_name: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the MongoDBAtlasCollection class.
@@ -184,8 +203,6 @@ class MongoDBAtlasCollection(
                 managed_client=managed_client,
             )
             return
-
-        from semantic_kernel.connectors.memory.mongodb import MongoDBAtlasSettings
 
         try:
             mongodb_atlas_settings = MongoDBAtlasSettings(
@@ -301,7 +318,9 @@ class MongoDBAtlasCollection(
             **kwargs: Additional keyword arguments.
         """
         collection = await self._get_database().create_collection(self.collection_name, **kwargs)
-        await collection.create_search_index(_create_index_definition(self.data_model_definition, self.index_name))
+        await collection.create_search_indexes(
+            models=_create_index_definitions(self.data_model_definition, self.index_name)
+        )
 
     @override
     async def does_collection_exist(self, **kwargs) -> bool:
@@ -499,7 +518,7 @@ class MongoDBAtlasCollection(
         return self
 
 
-@experimental
+@release_candidate
 class MongoDBAtlasStore(VectorStore):
     """MongoDB Atlas store implementation."""
 
@@ -511,6 +530,7 @@ class MongoDBAtlasStore(VectorStore):
         connection_string: str | None = None,
         database_name: str | None = None,
         mongo_client: AsyncMongoClient | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         **kwargs: Any,
@@ -533,6 +553,7 @@ class MongoDBAtlasStore(VectorStore):
                 mongo_client=mongo_client,
                 managed_client=managed_client,
                 database_name=database_name or DEFAULT_DB_NAME,
+                embedding_generator=embedding_generator,
             )
             return
         from semantic_kernel.connectors.memory.mongodb import MongoDBAtlasSettings
@@ -558,6 +579,7 @@ class MongoDBAtlasStore(VectorStore):
             mongo_client=mongo_client,
             managed_client=managed_client,
             database_name=mongodb_atlas_settings.database_name,
+            embedding_generator=embedding_generator,
         )
 
     @override
@@ -582,10 +604,11 @@ class MongoDBAtlasStore(VectorStore):
         return MongoDBAtlasCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
-            mongo_client=self.mongo_client,
             collection_name=collection_name,
+            mongo_client=self.mongo_client,
+            managed_client=False,
             database_name=self.database_name,
-            embedding_generator=embedding_generator,
+            embedding_generator=embedding_generator or self.embedding_generator,
             **kwargs,
         )
 

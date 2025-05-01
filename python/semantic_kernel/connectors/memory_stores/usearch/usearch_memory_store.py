@@ -12,6 +12,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from numpy import ndarray
+from usearch.index import BatchMatches, CompiledMetric, Index, Matches, MetricKind, ScalarKind
 
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
@@ -21,7 +22,6 @@ from semantic_kernel.exceptions import (
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
-from usearch.index import BatchMatches, CompiledMetric, Index, Matches, MetricKind, ScalarKind
 
 logger: logging.Logger = logging.getLogger(__name__)
 

@@ -50,13 +50,23 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel, KernelBaseSettings
 from semantic_kernel.utils.authentication.async_default_azure_credential_wrapper import (
     AsyncDefaultAzureCredentialWrapper,
 )
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
+
+__all__ = [
+    "AzureCosmosDBNoSQLCollection",
+    "AzureCosmosDBNoSQLCompositeKey",
+    "AzureCosmosDBNoSQLSettings",
+    "AzureCosmosDBNoSQLStore",
+    "AzureCosmosDBforMongoDBCollection",
+    "AzureCosmosDBforMongoDBSettings",
+    "AzureCosmosDBforMongoDBStore",
+]
 
 # region: Constants
 
@@ -183,7 +193,7 @@ def _create_default_vector_embedding_policy(data_model_definition: VectorStoreRe
     return vector_embedding_policy
 
 
-@experimental
+@release_candidate
 class AzureCosmosDBNoSQLCompositeKey(KernelBaseModel):
     """Azure CosmosDB NoSQL composite key."""
 
@@ -211,7 +221,7 @@ def _get_partition_key(key: str | AzureCosmosDBNoSQLCompositeKey) -> str:
 # region: Settings
 
 
-@experimental
+@release_candidate
 class AzureCosmosDBforMongoDBSettings(KernelBaseSettings):
     """Azure CosmosDB for MongoDB settings.
 
@@ -240,7 +250,7 @@ class AzureCosmosDBforMongoDBSettings(KernelBaseSettings):
     database_name: str = DEFAULT_DB_NAME
 
 
-@experimental
+@release_candidate
 class AzureCosmosDBNoSQLSettings(KernelBaseSettings):
     """Azure CosmosDB NoSQL settings.
 
@@ -279,9 +289,13 @@ class AzureCosmosDBNoSQLSettings(KernelBaseSettings):
 # region: Mongo Collection
 
 
-@experimental
+@release_candidate
 class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Generic[TKey, TModel]):
     """Azure Cosmos DB for MongoDB collection."""
+
+    # For AzureCosmosDBNoSQLCollection
+    supported_key_types: ClassVar[set[str] | None] = {"str"}
+    supported_vector_types: ClassVar[set[str] | None] = {"float", "int"}
 
     def __init__(
         self,
@@ -473,7 +487,7 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
 # region: Mongo Store
 
 
-@experimental
+@release_candidate
 class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
     """Azure Cosmos DB for MongoDB store."""
 
@@ -482,39 +496,28 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
         connection_string: str | None = None,
         database_name: str | None = None,
         mongo_client: AsyncMongoClient | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
-        """Initializes a new instance of the AzureCosmosDBforMongoDBStore.
-
-        Args:
-        connection_string (str): The connection string for Azure CosmosDB for MongoDB, optional.
-            Can be read from environment variables.
-        database_name (str): The name of the database, optional. Can be read from environment variables.
-        mongo_client (MongoClient): The MongoDB client, optional.
-        env_file_path (str): Use the environment settings file as a fallback
-            to environment variables.
-        env_file_encoding (str): The encoding of the environment settings file.
-
-        """
         managed_client: bool = not mongo_client
         if mongo_client:
             super().__init__(
                 mongo_client=mongo_client,
                 managed_client=managed_client,
-                database_name=database_name or DEFAULT_DB_NAME,
+                database_name=database_name,
+                embedding_generator=embedding_generator,
             )
             return
-
         try:
             settings = AzureCosmosDBforMongoDBSettings(
                 env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
                 connection_string=connection_string,
                 database_name=database_name,
-                env_file_encoding=env_file_encoding,
             )
         except ValidationError as exc:
-            raise VectorStoreInitializationException("Failed to create MongoDB Atlas settings.") from exc
+            raise VectorStoreInitializationException("Failed to create Azure CosmosDB for MongoDB settings.") from exc
 
         mongo_client = AsyncMongoClient(
             settings.connection_string.get_secret_value(),
@@ -525,6 +528,7 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
             mongo_client=mongo_client,
             managed_client=managed_client,
             database_name=settings.database_name,
+            embedding_generator=embedding_generator,
         )
 
     @override
@@ -540,10 +544,11 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
         return AzureCosmosDBforMongoDBCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
-            mongo_client=self.mongo_client,
             collection_name=collection_name,
+            mongo_client=self.mongo_client,
+            managed_client=False,
             database_name=self.database_name,
-            embedding_generator=embedding_generator,
+            embedding_generator=embedding_generator or self.embedding_generator,
             **kwargs,
         )
 
@@ -551,7 +556,7 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
 # region: NoSQL Base
 
 
-@experimental
+@release_candidate
 class AzureCosmosDBNoSQLBase(KernelBaseModel):
     """An Azure Cosmos DB NoSQL collection stores documents in a Azure Cosmos DB NoSQL account."""
 
@@ -656,7 +661,7 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
 # region: NoSQL Collection
 
 
-@experimental
+@release_candidate
 class AzureCosmosDBNoSQLCollection(
     AzureCosmosDBNoSQLBase,
     VectorStoreRecordCollection[TKey, TModel],
@@ -1016,7 +1021,7 @@ class AzureCosmosDBNoSQLCollection(
 # region: NoSQL Store
 
 
-@experimental
+@release_candidate
 class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
     """A VectorStore implementation that uses Azure CosmosDB NoSQL as the backend storage."""
 
@@ -1027,32 +1032,19 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
         database_name: str | None = None,
         cosmos_client: CosmosClient | None = None,
         create_database: bool = False,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ):
-        """Initialize the AzureCosmosDBNoSQLStore.
-
-        Args:
-            url (str): The URL of the Azure Cosmos DB NoSQL account. Defaults to None.
-            key (str): The key of the Azure Cosmos DB NoSQL account. Defaults to None.
-            database_name (str): The name of the database. The database may not exist yet. If it does not exist,
-                                 it will be created when the first collection is created. Defaults to None.
-            cosmos_client (CosmosClient): The custom Azure Cosmos DB NoSQL client whose lifetime is managed by the user.
-                                          Defaults to None.
-            create_database (bool): If True, the database will be created if it does not exist.
-                                    Defaults to False.
-            env_file_path (str): The path to the .env file. Defaults to None.
-            env_file_encoding (str): The encoding of the .env file. Defaults to None.
-        """
         super().__init__(
             url=url,
             key=key,
             database_name=database_name,
             cosmos_client=cosmos_client,
             create_database=create_database,
+            embedding_generator=embedding_generator,
             env_file_path=env_file_path,
             env_file_encoding=env_file_encoding,
-            managed_client=cosmos_client is None,
         )
 
     @override
@@ -1064,17 +1056,20 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> VectorStoreRecordCollection:
+    ) -> "VectorStoreRecordCollection":
         return AzureCosmosDBNoSQLCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             collection_name=collection_name,
             database_name=self.database_name,
-            embedding_generator=embedding_generator,
-            cosmos_client=self.cosmos_client,
-            create_database=self.create_database,
-            url=str(self.cosmos_db_nosql_settings.url),
+            embedding_generator=embedding_generator or self.embedding_generator,
+            url=self.cosmos_db_nosql_settings.url,
             key=self.cosmos_db_nosql_settings.key.get_secret_value() if self.cosmos_db_nosql_settings.key else None,
+            cosmos_client=self.cosmos_client,
+            partition_key=None,
+            create_database=self.create_database,
+            env_file_path=None,
+            env_file_encoding=None,
             **kwargs,
         )
 

@@ -4,14 +4,14 @@ import logging
 from typing import ClassVar
 
 import numpy as np
+import redis
 from numpy import ndarray
 from pydantic import SecretStr, ValidationError
-
-import redis
 from redis.commands.search.field import TextField, VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 from redis.exceptions import ResponseError
+
 from semantic_kernel.connectors.memory_stores.redis.utils import (
     deserialize_document_to_record,
     deserialize_redis_to_record,

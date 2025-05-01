@@ -16,8 +16,8 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.kernel_types import OptionalOneOrList
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 TSearchResult = TypeVar("TSearchResult")
 TSearchOptions = TypeVar("TSearchOptions", bound="SearchOptions")
@@ -28,19 +28,19 @@ logger = logging.getLogger(__name__)
 # region: Options
 
 
-@experimental
+@release_candidate
 class SearchOptions(ABC, KernelBaseModel):
     """Options for a search.
 
     When multiple filters are used, they are combined with an AND operator.
     """
 
-    filter: OneOrMany[Callable | str] | None = None
+    filter: OptionalOneOrList[Callable | str] = None
     skip: Annotated[int, Field(ge=0)] = 0
     include_total_count: bool = False
 
 
-@experimental
+@release_candidate
 class TextSearchOptions(SearchOptions):
     """Options for a text search.
 
@@ -53,7 +53,7 @@ class TextSearchOptions(SearchOptions):
 # region: Results
 
 
-@experimental
+@release_candidate
 class KernelSearchResults(KernelBaseModel, Generic[TSearchResult]):
     """The result of a kernel search."""
 
@@ -62,7 +62,7 @@ class KernelSearchResults(KernelBaseModel, Generic[TSearchResult]):
     metadata: Mapping[str, Any] | None = None
 
 
-@experimental
+@release_candidate
 class TextSearchResult(KernelBaseModel):
     """The result of a text search."""
 
@@ -176,7 +176,7 @@ def default_options_update_function(
 # region: Text Search
 
 
-@experimental
+@release_candidate
 class TextSearch:
     """The base class for all text searches."""
 

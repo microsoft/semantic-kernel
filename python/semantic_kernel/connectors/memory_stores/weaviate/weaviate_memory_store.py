@@ -5,8 +5,8 @@ import logging
 from typing import Final
 
 import numpy as np
-
 import weaviate
+
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase

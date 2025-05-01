@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ast
 import logging
 import sys
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from inspect import isawaitable
 from typing import Any, ClassVar, Final, Generic
 
@@ -11,23 +12,26 @@ from pinecone.data.index_asyncio import _IndexAsyncio as IndexAsyncio
 from pinecone.grpc import GRPCIndex, GRPCVector, PineconeGRPC
 from pydantic import SecretStr, ValidationError
 
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
 from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import VectorSearch, VectorSearchOptions, VectorSearchResult
+from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
     TKey,
     TModel,
     VectorStore,
     VectorStoreRecordCollection,
+    _get_collection_name_from_model,
 )
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
+    VectorStoreModelException,
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
-from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
+from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 if sys.version_info >= (3, 12):
@@ -76,15 +80,17 @@ class PineconeCollection(
     namespace: str = ""
     index: IndexModel | None = None
     index_client: IndexAsyncio | GRPCIndex | None = None
-    supported_key_types: ClassVar[list[str] | None] = ["str"]
+    supported_key_types: ClassVar[set[str] | None] = {"str"}
+    supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR}
     embed_settings: dict[str, Any] | None = None
 
     def __init__(
         self,
-        collection_name: str,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
         client: PineconeGRPC | PineconeAsyncio | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         embed_model: str | None = None,
         embed_settings: dict[str, Any] | None = None,
         use_grpc: bool = False,
@@ -97,11 +103,12 @@ class PineconeCollection(
         """Initialize the Pinecone collection.
 
         Args:
-            collection_name: The name of the Pinecone collection.
             data_model_type: The type of the data model.
             data_model_definition: The definition of the data model.
+            collection_name: The name of the Pinecone collection.
             client: The Pinecone client to use. If not provided, a new client will be created.
             use_grpc: Whether to use the GRPC client or not. Default is False.
+            embedding_generator: The embedding generator to use. If not provided, it will be read from the environment.
             embed_model: The settings for the embedding model. If not provided, it will be read from the environment.
                 This cannot be combined with a GRPC client.
             embed_settings: The settings for the embedding model. If not provided, the model can be read
@@ -115,8 +122,9 @@ class PineconeCollection(
             env_file_encoding: The encoding of the environment file.
             kwargs: Additional arguments to pass to the Pinecone client.
         """
+        if not collection_name:
+            collection_name = _get_collection_name_from_model(data_model_type, data_model_definition)
         managed_client = not client
-
         try:
             settings = PineconeSettings(
                 api_key=api_key,
@@ -160,6 +168,7 @@ class PineconeCollection(
             embed_settings=embed_settings,
             namespace=settings.namespace,
             managed_client=managed_client,
+            embedding_generator=embedding_generator,
             **kwargs,
         )
 
@@ -171,13 +180,6 @@ class PineconeCollection(
                 "Pinecone only supports one (or zero when using the integrated inference) vector field. "
                 "Please use a different data model or "
                 f"remove {len(self.data_model_definition.vector_field_names) - 1} vector fields."
-            )
-        if len(self.data_model_definition.vector_field_names) == 0 and not self.embed_settings:
-            logger.warning(
-                "Pinecone collection does not have a vector field. "
-                "Please use the integrated inference to create the vector field. "
-                "Pass in the `embed` parameter to the collection creation method. "
-                "See https://docs.pinecone.io/guides/inference/understanding-inference for more details."
             )
 
     @override
@@ -217,19 +219,15 @@ class PineconeCollection(
             embed = kwargs.pop("embed", {})
         cloud = kwargs.pop("cloud", "aws")
         region = kwargs.pop("region", "us-east-1")
-        if "metric" not in embed and vector_field and vector_field.distance_function:
+        if "metric" not in embed and vector_field:
             if vector_field.distance_function not in DISTANCE_METRIC_MAP:
                 raise VectorStoreOperationException(
                     f"Distance function {vector_field.distance_function} is not supported by Pinecone."
                 )
             embed["metric"] = DISTANCE_METRIC_MAP[vector_field.distance_function]
         if "field_map" not in embed:
-            for field in self.data_model_definition.fields:
-                if (
-                    isinstance(field, VectorStoreRecordVectorField)
-                    and not field.embedding_generator
-                    and not self.embedding_generator
-                ):
+            for field in self.data_model_definition.vector_fields:
+                if not field.embedding_generator and not self.embedding_generator:
                     embed["field_map"] = {"text": field.storage_property_name or field.name}
                     break
         index_creation_args = {
@@ -321,31 +319,36 @@ class PineconeCollection(
 
     def _record_to_pinecone_vector(self, record: dict[str, Any]) -> Vector | GRPCVector | dict[str, Any]:
         """Convert a record to a Pinecone vector."""
-        metadata_fields = self.data_model_definition.get_field_names(
+        metadata_fields = self.data_model_definition.get_storage_property_names(
             include_key_field=False, include_vector_fields=False
         )
+        vector_field = self.data_model_definition.vector_fields[0]
         if isinstance(self.client, PineconeGRPC):
             return GRPCVector(
-                id=record[self._key_field_name],
-                values=record.get(self.data_model_definition.vector_field_names[0], None),
+                id=record[self._key_field_storage_property_name],
+                values=record.get(vector_field.storage_property_name or vector_field.name, None),
                 metadata={key: value for key, value in record.items() if key in metadata_fields},
             )
         if self.embed_settings is not None:
-            record.pop(self.data_model_definition.vector_field_names[0], None)
+            record.pop(vector_field.storage_property_name or vector_field.name, None)
             record["_id"] = record.pop(self._key_field_name)
             return record
         return Vector(
-            id=record[self._key_field_name],
-            values=record.get(self.data_model_definition.vector_field_names[0], None) or list(),
+            id=record[self._key_field_storage_property_name],
+            values=record.get(vector_field.storage_property_name or vector_field.name, None) or list(),
             metadata={key: value for key, value in record.items() if key in metadata_fields},
         )
 
     def _pinecone_vector_to_record(self, record: Vector | dict[str, Any]) -> dict[str, Any]:
         """Convert a Pinecone vector to a record."""
         if isinstance(record, dict):
-            record[self._key_field_name] = record.pop("_id")
+            record[self._key_field_storage_property_name] = record.pop("_id")
             return record
-        ret_record = {self._key_field_name: record.id, self.data_model_definition.vector_field_names[0]: record.values}
+        vector_field = self.data_model_definition.vector_fields[0]
+        ret_record = {
+            self._key_field_storage_property_name: record.id,
+            vector_field.storage_property_name or vector_field.name: record.values,
+        }
         ret_record.update(record.metadata)
         return ret_record
 
@@ -423,10 +426,9 @@ class PineconeCollection(
     @override
     async def _inner_search(
         self,
+        search_type: SearchType,
         options: VectorSearchOptions,
-        keywords: OptionalOneOrMany[str] = None,
-        search_text: str | None = None,
-        vectorizable_text: str | None = None,
+        values: Any | None = None,
         vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
@@ -435,53 +437,37 @@ class PineconeCollection(
             await self._load_index_client()
         if not self.index_client:
             raise VectorStoreOperationException("Pinecone collection is not initialized.")
+        if search_type != SearchType.VECTOR:
+            raise VectorStoreOperationException(f"Search type {search_type} is not supported by Pinecone.")
         if "namespace" not in kwargs:
             kwargs["namespace"] = self.namespace
-        if vector is not None:
-            if self.embed_settings is not None:
-                raise VectorStoreOperationException(
-                    "Pinecone collection only support vector search when integrated embeddings are used.",
-                )
-            return await self._inner_vectorized_search(vector, options, **kwargs)
-        if vectorizable_text is not None:
-            if self.embed_settings is None:
-                raise VectorStoreOperationException(
-                    "Pinecone collection only support vectorizable text search when integrated embeddings are used.",
-                )
-            return await self._inner_vectorizable_text_search(vectorizable_text, options, **kwargs)
-
-        raise VectorStoreOperationException(
-            "Pinecone collection does not support text search. Please provide a vector.",
-        )
-
-    async def _inner_vectorizable_text_search(
-        self,
-        vectorizable_text: str,
-        options: VectorSearchOptions,
-        **kwargs: Any,
-    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        if not self.index_client or isinstance(self.index_client, GRPCIndex):
-            raise VectorStoreOperationException(
-                "Pinecone GRPC client does not support integrated embeddings. Please use the Pinecone Asyncio client."
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        if not vector_field:
+            raise VectorStoreModelException(
+                f"Vector field '{options.vector_field_name}' not found in the data model definition."
             )
-        search_args = {
-            "query": {"inputs": {"text": vectorizable_text}, "top_k": options.top},
-            "namespace": kwargs.get("namespace", self.namespace),
-        }
-        if options.filter and (filter := self._build_filter(options.filter)):
-            search_args["query"]["filter"] = filter
-
-        results = await self.index_client.search_records(**search_args)
-        return KernelSearchResults(
-            results=self._get_vector_search_results_from_results(results.result.hits, options),
-            total_count=len(results.result.hits),
-        )
-
-    async def _inner_vectorized_search(
-        self, vector: list[float | int], options: VectorSearchOptions, **kwargs: Any
-    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        """Search the records in the Pinecone collection."""
-        assert self.index_client is not None  # nosec
+        filter = self._build_filter(options.filter)
+        # is embedded mode
+        if self.embed_settings is not None:
+            if not self.index_client or isinstance(self.index_client, GRPCIndex):
+                raise VectorStoreOperationException(
+                    "Pinecone GRPC client does not support integrated embeddings. Please use the Pinecone Asyncio client."
+                )
+            search_args = {
+                "query": {"inputs": {"text": values}, "top_k": options.top},
+                "namespace": kwargs.get("namespace", self.namespace),
+            }
+            if filter:
+                search_args["query"]["filter"] = {"$and": filter} if isinstance(filter, list) else filter
+            results = await self.index_client.search_records(**search_args)
+            return KernelSearchResults(
+                results=self._get_vector_search_results_from_results(results.result.hits, options),
+                total_count=len(results.result.hits),
+            )
+        if not vector:
+            vector = await self._generate_vector_from_values(values, options)
+        if not vector:
+            raise VectorStoreOperationException("No vector found for the given values.")
         search_args = {
             "vector": vector,
             "top_k": options.top,
@@ -489,8 +475,8 @@ class PineconeCollection(
             "include_values": options.include_vectors,
             "namespace": kwargs.get("namespace", self.namespace),
         }
-        if options.filter and (filter := self._build_filter(options.filter)):
-            search_args["filter"] = filter
+        if filter:
+            search_args["filter"] = {"$and": filter} if isinstance(filter, list) else filter
         results = self.index_client.query(**search_args)
         if isawaitable(results):
             results = await results
@@ -499,19 +485,89 @@ class PineconeCollection(
             total_count=len(results.matches),
         )
 
-    def _build_filter(self, filters: VectorSearchFilter | Callable) -> dict[str, Any]:
-        """Build the filter for the Pinecone collection."""
-        if not isinstance(filters, VectorSearchFilter):
-            raise VectorStoreOperationException("Lambda filters are not supported yet.")
-        ret_filter: dict[str, Any] = {}
-        ret_filter = {"$and": []}
-        for filter in filters.filters:
-            ret_filter["$and"].append({filter.field_name: {"$eq": filter.value}})
-        if len(ret_filter["$and"]) == 0:
-            return {}
-        if len(ret_filter["$and"]) == 1:
-            return ret_filter["$and"][0]
-        return ret_filter
+    @override
+    def _lambda_parser(self, node: ast.AST) -> Any:
+        # Comparison operations
+        match node:
+            case ast.Compare():
+                if len(node.ops) > 1:
+                    # Chain comparisons (e.g., 1 < x < 3) become $and of each comparison
+                    values = []
+                    for idx in range(len(node.ops)):
+                        left = node.left if idx == 0 else node.comparators[idx - 1]
+                        right = node.comparators[idx]
+                        op = node.ops[idx]
+                        values.append(self._lambda_parser(ast.Compare(left=left, ops=[op], comparators=[right])))
+                    return {"$and": values}
+                left = self._lambda_parser(node.left)
+                right = self._lambda_parser(node.comparators[0])
+                op = node.ops[0]
+                match op:
+                    case ast.In():
+                        return {left: {"$in": right}}
+                    case ast.NotIn():
+                        return {left: {"$nin": right}}
+                    case ast.Eq():
+                        # Pinecone allows short form: {field: value}
+                        return {left: right}
+                    case ast.NotEq():
+                        return {left: {"$ne": right}}
+                    case ast.Gt():
+                        return {left: {"$gt": right}}
+                    case ast.GtE():
+                        return {left: {"$gte": right}}
+                    case ast.Lt():
+                        return {left: {"$lt": right}}
+                    case ast.LtE():
+                        return {left: {"$lte": right}}
+                raise NotImplementedError(f"Unsupported operator: {type(op)}")
+            case ast.BoolOp():
+                op = node.op
+                values = [self._lambda_parser(v) for v in node.values]
+                if isinstance(op, ast.And):
+                    return {"$and": values}
+                if isinstance(op, ast.Or):
+                    return {"$or": values}
+                raise NotImplementedError(f"Unsupported BoolOp: {type(op)}")
+            case ast.UnaryOp():
+                match node.op:
+                    case ast.Not():
+                        operand = self._lambda_parser(node.operand)
+                        # Pinecone only supports $not over $in (becomes $nin)
+                        if (
+                            isinstance(operand, dict)
+                            and len(operand) == 1
+                            and isinstance(list(operand.values())[0], dict)
+                            and "$in" in list(operand.values())[0]
+                        ):
+                            field = list(operand.keys())[0]
+                            values = list(operand.values())[0]["$in"]
+                            return {field: {"$nin": values}}
+                        raise NotImplementedError(
+                            "$not is only supported over $in (i.e., for ![...].contains(field)). "
+                            "Other NOT expressions are not supported by Pinecone."
+                        )
+                    case ast.UAdd() | ast.USub() | ast.Invert():
+                        raise NotImplementedError("Unary +, -, ~ are not supported in Pinecone filters.")
+            case ast.Attribute():
+                # Only allow attributes that are in the data model
+                if node.attr not in self.data_model_definition.storage_property_names:
+                    raise VectorStoreOperationException(
+                        f"Field '{node.attr}' not in data model (storage property names are used)."
+                    )
+                return node.attr
+            case ast.Name():
+                # Only allow names that are in the data model
+                if node.id not in self.data_model_definition.storage_property_names:
+                    raise VectorStoreOperationException(
+                        f"Field '{node.id}' not in data model (storage property names are used)."
+                    )
+                return node.id
+            case ast.Constant():
+                if node.value is None:
+                    raise NotImplementedError("Pinecone does not support null checks in vector search pre-filters.")
+                return node.value
+        raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
     @override
     def _get_record_from_result(self, result: dict[str, Any]) -> dict[str, Any]:
@@ -538,6 +594,7 @@ class PineconeCollection(
             await self.client.close()
 
 
+@release_candidate
 class PineconeStore(VectorStore):
     """Pinecone Vector Store, for interacting with Pinecone collections."""
 
@@ -547,6 +604,7 @@ class PineconeStore(VectorStore):
         self,
         client: PineconeGRPC | PineconeAsyncio | None = None,
         api_key: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         use_grpc: bool = False,
@@ -588,6 +646,7 @@ class PineconeStore(VectorStore):
         super().__init__(
             client=client,
             managed_client=managed_client,
+            embedding_generator=embedding_generator,
             **kwargs,
         )
 
@@ -601,9 +660,11 @@ class PineconeStore(VectorStore):
     @override
     def get_collection(
         self,
-        collection_name: str,
         data_model_type: type[TModel],
+        *,
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> "VectorStoreRecordCollection":
         """Create the Pinecone collection."""
@@ -612,6 +673,7 @@ class PineconeStore(VectorStore):
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             client=self.client,
+            embedding_generator=embedding_generator or self.embedding_generator,
             **kwargs,
         )
 

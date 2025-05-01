@@ -53,7 +53,7 @@ from semantic_kernel.exceptions import (
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if sys.version_info >= (3, 12):
@@ -96,8 +96,14 @@ TYPE_MAP_VECTOR: Final[dict[str, str]] = {
     "default": SearchFieldDataType.Collection(SearchFieldDataType.Single),
 }
 
+__all__ = [
+    "AzureAISearchCollection",
+    "AzureAISearchSettings",
+    "AzureAISearchStore",
+]
 
-@experimental
+
+@release_candidate
 class AzureAISearchSettings(KernelBaseSettings):
     """Azure AI Search model settings currently used by the AzureCognitiveSearchMemoryStore connector.
 
@@ -225,7 +231,7 @@ def _data_model_definition_to_azure_ai_search_index(
     )
 
 
-@experimental
+@release_candidate
 class AzureAISearchCollection(
     VectorStoreRecordCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
@@ -235,13 +241,10 @@ class AzureAISearchCollection(
 
     search_client: SearchClient
     search_index_client: SearchIndexClient
-    supported_key_types: ClassVar[list[str] | None] = ["str"]
-    supported_vector_types: ClassVar[list[str] | None] = ["float", "int"]
+    supported_key_types: ClassVar[set[str] | None] = {"str"}
+    supported_vector_types: ClassVar[set[str] | None] = {"float", "int"}
+    supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR, SearchType.KEYWORD_HYBRID}
     managed_search_index_client: bool = True
-    supported_search_types: ClassVar[set[SearchType]] = {
-        SearchType.VECTOR,
-        SearchType.KEYWORD_HYBRID,
-    }
 
     def __init__(
         self,
@@ -622,7 +625,7 @@ class AzureAISearchCollection(
             await self.search_index_client.close()
 
 
-@experimental
+@release_candidate
 class AzureAISearchStore(VectorStore):
     """Azure AI Search store implementation."""
 
@@ -639,21 +642,6 @@ class AzureAISearchStore(VectorStore):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
-        """Initializes a new instance of the AzureAISearchStore client.
-
-        Args:
-        search_endpoint (str): The endpoint of the Azure AI Search service, optional.
-            Can be read from environment variables.
-        api_key (str): Azure AI Search API key, optional. Can be read from environment variables.
-        azure_credentials (AzureKeyCredential ): Azure AI Search credentials, optional.
-        token_credentials (AsyncTokenCredential | TokenCredential): Azure AI Search token credentials, optional.
-        search_index_client (SearchIndexClient): The search index client, optional.
-        embedding_generator (EmbeddingGeneratorBase | None): The embedding generator, optional.
-        env_file_path (str): Use the environment settings file as a fallback
-            to environment variables.
-        env_file_encoding (str): The encoding of the environment settings file.
-
-        """
         managed_client: bool = False
         if not search_index_client:
             try:
@@ -685,7 +673,7 @@ class AzureAISearchStore(VectorStore):
         *,
         data_model_definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
-        embedding_generator: "EmbeddingGeneratorBase | None" = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         search_client: SearchClient | None = None,
         **kwargs: Any,
     ) -> "VectorStoreRecordCollection":
@@ -703,10 +691,9 @@ class AzureAISearchStore(VectorStore):
         return AzureAISearchCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
+            collection_name=collection_name,
             search_index_client=self.search_index_client,
             search_client=search_client,
-            collection_name=collection_name,
-            managed_client=search_client is None,
             embedding_generator=embedding_generator or self.embedding_generator,
             **kwargs,
         )

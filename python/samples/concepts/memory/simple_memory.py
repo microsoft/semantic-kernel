@@ -10,7 +10,7 @@ from samples.concepts.memory.utils import print_record
 from samples.concepts.resources.utils import Colors, print_with_color
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings, OpenAITextEmbedding
-from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
+from semantic_kernel.connectors.memory.in_memory import InMemoryCollection
 from semantic_kernel.data import (
     VectorSearchFilter,
     VectorSearchOptions,
@@ -99,7 +99,7 @@ async def main():
     # we also use the async with to open and close the connection
     # for the in memory collection, this is just a no-op
     # but for other collections, like Azure AI Search, this will open and close the connection
-    async with InMemoryVectorCollection[str, DataModel](
+    async with InMemoryCollection[str, DataModel](
         collection_name="test",
         data_model_type=DataModel,
     ) as record_collection:
