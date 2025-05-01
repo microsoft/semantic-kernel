@@ -236,7 +236,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
         var redisResultString = redisResult.ToString();
         if (redisResultString is null)
         {
-            throw new VectorStoreRecordMappingException($"Document with key '{key}' does not contain any json.");
+            throw new InvalidOperationException($"Document with key '{key}' does not contain any json.");
         }
 
         // Convert to the caller's data model.
@@ -290,7 +290,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
             var redisResultString = redisResult.ToString();
             if (redisResultString is null)
             {
-                throw new VectorStoreRecordMappingException($"Document with key '{key}' does not contain any json.");
+                throw new InvalidOperationException($"Document with key '{key}' does not contain any json.");
             }
 
             // Convert to the caller's data model.

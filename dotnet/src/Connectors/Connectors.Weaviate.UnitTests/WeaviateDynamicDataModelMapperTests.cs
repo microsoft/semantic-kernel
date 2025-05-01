@@ -330,7 +330,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
         var storageModel = new JsonObject();
 
         // Act & Assert
-        var exception = Assert.Throws<VectorStoreRecordMappingException>(
+        var exception = Assert.Throws<InvalidOperationException>(
             () => sut.MapFromStorageToDataModel(storageModel, includeVectors: true));
     }
 
