@@ -24,10 +24,13 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVec
     {
         // Use embedding generation service and record collection for the fixture.
         var textEmbeddingGeneration = fixture.TextEmbeddingGenerationService;
-        var vectorizedSearch = fixture.VectorStoreRecordCollection;
+        var collection = fixture.VectorStoreRecordCollection;
 
         // Create a text search instance using the InMemory vector store.
-        var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration);
+        // TODO: Once OpenAITextEmbeddingGenerationService implements MEAI's IEmbeddingGenerator (#10811), configure it with the collection
+#pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
+        var textSearch = new VectorStoreTextSearch<DataModel>(collection, textEmbeddingGeneration);
+#pragma warning restore CS0618
 
         // Search and return results as TextSearchResult items
         var query = "What is the Semantic Kernel?";
@@ -57,10 +60,13 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVec
 
         // Use embedding generation service and record collection for the fixture.
         var textEmbeddingGeneration = fixture.TextEmbeddingGenerationService;
-        var vectorizedSearch = fixture.VectorStoreRecordCollection;
+        var collection = fixture.VectorStoreRecordCollection;
 
         // Create a text search instance using the InMemory vector store.
-        var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration);
+        // TODO: Once OpenAITextEmbeddingGenerationService implements MEAI's IEmbeddingGenerator (#10811), configure it with the collection
+#pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
+        var textSearch = new VectorStoreTextSearch<DataModel>(collection, textEmbeddingGeneration);
+#pragma warning restore CS0618
 
         // Build a text search plugin with vector store search and add to the kernel
         var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");
@@ -69,14 +75,14 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVec
         // Invoke prompt and use text search plugin to provide grounding information
         var query = "What is the Semantic Kernel?";
         string promptTemplate = """
-            {{#with (SearchPlugin-GetTextSearchResults query)}}  
-              {{#each this}}  
+            {{#with (SearchPlugin-GetTextSearchResults query)}}
+              {{#each this}}
                 Name: {{Name}}
                 Value: {{Value}}
                 Link: {{Link}}
                 -----------------
-              {{/each}}  
-            {{/with}}  
+              {{/each}}
+            {{/with}}
 
             {{query}}
 
@@ -108,10 +114,13 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVec
 
         // Use embedding generation service and record collection for the fixture.
         var textEmbeddingGeneration = fixture.TextEmbeddingGenerationService;
-        var vectorizedSearch = fixture.VectorStoreRecordCollection;
+        var collection = fixture.VectorStoreRecordCollection;
 
         // Create a text search instance using the InMemory vector store.
-        var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration);
+        // TODO: Once OpenAITextEmbeddingGenerationService implements MEAI's IEmbeddingGenerator (#10811), configure it with the collection
+#pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
+        var textSearch = new VectorStoreTextSearch<DataModel>(collection, textEmbeddingGeneration);
+#pragma warning restore CS0618
 
         // Build a text search plugin with vector store search and add to the kernel
         var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");

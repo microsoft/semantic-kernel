@@ -40,12 +40,12 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             Properties = new List<VectorStoreRecordProperty>
             {
                 new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("Description", typeof(string)) { IsFullTextSearchable = true },
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
-                new VectorStoreRecordDataProperty("Tags", typeof(string[])) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("FTSTags", typeof(string[])) { IsFullTextSearchable = true },
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty("Description", typeof(string)) { IsFullTextIndexed = true },
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4),
+                new VectorStoreRecordDataProperty("Tags", typeof(string[])) { IsIndexed = true },
+                new VectorStoreRecordDataProperty("FTSTags", typeof(string[])) { IsFullTextIndexed = true },
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
                 new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset)),
                 new VectorStoreRecordDataProperty("Rating", typeof(double)),
@@ -57,10 +57,10 @@ public class RedisVectorStoreFixture : IAsyncLifetime
             Properties = new List<VectorStoreRecordProperty>
             {
                 new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("Description", typeof(string)) { IsFullTextSearchable = true },
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty("Description", typeof(string)) { IsFullTextIndexed = true },
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4),
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
                 new VectorStoreRecordDataProperty("Rating", typeof(double)),
             }

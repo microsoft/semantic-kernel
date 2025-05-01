@@ -126,12 +126,12 @@ static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel
             ReadOnlyMemory<float> promptEmbedding = await embeddingGenerationService.GenerateEmbeddingAsync(prompt, cancellationToken: cancellationToken);
 
             // Retrieve top three matching records from the vector store
-            VectorSearchResults<TextDataModel> result = await vsCollection.VectorizedSearchAsync(promptEmbedding, new() { Top = 3 }, cancellationToken);
+            var result = vsCollection.SearchEmbeddingAsync(promptEmbedding, top: 3, cancellationToken: cancellationToken);
 
             // Return the records as resource contents
             List<ResourceContents> contents = [];
 
-            await foreach (var record in result.Results)
+            await foreach (var record in result)
             {
                 contents.Add(new TextResourceContents()
                 {

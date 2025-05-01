@@ -777,6 +777,7 @@ internal partial class ClientCore
                         TextContent textContent => ChatMessageContentPart.CreateTextPart(textContent.Text),
                         ImageContent imageContent => GetImageContentItem(imageContent),
                         AudioContent audioContent => GetAudioContentItem(audioContent),
+                        BinaryContent binaryContent => GetBinaryContentItem(binaryContent),
                         _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
                     }))
                 { ParticipantName = message.AuthorName }
@@ -885,6 +886,16 @@ internal partial class ClientCore
         }
 
         throw new ArgumentException($"{nameof(AudioContent)} must have Data bytes.");
+    }
+
+    private static ChatMessageContentPart GetBinaryContentItem(BinaryContent binaryContent)
+    {
+        if (binaryContent.Data is { IsEmpty: false } data)
+        {
+            return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(data), binaryContent.MimeType, Guid.NewGuid().ToString());
+        }
+
+        throw new ArgumentException($"{nameof(BinaryContent)} must have Data bytes.");
     }
 
     private static ChatInputAudioFormat GetChatInputAudioFormat(string? mimeType)

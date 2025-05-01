@@ -107,11 +107,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{958AD708-F04
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics", "{29E7D971-1308-4171-9872-E8E4669A1134}"
 	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\Diagnostics\ActivityExtensions.cs = src\InternalUtilities\src\Diagnostics\ActivityExtensions.cs
 		src\InternalUtilities\src\Diagnostics\CompilerServicesAttributes.cs = src\InternalUtilities\src\Diagnostics\CompilerServicesAttributes.cs
 		src\InternalUtilities\src\Diagnostics\DynamicallyAccessedMembersAttribute.cs = src\InternalUtilities\src\Diagnostics\DynamicallyAccessedMembersAttribute.cs
 		src\InternalUtilities\src\Diagnostics\ExceptionExtensions.cs = src\InternalUtilities\src\Diagnostics\ExceptionExtensions.cs
 		src\InternalUtilities\src\Diagnostics\ExperimentalAttribute.cs = src\InternalUtilities\src\Diagnostics\ExperimentalAttribute.cs
 		src\InternalUtilities\src\Diagnostics\IsExternalInit.cs = src\InternalUtilities\src\Diagnostics\IsExternalInit.cs
+		src\InternalUtilities\src\Diagnostics\KernelVerify.cs = src\InternalUtilities\src\Diagnostics\KernelVerify.cs
+		src\InternalUtilities\src\Diagnostics\LoggingExtensions.cs = src\InternalUtilities\src\Diagnostics\LoggingExtensions.cs
 		src\InternalUtilities\src\Diagnostics\NullableAttributes.cs = src\InternalUtilities\src\Diagnostics\NullableAttributes.cs
 		src\InternalUtilities\src\Diagnostics\RequiresDynamicCodeAttribute.cs = src\InternalUtilities\src\Diagnostics\RequiresDynamicCodeAttribute.cs
 		src\InternalUtilities\src\Diagnostics\RequiresUnreferencedCodeAttribute.cs = src\InternalUtilities\src\Diagnostics\RequiresUnreferencedCodeAttribute.cs
@@ -537,15 +540,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Runtime", "Runtime", "{A70E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.Abstractions", "src\Agents\Runtime\Abstractions\Runtime.Abstractions.csproj", "{B9C86C5D-EB4C-8A16-E567-27025AC59A28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.Abstractions.Tests", "src\Agents\Runtime\Abstractions.Tests\Runtime.Abstractions.Tests.csproj", "{BB74EEE2-F048-A1A4-F53E-2B384A6F8BC4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.Abstractions.UnitTests", "src\Agents\Runtime\Abstractions.Tests\Runtime.Abstractions.UnitTests.csproj", "{BB74EEE2-F048-A1A4-F53E-2B384A6F8BC4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.Core", "src\Agents\Runtime\Core\Runtime.Core.csproj", "{19DC60E6-AD08-4BCB-A4DF-B80E0941B458}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.Core.Tests", "src\Agents\Runtime\Core.Tests\Runtime.Core.Tests.csproj", "{A4F05541-7D23-A5A9-033D-382F1E13D0FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.Core.UnitTests", "src\Agents\Runtime\Core.Tests\Runtime.Core.UnitTests.csproj", "{A4F05541-7D23-A5A9-033D-382F1E13D0FE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.InProcess", "src\Agents\Runtime\InProcess\Runtime.InProcess.csproj", "{CCC909E4-5269-A31E-0BFD-4863B4B29BBB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.InProcess.Tests", "src\Agents\Runtime\InProcess.Tests\Runtime.InProcess.Tests.csproj", "{DA6B4ED4-ED0B-D25C-889C-9F940E714891}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.InProcess.UnitTests", "src\Agents\Runtime\InProcess.Tests\Runtime.InProcess.UnitTests.csproj", "{DA6B4ED4-ED0B-D25C-889C-9F940E714891}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorData.UnitTests", "src\Connectors\VectorData.UnitTests\VectorData.UnitTests.csproj", "{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1508,6 +1513,12 @@ Global
 		{DA6B4ED4-ED0B-D25C-889C-9F940E714891}.Publish|Any CPU.Build.0 = Release|Any CPU
 		{DA6B4ED4-ED0B-D25C-889C-9F940E714891}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA6B4ED4-ED0B-D25C-889C-9F940E714891}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1713,6 +1724,7 @@ Global
 		{A4F05541-7D23-A5A9-033D-382F1E13D0FE} = {A70ED5A7-F8E1-4A57-9455-3C05989542DA}
 		{CCC909E4-5269-A31E-0BFD-4863B4B29BBB} = {A70ED5A7-F8E1-4A57-9455-3C05989542DA}
 		{DA6B4ED4-ED0B-D25C-889C-9F940E714891} = {A70ED5A7-F8E1-4A57-9455-3C05989542DA}
+		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84} = {5A7028A7-4DDF-4E4F-84A9-37CE8F8D7E89}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

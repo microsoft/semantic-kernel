@@ -4,14 +4,13 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Moq;
 using Xunit;
 using Sdk = Pinecone;
 
 namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
 /// <summary>
-/// Contains tests for the <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> class.
+/// Contains tests for the <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 public class PineconeVectorStoreRecordCollectionTests
 {
@@ -30,18 +29,18 @@ public class PineconeVectorStoreRecordCollectionTests
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+                new VectorStoreRecordKeyProperty("Key", typeof(string)),
+                new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)),
+                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>?), 4),
             }
         };
         var pineconeClient = new Sdk.PineconeClient("fake api key");
 
         // Act.
-        var sut = new PineconeVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new PineconeVectorStoreRecordCollection<string, SinglePropsModel>(
             pineconeClient,
             TestCollectionName,
-            new() { VectorStoreRecordDefinition = definition, VectorCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel, Sdk.Vector>>() });
+            new() { VectorStoreRecordDefinition = definition });
     }
 
     public sealed class SinglePropsModel

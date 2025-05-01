@@ -70,12 +70,12 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
             Properties = new List<VectorStoreRecordProperty>
             {
                 new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 1536 },
-                new VectorStoreRecordDataProperty("Tags", typeof(string[])) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool?)) { IsFilterable = true, StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset?)) { IsFilterable = true },
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 1536),
+                new VectorStoreRecordDataProperty("Tags", typeof(string[])) { IsIndexed = true },
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool?)) { IsIndexed = true, StoragePropertyName = "parking_is_included" },
+                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset?)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("Rating", typeof(double?))
             }
         };
@@ -115,6 +115,11 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     public ITextEmbeddingGenerationService EmbeddingGenerator { get; private set; }
 
     /// <summary>
+    /// Gets the embedding used for all test documents that the collection is seeded with.
+    /// </summary>
+    public ReadOnlyMemory<float> Embedding { get; private set; }
+
+    /// <summary>
     /// Create / Recreate index and upload documents before test run.
     /// </summary>
     /// <returns>An async task.</returns>
@@ -122,7 +127,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     {
         await AzureAISearchVectorStoreFixture.DeleteIndexIfExistsAsync(this._testIndexName, this.SearchIndexClient);
         await AzureAISearchVectorStoreFixture.CreateIndexAsync(this._testIndexName, this.SearchIndexClient);
-        await AzureAISearchVectorStoreFixture.UploadDocumentsAsync(this.SearchIndexClient.GetSearchClient(this._testIndexName), this.EmbeddingGenerator);
+        await this.UploadDocumentsAsync(this.SearchIndexClient.GetSearchClient(this._testIndexName), this.EmbeddingGenerator);
     }
 
     /// <summary>
@@ -193,9 +198,9 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     /// </summary>
     /// <param name="searchClient">The client to use for uploading the documents.</param>
     /// <param name="embeddingGenerator">An instance of <see cref="ITextEmbeddingGenerationService"/> to generate embeddings.</param>
-    public static async Task UploadDocumentsAsync(SearchClient searchClient, ITextEmbeddingGenerationService embeddingGenerator)
+    public async Task UploadDocumentsAsync(SearchClient searchClient, ITextEmbeddingGenerationService embeddingGenerator)
     {
-        var embedding = await embeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
+        this.Embedding = await embeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
 
         IndexDocumentsBatch<AzureAISearchHotel> batch = IndexDocumentsBatch.Create(
             IndexDocumentsAction.Upload(
@@ -204,7 +209,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     HotelId = "BaseSet-1",
                     HotelName = "Hotel 1",
                     Description = "This is a great hotel",
-                    DescriptionEmbedding = embedding,
+                    DescriptionEmbedding = this.Embedding,
                     Tags = new[] { "pool", "air conditioning", "concierge" },
                     ParkingIncluded = false,
                     LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
@@ -216,7 +221,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     HotelId = "BaseSet-2",
                     HotelName = "Hotel 2",
                     Description = "This is a great hotel",
-                    DescriptionEmbedding = embedding,
+                    DescriptionEmbedding = this.Embedding,
                     Tags = new[] { "pool", "free wifi", "concierge" },
                     ParkingIncluded = false,
                     LastRenovationDate = new DateTimeOffset(1979, 2, 18, 0, 0, 0, TimeSpan.Zero),
@@ -228,7 +233,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     HotelId = "BaseSet-3",
                     HotelName = "Hotel 3",
                     Description = "This is a great hotel",
-                    DescriptionEmbedding = embedding,
+                    DescriptionEmbedding = this.Embedding,
                     Tags = new[] { "air conditioning", "bar", "continental breakfast" },
                     ParkingIncluded = true,
                     LastRenovationDate = new DateTimeOffset(2015, 9, 20, 0, 0, 0, TimeSpan.Zero),
@@ -240,7 +245,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                     HotelId = "BaseSet-4",
                     HotelName = "Hotel 4",
                     Description = "This is a great hotel",
-                    DescriptionEmbedding = embedding,
+                    DescriptionEmbedding = this.Embedding,
                     Tags = new[] { "concierge", "view", "24-hour front desk service" },
                     ParkingIncluded = true,
                     LastRenovationDate = new DateTimeOffset(1960, 2, 06, 0, 0, 0, TimeSpan.Zero),
