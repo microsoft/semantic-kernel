@@ -50,7 +50,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     }
 
     /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildCreateTableCommand(string schema, string tableName, VectorStoreRecordModel model, bool ifNotExists = true)
+    internal static PostgresSqlCommandInfo BuildCreateTableCommand(string schema, string tableName, VectorStoreCollectionModel model, bool ifNotExists = true)
     {
         if (string.IsNullOrWhiteSpace(tableName))
         {
@@ -205,7 +205,7 @@ DO UPDATE SET {updateSetClause};
     }
 
     /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildGetCommand<TKey>(string schema, string tableName, VectorStoreRecordModel model, TKey key, bool includeVectors = false)
+    internal static PostgresSqlCommandInfo BuildGetCommand<TKey>(string schema, string tableName, VectorStoreCollectionModel model, TKey key, bool includeVectors = false)
         where TKey : notnull
     {
         List<string> queryColumns = new();
@@ -228,14 +228,14 @@ WHERE "{model.KeyProperty.StorageName}" = ${1};
     }
 
     /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, VectorStoreRecordModel model, List<TKey> keys, bool includeVectors = false)
+    internal static PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, VectorStoreCollectionModel model, List<TKey> keys, bool includeVectors = false)
         where TKey : notnull
     {
         NpgsqlDbType? keyType = PostgresVectorStoreRecordPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
 
         // Generate the column names
         var columns = model.Properties
-            .Where(p => includeVectors || p is not VectorStoreRecordVectorPropertyModel)
+            .Where(p => includeVectors || p is not VectorStoreVectorPropertyModel)
             .Select(p => p.StorageName)
             .ToList();
 
@@ -294,7 +294,7 @@ WHERE "{keyColumn}" = ANY($1);
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <inheritdoc />
     internal static PostgresSqlCommandInfo BuildGetNearestMatchCommand<TRecord>(
-        string schema, string tableName, VectorStoreRecordModel model, VectorStoreRecordVectorPropertyModel vectorProperty, Vector vectorValue,
+        string schema, string tableName, VectorStoreCollectionModel model, VectorStoreVectorPropertyModel vectorProperty, Vector vectorValue,
         VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter, int? skip, bool includeVectors, int limit)
     {
         var columns = string.Join(" ,", model.Properties.Select(property => $"\"{property.StorageName}\""));
@@ -362,14 +362,14 @@ FROM ({commandText}) AS subquery
     }
 
     internal static PostgresSqlCommandInfo BuildSelectWhereCommand<TRecord>(
-        string schema, string tableName, VectorStoreRecordModel model,
+        string schema, string tableName, VectorStoreCollectionModel model,
         Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options)
     {
         StringBuilder query = new(200);
         query.Append("SELECT ");
         foreach (var property in model.Properties)
         {
-            if (options.IncludeVectors || property is not VectorStoreRecordVectorPropertyModel)
+            if (options.IncludeVectors || property is not VectorStoreVectorPropertyModel)
             {
                 query.AppendFormat("\"{0}\",", property.StorageName);
             }
@@ -406,7 +406,7 @@ FROM ({commandText}) AS subquery
         };
     }
 
-    internal static (string Clause, List<object> Parameters) GenerateNewFilterWhereClause(VectorStoreRecordModel model, LambdaExpression newFilter, int startParamIndex)
+    internal static (string Clause, List<object> Parameters) GenerateNewFilterWhereClause(VectorStoreCollectionModel model, LambdaExpression newFilter, int startParamIndex)
     {
         PostgresFilterTranslator translator = new(model, newFilter, startParamIndex);
         translator.Translate(appendWhere: true);
@@ -414,7 +414,7 @@ FROM ({commandText}) AS subquery
     }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-    internal static (string Clause, List<object> Parameters) GenerateLegacyFilterWhereClause(string schema, string tableName, VectorStoreRecordModel model, VectorSearchFilter legacyFilter, int startParamIndex)
+    internal static (string Clause, List<object> Parameters) GenerateLegacyFilterWhereClause(string schema, string tableName, VectorStoreCollectionModel model, VectorSearchFilter legacyFilter, int startParamIndex)
     {
         var whereClause = new StringBuilder("WHERE ");
         var filterClauses = new List<string>();

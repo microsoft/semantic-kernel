@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 /// </summary>
 public class RedisHashSetDynamicDataModelMapperTests
 {
-    private static readonly VectorStoreRecordModel s_model = BuildModel(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
+    private static readonly VectorStoreCollectionModel s_model = BuildModel(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 
     private static readonly float[] s_floatVector = new float[] { 1.0f, 2.0f, 3.0f, 4.0f };
     private static readonly double[] s_doubleVector = new double[] { 5.0d, 6.0d, 7.0d, 8.0d };
@@ -60,14 +60,14 @@ public class RedisHashSetDynamicDataModelMapperTests
     public void MapFromDataToStorageModelMapsNullValues()
     {
         // Arrange
-        VectorStoreRecordModel model = BuildModel(new()
+        VectorStoreCollectionModel model = BuildModel(new()
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
-                new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
+                new VectorStoreKeyProperty("Key", typeof(string)),
+                new VectorStoreDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
+                new VectorStoreDataProperty("NullableIntData", typeof(int?)),
+                new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
             },
         });
 
@@ -131,12 +131,12 @@ public class RedisHashSetDynamicDataModelMapperTests
         // Arrange
         var model = BuildModel(new()
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
-                new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
+                new VectorStoreKeyProperty("Key", typeof(string)),
+                new VectorStoreDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
+                new VectorStoreDataProperty("NullableIntData", typeof(int?)),
+                new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
             }
         });
 
@@ -165,12 +165,12 @@ public class RedisHashSetDynamicDataModelMapperTests
         // Arrange.
         var model = BuildModel(new()
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
-                new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
+                new VectorStoreKeyProperty("Key", typeof(string)),
+                new VectorStoreDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
+                new VectorStoreDataProperty("NullableIntData", typeof(int?)),
+                new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
             }
         });
 
@@ -206,7 +206,7 @@ public class RedisHashSetDynamicDataModelMapperTests
         Assert.Equal("key", dataModel["Key"]);
     }
 
-    private static VectorStoreRecordModel BuildModel(VectorStoreRecordDefinition definition)
-        => new VectorStoreRecordModelBuilder(RedisHashSetVectorStoreRecordCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
+    private static VectorStoreCollectionModel BuildModel(VectorStoreRecordDefinition definition)
+        => new VectorStoreCollectionModelBuilder(RedisHashSetVectorStoreRecordCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
             .Build(typeof(Dictionary<string, object?>), definition, defaultEmbeddingGenerator: null);
 }

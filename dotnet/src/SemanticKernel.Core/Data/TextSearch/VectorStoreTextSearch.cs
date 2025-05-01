@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.Embeddings;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// A Vector Store Text Search implementation that can be used to perform searches using a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.
+/// A Vector Store Text Search implementation that can be used to perform searches using a <see cref="IVectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 [Experimental("SKEXP0001")]
 public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TRecord> : ITextSearch

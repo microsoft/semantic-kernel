@@ -87,19 +87,19 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
     /// </remarks>
     private sealed class Glossary
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public ulong Key { get; set; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreDataProperty(IsIndexed = true)]
         public string Category { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string Term { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string Definition { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVectorProperty(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 

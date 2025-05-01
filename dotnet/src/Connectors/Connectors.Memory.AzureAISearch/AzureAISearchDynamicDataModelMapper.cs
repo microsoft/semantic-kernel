@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <summary>
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Azure AI Search.
 /// </summary>
-internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel model)
+internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreCollectionModel model)
 {
     /// <inheritdoc />
     public JsonObject MapFromDataToStorageModel(Dictionary<string, object?> dataModel)
@@ -28,12 +28,12 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
         {
             switch (property)
             {
-                case VectorStoreRecordKeyPropertyModel keyProperty:
+                case VectorStoreKeyPropertyModel keyProperty:
                     storageJsonObject.Add(keyProperty.StorageName, (string)model.KeyProperty.GetValueAsObject(dataModel)!);
                     continue;
 
-                case VectorStoreRecordDataPropertyModel dataProperty:
-                case VectorStoreRecordVectorPropertyModel vectorProperty:
+                case VectorStoreDataPropertyModel dataProperty:
+                case VectorStoreVectorPropertyModel vectorProperty:
                     if (dataModel.TryGetValue(property.ModelName, out var dataValue))
                     {
                         var serializedJsonNode = JsonSerializer.SerializeToNode(dataValue);
@@ -62,13 +62,13 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
         {
             switch (property)
             {
-                case VectorStoreRecordKeyPropertyModel keyProperty:
+                case VectorStoreKeyPropertyModel keyProperty:
                     result[keyProperty.ModelName] = (string?)storageModel[keyProperty.StorageName]
                         ?? throw new InvalidOperationException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
 
                     continue;
 
-                case VectorStoreRecordDataPropertyModel dataProperty:
+                case VectorStoreDataPropertyModel dataProperty:
                 {
                     if (storageModel.TryGetPropertyValue(dataProperty.StorageName, out var value))
                     {
@@ -77,7 +77,7 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
                     continue;
                 }
 
-                case VectorStoreRecordVectorPropertyModel vectorProperty when includeVectors:
+                case VectorStoreVectorPropertyModel vectorProperty when includeVectors:
                 {
                     if (storageModel.TryGetPropertyValue(vectorProperty.StorageName, out var value))
                     {
@@ -95,7 +95,7 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
                     continue;
                 }
 
-                case VectorStoreRecordVectorPropertyModel vectorProperty when !includeVectors:
+                case VectorStoreVectorPropertyModel vectorProperty when !includeVectors:
                     break;
 
                 default:

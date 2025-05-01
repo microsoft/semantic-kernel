@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <typeparam name="TKey">The type of the key.</typeparam>
 /// <typeparam name="TRecord">The type of the record.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : notnull
@@ -30,7 +30,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     public string Name { get; }
 
     /// <summary>Metadata about vector store record collection.</summary>
-    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+    private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>Postgres client that is used to interact with the database.</summary>
     private readonly IPostgresVectorStoreDbClient _client;
@@ -39,7 +39,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly PostgresVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreRecordModel _model;
+    private readonly VectorStoreCollectionModel _model;
 
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
     private readonly PostgresVectorStoreRecordMapper<TRecord> _mapper;
@@ -78,7 +78,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         this.Name = name;
         this._options = options ?? new PostgresVectorStoreRecordCollectionOptions<TRecord>();
 
-        this._model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions)
+        this._model = new VectorStoreCollectionModelBuilder(PostgresConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
 
         this._mapper = new PostgresVectorStoreRecordMapper<TRecord>(this._model);
@@ -362,7 +362,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreRecordVectorPropertyModel vectorProperty,
+        VectorStoreVectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
@@ -440,7 +440,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return
             serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
             serviceType == typeof(NpgsqlDataSource) ? this._client.DataSource :
             serviceType.IsInstanceOfType(this) ? this :
             null;

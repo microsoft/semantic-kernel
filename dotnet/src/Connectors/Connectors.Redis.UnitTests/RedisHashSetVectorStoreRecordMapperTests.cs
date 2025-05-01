@@ -14,8 +14,8 @@ namespace SemanticKernel.Connectors.Redis.UnitTests;
 /// </summary>
 public sealed class RedisHashSetVectorStoreRecordMapperTests
 {
-    private static readonly VectorStoreRecordModel s_model
-        = new VectorStoreRecordModelBuilder(RedisHashSetVectorStoreRecordCollection<string, AllTypesModel>.ModelBuildingOptions)
+    private static readonly VectorStoreCollectionModel s_model
+        = new VectorStoreCollectionModelBuilder(RedisHashSetVectorStoreRecordCollection<string, AllTypesModel>.ModelBuildingOptions)
             .Build(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, defaultEmbeddingGenerator: null);
 
     [Fact]
@@ -93,58 +93,58 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 
     private sealed class AllTypesModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData(StoragePropertyName = "storage_string_data")]
+        [VectorStoreDataProperty(StoragePropertyName = "storage_string_data")]
         public string StringData { get; set; } = string.Empty;
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public int IntData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public uint UIntData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public long LongData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public ulong ULongData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public double DoubleData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public float FloatData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public bool BoolData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public int? NullableIntData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public uint? NullableUIntData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public long? NullableLongData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public ulong? NullableULongData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public double? NullableDoubleData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public float? NullableFloatData { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public bool? NullableBoolData { get; set; }
 
-        [VectorStoreRecordVector(10)]
+        [VectorStoreVectorProperty(10)]
         public ReadOnlyMemory<float>? FloatVector { get; set; }
 
-        [VectorStoreRecordVector(10)]
+        [VectorStoreVectorProperty(10)]
         public ReadOnlyMemory<double>? DoubleVector { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;

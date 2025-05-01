@@ -13,18 +13,18 @@ namespace GettingStartedWithVectorStores;
 /// </remarks>
 internal sealed class Glossary
 {
-    [VectorStoreRecordKey]
+    [VectorStoreKeyProperty]
     public string Key { get; set; }
 
-    [VectorStoreRecordData(IsIndexed = true)]
+    [VectorStoreDataProperty(IsIndexed = true)]
     public string Category { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreDataProperty]
     public string Term { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreDataProperty]
     public string Definition { get; set; }
 
-    [VectorStoreRecordVector(Dimensions: 1536)]
+    [VectorStoreVectorProperty(Dimensions: 1536)]
     public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
 }

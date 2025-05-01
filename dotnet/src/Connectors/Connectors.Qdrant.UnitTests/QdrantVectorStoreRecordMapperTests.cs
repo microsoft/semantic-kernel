@@ -24,7 +24,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(ulong));
-        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
+        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
             .Build(typeof(SinglePropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(model, hasNamedVectors);
 
@@ -54,7 +54,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(Guid));
-        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
+        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
             .Build(typeof(SinglePropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(model, hasNamedVectors);
 
@@ -77,7 +77,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(ulong));
-        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
+        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
             .Build(typeof(SinglePropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(model, hasNamedVectors);
 
@@ -109,7 +109,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(Guid));
-        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
+        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
             .Build(typeof(SinglePropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(model, hasNamedVectors);
 
@@ -137,7 +137,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(ulong));
-        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
             .Build(typeof(MultiPropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
 
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(model, hasNamedVectors: true);
@@ -166,7 +166,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(Guid));
-        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
             .Build(typeof(MultiPropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(model, hasNamedVectors: true);
 
@@ -196,7 +196,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(ulong));
-        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
             .Build(typeof(MultiPropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(model, hasNamedVectors: true);
 
@@ -235,7 +235,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(Guid));
-        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
             .Build(typeof(MultiPropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(model, hasNamedVectors: true);
 
@@ -375,23 +375,23 @@ public class QdrantVectorStoreRecordMapperTests
 
     private static VectorStoreRecordDefinition CreateSinglePropsVectorStoreRecordDefinition(Type keyType) => new()
     {
-        Properties = new List<VectorStoreRecordProperty>
+        Properties = new List<VectorStoreProperty>
         {
-            new VectorStoreRecordKeyProperty("Key", keyType) { StoragePropertyName = "key" },
-            new VectorStoreRecordDataProperty("Data", typeof(string)) { StoragePropertyName = "data" },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector" },
+            new VectorStoreKeyProperty("Key", keyType) { StoragePropertyName = "key" },
+            new VectorStoreDataProperty("Data", typeof(string)) { StoragePropertyName = "data" },
+            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector" },
         },
     };
 
     private sealed class SinglePropsModel<TKey>
     {
-        [VectorStoreRecordKey(StoragePropertyName = "key")]
+        [VectorStoreKeyProperty(StoragePropertyName = "key")]
         public TKey? Key { get; set; } = default;
 
-        [VectorStoreRecordData(StoragePropertyName = "data")]
+        [VectorStoreDataProperty(StoragePropertyName = "data")]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(10, StoragePropertyName = "vector")]
+        [VectorStoreVectorProperty(10, StoragePropertyName = "vector")]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;
@@ -399,56 +399,56 @@ public class QdrantVectorStoreRecordMapperTests
 
     private static VectorStoreRecordDefinition CreateMultiPropsVectorStoreRecordDefinition(Type keyType) => new()
     {
-        Properties = new List<VectorStoreRecordProperty>
+        Properties = new List<VectorStoreProperty>
         {
-            new VectorStoreRecordKeyProperty("Key", keyType) { StoragePropertyName = "key" },
-            new VectorStoreRecordDataProperty("DataString", typeof(string)) { StoragePropertyName = "dataString" },
-            new VectorStoreRecordDataProperty("DataInt", typeof(int)) { StoragePropertyName = "dataInt" },
-            new VectorStoreRecordDataProperty("DataLong", typeof(long)) { StoragePropertyName = "dataLong" },
-            new VectorStoreRecordDataProperty("DataFloat", typeof(float)) { StoragePropertyName = "dataFloat" },
-            new VectorStoreRecordDataProperty("DataDouble", typeof(double)) { StoragePropertyName = "dataDouble" },
-            new VectorStoreRecordDataProperty("DataBool", typeof(bool)) { StoragePropertyName = "dataBool" },
-            new VectorStoreRecordDataProperty("DataDateTimeOffset", typeof(DateTimeOffset)) { StoragePropertyName = "dataDateTimeOffset" },
-            new VectorStoreRecordDataProperty("DataArrayInt", typeof(List<int>)) { StoragePropertyName = "dataArrayInt" },
-            new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector1" },
-            new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector2" },
+            new VectorStoreKeyProperty("Key", keyType) { StoragePropertyName = "key" },
+            new VectorStoreDataProperty("DataString", typeof(string)) { StoragePropertyName = "dataString" },
+            new VectorStoreDataProperty("DataInt", typeof(int)) { StoragePropertyName = "dataInt" },
+            new VectorStoreDataProperty("DataLong", typeof(long)) { StoragePropertyName = "dataLong" },
+            new VectorStoreDataProperty("DataFloat", typeof(float)) { StoragePropertyName = "dataFloat" },
+            new VectorStoreDataProperty("DataDouble", typeof(double)) { StoragePropertyName = "dataDouble" },
+            new VectorStoreDataProperty("DataBool", typeof(bool)) { StoragePropertyName = "dataBool" },
+            new VectorStoreDataProperty("DataDateTimeOffset", typeof(DateTimeOffset)) { StoragePropertyName = "dataDateTimeOffset" },
+            new VectorStoreDataProperty("DataArrayInt", typeof(List<int>)) { StoragePropertyName = "dataArrayInt" },
+            new VectorStoreVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector1" },
+            new VectorStoreVectorProperty("Vector2", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector2" },
         },
     };
 
     private sealed class MultiPropsModel<TKey>
     {
-        [VectorStoreRecordKey(StoragePropertyName = "key")]
+        [VectorStoreKeyProperty(StoragePropertyName = "key")]
         public TKey? Key { get; set; } = default;
 
-        [VectorStoreRecordData(StoragePropertyName = "dataString")]
+        [VectorStoreDataProperty(StoragePropertyName = "dataString")]
         public string DataString { get; set; } = string.Empty;
 
         [JsonPropertyName("data_int_json")]
-        [VectorStoreRecordData(StoragePropertyName = "dataInt")]
+        [VectorStoreDataProperty(StoragePropertyName = "dataInt")]
         public int DataInt { get; set; } = 0;
 
-        [VectorStoreRecordData(StoragePropertyName = "dataLong")]
+        [VectorStoreDataProperty(StoragePropertyName = "dataLong")]
         public long DataLong { get; set; } = 0;
 
-        [VectorStoreRecordData(StoragePropertyName = "dataFloat")]
+        [VectorStoreDataProperty(StoragePropertyName = "dataFloat")]
         public float DataFloat { get; set; } = 0;
 
-        [VectorStoreRecordData(StoragePropertyName = "dataDouble")]
+        [VectorStoreDataProperty(StoragePropertyName = "dataDouble")]
         public double DataDouble { get; set; } = 0;
 
-        [VectorStoreRecordData(StoragePropertyName = "dataBool")]
+        [VectorStoreDataProperty(StoragePropertyName = "dataBool")]
         public bool DataBool { get; set; } = false;
 
-        [VectorStoreRecordData(StoragePropertyName = "dataDateTimeOffset")]
+        [VectorStoreDataProperty(StoragePropertyName = "dataDateTimeOffset")]
         public DateTimeOffset DataDateTimeOffset { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "dataArrayInt")]
+        [VectorStoreDataProperty(StoragePropertyName = "dataArrayInt")]
         public List<int>? DataArrayInt { get; set; }
 
-        [VectorStoreRecordVector(10, StoragePropertyName = "vector1")]
+        [VectorStoreVectorProperty(10, StoragePropertyName = "vector1")]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
-        [VectorStoreRecordVector(10, StoragePropertyName = "vector2")]
+        [VectorStoreVectorProperty(10, StoragePropertyName = "vector2")]
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;

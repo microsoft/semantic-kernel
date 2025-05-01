@@ -32,18 +32,18 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         }
     };
 
-    private readonly VectorStoreRecordModel _model = new WeaviateModelBuilder(hasNamedVectors: true)
+    private readonly VectorStoreCollectionModel _model = new WeaviateModelBuilder(hasNamedVectors: true)
         .Build(
             typeof(Dictionary<string, object?>),
             new()
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)) { StoragePropertyName = "hotelId" },
-                    new VectorStoreRecordDataProperty("HotelName", typeof(string)) { StoragePropertyName = "hotelName" },
-                    new VectorStoreRecordDataProperty("HotelCode", typeof(string)) { StoragePropertyName = "hotelCode" },
-                    new VectorStoreRecordDataProperty("Tags", typeof(string[])) { StoragePropertyName = "tags" },
-                    new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "descriptionEmbeddding" },
+                    new VectorStoreKeyProperty("HotelId", typeof(Guid)) { StoragePropertyName = "hotelId" },
+                    new VectorStoreDataProperty("HotelName", typeof(string)) { StoragePropertyName = "hotelName" },
+                    new VectorStoreDataProperty("HotelCode", typeof(string)) { StoragePropertyName = "hotelCode" },
+                    new VectorStoreDataProperty("Tags", typeof(string[])) { StoragePropertyName = "tags" },
+                    new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "descriptionEmbeddding" },
                 ]
             },
             defaultEmbeddingGenerator: null);

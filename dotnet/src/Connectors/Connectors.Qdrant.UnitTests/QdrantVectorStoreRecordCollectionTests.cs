@@ -444,11 +444,11 @@ public class QdrantVectorStoreRecordCollectionTests
         // Arrange.
         var definition = new VectorStoreRecordDefinition()
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty(nameof(SinglePropsModel<ulong>.Key), typeof(ulong)),
-                new VectorStoreRecordDataProperty(nameof(SinglePropsModel<ulong>.OriginalNameData), typeof(string)),
-                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel<ulong>.Vector), typeof(ReadOnlyMemory<float>?), 4),
+                new VectorStoreKeyProperty(nameof(SinglePropsModel<ulong>.Key), typeof(ulong)),
+                new VectorStoreDataProperty(nameof(SinglePropsModel<ulong>.OriginalNameData), typeof(string)),
+                new VectorStoreVectorProperty(nameof(SinglePropsModel<ulong>.Vector), typeof(ReadOnlyMemory<float>?), 4),
             }
         };
 
@@ -679,7 +679,7 @@ public class QdrantVectorStoreRecordCollectionTests
         return point;
     }
 
-    private IVectorStoreRecordCollection<T, SinglePropsModel<T>> CreateRecordCollection<T>(bool useDefinition, bool hasNamedVectors)
+    private IVectorStoreCollection<T, SinglePropsModel<T>> CreateRecordCollection<T>(bool useDefinition, bool hasNamedVectors)
         where T : notnull
     {
         var store = new QdrantVectorStoreRecordCollection<T, SinglePropsModel<T>>(
@@ -689,7 +689,7 @@ public class QdrantVectorStoreRecordCollectionTests
             {
                 VectorStoreRecordDefinition = useDefinition ? CreateSinglePropsDefinition(typeof(T)) : null,
                 HasNamedVectors = hasNamedVectors
-            }) as IVectorStoreRecordCollection<T, SinglePropsModel<T>>;
+            }) as IVectorStoreCollection<T, SinglePropsModel<T>>;
         return store!;
     }
 
@@ -711,28 +711,28 @@ public class QdrantVectorStoreRecordCollectionTests
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("Key", keyType),
-                new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
-                new VectorStoreRecordDataProperty("Data", typeof(string)) { IsIndexed = true, StoragePropertyName = "data_storage_name" },
-                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { StoragePropertyName = "vector_storage_name" }
+                new VectorStoreKeyProperty("Key", keyType),
+                new VectorStoreDataProperty("OriginalNameData", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
+                new VectorStoreDataProperty("Data", typeof(string)) { IsIndexed = true, StoragePropertyName = "data_storage_name" },
+                new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { StoragePropertyName = "vector_storage_name" }
             ]
         };
     }
 
     public sealed class SinglePropsModel<T>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public required T Key { get; set; }
 
-        [VectorStoreRecordData(IsIndexed = true, IsFullTextIndexed = true)]
+        [VectorStoreDataProperty(IsIndexed = true, IsFullTextIndexed = true)]
         public string OriginalNameData { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_data_json_name")]
-        [VectorStoreRecordData(IsIndexed = true, StoragePropertyName = "data_storage_name")]
+        [VectorStoreDataProperty(IsIndexed = true, StoragePropertyName = "data_storage_name")]
         public string Data { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_vector_json_name")]
-        [VectorStoreRecordVector(4, StoragePropertyName = "vector_storage_name")]
+        [VectorStoreVectorProperty(4, StoragePropertyName = "vector_storage_name")]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

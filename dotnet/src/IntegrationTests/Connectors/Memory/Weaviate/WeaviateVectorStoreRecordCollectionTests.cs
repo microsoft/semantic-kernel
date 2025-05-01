@@ -463,15 +463,15 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)),
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
-                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
-                new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.CosineDistance }
+                new VectorStoreKeyProperty("HotelId", typeof(Guid)),
+                new VectorStoreDataProperty("HotelName", typeof(string)),
+                new VectorStoreDataProperty("HotelCode", typeof(int)),
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
+                new VectorStoreDataProperty("HotelRating", typeof(float)),
+                new VectorStoreDataProperty("Tags", typeof(List<string>)),
+                new VectorStoreDataProperty("Description", typeof(string)),
+                new VectorStoreDataProperty("Timestamp", typeof(DateTimeOffset)),
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.CosineDistance }
             ]
         };
     }

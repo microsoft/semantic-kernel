@@ -14,13 +14,13 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
 internal class AzureCosmosDBNoSqlFilterTranslator
 {
-    private VectorStoreRecordModel _model = null!;
+    private VectorStoreCollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
     private readonly Dictionary<string, object?> _parameters = new();
     private readonly StringBuilder _sql = new();
 
-    internal (string WhereClause, Dictionary<string, object?> Parameters) Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
+    internal (string WhereClause, Dictionary<string, object?> Parameters) Translate(LambdaExpression lambdaExpression, VectorStoreCollectionModel model)
     {
         Debug.Assert(this._sql.Length == 0);
 
@@ -257,10 +257,10 @@ internal class AzureCosmosDBNoSqlFilterTranslator
         this._sql.Append(name);
     }
 
-    protected virtual void GeneratePropertyAccess(VectorStoreRecordPropertyModel property)
+    protected virtual void GeneratePropertyAccess(VectorStorePropertyModel property)
         => this._sql.Append(AzureCosmosDBNoSQLConstants.ContainerAlias).Append("[\"").Append(property.StorageName).Append("\"]");
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStorePropertyModel? property)
     {
         Type? convertedClrType = null;
 

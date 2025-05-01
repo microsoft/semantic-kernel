@@ -14,14 +14,14 @@ namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 /// This is an internal support type meant for use by connectors only, and not for use by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public class VectorStoreRecordJsonModelBuilder : VectorStoreRecordModelBuilder
+public class VectorStoreCollectionJsonModelBuilder : VectorStoreCollectionModelBuilder
 {
     private JsonSerializerOptions _jsonSerializerOptions = JsonSerializerOptions.Default;
 
     /// <summary>
-    /// Constructs a new <see cref="VectorStoreRecordJsonModelBuilder"/>.
+    /// Constructs a new <see cref="VectorStoreCollectionJsonModelBuilder"/>.
     /// </summary>
-    public VectorStoreRecordJsonModelBuilder(VectorStoreRecordModelBuildingOptions options)
+    public VectorStoreCollectionJsonModelBuilder(VectorStoreCollectionModelBuildingOptions options)
         : base(options)
     {
         if (!options.UsesExternalSerializer)
@@ -31,9 +31,9 @@ public class VectorStoreRecordJsonModelBuilder : VectorStoreRecordModelBuilder
     }
 
     /// <summary>
-    /// Builds and returns an <see cref="VectorStoreRecordModel"/> from the given <paramref name="type"/> and <paramref name="vectorStoreRecordDefinition"/>.
+    /// Builds and returns an <see cref="VectorStoreCollectionModel"/> from the given <paramref name="type"/> and <paramref name="vectorStoreRecordDefinition"/>.
     /// </summary>
-    public virtual VectorStoreRecordModel Build(
+    public virtual VectorStoreCollectionModel Build(
         Type type,
         VectorStoreRecordDefinition? vectorStoreRecordDefinition,
         IEmbeddingGenerator? defaultEmbeddingGenerator,
@@ -57,7 +57,7 @@ public class VectorStoreRecordJsonModelBuilder : VectorStoreRecordModelBuilder
 
         foreach (var property in this.Properties)
         {
-            var keyPropertyWithReservedName = this.Options.ReservedKeyStorageName is not null && property is VectorStoreRecordKeyPropertyModel;
+            var keyPropertyWithReservedName = this.Options.ReservedKeyStorageName is not null && property is VectorStoreKeyPropertyModel;
             string storageName;
 
             if (property.PropertyInfo?.GetCustomAttribute<JsonPropertyNameAttribute>() is { } jsonPropertyNameAttribute)

@@ -16,13 +16,13 @@ namespace Microsoft.SemanticKernel.Connectors;
 
 internal abstract class SqlFilterTranslator
 {
-    private readonly VectorStoreRecordModel _model;
+    private readonly VectorStoreCollectionModel _model;
     private readonly LambdaExpression _lambdaExpression;
     private readonly ParameterExpression _recordParameter;
     protected readonly StringBuilder _sql;
 
     internal SqlFilterTranslator(
-        VectorStoreRecordModel model,
+        VectorStoreCollectionModel model,
         LambdaExpression lambdaExpression,
         StringBuilder? sql = null)
     {
@@ -310,7 +310,7 @@ internal abstract class SqlFilterTranslator
         }
     }
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStorePropertyModel? property)
     {
         var unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)

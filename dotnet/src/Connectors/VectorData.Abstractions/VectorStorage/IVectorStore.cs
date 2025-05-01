@@ -23,15 +23,15 @@ public interface IVectorStore
     /// <typeparam name="TRecord">The record data model to use for adding, updating, and retrieving data from the collection.</typeparam>
     /// <param name="name">The name of the collection.</param>
     /// <param name="vectorStoreRecordDefinition">The schema of the record type.</param>
-    /// <returns>A new <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> instance for managing the records in the collection.</returns>
+    /// <returns>A new <see cref="IVectorStoreCollection{TKey, TRecord}"/> instance for managing the records in the collection.</returns>
     /// <remarks>
     /// To successfully request a collection, either <typeparamref name="TRecord"/> must be annotated with attributes that define the schema of
     /// the record type, or <paramref name="vectorStoreRecordDefinition"/> must be provided.
     /// </remarks>
-    /// <seealso cref="VectorStoreRecordKeyAttribute"/>
-    /// <seealso cref="VectorStoreRecordDataAttribute"/>
-    /// <seealso cref="VectorStoreRecordVectorAttribute"/>
-    IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    /// <seealso cref="VectorStoreKeyPropertyAttribute"/>
+    /// <seealso cref="VectorStoreDataPropertyAttribute"/>
+    /// <seealso cref="VectorStoreVectorPropertyAttribute"/>
+    IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull;
 

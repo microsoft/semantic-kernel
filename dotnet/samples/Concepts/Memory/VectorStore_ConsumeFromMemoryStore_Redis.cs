@@ -57,16 +57,16 @@ public class VectorStore_ConsumeFromMemoryStore_Redis(ITestOutputHelper output, 
     /// </summary>
     private sealed class VectorStoreRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string Key { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "metadata")]
+        [VectorStoreDataProperty(StoragePropertyName = "metadata")]
         public string Metadata { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "timestamp")]
+        [VectorStoreDataProperty(StoragePropertyName = "timestamp")]
         public long Timestamp { get; set; }
 
-        [VectorStoreRecordVector(VectorSize, StoragePropertyName = "embedding")]
+        [VectorStoreVectorProperty(VectorSize, StoragePropertyName = "embedding")]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 }

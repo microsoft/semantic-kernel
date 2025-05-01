@@ -10,18 +10,18 @@ namespace VectorStoreRAG;
 /// <typeparam name="TKey">The type of the data model key.</typeparam>
 internal sealed class TextSnippet<TKey>
 {
-    [VectorStoreRecordKey]
+    [VectorStoreKeyProperty]
     public required TKey Key { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreDataProperty]
     public string? Text { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreDataProperty]
     public string? ReferenceDescription { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreDataProperty]
     public string? ReferenceLink { get; set; }
 
-    [VectorStoreRecordVector(1536)]
+    [VectorStoreVectorProperty(1536)]
     public ReadOnlyMemory<float> TextEmbedding { get; set; }
 }

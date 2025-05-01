@@ -206,7 +206,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         const string HotelId2 = "22222222-2222-2222-2222-222222222222";
         const string HotelId3 = "33333333-3333-3333-3333-333333333333";
 
-        var sut = fixture.GetCollection<string, SqliteHotel<string>>("GetUpsertDeleteBatchWithStringKey") as IVectorStoreRecordCollection<string, SqliteHotel<string>>;
+        var sut = fixture.GetCollection<string, SqliteHotel<string>>("GetUpsertDeleteBatchWithStringKey") as IVectorStoreCollection<string, SqliteHotel<string>>;
 
         await sut.CreateCollectionAsync();
 
@@ -489,7 +489,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         };
 
         var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithStringKey", options)
-            as IVectorStoreRecordCollection<object, Dictionary<string, object?>>;
+            as IVectorStoreCollection<object, Dictionary<string, object?>>;
 
         await sut.CreateCollectionAsync();
 
@@ -527,13 +527,13 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     {
         Properties =
         [
-            new VectorStoreRecordKeyProperty("HotelId", typeof(TKey)),
-            new VectorStoreRecordDataProperty("HotelName", typeof(string)),
-            new VectorStoreRecordDataProperty("HotelCode", typeof(int)),
-            new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
-            new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
-            new VectorStoreRecordDataProperty("Description", typeof(string)),
-            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
+            new VectorStoreKeyProperty("HotelId", typeof(TKey)),
+            new VectorStoreDataProperty("HotelName", typeof(string)),
+            new VectorStoreDataProperty("HotelCode", typeof(int)),
+            new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
+            new VectorStoreDataProperty("HotelRating", typeof(float)),
+            new VectorStoreDataProperty("Description", typeof(string)),
+            new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
         ]
     };
 
@@ -565,16 +565,16 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 #pragma warning disable CA1812
     private sealed class RecordWithSupportedDistanceFunctions
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public ulong Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
+        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Embedding1 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance)]
+        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance)]
         public ReadOnlyMemory<float>? Embedding2 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.ManhattanDistance)]
+        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.ManhattanDistance)]
         public ReadOnlyMemory<float>? Embedding3 { get; set; }
     }
 #pragma warning restore CA1812

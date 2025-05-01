@@ -17,7 +17,7 @@ internal static class MongoDBVectorStoreCollectionCreateMapping
     /// Returns an array of indexes to create for vector properties.
     /// </summary>
     /// <param name="vectorProperties">Collection of vector properties for index creation.</param>
-    public static BsonArray GetVectorIndexFields(IReadOnlyList<VectorStoreRecordVectorPropertyModel> vectorProperties)
+    public static BsonArray GetVectorIndexFields(IReadOnlyList<VectorStoreVectorPropertyModel> vectorProperties)
     {
         var indexArray = new BsonArray();
 
@@ -42,7 +42,7 @@ internal static class MongoDBVectorStoreCollectionCreateMapping
     /// Returns an array of indexes to create for filterable data properties.
     /// </summary>
     /// <param name="dataProperties">Collection of data properties for index creation.</param>
-    public static BsonArray GetFilterableDataIndexFields(IReadOnlyList<VectorStoreRecordDataPropertyModel> dataProperties)
+    public static BsonArray GetFilterableDataIndexFields(IReadOnlyList<VectorStoreDataPropertyModel> dataProperties)
     {
         var indexArray = new BsonArray();
 
@@ -68,7 +68,7 @@ internal static class MongoDBVectorStoreCollectionCreateMapping
     /// Returns a list of of fields to index for full text search data properties.
     /// </summary>
     /// <param name="dataProperties">Collection of data properties for index creation.</param>
-    public static List<BsonElement> GetFullTextSearchableDataIndexFields(IReadOnlyList<VectorStoreRecordDataPropertyModel> dataProperties)
+    public static List<BsonElement> GetFullTextSearchableDataIndexFields(IReadOnlyList<VectorStoreDataPropertyModel> dataProperties)
     {
         var fieldElements = new List<BsonElement>();
 
@@ -96,6 +96,6 @@ internal static class MongoDBVectorStoreCollectionCreateMapping
             DistanceFunction.CosineSimilarity or null => "cosine",
             DistanceFunction.DotProductSimilarity => "dotProduct",
             DistanceFunction.EuclideanDistance => "euclidean",
-            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the MongoDB VectorStore.")
+            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the MongoDB VectorStore.")
         };
 }

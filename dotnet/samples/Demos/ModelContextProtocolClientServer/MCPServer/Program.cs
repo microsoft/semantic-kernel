@@ -101,7 +101,7 @@ static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel
             CancellationToken cancellationToken) =>
         {
             // Get the vector store collection
-            IVectorStoreRecordCollection<Guid, TextDataModel> vsCollection = vectorStore.GetCollection<Guid, TextDataModel>(collection);
+            IVectorStoreCollection<Guid, TextDataModel> vsCollection = vectorStore.GetCollection<Guid, TextDataModel>(collection);
 
             // Check if the collection exists, if not create and populate it
             if (!await vsCollection.CollectionExistsAsync(cancellationToken))

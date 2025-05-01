@@ -543,7 +543,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             // Derived types may override this to provide different vectors for different records.
             => new(Enumerable.Range(1, count).Select(i => (float)i).ToArray());
 
-        public virtual IVectorStoreRecordCollection<object, Dictionary<string, object?>> DynamicCollection { get; protected set; } = null!;
+        public virtual IVectorStoreCollection<object, Dictionary<string, object?>> DynamicCollection { get; protected set; } = null!;
 
         public virtual bool TestDynamic => true;
 
@@ -562,19 +562,19 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty(nameof(FilterRecord.Key), typeof(TKey)),
-                    new VectorStoreRecordVectorProperty(nameof(FilterRecord.Vector), typeof(ReadOnlyMemory<float>?), 3)
+                    new VectorStoreKeyProperty(nameof(FilterRecord.Key), typeof(TKey)),
+                    new VectorStoreVectorProperty(nameof(FilterRecord.Vector), typeof(ReadOnlyMemory<float>?), 3)
                     {
                         DistanceFunction = this.DistanceFunction,
                         IndexKind = this.IndexKind
                     },
 
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Int), typeof(int)) { IsIndexed = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.String), typeof(string)) { IsIndexed = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Bool), typeof(bool)) { IsIndexed = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Int2), typeof(int)) { IsIndexed = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.StringArray), typeof(string[])) { IsIndexed = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.StringList), typeof(List<string>)) { IsIndexed = true }
+                    new VectorStoreDataProperty(nameof(FilterRecord.Int), typeof(int)) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(FilterRecord.String), typeof(string)) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(FilterRecord.Bool), typeof(bool)) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(FilterRecord.Int2), typeof(int)) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(FilterRecord.StringArray), typeof(string[])) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(FilterRecord.StringList), typeof(List<string>)) { IsIndexed = true }
                 ]
             };
 

@@ -87,7 +87,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
             {
                 Assert.True(await collection.CollectionExistsAsync());
 
-                var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
+                var collectionMetadata = collection.GetService(typeof(VectorStoreCollectionMetadata)) as VectorStoreCollectionMetadata;
 
                 Assert.NotNull(collectionMetadata);
                 Assert.NotNull(collectionMetadata.VectorStoreSystemName);
@@ -118,7 +118,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
             {
                 Assert.True(await collection.CollectionExistsAsync());
 
-                var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
+                var collectionMetadata = collection.GetService(typeof(VectorStoreCollectionMetadata)) as VectorStoreCollectionMetadata;
 
                 Assert.NotNull(collectionMetadata);
                 Assert.NotNull(collectionMetadata.VectorStoreSystemName);
@@ -151,7 +151,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
             {
                 Assert.True(await collection.CollectionExistsAsync());
 
-                var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
+                var collectionMetadata = collection.GetService(typeof(VectorStoreCollectionMetadata)) as VectorStoreCollectionMetadata;
 
                 Assert.NotNull(collectionMetadata);
                 Assert.NotNull(collectionMetadata.VectorStoreSystemName);
@@ -170,16 +170,16 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         }
     }
 
-    protected virtual async Task<IVectorStoreRecordCollection<TKey, TRecord>> GetNonExistingCollectionAsync<TRecord>() where TRecord : notnull
+    protected virtual async Task<IVectorStoreCollection<TKey, TRecord>> GetNonExistingCollectionAsync<TRecord>() where TRecord : notnull
     {
         var definition = new VectorStoreRecordDefinition()
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty(nameof(SimpleRecord<object>.Id), typeof(TKey)) { StoragePropertyName = "key" },
-                new VectorStoreRecordDataProperty(nameof(SimpleRecord<object>.Text), typeof(string)) { StoragePropertyName = "text" },
-                new VectorStoreRecordDataProperty(nameof(SimpleRecord<object>.Number), typeof(int)) { StoragePropertyName = "number" },
-                new VectorStoreRecordVectorProperty(nameof(SimpleRecord<object>.Floats), typeof(ReadOnlyMemory<float>), 10) { IndexKind = fixture.TestStore.DefaultIndexKind }
+                new VectorStoreKeyProperty(nameof(SimpleRecord<object>.Id), typeof(TKey)) { StoragePropertyName = "key" },
+                new VectorStoreDataProperty(nameof(SimpleRecord<object>.Text), typeof(string)) { StoragePropertyName = "text" },
+                new VectorStoreDataProperty(nameof(SimpleRecord<object>.Number), typeof(int)) { StoragePropertyName = "number" },
+                new VectorStoreVectorProperty(nameof(SimpleRecord<object>.Floats), typeof(ReadOnlyMemory<float>), 10) { IndexKind = fixture.TestStore.DefaultIndexKind }
             ]
         };
 

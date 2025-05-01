@@ -12,9 +12,9 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// Customized MongoDB model builder that adds specialized configuration of property storage names
 /// (Mongo's reserve key property name and [BsonElement]).
 /// </summary>
-internal class MongoDBModelBuilder() : VectorStoreRecordModelBuilder(s_validationOptions)
+internal class MongoDBModelBuilder() : VectorStoreCollectionModelBuilder(s_validationOptions)
 {
-    private static readonly VectorStoreRecordModelBuildingOptions s_validationOptions = new()
+    private static readonly VectorStoreCollectionModelBuildingOptions s_validationOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,

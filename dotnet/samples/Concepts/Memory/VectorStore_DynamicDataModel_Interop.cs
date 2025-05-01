@@ -26,12 +26,12 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
 
     private static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
     {
-        Properties = new List<VectorStoreRecordProperty>
+        Properties = new List<VectorStoreProperty>
         {
-            new VectorStoreRecordKeyProperty("Key", typeof(ulong)),
-            new VectorStoreRecordDataProperty("Term", typeof(string)),
-            new VectorStoreRecordDataProperty("Definition", typeof(string)),
-            new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536)
+            new VectorStoreKeyProperty("Key", typeof(ulong)),
+            new VectorStoreDataProperty("Term", typeof(string)),
+            new VectorStoreDataProperty("Definition", typeof(string)),
+            new VectorStoreVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536)
         }
     };
 
@@ -124,16 +124,16 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
     /// </remarks>
     private sealed class Glossary
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public ulong Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string Term { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string Definition { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVectorProperty(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 

@@ -13,10 +13,10 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// Class for mapping between a json node stored in Azure CosmosDB NoSQL and the consumer data model.
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
-internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model, JsonSerializerOptions? jsonSerializerOptions)
+internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(VectorStoreCollectionModel model, JsonSerializerOptions? jsonSerializerOptions)
     : ICosmosNoSQLMapper<TRecord>
 {
-    private readonly VectorStoreRecordKeyPropertyModel _keyProperty = model.KeyProperty;
+    private readonly VectorStoreKeyPropertyModel _keyProperty = model.KeyProperty;
 
     public JsonObject MapFromDataToStorageModel(TRecord dataModel, MEAI.Embedding?[]? generatedEmbeddings)
     {

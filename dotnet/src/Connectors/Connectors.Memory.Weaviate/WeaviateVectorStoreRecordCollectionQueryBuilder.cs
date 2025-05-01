@@ -26,7 +26,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         JsonSerializerOptions jsonSerializerOptions,
         int top,
         VectorSearchOptions<TRecord> searchOptions,
-        VectorStoreRecordModel model,
+        VectorStoreCollectionModel model,
         bool hasNamedVectors)
     {
         var vectorsQuery = GetVectorsPropertyQuery(searchOptions.IncludeVectors, hasNamedVectors, model);
@@ -76,7 +76,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         int top,
         GetFilteredRecordOptions<TRecord> queryOptions,
         string collectionName,
-        VectorStoreRecordModel model,
+        VectorStoreCollectionModel model,
         bool hasNamedVectors)
     {
         var vectorsQuery = GetVectorsPropertyQuery(queryOptions.IncludeVectors, hasNamedVectors, model);
@@ -120,9 +120,9 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         int top,
         string keywords,
         string collectionName,
-        VectorStoreRecordModel model,
-        VectorStoreRecordVectorPropertyModel vectorProperty,
-        VectorStoreRecordDataPropertyModel textProperty,
+        VectorStoreCollectionModel model,
+        VectorStoreVectorPropertyModel vectorProperty,
+        VectorStoreDataPropertyModel textProperty,
         JsonSerializerOptions jsonSerializerOptions,
         HybridSearchOptions<TRecord> searchOptions,
         bool hasNamedVectors)
@@ -178,7 +178,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     private static string GetVectorsPropertyQuery(
         bool includeVectors,
         bool hasNamedVectors,
-        VectorStoreRecordModel model)
+        VectorStoreCollectionModel model)
     {
         return includeVectors
             ? hasNamedVectors
@@ -195,7 +195,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     private static string BuildLegacyFilter(
         VectorSearchFilter? vectorSearchFilter,
         JsonSerializerOptions jsonSerializerOptions,
-        VectorStoreRecordModel model)
+        VectorStoreCollectionModel model)
     {
         const string EqualOperator = "Equal";
         const string ContainsAnyOperator = "ContainsAny";

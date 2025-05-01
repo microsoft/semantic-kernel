@@ -55,28 +55,28 @@ public class VectorStore_ConsumeFromMemoryStore_Qdrant(ITestOutputHelper output,
     /// </summary>
     private sealed class VectorStoreRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public Guid Key { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "id")]
+        [VectorStoreDataProperty(StoragePropertyName = "id")]
         public string Id { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "description")]
+        [VectorStoreDataProperty(StoragePropertyName = "description")]
         public string Description { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "text")]
+        [VectorStoreDataProperty(StoragePropertyName = "text")]
         public string Text { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "is_reference")]
+        [VectorStoreDataProperty(StoragePropertyName = "is_reference")]
         public bool IsReference { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "external_source_name")]
+        [VectorStoreDataProperty(StoragePropertyName = "external_source_name")]
         public string ExternalSourceName { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "additional_metadata")]
+        [VectorStoreDataProperty(StoragePropertyName = "additional_metadata")]
         public string AdditionalMetadata { get; set; }
 
-        [VectorStoreRecordVector(VectorSize)]
+        [VectorStoreVectorProperty(VectorSize)]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 }

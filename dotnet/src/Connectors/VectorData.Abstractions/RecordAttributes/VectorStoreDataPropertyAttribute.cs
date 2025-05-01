@@ -5,34 +5,16 @@ using System;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines a data property on a vector store record.
+/// Defines an attribute to mark a property on a record class as 'data'.
 /// </summary>
 /// <remarks>
+/// Marking a property as 'data' means that the property is not a key and not a vector. But optionally,
+/// this property can have an associated vector field containing an embedding for this data.
 /// The characteristics defined here influence how the property is treated by the vector store.
 /// </remarks>
-public sealed class VectorStoreRecordDataProperty : VectorStoreRecordProperty
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+public sealed class VectorStoreDataPropertyAttribute : Attribute
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreRecordDataProperty"/> class.
-    /// </summary>
-    /// <param name="propertyName">The name of the property.</param>
-    /// <param name="propertyType">The type of the property.</param>
-    public VectorStoreRecordDataProperty(string propertyName, Type propertyType)
-        : base(propertyName, propertyType)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreRecordDataProperty"/> class by cloning the given source.
-    /// </summary>
-    /// <param name="source">The source to clone.</param>
-    public VectorStoreRecordDataProperty(VectorStoreRecordDataProperty source)
-        : base(source)
-    {
-        this.IsIndexed = source.IsIndexed;
-        this.IsFullTextIndexed = source.IsFullTextIndexed;
-    }
-
     /// <summary>
     /// Gets or sets a value indicating whether this data property is filterable.
     /// </summary>
@@ -66,4 +48,12 @@ public sealed class VectorStoreRecordDataProperty : VectorStoreRecordProperty
     /// The default is <see langword="false" />.
     /// </value>
     public bool IsFullTextIndexed { get; init; }
+
+    /// <summary>
+    /// Gets or sets an optional name to use for the property in storage, if different from the property name.
+    /// </summary>
+    /// <remarks>
+    /// For example, the property name might be "MyProperty" and the storage name might be "my_property".
+    /// </remarks>
+    public string? StoragePropertyName { get; init; }
 }

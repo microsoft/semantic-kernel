@@ -26,7 +26,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
     public static QueryDefinition BuildSearchQuery<TVector, TRecord>(
         TVector vector,
         ICollection<string>? keywords,
-        VectorStoreRecordModel model,
+        VectorStoreCollectionModel model,
         string vectorPropertyName,
         string? textPropertyName,
         string scorePropertyName,
@@ -46,10 +46,10 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
 
         var tableVariableName = AzureCosmosDBNoSQLConstants.ContainerAlias;
 
-        IEnumerable<VectorStoreRecordPropertyModel> projectionProperties = model.Properties;
+        IEnumerable<VectorStorePropertyModel> projectionProperties = model.Properties;
         if (!includeVectors)
         {
-            projectionProperties = projectionProperties.Where(p => p is not VectorStoreRecordVectorPropertyModel);
+            projectionProperties = projectionProperties.Where(p => p is not VectorStoreVectorPropertyModel);
         }
         var fieldsArgument = projectionProperties.Select(p => $"{tableVariableName}.{p.StorageName}");
         var vectorDistanceArgument = $"VectorDistance({tableVariableName}.{vectorPropertyName}, {VectorVariableName})";
@@ -126,17 +126,17 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
     }
 
     internal static QueryDefinition BuildSearchQuery<TRecord>(
-        VectorStoreRecordModel model,
+        VectorStoreCollectionModel model,
         string whereClause, Dictionary<string, object?> filterParameters,
         GetFilteredRecordOptions<TRecord> filterOptions,
         int top)
     {
         var tableVariableName = AzureCosmosDBNoSQLConstants.ContainerAlias;
 
-        IEnumerable<VectorStoreRecordPropertyModel> projectionProperties = model.Properties;
+        IEnumerable<VectorStorePropertyModel> projectionProperties = model.Properties;
         if (!filterOptions.IncludeVectors)
         {
-            projectionProperties = projectionProperties.Where(p => p is not VectorStoreRecordVectorPropertyModel);
+            projectionProperties = projectionProperties.Where(p => p is not VectorStoreVectorPropertyModel);
         }
 
         var fieldsArgument = projectionProperties.Select(field => $"{tableVariableName}.{field.StorageName}");
@@ -187,7 +187,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
     /// Builds <see cref="QueryDefinition"/> to get items from Azure CosmosDB NoSQL.
     /// </summary>
     public static QueryDefinition BuildSelectQuery(
-        VectorStoreRecordModel model,
+        VectorStoreCollectionModel model,
         string keyStoragePropertyName,
         string partitionKeyStoragePropertyName,
         List<AzureCosmosDBNoSQLCompositeKey> keys,
@@ -200,10 +200,10 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
 
         var tableVariableName = AzureCosmosDBNoSQLConstants.ContainerAlias;
 
-        IEnumerable<VectorStoreRecordPropertyModel> projectionProperties = model.Properties;
+        IEnumerable<VectorStorePropertyModel> projectionProperties = model.Properties;
         if (!includeVectors)
         {
-            projectionProperties = projectionProperties.Where(p => p is not VectorStoreRecordVectorPropertyModel);
+            projectionProperties = projectionProperties.Where(p => p is not VectorStoreVectorPropertyModel);
         }
         var fields = projectionProperties.Select(field => field.StorageName);
 
@@ -242,7 +242,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     private static (string WhereClause, Dictionary<string, object?> Parameters) BuildSearchFilter(
         VectorSearchFilter filter,
-        VectorStoreRecordModel model)
+        VectorStoreCollectionModel model)
     {
         const string EqualOperator = "=";
         const string ArrayContainsOperator = "ARRAY_CONTAINS";
@@ -294,7 +294,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
     }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
-    private static string GetStoragePropertyName(string propertyName, VectorStoreRecordModel model)
+    private static string GetStoragePropertyName(string propertyName, VectorStoreCollectionModel model)
     {
         if (!model.PropertyMap.TryGetValue(propertyName, out var property))
         {

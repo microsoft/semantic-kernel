@@ -39,9 +39,9 @@ public class VectorStoreRecordModelBuilderTests
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
-                new VectorStoreRecordDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
-                new VectorStoreRecordVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
+                new VectorStoreKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
+                new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
+                new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
                 {
                     // The following configures the property to be ReadOnlyMemory<Half> (non-default embedding type for this connector)
                     EmbeddingType = typeof(ReadOnlyMemory<Half>)
@@ -66,9 +66,9 @@ public class VectorStoreRecordModelBuilderTests
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
-                new VectorStoreRecordDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
-                new VectorStoreRecordVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
+                new VectorStoreKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
+                new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
+                new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
             ]
         };
 
@@ -89,9 +89,9 @@ public class VectorStoreRecordModelBuilderTests
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
-                new VectorStoreRecordDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
-                new VectorStoreRecordVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
+                new VectorStoreKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
+                new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
+                new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
                 {
                     EmbeddingType = typeof(ReadOnlyMemory<Half>)
                 }
@@ -115,9 +115,9 @@ public class VectorStoreRecordModelBuilderTests
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
-                new VectorStoreRecordDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
-                new VectorStoreRecordVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
+                new VectorStoreKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
+                new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
+                new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
                 {
                     EmbeddingGenerator = propertyEmbeddingGenerator
                 }
@@ -143,9 +143,9 @@ public class VectorStoreRecordModelBuilderTests
                 {
                     Properties =
                     [
-                        new VectorStoreRecordKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
-                        new VectorStoreRecordDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
-                        new VectorStoreRecordVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(ReadOnlyMemory<float>), dimensions: 3)
+                        new VectorStoreKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
+                        new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
+                        new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(ReadOnlyMemory<float>), dimensions: 3)
                     ]
                 },
                 embeddingGenerator)
@@ -167,9 +167,9 @@ public class VectorStoreRecordModelBuilderTests
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
-                new VectorStoreRecordDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
-                new VectorStoreRecordVectorProperty<Customer>(nameof(RecordWithEmbeddingVectorProperty.Embedding), dimensions: 3)
+                new VectorStoreKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
+                new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
+                new VectorStoreVectorProperty<Customer>(nameof(RecordWithEmbeddingVectorProperty.Embedding), dimensions: 3)
             ]
         };
 
@@ -226,9 +226,9 @@ public class VectorStoreRecordModelBuilderTests
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
-                new VectorStoreRecordDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
-                new VectorStoreRecordVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(ReadOnlyMemory<float>), dimensions: 3)
+                new VectorStoreKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
+                new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
+                new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(ReadOnlyMemory<float>), dimensions: 3)
                 {
                     EmbeddingGenerator = embeddingGenerator
                 }
@@ -245,37 +245,37 @@ public class VectorStoreRecordModelBuilderTests
 
     public class RecordWithStringVectorProperty
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public int Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string Name { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 3)]
+        [VectorStoreVectorProperty(Dimensions: 3)]
         public string Embedding { get; set; }
     }
 
     public class RecordWithEmbeddingVectorProperty
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public int Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string Name { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 3)]
+        [VectorStoreVectorProperty(Dimensions: 3)]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 
     public class RecordWithCustomerVectorProperty
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public int Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string Name { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 3)]
+        [VectorStoreVectorProperty(Dimensions: 3)]
         public Customer Embedding { get; set; }
     }
 
@@ -285,10 +285,10 @@ public class VectorStoreRecordModelBuilderTests
         public string LastName { get; set; }
     }
 
-    private sealed class CustomModelBuilder(VectorStoreRecordModelBuildingOptions? options = null)
-        : VectorStoreRecordModelBuilder(options ?? s_defaultOptions)
+    private sealed class CustomModelBuilder(VectorStoreCollectionModelBuildingOptions? options = null)
+        : VectorStoreCollectionModelBuilder(options ?? s_defaultOptions)
     {
-        private static readonly VectorStoreRecordModelBuildingOptions s_defaultOptions = new()
+        private static readonly VectorStoreCollectionModelBuildingOptions s_defaultOptions = new()
         {
             SupportsMultipleKeys = false,
             SupportsMultipleVectors = true,
@@ -301,7 +301,7 @@ public class VectorStoreRecordModelBuilderTests
         };
 
         protected override void SetupEmbeddingGeneration(
-            VectorStoreRecordVectorPropertyModel vectorProperty,
+            VectorStoreVectorPropertyModel vectorProperty,
             IEmbeddingGenerator embeddingGenerator,
             Type? embeddingType)
         {

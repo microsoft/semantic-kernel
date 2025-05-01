@@ -136,7 +136,7 @@ internal static class PostgresVectorStoreRecordPropertyMapping
     /// </summary>
     /// <param name="vectorProperty">The vector property.</param>
     /// <returns>The PostgreSQL vector type name.</returns>
-    public static (string PgType, bool IsNullable) GetPgVectorTypeName(VectorStoreRecordVectorPropertyModel vectorProperty)
+    public static (string PgType, bool IsNullable) GetPgVectorTypeName(VectorStoreVectorPropertyModel vectorProperty)
     {
         return ($"VECTOR({vectorProperty.Dimensions})", Nullable.GetUnderlyingType(vectorProperty.EmbeddingType) != null);
     }
@@ -173,18 +173,18 @@ internal static class PostgresVectorStoreRecordPropertyMapping
     /// <remarks>
     /// The default index kind is "Flat", which prevents the creation of an index.
     /// </remarks>
-    public static List<(string column, string kind, string function, bool isVector)> GetIndexInfo(IReadOnlyList<VectorStoreRecordPropertyModel> properties)
+    public static List<(string column, string kind, string function, bool isVector)> GetIndexInfo(IReadOnlyList<VectorStorePropertyModel> properties)
     {
         var vectorIndexesToCreate = new List<(string column, string kind, string function, bool isVector)>();
         foreach (var property in properties)
         {
             switch (property)
             {
-                case VectorStoreRecordKeyPropertyModel:
+                case VectorStoreKeyPropertyModel:
                     // There is no need to create a separate index for the key property.
                     break;
 
-                case VectorStoreRecordVectorPropertyModel vectorProperty:
+                case VectorStoreVectorPropertyModel vectorProperty:
                     var indexKind = vectorProperty.IndexKind ?? PostgresConstants.DefaultIndexKind;
                     var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
 
@@ -207,7 +207,7 @@ internal static class PostgresVectorStoreRecordPropertyMapping
 
                     break;
 
-                case VectorStoreRecordDataPropertyModel dataProperty:
+                case VectorStoreDataPropertyModel dataProperty:
                     if (dataProperty.IsIndexed)
                     {
                         vectorIndexesToCreate.Add((dataProperty.StorageName, "", "", isVector: false));

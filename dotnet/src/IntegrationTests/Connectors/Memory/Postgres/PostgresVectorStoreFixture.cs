@@ -52,7 +52,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
         return this.DataSource!.OpenConnection();
     }
 
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
+    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
         string collectionName,
         VectorStoreRecordDefinition? recordDefinition = default)
         where TKey : notnull

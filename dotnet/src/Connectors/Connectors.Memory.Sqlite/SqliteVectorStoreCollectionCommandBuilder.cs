@@ -102,7 +102,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         SqliteConnection connection,
         string tableName,
         string rowIdentifier,
-        IReadOnlyList<VectorStoreRecordPropertyModel> properties,
+        IReadOnlyList<VectorStorePropertyModel> properties,
         IReadOnlyList<Dictionary<string, object?>> records,
         bool data,
         bool replaceIfExists = false)
@@ -140,7 +140,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     public static DbCommand BuildSelectDataCommand<TRecord>(
         SqliteConnection connection,
         string tableName,
-        VectorStoreRecordModel model,
+        VectorStoreCollectionModel model,
         List<SqliteWhereCondition> conditions,
         GetFilteredRecordOptions<TRecord>? filterOptions = null,
         string? extraWhereFilter = null,
@@ -174,7 +174,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         string vectorTableName,
         string dataTableName,
         string joinColumnName,
-        VectorStoreRecordModel model,
+        VectorStoreCollectionModel model,
         IReadOnlyList<SqliteWhereCondition> conditions,
         bool includeDistance,
         GetFilteredRecordOptions<TRecord>? filterOptions = null,
@@ -232,13 +232,13 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
     #region private
 
-    private static StringBuilder AppendColumnNames(this StringBuilder builder, bool includeVectors, IReadOnlyList<VectorStoreRecordPropertyModel> properties,
+    private static StringBuilder AppendColumnNames(this StringBuilder builder, bool includeVectors, IReadOnlyList<VectorStorePropertyModel> properties,
         string? escapedVectorTableName = null, string? escapedDataTableName = null)
     {
         foreach (var property in properties)
         {
             string? tableName = escapedDataTableName;
-            if (property is VectorStoreRecordVectorPropertyModel)
+            if (property is VectorStoreVectorPropertyModel)
             {
                 if (!includeVectors)
                 {
@@ -262,7 +262,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         return builder;
     }
 
-    private static StringBuilder AppendOrderBy<TRecord>(this StringBuilder builder, VectorStoreRecordModel model,
+    private static StringBuilder AppendOrderBy<TRecord>(this StringBuilder builder, VectorStoreCollectionModel model,
         GetFilteredRecordOptions<TRecord> options, string? tableName = null)
     {
         if (options.OrderBy.Values.Count > 0)
@@ -382,7 +382,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     }
 
     private static (List<string> Columns, List<string> ParameterNames, List<object?> ParameterValues) GetQueryParts(
-        IReadOnlyList<VectorStoreRecordPropertyModel> properties,
+        IReadOnlyList<VectorStorePropertyModel> properties,
         Dictionary<string, object?> record,
         int index,
         bool data)
@@ -393,8 +393,8 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
         foreach (var property in properties)
         {
-            bool include = property is VectorStoreRecordKeyPropertyModel // The Key column is included in both Vector and Data tables.
-                || (data == property is VectorStoreRecordDataPropertyModel); // The Data column is included only in the Data table.
+            bool include = property is VectorStoreKeyPropertyModel // The Key column is included in both Vector and Data tables.
+                || (data == property is VectorStoreDataPropertyModel); // The Data column is included only in the Data table.
 
             string propertyName = property.StorageName;
             if (include && record.TryGetValue(propertyName, out var value))

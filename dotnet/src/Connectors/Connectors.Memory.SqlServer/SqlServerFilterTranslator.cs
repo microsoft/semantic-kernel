@@ -15,7 +15,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
     private int _parameterIndex;
 
     internal SqlServerFilterTranslator(
-        VectorStoreRecordModel model,
+        VectorStoreCollectionModel model,
         LambdaExpression lambdaExpression,
         StringBuilder sql,
         int startParamIndex)

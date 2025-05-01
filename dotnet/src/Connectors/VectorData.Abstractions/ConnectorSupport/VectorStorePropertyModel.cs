@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 /// This is an internal support type meant for use by connectors only, and not for use by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public abstract class VectorStoreRecordPropertyModel(string modelName, Type type)
+public abstract class VectorStorePropertyModel(string modelName, Type type)
 {
     private string? _storageName;
 

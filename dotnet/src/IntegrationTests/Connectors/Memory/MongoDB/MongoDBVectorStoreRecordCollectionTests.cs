@@ -215,10 +215,10 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         // Arrange
         var definition = new VectorStoreRecordDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string))
+                new VectorStoreKeyProperty("Id", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string))
             }
         };
 
@@ -267,10 +267,10 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         // Arrange
         var definition = new VectorStoreRecordDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string))
+                new VectorStoreKeyProperty("Id", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string))
             }
         };
 
@@ -494,10 +494,10 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
 
     private sealed class VectorStoreTestModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string? HotelId { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "hotel_name")]
+        [VectorStoreDataProperty(StoragePropertyName = "hotel_name")]
         public string? HotelName { get; set; }
     }
 
@@ -513,22 +513,22 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     private sealed class BsonVectorStoreTestModel
     {
         [BsonId]
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string? HotelId { get; set; }
 
         [BsonElement("hotel_name")]
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string? HotelName { get; set; }
     }
 
     private sealed class BsonVectorStoreWithNameTestModel
     {
         [BsonId]
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string? Id { get; set; }
 
         [BsonElement("bson_hotel_name")]
-        [VectorStoreRecordData(StoragePropertyName = "storage_hotel_name")]
+        [VectorStoreDataProperty(StoragePropertyName = "storage_hotel_name")]
         public string? HotelName { get; set; }
     }
 

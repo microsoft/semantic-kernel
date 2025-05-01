@@ -58,7 +58,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         // Arrange
         var definition = new VectorStoreRecordDefinition
         {
-            Properties = [new VectorStoreRecordKeyProperty("Id", typeof(string))]
+            Properties = [new VectorStoreKeyProperty("Id", typeof(string))]
         };
 
         // Act
@@ -434,10 +434,10 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
     {
         var definition = new VectorStoreRecordDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string))
+                new VectorStoreKeyProperty("Id", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string))
             }
         };
 
@@ -460,10 +460,10 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
     {
         var definition = new VectorStoreRecordDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string))
+                new VectorStoreKeyProperty("Id", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string))
             }
         };
 
@@ -730,10 +730,10 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
 
     private sealed class VectorStoreTestModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string? Id { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "hotel_name")]
+        [VectorStoreDataProperty(StoragePropertyName = "hotel_name")]
         public string? HotelName { get; set; }
     }
 
@@ -749,39 +749,39 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
     private sealed class BsonVectorStoreTestModel
     {
         [BsonId]
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string? Id { get; set; }
 
         [BsonElement("hotel_name")]
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string? HotelName { get; set; }
     }
 
     private sealed class BsonVectorStoreWithNameTestModel
     {
         [BsonId]
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string? Id { get; set; }
 
         [BsonElement("bson_hotel_name")]
-        [VectorStoreRecordData(StoragePropertyName = "storage_hotel_name")]
+        [VectorStoreDataProperty(StoragePropertyName = "storage_hotel_name")]
         public string? HotelName { get; set; }
     }
 
     private sealed class VectorSearchModel
     {
         [BsonId]
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string? Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string? HotelName { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat, StoragePropertyName = "test_embedding_1")]
+        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat, StoragePropertyName = "test_embedding_1")]
         public ReadOnlyMemory<float> TestEmbedding1 { get; set; }
 
         [BsonElement("test_embedding_2")]
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat)]
+        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat)]
         public ReadOnlyMemory<float> TestEmbedding2 { get; set; }
     }
 #pragma warning restore CA1812

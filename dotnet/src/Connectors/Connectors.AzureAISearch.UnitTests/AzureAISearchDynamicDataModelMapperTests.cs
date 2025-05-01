@@ -16,25 +16,25 @@ namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;
 /// </summary>
 public class AzureAISearchDynamicDataModelMapperTests
 {
-    private static readonly VectorStoreRecordModel s_model = BuildModel(
+    private static readonly VectorStoreCollectionModel s_model = BuildModel(
     [
-        new VectorStoreRecordKeyProperty("Key", typeof(string)),
-        new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-        new VectorStoreRecordDataProperty("IntDataProp", typeof(int)),
-        new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-        new VectorStoreRecordDataProperty("LongDataProp", typeof(long)),
-        new VectorStoreRecordDataProperty("NullableLongDataProp", typeof(long?)),
-        new VectorStoreRecordDataProperty("FloatDataProp", typeof(float)),
-        new VectorStoreRecordDataProperty("NullableFloatDataProp", typeof(float?)),
-        new VectorStoreRecordDataProperty("DoubleDataProp", typeof(double)),
-        new VectorStoreRecordDataProperty("NullableDoubleDataProp", typeof(double?)),
-        new VectorStoreRecordDataProperty("BoolDataProp", typeof(bool)),
-        new VectorStoreRecordDataProperty("NullableBoolDataProp", typeof(bool?)),
-        new VectorStoreRecordDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
-        new VectorStoreRecordDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
-        new VectorStoreRecordDataProperty("TagListDataProp", typeof(string[])),
-        new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
-        new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
+        new VectorStoreKeyProperty("Key", typeof(string)),
+        new VectorStoreDataProperty("StringDataProp", typeof(string)),
+        new VectorStoreDataProperty("IntDataProp", typeof(int)),
+        new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+        new VectorStoreDataProperty("LongDataProp", typeof(long)),
+        new VectorStoreDataProperty("NullableLongDataProp", typeof(long?)),
+        new VectorStoreDataProperty("FloatDataProp", typeof(float)),
+        new VectorStoreDataProperty("NullableFloatDataProp", typeof(float?)),
+        new VectorStoreDataProperty("DoubleDataProp", typeof(double)),
+        new VectorStoreDataProperty("NullableDoubleDataProp", typeof(double?)),
+        new VectorStoreDataProperty("BoolDataProp", typeof(bool)),
+        new VectorStoreDataProperty("NullableBoolDataProp", typeof(bool?)),
+        new VectorStoreDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
+        new VectorStoreDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
+        new VectorStoreDataProperty("TagListDataProp", typeof(string[])),
+        new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+        new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
     ]);
 
     private static readonly float[] s_vector1 = [1.0f, 2.0f, 3.0f];
@@ -98,10 +98,10 @@ public class AzureAISearchDynamicDataModelMapperTests
         // Arrange
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+            new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
         ]);
 
         var dataModel = new Dictionary<string, object?>
@@ -176,10 +176,10 @@ public class AzureAISearchDynamicDataModelMapperTests
         // Arrange
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+            new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
         ]);
 
         var storageModel = new JsonObject();
@@ -206,10 +206,10 @@ public class AzureAISearchDynamicDataModelMapperTests
         // Arrange
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+            new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
         ]);
 
         var sut = new AzureAISearchDynamicDataModelMapper(model);
@@ -228,9 +228,9 @@ public class AzureAISearchDynamicDataModelMapperTests
         // Arrange
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
         ]);
 
         var dataModel = new Dictionary<string, object?> { ["Key"] = "key" };
@@ -251,9 +251,9 @@ public class AzureAISearchDynamicDataModelMapperTests
         // Arrange
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
         ]);
 
         var storageModel = new JsonObject();
@@ -270,8 +270,8 @@ public class AzureAISearchDynamicDataModelMapperTests
         Assert.False(dataModel.ContainsKey("FloatVector"));
     }
 
-    private static VectorStoreRecordModel BuildModel(List<VectorStoreRecordProperty> properties)
-        => new VectorStoreRecordJsonModelBuilder(AzureAISearchModelBuilder.s_modelBuildingOptions)
+    private static VectorStoreCollectionModel BuildModel(List<VectorStoreProperty> properties)
+        => new VectorStoreCollectionJsonModelBuilder(AzureAISearchModelBuilder.s_modelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
                 new() { Properties = properties },

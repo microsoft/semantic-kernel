@@ -173,12 +173,12 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
-                Properties = new List<VectorStoreRecordProperty>()
+                Properties = new List<VectorStoreProperty>()
                 {
-                    new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                    new VectorStoreRecordDataProperty("Text", typeof(string)) { IsFullTextIndexed = true },
-                    new VectorStoreRecordDataProperty("Code", typeof(int)) { IsIndexed = true },
-                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
+                    new VectorStoreKeyProperty("Key", typeof(TKey)),
+                    new VectorStoreDataProperty("Text", typeof(string)) { IsFullTextIndexed = true },
+                    new VectorStoreDataProperty("Code", typeof(int)) { IsIndexed = true },
+                    new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
                 }
             };
 
@@ -226,13 +226,13 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
-                Properties = new List<VectorStoreRecordProperty>()
+                Properties = new List<VectorStoreProperty>()
                 {
-                    new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                    new VectorStoreRecordDataProperty("Text1", typeof(string)) { IsFullTextIndexed = true },
-                    new VectorStoreRecordDataProperty("Text2", typeof(string)) { IsFullTextIndexed = true },
-                    new VectorStoreRecordDataProperty("Code", typeof(int)) { IsIndexed = true },
-                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
+                    new VectorStoreKeyProperty("Key", typeof(TKey)),
+                    new VectorStoreDataProperty("Text1", typeof(string)) { IsFullTextIndexed = true },
+                    new VectorStoreDataProperty("Text2", typeof(string)) { IsFullTextIndexed = true },
+                    new VectorStoreDataProperty("Code", typeof(int)) { IsIndexed = true },
+                    new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
                 }
             };
 

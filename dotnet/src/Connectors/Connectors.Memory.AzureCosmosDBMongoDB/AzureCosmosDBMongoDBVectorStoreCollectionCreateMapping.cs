@@ -21,7 +21,7 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping
     /// <param name="numLists">Number of clusters that the inverted file (IVF) index uses to group the vector data.</param>
     /// <param name="efConstruction">The size of the dynamic candidate list for constructing the graph.</param>
     public static BsonArray GetVectorIndexes(
-        IReadOnlyList<VectorStoreRecordVectorPropertyModel> vectorProperties,
+        IReadOnlyList<VectorStoreVectorPropertyModel> vectorProperties,
         HashSet<string?> uniqueIndexes,
         int numLists,
         int efConstruction)
@@ -71,7 +71,7 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping
     /// <param name="dataProperties">Collection of data properties for index creation.</param>
     /// <param name="uniqueIndexes">Collection of unique existing indexes to avoid creating duplicates.</param>
     public static BsonArray GetFilterableDataIndexes(
-        IReadOnlyList<VectorStoreRecordDataPropertyModel> dataProperties,
+        IReadOnlyList<VectorStoreDataPropertyModel> dataProperties,
         HashSet<string?> uniqueIndexes)
     {
         var indexArray = new BsonArray();
@@ -112,7 +112,7 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping
         {
             IndexKind.Hnsw => "vector-hnsw",
             IndexKind.IvfFlat => "vector-ivf",
-            _ => throw new InvalidOperationException($"Index kind '{indexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
+            _ => throw new InvalidOperationException($"Index kind '{indexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
         };
 
     /// <summary>
@@ -124,6 +124,6 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping
             DistanceFunction.CosineDistance => "COS",
             DistanceFunction.DotProductSimilarity => "IP",
             DistanceFunction.EuclideanDistance => "L2",
-            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
+            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
         };
 }

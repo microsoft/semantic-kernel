@@ -32,14 +32,14 @@ public class PostgresVectorStoreRecordCollectionTests
         var recordDefinition = new VectorStoreRecordDefinition
         {
             Properties = [
-                new VectorStoreRecordKeyProperty("HotelId", typeof(int)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsIndexed = true, StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
-                new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 100) { DistanceFunction = DistanceFunction.ManhattanDistance }
+                new VectorStoreKeyProperty("HotelId", typeof(int)),
+                new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
+                new VectorStoreDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { IsIndexed = true, StoragePropertyName = "parking_is_included" },
+                new VectorStoreDataProperty("HotelRating", typeof(float)) { IsIndexed = true },
+                new VectorStoreDataProperty("Tags", typeof(List<string>)),
+                new VectorStoreDataProperty("Description", typeof(string)),
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 100) { DistanceFunction = DistanceFunction.ManhattanDistance }
             ]
         };
         var options = new PostgresVectorStoreRecordCollectionOptions<Dictionary<string, object?>>()
@@ -63,8 +63,8 @@ public class PostgresVectorStoreRecordCollectionTests
         var recordDefinition = new VectorStoreRecordDefinition
         {
             Properties = [
-                new VectorStoreRecordKeyProperty("HotelId", typeof(ulong)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
+                new VectorStoreKeyProperty("HotelId", typeof(ulong)),
+                new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
             ]
         };
         var options = new PostgresVectorStoreRecordCollectionOptions<Dictionary<string, object?>>()
@@ -184,22 +184,22 @@ public class PostgresVectorStoreRecordCollectionTests
 #pragma warning disable CA1812
     private sealed class TestRecord<TKey>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public TKey? Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string? Data { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
+        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Vector { get; set; }
     }
 
     private sealed class TestRecordWithoutVectorProperty<TKey>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public TKey? Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string? Data { get; set; }
     }
 #pragma warning restore CA1812

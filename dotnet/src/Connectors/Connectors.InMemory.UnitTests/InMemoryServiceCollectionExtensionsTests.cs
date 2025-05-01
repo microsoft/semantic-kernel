@@ -48,7 +48,7 @@ public class InMemoryServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<string, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<InMemoryVectorStoreRecordCollection<string, TestRecord>>(collection);
 
@@ -61,10 +61,10 @@ public class InMemoryServiceCollectionExtensionsTests
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string Id { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVectorProperty(4)]
         public ReadOnlyMemory<float> Vector { get; set; }
     }
 }

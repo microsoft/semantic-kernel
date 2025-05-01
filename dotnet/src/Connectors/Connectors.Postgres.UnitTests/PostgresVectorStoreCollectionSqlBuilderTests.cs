@@ -30,19 +30,19 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         var recordDefinition = new VectorStoreRecordDefinition()
         {
             Properties = [
-                new VectorStoreRecordKeyProperty("id", typeof(long)),
-                new VectorStoreRecordDataProperty("name", typeof(string)),
-                new VectorStoreRecordDataProperty("code", typeof(int)),
-                new VectorStoreRecordDataProperty("rating", typeof(float?)),
-                new VectorStoreRecordDataProperty("description", typeof(string)),
-                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
-                new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
-                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("name", typeof(string)),
+                new VectorStoreDataProperty("code", typeof(int)),
+                new VectorStoreDataProperty("rating", typeof(float?)),
+                new VectorStoreDataProperty("description", typeof(string)),
+                new VectorStoreDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
+                new VectorStoreDataProperty("tags", typeof(List<string>)),
+                new VectorStoreVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
                 {
                     Dimensions = 10,
                     IndexKind = "hnsw",
                 },
-                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?), 10)
+                new VectorStoreVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?), 10)
                 {
                     Dimensions = 10,
                     IndexKind = "hnsw",
@@ -50,7 +50,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
             ]
         };
 
-        var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null);
+        var model = new VectorStoreCollectionModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null);
 
         var cmdInfo = PostgresSqlBuilder.BuildCreateTableCommand("public", "testcollection", model, ifNotExists: ifNotExists);
 
@@ -261,25 +261,25 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         var recordDefinition = new VectorStoreRecordDefinition()
         {
             Properties = [
-                new VectorStoreRecordKeyProperty("id", typeof(long)),
-                new VectorStoreRecordDataProperty("name", typeof(string)),
-                new VectorStoreRecordDataProperty("code", typeof(int)),
-                new VectorStoreRecordDataProperty("rating", typeof(float?)),
-                new VectorStoreRecordDataProperty("description", typeof(string)),
-                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
-                new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
-                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("name", typeof(string)),
+                new VectorStoreDataProperty("code", typeof(int)),
+                new VectorStoreDataProperty("rating", typeof(float?)),
+                new VectorStoreDataProperty("description", typeof(string)),
+                new VectorStoreDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
+                new VectorStoreDataProperty("tags", typeof(List<string>)),
+                new VectorStoreVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
                 {
                     IndexKind = "hnsw",
                 },
-                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?), 10)
+                new VectorStoreVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?), 10)
                 {
                     IndexKind = "hnsw",
                 }
             ]
         };
 
-        var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null);
+        var model = new VectorStoreCollectionModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null);
 
         var key = 123;
 
@@ -304,18 +304,18 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         var recordDefinition = new VectorStoreRecordDefinition()
         {
             Properties = [
-                new VectorStoreRecordKeyProperty("id", typeof(long)),
-                new VectorStoreRecordDataProperty("name", typeof(string)),
-                new VectorStoreRecordDataProperty("code", typeof(int)),
-                new VectorStoreRecordDataProperty("rating", typeof(float?)),
-                new VectorStoreRecordDataProperty("description", typeof(string)),
-                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
-                new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
-                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
+                new VectorStoreKeyProperty("id", typeof(long)),
+                new VectorStoreDataProperty("name", typeof(string)),
+                new VectorStoreDataProperty("code", typeof(int)),
+                new VectorStoreDataProperty("rating", typeof(float?)),
+                new VectorStoreDataProperty("description", typeof(string)),
+                new VectorStoreDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
+                new VectorStoreDataProperty("tags", typeof(List<string>)),
+                new VectorStoreVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
                 {
                     IndexKind = "hnsw",
                 },
-                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?), 10)
+                new VectorStoreVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?), 10)
                 {
                     IndexKind = "hnsw",
                 }
@@ -324,7 +324,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         var keys = new List<long> { 123, 124 };
 
-        var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null);
+        var model = new VectorStoreCollectionModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null);
 
         // Act
         var cmdInfo = PostgresSqlBuilder.BuildGetBatchCommand("public", "testcollection", model, keys, includeVectors: true);

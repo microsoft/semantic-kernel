@@ -284,16 +284,16 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
 
     private sealed class CacheRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string Prompt { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string Result { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 1536)]
+        [VectorStoreVectorProperty(Dimensions: 1536)]
         public ReadOnlyMemory<float> PromptEmbedding { get; set; }
     }
 

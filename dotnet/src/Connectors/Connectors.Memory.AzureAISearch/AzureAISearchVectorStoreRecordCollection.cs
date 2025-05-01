@@ -27,7 +27,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 #pragma warning disable CS0618 // IVectorizableTextSearch is obsolete
 public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
-    IVectorStoreRecordCollection<TKey, TRecord>,
+    IVectorStoreCollection<TKey, TRecord>,
     IVectorizableTextSearch<TRecord>,
     IKeywordHybridSearch<TRecord>
     where TKey : notnull
@@ -36,7 +36,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>
-    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+    private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -60,7 +60,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     private readonly AzureAISearchDynamicDataModelMapper? _dynamicMapper;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreRecordModel _model;
+    private readonly VectorStoreCollectionModel _model;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -145,15 +145,15 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         {
             switch (property)
             {
-                case VectorStoreRecordKeyPropertyModel p:
+                case VectorStoreKeyPropertyModel p:
                     searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapKeyField(p));
                     break;
 
-                case VectorStoreRecordDataPropertyModel p:
+                case VectorStoreDataPropertyModel p:
                     searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(p));
                     break;
 
-                case VectorStoreRecordVectorPropertyModel p:
+                case VectorStoreVectorPropertyModel p:
                     (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(p);
 
                     // Add the search field, plus its profile and algorithm configuration to the search config.
@@ -391,7 +391,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
 
         foreach (var pair in options.OrderBy.Values)
         {
-            VectorStoreRecordPropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
+            VectorStorePropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
             string name = property.StorageName;
             // From https://learn.microsoft.com/dotnet/api/azure.search.documents.searchoptions.orderby:
             // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".
@@ -550,7 +550,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
 
         return
             serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
             serviceType == typeof(SearchIndexClient) ? this._searchIndexClient :
             serviceType == typeof(SearchClient) ? this._searchClient :
             serviceType.IsInstanceOfType(this) ? this :

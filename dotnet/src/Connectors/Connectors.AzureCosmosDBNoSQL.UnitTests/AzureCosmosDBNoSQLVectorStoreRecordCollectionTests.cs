@@ -77,7 +77,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         // Arrange
         var definition = new VectorStoreRecordDefinition
         {
-            Properties = [new VectorStoreRecordKeyProperty("Id", typeof(string))]
+            Properties = [new VectorStoreKeyProperty("Id", typeof(string))]
         };
 
         // Act
@@ -271,7 +271,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
                 this._mockDatabase.Object,
                 "collection");
 
-            await ((IVectorStoreRecordCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel>)sut).DeleteAsync(
+            await ((IVectorStoreCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel>)sut).DeleteAsync(
                 new AzureCosmosDBNoSQLCompositeKey(RecordKey, PartitionKey));
         }
         else
@@ -280,7 +280,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
                 this._mockDatabase.Object,
                 "collection");
 
-            await ((IVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>)sut).DeleteAsync(
+            await ((IVectorStoreCollection<string, AzureCosmosDBNoSQLHotel>)sut).DeleteAsync(
                 RecordKey);
         }
 
@@ -632,25 +632,25 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
     private sealed class TestIndexingModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string? Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 2, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]
+        [VectorStoreVectorProperty(Dimensions: 2, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]
         public ReadOnlyMemory<float>? DescriptionEmbedding2 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 3, DistanceFunction = DistanceFunction.DotProductSimilarity, IndexKind = IndexKind.QuantizedFlat)]
+        [VectorStoreVectorProperty(Dimensions: 3, DistanceFunction = DistanceFunction.DotProductSimilarity, IndexKind = IndexKind.QuantizedFlat)]
         public ReadOnlyMemory<byte>? DescriptionEmbedding3 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance, IndexKind = IndexKind.DiskAnn)]
+        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance, IndexKind = IndexKind.DiskAnn)]
         public ReadOnlyMemory<sbyte>? DescriptionEmbedding4 { get; set; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreDataProperty(IsIndexed = true)]
         public string? IndexableData1 { get; set; }
 
-        [VectorStoreRecordData(IsFullTextIndexed = true)]
+        [VectorStoreDataProperty(IsFullTextIndexed = true)]
         public string? IndexableData2 { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string? NonIndexableData1 { get; set; }
     }
 #pragma warning restore CA1812

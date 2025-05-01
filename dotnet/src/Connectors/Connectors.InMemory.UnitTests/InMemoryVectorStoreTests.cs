@@ -59,13 +59,13 @@ public class InMemoryVectorStoreTests
 #pragma warning disable CA1812 // Classes are used as generic arguments
     private sealed class SinglePropsModel<TKey>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public required TKey Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVectorProperty(4)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }
@@ -73,10 +73,10 @@ public class InMemoryVectorStoreTests
 
     private sealed class SecondModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public required int Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string Data { get; set; } = string.Empty;
     }
 #pragma warning restore CA1812

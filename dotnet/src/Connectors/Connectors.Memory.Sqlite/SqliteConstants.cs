@@ -23,7 +23,7 @@ internal static class SqliteConstants
         typeof(ReadOnlyMemory<float>?)
     ];
 
-    public static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
+    public static readonly VectorStoreCollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,

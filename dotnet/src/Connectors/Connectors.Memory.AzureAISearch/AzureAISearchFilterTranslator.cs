@@ -15,14 +15,14 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 internal class AzureAISearchFilterTranslator
 {
-    private VectorStoreRecordModel _model = null!;
+    private VectorStoreCollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
     private readonly StringBuilder _filter = new();
 
     private static readonly char[] s_searchInDefaultDelimiter = [' ', ','];
 
-    internal string Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
+    internal string Translate(LambdaExpression lambdaExpression, VectorStoreCollectionModel model)
     {
         Debug.Assert(this._filter.Length == 0);
 
@@ -326,7 +326,7 @@ RestartLoop:
         }
     }
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStorePropertyModel? property)
     {
         var unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)

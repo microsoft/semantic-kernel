@@ -416,13 +416,13 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
 
     private sealed class FunctionRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public string Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string FunctionInfo { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVectorProperty(1536)]
         public ReadOnlyMemory<float> FunctionInfoEmbedding { get; set; }
     }
 

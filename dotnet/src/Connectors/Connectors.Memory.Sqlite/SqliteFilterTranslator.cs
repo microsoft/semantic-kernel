@@ -12,7 +12,7 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
 {
     private readonly Dictionary<string, object> _parameters = new();
 
-    internal SqliteFilterTranslator(VectorStoreRecordModel model, LambdaExpression lambdaExpression)
+    internal SqliteFilterTranslator(VectorStoreCollectionModel model, LambdaExpression lambdaExpression)
         : base(model, lambdaExpression, sql: null)
     {
     }

@@ -22,7 +22,7 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
     /// <param name="hasNamedVectors">Gets a value indicating whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector in Weaviate collection.</param>
     /// <param name="model">The model.</param>
     /// <returns>Weaviate collection schema.</returns>
-    public static WeaviateCollectionSchema MapToSchema(string collectionName, bool hasNamedVectors, VectorStoreRecordModel model)
+    public static WeaviateCollectionSchema MapToSchema(string collectionName, bool hasNamedVectors, VectorStoreCollectionModel model)
     {
         var schema = new WeaviateCollectionSchema(collectionName);
 
@@ -90,7 +90,7 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
             IndexKind.Flat => Flat,
             IndexKind.Dynamic => Dynamic,
             _ => throw new InvalidOperationException(
-                $"Index kind '{indexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. " +
+                $"Index kind '{indexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. " +
                 $"Supported index kinds: {string.Join(", ",
                     IndexKind.Hnsw,
                     IndexKind.Flat,
@@ -124,7 +124,7 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
             DistanceFunction.Hamming => Hamming,
             DistanceFunction.ManhattanDistance => Manhattan,
             _ => throw new NotSupportedException(
-                $"Distance function '{distanceFunction}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. " +
+                $"Distance function '{distanceFunction}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. " +
                 $"Supported distance functions: {string.Join(", ",
                     DistanceFunction.CosineDistance,
                     DistanceFunction.NegativeDotProductSimilarity,

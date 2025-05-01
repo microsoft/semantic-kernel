@@ -56,7 +56,7 @@ internal static class VectorStoreRecordPropertyVerification
     /// <param name="propertyCategoryDescription">A description of the category of properties being checked. Used for error messaging.</param>
     /// <param name="supportEnumerable">A value indicating whether <see cref="IEnumerable{T}"/> versions of all the types should also be supported.</param>
     /// <exception cref="ArgumentException">Thrown if any of the properties are not in the given set of types.</exception>
-    public static void VerifyPropertyTypes(IEnumerable<VectorStoreRecordProperty> properties, HashSet<Type> supportedTypes, string propertyCategoryDescription, bool? supportEnumerable = false)
+    public static void VerifyPropertyTypes(IEnumerable<VectorStoreProperty> properties, HashSet<Type> supportedTypes, string propertyCategoryDescription, bool? supportEnumerable = false)
     {
         var supportedEnumerableElementTypes = supportEnumerable == true
             ? supportedTypes
@@ -73,7 +73,7 @@ internal static class VectorStoreRecordPropertyVerification
     /// <param name="supportedEnumerableElementTypes">A set of supported types that the provided enumerable properties may use as their element type.</param>
     /// <param name="propertyCategoryDescription">A description of the category of properties being checked. Used for error messaging.</param>
     /// <exception cref="ArgumentException">Thrown if any of the properties are not in the given set of types.</exception>
-    public static void VerifyPropertyTypes(IEnumerable<VectorStoreRecordProperty> properties, HashSet<Type> supportedTypes, HashSet<Type> supportedEnumerableElementTypes, string propertyCategoryDescription)
+    public static void VerifyPropertyTypes(IEnumerable<VectorStoreProperty> properties, HashSet<Type> supportedTypes, HashSet<Type> supportedEnumerableElementTypes, string propertyCategoryDescription)
     {
         foreach (var property in properties)
         {

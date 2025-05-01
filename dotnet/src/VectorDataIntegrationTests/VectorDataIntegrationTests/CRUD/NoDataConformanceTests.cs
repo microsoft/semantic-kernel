@@ -98,10 +98,10 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
     {
         public const int DimensionCount = 3;
 
-        [VectorStoreRecordKey(StoragePropertyName = "key")]
+        [VectorStoreKeyProperty(StoragePropertyName = "key")]
         public TKey Id { get; set; } = default!;
 
-        [VectorStoreRecordVector(DimensionCount, StoragePropertyName = "embedding")]
+        [VectorStoreVectorProperty(DimensionCount, StoragePropertyName = "embedding")]
         public ReadOnlyMemory<float> Floats { get; set; }
 
         public void AssertEqual(NoDataRecord? other, bool includeVectors, bool compareVectors)
@@ -155,8 +155,8 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty(nameof(NoDataRecord.Id), typeof(TKey)) { StoragePropertyName = "key" },
-                    new VectorStoreRecordVectorProperty(nameof(NoDataRecord.Floats), typeof(ReadOnlyMemory<float>), NoDataRecord.DimensionCount)
+                    new VectorStoreKeyProperty(nameof(NoDataRecord.Id), typeof(TKey)) { StoragePropertyName = "key" },
+                    new VectorStoreVectorProperty(nameof(NoDataRecord.Floats), typeof(ReadOnlyMemory<float>), NoDataRecord.DimensionCount)
                     {
                         StoragePropertyName = "embedding",
                         IndexKind = this.IndexKind,

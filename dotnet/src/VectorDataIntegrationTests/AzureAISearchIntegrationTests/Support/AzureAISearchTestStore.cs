@@ -49,7 +49,7 @@ internal sealed class AzureAISearchTestStore : TestStore
     }
 
     public override async Task WaitForDataAsync<TKey, TRecord>(
-        IVectorStoreRecordCollection<TKey, TRecord> collection,
+        IVectorStoreCollection<TKey, TRecord> collection,
         int recordCount,
         Expression<Func<TRecord, bool>>? filter = null,
         int vectorSize = 3)

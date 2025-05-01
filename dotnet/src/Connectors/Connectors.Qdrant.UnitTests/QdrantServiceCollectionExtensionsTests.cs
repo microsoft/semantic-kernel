@@ -102,7 +102,7 @@ public class QdrantServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<ulong, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<ulong, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<QdrantVectorStoreRecordCollection<ulong, TestRecord>>(collection);
 
@@ -115,10 +115,10 @@ public class QdrantServiceCollectionExtensionsTests
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public ulong Id { get; set; }
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVectorProperty(4)]
         public ReadOnlyMemory<float> Vector { get; set; }
     }
 }

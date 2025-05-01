@@ -112,10 +112,10 @@ public sealed class WeaviateVectorStoreRecordMapperTests
                 {
                     Properties =
                     [
-                        new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
-                        new VectorStoreRecordDataProperty("HotelName", typeof(string)),
-                        new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
-                        new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>), 10)
+                        new VectorStoreKeyProperty("HotelId", typeof(Guid)),
+                        new VectorStoreDataProperty("HotelName", typeof(string)),
+                        new VectorStoreDataProperty("Tags", typeof(List<string>)),
+                        new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>), 10)
                     ]
                 },
                 defaultEmbeddingGenerator: null,

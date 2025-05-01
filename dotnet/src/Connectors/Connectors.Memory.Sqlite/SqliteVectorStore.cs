@@ -29,7 +29,7 @@ public sealed class SqliteVectorStore : IVectorStore
     private readonly SqliteVectorStoreOptions _options;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteVectorStore"/> class.
@@ -64,7 +64,7 @@ public sealed class SqliteVectorStore : IVectorStore
         => throw new InvalidOperationException("Use the constructor that accepts a connection string instead.");
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
         => new SqliteVectorStoreRecordCollection<TKey, TRecord>(
@@ -76,7 +76,7 @@ public sealed class SqliteVectorStore : IVectorStore
                 VectorSearchExtensionName = this._options.VectorSearchExtensionName,
                 VectorVirtualTableName = this._options.VectorVirtualTableName,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            }) as IVectorStoreCollection<TKey, TRecord>;
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

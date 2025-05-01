@@ -10,35 +10,35 @@ namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
 public class AzureCosmosDBMongoDBHotelModel(string hotelId)
 {
     /// <summary>The key of the record.</summary>
-    [VectorStoreRecordKey]
+    [VectorStoreKeyProperty]
     public string HotelId { get; init; } = hotelId;
 
     /// <summary>A string metadata field.</summary>
-    [VectorStoreRecordData(IsIndexed = true)]
+    [VectorStoreDataProperty(IsIndexed = true)]
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>
-    [VectorStoreRecordData]
+    [VectorStoreDataProperty]
     public int HotelCode { get; set; }
 
     /// <summary>A float metadata field.</summary>
-    [VectorStoreRecordData]
+    [VectorStoreDataProperty]
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
     [BsonElement("parking_is_included")]
-    [VectorStoreRecordData]
+    [VectorStoreDataProperty]
     public bool ParkingIncluded { get; set; }
 
     /// <summary>An array metadata field.</summary>
-    [VectorStoreRecordData]
+    [VectorStoreDataProperty]
     public List<string> Tags { get; set; } = [];
 
     /// <summary>A data field.</summary>
-    [VectorStoreRecordData]
+    [VectorStoreDataProperty]
     public string? Description { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat)]
+    [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

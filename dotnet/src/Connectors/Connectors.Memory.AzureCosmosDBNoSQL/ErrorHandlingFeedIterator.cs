@@ -11,11 +11,11 @@ internal class ErrorHandlingFeedIterator<T> : FeedIterator<T>
 {
     private readonly FeedIterator<T> _internalFeedIterator;
     private readonly string _operationName;
-    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+    private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     public ErrorHandlingFeedIterator(
         FeedIterator<T> internalFeedIterator,
-        VectorStoreRecordCollectionMetadata collectionMetadata,
+        VectorStoreCollectionMetadata collectionMetadata,
         string operationName)
     {
         this._internalFeedIterator = internalFeedIterator;
@@ -30,7 +30,7 @@ internal class ErrorHandlingFeedIterator<T> : FeedIterator<T>
     {
         this._internalFeedIterator = internalFeedIterator;
         this._operationName = operationName;
-        this._collectionMetadata = new VectorStoreRecordCollectionMetadata()
+        this._collectionMetadata = new VectorStoreCollectionMetadata()
         {
             CollectionName = null,
             VectorStoreName = metadata.VectorStoreName,

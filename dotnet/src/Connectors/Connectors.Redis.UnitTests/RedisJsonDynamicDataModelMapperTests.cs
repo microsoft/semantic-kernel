@@ -18,20 +18,20 @@ public class RedisJsonDynamicDataModelMapperTests
 {
     private static readonly float[] s_floatVector = new float[] { 1.0f, 2.0f, 3.0f, 4.0f };
 
-    private static readonly VectorStoreRecordModel s_model
-        = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
+    private static readonly VectorStoreCollectionModel s_model
+        = new VectorStoreCollectionJsonModelBuilder(RedisJsonVectorStoreRecordCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
                 new()
                 {
                     Properties =
                     [
-                        new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                        new VectorStoreRecordDataProperty("StringData", typeof(string)),
-                        new VectorStoreRecordDataProperty("IntData", typeof(int)),
-                        new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
-                        new VectorStoreRecordDataProperty("ComplexObjectData", typeof(ComplexObject)),
-                        new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+                        new VectorStoreKeyProperty("Key", typeof(string)),
+                        new VectorStoreDataProperty("StringData", typeof(string)),
+                        new VectorStoreDataProperty("IntData", typeof(int)),
+                        new VectorStoreDataProperty("NullableIntData", typeof(int?)),
+                        new VectorStoreDataProperty("ComplexObjectData", typeof(ComplexObject)),
+                        new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
                     ]
                 },
                 defaultEmbeddingGenerator: null);

@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// </summary>
 [ExcludeFromCodeCoverage]
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model) : IMongoDBMapper<Dictionary<string, object?>>
+internal sealed class MongoDBDynamicDataModelMapper(VectorStoreCollectionModel model) : IMongoDBMapper<Dictionary<string, object?>>
 #pragma warning restore CS0618
 {
     /// <inheritdoc />
@@ -88,20 +88,20 @@ internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model
         {
             switch (property)
             {
-                case VectorStoreRecordKeyPropertyModel keyProperty:
+                case VectorStoreKeyPropertyModel keyProperty:
                     result[keyProperty.ModelName] = storageModel.TryGetValue(MongoDBConstants.MongoReservedKeyPropertyName, out var keyValue)
                         ? keyValue.AsString
                         : throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
                     continue;
 
-                case VectorStoreRecordDataPropertyModel dataProperty:
+                case VectorStoreDataPropertyModel dataProperty:
                     if (storageModel.TryGetValue(dataProperty.StorageName, out var dataValue))
                     {
                         result.Add(dataProperty.ModelName, GetDataPropertyValue(property.ModelName, property.Type, dataValue));
                     }
                     continue;
 
-                case VectorStoreRecordVectorPropertyModel vectorProperty:
+                case VectorStoreVectorPropertyModel vectorProperty:
                     if (includeVectors && storageModel.TryGetValue(vectorProperty.StorageName, out var vectorValue))
                     {
                         result.Add(vectorProperty.ModelName, GetVectorPropertyValue(property.ModelName, property.Type, vectorValue));

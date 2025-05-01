@@ -10,14 +10,14 @@ namespace Microsoft.Extensions.VectorData;
 /// <remarks>
 /// The characteristics defined here influence how the property is treated by the vector store.
 /// </remarks>
-public abstract class VectorStoreRecordProperty
+public abstract class VectorStoreProperty
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreRecordProperty"/> class.
+    /// Initializes a new instance of the <see cref="VectorStoreProperty"/> class.
     /// </summary>
     /// <param name="dataModelPropertyName">The name of the property on the data model.</param>
     /// <param name="propertyType">The type of the property.</param>
-    private protected VectorStoreRecordProperty(string dataModelPropertyName, Type propertyType)
+    private protected VectorStoreProperty(string dataModelPropertyName, Type propertyType)
     {
         if (string.IsNullOrWhiteSpace(dataModelPropertyName))
         {
@@ -33,7 +33,7 @@ public abstract class VectorStoreRecordProperty
         this.PropertyType = propertyType;
     }
 
-    private protected VectorStoreRecordProperty(VectorStoreRecordProperty source)
+    private protected VectorStoreProperty(VectorStoreProperty source)
     {
         this.DataModelPropertyName = source.DataModelPropertyName;
         this.StoragePropertyName = source.StoragePropertyName;

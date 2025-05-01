@@ -27,7 +27,7 @@ internal static class VectorStoreErrorHandler
         where TException : Exception
     {
         return RunOperationAsync<TResult, TException>(
-            new VectorStoreRecordCollectionMetadata()
+            new VectorStoreCollectionMetadata()
             {
                 CollectionName = null,
                 VectorStoreName = metadata.VectorStoreName,
@@ -39,7 +39,7 @@ internal static class VectorStoreErrorHandler
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async Task<TResult> RunOperationAsync<TResult, TException>(
-        VectorStoreRecordCollectionMetadata metadata,
+        VectorStoreCollectionMetadata metadata,
         string operationName,
         Func<Task<TResult>> operation)
         where TException : Exception
@@ -78,7 +78,7 @@ internal static class VectorStoreErrorHandler
         where TException : Exception
     {
         return RunOperation<TResult, TException>(
-            new VectorStoreRecordCollectionMetadata()
+            new VectorStoreCollectionMetadata()
             {
                 CollectionName = null,
                 VectorStoreName = metadata.VectorStoreName,
@@ -90,7 +90,7 @@ internal static class VectorStoreErrorHandler
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult RunOperation<TResult, TException>(
-        VectorStoreRecordCollectionMetadata metadata,
+        VectorStoreCollectionMetadata metadata,
         string operationName,
         Func<TResult> operation)
         where TException : Exception
@@ -123,7 +123,7 @@ internal static class VectorStoreErrorHandler
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async Task<TResult> RunOperationWithRetryAsync<TResult, TException>(
-        VectorStoreRecordCollectionMetadata metadata,
+        VectorStoreCollectionMetadata metadata,
         string operationName,
         int maxRetries,
         int delayInMilliseconds,
@@ -190,7 +190,7 @@ internal static class VectorStoreErrorHandler
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async Task RunOperationAsync<TException>(
-        VectorStoreRecordCollectionMetadata metadata,
+        VectorStoreCollectionMetadata metadata,
         string operationName,
         Func<Task> operation)
         where TException : Exception
@@ -223,7 +223,7 @@ internal static class VectorStoreErrorHandler
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async Task RunOperationWithRetryAsync<TException>(
-        VectorStoreRecordCollectionMetadata metadata,
+        VectorStoreCollectionMetadata metadata,
         string operationName,
         int maxRetries,
         int delayInMilliseconds,
@@ -293,12 +293,12 @@ internal static class VectorStoreErrorHandler
         where TException : Exception
     {
         private readonly ConfiguredCancelableAsyncEnumerable<TResult> _enumerable;
-        private readonly VectorStoreRecordCollectionMetadata _metadata;
+        private readonly VectorStoreCollectionMetadata _metadata;
         private readonly string _operationName;
 
         public ConfiguredCancelableErrorHandlingAsyncEnumerable(
             ConfiguredCancelableAsyncEnumerable<TResult> enumerable,
-            VectorStoreRecordCollectionMetadata metadata,
+            VectorStoreCollectionMetadata metadata,
             string operationName)
         {
             this._enumerable = enumerable;
@@ -333,7 +333,7 @@ internal static class VectorStoreErrorHandler
 
         public struct Enumerator(
             ConfiguredCancelableAsyncEnumerable<TResult>.Enumerator enumerator,
-            VectorStoreRecordCollectionMetadata metadata,
+            VectorStoreCollectionMetadata metadata,
             string operationName)
         {
             public async ValueTask<bool> MoveNextAsync()
@@ -369,7 +369,7 @@ internal static class VectorStoreErrorHandler
 
     internal static Task<bool> ReadWithErrorHandlingAsync(
         this DbDataReader reader,
-        VectorStoreRecordCollectionMetadata metadata,
+        VectorStoreCollectionMetadata metadata,
         string operationName,
         CancellationToken cancellationToken)
         => VectorStoreErrorHandler.RunOperationAsync<bool, DbException>(
@@ -396,7 +396,7 @@ internal static class VectorStoreErrorHandler
     {
         return await ExecuteWithErrorHandlingAsync(
             connection,
-            new VectorStoreRecordCollectionMetadata
+            new VectorStoreCollectionMetadata
             {
                 VectorStoreSystemName = metadata.VectorStoreSystemName,
                 VectorStoreName = metadata.VectorStoreName,
@@ -409,7 +409,7 @@ internal static class VectorStoreErrorHandler
 
     internal static async Task<TResult> ExecuteWithErrorHandlingAsync<TResult>(
         this DbConnection connection,
-        VectorStoreRecordCollectionMetadata metadata,
+        VectorStoreCollectionMetadata metadata,
         string operationName,
         Func<Task<TResult>> operation,
         CancellationToken cancellationToken)

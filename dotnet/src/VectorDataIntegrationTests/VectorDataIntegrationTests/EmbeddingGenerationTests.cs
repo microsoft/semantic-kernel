@@ -96,7 +96,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
             await using var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<TKey, RecordWithAttributes>>();
+            var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<TKey, RecordWithAttributes>>();
 
             var result = await collection.SearchAsync("[1, 1, 0]", top: 1).SingleAsync();
 
@@ -110,8 +110,8 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         var recordDefinition = new VectorStoreRecordDefinition()
         {
             Properties = fixture.GetRecordDefinition().Properties
-                .Select(p => p is VectorStoreRecordVectorProperty vectorProperty
-                    ? new VectorStoreRecordVectorProperty<Customer>(nameof(Record.Embedding), dimensions: 3)
+                .Select(p => p is VectorStoreVectorProperty vectorProperty
+                    ? new VectorStoreVectorProperty<Customer>(nameof(Record.Embedding), dimensions: 3)
                     {
                         DistanceFunction = fixture.DefaultDistanceFunction,
                         IndexKind = fixture.DefaultIndexKind
@@ -144,9 +144,9 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
     public class RawRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public TKey Key { get; set; } = default!;
-        [VectorStoreRecordVector(Dimensions: 3)]
+        [VectorStoreVectorProperty(Dimensions: 3)]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 
@@ -348,16 +348,16 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
     public class RecordWithAttributes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKeyProperty]
         public TKey Key { get; set; } = default!;
 
-        [VectorStoreRecordVector(Dimensions: 3)]
+        [VectorStoreVectorProperty(Dimensions: 3)]
         public string? Embedding { get; set; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreDataProperty(IsIndexed = true)]
         public int Counter { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreDataProperty]
         public string? Text { get; set; }
     }
 
@@ -376,7 +376,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         public string? LastName { get; set; }
     }
 
-    private IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TRecord>(
+    private IVectorStoreCollection<TKey, TRecord> GetCollection<TRecord>(
         bool storeGenerator = false,
         bool collectionGenerator = false,
         bool propertyGenerator = false)
@@ -385,8 +385,8 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         var properties = fixture.GetRecordDefinition().Properties;
 
         properties = properties
-            .Select(p => p is VectorStoreRecordVectorProperty vectorProperty && propertyGenerator
-                ? new VectorStoreRecordVectorProperty(vectorProperty) { EmbeddingGenerator = new FakeEmbeddingGenerator(replaceLast: 3) }
+            .Select(p => p is VectorStoreVectorProperty vectorProperty && propertyGenerator
+                ? new VectorStoreVectorProperty(vectorProperty) { EmbeddingGenerator = new FakeEmbeddingGenerator(replaceLast: 3) }
                 : p)
             .ToList();
 
@@ -413,15 +413,15 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty(nameof(Record.Key), typeof(TKey)),
-                    new VectorStoreRecordVectorProperty(nameof(Record.Embedding), typeof(string), dimensions: 3)
+                    new VectorStoreKeyProperty(nameof(Record.Key), typeof(TKey)),
+                    new VectorStoreVectorProperty(nameof(Record.Embedding), typeof(string), dimensions: 3)
                     {
                         DistanceFunction = this.DefaultDistanceFunction,
                         IndexKind = this.DefaultIndexKind
                     },
 
-                    new VectorStoreRecordDataProperty(nameof(Record.Counter), typeof(int)) { IsIndexed = true },
-                    new VectorStoreRecordDataProperty(nameof(Record.Text), typeof(string))
+                    new VectorStoreDataProperty(nameof(Record.Counter), typeof(int)) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(Record.Text), typeof(string))
                 ],
                 EmbeddingGenerator = new FakeEmbeddingGenerator()
             };
@@ -451,7 +451,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
             }
         ];
 
-        public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TRecord>(
+        public virtual IVectorStoreCollection<TKey, TRecord> GetCollection<TRecord>(
             IVectorStore vectorStore,
             string collectionName,
             VectorStoreRecordDefinition? recordDefinition = null)

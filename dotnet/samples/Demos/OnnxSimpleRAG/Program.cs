@@ -130,14 +130,14 @@ static void DisposeServices(Kernel kernel)
 /// </summary>
 internal sealed class InformationItem
 {
-    [VectorStoreRecordKey]
+    [VectorStoreKeyProperty]
     [TextSearchResultName]
     public string Id { get; set; } = string.Empty;
 
-    [VectorStoreRecordData]
+    [VectorStoreDataProperty]
     [TextSearchResultValue]
     public string Text { get; set; } = string.Empty;
 
-    [VectorStoreRecordVector(Dimensions: 384)]
+    [VectorStoreVectorProperty(Dimensions: 384)]
     public ReadOnlyMemory<float> Embedding { get; set; }
 }

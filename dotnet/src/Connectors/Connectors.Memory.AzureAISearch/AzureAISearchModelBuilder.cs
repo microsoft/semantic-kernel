@@ -6,9 +6,9 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
-internal class AzureAISearchModelBuilder() : VectorStoreRecordJsonModelBuilder(s_modelBuildingOptions)
+internal class AzureAISearchModelBuilder() : VectorStoreCollectionJsonModelBuilder(s_modelBuildingOptions)
 {
-    internal static readonly VectorStoreRecordModelBuildingOptions s_modelBuildingOptions = new()
+    internal static readonly VectorStoreCollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,
@@ -26,7 +26,7 @@ internal class AzureAISearchModelBuilder() : VectorStoreRecordJsonModelBuilder(s
     {
         base.Validate(type);
 
-        if (this.VectorProperties.FirstOrDefault(p => p.EmbeddingGenerator is not null) is VectorStoreRecordPropertyModel property)
+        if (this.VectorProperties.FirstOrDefault(p => p.EmbeddingGenerator is not null) is VectorStorePropertyModel property)
         {
             throw new NotSupportedException(
                 $"The Azure AI Search connector does not currently support a custom embedding generator (configured for property '{property.ModelName}' on type '{type.Name}'). " +
