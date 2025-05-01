@@ -65,7 +65,7 @@ public sealed class PostgresVectorStore : IVectorStore
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._postgresClient.GetTablesAsync(cancellationToken),
             "ListCollectionNames",
-            this._metadata.VectorStoreName
+            this._metadata
         );
     }
 

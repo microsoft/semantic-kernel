@@ -29,7 +29,7 @@ internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model
         var document = new BsonDocument();
 
         document[MongoDBConstants.MongoReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
-            ? throw new KeyNotFoundException($"Missing value for key property '{model.KeyProperty.ModelName}")
+            ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
             : keyValue switch
             {
                 string s => s,

@@ -71,21 +71,10 @@ public sealed class PineconeVectorStore : IVectorStore
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        IndexList indexList;
-
-        try
-        {
-            indexList = await this._pineconeClient.ListIndexesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
-        catch (PineconeApiException ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
-                VectorStoreName = this._metadata.VectorStoreName,
-                OperationName = "ListCollections"
-            };
-        }
+        var indexList = await VectorStoreErrorHandler.RunOperationAsync<IndexList, PineconeApiException>(
+            this._metadata,
+            "ListCollections",
+            () => this._pineconeClient.ListIndexesAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         if (indexList.Indexes is not null)
         {

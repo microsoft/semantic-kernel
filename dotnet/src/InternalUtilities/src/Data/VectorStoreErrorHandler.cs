@@ -104,6 +104,24 @@ internal static class VectorStoreErrorHandler
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult RunOperation<TResult, TException>(
+        VectorStoreMetadata metadata,
+        string operationName,
+        Func<TResult> operation)
+        where TException : Exception
+    {
+        return RunOperation<TResult, TException>(
+            new VectorStoreRecordCollectionMetadata()
+            {
+                CollectionName = null,
+                VectorStoreName = metadata.VectorStoreName,
+                VectorStoreSystemName = metadata.VectorStoreSystemName,
+            },
+            operationName,
+            operation);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult RunOperation<TResult, TException>(
         VectorStoreRecordCollectionMetadata metadata,
         string operationName,
         Func<TResult> operation)
