@@ -34,7 +34,9 @@ internal sealed class MongoDBTestStore : TestStore
 
     protected override async Task StartAsync()
     {
-        await this._container.StartAsync();
+        using CancellationTokenSource cts = new();
+        cts.CancelAfter(TimeSpan.FromSeconds(60));
+        await this._container.StartAsync(cts.Token);
 
         this._client = new MongoClient(new MongoClientSettings
         {
