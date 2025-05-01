@@ -406,6 +406,10 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         )
         await stack(invocation_context)
 
+        # Snapshot the tool's return value so later mutations don't leak back
+        if invocation_context.function_result and invocation_context.function_result.value is not None:
+            invocation_context.function_result.value = deepcopy(invocation_context.function_result.value)
+
         frc = FunctionResultContent.from_function_call_content_and_result(
             function_call_content=function_call,
             result=invocation_context.function_result,

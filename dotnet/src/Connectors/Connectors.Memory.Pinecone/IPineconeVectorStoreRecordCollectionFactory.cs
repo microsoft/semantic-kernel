@@ -22,5 +22,6 @@ public interface IPineconeVectorStoreRecordCollectionFactory
     /// <param name="vectorStoreRecordDefinition">An optional record definition that defines the schema of the record type. If not present, attributes on <typeparamref name="TRecord"/> will be used.</param>
     /// <returns>The new instance of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</returns>
     IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(Sdk.PineconeClient pineconeClient, string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
-        where TKey : notnull;
+        where TKey : notnull
+        where TRecord : notnull;
 }

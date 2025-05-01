@@ -3,9 +3,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using NRedisStack.Search;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -47,11 +49,10 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// Map from the given list of <see cref="VectorStoreRecordProperty"/> items to the Redis <see cref="Schema"/>.
     /// </summary>
     /// <param name="properties">The property definitions to map from.</param>
-    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name that should be used when serializing it to json for data and vector properties.</param>
     /// <param name="useDollarPrefix">A value indicating whether to include $. prefix for field names as required in JSON mode.</param>
     /// <returns>The mapped Redis <see cref="Schema"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if there are missing required or unsupported configuration options set.</exception>
-    public static Schema MapToSchema(IEnumerable<VectorStoreRecordProperty> properties, IReadOnlyDictionary<string, string> storagePropertyNames, bool useDollarPrefix)
+    public static Schema MapToSchema(IEnumerable<VectorStoreRecordPropertyModel> properties, bool useDollarPrefix)
     {
         var schema = new Schema();
         var fieldNamePrefix = useDollarPrefix ? "$." : string.Empty;
@@ -59,79 +60,68 @@ internal static class RedisVectorStoreCollectionCreateMapping
         // Loop through all properties and create the index fields.
         foreach (var property in properties)
         {
-            // Key property.
-            if (property is VectorStoreRecordKeyProperty keyProperty)
+            var storageName = property.StorageName;
+
+            switch (property)
             {
-                // Do nothing, since key is not stored as part of the payload and therefore doesn't have to be added to the index.
-                continue;
-            }
+                case VectorStoreRecordKeyPropertyModel keyProperty:
+                    // Do nothing, since key is not stored as part of the payload and therefore doesn't have to be added to the index.
+                    continue;
 
-            // Data property.
-            if (property is VectorStoreRecordDataProperty dataProperty && (dataProperty.IsFilterable || dataProperty.IsFullTextSearchable))
-            {
-                var storageName = storagePropertyNames[dataProperty.DataModelPropertyName];
-
-                if (dataProperty.IsFilterable && dataProperty.IsFullTextSearchable)
-                {
-                    throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' has both {nameof(VectorStoreRecordDataProperty.IsFilterable)} and {nameof(VectorStoreRecordDataProperty.IsFullTextSearchable)} set to true, and this is not supported by the Redis VectorStore.");
-                }
-
-                // Add full text search field index.
-                if (dataProperty.IsFullTextSearchable)
-                {
-                    if (dataProperty.PropertyType == typeof(string) || (typeof(IEnumerable).IsAssignableFrom(dataProperty.PropertyType) && GetEnumerableType(dataProperty.PropertyType) == typeof(string)))
+                case VectorStoreRecordDataPropertyModel dataProperty when dataProperty.IsIndexed || dataProperty.IsFullTextIndexed:
+                    if (dataProperty.IsIndexed && dataProperty.IsFullTextIndexed)
                     {
-                        schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
+                        throw new InvalidOperationException($"Property '{dataProperty.ModelName}' has both {nameof(VectorStoreRecordDataProperty.IsIndexed)} and {nameof(VectorStoreRecordDataProperty.IsFullTextIndexed)} set to true, and this is not supported by the Redis VectorStore.");
                     }
-                    else
-                    {
-                        throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not a string or IEnumerable<string>. The Redis VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string or IEnumerable<string> properties only.");
-                    }
-                }
 
-                // Add filter field index.
-                if (dataProperty.IsFilterable)
-                {
-                    if (dataProperty.PropertyType == typeof(string))
+                    // Add full text search field index.
+                    if (dataProperty.IsFullTextIndexed)
                     {
-                        schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
+                        if (dataProperty.Type == typeof(string) || (typeof(IEnumerable).IsAssignableFrom(dataProperty.Type) && GetEnumerableType(dataProperty.Type) == typeof(string)))
+                        {
+                            schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextIndexed)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string or IEnumerable<string>. The Redis VectorStore supports {nameof(dataProperty.IsFullTextIndexed)} on string or IEnumerable<string> properties only.");
+                        }
                     }
-                    else if (typeof(IEnumerable).IsAssignableFrom(dataProperty.PropertyType) && GetEnumerableType(dataProperty.PropertyType) == typeof(string))
-                    {
-                        schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}.*", storageName));
-                    }
-                    else if (RedisVectorStoreCollectionCreateMapping.s_supportedFilterableNumericDataTypes.Contains(dataProperty.PropertyType))
-                    {
-                        schema.AddNumericField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' is marked as {nameof(VectorStoreRecordDataProperty.IsFilterable)}, but the property type '{dataProperty.PropertyType}' is not supported. Only string, IEnumerable<string> and numeric properties are supported for filtering by the Redis VectorStore.");
-                    }
-                }
 
-                continue;
-            }
+                    // Add filter field index.
+                    if (dataProperty.IsIndexed)
+                    {
+                        if (dataProperty.Type == typeof(string))
+                        {
+                            schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
+                        }
+                        else if (typeof(IEnumerable).IsAssignableFrom(dataProperty.Type) && GetEnumerableType(dataProperty.Type) == typeof(string))
+                        {
+                            schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}.*", storageName));
+                        }
+                        else if (RedisVectorStoreCollectionCreateMapping.s_supportedFilterableNumericDataTypes.Contains(dataProperty.Type))
+                        {
+                            schema.AddNumericField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Property '{dataProperty.ModelName}' is marked as {nameof(VectorStoreRecordDataProperty.IsIndexed)}, but the property type '{dataProperty.Type}' is not supported. Only string, IEnumerable<string> and numeric properties are supported for filtering by the Redis VectorStore.");
+                        }
+                    }
 
-            // Vector property.
-            if (property is VectorStoreRecordVectorProperty vectorProperty)
-            {
-                if (vectorProperty.Dimensions is not > 0)
-                {
-                    throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' must be set to a positive integer to create a collection.");
-                }
+                    continue;
 
-                var storageName = storagePropertyNames[vectorProperty.DataModelPropertyName];
-                var indexKind = GetSDKIndexKind(vectorProperty);
-                var vectorType = GetSDKVectorType(vectorProperty);
-                var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
-                var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
-                schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName), indexKind, new Dictionary<string, object>()
-                {
-                    ["TYPE"] = vectorType,
-                    ["DIM"] = dimensions,
-                    ["DISTANCE_METRIC"] = distanceAlgorithm
-                });
+                case VectorStoreRecordVectorPropertyModel vectorProperty:
+                    var indexKind = GetSDKIndexKind(vectorProperty);
+                    var vectorType = GetSDKVectorType(vectorProperty);
+                    var dimensions = vectorProperty.Dimensions.ToString(CultureInfo.InvariantCulture);
+                    var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
+                    schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName), indexKind, new Dictionary<string, object>()
+                    {
+                        ["TYPE"] = vectorType,
+                        ["DIM"] = dimensions,
+                        ["DISTANCE_METRIC"] = distanceAlgorithm
+                    });
+                    continue;
             }
         }
 
@@ -145,20 +135,13 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The chosen <see cref="Schema.VectorField.VectorAlgo"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if a index type was chosen that isn't supported by Redis.</exception>
-    public static Schema.VectorField.VectorAlgo GetSDKIndexKind(VectorStoreRecordVectorProperty vectorProperty)
-    {
-        if (vectorProperty.IndexKind is null)
+    public static Schema.VectorField.VectorAlgo GetSDKIndexKind(VectorStoreRecordVectorPropertyModel vectorProperty)
+        => vectorProperty.IndexKind switch
         {
-            return Schema.VectorField.VectorAlgo.HNSW;
-        }
-
-        return vectorProperty.IndexKind switch
-        {
-            IndexKind.Hnsw => Schema.VectorField.VectorAlgo.HNSW,
+            IndexKind.Hnsw or null => Schema.VectorField.VectorAlgo.HNSW,
             IndexKind.Flat => Schema.VectorField.VectorAlgo.FLAT,
-            _ => throw new InvalidOperationException($"Index kind '{vectorProperty.IndexKind}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Redis VectorStore.")
+            _ => throw new InvalidOperationException($"Index kind '{vectorProperty.IndexKind}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Redis VectorStore.")
         };
-    }
 
     /// <summary>
     /// Get the configured distance metric from the given <paramref name="vectorProperty"/>.
@@ -167,22 +150,15 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The chosen distance metric.</returns>
     /// <exception cref="InvalidOperationException">Thrown if a distance function is chosen that isn't supported by Redis.</exception>
-    public static string GetSDKDistanceAlgorithm(VectorStoreRecordVectorProperty vectorProperty)
-    {
-        if (vectorProperty.DistanceFunction is null)
+    public static string GetSDKDistanceAlgorithm(VectorStoreRecordVectorPropertyModel vectorProperty)
+        => vectorProperty.DistanceFunction switch
         {
-            return "COSINE";
-        }
-
-        return vectorProperty.DistanceFunction switch
-        {
-            DistanceFunction.CosineSimilarity => "COSINE",
+            DistanceFunction.CosineSimilarity or null => "COSINE",
             DistanceFunction.CosineDistance => "COSINE",
             DistanceFunction.DotProductSimilarity => "IP",
             DistanceFunction.EuclideanSquaredDistance => "L2",
-            _ => throw new InvalidOperationException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Redis VectorStore.")
+            _ => throw new InvalidOperationException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Redis VectorStore.")
         };
-    }
 
     /// <summary>
     /// Get the vector type to pass to the SDK based on the data type of the vector property.
@@ -190,17 +166,16 @@ internal static class RedisVectorStoreCollectionCreateMapping
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The SDK required vector type.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the property data type is not supported by the connector.</exception>
-    public static string GetSDKVectorType(VectorStoreRecordVectorProperty vectorProperty)
-    {
-        return vectorProperty.PropertyType switch
+    public static string GetSDKVectorType(VectorStoreRecordVectorPropertyModel vectorProperty)
+        => vectorProperty.EmbeddingType switch
         {
             Type t when t == typeof(ReadOnlyMemory<float>) => "FLOAT32",
             Type t when t == typeof(ReadOnlyMemory<float>?) => "FLOAT32",
             Type t when t == typeof(ReadOnlyMemory<double>) => "FLOAT64",
             Type t when t == typeof(ReadOnlyMemory<double>?) => "FLOAT64",
-            _ => throw new InvalidOperationException($"Vector data type '{vectorProperty.PropertyType.FullName}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' is not supported by the Redis VectorStore.")
+            null => throw new UnreachableException("null embedding type"),
+            _ => throw new InvalidOperationException($"Vector data type '{vectorProperty.Type.Name}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Redis VectorStore.")
         };
-    }
 
     /// <summary>
     /// Gets the type of object stored in the given enumerable type.

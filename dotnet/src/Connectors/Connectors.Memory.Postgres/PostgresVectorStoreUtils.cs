@@ -17,17 +17,22 @@ internal static class PostgresVectorStoreUtils
     /// <typeparam name="T">The type of the items in the async enumerable.</typeparam>
     /// <param name="asyncEnumerable">The async enumerable to wrap.</param>
     /// <param name="operationName">The name of the operation being performed.</param>
+    /// <param name="vectorStoreName">The name of the vector store.</param>
     /// <param name="collectionName">The name of the collection being operated on.</param>
     /// <returns>An async enumerable that will throw a <see cref="VectorStoreOperationException"/> if an exception is thrown while iterating over the original enumerator.</returns>
-    public static async IAsyncEnumerable<T> WrapAsyncEnumerableAsync<T>(IAsyncEnumerable<T> asyncEnumerable, string operationName, string? collectionName = null)
+    public static async IAsyncEnumerable<T> WrapAsyncEnumerableAsync<T>(
+        IAsyncEnumerable<T> asyncEnumerable,
+        string operationName,
+        string? vectorStoreName = null,
+        string? collectionName = null)
     {
         var enumerator = asyncEnumerable.ConfigureAwait(false).GetAsyncEnumerator();
 
-        var nextResult = await GetNextAsync<T>(enumerator, operationName, collectionName).ConfigureAwait(false);
+        var nextResult = await GetNextAsync<T>(enumerator, operationName, vectorStoreName, collectionName).ConfigureAwait(false);
         while (nextResult.more)
         {
             yield return nextResult.item;
-            nextResult = await GetNextAsync(enumerator, operationName, collectionName).ConfigureAwait(false);
+            nextResult = await GetNextAsync(enumerator, operationName, vectorStoreName, collectionName).ConfigureAwait(false);
         }
     }
 
@@ -37,20 +42,26 @@ internal static class PostgresVectorStoreUtils
     /// </summary>
     /// <param name="enumerator">The enumerator to get the next result from.</param>
     /// <param name="operationName">The name of the operation being performed.</param>
+    /// <param name="vectorStoreName">The name of the vector store.</param>
     /// <param name="collectionName">The name of the collection being operated on.</param>
     /// <returns>A value indicating whether there are more results and the current string if true.</returns>
-    public static async Task<(T item, bool more)> GetNextAsync<T>(ConfiguredCancelableAsyncEnumerable<T>.Enumerator enumerator, string operationName, string? collectionName = null)
+    public static async Task<(T item, bool more)> GetNextAsync<T>(
+        ConfiguredCancelableAsyncEnumerable<T>.Enumerator enumerator,
+        string operationName,
+        string? vectorStoreName = null,
+        string? collectionName = null)
     {
         try
         {
             var more = await enumerator.MoveNextAsync();
             return (enumerator.Current, more);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not (NotSupportedException or ArgumentException))
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = PostgresConstants.DatabaseName,
+                VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
+                VectorStoreName = vectorStoreName,
                 CollectionName = collectionName,
                 OperationName = operationName
             };

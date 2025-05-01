@@ -26,6 +26,7 @@ namespace Memory;
 /// dotnet user-secrets set "AzureAISearch:Endpoint" "https://myazureaisearchinstance.search.windows.net"
 /// dotnet user-secrets set "AzureAISearch:ApiKey" "samplesecret"
 /// </remarks>
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class VectorStore_ConsumeFromMemoryStore_AzureAISearch(ITestOutputHelper output, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
 {
     private const int VectorSize = 1536;

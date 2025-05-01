@@ -41,6 +41,7 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecordFromString<TKey, TRecord> createRecord)
         where TKey : notnull
+        where TRecord : notnull
     {
         var lines = await File.ReadAllLinesAsync("./TestData/semantic-kernel-info.txt");
 
@@ -97,20 +98,6 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     }
 
     /// <summary>
-    /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
-    /// </summary>
-    protected sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
-    {
-        /// <inheritdoc/>
-        public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        {
-            var vectorizedQuery = await textEmbeddingGeneration!.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            return await vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, options, cancellationToken);
-        }
-    }
-
-    /// <summary>
     /// Sample model class that represents a record entry.
     /// </summary>
     /// <remarks>
@@ -130,7 +117,7 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
         [VectorStoreRecordData]
         public required string Link { get; init; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public required string Tag { get; init; }
 
         [VectorStoreRecordVector(1536)]

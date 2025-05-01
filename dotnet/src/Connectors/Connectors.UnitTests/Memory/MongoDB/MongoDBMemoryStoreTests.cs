@@ -17,6 +17,7 @@ namespace SemanticKernel.Connectors.UnitTests.MongoDB;
 /// <summary>
 /// Unit tests for <see cref="MongoDBMemoryStore"/> class.
 /// </summary>
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class MongoDBMemoryStoreTests
 {
     private const string CollectionName = "test-collection";

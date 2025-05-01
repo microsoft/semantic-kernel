@@ -32,9 +32,8 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     merge_streaming_function_results,
 )
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
-from semantic_kernel.connectors.ai.function_calling_utils import (
-    kernel_function_metadata_to_function_call_format,
-)
+from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
@@ -149,6 +148,7 @@ class AssistantThreadActions:
         temperature: float | None = None,
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Invoke the assistant.
@@ -172,6 +172,8 @@ class AssistantThreadActions:
             temperature: The temperature.
             top_p: The top p.
             truncation_strategy: The truncation strategy.
+            polling_options: The polling options defined at the run-level. These will override the agent-level
+                polling options.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -222,7 +224,9 @@ class AssistantThreadActions:
         function_steps: dict[str, "FunctionCallContent"] = {}
 
         while run.status != "completed":
-            run = await cls._poll_run_status(agent=agent, run=run, thread_id=thread_id)
+            run = await cls._poll_run_status(
+                agent=agent, run=run, thread_id=thread_id, polling_options=polling_options or agent.polling_options
+            )
 
             if run.status in cls.error_message_states:
                 error_message = ""
@@ -332,7 +336,7 @@ class AssistantThreadActions:
                         message_id=completed_step.step_details.message_creation.message_id,  # type: ignore
                     )
                     if message:
-                        content = generate_message_content(agent.name, message)
+                        content = generate_message_content(agent.name, message, completed_step)
                         if content and len(content.items) > 0:
                             message_count += 1
                             logger.debug(
@@ -681,17 +685,19 @@ class AssistantThreadActions:
         ]
 
     @classmethod
-    async def _poll_run_status(cls: type[_T], agent: "OpenAIAssistantAgent", run: "Run", thread_id: str) -> "Run":
+    async def _poll_run_status(
+        cls: type[_T], agent: "OpenAIAssistantAgent", run: "Run", thread_id: str, polling_options: RunPollingOptions
+    ) -> "Run":
         """Poll the run status."""
         logger.info(f"Polling run status: {run.id}, threadId: {thread_id}")
 
         try:
             run = await asyncio.wait_for(
-                cls._poll_loop(agent, run, thread_id),
-                timeout=agent.polling_options.run_polling_timeout.total_seconds(),
+                cls._poll_loop(agent, run, thread_id, polling_options),
+                timeout=polling_options.run_polling_timeout.total_seconds(),
             )
         except asyncio.TimeoutError:
-            timeout_duration = agent.polling_options.run_polling_timeout
+            timeout_duration = polling_options.run_polling_timeout
             error_message = f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` after waiting {timeout_duration}."  # noqa: E501
             logger.error(error_message)
             raise AgentInvokeException(error_message)
@@ -700,11 +706,13 @@ class AssistantThreadActions:
         return run
 
     @classmethod
-    async def _poll_loop(cls: type[_T], agent: "OpenAIAssistantAgent", run: "Run", thread_id: str) -> "Run":
+    async def _poll_loop(
+        cls: type[_T], agent: "OpenAIAssistantAgent", run: "Run", thread_id: str, polling_options: RunPollingOptions
+    ) -> "Run":
         """Internal polling loop."""
         count = 0
         while True:
-            await asyncio.sleep(agent.polling_options.get_polling_interval(count).total_seconds())
+            await asyncio.sleep(polling_options.get_polling_interval(count).total_seconds())
             count += 1
 
             try:
