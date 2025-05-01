@@ -106,7 +106,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     }
 
     /// <summary>
-    /// Get the <see cref="Microsoft.Extensions.AI.AIFunctionArgumentsV2"/> with which this filter is associated.
+    /// Get the <see cref="AIFunctionArguments"/> with which this filter is associated.
     /// </summary>
     public AIFunctionArguments AIArguments
     {
