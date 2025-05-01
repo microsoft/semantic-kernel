@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Driver;
@@ -31,7 +32,9 @@ public class MongoDBVectorStoreFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await this._container.StartAsync();
+        using CancellationTokenSource cts = new();
+        cts.CancelAfter(TimeSpan.FromSeconds(60));
+        await this._container.StartAsync(cts.Token);
 
         var mongoClient = new MongoClient(new MongoClientSettings
         {
