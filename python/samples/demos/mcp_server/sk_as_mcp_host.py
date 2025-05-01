@@ -63,15 +63,11 @@ async def main(transport: Literal["sse", "stdio"] = "stdio", url: str | None = N
             ],
         )
     elif transport == "sse":
-        assert url is not None
-
         mcp_client_plugin = MCPSsePlugin(
             name="Echo",
             url=url,
             description="SK Echo plugin",
         )
-
-    assert mcp_client_plugin is not None
 
     async with mcp_client_plugin as plugin:
         _ = kernel.add_plugin(plugin)
