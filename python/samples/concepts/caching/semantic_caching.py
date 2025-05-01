@@ -10,7 +10,7 @@ from uuid import uuid4
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
-from semantic_kernel.connectors.memory.in_memory import InMemoryVectorStore
+from semantic_kernel.connectors.memory.in_memory import InMemoryStore
 from semantic_kernel.data import (
     VectorizedSearchMixin,
     VectorSearchOptions,
@@ -120,7 +120,7 @@ async def main():
     kernel.add_service(chat)
     kernel.add_service(embedding)
     # create the in-memory vector store
-    vector_store = InMemoryVectorStore()
+    vector_store = InMemoryStore()
     # create the cache filter and add the filters to the kernel
     cache = PromptCacheFilter(embedding_service=embedding, vector_store=vector_store)
     kernel.add_filter(FilterTypes.PROMPT_RENDERING, cache.on_prompt_render)

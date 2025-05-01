@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ast
 import sys
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from typing import Any, ClassVar, Final, Generic
@@ -9,10 +10,11 @@ from pydantic import Field
 from scipy.spatial.distance import cityblock, cosine, euclidean, hamming, sqeuclidean
 from typing_extensions import override
 
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction
-from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import VectorSearch, VectorSearchOptions, VectorSearchResult
+from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
     TKey,
@@ -21,9 +23,9 @@ from semantic_kernel.data.vector_storage import (
     VectorStoreRecordCollection,
 )
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
-from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
-from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException
+from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.list_handler import empty_generator
 
 if sys.version_info >= (3, 12):
@@ -45,7 +47,7 @@ DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction | str, Callable[..., Any]]] =
 }
 
 
-class InMemoryVectorCollection(
+class InMemoryCollection(
     VectorStoreRecordCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
     Generic[TKey, TModel],
@@ -53,13 +55,15 @@ class InMemoryVectorCollection(
     """In Memory Collection."""
 
     inner_storage: dict[TKey, dict] = Field(default_factory=dict)
-    supported_key_types: ClassVar[list[str] | None] = ["str", "int", "float"]
+    supported_key_types: ClassVar[set[str] | None] = {"str", "int", "float"}
+    supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR}
 
     def __init__(
         self,
-        collection_name: str,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ):
         """Create a In Memory Collection."""
@@ -67,6 +71,7 @@ class InMemoryVectorCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             collection_name=collection_name,
+            embedding_generator=embedding_generator,
             **kwargs,
         )
 
@@ -121,56 +126,26 @@ class InMemoryVectorCollection(
     @override
     async def _inner_search(
         self,
-        options: VectorSearchOptions | None = None,
-        keywords: OptionalOneOrMany[str] = None,
-        search_text: str | None = None,
-        vectorizable_text: str | None = None,
+        search_type: SearchType,
+        options: VectorSearchOptions,
+        values: Any | None = None,
         vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Inner search method."""
-        if search_text:
-            return await self._inner_search_text(search_text, options, **kwargs)
-        if vector:
-            if not options:
-                raise VectorSearchExecutionException("Options must be provided for vector search.")
-            return await self._inner_search_vectorized(vector, options, **kwargs)
-        raise VectorSearchExecutionException("Search text or vector must be provided.")
-
-    async def _inner_search_text(
-        self,
-        search_text: str,
-        options: VectorSearchOptions | None = None,
-        **kwargs: Any,
-    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        """Inner search method."""
+        if not vector:
+            vector = await self._generate_vector_from_values(values, options)
         return_records: dict[TKey, float] = {}
-        for key, record in self._get_filtered_records(options).items():
-            if self._should_add_text_search(search_text, record):
-                return_records[key] = 1.0
-        if return_records:
-            return KernelSearchResults(
-                results=self._get_vector_search_results_from_results(
-                    self._generate_return_list(return_records, options), options
-                ),
-                total_count=len(return_records) if options and options.include_total_count else None,
+        field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        if not field:
+            raise VectorStoreModelException(
+                f"Vector field '{options.vector_field_name}' not found in the data model definition."
             )
-        return KernelSearchResults(results=None)
-
-    async def _inner_search_vectorized(
-        self,
-        vector: list[float | int],
-        options: VectorSearchOptions,
-        **kwargs: Any,
-    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        return_records: dict[TKey, float] = {}
-        field = options.vector_field_name or self.data_model_definition.vector_field_names[0]
-        assert isinstance(self.data_model_definition.fields.get(field), VectorStoreRecordVectorField)  # nosec
-        distance_metric = (
-            self.data_model_definition.fields.get(field).distance_function  # type: ignore
-            or DistanceFunction.COSINE_DISTANCE
-        )
-        distance_func = DISTANCE_FUNCTION_MAP[distance_metric]
+        if field.distance_function not in DISTANCE_FUNCTION_MAP:
+            raise VectorSearchExecutionException(
+                f"Distance function '{field.distance_function}' is not supported. Supported functions are: {list(DISTANCE_FUNCTION_MAP.keys())}"
+            )
+        distance_func = DISTANCE_FUNCTION_MAP[field.distance_function]
 
         for key, record in self._get_filtered_records(options).items():
             if vector and field is not None:
@@ -178,13 +153,13 @@ class InMemoryVectorCollection(
                     vector,
                     record[field],
                     distance_func,
-                    invert_score=distance_metric == DistanceFunction.COSINE_SIMILARITY,
+                    invert_score=field.distance_function == DistanceFunction.COSINE_SIMILARITY,
                 )
         sorted_records = dict(
             sorted(
                 return_records.items(),
                 key=lambda item: item[1],
-                reverse=DISTANCE_FUNCTION_DIRECTION_HELPER[distance_metric](1, 0),
+                reverse=DISTANCE_FUNCTION_DIRECTION_HELPER[field.distance_function](1, 0),
             )
         )
         if sorted_records:
@@ -211,19 +186,38 @@ class InMemoryVectorCollection(
                 if returned >= top:
                     break
 
-    def _get_filtered_records(self, options: VectorSearchOptions | None) -> dict[TKey, dict]:
-        if options and options.filter:
-            if not isinstance(options.filter, VectorSearchFilter):
-                raise VectorStoreOperationException("Lambda filters are not supported yet.")
-            for filter in options.filter.filters:
-                return {key: record for key, record in self.inner_storage.items() if self._apply_filter(record, filter)}
+    def _get_filtered_records(self, options: VectorSearchOptions) -> dict[TKey, dict]:
+        if filters := self._build_filter(options.filter):
+            if not isinstance(filters, list):
+                filters = [filters]
+            filtered_records = {}
+            for key, record in self.inner_storage.items():
+                for filter in filters:
+                    if filter(record):
+                        filtered_records[key] = record
+            return filtered_records
         return self.inner_storage
 
-    def _should_add_text_search(self, search_text: str, record: dict) -> bool:
-        for field in self.data_model_definition.fields.values():
-            if not isinstance(field, VectorStoreRecordVectorField) and search_text in record.get(field.name, ""):
-                return True
-        return False
+    @override
+    def _lambda_parser(self, node: ast.AST) -> Any:
+        """Rewrite lambda AST to use dict-style access instead of attribute access."""
+
+        class AttributeToSubscriptTransformer(ast.NodeTransformer):
+            def visit_Attribute(self, node):
+                # Only transform if the value is a Name (e.g., x.content)
+                if isinstance(node.value, ast.Name):
+                    return ast.Subscript(
+                        value=node.value,
+                        slice=ast.Constant(value=node.attr),
+                        ctx=ast.Load(),
+                    )
+                return self.generic_visit(node)
+
+        # Transform the AST
+        transformer = AttributeToSubscriptTransformer()
+        new_node = transformer.visit(node)
+        ast.fix_missing_locations(new_node)
+        return new_node
 
     def _calculate_vector_similarity(
         self,
@@ -237,24 +231,6 @@ class InMemoryVectorCollection(
             return 1.0 - float(calc)
         return float(calc)
 
-    @staticmethod
-    def _apply_filter(record: dict[str, Any], filter: FilterClauseBase) -> bool:
-        match filter:
-            case EqualTo():
-                value = record.get(filter.field_name)
-                if not value:
-                    return False
-                return value.lower() == filter.value.lower()
-            case AnyTagsEqualTo():
-                tag_list = record.get(filter.field_name)
-                if not tag_list:
-                    return False
-                if not isinstance(tag_list, list):
-                    tag_list = [tag_list]
-                return filter.value in tag_list
-            case _:
-                return True
-
     def _get_record_from_result(self, result: Any) -> Any:
         return result
 
@@ -262,9 +238,16 @@ class InMemoryVectorCollection(
         return result.get(IN_MEMORY_SCORE_KEY)
 
 
-@experimental
-class InMemoryVectorStore(VectorStore):
+@release_candidate
+class InMemoryStore(VectorStore):
     """Create a In Memory Vector Store."""
+
+    def __init__(
+        self,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
+        **kwargs: Any,
+    ):
+        super().__init__(embedding_generator=embedding_generator, **kwargs)
 
     @override
     async def list_collection_names(self, **kwargs) -> Sequence[str]:
@@ -273,13 +256,16 @@ class InMemoryVectorStore(VectorStore):
     @override
     def get_collection(
         self,
-        collection_name: str,
         data_model_type: type[TModel],
+        *,
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> "VectorStoreRecordCollection":
-        return InMemoryVectorCollection(
+        return InMemoryCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             collection_name=collection_name,
+            embedding_generator=embedding_generator or self.embedding_generator,
         )

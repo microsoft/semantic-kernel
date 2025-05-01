@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ast
 import logging
 import sys
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from copy import deepcopy
 from typing import Any, ClassVar, Final, Generic
 
 from pydantic import HttpUrl, SecretStr, ValidationError, model_validator
@@ -12,18 +14,24 @@ from qdrant_client.models import (
     Distance,
     FieldCondition,
     Filter,
+    Fusion,
+    FusionQuery,
     MatchAny,
+    MatchValue,
     PointStruct,
+    Prefetch,
     QueryResponse,
+    Range,
     ScoredPoint,
     VectorParams,
 )
 from typing_extensions import override
 
-from semantic_kernel.data.const import DistanceFunction
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import VectorSearch, VectorSearchOptions, VectorSearchResult
+from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
     TKey,
@@ -38,8 +46,8 @@ from semantic_kernel.exceptions import (
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
-from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if sys.version_info >= (3, 12):
@@ -56,6 +64,10 @@ DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, Distance]] = {
     DistanceFunction.MANHATTAN: Distance.MANHATTAN,
     DistanceFunction.DEFAULT: Distance.COSINE,
 }
+INDEX_KIND_MAP: Final[dict[IndexKind, str]] = {
+    IndexKind.HNSW: "hnsw",
+    IndexKind.DEFAULT: "hnsw",
+}
 TYPE_MAPPER_VECTOR: Final[dict[str, Datatype]] = {
     "float": Datatype.FLOAT32,
     "int": Datatype.UINT8,
@@ -65,7 +77,7 @@ TYPE_MAPPER_VECTOR: Final[dict[str, Datatype]] = {
 IN_MEMORY_STRING: Final[str] = ":memory:"
 
 
-@experimental
+@release_candidate
 class QdrantSettings(KernelBaseSettings):
     """Qdrant settings currently used by the Qdrant Vector Record Store."""
 
@@ -103,7 +115,7 @@ class QdrantSettings(KernelBaseSettings):
         return dump
 
 
-@experimental
+@release_candidate
 class QdrantCollection(
     VectorStoreRecordCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
@@ -113,14 +125,16 @@ class QdrantCollection(
 
     qdrant_client: AsyncQdrantClient
     named_vectors: bool
-    supported_key_types: ClassVar[list[str] | None] = ["str", "int"]
-    supported_vector_types: ClassVar[list[str] | None] = ["float", "int"]
+    supported_key_types: ClassVar[set[str] | None] = {"str", "int"}
+    supported_vector_types: ClassVar[set[str] | None] = {"float", "int"}
+    supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR, SearchType.KEYWORD_HYBRID}
 
     def __init__(
         self,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         named_vectors: bool = True,
         url: str | None = None,
         api_key: str | None = None,
@@ -148,6 +162,7 @@ class QdrantCollection(
             data_model_type (type[TModel]): The type of the data model.
             data_model_definition (VectorStoreRecordDefinition): The model fields, optional.
             collection_name (str): The name of the collection, optional.
+            embedding_generator (EmbeddingGeneratorBase): The embedding generator to use, optional.
             named_vectors (bool): If true, vectors are stored with name (default: True).
             url (str): The URL of the Qdrant server (default: {None}).
             api_key (str): The API key for the Qdrant server (default: {None}).
@@ -171,10 +186,9 @@ class QdrantCollection(
                 qdrant_client=client,  # type: ignore
                 named_vectors=named_vectors,  # type: ignore
                 managed_client=False,
+                embedding_generator=embedding_generator,
             )
             return
-
-        from semantic_kernel.connectors.memory.qdrant import QdrantSettings
 
         try:
             settings = QdrantSettings(
@@ -204,6 +218,7 @@ class QdrantCollection(
             collection_name=collection_name,
             qdrant_client=client,
             named_vectors=named_vectors,
+            embedding_generator=embedding_generator,
         )
 
     @override
@@ -249,30 +264,90 @@ class QdrantCollection(
     @override
     async def _inner_search(
         self,
+        search_type: SearchType,
         options: VectorSearchOptions,
-        keywords: OptionalOneOrMany[str] = None,
-        search_text: str | None = None,
-        vectorizable_text: str | None = None,
+        values: Any | None = None,
         vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         query_vector: tuple[str, list[float | int]] | list[float | int] | None = None
-        if vector is not None:
-            if self.named_vectors and options.vector_field_name:
-                query_vector = (options.vector_field_name, vector)
-            else:
-                query_vector = vector
-        if query_vector is None:
+
+        if not vector:
+            vector = await self._generate_vector_from_values(values, options)
+
+        if not vector:
             raise VectorSearchExecutionException("Search requires a vector.")
-        results = await self.qdrant_client.search(
-            collection_name=self.collection_name,
-            query_vector=query_vector,
-            query_filter=self._create_filter(options.filter) if options.filter else None,
-            with_vectors=options.include_vectors,
-            limit=options.top,
-            offset=options.skip,
-            **kwargs,
-        )
+
+        if self.named_vectors:
+            vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+            if not vector_field:
+                raise VectorStoreOperationException(
+                    f"Vector field {options.vector_field_name} not found in data model definition."
+                )
+            query_vector = (vector_field.storage_property_name or vector_field.name, vector)
+        else:
+            query_vector = vector
+        filters: Filter | list[Filter] | None = self._build_filter(options.filter)  # type: ignore
+        filter: Filter | None = Filter(must=filters) if filters and isinstance(filters, list) else filters  # type: ignore
+        if search_type == SearchType.VECTOR:
+            results = await self.qdrant_client.search(
+                collection_name=self.collection_name,
+                query_vector=query_vector,
+                query_filter=filter,
+                with_vectors=options.include_vectors,
+                limit=options.top,
+                offset=options.skip,
+                **kwargs,
+            )
+        else:
+            # Hybrid search: vector + keywords (RRF fusion)
+            # 1. Get keywords and text field
+            if not values:
+                raise VectorSearchExecutionException("Hybrid search requires non-empty keywords in values.")
+            if not options.keyword_field_name:
+                raise VectorSearchExecutionException("Hybrid search requires a keyword field name.")
+            text_field = next(
+                field
+                for field in self.data_model_definition.fields
+                if field.name == options.keyword_field_name or field.storage_property_name == options.keyword_field_name
+            )
+            if not text_field:
+                raise VectorStoreOperationException(
+                    f"Keyword field {options.keyword_field_name} not found in data model definition."
+                )
+            keyword_filter = deepcopy(filter) if filter else Filter()
+            keyword_sub_filter = Filter(
+                should=[
+                    FieldCondition(key=text_field.storage_property_name or text_field.name, match=MatchAny(any=[kw]))
+                    for kw in values
+                ]
+            )
+            if isinstance(keyword_filter.must, list):
+                keyword_filter.must.append(keyword_sub_filter)
+            elif isinstance(keyword_filter.must, Filter):
+                keyword_filter.must = Filter(must=[keyword_filter.must, keyword_sub_filter])
+            else:
+                keyword_filter.must = keyword_sub_filter
+
+            results = await self.qdrant_client.query_points(
+                collection_name=self.collection_name,
+                prefetch=[
+                    Prefetch(
+                        query=vector,
+                        using=vector_field.storage_property_name or vector_field.name,
+                        filter=filter,
+                        limit=options.top,
+                    ),
+                    Prefetch(filter=keyword_filter),
+                ],
+                query=FusionQuery(fusion=Fusion.RRF),
+                limit=options.top,
+                offset=options.skip,
+                with_vectors=options.include_vectors,
+                **kwargs,
+            )
+            results = results.points
+
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(results, options),
             total_count=len(results) if options.include_total_count else None,
@@ -286,16 +361,79 @@ class QdrantCollection(
     def _get_score_from_result(self, result: ScoredPoint) -> float:
         return result.score
 
-    def _create_filter(self, filter: VectorSearchFilter | Callable) -> Filter | None:
-        if not isinstance(filter, VectorSearchFilter):
-            raise VectorStoreOperationException("Lambda filters are not supported yet.")
-        if not filter.filters:
-            return None
-        return Filter(
-            must=[
-                FieldCondition(key=filter.field_name, match=MatchAny(any=[filter.value])) for filter in filter.filters
-            ]
-        )
+    @override
+    def _lambda_parser(self, node: ast.AST) -> Any:
+        # Qdrant filter translation: output a qdrant_client.models.Filter or FieldCondition tree
+        # Use correct Match subtypes: MatchAny, MatchValue, etc.
+        # See: https://python-client.qdrant.tech/qdrant_client.http.models.models#qdrant_client.http.models.models.Filter
+        match node:
+            case ast.Compare():
+                if len(node.ops) > 1:
+                    # Chain comparisons (e.g., 1 < x < 3) become AND of each comparison
+                    conditions = []
+                    for idx in range(len(node.ops)):
+                        left = node.left if idx == 0 else node.comparators[idx - 1]
+                        right = node.comparators[idx]
+                        op = node.ops[idx]
+                        conditions.append(self._lambda_parser(ast.Compare(left=left, ops=[op], comparators=[right])))
+                    return Filter(must=conditions)
+                left = self._lambda_parser(node.left)
+                right = self._lambda_parser(node.comparators[0])
+                op = node.ops[0]
+                match op:
+                    case ast.In():
+                        # IN: left in right (right is a list)
+                        return FieldCondition(key=left, match=MatchAny(any=right))
+                    case ast.NotIn():
+                        # NOT IN: left not in right
+                        return Filter(must_not=[FieldCondition(key=left, match=MatchAny(any=right))])
+                    case ast.Eq():
+                        return FieldCondition(key=left, match=MatchValue(value=right))
+                    case ast.NotEq():
+                        return Filter(must_not=[FieldCondition(key=left, match=MatchValue(value=right))])
+                    case ast.Gt():
+                        return FieldCondition(key=left, range=Range(gt=right))
+                    case ast.GtE():
+                        return FieldCondition(key=left, range=Range(gte=right))
+                    case ast.Lt():
+                        return FieldCondition(key=left, range=Range(lt=right))
+                    case ast.LtE():
+                        return FieldCondition(key=left, range=Range(lte=right))
+                raise NotImplementedError(f"Unsupported operator: {type(op)}")
+            case ast.BoolOp():
+                op = node.op
+                values = [self._lambda_parser(v) for v in node.values]
+                if isinstance(op, ast.And):
+                    return Filter(must=values)
+                if isinstance(op, ast.Or):
+                    return Filter(should=values)
+                raise NotImplementedError(f"Unsupported BoolOp: {type(op)}")
+            case ast.UnaryOp():
+                match node.op:
+                    case ast.Not():
+                        operand = self._lambda_parser(node.operand)
+                        return Filter(must_not=[operand])
+                    case ast.UAdd() | ast.USub() | ast.Invert():
+                        raise NotImplementedError("Unary +, -, ~ are not supported in Qdrant filters.")
+            case ast.Attribute():
+                # Only allow attributes that are in the data model
+                if node.attr not in self.data_model_definition.storage_property_names:
+                    raise VectorStoreOperationException(
+                        f"Field '{node.attr}' not in data model (storage property names are used)."
+                    )
+                return node.attr
+            case ast.Name():
+                # Only allow names that are in the data model
+                if node.id not in self.data_model_definition.storage_property_names:
+                    raise VectorStoreOperationException(
+                        f"Field '{node.id}' not in data model (storage property names are used)."
+                    )
+                return node.id
+            case ast.Constant():
+                return node.value
+            case ast.List():
+                return [self._lambda_parser(elt) for elt in node.elts]
+        raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
     @override
     def _serialize_dicts_to_store_models(
@@ -352,6 +490,8 @@ class QdrantCollection(
             vectors_config: VectorParams | Mapping[str, VectorParams] = {}
             if self.named_vectors:
                 for field in self.data_model_definition.vector_fields:
+                    if field.index_kind not in INDEX_KIND_MAP:
+                        raise VectorStoreOperationException(f"Index kind {field.index_kind} is not supported.")
                     if field.distance_function not in DISTANCE_FUNCTION_MAP:
                         raise VectorStoreOperationException(
                             f"Distance function {field.distance_function} is not supported."
@@ -403,7 +543,7 @@ class QdrantCollection(
             await self.qdrant_client.close()
 
 
-@experimental
+@release_candidate
 class QdrantStore(VectorStore):
     """A QdrantStore is a memory store that uses Qdrant as the backend."""
 
@@ -420,6 +560,7 @@ class QdrantStore(VectorStore):
         location: str | None = None,
         prefer_grpc: bool | None = None,
         client: AsyncQdrantClient | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         **kwargs: Any,
@@ -443,13 +584,16 @@ class QdrantStore(VectorStore):
             location: The location of the Qdrant server (default: {None}).
             prefer_grpc: If true, gRPC will be preferred (default: {None}).
             client: The Qdrant client to use (default: {None}).
+            embedding_generator: The embedding generator to use (default: {None}).
             env_file_path: Use the environment settings file as a fallback to environment variables.
             env_file_encoding: The encoding of the environment settings file.
             **kwargs: Additional keyword arguments passed to the client constructor.
 
         """
         if client:
-            super().__init__(qdrant_client=client, managed_client=False, **kwargs)
+            super().__init__(
+                qdrant_client=client, managed_client=False, embedding_generator=embedding_generator, **kwargs
+            )
             return
 
         try:
@@ -474,21 +618,25 @@ class QdrantStore(VectorStore):
             client = AsyncQdrantClient(**settings.model_dump(exclude_none=True), **kwargs)
         except ValueError as ex:
             raise VectorStoreInitializationException("Failed to create Qdrant client.", ex) from ex
-        super().__init__(qdrant_client=client)
+        super().__init__(qdrant_client=client, embedding_generator=embedding_generator, **kwargs)
 
+    @override
     def get_collection(
         self,
-        collection_name: str,
         data_model_type: type[TModel],
+        *,
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> "VectorStoreRecordCollection":
         """Get a QdrantCollection tied to a collection.
 
         Args:
-            collection_name (str): The name of the collection.
             data_model_type (type[TModel]): The type of the data model.
             data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
+            collection_name (str): The name of the collection.
+            embedding_generator (EmbeddingGeneratorBase | None): The embedding generator to use, optional.
             **kwargs: Additional keyword arguments, passed to the collection constructor.
         """
         return QdrantCollection(
@@ -496,6 +644,7 @@ class QdrantStore(VectorStore):
             data_model_definition=data_model_definition,
             collection_name=collection_name,
             client=self.qdrant_client,
+            embedding_generator=embedding_generator or self.embedding_generator,
             **kwargs,
         )
 

@@ -31,7 +31,7 @@ from semantic_kernel.exceptions.vector_store_exceptions import (
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OptionalOneOrMany
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.list_handler import desync_list
 
 TSearchOptions = TypeVar("TSearchOptions", bound=SearchOptions)
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 # region: Search Type
 
 
-@experimental
+@release_candidate
 class SearchType(str, Enum):
     """Enumeration for search types.
 
@@ -55,7 +55,7 @@ class SearchType(str, Enum):
 # region: Options
 
 
-@experimental
+@release_candidate
 class VectorSearchOptions(SearchOptions):
     """Options for vector search, builds on TextSearchOptions.
 
@@ -71,7 +71,7 @@ class VectorSearchOptions(SearchOptions):
 # region: Results
 
 
-@experimental
+@release_candidate
 class VectorSearchResult(KernelBaseModel, Generic[TModel]):
     """The result of a vector search."""
 
@@ -82,7 +82,7 @@ class VectorSearchResult(KernelBaseModel, Generic[TModel]):
 # region: Vector Search
 
 
-@experimental
+@release_candidate
 class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]):
     """Base class for searching vectors."""
 

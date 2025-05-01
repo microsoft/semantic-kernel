@@ -15,7 +15,7 @@ from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGene
 from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.exceptions import VectorStoreModelException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # region: Fields
 
 
-@experimental
+@release_candidate
 @dataclass(kw_only=True, config=ConfigDict(extra="allow"))
 class VectorStoreRecordField(ABC):
     """Vector store record fields.
@@ -74,7 +74,7 @@ class VectorStoreRecordField(ABC):
         return data
 
 
-@experimental
+@release_candidate
 @dataclass(kw_only=True)
 class VectorStoreRecordKeyField(VectorStoreRecordField):
     """Memory record key field.
@@ -87,7 +87,7 @@ class VectorStoreRecordKeyField(VectorStoreRecordField):
     """
 
 
-@experimental
+@release_candidate
 @dataclass(kw_only=True)
 class VectorStoreRecordDataField(VectorStoreRecordField):
     """Memory record data field.
@@ -103,7 +103,7 @@ class VectorStoreRecordDataField(VectorStoreRecordField):
     is_full_text_indexed: bool | None = None
 
 
-@experimental
+@release_candidate
 @dataclass(kw_only=True)
 class VectorStoreRecordVectorField(VectorStoreRecordField):
     """Memory record vector field.
@@ -235,7 +235,7 @@ class ToDictMethodProtocol(Protocol):
 # region: VectorStoreRecordDefinition
 
 
-@experimental
+@release_candidate
 class VectorStoreRecordDefinition(KernelBaseModel):
     """Memory record definition.
 
@@ -270,7 +270,12 @@ class VectorStoreRecordDefinition(KernelBaseModel):
     @property
     def key_field(self) -> "VectorStoreRecordKeyField":
         """Get the key field."""
-        return next((field for field in self.fields if field.name == self.key_field_name), None)  # type: ignore[return-value]
+        return next((field for field in self.fields if field.name == self.key_field_name), None)  # type: ignore[return-value, arg-type]
+
+    @property
+    def key_field_storage_property_name(self) -> str:
+        """Get the key field storage property name."""
+        return self.key_field.storage_property_name or self.key_field.name
 
     @property
     def vector_fields(self) -> list["VectorStoreRecordVectorField"]:
@@ -447,7 +452,7 @@ def _parse_signature_to_definition(
 _T = TypeVar("_T")
 
 
-@experimental
+@release_candidate
 def vectorstoremodel(
     cls: type[_T] | None = None,
     collection_name: str | None = None,

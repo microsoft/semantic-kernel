@@ -6391,7 +6391,7 @@ wheels = [
 
 [[package]]
 name = "usearch"
-version = "2.17.7"
+version = "2.16.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },

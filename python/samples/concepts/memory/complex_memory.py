@@ -11,7 +11,21 @@ from samples.concepts.memory.utils import print_record
 from samples.concepts.resources.utils import Colors, print_with_color
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureTextEmbedding, OpenAITextEmbedding
-from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
+from semantic_kernel.connectors.memory import (
+    AzureAISearchCollection,
+    AzureCosmosDBforMongoDBCollection,
+    AzureCosmosDBNoSQLCollection,
+    ChromaCollection,
+    FaissCollection,
+    InMemoryCollection,
+    PineconeCollection,
+    PostgresCollection,
+    QdrantCollection,
+    RedisHashsetCollection,
+    RedisJsonCollection,
+    SqlServerCollection,
+    WeaviateCollection,
+)
 from semantic_kernel.data import (
     VectorSearch,
     VectorSearchOptions,
@@ -84,31 +98,31 @@ class DataModel:
 # so that settings for unused collections do not cause validation errors.
 collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
     "ai_search": lambda: AzureAISearchCollection[str, DataModel](data_model_type=DataModel),
-    # "postgres": lambda: PostgresCollection[str, DataModel](data_model_type=DataModel),
-    # "redis_json": lambda: RedisJsonCollection[str, DataModel](
-    #     data_model_type=DataModel,
-    #     prefix_collection_name_to_key_names=True,
-    # ),
-    # "redis_hash": lambda: RedisHashsetCollection[str, DataModel](
-    #     data_model_type=DataModel,
-    #     prefix_collection_name_to_key_names=True,
-    # ),
-    # "qdrant": lambda: QdrantCollection[str, DataModel](
-    #     data_model_type=DataModel,
-    #     prefer_grpc=True,
-    #     named_vectors=False,
-    # ),
-    # "in_memory": lambda: InMemoryVectorCollection[str, DataModel](data_model_type=DataModel),
-    # "weaviate": lambda: WeaviateCollection[str, DataModel](data_model_type=DataModel),
-    # "azure_cosmos_nosql": lambda: AzureCosmosDBNoSQLCollection[str, DataModel](
-    #     data_model_type=DataModel,
-    #     create_database=True,
-    # ),
-    # "azure_cosmos_mongodb": lambda: AzureCosmosDBforMongoDBCollection[str, DataModel](data_model_type=DataModel),
-    # "faiss": lambda: FaissCollection[str, DataModel](data_model_type=DataModel),
-    # "chroma": lambda: ChromaCollection[str, DataModel](data_model_type=DataModel),
-    # "pinecone": lambda: PineconeCollection[str, DataModel](data_model_type=DataModel),
-    # "sql_server": lambda: SqlServerCollection[str, DataModel](data_model_type=DataModel),
+    "postgres": lambda: PostgresCollection[str, DataModel](data_model_type=DataModel),
+    "redis_json": lambda: RedisJsonCollection[str, DataModel](
+        data_model_type=DataModel,
+        prefix_collection_name_to_key_names=True,
+    ),
+    "redis_hash": lambda: RedisHashsetCollection[str, DataModel](
+        data_model_type=DataModel,
+        prefix_collection_name_to_key_names=True,
+    ),
+    "qdrant": lambda: QdrantCollection[str, DataModel](
+        data_model_type=DataModel,
+        prefer_grpc=True,
+        named_vectors=False,
+    ),
+    "in_memory": lambda: InMemoryCollection[str, DataModel](data_model_type=DataModel),
+    "weaviate": lambda: WeaviateCollection[str, DataModel](data_model_type=DataModel),
+    "azure_cosmos_nosql": lambda: AzureCosmosDBNoSQLCollection[str, DataModel](
+        data_model_type=DataModel,
+        create_database=True,
+    ),
+    "azure_cosmos_mongodb": lambda: AzureCosmosDBforMongoDBCollection[str, DataModel](data_model_type=DataModel),
+    "faiss": lambda: FaissCollection[str, DataModel](data_model_type=DataModel),
+    "chroma": lambda: ChromaCollection[str, DataModel](data_model_type=DataModel),
+    "pinecone": lambda: PineconeCollection[str, DataModel](data_model_type=DataModel),
+    "sql_server": lambda: SqlServerCollection[str, DataModel](data_model_type=DataModel),
 }
 
 

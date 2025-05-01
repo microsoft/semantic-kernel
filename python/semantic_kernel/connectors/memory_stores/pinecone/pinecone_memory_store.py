@@ -4,9 +4,9 @@ import logging
 from typing import NamedTuple
 
 from numpy import ndarray
+from pinecone import FetchResponse, IndexList, IndexModel, Pinecone, ServerlessSpec
 from pydantic import ValidationError
 
-from pinecone import FetchResponse, IndexList, IndexModel, Pinecone, ServerlessSpec
 from semantic_kernel.connectors.memory_stores.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.connectors.memory_stores.pinecone.utils import build_payload, parse_payload
 from semantic_kernel.exceptions import (

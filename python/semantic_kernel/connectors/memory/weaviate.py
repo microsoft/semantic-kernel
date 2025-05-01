@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ast
+import json
 import logging
 import sys
 from collections.abc import Callable, Sequence
@@ -13,10 +15,10 @@ from weaviate.classes.query import Filter, MetadataQuery
 from weaviate.collections.classes.config_named_vectors import _NamedVectorConfigCreate
 from weaviate.collections.classes.config_vectorizers import VectorDistances
 from weaviate.collections.classes.data import DataObject
-from weaviate.collections.classes.filters import _Filters
 from weaviate.collections.collection import CollectionAsync
 from weaviate.exceptions import WeaviateClosedClientError, WeaviateConnectionError
 
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
 from semantic_kernel.data.text_search import KernelSearchResults
@@ -37,8 +39,8 @@ from semantic_kernel.exceptions import (
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
-from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -63,7 +65,7 @@ INDEX_KIND_MAP: Final[dict[IndexKind, Callable]] = {
     IndexKind.DEFAULT: Configure.VectorIndex.flat,
 }
 
-TYPE_MAPPER_DATA: Final[dict[str, DataType]] = {
+DATATYPE_MAP: Final[dict[str, DataType]] = {
     "str": DataType.TEXT,
     "int": DataType.INT,
     "float": DataType.NUMBER,
@@ -111,25 +113,7 @@ def _data_model_definition_to_weaviate_named_vectors(
     return vector_list
 
 
-def create_filter_from_vector_search_filters(filters: VectorSearchFilter | Callable) -> "_Filters | None":
-    """Create a Weaviate filter from a vector search filter."""
-    if not isinstance(filters, VectorSearchFilter):
-        raise VectorStoreOperationException("Lambda filters are not supported yet.")
-    if not filters.filters:
-        return None
-    weaviate_filters: list["_Filters"] = []
-    for filter in filters.filters:
-        match filter:
-            case EqualTo():
-                weaviate_filters.append(Filter.by_property(filter.field_name).equal(filter.value))
-            case AnyTagsEqualTo():
-                weaviate_filters.append(Filter.by_property(filter.field_name).like(filter.value))
-            case _:
-                raise ValueError(f"Unsupported filter type: {filter}")
-    return Filter.all_of(weaviate_filters) if weaviate_filters else None
-
-
-@experimental
+@release_candidate
 class WeaviateSettings(KernelBaseSettings):
     """Weaviate model settings.
 
@@ -204,7 +188,7 @@ class WeaviateSettings(KernelBaseSettings):
         return data.get("use_embed") is True
 
 
-@experimental
+@release_candidate
 class WeaviateCollection(
     VectorStoreRecordCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
@@ -214,12 +198,15 @@ class WeaviateCollection(
 
     async_client: WeaviateAsyncClient
     named_vectors: bool = True
+    supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR, SearchType.KEYWORD_HYBRID}
+    supported_key_types: ClassVar[set[str] | None] = {"str"}
 
     def __init__(
         self,
         data_model_type: type[TModel],
-        collection_name: str,
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         url: str | None = None,
         api_key: str | None = None,
         local_host: str | None = None,
@@ -237,6 +224,7 @@ class WeaviateCollection(
             data_model_type: The type of the data model.
             data_model_definition: The definition of the data model.
             collection_name: The name of the collection.
+            embedding_generator: The embedding generator.
             url: The Weaviate URL
             api_key: The Weaviate API key.
             local_host: The local Weaviate host (i.e. Weaviate in a Docker container).
@@ -297,6 +285,7 @@ class WeaviateCollection(
             async_client=async_client,  # type: ignore[call-arg]
             managed_client=managed_client,
             named_vectors=named_vectors,  # type: ignore[call-arg]
+            embedding_generator=embedding_generator,
         )
 
     @field_validator("collection_name")
@@ -351,29 +340,142 @@ class WeaviateCollection(
         self,
         search_type: SearchType,
         options: VectorSearchOptions,
-        keywords: OptionalOneOrMany[str] = None,
-        search_text: str | None = None,
-        vectorizable_text: str | None = None,
+        values: Any | None = None,
         vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
         collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
         args = {
             "include_vector": options.include_vectors,
             "limit": options.top,
             "offset": options.skip,
         }
-        if options.filter and (filter := create_filter_from_vector_search_filters(options.filter)):
-            args["filters"] = filter
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        if not vector:
+            vector = await self._generate_vector_from_values(values, options)
+        if not vector:
+            raise VectorSearchExecutionException("No vector provided, or unable to generate a vector.")
+        if filter := self._build_filter(options.filter):
+            args["filters"] = Filter.all_of(filter) if isinstance(filter, list) else filter
         if search_type == SearchType.VECTOR:
-            results = await self._inner_vectorized_search(collection, vector, vector_field, args)
-        else:
-            raise VectorSearchExecutionException("No search criteria provided.")
+            if self.named_vectors and not vector_field:
+                raise VectorSearchExecutionException(
+                    "Vectorizable text search requires a vector field to be specified in the options."
+                )
+            try:
+                results = await collection.query.near_vector(
+                    near_vector=vector,
+                    target_vector=vector_field.storage_property_name or vector_field.name
+                    if self.named_vectors and vector_field
+                    else None,
+                    return_metadata=MetadataQuery(distance=True),
+                    **args,
+                )
+            except WeaviateClosedClientError as ex:
+                raise VectorSearchExecutionException(
+                    "Client is closed, please use the context manager or self.async_client.connect."
+                ) from ex
+            except Exception as ex:
+                raise VectorSearchExecutionException(f"Failed searching using a vector: {ex}") from ex
+            return KernelSearchResults(
+                results=self._get_vector_search_results_from_results(results.objects), total_count=len(results.objects)
+            )
+        try:
+            results = await collection.query.hybrid(
+                query=json.dumps(values) if isinstance(values, list) else values,
+                vector=vector,
+                target_vector=vector_field.storage_property_name or vector_field.name
+                if self.named_vectors and vector_field
+                else None,
+                return_metadata=MetadataQuery(distance=True),
+                **args,
+            )
+        except WeaviateClosedClientError as ex:
+            raise VectorSearchExecutionException(
+                "Client is closed, please use the context manager or self.async_client.connect."
+            ) from ex
+        except Exception as ex:
+            raise VectorSearchExecutionException(f"Failed searching using hybrid: {ex}") from ex
 
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(results.objects), total_count=len(results.objects)
         )
+
+    @override
+    def _lambda_parser(self, node: ast.AST) -> Any:
+        # Use Weaviate Filter and operators for AST translation
+
+        # Comparison operations
+        match node:
+            case ast.Compare():
+                if len(node.ops) > 1:
+                    # Chain comparisons (e.g., 1 < x < 3) become AND of each comparison
+                    filters = []
+                    for idx in range(len(node.ops)):
+                        left = node.left if idx == 0 else node.comparators[idx - 1]
+                        right = node.comparators[idx]
+                        op = node.ops[idx]
+                        filters.append(self._lambda_parser(ast.Compare(left=left, ops=[op], comparators=[right])))
+                    return Filter.all_of(filters)
+                left = self._lambda_parser(node.left)
+                right = self._lambda_parser(node.comparators[0])
+                op = node.ops[0]
+                # left is property name, right is value
+                if not isinstance(left, str):
+                    raise NotImplementedError("Only simple property filters are supported.")
+                match op:
+                    case ast.Eq():
+                        return Filter.by_property(left).equal(right)
+                    case ast.NotEq():
+                        return Filter.by_property(left).not_equal(right)
+                    case ast.Gt():
+                        return Filter.by_property(left).greater_than(right)
+                    case ast.GtE():
+                        return Filter.by_property(left).greater_or_equal(right)
+                    case ast.Lt():
+                        return Filter.by_property(left).less_than(right)
+                    case ast.LtE():
+                        return Filter.by_property(left).less_or_equal(right)
+                    case ast.In():
+                        return Filter.by_property(left).contains_any(right)
+                    case ast.NotIn():
+                        # NotIn is not directly supported, so use NOT(contains_any)
+                        return ~Filter.by_property(left).contains_any(right)
+                raise NotImplementedError(f"Unsupported operator: {type(op)}")
+            case ast.BoolOp():
+                op = node.op
+                filters = [self._lambda_parser(v) for v in node.values]
+                if isinstance(op, ast.And):
+                    return Filter.all_of(filters)
+                if isinstance(op, ast.Or):
+                    return Filter.any_of(filters)
+                raise NotImplementedError(f"Unsupported BoolOp: {type(op)}")
+            case ast.UnaryOp():
+                match node.op:
+                    case ast.Not():
+                        operand = self._lambda_parser(node.operand)
+                        # Weaviate does not have a direct NOT, so wrap in a custom _Filters NOT if needed
+                        # Here, we use Python's bitwise NOT (~) as a convention for NOT
+                        return ~operand
+                    case ast.UAdd() | ast.USub() | ast.Invert():
+                        raise NotImplementedError("Unary +, -, ~ are not supported in Weaviate filters.")
+            case ast.Attribute():
+                # Only allow attributes that are in the data model
+                if node.attr not in self.data_model_definition.storage_property_names:
+                    raise VectorStoreOperationException(
+                        f"Field '{node.attr}' not in data model (storage property names are used)."
+                    )
+                return node.attr
+            case ast.Name():
+                # Only allow names that are in the data model
+                if node.id not in self.data_model_definition.storage_property_names:
+                    raise VectorStoreOperationException(
+                        f"Field '{node.id}' not in data model (storage property names are used)."
+                    )
+                return node.id
+            case ast.Constant():
+                return node.value
+        raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
     async def _inner_vectorized_search(
         self,
@@ -501,7 +603,7 @@ class WeaviateCollection(
                 properties.append(
                     Property(
                         name=field.storage_property_name or field.name,
-                        data_type=TYPE_MAPPER_DATA[field.property_type or "default"],
+                        data_type=DATATYPE_MAP[field.property_type or "default"],
                         index_filterable=field.is_indexed,
                         index_full_text=field.is_full_text_indexed,
                     )
@@ -575,11 +677,11 @@ class WeaviateCollection(
             )
 
 
-@experimental
+@release_candidate
 class WeaviateStore(VectorStore):
     """A Weaviate store is a vector store that uses Weaviate as the backend."""
 
-    async_client: weaviate.WeaviateAsyncClient
+    async_client: WeaviateAsyncClient
 
     def __init__(
         self,
@@ -589,23 +691,11 @@ class WeaviateStore(VectorStore):
         local_port: int | None = None,
         local_grpc_port: int | None = None,
         use_embed: bool = False,
-        async_client: weaviate.WeaviateAsyncClient | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
+        async_client: WeaviateAsyncClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ):
-        """Initialize a Weaviate collection.
-
-        Args:
-            url: The Weaviate URL
-            api_key: The Weaviate API key.
-            local_host: The local Weaviate host (i.e. Weaviate in a Docker container).
-            local_port: The local Weaviate port.
-            local_grpc_port: The local Weaviate gRPC port.
-            use_embed: Whether to use the client embedding options.
-            async_client: A custom Weaviate async client.
-            env_file_path: The path to the environment file.
-            env_file_encoding: The encoding of the environment file.
-        """
         managed_client: bool = False
         if not async_client:
             managed_client = True
@@ -622,7 +712,7 @@ class WeaviateStore(VectorStore):
 
             try:
                 if weaviate_settings.url:
-                    async_client = weaviate.use_async_with_weaviate_cloud(
+                    async_client = use_async_with_weaviate_cloud(
                         cluster_url=str(weaviate_settings.url),
                         auth_credentials=Auth.api_key(weaviate_settings.api_key.get_secret_value()),
                     )
@@ -632,12 +722,12 @@ class WeaviateStore(VectorStore):
                         "grpc_port": weaviate_settings.local_grpc_port,
                     }
                     kwargs = {k: v for k, v in kwargs.items() if v is not None}
-                    async_client = weaviate.use_async_with_local(
+                    async_client = use_async_with_local(
                         host=weaviate_settings.local_host,
                         **kwargs,
                     )
                 elif weaviate_settings.use_embed:
-                    async_client = weaviate.use_async_with_embedded()
+                    async_client = use_async_with_embedded()
                 else:
                     raise NotImplementedError(
                         "Weaviate settings must specify either a custom client, a Weaviate Cloud instance,",
@@ -646,25 +736,28 @@ class WeaviateStore(VectorStore):
             except Exception as e:
                 raise VectorStoreInitializationException(f"Failed to initialize Weaviate client: {e}")
 
-        super().__init__(async_client=async_client, managed_client=managed_client)
+        super().__init__(
+            async_client=async_client, managed_client=managed_client, embedding_generator=embedding_generator
+        )
 
     @override
     def get_collection(
         self,
-        collection_name: str,
-        data_model_type: type[object],
+        data_model_type: type[TModel],
+        *,
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> VectorStoreRecordCollection:
-        if collection_name not in self.vector_record_collections:
-            self.vector_record_collections[collection_name] = WeaviateCollection(
-                data_model_type=data_model_type,
-                collection_name=collection_name,
-                data_model_definition=data_model_definition,
-                async_client=self.async_client,
-                **kwargs,
-            )
-        return self.vector_record_collections[collection_name]
+    ) -> "VectorStoreRecordCollection":
+        return WeaviateCollection(
+            data_model_type=data_model_type,
+            data_model_definition=data_model_definition,
+            collection_name=collection_name,
+            embedding_generator=embedding_generator or self.embedding_generator,
+            async_client=self.async_client,
+            **kwargs,
+        )
 
     @override
     async def list_collection_names(self, **kwargs) -> Sequence[str]:

@@ -1,32 +1,37 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ast
 import logging
 import sys
-from collections.abc import Callable, Sequence
-from typing import Any, ClassVar, Generic
+from collections.abc import Sequence
+from typing import Any, ClassVar, Final, Generic
 
 from chromadb import Client, Collection, QueryResult
 from chromadb.api import ClientAPI
+from chromadb.api.collection_configuration import CreateCollectionConfiguration, CreateHNSWConfiguration
+from chromadb.api.types import EmbeddingFunction, Space
 from chromadb.config import Settings
 
-from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.record_definition import VectorStoreRecordDataField, VectorStoreRecordDefinition
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.data.const import DistanceFunction, IndexKind
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import VectorSearch, VectorSearchOptions, VectorSearchResult
+from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
     TKey,
     TModel,
     VectorStore,
     VectorStoreRecordCollection,
+    _get_collection_name_from_model,
 )
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
+    VectorStoreModelException,
     VectorStoreModelValidationError,
     VectorStoreOperationException,
 )
-from semantic_kernel.kernel_types import OptionalOneOrMany
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -36,14 +41,20 @@ else:
 logger = logging.getLogger(__name__)
 
 
-DISTANCE_FUNCTION_MAP = {
+DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, Space]] = {
     DistanceFunction.COSINE_SIMILARITY: "cosine",
     DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE: "l2",
     DistanceFunction.DOT_PROD: "ip",
+    DistanceFunction.DEFAULT: "l2",
+}
+
+INDEX_KIND_MAP: Final[dict[IndexKind, str]] = {
+    IndexKind.HNSW: "hnsw",
+    IndexKind.DEFAULT: "hnsw",
 }
 
 
-@experimental
+@release_candidate
 class ChromaCollection(
     VectorStoreRecordCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
@@ -52,19 +63,40 @@ class ChromaCollection(
     """Chroma vector store collection."""
 
     client: ClientAPI
-    supported_key_types: ClassVar[list[str] | None] = ["str"]
+    embedding_func: EmbeddingFunction | None = None
+    supported_key_types: ClassVar[set[str] | None] = {"str"}
+    supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR}
 
     def __init__(
         self,
-        collection_name: str,
         data_model_type: type[object],
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
         persist_directory: str | None = None,
         client_settings: "Settings | None" = None,
         client: "ClientAPI | None" = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
+        embedding_func: EmbeddingFunction | None = None,
         **kwargs: Any,
     ):
-        """Initialize the Chroma vector store collection."""
+        """Initialize the Chroma vector store collection.
+
+        Args:
+            data_model_type: The type of the data model.
+            data_model_definition: The definition of the data model.
+            collection_name: The name of the collection.
+            persist_directory: The directory to persist the collection.
+            client_settings: The settings for the Chroma client.
+            client: The Chroma client.
+            embedding_generator: The embedding generator to use.
+                This is the Semantic Kernel embedding generator that will be used to generate the embeddings.
+            embedding_func: The embedding function to use.
+                This is a Chroma specific function that will be used to generate the embeddings.
+            kwargs: Additional arguments to pass to the parent class.
+
+        """
+        if not collection_name:
+            collection_name = _get_collection_name_from_model(data_model_type, data_model_definition)
         managed_client = not client
         if client is None:
             settings = client_settings or Settings()
@@ -78,12 +110,14 @@ class ChromaCollection(
             data_model_definition=data_model_definition,
             client=client,
             managed_client=managed_client,
+            embedding_func=embedding_func,
+            embedding_generator=embedding_generator,
             **kwargs,
         )
 
     def _get_collection(self) -> Collection:
         try:
-            return self.client.get_collection(name=self.collection_name)
+            return self.client.get_collection(name=self.collection_name, embedding_function=self.embedding_func)
         except Exception as e:
             raise RuntimeError(f"Failed to get collection {self.collection_name}") from e
 
@@ -91,7 +125,7 @@ class ChromaCollection(
     async def does_collection_exist(self, **kwargs: Any) -> bool:
         """Check if the collection exists."""
         try:
-            self.client.get_collection(name=self.collection_name)
+            self.client.get_collection(name=self.collection_name, embedding_function=self.embedding_func)
             return True
         except Exception:
             return False
@@ -100,33 +134,45 @@ class ChromaCollection(
     async def create_collection(self, **kwargs: Any) -> None:
         """Create the collection.
 
-        Sets the distance function if specified in the data model definition.
+        Will create a metadata object with the hnsw arguments.
+        By default only the distance function will be set based on the data model.
+        To tweak the other hnsw parameters, pass them in the kwargs.
+
+        For example:
+        ```python
+        await collection.create_collection(
+            configuration={"hnsw": {"max_neighbors": 16, "ef_construction": 200, "ef_search": 200}}
+        )
+        ```
+        if the `space` is set, it will be overridden, by the distance function set in the data model.
+
+        To use the built-in Chroma embedding functions, set the `embedding_func` parameter in the class constructor.
 
         Args:
             kwargs: Additional arguments are passed to the metadata parameter of the create_collection method.
+                See the Chroma documentation for more details.
         """
         if self.data_model_definition.vector_fields:
-            if (
-                self.data_model_definition.vector_fields[0].index_kind
-                and self.data_model_definition.vector_fields[0].index_kind != "hnsw"
-            ):
+            configuration = kwargs.pop("configuration", {})
+            configuration = CreateCollectionConfiguration(**configuration)
+            vector_field = self.data_model_definition.vector_fields[0]
+            if vector_field.index_kind not in INDEX_KIND_MAP:
+                raise VectorStoreInitializationException(f"Index kind {vector_field.index_kind} is not supported.")
+            if vector_field.distance_function not in DISTANCE_FUNCTION_MAP:
                 raise VectorStoreInitializationException(
-                    f"Index kind {self.data_model_definition.vector_fields[0].index_kind} is not supported."
+                    f"Distance function {vector_field.distance_function} is not supported."
                 )
-            distance_func = (
-                self.data_model_definition.vector_fields[0].distance_function
-                or DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE
-            )
-            if distance_func not in DISTANCE_FUNCTION_MAP:
-                raise VectorStoreInitializationException(
-                    f"Distance function {self.data_model_definition.vector_fields[0].distance_function} is not "
-                    "supported."
+            if "hnsw" not in configuration or configuration["hnsw"] is None:
+                configuration["hnsw"] = CreateHNSWConfiguration(
+                    space=DISTANCE_FUNCTION_MAP[vector_field.distance_function]
                 )
-            kwargs["hnsw:space"] = DISTANCE_FUNCTION_MAP[distance_func]
-        if kwargs:
-            self.client.create_collection(name=self.collection_name, metadata=kwargs)
-        else:
-            self.client.create_collection(name=self.collection_name)
+            else:
+                configuration["hnsw"]["space"] = DISTANCE_FUNCTION_MAP[vector_field.distance_function]
+            kwargs["configuration"] = configuration
+        if "get_or_create" not in kwargs:
+            kwargs["get_or_create"] = True
+
+        self.client.create_collection(name=self.collection_name, embedding_function=self.embedding_func, **kwargs)
 
     @override
     async def delete_collection(self, **kwargs: Any) -> None:
@@ -150,23 +196,22 @@ class ChromaCollection(
 
     @override
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
-        vector_field_name = self.data_model_definition.vector_field_names[0]
+        vector_field = self.data_model_definition.vector_fields[0]
         id_field_name = self.data_model_definition.key_field_name
-        document_field_name = next(
-            field.name
-            for field in self.data_model_definition.fields.values()
-            if isinstance(field, VectorStoreRecordDataField) and field.embedding_property_name == vector_field_name
-        )
         store_models = []
         for record in records:
             store_model = {
                 "id": record[id_field_name],
-                "embedding": record[vector_field_name],
-                "document": record[document_field_name],
                 "metadata": {
-                    k: v for k, v in record.items() if k not in [id_field_name, vector_field_name, document_field_name]
+                    k: v
+                    for k, v in record.items()
+                    if k not in [id_field_name, vector_field.storage_property_name or vector_field.name]
                 },
             }
+            if self.embedding_func:
+                store_model["document"] = (record[vector_field.storage_property_name or vector_field.name],)
+            else:
+                store_model["embedding"] = record[vector_field.storage_property_name or vector_field.name]
             if store_model["metadata"] == {}:
                 store_model.pop("metadata")
             store_models.append(store_model)
@@ -174,18 +219,11 @@ class ChromaCollection(
 
     @override
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
-        vector_field_name = self.data_model_definition.vector_field_names[0]
-        id_field_name = self.data_model_definition.key_field_name
-        document_field_name = next(
-            field.name
-            for field in self.data_model_definition.fields.values()
-            if isinstance(field, VectorStoreRecordDataField) and field.embedding_property_name == vector_field_name
-        )
+        vector_field = self.data_model_definition.vector_fields[0]
         # replace back the name of the vector, content and id fields
         for record in records:
-            record[id_field_name] = record.pop("id")
-            record[vector_field_name] = record.pop("embedding")
-            record[document_field_name] = record.pop("document")
+            record[self.data_model_definition.key_field_name] = record.pop("id")
+            record[vector_field.name] = record.pop("document" if self.embedding_func else "embedding")
         return records
 
     @override
@@ -194,21 +232,21 @@ class ChromaCollection(
         records: Sequence[Any],
         **kwargs: Any,
     ) -> Sequence[str]:
-        upsert_obj = {"ids": []}
+        upsert_obj = {"ids": [], "metadatas": []}
+        if self.embedding_func:
+            upsert_obj["documents"] = []
+        else:
+            upsert_obj["embeddings"] = []
         for record in records:
             upsert_obj["ids"].append(record["id"])
             if "embedding" in record:
-                if "embeddings" not in upsert_obj:
-                    upsert_obj["embeddings"] = []
                 upsert_obj["embeddings"].append(record["embedding"])
             if "document" in record:
-                if "documents" not in upsert_obj:
-                    upsert_obj["documents"] = []
                 upsert_obj["documents"].append(record["document"])
             if "metadata" in record:
-                if "metadatas" not in upsert_obj:
-                    upsert_obj["metadatas"] = []
                 upsert_obj["metadatas"].append(record["metadata"])
+        if not upsert_obj["metadatas"]:
+            upsert_obj.pop("metadatas")
         self._get_collection().add(**upsert_obj)
         return upsert_obj["ids"]
 
@@ -219,15 +257,20 @@ class ChromaCollection(
         options: GetFilteredRecordOptions | None = None,
         **kwargs: Any,
     ) -> Sequence[Any] | None:
-        if not keys:
-            if options is not None:
-                raise NotImplementedError("Get without keys is not yet implemented.")
-            return None
         include_vectors = kwargs.get("include_vectors", True)
-        results = self._get_collection().get(
-            ids=keys,
-            include=["documents", "metadatas", "embeddings"] if include_vectors else ["documents", "metadatas"],
-        )
+        if self.embedding_func:
+            include = ["documents", "metadatas"]
+        elif include_vectors:
+            include = ["embeddings", "metadatas"]
+        else:
+            include = ["metadatas"]
+        args: dict[str, Any] = {"include": include}
+        if keys:
+            args["ids"] = keys
+        if options:
+            args["limit"] = options.top
+            args["offset"] = options.skip
+        results = self._get_collection().get(**args)
         return self._unpack_results(results, include_vectors)
 
     def _unpack_results(
@@ -239,41 +282,51 @@ class ChromaCollection(
                     results[k] = [v]
         except IndexError:
             return []
-        records = []
+        records: list[dict[str, Any]] = []
+
         if include_vectors and include_distances:
-            for id, document, embedding, metadata, distance in zip(
+            for id, vector_field, metadata, distance in zip(
                 results["ids"][0],
-                results["documents"][0],
-                results["embeddings"][0],
+                results["documents" if self.embedding_func else "embeddings"][0],
                 results["metadatas"][0],
                 results["distances"][0],
             ):
-                record = {"id": id, "embedding": embedding, "document": document, "distance": distance}
+                record: dict[str, Any] = (
+                    {"id": id, "document": vector_field, "distance": distance}
+                    if self.embedding_func
+                    else {"id": id, "embedding": vector_field, "distance": distance}
+                )
                 if metadata:
                     record.update(metadata)
                 records.append(record)
             return records
         if include_vectors and not include_distances:
-            for id, document, embedding, metadata in zip(
+            for id, vector_field, metadata in zip(
                 results["ids"][0],
-                results["documents"][0],
-                results["embeddings"][0],
+                results["documents" if self.embedding_func else "embeddings"][0],
                 results["metadatas"][0],
             ):
-                record = {
-                    "id": id,
-                    "embedding": embedding,
-                    "document": document,
-                }
+                record: dict[str, Any] = (
+                    {"id": id, "document": vector_field}
+                    if self.embedding_func
+                    else {"id": id, "embedding": vector_field}
+                )
                 if metadata:
                     record.update(metadata)
                 records.append(record)
             return records
         if not include_vectors and include_distances:
             for id, document, metadata, distance in zip(
-                results["ids"][0], results["documents"][0], results["metadatas"][0], results["distances"][0]
+                results["ids"][0],
+                results["documents"][0],
+                results["metadatas"][0],
+                results["distances"][0],
             ):
-                record = {"id": id, "document": document, "distance": distance}
+                record: dict[str, Any] = (
+                    {"id": id, "document": document, "distance": distance}
+                    if self.embedding_func
+                    else {"id": id, "distance": distance}
+                )
                 if metadata:
                     record.update(metadata)
                 records.append(record)
@@ -283,10 +336,7 @@ class ChromaCollection(
             results["documents"][0],
             results["metadatas"][0],
         ):
-            record = {
-                "id": id,
-                "document": document,
-            }
+            record: dict[str, Any] = {"id": id, "document": document} if self.embedding_func else {"id": id}
             if metadata:
                 record.update(metadata)
             records.append(record)
@@ -299,23 +349,32 @@ class ChromaCollection(
     @override
     async def _inner_search(
         self,
+        search_type: SearchType,
         options: VectorSearchOptions,
-        keywords: OptionalOneOrMany[str] = None,
-        search_text: str | None = None,
-        vectorizable_text: str | None = None,
+        values: Any | None = None,
         vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        if not vector_field:
+            raise VectorStoreModelException(
+                f"Vector field '{options.vector_field_name}' not found in the data model definition."
+            )
+        include = ["metadatas", "distances"]
+        if options.include_vectors:
+            include.append("documents" if self.embedding_func else "embeddings")
         args = {
             "n_results": options.top,
-            "include": ["documents", "metadatas", "embeddings", "distances"]
-            if options.include_vectors
-            else ["documents", "metadatas", "distances"],
+            "include": include,
         }
-        if options.filter and (filter := self._parse_filter(options.filter)):
-            args["where"] = filter
-        if vector is not None:
+        if filter := self._build_filter(options.filter):
+            args["where"] = filter if isinstance(filter, dict) else {"$and": filter}
+        if self.embedding_func:
+            args["query_texts"] = values
+        elif vector is not None:
             args["query_embeddings"] = vector
+        else:
+            args["query_embeddings"] = await self._generate_vector_from_values(values, options)
         results = self._get_collection().query(**args)
         records = self._unpack_results(results, options.include_vectors, include_distances=True)
         return KernelSearchResults(
@@ -330,24 +389,72 @@ class ChromaCollection(
     def _get_score_from_result(self, result: Any) -> float | None:
         return result["distance"]
 
-    def _parse_filter(self, search_filter: VectorSearchFilter | Callable) -> dict[str, Any] | None:
-        if not isinstance(search_filter, VectorSearchFilter):
-            raise VectorStoreOperationException("Lambda filters are not supported yet.")
-        if not search_filter.filters:
-            return None
-        filter_expression = {"$and": []}
-        for filter in search_filter.filters:
-            match filter:
-                case EqualTo():
-                    filter_expression["$and"].append({filter.field_name: {"$eq": filter.value}})
-                case AnyTagsEqualTo():
-                    filter_expression["$and"].append({filter.field_name: {"$in": filter.value}})
-        if len(filter_expression["$and"]) == 1:
-            return filter_expression["$and"][0]
-        return filter_expression
+    @override
+    def _lambda_parser(self, node: ast.AST) -> Any:
+        # Comparison operations
+        match node:
+            case ast.Compare():
+                if len(node.ops) > 1:
+                    # Chain comparisons (e.g., 1 < x < 3) become $and of each comparison
+                    values = []
+                    for idx in range(len(node.ops)):
+                        left = node.left if idx == 0 else node.comparators[idx - 1]
+                        right = node.comparators[idx]
+                        op = node.ops[idx]
+                        values.append(self._lambda_parser(ast.Compare(left=left, ops=[op], comparators=[right])))
+                    return {"$and": values}
+                left = self._lambda_parser(node.left)
+                right = self._lambda_parser(node.comparators[0])
+                op = node.ops[0]
+                match op:
+                    case ast.In():
+                        return {left: {"$in": right}}
+                    case ast.NotIn():
+                        return {left: {"$nin": right}}
+                    case ast.Eq():
+                        # Chroma allows short form: {field: value}
+                        return {left: right}
+                    case ast.NotEq():
+                        return {left: {"$ne": right}}
+                    case ast.Gt():
+                        return {left: {"$gt": right}}
+                    case ast.GtE():
+                        return {left: {"$gte": right}}
+                    case ast.Lt():
+                        return {left: {"$lt": right}}
+                    case ast.LtE():
+                        return {left: {"$lte": right}}
+                raise NotImplementedError(f"Unsupported operator: {type(op)}")
+            case ast.BoolOp():
+                op = node.op
+                values = [self._lambda_parser(v) for v in node.values]
+                if isinstance(op, ast.And):
+                    return {"$and": values}
+                if isinstance(op, ast.Or):
+                    return {"$or": values}
+                raise NotImplementedError(f"Unsupported BoolOp: {type(op)}")
+            case ast.UnaryOp():
+                raise NotImplementedError("Unary +, -, ~ and ! are not supported in Chroma filters.")
+            case ast.Attribute():
+                # Only allow attributes that are in the data model
+                if node.attr not in self.data_model_definition.storage_property_names:
+                    raise VectorStoreOperationException(
+                        f"Field '{node.attr}' not in data model (storage property names are used)."
+                    )
+                return node.attr
+            case ast.Name():
+                # Only allow names that are in the data model
+                if node.id not in self.data_model_definition.storage_property_names:
+                    raise VectorStoreOperationException(
+                        f"Field '{node.id}' not in data model (storage property names are used)."
+                    )
+                return node.id
+            case ast.Constant():
+                return node.value
+        raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
 
-@experimental
+@release_candidate
 class ChromaStore(VectorStore):
     """Chroma vector store."""
 
@@ -358,6 +465,7 @@ class ChromaStore(VectorStore):
         persist_directory: str | None = None,
         client_settings: "Settings | None" = None,
         client: ClientAPI | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ):
         """Initialize the Chroma vector store."""
@@ -368,25 +476,30 @@ class ChromaStore(VectorStore):
             settings.persist_directory = persist_directory
         if client is None:
             client = Client(settings)
-        super().__init__(client=client, managed_client=managed_client, **kwargs)
+        super().__init__(
+            client=client, managed_client=managed_client, embedding_generator=embedding_generator, **kwargs
+        )
 
     @override
     def get_collection(
         self,
-        collection_name: str,
-        data_model_type: type[object],
-        data_model_definition: "VectorStoreRecordDefinition | None" = None,
-        **kwargs: "Any",
-    ) -> VectorStoreRecordCollection:
+        data_model_type: type[TModel],
+        *,
+        data_model_definition: VectorStoreRecordDefinition | None = None,
+        collection_name: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
+        **kwargs: Any,
+    ) -> "VectorStoreRecordCollection":
         """Get a vector record store."""
         return ChromaCollection(
             client=self.client,
             collection_name=collection_name,
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
+            embedding_generator=embedding_generator or self.embedding_generator,
             **kwargs,
         )
 
     @override
     async def list_collection_names(self, **kwargs) -> Sequence[str]:
-        return self.client.list_collections()
+        return [coll.name for coll in self.client.list_collections()]

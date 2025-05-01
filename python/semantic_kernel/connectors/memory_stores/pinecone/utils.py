@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import numpy
-
 from pinecone import Vector
+
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
