@@ -476,7 +476,7 @@ public abstract class KernelFunction : AIFunction
     /// <remarks>
     /// When using the <see cref="AIFunction.InvokeAsync"/> interface, the <see cref="Kernel"/> will be acquired as follows, in order of priority:
     /// <list type="number">
-    /// <item>From the <see cref="Kernel"/> provided in <see cref="KernelFunctionExtensions.Clone(KernelFunction,SemanticKernel.Kernel)"/> when Cloning the <see cref="KernelFunction"/>.</item>
+    /// <item>From the <see cref="Kernel"/> provided in <see cref="KernelFunctionExtensions.Clone(KernelFunction,SemanticKernel.Kernel,string?)"/> when Cloning the <see cref="KernelFunction"/>.</item>
     /// <item>From the <see cref="AIFunctionArguments"/> dictionary with the <see cref="AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey"/> key.</item>
     /// <item>From the <see cref="AIFunctionArguments"/>.<see cref="AIFunctionArguments.Services"/> service provider.</item>
     /// <item>A new <see cref="Kernel"/> instance will be created using the same service provider in the <see cref="AIFunctionArguments"/>.<see cref="AIFunctionArguments.Services"/>.</item>
@@ -612,6 +612,7 @@ public abstract class KernelFunction : AIFunction
     private JsonElement _jsonSchema;
 
     /// <summary>An <see cref="AIFunction"/> wrapper around a <see cref="KernelFunction"/>.</summary>
+    [Obsolete("Use the kernel function directly or for similar behavior use Clone(Kernel) method instead.")]
     private sealed class KernelAIFunction : AIFunction
     {
         private static readonly JsonElement s_defaultSchema = JsonDocument.Parse("{}").RootElement;

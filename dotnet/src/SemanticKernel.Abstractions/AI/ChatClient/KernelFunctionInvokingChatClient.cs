@@ -21,6 +21,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 #pragma warning disable CA2213 // Disposable fields should be disposed
 #pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
 #pragma warning disable SA1202 // 'protected' members should come before 'private' members
+#pragma warning disable CS0618 // Ignore Obsolete ConversationId, addressed in another PR
 
 // Modified source from 2025-04-07
 // https://raw.githubusercontent.com/dotnet/extensions/84d09b794d994435568adcbb85a981143d4f15cb/src/Libraries/Microsoft.Extensions.AI/ChatCompletion/FunctionInvokingChatClient.cs
