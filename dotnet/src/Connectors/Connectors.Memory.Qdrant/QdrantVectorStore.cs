@@ -84,21 +84,10 @@ public sealed class QdrantVectorStore : IVectorStore
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<string> collections;
-
-        try
-        {
-            collections = await this._qdrantClient.ListCollectionsAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (RpcException ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
-                VectorStoreName = this._metadata.VectorStoreName,
-                OperationName = "ListCollections"
-            };
-        }
+        var collections = await VectorStoreErrorHandler.RunOperationAsync<IReadOnlyList<string>, RpcException>(
+            this._metadata,
+            "ListCollections",
+            () => this._qdrantClient.ListCollectionsAsync(cancellationToken)).ConfigureAwait(false);
 
         foreach (var collection in collections)
         {
