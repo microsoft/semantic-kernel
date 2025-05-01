@@ -13,6 +13,8 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
 using Npgsql;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 /// <summary>

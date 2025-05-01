@@ -17,6 +17,8 @@ using Microsoft.Extensions.VectorData.Properties;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
