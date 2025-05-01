@@ -19,8 +19,6 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MEVD = Microsoft.Extensions.VectorData;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 /// <summary>

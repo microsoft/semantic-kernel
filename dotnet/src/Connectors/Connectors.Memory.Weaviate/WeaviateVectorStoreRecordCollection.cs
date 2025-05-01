@@ -18,8 +18,6 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 /// <summary>

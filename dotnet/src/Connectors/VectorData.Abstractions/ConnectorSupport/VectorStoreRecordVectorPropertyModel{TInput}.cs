@@ -9,8 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 
 /// <inheritdoc />
