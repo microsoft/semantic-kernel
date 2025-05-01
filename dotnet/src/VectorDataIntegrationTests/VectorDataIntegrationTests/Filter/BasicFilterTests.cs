@@ -65,6 +65,56 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
     }
 
     [ConditionalFact]
+    public virtual Task Equal_int_property_with_nonnull_nullable_int()
+    {
+        int? i = 8;
+
+        return this.TestFilterAsync(
+            r => r.Int == i,
+            r => (int)r["Int"] == i);
+    }
+
+    [ConditionalFact]
+    public virtual Task Equal_int_property_with_null_nullable_int()
+    {
+        int? i = null;
+
+        return this.TestFilterAsync(
+            r => r.Int == i,
+            r => (int)r["Int"] == i,
+            expectZeroResults: true);
+    }
+
+    [ConditionalFact]
+    public virtual Task Equal_int_property_with_nonnull_nullable_int_Value()
+    {
+        int? i = 8;
+
+        return this.TestFilterAsync(
+            r => r.Int == i.Value,
+            r => (int)r["Int"] == i.Value);
+    }
+
+#pragma warning disable CS8629 // Nullable value type may be null.
+    [ConditionalFact]
+    public virtual async Task Equal_int_property_with_null_nullable_int_Value()
+    {
+        int? i = null;
+
+        // TODO: Some connectors wrap filter translation exceptions in a VectorStoreOperationException (#11766)
+        var exception = await Assert.ThrowsAnyAsync<Exception>(() => this.TestFilterAsync(
+            r => r.Int == i.Value,
+            r => (int)r["Int"] == i.Value,
+            expectZeroResults: true));
+
+        if (exception is not InvalidOperationException and not VectorStoreOperationException { InnerException: InvalidOperationException })
+        {
+            Assert.Fail($"Expected {nameof(InvalidOperationException)} or {nameof(VectorStoreOperationException)} but got {exception.GetType()}");
+        }
+    }
+#pragma warning restore CS8629
+
+    [ConditionalFact]
     public virtual Task NotEqual_with_int()
         => this.TestFilterAsync(
             r => r.Int != 8,
@@ -263,8 +313,10 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     #endregion Contains
 
+    #region Variable types
+
     [ConditionalFact]
-    public virtual Task Captured_variable()
+    public virtual Task Captured_local_variable()
     {
         // ReSharper disable once ConvertToConstant.Local
         var i = 8;
@@ -273,6 +325,59 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             r => r.Int == i,
             r => (int)r["Int"] == i);
     }
+
+    [ConditionalFact]
+    public virtual Task Member_field()
+        => this.TestFilterAsync(
+            r => r.Int == this._memberField,
+            r => (int)r["Int"] == this._memberField);
+
+    [ConditionalFact]
+    public virtual Task Member_readonly_field()
+        => this.TestFilterAsync(
+            r => r.Int == this._memberReadOnlyField,
+            r => (int)r["Int"] == this._memberReadOnlyField);
+
+    [ConditionalFact]
+    public virtual Task Member_static_field()
+        => this.TestFilterAsync(
+            r => r.Int == _staticMemberField,
+            r => (int)r["Int"] == _staticMemberField);
+
+    [ConditionalFact]
+    public virtual Task Member_static_readonly_field()
+        => this.TestFilterAsync(
+            r => r.Int == _staticMemberReadOnlyField,
+            r => (int)r["Int"] == _staticMemberReadOnlyField);
+
+    [ConditionalFact]
+    public virtual Task Member_nested_access()
+        => this.TestFilterAsync(
+            r => r.Int == this._someWrapper.SomeWrappedValue,
+            r => (int)r["Int"] == this._someWrapper.SomeWrappedValue);
+
+#pragma warning disable RCS1169 // Make field read-only
+#pragma warning disable IDE0044 // Make field read-only
+#pragma warning disable RCS1187 // Use constant instead of field
+#pragma warning disable CA1802 // Use literals where appropriate
+    private int _memberField = 8;
+    private readonly int _memberReadOnlyField = 8;
+
+    private static int _staticMemberField = 8;
+    private static readonly int _staticMemberReadOnlyField = 8;
+
+    private SomeWrapper _someWrapper = new();
+#pragma warning restore CA1802
+#pragma warning restore RCS1187
+#pragma warning restore RCS1169
+#pragma warning restore IDE0044
+
+    private sealed class SomeWrapper
+    {
+        public int SomeWrappedValue = 8;
+    }
+
+    #endregion Variable types
 
     #region Legacy filter support
 
@@ -332,12 +437,20 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         if (expected.Count == 0 && !expectZeroResults)
         {
-            Assert.Fail("The test returns zero results, and so is unreliable");
+            Assert.Fail("The test returns zero results, and so may be unreliable");
+        }
+        else if (expectZeroResults && expected.Count != 0)
+        {
+            Assert.Fail($"{nameof(expectZeroResults)} was true, but the test returned {expected.Count} results.");
         }
 
         if (expected.Count == fixture.TestData.Count && !expectAllResults)
         {
-            Assert.Fail("The test returns all results, and so is unreliable");
+            Assert.Fail("The test returns all results, and so may be unreliable");
+        }
+        else if (expectAllResults && expected.Count != fixture.TestData.Count)
+        {
+            Assert.Fail($"{nameof(expectAllResults)} was true, but the test returned {expected.Count} results instead of the expected {fixture.TestData.Count}.");
         }
 
         // Execute the query against the vector store, once using the strongly typed filter

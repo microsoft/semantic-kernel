@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
@@ -12,12 +11,6 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </summary>
 public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord>
 {
-    /// <summary>
-    /// Gets or sets an optional custom mapper to use when converting between the data model and Weaviate record.
-    /// </summary>
-    [Obsolete("Custom mappers are no longer supported.", error: true)]
-    public IVectorStoreRecordMapper<TRecord, JsonObject>? JsonObjectCustomMapper { get; init; } = null;
-
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>

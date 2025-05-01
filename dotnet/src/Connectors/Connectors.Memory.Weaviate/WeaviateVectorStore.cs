@@ -58,18 +58,7 @@ public sealed class WeaviateVectorStore : IVectorStore
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
-    {
-#pragma warning disable CS0618 // IWeaviateVectorStoreRecordCollectionFactory is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
-        {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(
-                this._httpClient,
-                name,
-                vectorStoreRecordDefinition);
-        }
-#pragma warning restore CS0618
-
-        var recordCollection = new WeaviateVectorStoreRecordCollection<TKey, TRecord>(
+        => new WeaviateVectorStoreRecordCollection<TKey, TRecord>(
             this._httpClient,
             name,
             new()
@@ -79,10 +68,7 @@ public sealed class WeaviateVectorStore : IVectorStore
                 ApiKey = this._options.ApiKey,
                 HasNamedVectors = this._options.HasNamedVectors,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
-
-        return recordCollection;
-    }
+            });
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

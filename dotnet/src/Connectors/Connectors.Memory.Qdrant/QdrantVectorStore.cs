@@ -63,23 +63,12 @@ public sealed class QdrantVectorStore : IVectorStore
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
-    {
-#pragma warning disable CS0618 // IQdrantVectorStoreRecordCollectionFactory is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
-        {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._qdrantClient.QdrantClient, name, vectorStoreRecordDefinition);
-        }
-#pragma warning restore CS0618
-
-        var recordCollection = new QdrantVectorStoreRecordCollection<TKey, TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>()
+        => new QdrantVectorStoreRecordCollection<TKey, TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>()
         {
             HasNamedVectors = this._options.HasNamedVectors,
             VectorStoreRecordDefinition = vectorStoreRecordDefinition,
             EmbeddingGenerator = this._options.EmbeddingGenerator
         });
-        var castRecordCollection = recordCollection as IVectorStoreRecordCollection<TKey, TRecord>;
-        return castRecordCollection!;
-    }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

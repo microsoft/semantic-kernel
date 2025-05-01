@@ -102,7 +102,7 @@ public class RedisHashSetDynamicDataModelMapperTests
         var sut = new RedisHashSetVectorStoreRecordMapper<Dictionary<string, object?>>(s_model);
 
         // Act.
-        var dataModel = sut.MapFromStorageToDataModel(("key", hashSet), new() { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(("key", hashSet), includeVectors: true);
 
         // Assert.
         Assert.Equal("key", dataModel["Key"]);
@@ -150,7 +150,7 @@ public class RedisHashSetDynamicDataModelMapperTests
         var sut = new RedisHashSetVectorStoreRecordMapper<Dictionary<string, object?>>(model);
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(("key", hashSet), new() { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(("key", hashSet), includeVectors: true);
 
         // Assert
         Assert.Equal("key", dataModel["Key"]);
@@ -199,7 +199,7 @@ public class RedisHashSetDynamicDataModelMapperTests
         var sut = new RedisHashSetVectorStoreRecordMapper<Dictionary<string, object?>>(s_model);
 
         // Act.
-        var dataModel = sut.MapFromStorageToDataModel(("key", hashSet), new() { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(("key", hashSet), includeVectors: true);
 
         // Assert.
         Assert.Single(dataModel);

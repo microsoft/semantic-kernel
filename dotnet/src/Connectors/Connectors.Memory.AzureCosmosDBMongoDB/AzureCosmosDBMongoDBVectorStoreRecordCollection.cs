@@ -177,7 +177,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
             return default;
         }
 
-        return this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors });
+        return this._mapper.MapFromStorageToDataModel(record, includeVectors);
     }
 
     /// <inheritdoc />
@@ -481,7 +481,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
         {
             foreach (var response in cursor.Current)
             {
-                var record = this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors });
+                var record = this._mapper.MapFromStorageToDataModel(response, options.IncludeVectors);
 
                 yield return record;
             }

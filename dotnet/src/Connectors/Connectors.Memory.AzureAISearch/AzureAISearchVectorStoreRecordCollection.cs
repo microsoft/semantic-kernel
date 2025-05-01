@@ -589,7 +589,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
                 return default;
             }
 
-            return (TRecord)(object)this._dynamicMapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors });
+            return (TRecord)(object)this._dynamicMapper!.MapFromStorageToDataModel(jsonObject, includeVectors);
         }
 
         // Use the built in Azure AI Search mapper.
@@ -682,7 +682,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     {
         await foreach (var result in results.ConfigureAwait(false))
         {
-            var document = (TRecord)(object)this._dynamicMapper!.MapFromStorageToDataModel(result.Document, new() { IncludeVectors = includeVectors });
+            var document = (TRecord)(object)this._dynamicMapper!.MapFromStorageToDataModel(result.Document, includeVectors);
             yield return new VectorSearchResult<TRecord>(document, result.Score);
         }
     }

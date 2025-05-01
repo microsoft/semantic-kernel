@@ -345,7 +345,6 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         using (command)
         {
             const string OperationName = "Get";
-            StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
 
             using var reader = await connection.ExecuteWithErrorHandlingAsync(
                 this._collectionMetadata,
@@ -361,7 +360,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                 yield return this.GetAndMapRecord(
                     reader,
                     this._model.Properties,
-                    mapperOptions);
+                    options.IncludeVectors);
             }
         }
     }
@@ -596,7 +595,6 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             () => command.ExecuteReaderAsync(cancellationToken),
             cancellationToken).ConfigureAwait(false);
 
-        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = searchOptions.IncludeVectors };
         for (var recordCounter = 0; await reader.ReadAsync(cancellationToken).ConfigureAwait(false); recordCounter++)
         {
             if (recordCounter >= searchOptions.Skip)
@@ -606,7 +604,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                 var record = this.GetAndMapRecord(
                     reader,
                     this._model.Properties,
-                    mapperOptions);
+                    searchOptions.IncludeVectors);
 
                 yield return new VectorSearchResult<TRecord>(record, score);
             }
@@ -711,8 +709,6 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         using (command)
         {
-            StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = includeVectors };
-
             using var reader = await connection.ExecuteWithErrorHandlingAsync(
                 this._collectionMetadata,
                 OperationName,
@@ -724,7 +720,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                 yield return this.GetAndMapRecord(
                     reader,
                     this._model.Properties,
-                    mapperOptions);
+                    includeVectors);
             }
         }
     }
@@ -835,20 +831,20 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     private TRecord GetAndMapRecord(
         DbDataReader reader,
         IReadOnlyList<VectorStoreRecordPropertyModel> properties,
-        StorageToDataModelMapperOptions options)
+        bool includeVectors)
     {
         var storageModel = new Dictionary<string, object?>();
 
         foreach (var property in properties)
         {
-            if (options.IncludeVectors || property is not VectorStoreRecordVectorPropertyModel)
+            if (includeVectors || property is not VectorStoreRecordVectorPropertyModel)
             {
                 var propertyValue = SqliteVectorStoreRecordPropertyMapping.GetPropertyValue(reader, property.StorageName, property.Type);
                 storageModel.Add(property.StorageName, propertyValue);
             }
         }
 
-        return this._mapper.MapFromStorageToDataModel(storageModel, options);
+        return this._mapper.MapFromStorageToDataModel(storageModel, includeVectors);
     }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete

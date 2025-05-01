@@ -6,8 +6,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
@@ -31,10 +29,10 @@ internal class AzureCosmosDBNoSqlFilterTranslator
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = false };
-        var preprocessedExpression = preprocessor.Visit(lambdaExpression);
+        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = true };
+        var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
 
-        this.Translate(lambdaExpression.Body);
+        this.Translate(preprocessedExpression);
 
         return (this._sql.ToString(), this._parameters);
     }
@@ -49,6 +47,10 @@ internal class AzureCosmosDBNoSqlFilterTranslator
 
             case ConstantExpression constant:
                 this.TranslateConstant(constant);
+                return;
+
+            case QueryParameterExpression { Name: var name, Value: var value }:
+                this.TranslateQueryParameter(name, value);
                 return;
 
             case MemberExpression member:
@@ -143,34 +145,13 @@ internal class AzureCosmosDBNoSqlFilterTranslator
 
     private void TranslateMember(MemberExpression memberExpression)
     {
-        switch (memberExpression)
+        if (this.TryBindProperty(memberExpression, out var property))
         {
-            case var _ when this.TryBindProperty(memberExpression, out var property):
-                this.GeneratePropertyAccess(property);
-                return;
-
-            // Identify captured lambda variables, translate to Cosmos parameters (@foo, @bar...)
-            case var _ when TryGetCapturedValue(memberExpression, out var name, out var value):
-                // Duplicate parameter name, create a new parameter with a different name
-                // TODO: Share the same parameter when it references the same captured value
-                if (this._parameters.ContainsKey(name))
-                {
-                    var baseName = name;
-                    var i = 0;
-                    do
-                    {
-                        name = baseName + (i++);
-                    } while (this._parameters.ContainsKey(name));
-                }
-
-                name = '@' + name;
-                this._parameters.Add(name, value);
-                this._sql.Append(name);
-                return;
-
-            default:
-                throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
+            this.GeneratePropertyAccess(property);
+            return;
         }
+
+        throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
 
     private void TranslateNewArray(NewArrayExpression newArray)
@@ -254,6 +235,11 @@ internal class AzureCosmosDBNoSqlFilterTranslator
                 this._sql.Append(')');
                 return;
 
+            // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
+            case ExpressionType.Convert when Nullable.GetUnderlyingType(unary.Type) == unary.Operand.Type:
+                this.Translate(unary.Operand);
+                return;
+
             // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
             case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
                 this.GeneratePropertyAccess(property);
@@ -262,6 +248,13 @@ internal class AzureCosmosDBNoSqlFilterTranslator
             default:
                 throw new NotSupportedException("Unsupported unary expression node type: " + unary.NodeType);
         }
+    }
+
+    protected void TranslateQueryParameter(string name, object? value)
+    {
+        name = '@' + name;
+        this._parameters.Add(name, value);
+        this._sql.Append(name);
     }
 
     protected virtual void GeneratePropertyAccess(VectorStoreRecordPropertyModel property)
@@ -311,21 +304,5 @@ internal class AzureCosmosDBNoSqlFilterTranslator
         }
 
         return true;
-    }
-
-    private static bool TryGetCapturedValue(Expression expression, [NotNullWhen(true)] out string? name, out object? value)
-    {
-        if (expression is MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
-            && constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
-            && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true))
-        {
-            name = fieldInfo.Name;
-            value = fieldInfo.GetValue(constant.Value);
-            return true;
-        }
-
-        name = null;
-        value = null;
-        return false;
     }
 }

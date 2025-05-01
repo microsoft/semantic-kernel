@@ -50,15 +50,7 @@ public sealed class PineconeVectorStore : IVectorStore
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
-    {
-#pragma warning disable CS0618 // IPineconeVectorStoreRecordCollectionFactory is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
-        {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._pineconeClient, name, vectorStoreRecordDefinition);
-        }
-#pragma warning restore CS0618
-
-        return (new PineconeVectorStoreRecordCollection<TKey, TRecord>(
+        => (new PineconeVectorStoreRecordCollection<TKey, TRecord>(
             this._pineconeClient,
             name,
             new PineconeVectorStoreRecordCollectionOptions<TRecord>()
@@ -66,7 +58,6 @@ public sealed class PineconeVectorStore : IVectorStore
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
             }) as IVectorStoreRecordCollection<TKey, TRecord>)!;
-    }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

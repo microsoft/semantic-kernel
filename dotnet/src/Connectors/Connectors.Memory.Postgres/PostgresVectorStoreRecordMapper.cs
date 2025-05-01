@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
@@ -49,7 +48,7 @@ internal sealed class PostgresVectorStoreRecordMapper<TRecord>(VectorStoreRecord
         return properties;
     }
 
-    public TRecord MapFromStorageToDataModel(Dictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
+    public TRecord MapFromStorageToDataModel(Dictionary<string, object?> storageModel, bool includeVectors)
     {
         var record = model.CreateRecord<TRecord>()!;
 
@@ -62,7 +61,7 @@ internal sealed class PostgresVectorStoreRecordMapper<TRecord>(VectorStoreRecord
             dataProperty.SetValueAsObject(record, storageModel[dataProperty.StorageName]);
         }
 
-        if (options.IncludeVectors)
+        if (includeVectors)
         {
             foreach (var vectorProperty in model.VectorProperties)
             {

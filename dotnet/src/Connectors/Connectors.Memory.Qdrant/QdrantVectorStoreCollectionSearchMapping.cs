@@ -105,7 +105,7 @@ internal static class QdrantVectorStoreCollectionSearchMapping
     {
         // Do the mapping with error handling.
         return new VectorSearchResult<TRecord>(
-            mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors }),
+            mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, includeVectors),
             point.Score);
     }
 
@@ -119,6 +119,6 @@ internal static class QdrantVectorStoreCollectionSearchMapping
         string operationName)
     {
         // Do the mapping with error handling.
-        return mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
+        return mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, includeVectors);
     }
 }

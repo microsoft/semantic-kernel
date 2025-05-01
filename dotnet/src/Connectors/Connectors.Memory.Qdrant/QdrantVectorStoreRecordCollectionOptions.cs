@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
@@ -17,15 +15,6 @@ public sealed class QdrantVectorStoreRecordCollectionOptions<TRecord>
     /// Defaults to single vector per point.
     /// </summary>
     public bool HasNamedVectors { get; set; } = false;
-
-    /// <summary>
-    /// Gets or sets an optional custom mapper to use when converting between the data model and the qdrant point.
-    /// </summary>
-    /// <remarks>
-    /// If not set, a default mapper that uses json as an intermediary to allow automatic mapping to a wide variety of types will be used.
-    /// </remarks>
-    [Obsolete("Custom mappers are no longer supported.", error: true)]
-    public IVectorStoreRecordMapper<TRecord, PointStruct>? PointStructCustomMapper { get; init; } = null;
 
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

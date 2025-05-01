@@ -85,7 +85,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
         var mapper = new SqliteVectorStoreRecordMapper<TestRecord<string>>(model);
 
         // Act
-        var result = mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors });
+        var result = mapper.MapFromStorageToDataModel(storageModel, includeVectors);
 
         // Assert
         Assert.Equal("key", result.Key);
@@ -126,7 +126,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
         var mapper = new SqliteVectorStoreRecordMapper<TestRecord<ulong>>(model);
 
         // Act
-        var result = mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors });
+        var result = mapper.MapFromStorageToDataModel(storageModel, includeVectors);
 
         // Assert
         Assert.Equal((ulong)1, result.Key);

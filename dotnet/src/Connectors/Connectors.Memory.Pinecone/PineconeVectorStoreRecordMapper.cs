@@ -52,13 +52,13 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord>(VectorStoreRecord
     }
 
     /// <inheritdoc />
-    public TRecord MapFromStorageToDataModel(Vector storageModel, StorageToDataModelMapperOptions options)
+    public TRecord MapFromStorageToDataModel(Vector storageModel, bool includeVectors)
     {
         var outputRecord = model.CreateRecord<TRecord>()!;
 
         model.KeyProperty.SetValueAsObject(outputRecord, storageModel.Id);
 
-        if (options?.IncludeVectors is true)
+        if (includeVectors is true)
         {
             model.VectorProperty.SetValueAsObject(
                 outputRecord,

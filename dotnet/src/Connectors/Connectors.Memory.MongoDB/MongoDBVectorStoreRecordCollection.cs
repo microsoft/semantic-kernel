@@ -185,7 +185,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
             return default;
         }
 
-        return this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors });
+        return this._mapper.MapFromStorageToDataModel(record, includeVectors);
     }
 
     /// <inheritdoc />
@@ -458,7 +458,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         {
             foreach (var response in cursor.Current)
             {
-                var record = this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors });
+                var record = this._mapper.MapFromStorageToDataModel(response, options.IncludeVectors);
 
                 yield return record;
             }
@@ -655,7 +655,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                 if (skipCounter >= skip)
                 {
                     var score = response[ScorePropertyName].AsDouble;
-                    var record = this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new() { IncludeVectors = includeVectors });
+                    var record = this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, includeVectors);
 
                     yield return new VectorSearchResult<TRecord>(record, score);
                 }

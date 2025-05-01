@@ -77,7 +77,7 @@ internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model
     }
 
     /// <inheritdoc />
-    public Dictionary<string, object?> MapFromStorageToDataModel(BsonDocument storageModel, StorageToDataModelMapperOptions options)
+    public Dictionary<string, object?> MapFromStorageToDataModel(BsonDocument storageModel, bool includeVectors)
     {
         Verify.NotNull(storageModel);
 
@@ -102,7 +102,7 @@ internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model
                     continue;
 
                 case VectorStoreRecordVectorPropertyModel vectorProperty:
-                    if (options.IncludeVectors && storageModel.TryGetValue(vectorProperty.StorageName, out var vectorValue))
+                    if (includeVectors && storageModel.TryGetValue(vectorProperty.StorageName, out var vectorValue))
                     {
                         result.Add(vectorProperty.ModelName, GetVectorPropertyValue(property.ModelName, property.Type, vectorValue));
                     }

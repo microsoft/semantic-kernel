@@ -81,7 +81,7 @@ internal sealed class AzureCosmosDBNoSQLDynamicDataModelMapper(VectorStoreRecord
         return jsonObject;
     }
 
-    public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
+    public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
         Verify.NotNull(storageModel);
 
@@ -106,7 +106,7 @@ internal sealed class AzureCosmosDBNoSQLDynamicDataModelMapper(VectorStoreRecord
                     continue;
 
                 case VectorStoreRecordVectorPropertyModel vectorProperty:
-                    if (options.IncludeVectors && storageModel.TryGetPropertyValue(vectorProperty.StorageName, out var vectorValue))
+                    if (includeVectors && storageModel.TryGetPropertyValue(vectorProperty.StorageName, out var vectorValue))
                     {
                         result.Add(property.ModelName, vectorValue.Deserialize(property.Type, s_vectorJsonSerializerOptions));
                     }

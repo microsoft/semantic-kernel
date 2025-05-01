@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
@@ -12,12 +10,6 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// </summary>
 public sealed class MongoDBVectorStoreRecordCollectionOptions<TRecord>
 {
-    /// <summary>
-    /// Gets or sets an optional custom mapper to use when converting between the data model and the MongoDB BSON object.
-    /// </summary>
-    [Obsolete("Custom mappers are no longer supported.", error: true)]
-    public IVectorStoreRecordMapper<TRecord, BsonDocument>? BsonDocumentCustomMapper { get; init; } = null;
-
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>

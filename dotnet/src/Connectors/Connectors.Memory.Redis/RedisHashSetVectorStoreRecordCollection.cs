@@ -245,7 +245,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
         }
 
         // Convert to the caller's data model.
-        return this._mapper.MapFromStorageToDataModel((stringKey, retrievedHashEntries), new() { IncludeVectors = includeVectors });
+        return this._mapper.MapFromStorageToDataModel((stringKey, retrievedHashEntries), includeVectors);
     }
 
     /// <inheritdoc />
@@ -437,7 +437,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
                 .ToArray();
 
             // Convert to the caller's data model.
-            var dataModel = this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(result.Id), retrievedHashEntries), new() { IncludeVectors = options.IncludeVectors });
+            var dataModel = this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(result.Id), retrievedHashEntries), options.IncludeVectors);
 
             // Process the score of the result item.
             var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
@@ -491,7 +491,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
                 .ToArray();
 
             // Convert to the caller's data model.
-            yield return this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(document.Id), retrievedHashEntries), new() { IncludeVectors = options.IncludeVectors });
+            yield return this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(document.Id), retrievedHashEntries), options.IncludeVectors);
         }
     }
 

@@ -268,9 +268,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             cancellationToken).ConfigureAwait(false);
 
         return reader.HasRows
-            ? this._mapper.MapFromStorageToDataModel(
-                new SqlDataReaderDictionary(reader, this._model.VectorProperties),
-                new() { IncludeVectors = includeVectors })
+            ? this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, this._model.VectorProperties), includeVectors)
             : default;
     }
 
@@ -325,9 +323,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 "GetBatch",
                 cancellationToken).ConfigureAwait(false))
             {
-                yield return this._mapper.MapFromStorageToDataModel(
-                    new SqlDataReaderDictionary(reader, this._model.VectorProperties),
-                    new() { IncludeVectors = includeVectors });
+                yield return this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, this._model.VectorProperties), includeVectors);
             }
         } while (command.Parameters.Count == SqlServerConstants.MaxParameterCount);
     }
@@ -636,7 +632,6 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     {
         try
         {
-            StorageToDataModelMapperOptions options = new() { IncludeVectors = includeVectors };
             var vectorProperties = includeVectors ? this._model.VectorProperties : [];
 
             using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
@@ -657,7 +652,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 }
 
                 yield return new VectorSearchResult<TRecord>(
-                    this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorProperties), options),
+                    this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorProperties), includeVectors),
                     reader.GetDouble(scoreIndex));
             }
         }
@@ -694,13 +689,12 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             cancellationToken).ConfigureAwait(false);
 
         var vectorProperties = options.IncludeVectors ? this._model.VectorProperties : [];
-        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
         while (await reader.ReadWithErrorHandlingAsync(
                 this._collectionMetadata,
                 operationName: "GetAsync",
                 cancellationToken).ConfigureAwait(false))
         {
-            yield return this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorProperties), mapperOptions);
+            yield return this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorProperties), options.IncludeVectors);
         }
     }
 }

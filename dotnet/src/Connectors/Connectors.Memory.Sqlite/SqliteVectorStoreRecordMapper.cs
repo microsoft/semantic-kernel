@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
@@ -44,7 +43,7 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
         return properties;
     }
 
-    public TRecord MapFromStorageToDataModel(Dictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
+    public TRecord MapFromStorageToDataModel(Dictionary<string, object?> storageModel, bool includeVectors)
     {
         var record = model.CreateRecord<TRecord>()!;
 
@@ -56,7 +55,7 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
             property.SetValueAsObject(record, storageModel[property.StorageName]);
         }
 
-        if (options.IncludeVectors)
+        if (includeVectors)
         {
             foreach (var property in model.VectorProperties)
             {

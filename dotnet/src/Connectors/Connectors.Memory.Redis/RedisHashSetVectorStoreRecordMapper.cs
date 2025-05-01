@@ -67,7 +67,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
     }
 
     /// <inheritdoc />
-    public TConsumerDataModel MapFromStorageToDataModel((string Key, HashEntry[] HashEntries) storageModel, StorageToDataModelMapperOptions options)
+    public TConsumerDataModel MapFromStorageToDataModel((string Key, HashEntry[] HashEntries) storageModel, bool includeVectors)
     {
         var hashEntriesDictionary = storageModel.HashEntries.ToDictionary(x => (string)x.Name!, x => x.Value);
 
@@ -78,7 +78,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
         model.KeyProperty.SetValueAsObject(outputRecord, storageModel.Key);
 
         // Set each vector property if embeddings should be returned.
-        if (options?.IncludeVectors is true)
+        if (includeVectors)
         {
             foreach (var property in model.VectorProperties)
             {

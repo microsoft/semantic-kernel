@@ -15,9 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <summary>
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Azure AI Search.
 /// </summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
 internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel model)
-#pragma warning restore CS0618
 {
     /// <inheritdoc />
     public JsonObject MapFromDataToStorageModel(Dictionary<string, object?> dataModel)
@@ -53,7 +51,7 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
     }
 
     /// <inheritdoc />
-    public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
+    public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
         Verify.NotNull(storageModel);
 
@@ -80,7 +78,7 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
                     continue;
                 }
 
-                case VectorStoreRecordVectorPropertyModel vectorProperty when options.IncludeVectors:
+                case VectorStoreRecordVectorPropertyModel vectorProperty when includeVectors:
                 {
                     if (storageModel.TryGetPropertyValue(vectorProperty.StorageName, out var value))
                     {
@@ -98,7 +96,7 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
                     continue;
                 }
 
-                case VectorStoreRecordVectorPropertyModel vectorProperty when !options.IncludeVectors:
+                case VectorStoreRecordVectorPropertyModel vectorProperty when !includeVectors:
                     break;
 
                 default:

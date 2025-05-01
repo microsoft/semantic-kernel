@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Postgres;
 using Moq;
-using Npgsql;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Postgres.UnitTests;
@@ -52,31 +51,6 @@ public class PostgresVectorStoreTests
         // Act and Assert.
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<ulong, SinglePropsModel<ulong>>(TestCollectionName));
     }
-
-#pragma warning disable CS0618 // IPostgresVectorStoreRecordCollectionFactory is obsolete
-    [Fact]
-    public void GetCollectionCallsFactoryIfProvided()
-    {
-        // Arrange.
-        var factoryMock = new Mock<IPostgresVectorStoreRecordCollectionFactory>(MockBehavior.Strict);
-        var collectionMock = new Mock<IVectorStoreRecordCollection<int, SinglePropsModel<int>>>(MockBehavior.Strict);
-        var clientMock = new Mock<IPostgresVectorStoreDbClient>(MockBehavior.Strict);
-
-        clientMock.Setup(x => x.DataSource).Returns<NpgsqlDataSource>(null);
-        clientMock.Setup(x => x.DatabaseName).Returns("TestDatabase");
-
-        factoryMock
-            .Setup(x => x.CreateVectorStoreRecordCollection<int, SinglePropsModel<int>>(It.IsAny<NpgsqlDataSource>(), TestCollectionName, null))
-            .Returns(collectionMock.Object);
-        var sut = new PostgresVectorStore(clientMock.Object, new() { VectorStoreCollectionFactory = factoryMock.Object });
-
-        // Act.
-        var actual = sut.GetCollection<int, SinglePropsModel<int>>(TestCollectionName);
-
-        // Assert.
-        Assert.Equal(collectionMock.Object, actual);
-    }
-#pragma warning restore CS0618
 
     [Fact]
     public async Task ListCollectionNamesCallsSDKAsync()

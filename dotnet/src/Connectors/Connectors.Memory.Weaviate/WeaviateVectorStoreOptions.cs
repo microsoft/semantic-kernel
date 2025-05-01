@@ -11,12 +11,6 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 public sealed class WeaviateVectorStoreOptions
 {
     /// <summary>
-    /// An optional factory to use for constructing <see cref="WeaviateVectorStoreRecordCollection{TKey, TRecord}"/> instances, if a custom record collection is required.
-    /// </summary>
-    [Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
-    public IWeaviateVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
-
-    /// <summary>
     /// Weaviate endpoint for remote or local cluster.
     /// </summary>
     public Uri? Endpoint { get; set; } = null;

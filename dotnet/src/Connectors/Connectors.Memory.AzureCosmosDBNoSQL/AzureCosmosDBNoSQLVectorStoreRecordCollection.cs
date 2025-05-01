@@ -255,7 +255,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 
         await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken).ConfigureAwait(false))
         {
-            var record = this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors });
+            var record = this._mapper.MapFromStorageToDataModel(jsonObject, includeVectors);
 
             if (record is not null)
             {
@@ -499,7 +499,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 
         await foreach (var jsonObject in searchResults.ConfigureAwait(false))
         {
-            var record = this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = options.IncludeVectors });
+            var record = this._mapper.MapFromStorageToDataModel(jsonObject, options.IncludeVectors);
 
             yield return record;
         }
@@ -742,7 +742,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             // Remove score from result object for mapping.
             jsonObject.Remove(scorePropertyName);
 
-            var record = this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors });
+            var record = this._mapper.MapFromStorageToDataModel(jsonObject, includeVectors);
 
             yield return new VectorSearchResult<TRecord>(record, score);
         }

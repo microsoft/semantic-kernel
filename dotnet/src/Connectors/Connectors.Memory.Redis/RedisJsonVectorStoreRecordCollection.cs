@@ -241,7 +241,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
 
         // Convert to the caller's data model.
         var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
-        return this._mapper.MapFromStorageToDataModel((stringKey, node), new() { IncludeVectors = includeVectors });
+        return this._mapper.MapFromStorageToDataModel((stringKey, node), includeVectors);
     }
 
     /// <inheritdoc />
@@ -295,7 +295,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
 
             // Convert to the caller's data model.
             var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
-            yield return this._mapper.MapFromStorageToDataModel((key, node), new() { IncludeVectors = includeVectors });
+            yield return this._mapper.MapFromStorageToDataModel((key, node), includeVectors);
         }
     }
 
@@ -487,7 +487,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
             var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
             var mappedRecord = this._mapper.MapFromStorageToDataModel(
                 (this.RemoveKeyPrefixIfNeeded(result.Id), node),
-                new() { IncludeVectors = options.IncludeVectors });
+                options.IncludeVectors);
 
             // Process the score of the result item.
             var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
@@ -537,7 +537,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
             var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
             yield return this._mapper.MapFromStorageToDataModel(
                 (this.RemoveKeyPrefixIfNeeded(document.Id), node),
-                new() { IncludeVectors = options.IncludeVectors });
+                options.IncludeVectors);
         }
     }
 

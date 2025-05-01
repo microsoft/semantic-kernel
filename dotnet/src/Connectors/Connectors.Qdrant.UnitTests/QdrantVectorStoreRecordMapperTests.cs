@@ -83,7 +83,7 @@ public class QdrantVectorStoreRecordMapperTests
 
         // Act.
         var point = CreateSinglePropsPointStruct(5, hasNamedVectors);
-        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
+        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, includeVectors);
 
         // Assert.
         Assert.NotNull(actual);
@@ -115,7 +115,7 @@ public class QdrantVectorStoreRecordMapperTests
 
         // Act.
         var point = CreateSinglePropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111"), hasNamedVectors);
-        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
+        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, includeVectors);
 
         // Assert.
         Assert.NotNull(actual);
@@ -202,7 +202,7 @@ public class QdrantVectorStoreRecordMapperTests
 
         // Act.
         var point = CreateMultiPropsPointStruct(5);
-        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
+        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, includeVectors);
 
         // Assert.
         Assert.NotNull(actual);
@@ -241,7 +241,7 @@ public class QdrantVectorStoreRecordMapperTests
 
         // Act.
         var point = CreateMultiPropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111"));
-        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
+        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, includeVectors);
 
         // Assert.
         Assert.NotNull(actual);

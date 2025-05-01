@@ -243,7 +243,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
         };
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal(key, dataModel["Key"]);
@@ -312,7 +312,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
         var sut = new WeaviateDynamicDataModelMapper("Collection", HasNamedVectors, s_model, s_jsonSerializerOptions);
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal(key, dataModel["Key"]);
@@ -331,7 +331,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
 
         // Act & Assert
         var exception = Assert.Throws<VectorStoreRecordMappingException>(
-            () => sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true }));
+            () => sut.MapFromStorageToDataModel(storageModel, includeVectors: true));
     }
 
     [Fact]
@@ -392,7 +392,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
         };
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal(key, dataModel["Key"]);
@@ -470,7 +470,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
         }
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal(key, dataModel["Key"]);

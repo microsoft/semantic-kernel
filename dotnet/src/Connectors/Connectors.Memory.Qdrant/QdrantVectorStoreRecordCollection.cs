@@ -303,7 +303,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         // Convert the retrieved points to the target data model.
         foreach (var retrievedPoint in retrievedPoints)
         {
-            yield return this._mapper.MapFromStorageToDataModel(retrievedPoint.Id, retrievedPoint.Payload, retrievedPoint.Vectors, new() { IncludeVectors = includeVectors });
+            yield return this._mapper.MapFromStorageToDataModel(retrievedPoint.Id, retrievedPoint.Payload, retrievedPoint.Vectors, includeVectors);
         }
     }
 
