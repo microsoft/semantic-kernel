@@ -1,19 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
 
 /// <summary>
-/// Integration tests for <see cref="SqliteVectorStoreRecordCollection{TRecord}"/> class.
+/// Integration tests for <see cref="SqliteVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 [Collection("SqliteVectorStoreCollection")]
 public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixture fixture)
@@ -26,7 +29,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task CollectionExistsReturnsCollectionStateAsync(bool createCollection)
     {
         // Arrange
-        var sut = fixture.GetCollection<SqliteHotel<ulong>>("CollectionExists");
+        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("CollectionExists");
 
         if (createCollection)
         {
@@ -44,7 +47,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanCreateCollectionAsync()
     {
         // Arrange
-        var sut = fixture.GetCollection<SqliteHotel<ulong>>("CreateCollection");
+        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("CreateCollection");
 
         // Act
         await sut.CreateCollectionAsync();
@@ -57,7 +60,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanCreateCollectionForSupportedDistanceFunctionsAsync()
     {
         // Arrange
-        var sut = fixture.GetCollection<RecordWithSupportedDistanceFunctions>("CreateCollectionForSupportedDistanceFunctions");
+        var sut = fixture.GetCollection<ulong, RecordWithSupportedDistanceFunctions>("CreateCollectionForSupportedDistanceFunctions");
 
         // Act
         await sut.CreateCollectionAsync();
@@ -70,7 +73,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
-        var sut = fixture.GetCollection<SqliteHotel<ulong>>("DeleteCollection");
+        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteCollection");
 
         await sut.CreateCollectionAsync();
 
@@ -101,7 +104,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             VectorStoreRecordDefinition = useRecordDefinition ? GetVectorStoreRecordDefinition<ulong>() : null
         };
 
-        var sut = fixture.GetCollection<SqliteHotel<ulong>>("DeleteCollection", options);
+        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteCollection", options);
 
         var record = CreateTestHotel(HotelId);
 
@@ -140,7 +143,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     {
         // Arrange
         const ulong HotelId = 5;
-        var sut = fixture.GetCollection<SqliteHotel<ulong>>("DeleteRecord");
+        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteRecord");
 
         await sut.CreateCollectionAsync();
 
@@ -169,7 +172,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         const ulong HotelId2 = 2;
         const ulong HotelId3 = 3;
 
-        var sut = fixture.GetCollection<SqliteHotel<ulong>>("GetUpsertDeleteBatchWithNumericKey");
+        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("GetUpsertDeleteBatchWithNumericKey");
 
         await sut.CreateCollectionAsync();
 
@@ -177,8 +180,8 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var record2 = CreateTestHotel(HotelId2);
         var record3 = CreateTestHotel(HotelId3);
 
-        var upsertResults = await sut.UpsertBatchAsync([record1, record2, record3]).ToListAsync();
-        var getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
+        var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
 
@@ -187,9 +190,9 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId3));
 
         // Act
-        await sut.DeleteBatchAsync([HotelId1, HotelId2, HotelId3]);
+        await sut.DeleteAsync([HotelId1, HotelId2, HotelId3]);
 
-        getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+        getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         // Assert
         Assert.Empty(getResults);
@@ -203,7 +206,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         const string HotelId2 = "22222222-2222-2222-2222-222222222222";
         const string HotelId3 = "33333333-3333-3333-3333-333333333333";
 
-        var sut = fixture.GetCollection<SqliteHotel<string>>("GetUpsertDeleteBatchWithStringKey") as IVectorStoreRecordCollection<string, SqliteHotel<string>>;
+        var sut = fixture.GetCollection<string, SqliteHotel<string>>("GetUpsertDeleteBatchWithStringKey") as IVectorStoreRecordCollection<string, SqliteHotel<string>>;
 
         await sut.CreateCollectionAsync();
 
@@ -211,8 +214,8 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var record2 = CreateTestHotel(HotelId2);
         var record3 = CreateTestHotel(HotelId3);
 
-        var upsertResults = await sut.UpsertBatchAsync([record1, record2, record3]).ToListAsync();
-        var getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
+        var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
 
@@ -221,9 +224,9 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId3));
 
         // Act
-        await sut.DeleteBatchAsync([HotelId1, HotelId2, HotelId3]);
+        await sut.DeleteAsync([HotelId1, HotelId2, HotelId3]);
 
-        getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+        getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         // Assert
         Assert.Empty(getResults);
@@ -239,13 +242,15 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var collectionName = $"Collection{collectionNamePostfix}";
 
         const ulong HotelId = 5;
-        var sut = fixture.GetCollection<SqliteHotel<ulong>>(collectionName);
+        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>(collectionName);
 
         await sut.CreateCollectionAsync();
 
         var record = CreateTestHotel(HotelId);
 
-        var commandData = fixture.Connection.CreateCommand();
+        using var connection = new SqliteConnection(fixture.ConnectionString);
+        await connection.OpenAsync();
+        var commandData = connection.CreateCommand();
 
         commandData.CommandText =
             $"INSERT INTO {collectionName} " +
@@ -262,7 +267,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         if (includeVectors)
         {
-            var commandVector = fixture.Connection.CreateCommand();
+            var commandVector = connection.CreateCommand();
 
             commandVector.CommandText =
                 $"INSERT INTO vec_{collectionName} " +
@@ -303,7 +308,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     {
         // Arrange
         const ulong HotelId = 5;
-        var sut = fixture.GetCollection<SqliteHotel<ulong>>("UpsertRecord");
+        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("UpsertRecord");
 
         await sut.CreateCollectionAsync();
 
@@ -343,19 +348,17 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var hotel3 = CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = fixture.GetCollection<SqliteHotel<string>>("VectorizedSearch");
+        var sut = fixture.GetCollection<string, SqliteHotel<string>>("VectorizedSearch");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
         {
             IncludeVectors = includeVectors
-        });
-
-        var results = await searchResults.Results.ToListAsync();
+        }).ToListAsync();
 
         // Assert
         var ids = results.Select(l => l.Record.HotelId).ToList();
@@ -380,20 +383,17 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var hotel3 = CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = fixture.GetCollection<SqliteHotel<string>>("VectorizedSearchWithOffset");
+        var sut = fixture.GetCollection<string, SqliteHotel<string>>("VectorizedSearchWithOffset");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
         {
-            Top = 2,
             Skip = 2
-        });
-
-        var results = await searchResults.Results.ToListAsync();
+        }).ToListAsync();
 
         // Assert
         var ids = results.Select(l => l.Record.HotelId).ToList();
@@ -414,19 +414,17 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var hotel3 = CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = fixture.GetCollection<SqliteHotel<string>>("VectorizedSearchWithFilter");
+        var sut = fixture.GetCollection<string, SqliteHotel<string>>("VectorizedSearchWithFilter");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
         {
             OldFilter = new VectorSearchFilter().EqualTo(nameof(SqliteHotel<string>.HotelName), "My Hotel key2")
-        });
-
-        var results = await searchResults.Results.ToListAsync();
+        }).ToListAsync();
 
         // Assert
         var ids = results.Select(l => l.Record.HotelId).ToList();
@@ -439,81 +437,75 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperWithNumericKeyAsync()
+    public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperWithNumericKeyAsync()
     {
-        const ulong HotelId = 5;
+        const long HotelId = 5;
 
-        var options = new SqliteVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<ulong>>
+        var options = new SqliteVectorStoreRecordCollectionOptions<Dictionary<string, object?>>
         {
             VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<ulong>()
         };
 
-        var sut = fixture.GetCollection<VectorStoreGenericDataModel<ulong>>("GenericMapperWithNumericKey", options);
+        var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithNumericKey", options);
 
         await sut.CreateCollectionAsync();
 
         var record = CreateTestHotel(HotelId);
 
         // Act
-        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<ulong>(HotelId)
+        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
         {
-            Data =
-            {
-                { "HotelName", "Generic Mapper Hotel" },
-                { "Description", "This is a generic mapper hotel" },
-                { "ParkingIncluded", true },
-                { "HotelRating", 3.6f }
-            },
-            Vectors =
-            {
-                { "DescriptionEmbedding", new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]) }
-            }
+            ["HotelId"] = HotelId,
+
+            ["HotelName"] = "Dynamic Mapper Hotel",
+            ["Description"] = "This is a dynamic mapper hotel",
+            ["ParkingIncluded"] = true,
+            ["HotelRating"] = 3.6f,
+
+            ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])
         });
 
         var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
 
         // Assert
-        Assert.Equal(HotelId, upsertResult);
+        Assert.Equal(HotelId, (long)upsertResult);
 
         Assert.NotNull(localGetResult);
-        Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
-        Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
-        Assert.True((bool?)localGetResult.Data["ParkingIncluded"]);
-        Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
-        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+        Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
+        Assert.Equal("This is a dynamic mapper hotel", localGetResult["Description"]);
+        Assert.True((bool?)localGetResult["ParkingIncluded"]);
+        Assert.Equal(3.6f, localGetResult["HotelRating"]);
+        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult["DescriptionEmbedding"]!).ToArray());
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperWithStringKeyAsync()
+    public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperWithStringKeyAsync()
     {
         const string HotelId = "key";
 
-        var options = new SqliteVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<string>>
+        var options = new SqliteVectorStoreRecordCollectionOptions<Dictionary<string, object?>>
         {
             VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<string>()
         };
 
-        var sut = fixture.GetCollection<VectorStoreGenericDataModel<string>>("GenericMapperWithStringKey", options)
-            as IVectorStoreRecordCollection<string, VectorStoreGenericDataModel<string>>;
+        var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithStringKey", options)
+            as IVectorStoreRecordCollection<object, Dictionary<string, object?>>;
 
         await sut.CreateCollectionAsync();
 
         var record = CreateTestHotel(HotelId);
 
         // Act
-        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<string>(HotelId)
+        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
         {
-            Data =
-            {
-                { "HotelName", "Generic Mapper Hotel" },
-                { "Description", "This is a generic mapper hotel" },
-                { "ParkingIncluded", true },
-                { "HotelRating", 3.6f }
-            },
-            Vectors =
-            {
-                { "DescriptionEmbedding", new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]) }
-            }
+            ["HotelId"] = HotelId,
+
+            ["HotelName"] = "Dynamic Mapper Hotel",
+            ["Description"] = "This is a dynamic mapper hotel",
+            ["ParkingIncluded"] = true,
+            ["HotelRating"] = 3.6f,
+
+            ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])
         });
 
         var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
@@ -522,11 +514,11 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         Assert.Equal(HotelId, upsertResult);
 
         Assert.NotNull(localGetResult);
-        Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
-        Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
-        Assert.True((bool?)localGetResult.Data["ParkingIncluded"]);
-        Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
-        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+        Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
+        Assert.Equal("This is a dynamic mapper hotel", localGetResult["Description"]);
+        Assert.True((bool?)localGetResult["ParkingIncluded"]);
+        Assert.Equal(3.6f, localGetResult["HotelRating"]);
+        Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult["DescriptionEmbedding"]!).ToArray());
     }
 
     #region
@@ -541,7 +533,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
             new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
             new VectorStoreRecordDataProperty("Description", typeof(string)),
-            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
+            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
         ]
     };
 
@@ -576,13 +568,13 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         [VectorStoreRecordKey]
         public ulong Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Embedding1 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance)]
         public ReadOnlyMemory<float>? Embedding2 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.ManhattanDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.ManhattanDistance)]
         public ReadOnlyMemory<float>? Embedding3 { get; set; }
     }
 #pragma warning restore CA1812

@@ -1,0 +1,59 @@
+{
+    "$type": "Process",
+    "name": "FishSandwichWithStatefulStepsProcess",
+    "versionInfo": "FishSandwich.V1",
+    "stepsState": {
+        "FriedFishWithStatefulStepsProcess": {
+            "$type": "Process",
+            "id": "d4dc8776d4574b95a4cc39e2e7667018",
+            "name": "FriedFishWithStatefulStepsProcess",
+            "versionInfo": "FriedFishProcess.v1",
+            "stepsState": {
+                "GatherFriedFishIngredientsWithStockStep": {
+                    "$type": "Step",
+                    "id": "94d2df838d314d4e8fd694398f6a3ada",
+                    "name": "GatherFriedFishIngredientsWithStockStep",
+                    "versionInfo": "GatherFishIngredient.V2",
+                    "state": {
+                        "IngredientsStock": 1
+                    }
+                },
+                "chopStep": {
+                    "$type": "Step",
+                    "id": "467e52a1187f497d865b897d56b68db0",
+                    "name": "chopStep",
+                    "versionInfo": "CutFoodStep.V2",
+                    "state": {
+                        "KnifeSharpness": 5,
+                        "NeedsSharpeningLimit": 3,
+                        "SharpeningBoost": 5
+                    }
+                },
+                "FryFoodStep": {
+                    "$type": "Step",
+                    "id": "ba3a93b5885e4b75af0c9a46015e3e66",
+                    "name": "FryFoodStep",
+                    "versionInfo": "FryFoodStep.V1"
+                }
+            }
+        },
+        "AddBunStep": {
+            "$type": "Step",
+            "id": "36448a39e963432caded6ca3206849e6",
+            "name": "AddBunStep",
+            "versionInfo": "v1"
+        },
+        "AddSpecialSauceStep": {
+            "$type": "Step",
+            "id": "d1ac856e1e5f49e6a9f389c870bc9aa1",
+            "name": "AddSpecialSauceStep",
+            "versionInfo": "v1"
+        },
+        "ExternalFriedFishStep": {
+            "$type": "Step",
+            "id": "ea1a9b2f08d7407b84093ffb4f34daca",
+            "name": "ExternalFriedFishStep",
+            "versionInfo": "v1"
+        }
+    }
+}

@@ -1,13 +1,12 @@
 ﻿# Microsoft.SemanticKernel.Connectors.Kusto
 
-This connector uses [Azure Data Explorer (Kusto)](https://learn.microsoft.com/en-us/azure/data-explorer/) to implement Semantic Memory.
+This connector uses [Azure Data Explorer (Kusto)](https://learn.microsoft.com/azure/data-explorer/) to implement Semantic Memory.
 
 ## Quick Start
 
-1. Create a cluster and database in Azure Data Explorer (Kusto) - see https://learn.microsoft.com/en-us/azure/data-explorer/create-cluster-and-database?tabs=free
+1. Create a cluster and database in Azure Data Explorer (Kusto) - see https://learn.microsoft.com/azure/data-explorer/create-cluster-and-database?tabs=free
 
 2. To use Kusto as a semantic memory store, use the following code:
-   > See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
 
 ```csharp
 using Kusto.Data;
@@ -37,9 +36,9 @@ The function is called `series_cosine_similarity_fl` and is located in the `Func
 
 Kusto is an append-only store. This means that when a fact is updated, the old fact is not deleted.
 This isn't a problem for the semantic memory connector, as it always utilizes the most recent fact.
-This is made possible by using the [arg_max](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/arg-max-aggfunction) aggregation function in conjunction with the [ingestion_time](https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/ingestiontimefunction) function.  
+This is made possible by using the [arg_max](https://learn.microsoft.com/azure/data-explorer/kusto/query/arg-max-aggfunction) aggregation function in conjunction with the [ingestion_time](https://learn.microsoft.com/azure/data-explorer/kusto/query/ingestiontimefunction) function.  
 However, users manually querying the underlying table should be aware of this behavior.
 
 ### Authentication
 
-Please note that the authentication used in the example above is not recommended for production use. You can find more details here: https://learn.microsoft.com/en-us/azure/data-explorer/kusto/api/connection-strings/kusto
+Please note that the authentication used in the example above is not recommended for production use. You can find more details here: https://learn.microsoft.com/azure/data-explorer/kusto/api/connection-strings/kusto

@@ -1,0 +1,34 @@
+{
+    "$type": "Process",
+    "id": "e0dd9eb8160e480daaaef49a14bcf551",
+    "name": "FriedFishWithStatefulStepsProcess",
+    "versionInfo": "FriedFishProcess.v1",
+    "stepsState": {
+        "GatherFriedFishIngredientsWithStockStep": {
+            "$type": "Step",
+            "id": "480bfb877a9c48a599e956312747879b",
+            "name": "GatherFriedFishIngredientsWithStockStep",
+            "versionInfo": "GatherFishIngredient.V2",
+            "state": {
+                "IngredientsStock": 4
+            }
+        },
+        "chopStep": {
+            "$type": "Step",
+            "id": "63b794c970ca4bf4816545bff7395c1c",
+            "name": "chopStep",
+            "versionInfo": "CutFoodStep.V2",
+            "state": {
+                "KnifeSharpness": 4,
+                "NeedsSharpeningLimit": 3,
+                "SharpeningBoost": 5
+            }
+        },
+        "FryFoodStep": {
+            "$type": "Step",
+            "id": "66545dcca7394071a434ec1e66116517",
+            "name": "FryFoodStep",
+            "versionInfo": "FryFoodStep.V1"
+        }
+    }
+}

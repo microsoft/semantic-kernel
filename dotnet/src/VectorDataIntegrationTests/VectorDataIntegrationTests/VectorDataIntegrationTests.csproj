@@ -6,11 +6,14 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <RootNamespace>VectorDataSpecificationTests</RootNamespace>
+    <NoWarn>$(NoWarn);MEVD9000</NoWarn> <!-- Microsoft.Extensions.VectorData experimental user-facing APIs -->
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="xunit" />
     <PackageReference Include="System.Linq.Async" /> <!-- Remove when targeting .NET 10 -->
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
   <ItemGroup>
