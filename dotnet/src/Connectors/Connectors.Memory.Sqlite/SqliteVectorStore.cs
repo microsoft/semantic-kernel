@@ -95,6 +95,7 @@ public sealed class SqliteVectorStore : IVectorStore
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        const string OperationName = "ListCollectionNames";
         const string TablePropertyName = "name";
         const string Query = $"SELECT {TablePropertyName} FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';";
 
@@ -104,9 +105,16 @@ public sealed class SqliteVectorStore : IVectorStore
 
         command.CommandText = Query;
 
-        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await connection.ExecuteWithErrorHandlingAsync(
+            this._metadata,
+            OperationName,
+            () => command.ExecuteReaderAsync(cancellationToken),
+            cancellationToken).ConfigureAwait(false);
 
-        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        while (await reader.ReadWithErrorHandlingAsync(
+            this._metadata,
+            OperationName,
+            cancellationToken).ConfigureAwait(false))
         {
             var ordinal = reader.GetOrdinal(TablePropertyName);
             yield return reader.GetString(ordinal);

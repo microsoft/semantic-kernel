@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -86,16 +87,15 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         using SqlCommand command = SqlServerCommandBuilder.SelectTableName(
             connection, this._options.Schema, this.Name);
 
-        return await ExceptionWrapper.WrapAsync(connection, command,
-            static async (cmd, ct) =>
-            {
-                using SqlDataReader reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                return await reader.ReadAsync(ct).ConfigureAwait(false);
-            },
+        return await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
             "CollectionExists",
-            this._collectionMetadata.VectorStoreName,
-            this.Name,
-            cancellationToken).ConfigureAwait(false);
+            async () =>
+            {
+                using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                return await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+            },
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -116,12 +116,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             ifNotExists,
             this._model);
 
-        await ExceptionWrapper.WrapAsync(connection, command,
-            static (cmd, ct) => cmd.ExecuteNonQueryAsync(ct),
+        await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
             "CreateCollection",
-            this._collectionMetadata.VectorStoreName,
-            this.Name,
-            cancellationToken).ConfigureAwait(false);
+            () => command.ExecuteNonQueryAsync(cancellationToken),
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -131,12 +130,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         using SqlCommand command = SqlServerCommandBuilder.DropTableIfExists(
             connection, this._options.Schema, this.Name);
 
-        await ExceptionWrapper.WrapAsync(connection, command,
-            static (cmd, ct) => cmd.ExecuteNonQueryAsync(ct),
+        await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
             "DeleteCollection",
-            this._collectionMetadata.VectorStoreName,
-            this.Name,
-            cancellationToken).ConfigureAwait(false);
+            () => command.ExecuteNonQueryAsync(cancellationToken),
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -152,12 +150,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this._model.KeyProperty,
             key);
 
-        await ExceptionWrapper.WrapAsync(connection, command,
-            static (cmd, ct) => cmd.ExecuteNonQueryAsync(ct),
+        await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
             "Delete",
-            this._collectionMetadata.VectorStoreName,
-            this.Name,
-            cancellationToken).ConfigureAwait(false);
+            () => command.ExecuteNonQueryAsync(cancellationToken),
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -210,7 +207,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 #endif
             }
         }
-        catch (Exception ex)
+        catch (DbException ex)
         {
 #if NET
             await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
@@ -225,6 +222,16 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 CollectionName = this.Name,
                 OperationName = "DeleteBatch"
             };
+        }
+        catch (Exception)
+        {
+#if NET
+            await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+#else
+            transaction.Rollback();
+#endif
+
+            throw;
         }
     }
 
@@ -249,17 +256,16 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             key,
             includeVectors);
 
-        using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
-            static async (cmd, ct) =>
+        using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
+            operationName: "Get",
+            async () =>
             {
-                SqlDataReader reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                await reader.ReadAsync(ct).ConfigureAwait(false);
+                SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
                 return reader;
             },
-            "Get",
-            this._collectionMetadata.VectorStoreName,
-            this.Name,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return reader.HasRows
             ? this._mapper.MapFromStorageToDataModel(
@@ -308,18 +314,15 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 taken += command.Parameters.Count;
             }
 
-            using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
-                static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
-                "GetBatch",
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
-                cancellationToken).ConfigureAwait(false);
+            using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
+                this._collectionMetadata,
+                operationName: "GetBatch",
+                () => command.ExecuteReaderAsync(cancellationToken),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            while (await ExceptionWrapper.WrapReadAsync(
-                reader,
+            while (await reader.ReadWithErrorHandlingAsync(
+                this._collectionMetadata,
                 "GetBatch",
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
                 cancellationToken).ConfigureAwait(false))
             {
                 yield return this._mapper.MapFromStorageToDataModel(
@@ -368,17 +371,16 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this._model,
             this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings));
 
-        return await ExceptionWrapper.WrapAsync(connection, command,
-            async static (cmd, ct) =>
+        return await connection.ExecuteWithErrorHandlingAsync(
+           this._collectionMetadata,
+           "Upsert",
+            async () =>
             {
-                using SqlDataReader reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                await reader.ReadAsync(ct).ConfigureAwait(false);
+                using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
                 return reader.GetFieldValue<TKey>(0);
             },
-            "Upsert",
-            this._collectionMetadata.VectorStoreName,
-            this.Name,
-            cancellationToken).ConfigureAwait(false);
+           cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -477,7 +479,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 #endif
             }
         }
-        catch (Exception ex)
+        catch (DbException ex)
         {
 #if NET
             await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
@@ -492,6 +494,15 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 CollectionName = this.Name,
                 OperationName = "UpsertBatch"
             };
+        }
+        catch (Exception)
+        {
+#if NET
+            await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+#else
+            transaction.Rollback();
+#endif
+            throw;
         }
 
         var keyProperty = this._model.KeyProperty;
@@ -628,20 +639,17 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             StorageToDataModelMapperOptions options = new() { IncludeVectors = includeVectors };
             var vectorProperties = includeVectors ? this._model.VectorProperties : [];
 
-            using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
-                static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
-                "VectorizedSearch",
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
-                cancellationToken).ConfigureAwait(false);
+            using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
+                this._collectionMetadata,
+                operationName: "VectorizedSearch",
+                () => command.ExecuteReaderAsync(cancellationToken),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             int scoreIndex = -1;
-            while (await ExceptionWrapper.WrapReadAsync(
-                reader,
-                "VectorizedSearch",
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
-                cancellationToken).ConfigureAwait(false))
+            while (await reader.ReadWithErrorHandlingAsync(
+                this._collectionMetadata,
+                operationName: "VectorizedSearch",
+                cancellationToken: cancellationToken).ConfigureAwait(false))
             {
                 if (scoreIndex < 0)
                 {
@@ -679,13 +687,18 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this.Name,
             this._model);
 
-        using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
-            static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
-            "GetAsync", this._collectionMetadata.VectorStoreName, this.Name, cancellationToken).ConfigureAwait(false);
+        using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
+            operationName: "GetAsync",
+            () => command.ExecuteReaderAsync(cancellationToken),
+            cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var vectorProperties = options.IncludeVectors ? this._model.VectorProperties : [];
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
-        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        while (await reader.ReadWithErrorHandlingAsync(
+                this._collectionMetadata,
+                operationName: "GetAsync",
+                cancellationToken: cancellationToken).ConfigureAwait(false))
         {
             yield return this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorProperties), mapperOptions);
         }

@@ -258,12 +258,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         }
 
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
-        var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            MongoDBConstants.VectorStoreSystemName,
-            this._collectionMetadata.VectorStoreName,
-            this.Name,
-            OperationName,
-            () => this._mapper.MapFromDataToStorageModel(record, generatedEmbeddings));
+        var storageModel = this._mapper.MapFromDataToStorageModel(record, generatedEmbeddings);
 
         var key = storageModel[MongoDBConstants.MongoReservedKeyPropertyName].AsString;
 
@@ -406,7 +401,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
             () => this._mongoCollection.AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken),
             cancellationToken).ConfigureAwait(false);
 
-        var errorHandlingAsyncCursor = new ErrorHandlingAsyncCursor<BsonDocument>(cursor, this._collectionMetadata, OperationName);
+        using var errorHandlingAsyncCursor = new ErrorHandlingAsyncCursor<BsonDocument>(cursor, this._collectionMetadata, OperationName);
         var mappedResults = this.EnumerateAndMapSearchResultsAsync(errorHandlingAsyncCursor, options.Skip, options.IncludeVectors, cancellationToken);
 
         await foreach (var result in mappedResults.ConfigureAwait(false))

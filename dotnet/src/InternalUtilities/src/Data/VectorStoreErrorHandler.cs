@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,40 +19,6 @@ namespace Microsoft.Extensions.VectorData;
 [ExcludeFromCodeCoverage]
 internal static class VectorStoreErrorHandler
 {
-    /// <summary>
-    /// Run the given model conversion and wrap any exceptions with <see cref="VectorStoreRecordMappingException"/>.
-    /// </summary>
-    /// <typeparam name="T">The response type of the operation.</typeparam>
-    /// <param name="vectorStoreSystemName">The name of the vector store system the operation is being run on.</param>
-    /// <param name="vectorStoreName">The name of the vector store the operation is being run on.</param>
-    /// <param name="collectionName">The name of the collection the operation is being run on.</param>
-    /// <param name="operationName">The type of database operation being run.</param>
-    /// <param name="operation">The operation to run.</param>
-    /// <returns>The result of the operation.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T RunModelConversion<T>(
-        string vectorStoreSystemName,
-        string? vectorStoreName,
-        string collectionName,
-        string operationName,
-        Func<T> operation)
-    {
-        try
-        {
-            return operation.Invoke();
-        }
-        catch (Exception ex)
-        {
-            throw new VectorStoreRecordMappingException("Failed to convert vector store record.", ex)
-            {
-                VectorStoreSystemName = vectorStoreSystemName,
-                VectorStoreName = vectorStoreName,
-                CollectionName = collectionName,
-                OperationName = operationName
-            };
-        }
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Task<TResult> RunOperationAsync<TResult, TException>(
         VectorStoreMetadata metadata,
@@ -396,6 +364,105 @@ internal static class VectorStoreErrorHandler
                 }
             }
             public TResult Current => enumerator.Current;
+        }
+    }
+
+    internal static Task<bool> ReadWithErrorHandlingAsync(
+        this DbDataReader reader,
+        VectorStoreRecordCollectionMetadata metadata,
+        string operationName,
+        CancellationToken cancellationToken)
+        => VectorStoreErrorHandler.RunOperationAsync<bool, DbException>(
+            metadata,
+            operationName,
+            () => reader.ReadAsync(cancellationToken));
+
+    internal static Task<bool> ReadWithErrorHandlingAsync(
+        this DbDataReader reader,
+        VectorStoreMetadata metadata,
+        string operationName,
+        CancellationToken cancellationToken)
+        => VectorStoreErrorHandler.RunOperationAsync<bool, DbException>(
+            metadata,
+            operationName,
+            () => reader.ReadAsync(cancellationToken));
+
+    internal static async Task<TResult> ExecuteWithErrorHandlingAsync<TResult>(
+        this DbConnection connection,
+        VectorStoreMetadata metadata,
+        string operationName,
+        Func<Task<TResult>> operation,
+        CancellationToken cancellationToken)
+    {
+        return await ExecuteWithErrorHandlingAsync(
+            connection,
+            new VectorStoreRecordCollectionMetadata
+            {
+                VectorStoreSystemName = metadata.VectorStoreSystemName,
+                VectorStoreName = metadata.VectorStoreName,
+                CollectionName = null
+            },
+            operationName,
+            operation,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    internal static async Task<TResult> ExecuteWithErrorHandlingAsync<TResult>(
+        this DbConnection connection,
+        VectorStoreRecordCollectionMetadata metadata,
+        string operationName,
+        Func<Task<TResult>> operation,
+        CancellationToken cancellationToken)
+    {
+        if (connection.State != System.Data.ConnectionState.Open)
+        {
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        try
+        {
+            return await operation().ConfigureAwait(false);
+        }
+        catch (DbException ex)
+        {
+#if NET
+            await connection.DisposeAsync().ConfigureAwait(false);
+#else
+            connection.Dispose();
+#endif
+
+            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            {
+                VectorStoreSystemName = metadata.VectorStoreSystemName,
+                VectorStoreName = metadata.VectorStoreName,
+                CollectionName = metadata.CollectionName,
+                OperationName = operationName
+            };
+        }
+        catch (IOException ex)
+        {
+#if NET
+            await connection.DisposeAsync().ConfigureAwait(false);
+#else
+            connection.Dispose();
+#endif
+
+            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            {
+                VectorStoreSystemName = metadata.VectorStoreSystemName,
+                VectorStoreName = metadata.VectorStoreName,
+                CollectionName = metadata.CollectionName,
+                OperationName = operationName
+            };
+        }
+        catch (Exception)
+        {
+#if NET
+            await connection.DisposeAsync().ConfigureAwait(false);
+#else
+            connection.Dispose();
+#endif
+            throw;
         }
     }
 }

@@ -121,38 +121,28 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        const string OperationName = "GetCollectionSchema";
+        using var request = new WeaviateGetCollectionSchemaRequest(this.Name).Build();
 
-        return this.RunOperationAsync(OperationName, async () =>
-        {
-            var request = new WeaviateGetCollectionSchemaRequest(this.Name).Build();
+        var response = await this
+            .ExecuteRequestWithNotFoundHandlingAsync<WeaviateGetCollectionSchemaResponse>(request, cancellationToken)
+            .ConfigureAwait(false);
 
-            var response = await this
-                .ExecuteRequestWithNotFoundHandlingAsync<WeaviateGetCollectionSchemaResponse>(request, cancellationToken)
-                .ConfigureAwait(false);
-
-            return response != null;
-        });
+        return response != null;
     }
 
     /// <inheritdoc />
-    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        const string OperationName = "CreateCollectionSchema";
-
         var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(
             this.Name,
             this._options.HasNamedVectors,
             this._model);
 
-        return this.RunOperationAsync(OperationName, () =>
-        {
-            var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
+        using var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
 
-            return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
-        });
+        await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -165,42 +155,31 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        const string OperationName = "DeleteCollectionSchema";
+        using var request = new WeaviateDeleteCollectionSchemaRequest(this.Name).Build();
 
-        return this.RunOperationAsync(OperationName, () =>
-        {
-            var request = new WeaviateDeleteCollectionSchemaRequest(this.Name).Build();
-
-            return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
-        });
+        await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        const string OperationName = "DeleteObject";
-
-        return this.RunOperationAsync(OperationName, () =>
+        var guid = key switch
         {
-            var guid = key switch
-            {
-                Guid g => g,
-                object o => (Guid)o,
-                _ => throw new UnreachableException("Guid key should have been validated during model building")
-            };
+            Guid g => g,
+            object o => (Guid)o,
+            _ => throw new UnreachableException("Guid key should have been validated during model building")
+        };
 
-            var request = new WeaviateDeleteObjectRequest(this.Name, guid).Build();
+        using var request = new WeaviateDeleteObjectRequest(this.Name, guid).Build();
 
-            return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
-        });
+        await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
-        const string OperationName = "DeleteObjectBatch";
         const string ContainsAnyOperator = "ContainsAny";
 
         Verify.NotNull(keys);
@@ -209,33 +188,27 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (stringKeys.Count == 0)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        return this.RunOperationAsync(OperationName, () =>
+        var match = new WeaviateQueryMatch
         {
-            var match = new WeaviateQueryMatch
+            CollectionName = this.Name,
+            WhereClause = new WeaviateQueryMatchWhereClause
             {
-                CollectionName = this.Name,
-                WhereClause = new WeaviateQueryMatchWhereClause
-                {
-                    Operator = ContainsAnyOperator,
-                    Path = [WeaviateConstants.ReservedKeyPropertyName],
-                    Values = stringKeys!
-                }
-            };
+                Operator = ContainsAnyOperator,
+                Path = [WeaviateConstants.ReservedKeyPropertyName],
+                Values = stringKeys!
+            }
+        };
 
-            var request = new WeaviateDeleteObjectBatchRequest(match).Build();
-
-            return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
-        });
+        using var request = new WeaviateDeleteObjectBatchRequest(match).Build();
+        await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        const string OperationName = "GetCollectionObject";
-
         var guid = key as Guid? ?? throw new InvalidCastException("Only Guid keys are supported");
         var includeVectors = options?.IncludeVectors is true;
         if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
@@ -243,24 +216,16 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        return this.RunOperationAsync(OperationName, async () =>
+        using var request = new WeaviateGetCollectionObjectRequest(this.Name, guid, includeVectors).Build();
+
+        var jsonObject = await this.ExecuteRequestWithNotFoundHandlingAsync<JsonObject>(request, cancellationToken).ConfigureAwait(false);
+
+        if (jsonObject is null)
         {
-            using var request = new WeaviateGetCollectionObjectRequest(this.Name, guid, includeVectors).Build();
+            return default;
+        }
 
-            var jsonObject = await this.ExecuteRequestWithNotFoundHandlingAsync<JsonObject>(request, cancellationToken).ConfigureAwait(false);
-
-            if (jsonObject is null)
-            {
-                return default;
-            }
-
-            return VectorStoreErrorHandler.RunModelConversion(
-                WeaviateConstants.VectorStoreSystemName,
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
-                OperationName,
-                () => this._mapper.MapFromStorageToDataModel(jsonObject!, new() { IncludeVectors = includeVectors }));
-        });
+        return this._mapper.MapFromStorageToDataModel(jsonObject!, new() { IncludeVectors = includeVectors });
     }
 
     /// <inheritdoc />
@@ -295,8 +260,6 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
-        const string OperationName = "UpsertCollectionObject";
-
         Verify.NotNull(records);
 
         IReadOnlyList<TRecord>? recordsList = null;
@@ -347,24 +310,16 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             }
         }
 
-        var jsonObjects = records.Select((record, i) => VectorStoreErrorHandler.RunModelConversion(
-            WeaviateConstants.VectorStoreSystemName,
-            this._collectionMetadata.VectorStoreName,
-            this.Name,
-            OperationName,
-            () => this._mapper.MapFromDataToStorageModel(record, i, generatedEmbeddings))).ToList();
+        var jsonObjects = records.Select((record, i) => this._mapper.MapFromDataToStorageModel(record, i, generatedEmbeddings)).ToList();
 
         if (jsonObjects.Count == 0)
         {
             return [];
         }
 
-        var responses = await this.RunOperationAsync(OperationName, async () =>
-        {
-            var request = new WeaviateUpsertCollectionObjectBatchRequest(jsonObjects).Build();
+        using var request = new WeaviateUpsertCollectionObjectBatchRequest(jsonObjects).Build();
 
-            return await this.ExecuteRequestAsync<List<WeaviateUpsertCollectionObjectBatchResponse>>(request, cancellationToken).ConfigureAwait(false);
-        }).ConfigureAwait(false);
+        var responses = await this.ExecuteRequestAsync<List<WeaviateUpsertCollectionObjectBatchResponse>>(request, cancellationToken).ConfigureAwait(false);
 
         var keys = new List<TKey>(jsonObjects.Count);
 
@@ -574,19 +529,14 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             {
                 var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result, scorePropertyName, this._options.HasNamedVectors);
 
-                var record = VectorStoreErrorHandler.RunModelConversion(
-                    WeaviateConstants.VectorStoreSystemName,
-                    this._collectionMetadata.VectorStoreName,
-                    this.Name,
-                    operationName,
-                    () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
+                var record = this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors });
 
                 yield return new VectorSearchResult<TRecord>(record, score);
             }
         }
     }
 
-    private async Task<HttpResponseMessage> ExecuteRequestAsync(
+    private Task<HttpResponseMessage> ExecuteRequestAsync(
         HttpRequestMessage request,
         bool ensureSuccessStatusCode = true,
         CancellationToken cancellationToken = default)
@@ -598,25 +548,34 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._apiKey);
         }
 
-        var response = await this._httpClient
-            .SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken)
-            .ConfigureAwait(false);
+        return VectorStoreErrorHandler.RunOperationAsync<HttpResponseMessage, HttpRequestException>(
+            this._collectionMetadata,
+            $"{request.Method} {request.RequestUri}",
+            async () =>
+            {
+                var response = await this._httpClient
+                    .SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken)
+                    .ConfigureAwait(false);
 
-        if (ensureSuccessStatusCode)
-        {
-            response.EnsureSuccessStatusCode();
-        }
+                if (ensureSuccessStatusCode)
+                {
+                    response.EnsureSuccessStatusCode();
+                }
 
-        return response;
+                return response;
+            });
     }
 
     private async Task<(TResponse?, string)> ExecuteRequestWithResponseContentAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var response = await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        var response = await this.ExecuteRequestAsync(request, ensureSuccessStatusCode: true, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        var responseModel = JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
+
+        var responseModel = VectorStoreErrorHandler.RunOperation<TResponse?, JsonException>(
+            this._collectionMetadata,
+            $"{request.Method} {request.RequestUri}",
+            () => JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions));
 
         return (responseModel, responseContent);
     }
@@ -640,27 +599,13 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         response.EnsureSuccessStatusCode();
 
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        var responseModel = JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
+
+        var responseModel = VectorStoreErrorHandler.RunOperation<TResponse?, JsonException>(
+            this._collectionMetadata,
+            $"{request.Method} {request.RequestUri}",
+            () => JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions));
 
         return responseModel;
-    }
-
-    private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
-    {
-        try
-        {
-            return await operation.Invoke().ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
-                OperationName = operationName
-            };
-        }
     }
 
     private static void VerifyVectorParam<TVector>(TVector vector)

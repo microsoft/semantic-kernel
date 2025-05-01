@@ -250,12 +250,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
         }
 
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
-        var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
-            this._collectionMetadata.VectorStoreName,
-            this.Name,
-            OperationName,
-            () => this._mapper.MapFromDataToStorageModel(record, generatedEmbeddings));
+        var storageModel = this._mapper.MapFromDataToStorageModel(record, generatedEmbeddings);
 
         var key = storageModel[MongoDBConstants.MongoReservedKeyPropertyName].AsString;
 

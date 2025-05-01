@@ -105,12 +105,7 @@ internal static class QdrantVectorStoreCollectionSearchMapping
     {
         // Do the mapping with error handling.
         return new VectorSearchResult<TRecord>(
-            VectorStoreErrorHandler.RunModelConversion(
-                vectorStoreSystemName,
-                vectorStoreName,
-                collectionName,
-                operationName,
-                () => mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors })),
+            mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors }),
             point.Score);
     }
 
@@ -124,11 +119,6 @@ internal static class QdrantVectorStoreCollectionSearchMapping
         string operationName)
     {
         // Do the mapping with error handling.
-        return VectorStoreErrorHandler.RunModelConversion(
-                vectorStoreSystemName,
-                vectorStoreName,
-                collectionName,
-                operationName,
-                () => mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors }));
+        return mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
     }
 }
