@@ -77,7 +77,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
     }
 
     /// <inheritdoc/>
-    protected override async Task<object?> InvokeFunctionAsync(Microsoft.Extensions.AI.FunctionInvocationContext context, CancellationToken cancellationToken)
+    protected override async ValueTask<object?> InvokeFunctionAsync(Microsoft.Extensions.AI.FunctionInvocationContext context, CancellationToken cancellationToken)
     {
         if (context.Options is null)
         {
