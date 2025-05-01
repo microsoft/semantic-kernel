@@ -54,6 +54,7 @@ async def test_start_with_event(process_context):
     expected_payload = {
         "process_info": dapr_process_info.model_dump_json(),
         "parent_process_id": None,
+        "max_supersteps": context.max_supersteps,
     }
     mock_dapr_process.initialize_process.assert_awaited_once_with(expected_payload)
 
