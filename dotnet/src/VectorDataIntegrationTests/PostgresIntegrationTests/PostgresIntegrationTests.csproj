@@ -17,6 +17,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk"/>
     <PackageReference Include="Testcontainers.PostgreSql"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json"/>
   </ItemGroup>
 
   <ItemGroup>

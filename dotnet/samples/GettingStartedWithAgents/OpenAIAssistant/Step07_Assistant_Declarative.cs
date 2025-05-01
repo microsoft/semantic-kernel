@@ -92,6 +92,26 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
     }
 
     /// <summary>
+    /// Demonstrates loading an existing OpenAI Assistant.
+    /// </summary>
+    [Fact]
+    public async Task OpenAIAssistantAgentWithId()
+    {
+        var text =
+            """
+            id: ${AzureOpenAI:AgentId}
+            type: openai_assistant
+            name: StoryAgent
+            instructions: Tell a story suitable for children about the topic provided by the user. You always respond in French.
+            """;
+        OpenAIAssistantAgentFactory factory = new();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, configuration: TestConfiguration.ConfigurationRoot);
+
+        await InvokeAgentAsync(agent!, "Cats and Dogs", deleteAgent: false);
+    }
+
+    /// <summary>
     /// Demonstrates creating and using a OpenAI Assistant with templated instructions.
     /// </summary>
     [Fact]
@@ -170,7 +190,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
     /// <summary>
     /// Invoke the agent with the user input.
     /// </summary>
-    private async Task InvokeAgentAsync(Agent agent, string input)
+    private async Task InvokeAgentAsync(Agent agent, string input, bool deleteAgent = true)
     {
         AgentThread? agentThread = null;
         try
@@ -187,9 +207,11 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
         }
         finally
         {
-            var openaiAgent = agent as OpenAIAssistantAgent;
-            Assert.NotNull(openaiAgent);
-            await openaiAgent.Client.DeleteAssistantAsync(openaiAgent.Id);
+            if (deleteAgent)
+            {
+                var openaiAgent = agent as OpenAIAssistantAgent;
+                await openaiAgent!.Client.DeleteAssistantAsync(openaiAgent.Id);
+            }
 
             if (agentThread is not null)
             {

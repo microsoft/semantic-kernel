@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <!-- Suppress: "Declare types in namespaces", "Require ConfigureAwait", "Experimental" -->
-    <NoWarn>$(NoWarn);CS8618,IDE0009,CA1051,CA1050,CA1707,CA2007,VSTHRD111,CS1591,RCS1110,CA5394,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0101</NoWarn>
+    <NoWarn>$(NoWarn);CS8618,IDE0009,CA1051,CA1050,CA1707,CA2007,VSTHRD111,CS1591,RCS1110,CA5394,SKEXP0001,SKEXP0010,SKEXP0040,SKEXP0050,SKEXP0060,SKEXP0101</NoWarn>
     <OutputType>Library</OutputType>
     <UserSecretsId>5ee045b0-aea3-4f08-8d31-32d1a6f8fed0</UserSecretsId>
   </PropertyGroup>

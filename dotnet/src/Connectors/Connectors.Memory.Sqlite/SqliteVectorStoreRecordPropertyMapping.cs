@@ -3,8 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
@@ -35,9 +37,7 @@ internal static class SqliteVectorStoreRecordPropertyMapping
         return new ReadOnlyMemory<float>(array);
     }
 
-    public static List<SqliteColumn> GetColumns(
-        List<VectorStoreRecordProperty> properties,
-        IReadOnlyDictionary<string, string> storagePropertyNames)
+    public static List<SqliteColumn> GetColumns(IReadOnlyList<VectorStoreRecordPropertyModel> properties, bool data)
     {
         const string DistanceMetricConfigurationName = "distance_metric";
 
@@ -45,28 +45,46 @@ internal static class SqliteVectorStoreRecordPropertyMapping
 
         foreach (var property in properties)
         {
-            var isPrimary = property is VectorStoreRecordKeyProperty;
-            var propertyName = storagePropertyNames[property.DataModelPropertyName];
+            var isPrimary = false;
 
             string propertyType;
             Dictionary<string, object>? configuration = null;
 
-            if (property is VectorStoreRecordVectorProperty vectorProperty)
+            if (property is VectorStoreRecordVectorPropertyModel vectorProperty)
             {
+                if (data)
+                {
+                    continue;
+                }
+
                 propertyType = GetStorageVectorPropertyType(vectorProperty);
                 configuration = new()
                 {
-                    [DistanceMetricConfigurationName] = GetDistanceMetric(vectorProperty.DistanceFunction, vectorProperty.DataModelPropertyName)
+                    [DistanceMetricConfigurationName] = GetDistanceMetric(vectorProperty)
                 };
+            }
+            else if (property is VectorStoreRecordDataPropertyModel dataProperty)
+            {
+                if (!data)
+                {
+                    continue;
+                }
+
+                propertyType = GetStorageDataPropertyType(property);
             }
             else
             {
+                // The Key column in included in both Vector and Data tables.
+                Debug.Assert(property is VectorStoreRecordKeyPropertyModel, "property is VectorStoreRecordKeyPropertyModel");
+
                 propertyType = GetStorageDataPropertyType(property);
+                isPrimary = true;
             }
 
-            var column = new SqliteColumn(propertyName, propertyType, isPrimary)
+            var column = new SqliteColumn(property.StorageName, propertyType, isPrimary)
             {
-                Configuration = configuration
+                Configuration = configuration,
+                HasIndex = property is VectorStoreRecordDataPropertyModel { IsIndexed: true }
             };
 
             columns.Add(column);
@@ -116,9 +134,8 @@ internal static class SqliteVectorStoreRecordPropertyMapping
 
     #region private
 
-    private static string GetStorageDataPropertyType(VectorStoreRecordProperty property)
-    {
-        return property.PropertyType switch
+    private static string GetStorageDataPropertyType(VectorStoreRecordPropertyModel property)
+        => property.Type switch
         {
             // Integer types
             Type t when t == typeof(int) || t == typeof(int?) => "INTEGER",
@@ -142,34 +159,20 @@ internal static class SqliteVectorStoreRecordPropertyMapping
             Type t when t == typeof(byte[]) => "BLOB",
 
             // Default fallback for unknown types
-            _ => throw new NotSupportedException($"Property {property.DataModelPropertyName} has type {property.PropertyType.FullName}, which is not supported by SQLite connector.")
+            _ => throw new NotSupportedException($"Property '{property.ModelName}' has type '{property.Type.Name}', which is not supported by SQLite connector.")
         };
-    }
 
-    private static string GetDistanceMetric(string? distanceFunction, string vectorPropertyName)
-    {
-        const string Cosine = "cosine";
-        const string L1 = "l1";
-        const string L2 = "l2";
-
-        if (string.IsNullOrWhiteSpace(distanceFunction))
+    private static string GetDistanceMetric(VectorStoreRecordVectorPropertyModel vectorProperty)
+        => vectorProperty.DistanceFunction switch
         {
-            return Cosine;
-        }
-
-        return distanceFunction switch
-        {
-            DistanceFunction.CosineDistance => Cosine,
-            DistanceFunction.ManhattanDistance => L1,
-            DistanceFunction.EuclideanDistance => L2,
-            _ => throw new NotSupportedException($"Distance function '{distanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the SQLite connector.")
+            DistanceFunction.CosineDistance or null => "cosine",
+            DistanceFunction.ManhattanDistance => "l1",
+            DistanceFunction.EuclideanDistance => "l2",
+            _ => throw new NotSupportedException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' is not supported by the SQLite connector.")
         };
-    }
 
-    private static string GetStorageVectorPropertyType(VectorStoreRecordVectorProperty vectorProperty)
-    {
-        return $"FLOAT[{vectorProperty.Dimensions}]";
-    }
+    private static string GetStorageVectorPropertyType(VectorStoreRecordVectorPropertyModel vectorProperty)
+        => $"FLOAT[{vectorProperty.Dimensions}]";
 
     #endregion
 }

@@ -21,6 +21,7 @@ namespace SemanticKernel.Connectors.UnitTests.Memory.AzureAISearch;
 /// <summary>
 /// Unit tests for <see cref="AzureAISearchMemoryStore"/> class.
 /// </summary>
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public sealed class AzureAISearchMemoryStoreTests
 {
     private readonly Mock<SearchIndexClient> _mockSearchIndexClient = new();

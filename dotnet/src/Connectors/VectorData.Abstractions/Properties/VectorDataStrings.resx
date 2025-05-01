@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="IncompatibleEmbeddingGenerator" xml:space="preserve">
+        <value>Embedding generator '{0}' is incompatible with the required input and output types. The property input type must be '{1}', and the output type must be '{2}'.</value>
+    </data>
+    <data name="IncompatibleEmbeddingGeneratorWasConfiguredForInputType" xml:space="preserve">
+        <value>An input of type '{0}' was provided, but an incompatible embedding generator of type '{1}' was configured.</value>
+    </data>
+    <data name="NoEmbeddingGeneratorWasConfiguredForSearch" xml:space="preserve">
+        <value>'SearchAsync' requires an embedding generator to be configured. To pass an embedding directly, use 'SearchEmbeddingAsync', otherwise configure an embedding generator with your vector store connector.</value>
+    </data>
+    <data name="NonEmbeddingVectorPropertyWithoutEmbeddingGenerator" xml:space="preserve">
+        <value>Property '{0}' has non-Embedding type '{1}', but no embedding generator is configured.</value>
+    </data>
+    <data name="EmbeddingTypePassedToSearchAsync" xml:space="preserve">
+        <value>'SearchAsync' performs embedding generation, and does not accept Embedding types directly. To search for an Embedding directly, use 'SearchEmbeddingAsync'.</value>
+    </data>
+    <data name="EmbeddingPropertyTypeIncompatibleWithEmbeddingGenerator" xml:space="preserve">
+        <value>Property '{0}' has embedding type '{1}', but an embedding generator is configured on the property. Remove the embedding generator or change the property's .NET type to a non-embedding input type to the generator (e.g. string).</value>
+    </data>
+    <data name="IncludeVectorsNotSupportedWithEmbeddingGeneration" xml:space="preserve">
+        <value>When an embedding generator is configured, `Include Vectors` cannot be enabled.</value>
+    </data>
+    <data name="EmbeddingGeneratorWithInvalidEmbeddingType" xml:space="preserve">
+        <value>An embedding generator was configured on property '{0}', but output embedding type '{1}' isn't supported by the connector.</value>
+    </data>
+</root>

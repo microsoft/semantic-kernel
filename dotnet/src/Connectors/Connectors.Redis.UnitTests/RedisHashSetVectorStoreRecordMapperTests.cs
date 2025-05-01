@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 using Xunit;
@@ -13,15 +14,18 @@ namespace SemanticKernel.Connectors.Redis.UnitTests;
 /// </summary>
 public sealed class RedisHashSetVectorStoreRecordMapperTests
 {
+    private static readonly VectorStoreRecordModel s_model
+        = new VectorStoreRecordModelBuilder(RedisHashSetVectorStoreRecordCollection<string, AllTypesModel>.ModelBuildingOptions)
+            .Build(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, defaultEmbeddingGenerator: null);
+
     [Fact]
     public void MapsAllFieldsFromDataToStorageModel()
     {
         // Arrange.
-        var reader = new VectorStoreRecordPropertyReader(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, null);
-        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(reader);
+        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(s_model);
 
         // Act.
-        var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
+        var actual = sut.MapFromDataToStorageModel(CreateModel("test key"), recordIndex: 0, generatedEmbeddings: null);
 
         // Assert.
         Assert.NotNull(actual.HashEntries);
@@ -33,8 +37,7 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
     public void MapsAllFieldsFromStorageToDataModel()
     {
         // Arrange.
-        var reader = new VectorStoreRecordPropertyReader(typeof(AllTypesModel), RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition, null);
-        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(reader);
+        var sut = new RedisHashSetVectorStoreRecordMapper<AllTypesModel>(s_model);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(("test key", RedisHashSetVectorStoreMappingTestHelpers.CreateHashSet()), new() { IncludeVectors = true });
@@ -138,10 +141,10 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         [VectorStoreRecordData]
         public bool? NullableBoolData { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(10)]
         public ReadOnlyMemory<float>? FloatVector { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(10)]
         public ReadOnlyMemory<double>? DoubleVector { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;

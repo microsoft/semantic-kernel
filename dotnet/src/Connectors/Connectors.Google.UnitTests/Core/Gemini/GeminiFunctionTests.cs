@@ -68,7 +68,8 @@ public sealed class GeminiFunctionTests
         var result = sut.ToFunctionDeclaration();
 
         // Assert
-        Assert.Null(result.Parameters);
+        Assert.NotNull(result.Parameters);
+        Assert.Equal(JsonValueKind.Null, result.Parameters.Value.ValueKind);
     }
 
     [Fact]

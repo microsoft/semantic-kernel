@@ -109,6 +109,7 @@ public sealed class TestConfiguration
         public string ChatModelId { get; set; }
         public string BingConnectionId { get; set; }
         public string VectorStoreId { get; set; }
+        public string AgentId { get; set; }
     }
 
     public class AzureOpenAIConfig
@@ -124,6 +125,7 @@ public sealed class TestConfiguration
         public string Endpoint { get; set; }
         public string ApiKey { get; set; }
         public string ImageApiKey { get; set; }
+        public string AgentId { get; set; }
     }
 
     public class AzureOpenAIEmbeddingsConfig

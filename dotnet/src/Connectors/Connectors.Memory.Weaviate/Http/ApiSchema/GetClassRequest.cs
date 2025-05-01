@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and WeaviateVectorStore")]
 internal sealed class GetClassRequest
 {
     private GetClassRequest(string @class)
