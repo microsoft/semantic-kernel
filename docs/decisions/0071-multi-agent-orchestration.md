@@ -54,12 +54,12 @@ Depending on the actual runtime implementation, actors can be local or distribut
 
 The first version of the multi-agent orchestration framework will provide a set of pre-built orchestrations that cover the most common patterns listed below. As time goes on, we will add more orchestrations based on customer feedback and will allow customers to easily create their own orchestrations using the building blocks provided by the framework.
 
-| **Orchestrations** | **Description** |
-| ------------------ | ----------------------------------------------- |
-| **Concurrent**     | Useful for tasks that will benefit from independent analysis from multiple agents. |
-| **Sequential**     | Useful for tasks that require a well-defined step-by-step approach. |
-| **Handoff**        | Useful for tasks that are dynamic in nature and don't have a well-defined step-by-step approach. |
-| **GroupChat**      | Useful for tasks that will benefit from inputs from multiple agents and a highly configurable conversation flow. |
+| **Orchestrations** | **Description**                                                                                                                                                                                     |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Concurrent**     | Useful for tasks that will benefit from independent analysis from multiple agents.                                                                                                                  |
+| **Sequential**     | Useful for tasks that require a well-defined step-by-step approach.                                                                                                                                 |
+| **Handoff**        | Useful for tasks that are dynamic in nature and don't have a well-defined step-by-step approach.                                                                                                    |
+| **GroupChat**      | Useful for tasks that will benefit from inputs from multiple agents and a highly configurable conversation flow.                                                                                    |
 | **Magentic One**   | GroupChat like with a planner based manager. Inspired by [Magentic One](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/). |
 
 > Please see [Appendix A](#appendix-a-pre-built-orchestrations) for a more detailed descriptions of the pre-built orchestrations.
@@ -133,11 +133,11 @@ We need the orchestrations to accept structured inputs and return structured out
 
 ### Building blocks
 
-| **Component**            | **Details** |
-| ------------------------ | ------------------------------------------------------------------ |
-| **Agent actor**          | - Semantic Kernel agent <br> - Agent context: thread and history |
-| **Data transform logic** | - Provide hooks to transform the input/output of the orchestration from/to custom types. |
-| **Orchestration**        | - Consists of multiple agent actors and other optional orchestration-specific actors. |
+| **Component**            | **Details**                                                                                                          |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| **Agent actor**          | - Semantic Kernel agent <br> - Agent context: thread and history                                                     |
+| **Data transform logic** | - Provide hooks to transform the input/output of the orchestration from/to custom types.                             |
+| **Orchestration**        | - Consists of multiple agent actors and other optional orchestration-specific actors.                                |
 | **Optional actors**      | - Other actors that are not agent actors. <br> - For example, a group manager actor in the group chat orchestration. |
 
 ```mermaid
@@ -154,7 +154,7 @@ graph TD
       end
 
     end
-    
+
     IT[Internal Topic]
 
     OA[Optional Actor]
@@ -195,6 +195,8 @@ class AgentActorBase(RoutedAgent):
 ```
 
 Orchestrations will have their own agent actor that extends the `AgentActorBase` because each orchestration can have its own set of message handlers.
+
+> To learn more about messages and message handlers, please refer to the [AutoGen documentation](https://microsoft.github.io/autogen/stable/user-guide/core-user-guide/framework/message-and-communication.html).
 
 For example, for the group chat orchestration, the agent actor will look like this:
 
@@ -356,20 +358,24 @@ class OrchestrationResult(KernelBaseModel, Generic[TOut]):
     cancellation_token: CancellationToken = Field(default_factory=lambda: CancellationToken())
 
     async def get(self, timeout: float | None = None) -> TOut:
-        """Get the result of the orchestration.
+        """Get the result of the invocation.
 
         Args:
             timeout (float | None): The timeout in seconds. If None, wait indefinitely.
 
+        Raises:
+            TimeoutError: If the timeout is reached before the result is ready.
+            RuntimeError: If the invocation is cancelled.
+
         Returns:
-            TOut: The result of the orchestration.
+            TOut: The result of the invocation.
         """
         ...
 
     def cancel(self) -> None:
-        """Cancel the orchestration.
+        """Cancel the invocation.
 
-        This method will cancel the orchestration and set the cancellation token.
+        This method will cancel the invocation and set the cancellation token.
         Actors that have received messages will continue to process them, but no new messages will be processed.
         """
         ...
@@ -429,6 +435,8 @@ Although orchestrations are not tied to a specific runtime, we need to understan
 
 - Actor registrations happen locally on the same machine with the runtime via a factory. Does the factory need to be distributed?
 - How will the runtime handle distributed actor failures?
+- How will the runtime handle the cancellation of an invocation of an orchestration that is distributed?
+- How will the result of an invocation be returned via a callback function or some other mechanism if the orchestration is distributed?
 
 ### Support declarative orchestrations
 
