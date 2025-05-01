@@ -5,14 +5,16 @@ from random import Random
 
 from pydantic import Field
 
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.processes.kernel_process.kernel_process_event import (
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.processes.kernel_process import (
     KernelProcessEventVisibility,
+    KernelProcessStep,
+    KernelProcessStepContext,
+    kernel_process_step_metadata,
 )
-from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 
 
+@kernel_process_step_metadata("FryFoodStep.V1")
 class FryFoodStep(KernelProcessStep):
     class Functions(Enum):
         FryFood = "FryFood"
@@ -21,7 +23,7 @@ class FryFoodStep(KernelProcessStep):
         FoodRuined = "FoodRuined"
         FriedFoodReady = "FriedFoodReady"
 
-    random_seed: int = Field(default_factory=Random)
+    random_seed: Random = Field(default_factory=Random)
 
     @kernel_function(name=Functions.FryFood)
     async def fry_food(self, context: KernelProcessStepContext, food_actions: list[str]):

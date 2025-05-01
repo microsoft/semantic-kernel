@@ -2,11 +2,15 @@
 
 from enum import Enum
 
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.processes.kernel_process import (
+    KernelProcessStep,
+    KernelProcessStepContext,
+    kernel_process_step_metadata,
+)
 
 
+@kernel_process_step_metadata("CutFoodStep.V1")
 class CutFoodStep(KernelProcessStep):
     class Functions(Enum):
         ChopFood = "ChopFood"

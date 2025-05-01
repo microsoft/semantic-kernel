@@ -1,18 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 /// <summary>
-/// Options when creating a <see cref="SqliteVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="SqliteVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class SqliteVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the SQLite record.
     /// </summary>
+    [Obsolete("Custom mappers are no longer supported.", error: true)]
     public IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>? DictionaryCustomMapper { get; set; }
 
     /// <summary>
@@ -37,4 +40,9 @@ public sealed class SqliteVectorStoreRecordCollectionOptions<TRecord>
     /// If not provided, collection name with prefix will be used as virtual table name.
     /// </remarks>
     public string? VectorVirtualTableName { get; set; } = null;
+
+    /// <summary>
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

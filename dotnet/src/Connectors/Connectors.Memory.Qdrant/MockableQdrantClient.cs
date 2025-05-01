@@ -312,4 +312,23 @@ internal class MockableQdrantClient
             lookupFrom,
             timeout,
             cancellationToken);
+
+    public virtual Task<ScrollResponse> ScrollAsync(
+        string collectionName,
+        Filter filter,
+        WithVectorsSelector vectorsSelector,
+        uint limit = 10,
+        OrderBy? orderBy = null,
+        CancellationToken cancellationToken = default)
+        => this._qdrantClient.ScrollAsync(
+            collectionName,
+            filter,
+            limit,
+            offset: null,
+            payloadSelector: null,
+            vectorsSelector,
+            readConsistency: null,
+            shardKeySelector: null,
+            orderBy,
+            cancellationToken);
 }

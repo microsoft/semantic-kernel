@@ -3,42 +3,41 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Docker.DotNet;
-using Docker.DotNet.Models;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Driver;
+using Testcontainers.MongoDb;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
 public class MongoDBVectorStoreFixture : IAsyncLifetime
 {
+    private readonly MongoDbContainer _container = new MongoDbBuilder()
+        .WithImage("mongodb/mongodb-atlas-local:7.0.6")
+        .Build();
+
     private readonly List<string> _testCollections = ["sk-test-hotels", "sk-test-contacts", "sk-test-addresses"];
 
     /// <summary>Main test collection for tests.</summary>
     public string TestCollection => this._testCollections[0];
 
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in MongoDB.</summary>
-    public IMongoDatabase MongoDatabase { get; }
+    public IMongoDatabase MongoDatabase { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for MongoDB test model.</summary>
     public VectorStoreRecordDefinition HotelVectorStoreRecordDefinition { get; private set; }
 
-    /// <summary>The id of the MongoDB container that we are testing with.</summary>
-    private string? _containerId = null;
-
-    /// <summary>The Docker client we are using to create a MongoDB container with.</summary>
-    private readonly DockerClient _client;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MongoDBVectorStoreFixture"/> class.
-    /// </summary>
-    public MongoDBVectorStoreFixture()
+    public async Task InitializeAsync()
     {
-        using var dockerClientConfiguration = new DockerClientConfiguration();
-        this._client = dockerClientConfiguration.CreateClient();
+        await this._container.StartAsync();
 
-        var mongoClient = new MongoClient("mongodb://localhost:27017/?directConnection=true");
+        var mongoClient = new MongoClient(new MongoClientSettings
+        {
+            Server = new MongoServerAddress(this._container.Hostname, this._container.GetMappedPublicPort(MongoDbBuilder.MongoDbPort)),
+            DirectConnection = true,
+        });
 
         this.MongoDatabase = mongoClient.GetDatabase("test");
 
@@ -54,14 +53,9 @@ public class MongoDBVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineSimilarity }
             ]
         };
-    }
-
-    public async Task InitializeAsync()
-    {
-        this._containerId = await SetupMongoDBContainerAsync(this._client);
 
         foreach (var collection in this._testCollections)
         {
@@ -81,52 +75,6 @@ public class MongoDBVectorStoreFixture : IAsyncLifetime
             }
         }
 
-        if (this._containerId != null)
-        {
-            await this._client.Containers.StopContainerAsync(this._containerId, new ContainerStopParameters());
-            await this._client.Containers.RemoveContainerAsync(this._containerId, new ContainerRemoveParameters());
-        }
+        await this._container.StopAsync();
     }
-
-    #region private
-
-    private static async Task<string> SetupMongoDBContainerAsync(DockerClient client)
-    {
-        const string Image = "mongodb/mongodb-atlas-local";
-        const string Tag = "latest";
-
-        await client.Images.CreateImageAsync(
-            new ImagesCreateParameters
-            {
-                FromImage = Image,
-                Tag = Tag,
-            },
-            null,
-            new Progress<JSONMessage>());
-
-        var container = await client.Containers.CreateContainerAsync(new CreateContainerParameters()
-        {
-            Image = $"{Image}:{Tag}",
-            HostConfig = new HostConfig()
-            {
-                PortBindings = new Dictionary<string, IList<PortBinding>>
-                {
-                    { "27017", new List<PortBinding> { new() { HostPort = "27017" } } },
-                },
-                PublishAllPorts = true
-            },
-            ExposedPorts = new Dictionary<string, EmptyStruct>
-            {
-                { "27017", default },
-            },
-        });
-
-        await client.Containers.StartContainerAsync(
-            container.ID,
-            new ContainerStartParameters());
-
-        return container.ID;
-    }
-
-    #endregion
 }
