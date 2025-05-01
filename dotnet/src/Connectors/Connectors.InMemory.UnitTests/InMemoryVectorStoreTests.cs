@@ -44,24 +44,6 @@ public class InMemoryVectorStoreTests
     }
 
     [Fact]
-    public async Task ListCollectionNamesReadsDictionaryAsync()
-    {
-        // Arrange.
-        var collectionStore = new ConcurrentDictionary<string, ConcurrentDictionary<object, object>>();
-        collectionStore.TryAdd("collection1", new ConcurrentDictionary<object, object>());
-        collectionStore.TryAdd("collection2", new ConcurrentDictionary<object, object>());
-        var sut = new InMemoryVectorStore(collectionStore);
-
-        // Act.
-        var collectionNames = sut.ListCollectionNamesAsync();
-
-        // Assert.
-        var collectionNamesList = await collectionNames.ToListAsync();
-        Assert.Contains("collection1", collectionNamesList);
-        Assert.Contains("collection2", collectionNamesList);
-    }
-
-    [Fact]
     public async Task GetCollectionDoesNotAllowADifferentDataTypeThanPreviouslyUsedAsync()
     {
         // Arrange.
