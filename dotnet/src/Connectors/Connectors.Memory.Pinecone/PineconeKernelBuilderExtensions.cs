@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Sdk = Pinecone;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Pinecone <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("The IKernelBuilder extensions are being obsoleted, call the appropriate function on the Services property of your IKernelBuilder")]
 public static class PineconeKernelBuilderExtensions
 {
     /// <summary>
@@ -39,13 +41,13 @@ public static class PineconeKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Register a Pinecone <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the
+    /// Register a Pinecone <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the
     /// specified service ID and where <see cref="Sdk.PineconeClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="builder">The builder to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> will access.</param>
-    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddPineconeVectorStoreRecordCollection<TRecord>(
@@ -53,20 +55,21 @@ public static class PineconeKernelBuilderExtensions
         string collectionName,
         PineconeVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddPineconeVectorStoreRecordCollection<TRecord>(collectionName, options, serviceId);
         return builder;
     }
 
     /// <summary>
-    /// Register a Pinecone <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the
+    /// Register a Pinecone <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the
     /// provided <see cref="Sdk.PineconeClient"/> and the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="builder">The builder to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="apiKey">The api key for Pinecone.</param>
-    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.</param>
+    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddPineconeVectorStoreRecordCollection<TRecord>(
@@ -75,6 +78,7 @@ public static class PineconeKernelBuilderExtensions
         string apiKey,
         PineconeVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddPineconeVectorStoreRecordCollection<TRecord>(collectionName, apiKey, options, serviceId);
         return builder;

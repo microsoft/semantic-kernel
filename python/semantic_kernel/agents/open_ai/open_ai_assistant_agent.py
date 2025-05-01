@@ -489,6 +489,7 @@ class OpenAIAssistantAgent(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent on a thread.
@@ -513,6 +514,7 @@ class OpenAIAssistantAgent(Agent):
             temperature: The temperature.
             top_p: The top p.
             truncation_strategy: The truncation strategy.
+            polling_options: The polling options at the run-level.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -549,6 +551,7 @@ class OpenAIAssistantAgent(Agent):
             "tools": tools,
             "top_p": top_p,
             "truncation_strategy": truncation_strategy,
+            "polling_options": polling_options,
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 
@@ -594,6 +597,7 @@ class OpenAIAssistantAgent(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
@@ -619,6 +623,7 @@ class OpenAIAssistantAgent(Agent):
             temperature: The temperature.
             top_p: The top p.
             truncation_strategy: The truncation strategy.
+            polling_options: The polling options at the run-level.
             kwargs: Additional keyword arguments.
 
         Yields:
@@ -655,6 +660,7 @@ class OpenAIAssistantAgent(Agent):
             "tools": tools,
             "top_p": top_p,
             "truncation_strategy": truncation_strategy,
+            "polling_options": polling_options,
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 

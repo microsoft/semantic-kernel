@@ -121,11 +121,11 @@ public sealed class OpenAIFileService
         using (stream)
         {
             using var memoryStream = new MemoryStream();
-#if NETSTANDARD2_0
+#if NET8_0_OR_GREATER
+            await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+#else
             const int DefaultCopyBufferSize = 81920;
             await stream.CopyToAsync(memoryStream, DefaultCopyBufferSize, cancellationToken).ConfigureAwait(false);
-#else
-            await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 #endif
             return
                 new(memoryStream.ToArray(), mimetype)

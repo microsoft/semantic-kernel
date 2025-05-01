@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
@@ -14,7 +13,6 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// The REST API operation.
 /// </summary>
-[Experimental("SKEXP0040")]
 public sealed class RestApiOperation
 {
     /// <summary>

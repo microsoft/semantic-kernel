@@ -85,7 +85,11 @@ public class AzureAISearchTextSearchTests(AzureAISearchVectorStoreFixture fixtur
         var stringMapper = new HotelTextSearchStringMapper();
         var resultMapper = new HotelTextSearchResultMapper();
 
+        // TODO: Once OpenAITextEmbeddingGenerationService implements MEAI's IEmbeddingGenerator (#10811), configure it with the AzureAISearchVectorStore above instead of passing it here.
+#pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
         var result = new VectorStoreTextSearch<AzureAISearchHotel>(vectorSearch, this.EmbeddingGenerator!, stringMapper, resultMapper);
+#pragma warning restore CS0618
+
         return Task.FromResult<ITextSearch>(result);
     }
 
