@@ -42,6 +42,16 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     public string Version { get; init; } = "v1";
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
+    /// </summary>
+    /// <param name="id">The name of the process. This is required.</param>
+    /// <param name="stateType">The type of the state. This is optional.</param>
+    public ProcessBuilder(string id, Type? stateType = null)
+        : base(id)
+    {
+    }
+
+    /// <summary>
     /// Used to resolve the target function and parameter for a given optional function name and parameter name.
     /// This is used to simplify the process of creating a <see cref="KernelProcessFunctionTarget"/> by making it possible
     /// to infer the function and/or parameter names from the function metadata if only one option exists.
@@ -230,26 +240,6 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     }
 
     /// <summary>
-    /// Adds a step to the process from an agent.
-    /// </summary>
-    /// <param name="agent"></param>
-    /// <param name="onComplete"></param>
-    /// <param name="onError"></param>
-    /// <param name="aliases"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    //public ProcessStepBuilder AddStepFromAgent(Agent agent, Action<object?, KernelProcessStepContext> onComplete, Action<object?, KernelProcessStepContext> onError, IReadOnlyList<string>? aliases = null)
-    //{
-    //    Verify.NotNull(agent, nameof(agent));
-    //    if (string.IsNullOrWhiteSpace(agent.Id))
-    //    {
-    //        throw new ArgumentException("Agent.Id cannot be null or empty.", nameof(agent));
-    //    }
-    //    ProcessStepBuilder stepBuilder = new ProcessAgentBuilder(agent);
-    //    return this.AddStep(stepBuilder, aliases);
-    //}
-
-    /// <summary>
     /// Adds a step to the process that represents the end of the process.
     /// </summary>
     /// <returns></returns>
@@ -379,6 +369,13 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         return this;
     }
 
+    //public ProcessBuilder Add<T>(string variableName, T initialValue)
+    //{
+    //    Verify.NotNullOrWhiteSpace(variableName, nameof(variableName));
+    //    //this.Variables[variableName] = initialValue;
+    //    return this;
+    //}
+
     /// <summary>
     /// Provides an instance of <see cref="ProcessEdgeBuilder"/> for defining an input edge to a process.
     /// </summary>
@@ -449,15 +446,6 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads };
 
         return process;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
-    /// </summary>
-    /// <param name="id">The name of the process. This is required.</param>
-    public ProcessBuilder(string id)
-        : base(id)
-    {
     }
 
     /// <summary>

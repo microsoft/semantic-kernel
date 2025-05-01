@@ -22,7 +22,7 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// <param name="agentDefinition"></param>
     /// <param name="threadName"></param>
     /// <exception cref="KernelException"></exception>
-    public ProcessAgentBuilder(AgentDefinition agentDefinition, string? threadName = null) : base(id: agentDefinition.Id ?? agentDefinition.Name ?? throw new KernelException("All declarative agents must have an Id or a Name assigned."))
+    public ProcessAgentBuilder(AgentDefinition agentDefinition, string threadName) : base(id: agentDefinition.Id ?? agentDefinition.Name ?? throw new KernelException("All declarative agents must have an Id or a Name assigned."))
     {
         Verify.NotNull(agentDefinition);
         this._agentDefinition = agentDefinition;
@@ -37,7 +37,7 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// <param name="onError"></param>
     /// <param name="threadName"></param>
     /// <exception cref="KernelException"></exception>
-    public ProcessAgentBuilder(AgentDefinition agentDefinition, Action<object?, KernelProcessStepContext> onComplete, Action<object?, KernelProcessStepContext> onError, string? threadName = null) : base(agentDefinition.Id ?? throw new KernelException("AgentDefinition Id must be set"))
+    public ProcessAgentBuilder(AgentDefinition agentDefinition, Action<object?, KernelProcessStepContext> onComplete, Action<object?, KernelProcessStepContext> onError, string threadName) : base(agentDefinition.Id ?? throw new KernelException("AgentDefinition Id must be set"))
     {
         Verify.NotNull(agentDefinition);
         this._agentDefinition = agentDefinition;
@@ -131,7 +131,7 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
                 OnError = this.OnErrorBuilder?.Build()
             });
 
-        var state = new KernelProcessStepState<KernelProcessAgentExecutorState>(this.Name, "1.0", this.Id);
+        var state = new KernelProcessStepState(this.Name, "1.0", this.Id);
 
         return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.ThreadName)
         {

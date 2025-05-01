@@ -12,9 +12,8 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a step in a process that executes an agent.
 /// </summary>
-public partial class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProcessAgentExecutorState>
+public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProcessAgentExecutorState>
 {
-    private readonly AgentFactory? _agentFactory;
     private readonly KernelProcessAgentStep _agentStep;
     private readonly KernelProcessAgentThread _processThread;
 
@@ -23,15 +22,13 @@ public partial class KernelProcessAgentExecutorInternal : KernelProcessStep<Kern
     /// <summary>
     /// Constructor used by parent process passing specific agent factory
     /// </summary>
-    /// <param name="agentFactory"></param>
     /// <param name="agentStep"></param>
     /// <param name="processThread"></param>
-    public KernelProcessAgentExecutorInternal(AgentFactory? agentFactory, KernelProcessAgentStep agentStep, KernelProcessAgentThread processThread)
+    public KernelProcessAgentExecutorInternal(KernelProcessAgentStep agentStep, KernelProcessAgentThread processThread)
     {
-        //Verify.NotNull(agentStep);
-        //Verify.NotNull(agentStep.AgentDefinition); // TODO: Fix issue
+        Verify.NotNull(agentStep);
+        Verify.NotNull(agentStep.AgentDefinition); // TODO: Fix issue
 
-        this._agentFactory = agentFactory;
         this._agentStep = agentStep;
         this._processThread = processThread;
     }
@@ -55,11 +52,6 @@ public partial class KernelProcessAgentExecutorInternal : KernelProcessStep<Kern
     {
         try
         {
-            if (this._agentFactory == null)
-            {
-                throw new KernelException("Agent factory is not set.");
-            }
-
             ChatMessageContent? inputMessageContent = null;
             if (message is ChatMessageContent chatMessage)
             {
@@ -84,7 +76,8 @@ public partial class KernelProcessAgentExecutorInternal : KernelProcessStep<Kern
             //    this._agentStep.AgentDefinition.Id = this._state.AgentId;
             //}
 
-            Agent agent = await this._agentFactory.CreateAsync(kernel, this._agentStep.AgentDefinition).ConfigureAwait(false);
+            AgentFactory agentFactory = ProcesAgentFactory.CreateAgentFactoryAsync(this._agentStep.AgentDefinition);
+            Agent agent = await agentFactory.CreateAsync(kernel, this._agentStep.AgentDefinition).ConfigureAwait(false);
             this._state!.AgentId = agent.Id;
 
             var threadDefinition = this._processThread with { ThreadId = this._state.ThreadId };
@@ -104,4 +97,20 @@ public partial class KernelProcessAgentExecutorInternal : KernelProcessStep<Kern
             throw;
         }
     }
+}
+
+/// <summary>
+/// State used by <see cref="KernelProcessAgentExecutor"/> to persist agent and thread details
+/// </summary>
+public sealed class KernelProcessAgentExecutorState
+{
+    /// <summary>
+    /// Id of agent so it is reused if the same process is invoked again
+    /// </summary>
+    public string? AgentId { get; set; }
+
+    /// <summary>
+    /// Thread related information used for checking thread details by the specific agent
+    /// </summary>
+    public string? ThreadId { get; set; }
 }

@@ -3,26 +3,26 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Agents;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel.Process;
 internal class LocalAgentStep : LocalStep
 {
-    private readonly AgentFactory _agentFactory;
     private new readonly KernelProcessAgentStep _stepInfo;
     private readonly KernelProcessAgentThread _agentThread;
+    private readonly ILogger _logger;
 
-    public LocalAgentStep(KernelProcessAgentStep stepInfo, AgentFactory agentFactory, Kernel kernel, KernelProcessAgentThread agentThread, string? parentProcessId = null) : base(stepInfo, kernel, parentProcessId)
+    public LocalAgentStep(KernelProcessAgentStep stepInfo, Kernel kernel, KernelProcessAgentThread agentThread, string? parentProcessId = null) : base(stepInfo, kernel, parentProcessId)
     {
-        this._agentFactory = agentFactory;
         this._stepInfo = stepInfo;
         this._agentThread = agentThread;
+        this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalAgentStep>();
     }
 
     protected override ValueTask InitializeStepAsync()
     {
-        this._stepInstance = new KernelProcessAgentExecutorInternal(this._agentFactory, this._stepInfo, this._agentThread);
+        this._stepInstance = new KernelProcessAgentExecutorInternal(this._stepInfo, this._agentThread);
         var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
 
         // Load the kernel functions

@@ -19,6 +19,7 @@ public record KernelProcessAgentThread
 
     /// <summary>
     /// The id of the thread. This may be null if the thread is not existing when the Process is created.
+    /// </summary>
     public string? ThreadId { get; init; }
 
     /// <summary>

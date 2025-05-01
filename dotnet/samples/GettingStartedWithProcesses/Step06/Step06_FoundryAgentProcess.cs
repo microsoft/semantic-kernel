@@ -56,7 +56,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         kernelBuilder.Services.AddSingleton(foundryClient);
         var kernel = kernelBuilder.Build();
 
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" }, agentFactory: new AzureAIAgentFactory());
+        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" });
         var agent1Result = await context.GetStateAsync();
 
         Assert.NotNull(context);
@@ -94,7 +94,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         kernelBuilder.Services.AddSingleton(foundryClient);
         var kernel = kernelBuilder.Build();
 
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" }, agentFactory: new AzureAIAgentFactory());
+        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" });
         var agent1Result = await context.GetStateAsync();
 
         Assert.NotNull(context);

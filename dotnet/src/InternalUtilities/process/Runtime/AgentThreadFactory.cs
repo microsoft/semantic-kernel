@@ -14,39 +14,6 @@ namespace Microsoft.SemanticKernel.Process.Internal;
 /// </summary>
 public static class AgentThreadFactory
 {
-    ///// <summary>
-    ///// Processes the thread definition and creates an underlying thread if needed.
-    ///// </summary>
-    ///// <param name="threadDefinition"></param>
-    ///// <param name="kernel"></param>
-    ///// <returns>The Id of the created thread if one was created, else null.</returns>
-    ///// <exception cref="KernelException"></exception>
-    //public static async Task<AgentThread> CreateScopedThreadIfNeededAsync(this KernelProcessAgentThread threadDefinition, Kernel kernel)
-    //{
-    //    if (string.IsNullOrEmpty(threadDefinition.ThreadId))
-    //    {
-    //        if (threadDefinition.ThreadPolicy == KernelProcessThreadLifetime.Scoped)
-    //        {
-    //            // Create the thread.
-    //            switch (threadDefinition.ThreadType)
-    //            {
-    //                case KernelProcessThreadType.AzureAI:
-    //                    var underlyingThread = await CreateAzureAIThreadAsync(kernel).ConfigureAwait(false);
-    //                    return new AzureAIAgentThread()
-
-    //                default:
-    //                    throw new KernelException($"Thread type {threadDefinition.ThreadType} is not supported.");
-
-    //            }
-    //        }
-
-    //        // ThreadPolicy is not New, so we don't create a new thread.
-    //        return null;
-    //    }
-
-    //    return threadDefinition.ThreadId;
-    //}
-
     /// <summary>
     /// Processes the thread definition and creates an underlying thread if needed.
     /// </summary>
@@ -90,6 +57,5 @@ public static class AgentThreadFactory
         }
 
         return new AzureAIAgentThread(client, id);
-
     }
 }

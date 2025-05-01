@@ -240,7 +240,6 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         RootProcessId = this.RootProcessId,
                         EventProxy = this.EventProxy,
                         ExternalMessageChannel = this.ExternalMessageChannel,
-                        AgentFactory = this.AgentFactory,
                     };
             }
             else if (step is KernelProcessMap mapStep)
@@ -258,7 +257,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     {
                         ParentProcessId = this.RootProcessId,
                         EventProxy = this.EventProxy,
-                        ExternalMessageChannel = this.ExternalMessageChannel,
+                        ExternalMessageChannel = this.ExternalMessageChannel
                     };
             }
             else if (step is KernelProcessAgentStep agentStep)
@@ -268,8 +267,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     throw new KernelException($"The thread name {agentStep.ThreadName} does not have a matching thread variable defined.").Log(this._logger);
                 }
 
-                // TODO: Figure out how the AgentFactory should be passed in to the process. Seems not quite right at this point.
-                localStep = new LocalAgentStep(agentStep, this.AgentFactory, this._kernel, thread, this.ParentProcessId);
+                localStep = new LocalAgentStep(agentStep, this._kernel, thread, this.ParentProcessId);
             }
             else
             {
@@ -280,8 +278,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     new LocalStep(step, this._kernel)
                     {
                         ParentProcessId = this.Id,
-                        EventProxy = this.EventProxy,
-                        AgentFactory = this.AgentFactory,
+                        EventProxy = this.EventProxy
                     };
             }
 

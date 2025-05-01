@@ -63,7 +63,6 @@ public class Step04_AgentOrchestration : BaseTest
 
         // Setup kernel with OpenAI Client
         Kernel kernel = SetupKernel();
-        OpenAIAssistantAgentFactory agentFactory = new();
 
         // Execute process
         await using LocalKernelProcessContext localProcess =
@@ -72,7 +71,7 @@ public class Step04_AgentOrchestration : BaseTest
                 new KernelProcessEvent()
                 {
                     Id = AgentOrchestrationEvents.StartProcess
-                }, agentFactory: agentFactory);
+                });
 
         // Cleaning up created agents
         var processState = await localProcess.GetStateAsync();
