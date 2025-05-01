@@ -462,7 +462,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.NotNull(baseSetGetResult["DescriptionEmbedding"]);
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)baseSetGetResult["DescriptionEmbedding"]!).ToArray());
 
-        Assert.Equal("HDynamicMapper-1", upsertResult); 
+        Assert.Equal("HDynamicMapper-1", upsertResult);
 
         Assert.NotNull(localGetResult);
         Assert.Equal("HDynamicMapper-1", localGetResult["HotelId"]);
