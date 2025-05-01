@@ -33,7 +33,7 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
     private bool _disposedValue;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorDataTextMemoryStore{TKey}"/> class.
+    /// Initializes a new instance of the <see cref="TextRagStore{TKey}"/> class.
     /// </summary>
     /// <param name="vectorStore">The vector store to store and read the memories from.</param>
     /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings for the memories.</param>
@@ -48,26 +48,29 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
         int vectorDimensions,
         TextRagStoreOptions? options = default)
     {
+        // Verify
         Verify.NotNull(vectorStore);
         Verify.NotNull(textEmbeddingGenerationService);
         Verify.NotNullOrWhiteSpace(collectionName);
         Verify.True(vectorDimensions > 0, "Vector dimensions must be greater than 0");
-
-        this._vectorStore = vectorStore;
-        this._textEmbeddingGenerationService = textEmbeddingGenerationService;
-        this._vectorDimensions = vectorDimensions;
-        this._options = options ?? new TextRagStoreOptions();
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(Guid))
         {
             throw new NotSupportedException($"Unsupported key of type '{typeof(TKey).Name}'");
         }
 
-        if (typeof(TKey) != typeof(string) && this._options.UseSourceIdAsPrimaryKey is true)
+        if (typeof(TKey) != typeof(string) && options?.UseSourceIdAsPrimaryKey is true)
         {
             throw new NotSupportedException($"The {nameof(TextRagStoreOptions.UseSourceIdAsPrimaryKey)} option can only be used when the key type is 'string'.");
         }
 
+        // Assign
+        this._vectorStore = vectorStore;
+        this._textEmbeddingGenerationService = textEmbeddingGenerationService;
+        this._vectorDimensions = vectorDimensions;
+        this._options = options ?? new TextRagStoreOptions();
+
+        // Create a definition so that we can use the dimensions provided at runtime.
         VectorStoreRecordDefinition ragDocumentDefinition = new()
         {
             Properties = new List<VectorStoreRecordProperty>()
@@ -106,11 +109,13 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
                 throw new ArgumentNullException(nameof(documents), "One of the provided documents is null.");
             }
 
+            // Without text we cannot generate a vector.
             if (string.IsNullOrWhiteSpace(document.Text))
             {
                 throw new ArgumentException($"The {nameof(TextRagDocument.Text)} property must be set.", nameof(document));
             }
 
+            // If we aren't persisting the text, we need a source id or link to refer back to the original document.
             if (options?.PersistSourceText is false && string.IsNullOrWhiteSpace(document.SourceId) && string.IsNullOrWhiteSpace(document.SourceLink))
             {
                 throw new ArgumentException($"Either the {nameof(TextRagDocument.SourceId)} or {nameof(TextRagDocument.SourceLink)} properties must be set when the {nameof(TextRagStoreUpsertOptions.PersistSourceText)} setting is false.", nameof(document));
@@ -138,16 +143,9 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
-        var textSearch = new VectorStoreTextSearch<TextRagStorageDocument<TKey>>(
-            vectorStoreRecordCollection,
-            this._textEmbeddingGenerationService,
-            r => r is TextRagStorageDocument<TKey> doc ? doc.Text ?? string.Empty : string.Empty,
-            r => r is TextRagStorageDocument<TKey> doc ? new TextSearchResult(doc.Text ?? string.Empty) { Name = doc.SourceName, Link = doc.SourceLink } : new TextSearchResult(string.Empty));
-
         var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        return new(searchResult.Results.SelectAsync(x => x.Record.Text ?? string.Empty, cancellationToken));
+        return new(searchResult.Select(x => x.Text ?? string.Empty).ToAsyncEnumerable());
     }
 
     /// <inheritdoc/>
@@ -155,36 +153,37 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
     {
         var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        var results = searchResult.Results.SelectAsync(x => new TextSearchResult(x.Record.Text ?? string.Empty) { Name = x.Record.SourceName, Link = x.Record.SourceLink }, cancellationToken);
-        return new(searchResult.Results.SelectAsync(x =>
-            new TextSearchResult(x.Record.Text ?? string.Empty)
+        var results = searchResult.Select(x => new TextSearchResult(x.Text ?? string.Empty) { Name = x.SourceName, Link = x.SourceLink });
+        return new(searchResult.Select(x =>
+            new TextSearchResult(x.Text ?? string.Empty)
             {
-                Name = x.Record.SourceName,
-                Link = x.Record.SourceLink
-            }, cancellationToken));
+                Name = x.SourceName,
+                Link = x.SourceLink
+            }).ToAsyncEnumerable());
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
-        return new(searchResult.Results.SelectAsync(x => (object)x, cancellationToken));
+        return new(searchResult.Select(x => (object)x).ToAsyncEnumerable());
     }
 
     /// <summary>
-    /// Internal search implementation.
+    /// Internal search implementation with hydration of id / link only storage.
     /// </summary>
     /// <param name="query">The text query to find similar documents to.</param>
     /// <param name="searchOptions">Search options.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The search results.</returns>
-    private async Task<VectorSearchResults<TextRagStorageDocument<TKey>>> SearchInternalAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    private async Task<IEnumerable<TextRagStorageDocument<TKey>>> SearchInternalAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         // Optional filter to limit the search to a specific namespace.
         Expression<Func<TextRagStorageDocument<TKey>, bool>>? filter = string.IsNullOrWhiteSpace(this._options.SearchNamespace) ? null : x => x.Namespaces.Contains(this._options.SearchNamespace);
 
+        // Generate the vector for the query and search.
         var vector = await this._textEmbeddingGenerationService.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
         var searchResult = await vectorStoreRecordCollection.VectorizedSearchAsync(
             vector,
@@ -195,7 +194,50 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
             },
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        return searchResult;
+        // Retrieve the documents from the search results.
+        var retrievedDocs = await searchResult
+            .Results
+            .SelectAsync(x => x.Record, cancellationToken)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        // Find any source ids and links for which the text needs to be retrieved.
+        var sourceIdsToRetrieve = retrievedDocs
+            .Where(x => string.IsNullOrWhiteSpace(x.Text))
+            .Select(x => (x.SourceId, x.SourceLink))
+            .ToList();
+
+        if (sourceIdsToRetrieve.Count > 0)
+        {
+            if (this._options.SourceRetrievalCallback is null)
+            {
+                throw new InvalidOperationException($"The {nameof(TextRagStoreOptions.SourceRetrievalCallback)} option must be set if retrieving documents without stored text.");
+            }
+
+            var retrievedText = await this._options.SourceRetrievalCallback(sourceIdsToRetrieve).ConfigureAwait(false);
+
+            if (retrievedText is null)
+            {
+                throw new InvalidOperationException($"The {nameof(TextRagStoreOptions.SourceRetrievalCallback)} must return a non-null value.");
+            }
+
+            // Update the retrieved documents with the retrieved text.
+            retrievedDocs = retrievedDocs.GroupJoin(
+                retrievedText,
+                retrievedDocs => (retrievedDocs.SourceId, retrievedDocs.SourceLink),
+                retrievedText => (retrievedText.sourceId, retrievedText.sourceLink),
+                (retrievedDoc, retrievedText) => (retrievedDoc, retrievedText))
+                .SelectMany(
+                    joinedSet => joinedSet.retrievedText.DefaultIfEmpty(),
+                    (combined, retrievedText) =>
+                    {
+                        combined.retrievedDoc.Text = retrievedText.text ?? combined.retrievedDoc.Text;
+                        return combined.retrievedDoc;
+                    })
+                .ToList();
+        }
+
+        return retrievedDocs;
     }
 
     /// <summary>
