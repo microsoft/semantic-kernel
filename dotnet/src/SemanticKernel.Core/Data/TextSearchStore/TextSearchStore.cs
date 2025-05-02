@@ -115,7 +115,7 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
             // Without text we cannot generate a vector.
             if (string.IsNullOrWhiteSpace(textChunk))
             {
-                throw new ArgumentException(nameof(textChunks), "One of the provided text chunks is null.");
+                throw new ArgumentException("One of the provided text chunks is null.", nameof(textChunks));
             }
 
             var key = GenerateUniqueKey<TKey>(null);
