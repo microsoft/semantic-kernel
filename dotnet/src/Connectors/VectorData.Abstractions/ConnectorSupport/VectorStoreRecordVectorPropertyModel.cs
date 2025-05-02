@@ -122,7 +122,7 @@ public class VectorStoreRecordVectorPropertyModel(string modelName, Type type) :
         {
             case IEmbeddingGenerator<string, TEmbedding> generator when this.EmbeddingType == typeof(TUnwrappedEmbedding):
             {
-                task = generator.GenerateEmbeddingAsync(
+                task = generator.GenerateAsync(
                     this.GetValueAsObject(record) is var value && value is string s
                         ? s
                         : throw new InvalidOperationException($"Property '{this.ModelName}' was configured with an embedding generator accepting a string, but {value?.GetType().Name ?? "null"} was provided."),
@@ -133,7 +133,7 @@ public class VectorStoreRecordVectorPropertyModel(string modelName, Type type) :
 
             case IEmbeddingGenerator<DataContent, TEmbedding> generator when this.EmbeddingType == typeof(TUnwrappedEmbedding):
             {
-                task = generator.GenerateEmbeddingAsync(
+                task = generator.GenerateAsync(
                     this.GetValueAsObject(record) is var value && value is DataContent c
                         ? c
                         : throw new InvalidOperationException($"Property '{this.ModelName}' was configured with an embedding generator accepting a {nameof(DataContent)}, but {value?.GetType().Name ?? "null"} was provided."),
