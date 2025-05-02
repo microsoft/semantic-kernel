@@ -20,7 +20,7 @@ class AgentType(Protocol):
 
 @experimental
 @dataclass(eq=True, frozen=True)
-class CoreAgentType(AgentType):
+class CoreAgentType:
     """Concrete immutable implementation of AgentType."""
 
     _type: str

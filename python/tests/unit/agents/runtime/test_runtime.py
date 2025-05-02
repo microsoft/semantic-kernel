@@ -370,7 +370,7 @@ class FailingAgent(RoutedAgent):
 
 
 @pytest.mark.asyncio
-async def test_event_handler_exception_propogates() -> None:
+async def test_event_handler_exception_propagates() -> None:
     runtime = InProcessRuntime(ignore_unhandled_exceptions=False)
     await FailingAgent.register(runtime, "name", FailingAgent)
 

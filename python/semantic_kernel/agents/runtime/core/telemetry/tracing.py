@@ -61,7 +61,7 @@ class TraceHelper(Generic[Operation, Destination, ExtraAttributes]):
         Args:
             operation (MessagingOperation): The messaging operation being performed.
             destination (MessagingDestination): The messaging destination being used.
-            parent (Optional[TelemetryMetadataContainer]): The parent telemetry metadta context
+            parent (Optional[TelemetryMetadataContainer]): The parent telemetry metadata context
             kind (SpanKind, optional): The kind of span. If not provided, it maps to PRODUCER or CONSUMER depending
                 on the operation.
             extraAttributes (ExtraAttributes, optional): Additional defined attributes for the span. Defaults to None.
