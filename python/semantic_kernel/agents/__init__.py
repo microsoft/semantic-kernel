@@ -4,7 +4,7 @@ import importlib
 
 _AGENTS = {
     "Agent": ".agent",
-    "AgentRegistry": ".agent_registry",
+    "AgentRegistry": ".agent",
     "AgentResponseItem": ".agent",
     "AgentThread": ".agent",
     "AutoGenConversableAgent": ".autogen.autogen_conversable_agent",

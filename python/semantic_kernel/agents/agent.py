@@ -61,8 +61,8 @@ class ModelSpec(KernelBaseModel):
 class ToolSpec(KernelBaseModel):
     """Class representing a tool specification."""
 
-    id: str
-    type: str
+    id: str | None = None
+    type: str | None = None
     description: str | None = None
     options: dict[str, Any] | None = Field(default_factory=dict)
     extras: dict[str, Any] = Field(default_factory=dict)
@@ -517,7 +517,9 @@ class Agent(KernelBaseModel, ABC):
         pass
 
     @classmethod
-    def resolve_placeholders(cls, yaml_str: str, settings: "KernelBaseSettings") -> str:
+    def resolve_placeholders(
+        cls, yaml_str: str, settings: "KernelBaseSettings | None" = None, extras: dict[str, Any] | None = None
+    ) -> str:
         """Resolve placeholders inside the YAML string using agent-specific settings.
 
         Override in subclasses if necessary.
@@ -720,8 +722,9 @@ class AgentRegistry:
     async def create_agent_from_yaml(
         yaml_str: str,
         *,
-        kernel,
-        settings: Any = None,
+        kernel: Kernel,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
         **kwargs,
     ) -> _TAgent:
         """Create a single agent instance from a YAML string.
@@ -759,7 +762,7 @@ class AgentRegistry:
 
         # Let the agent class resolve placeholders, if needed
         if settings:
-            yaml_str = agent_cls.resolve_placeholders(yaml_str, settings)
+            yaml_str = agent_cls.resolve_placeholders(yaml_str, settings, extras=extras)
             data = yaml.safe_load(yaml_str)
 
         return await AgentRegistry.create_agent_from_dict(
@@ -773,8 +776,9 @@ class AgentRegistry:
     async def create_agent_from_dict(
         data: dict,
         *,
-        kernel,
-        settings: Any = None,
+        kernel: Kernel,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
         **kwargs,
     ) -> _TAgent:
         """Create a single agent instance from a dictionary.
@@ -816,7 +820,9 @@ class AgentRegistry:
     async def create_agents_from_yaml(
         yaml_str: str,
         *,
-        kernel,
+        kernel: Kernel,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
         **kwargs,
     ) -> list[_TAgent]:
         """Create multiple agent instances from a YAML list.

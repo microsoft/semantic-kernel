@@ -22,6 +22,9 @@ async def main() -> None:
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Create an agent with a code interpreter on the Azure AI agent service
+
+        file_id = await client.upload_file
+
         code_interpreter = CodeInterpreterTool()
         agent_definition = await client.agents.create_agent(
             model=AzureAIAgentSettings().model_deployment_name,

@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from .agent import Agent, AgentResponseItem, AgentThread
-from .agent_registry import AgentRegistry
+from .agent import Agent, AgentRegistry, AgentResponseItem, AgentThread
 from .autogen.autogen_conversable_agent import AutoGenConversableAgent, AutoGenConversableAgentThread
 from .azure_ai.azure_ai_agent import AzureAIAgent, AzureAIAgentThread
 from .azure_ai.azure_ai_agent_settings import AzureAIAgentSettings

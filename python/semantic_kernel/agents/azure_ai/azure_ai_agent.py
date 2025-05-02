@@ -95,6 +95,49 @@ def _register_tool(tool_type: str):
 
 
 # ── concrete builders -------------------------------------------------------
+# ── helper -----------------------------------------------------------
+def _normalize_parameters(params: Any) -> dict[str, Any]:
+    """Accept either.
+
+    • list[dict] “short-form” blocks   → build JSON-schema on the fly
+    • dict        “long-form” schema  → passthrough
+    """
+    from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
+
+    # --- long-form (what you already support) ---
+    if isinstance(params, dict) and params.get("type") == "object":
+        return params
+
+    # --- short-form (mirrors .NET list<object>) ---
+    if isinstance(params, list):
+        properties: dict[str, Any] = {}
+        required: list[str] = []
+
+        for p in params:
+            if not isinstance(p, dict):
+                raise TypeError("Each parameter entry must be a mapping")
+
+            name = p.get("name")
+            type_name = p.get("type")
+            description = p.get("description", "")
+            is_required = str(p.get("required", "false")).lower() == "true"
+
+            if not name or not type_name:
+                raise ValueError("Parameter entries require both 'name' and 'type'")
+
+            schema = KernelJsonSchemaBuilder.build_from_type_name(type_name, description)
+            properties[name] = schema
+            if is_required:
+                required.append(name)
+
+        return {
+            "type": "object",
+            "properties": properties,
+            "required": required,
+        }
+
+    # --- default: empty schema ---------------------------------------
+    return {"type": "object", "properties": {}}
 
 
 @_register_tool("code_interpreter")
@@ -105,7 +148,9 @@ def _code_interpreter(spec: ToolSpec) -> ToolDefinition:
 
 @_register_tool("function")
 def _function(spec: ToolSpec) -> ToolDefinition:
-    params_schema = (spec.options or {}).get("parameters", {"type": "object", "properties": {}})
+    raw_params = (spec.options or {}).get("parameters", {"type": "object", "properties": {}})
+    params_schema = _normalize_parameters(raw_params)
+
     fn_def = FunctionDefinition(
         name=spec.id,
         description=spec.description or "",
@@ -140,9 +185,6 @@ def _build_tool(spec: ToolSpec) -> ToolDefinition:
         return _TOOL_BUILDERS[spec.type.lower()](spec)
     except KeyError as exc:
         raise ValueError(f"Unsupported tool type: {spec.type}") from exc
-
-
-# ── resource builder --------------------------------------------------------
 
 
 def _build_tool_resources(tool_specs: list[ToolSpec]) -> ToolResources | None:
@@ -395,7 +437,9 @@ class AzureAIAgent(Agent):
         return value
 
     @classmethod
-    def resolve_placeholders(cls, yaml_str: str, settings: Any) -> str:
+    def resolve_placeholders(
+        cls, yaml_str: str, settings: AzureAIAgentSettings, extras: dict[str, Any] | None = None
+    ) -> str:
         """Substitute ${AzureAI:Key} placeholders with fields from `AzureAIAgentSettings`."""
         import re
 
@@ -412,6 +456,9 @@ class AzureAIAgent(Agent):
             "ResourceGroup": cls._get_setting(getattr(settings, "resource_group_name", None)),
             "ProjectName": cls._get_setting(getattr(settings, "project_name", None)),
         }
+
+        if extras:
+            field_mapping.update(extras)
 
         def replacer(match: re.Match[str]) -> str:
             full_key = match.group(1)  # for example, "AzureAI:ChatModelId"
