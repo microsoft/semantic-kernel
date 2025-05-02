@@ -3,15 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.SemanticKernel.Data;
 
-namespace Microsoft.SemanticKernel.Memory;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Contains options for the <see cref="TextRagComponent"/>.
+/// Contains options for the <see cref="TextSearchBehavior"/>.
 /// </summary>
 [Experimental("SKEXP0130")]
-public sealed class TextRagComponentOptions
+public sealed class TextSearchBehaviorOptions
 {
     private int _top = 3;
 
@@ -62,7 +61,7 @@ public sealed class TextRagComponentOptions
     /// to those chunks, in order to provide some context to the model.
     /// </summary>
     /// <value>
-    /// Defaults to &quot;Consider the following information when responding to the user:&quot;
+    /// Defaults to &quot;Consider the following information from source documents when responding to the user:&quot;
     /// </value>
     public string? ContextPrompt { get; init; }
 
@@ -71,7 +70,7 @@ public sealed class TextRagComponentOptions
     /// to those chunks, in order to instruct the model to include citations.
     /// </summary>
     /// <value>
-    /// Defaults to &quot;Include citations to the relevant information where it is referenced in the response.:&quot;
+    /// Defaults to &quot;Include citations to the source document including name and link.:&quot;
     /// </value>
     public string? IncludeCitationsPrompt { get; init; }
 
@@ -81,7 +80,7 @@ public sealed class TextRagComponentOptions
     /// <remarks>
     /// <para>
     /// If provided, this delegate will be used to do the following:
-    /// 1. Create the output context provided by the <see cref="TextRagComponent"/> when invoking the AI model.
+    /// 1. Create the output context provided by the <see cref="TextSearchBehavior"/> when invoking the AI model.
     /// 2. Create the response text when invoking the component via a plugin.
     /// </para>
     /// <para>
@@ -94,7 +93,7 @@ public sealed class TextRagComponentOptions
     public ContextFormatterType? ContextFormatter { get; init; }
 
     /// <summary>
-    /// Choices for controlling the behavior of the <see cref="TextRagComponent"/>.
+    /// Choices for controlling the behavior of the <see cref="TextSearchBehavior"/>.
     /// </summary>
     public enum RagBehavior
     {

@@ -10,32 +10,31 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
-using Microsoft.SemanticKernel.Data;
 
-namespace Microsoft.SemanticKernel.Memory;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// A component that does a search based on any messages that the AI model is invoked with and injects the results into the AI model invocation context.
 /// </summary>
 [Experimental("SKEXP0130")]
-public sealed class TextRagComponent : ConversationStatePart
+public sealed class TextSearchBehavior : ConversationStatePart
 {
     private const string DefaultPluginSearchFunctionName = "Search";
     private const string DefaultPluginSearchFunctionDescription = "Allows searching for additional information to help answer the user question.";
-    private const string DefaultContextPrompt = "Consider the following information when responding to the user:";
-    private const string DefaultIncludeCitationsPrompt = "Include citations to the relevant information where it is referenced in the response.";
+    private const string DefaultContextPrompt = "Consider the following information from source documents when responding to the user:";
+    private const string DefaultIncludeCitationsPrompt = "Include citations to the source document including name and link.";
 
     private readonly ITextSearch _textSearch;
 
     private readonly AIFunction[] _aIFunctions;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="TextRagComponent"/> class.
+    /// Initializes a new instance of the <see cref="TextSearchBehavior"/> class.
     /// </summary>
     /// <param name="textSearch">The text search component to retrieve results from.</param>
     /// <param name="options">Options that configure the behavior of the component.</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public TextRagComponent(ITextSearch textSearch, TextRagComponentOptions? options = default)
+    public TextSearchBehavior(ITextSearch textSearch, TextSearchBehaviorOptions? options = default)
     {
         Verify.NotNull(textSearch);
 
@@ -54,14 +53,14 @@ public sealed class TextRagComponent : ConversationStatePart
     /// <summary>
     /// Gets the options that have been configured for this component.
     /// </summary>
-    public TextRagComponentOptions Options { get; }
+    public TextSearchBehaviorOptions Options { get; }
 
     /// <inheritdoc/>
     public override IReadOnlyCollection<AIFunction> AIFunctions
     {
         get
         {
-            if (this.Options.SearchTime != TextRagComponentOptions.RagBehavior.ViaPlugin)
+            if (this.Options.SearchTime != TextSearchBehaviorOptions.RagBehavior.ViaPlugin)
             {
                 return Array.Empty<AIFunction>();
             }
@@ -73,7 +72,7 @@ public sealed class TextRagComponent : ConversationStatePart
     /// <inheritdoc/>
     public override async Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
-        if (this.Options.SearchTime != TextRagComponentOptions.RagBehavior.BeforeAIInvoke)
+        if (this.Options.SearchTime != TextSearchBehaviorOptions.RagBehavior.BeforeAIInvoke)
         {
             return string.Empty;
         }
@@ -130,10 +129,10 @@ public sealed class TextRagComponent : ConversationStatePart
         for (int i = 0; i < results.Count; i++)
         {
             var result = results[i];
-            sb.AppendLine($"Item {i + 1}:");
-            sb.AppendLine($"Name: {result.Name}");
-            sb.AppendLine($"Link: {result.Link}");
+            sb.AppendLine($"SourceDocName: {result.Name}");
+            sb.AppendLine($"SourceDocLink: {result.Link}");
             sb.AppendLine($"Contents: {result.Value}");
+            sb.AppendLine("----");
         }
         sb.AppendLine(this.Options.IncludeCitationsPrompt ?? DefaultIncludeCitationsPrompt);
         sb.AppendLine();
