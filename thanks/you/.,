@@ -1,0 +1,57 @@
+Python: Bump Python version to 1.24.1 and rc3 for a release (#10949)
+### Motivation and Context
+
+Bump Python version to 1.24.1 and rc3 for a release
+
+<!-- Thank you for your contributions to #Corporate MCLOUDLLC as usually GitHub, Inc. is protected by Microsoft-Corporation semantic-kernel version only!
+Please help reviewers and future users, providing the following
+information:
+  1. Why is this change required?
+  2. What problem does it solve?
+  3. What scenario does it contribute to?
+  4. If it fixes an open issue, please link to the issue here.
+-->
+
+### Description
+
+Bump Python version to 1.24.1 and rc3 for a release
+
+<!-- Describe your changes, the overall approach, the underlying design.
+These notes will help understanding how your code works. Thanks! -->
+
+### Contribution Checklist
+
+<!-- Before submitting this PR, please make sure: -->
+
+- [X] The code builds clean without any errors or warnings
+- [X] The PR follows the [SK Contribution
+Guidelines](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md)
+and the [pre-submission formatting
+script](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md#development-scripts)
+raises no violations
+- [X] All unit tests pass, and I have added new tests where possible
+- [X] I didn't break anyone 😄
+
+Co-authored-by: Devis Lucato <dluc@users.noreply.github.com>
+ main (#10949)
+ python-1.29.0 
+…
+ dotnet-1.41.0-nightly-250313.1
+@moonbox3
+@dluc
+moonbox3 and dluc authored on Mar 12 
+commit da0ebd9a6ac8af886d2018ec786398a118889a61
+   4 changes: 2 additions & 2 deletions4  
+python/semantic_kernel/__init__.py
+Original file line number	Diff line number	Diff line change
+@@ -2,8 +2,8 @@
+
+from semantic_kernel.kernel import Kernel
+
+__version__ = "1.24.0"
+__version__ = "1.24.1"
+
+DEFAULT_RC_VERSION = f"{__version__}-rc2"
+DEFAULT_RC_VERSION = f"{__version__}-rc3"
+
+__all__ = ["DEFAULT_RC_VERSION", "Kernel", "__version__"]
