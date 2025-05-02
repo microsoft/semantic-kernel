@@ -3,10 +3,11 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.UnitTests.Filters.AutoFunctionInvocation;
+namespace SemanticKernel.UnitTests.Filters.AutoFunctionInvocation;
 
 public class AutoFunctionInvocationContextTests
 {
@@ -277,7 +278,6 @@ public class AutoFunctionInvocationContextTests
 
         // Act & Assert
         Assert.Same(kernelArgs, contextWithArgs.Arguments);
-        Assert.Same(kernelArgs, contextWithArgs.AIArguments);
     }
 
     [Fact]
@@ -381,35 +381,6 @@ public class AutoFunctionInvocationContextTests
     }
 
     [Fact]
-    public void AIArgumentsPropertyReturnsArguments()
-    {
-        // Arrange
-        var kernel = new Kernel();
-        var function = KernelFunctionFactory.CreateFromMethod(() => "Test", "TestFunction");
-        var result = new FunctionResult(function);
-        var chatHistory = new ChatHistory();
-        var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
-
-        // Create KernelArguments
-        var kernelArgs = new KernelArguments { ["test"] = "value" };
-
-        // Create a context with the arguments
-        var context = new AutoFunctionInvocationContext(
-            kernel,
-            function,
-            result,
-            chatHistory,
-            chatMessageContent)
-        {
-            Arguments = kernelArgs
-        };
-
-        // Act & Assert
-        Assert.Same(kernelArgs, context.AIArguments);
-        Assert.IsAssignableFrom<AIFunctionArguments>(context.AIArguments);
-    }
-
-    [Fact]
     public void ArgumentsPropertyThrowsWhenBaseArgumentsIsNotKernelArguments()
     {
         // Arrange
@@ -419,7 +390,6 @@ public class AutoFunctionInvocationContextTests
         var chatHistory = new ChatHistory();
         var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
 
-        // Create a context
         var context = new AutoFunctionInvocationContext(
             kernel,
             function,
@@ -427,18 +397,9 @@ public class AutoFunctionInvocationContextTests
             chatHistory,
             chatMessageContent);
 
-        // Use reflection to set base.Arguments to a non-KernelArguments instance
-        var nonKernelArgs = new NonKernelArgumentsClass();
-        var baseType = typeof(AutoFunctionInvocationContext).BaseType;
-        var argumentsProperty = baseType?.GetProperty("Arguments");
-        argumentsProperty?.SetValue(context, nonKernelArgs);
+        ((Microsoft.Extensions.AI.FunctionInvocationContext)context).Arguments = new AIFunctionArguments();
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => context.Arguments);
-        Assert.Contains("The arguments are not of type KernelArguments", exception.Message);
-        Assert.Contains("use AIArguments instead", exception.Message);
+        Assert.Throws<InvalidOperationException>(() => context.Arguments);
     }
-
-    // Helper class for testing non-KernelArguments
-    private sealed class NonKernelArgumentsClass : AIFunctionArguments { }
 }

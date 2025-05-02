@@ -2,9 +2,10 @@
 
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.UnitTests.Functions;
+namespace SemanticKernel.UnitTests.Functions;
 
 public class KernelFunctionCloneTests
 {

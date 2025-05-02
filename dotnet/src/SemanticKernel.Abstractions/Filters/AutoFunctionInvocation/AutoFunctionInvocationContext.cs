@@ -92,12 +92,10 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     /// Gets the <see cref="KernelArguments"/> specialized version of <see cref="AIFunctionArguments"/> associated with the operation.
     /// </summary>
     /// <remarks>
-    /// If the arguments are not a <see cref="KernelArguments"/> class use the <see cref="AIArguments"/> property instead.
-    /// <para>
     /// Due to a clash with the <see cref="Microsoft.Extensions.AI.FunctionInvocationContext.Arguments"/> as a <see cref="AIFunctionArguments"/> type, this property hides
     /// it to not break existing code that relies on the <see cref="AutoFunctionInvocationContext.Arguments"/> as a <see cref="KernelArguments"/> type.
-    /// </para>
     /// </remarks>
+    /// <exception cref="InvalidOperationException">Attempting to access the property when the arguments is not a <see cref="KernelArguments"/> class.</exception>
     public new KernelArguments? Arguments
     {
         get
@@ -107,17 +105,9 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
                 return kernelArguments;
             }
 
-            throw new InvalidOperationException($"The arguments are not of type {nameof(KernelArguments)}, for those scenarios, use {nameof(this.AIArguments)} instead.");
+            throw new InvalidOperationException($"The arguments provided in the initialization must be of type {nameof(KernelArguments)}.");
         }
         init => base.Arguments = value ?? new();
-    }
-
-    /// <summary>
-    /// Get the <see cref="AIFunctionArguments"/> with which this filter is associated.
-    /// </summary>
-    public AIFunctionArguments AIArguments
-    {
-        get => base.Arguments;
     }
 
     /// <summary>
