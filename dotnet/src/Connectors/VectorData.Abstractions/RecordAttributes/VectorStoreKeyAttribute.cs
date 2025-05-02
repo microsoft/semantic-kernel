@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.VectorData;
 /// The characteristics defined here influence how the property is treated by the vector store.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public sealed class VectorStoreKeyPropertyAttribute : Attribute
+public sealed class VectorStoreKeyAttribute : Attribute
 {
     /// <summary>
     /// Gets or sets an optional name to use for the property in storage, if different from the property name.

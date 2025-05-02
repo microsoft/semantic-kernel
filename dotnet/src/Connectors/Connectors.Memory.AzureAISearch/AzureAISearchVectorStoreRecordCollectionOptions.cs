@@ -18,7 +18,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionOptions<TRecord>
     /// <remarks>
     /// If not provided, the schema will be inferred from the record model class using reflection.
     /// In this case, the record model properties must be annotated with the appropriate attributes to indicate their usage.
-    /// See <see cref="VectorStoreKeyPropertyAttribute"/>, <see cref="VectorStoreDataPropertyAttribute"/> and <see cref="VectorStoreVectorPropertyAttribute"/>.
+    /// See <see cref="VectorStoreKeyAttribute"/>, <see cref="VectorStoreDataAttribute"/> and <see cref="VectorStoreVectorAttribute"/>.
     /// </remarks>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
 

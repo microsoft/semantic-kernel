@@ -89,7 +89,7 @@ public class RedisServiceCollectionExtensionsTests
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string Id { get; set; } = string.Empty;
     }
 }

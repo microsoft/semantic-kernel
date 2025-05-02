@@ -245,37 +245,37 @@ public class VectorStoreRecordModelBuilderTests
 
     public class RecordWithStringVectorProperty
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public int Id { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Name { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 3)]
+        [VectorStoreVector(Dimensions: 3)]
         public string Embedding { get; set; }
     }
 
     public class RecordWithEmbeddingVectorProperty
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public int Id { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Name { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 3)]
+        [VectorStoreVector(Dimensions: 3)]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 
     public class RecordWithCustomerVectorProperty
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public int Id { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Name { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 3)]
+        [VectorStoreVector(Dimensions: 3)]
         public Customer Embedding { get; set; }
     }
 

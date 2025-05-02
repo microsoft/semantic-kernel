@@ -122,19 +122,19 @@ public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore
     /// <typeparam name="TKey">The type of the model key.</typeparam>
     private sealed class Glossary<TKey>
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public TKey Key { get; set; }
 
-        [VectorStoreDataProperty(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string Category { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Term { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Definition { get; set; }
 
-        [VectorStoreVectorProperty(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 }

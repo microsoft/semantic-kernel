@@ -177,16 +177,16 @@ public sealed class SqliteVectorStoreRecordMapperTests
 #pragma warning disable CA1812
     private sealed class TestRecord<TKey>
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public TKey? Key { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string? StringProperty { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public int? IntProperty { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
+        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? FloatVector { get; set; }
     }
 #pragma warning restore CA1812

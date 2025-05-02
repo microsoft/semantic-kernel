@@ -158,16 +158,16 @@ public class VectorStoreTextSearchTestBase
     public sealed class DataModel
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public Guid Key { get; init; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public required string Text { get; init; }
 
-        [VectorStoreDataProperty(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public required string Tag { get; init; }
 
-        [VectorStoreVectorProperty(1536)]
+        [VectorStoreVector(1536)]
         public string? Embedding { get; init; }
     }
 
@@ -182,16 +182,16 @@ public class VectorStoreTextSearchTestBase
     public sealed class DataModelWithRawEmbedding
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public Guid Key { get; init; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public required string Text { get; init; }
 
-        [VectorStoreDataProperty(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public required string Tag { get; init; }
 
-        [VectorStoreVectorProperty(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
 }

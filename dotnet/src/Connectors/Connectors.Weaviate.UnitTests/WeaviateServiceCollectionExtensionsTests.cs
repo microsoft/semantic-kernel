@@ -66,7 +66,7 @@ public sealed class WeaviateServiceCollectionExtensionsTests
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public Guid Id { get; set; }
     }
 }

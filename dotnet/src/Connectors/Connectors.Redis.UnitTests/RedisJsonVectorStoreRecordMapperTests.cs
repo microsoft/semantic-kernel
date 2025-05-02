@@ -125,19 +125,19 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
 
     private sealed class MultiPropsModel
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Data1 { get; set; } = string.Empty;
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Data2 { get; set; } = string.Empty;
 
-        [VectorStoreVectorProperty(10)]
+        [VectorStoreVector(10)]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
-        [VectorStoreVectorProperty(10)]
+        [VectorStoreVector(10)]
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;

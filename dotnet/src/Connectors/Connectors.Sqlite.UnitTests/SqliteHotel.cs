@@ -8,30 +8,30 @@ namespace SemanticKernel.Connectors.Sqlite.UnitTests;
 public class SqliteHotel<TKey>()
 {
     /// <summary>The key of the record.</summary>
-    [VectorStoreKeyProperty]
+    [VectorStoreKey]
     public TKey? HotelId { get; init; }
 
     /// <summary>A string metadata field.</summary>
-    [VectorStoreDataProperty(IsIndexed = true)]
+    [VectorStoreData(IsIndexed = true)]
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public int HotelCode { get; set; }
 
     /// <summary>A float metadata field.</summary>
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
-    [VectorStoreDataProperty(StoragePropertyName = "parking_is_included")]
+    [VectorStoreData(StoragePropertyName = "parking_is_included")]
     public bool ParkingIncluded { get; set; }
 
     /// <summary>A data field.</summary>
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public string? Description { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance)]
+    [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

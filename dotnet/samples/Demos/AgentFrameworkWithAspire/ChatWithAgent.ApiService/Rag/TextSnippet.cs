@@ -13,22 +13,22 @@ namespace ChatWithAgent.ApiService;
 /// <typeparam name="TKey">The type of the data model key.</typeparam>
 internal sealed class TextSnippet<TKey>
 {
-    [VectorStoreKeyProperty]
+    [VectorStoreKey]
     [JsonPropertyName("chunk_id")]
     public required TKey Key { get; set; }
 
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     [JsonPropertyName("chunk")]
     [TextSearchResultValue]
     public string? Text { get; set; }
 
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     [JsonPropertyName("title")]
     [TextSearchResultName]
     [TextSearchResultLink]
     public string? Reference { get; set; }
 
-    [VectorStoreVectorProperty(1536)]
+    [VectorStoreVector(1536)]
     [JsonPropertyName("text_vector")]
     public ReadOnlyMemory<float> TextEmbedding { get; set; }
 }

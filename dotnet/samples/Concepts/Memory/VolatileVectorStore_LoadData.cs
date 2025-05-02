@@ -131,19 +131,19 @@ public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
     /// </remarks>
     private sealed class DataModel
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public Guid Key { get; init; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string? Title { get; init; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Text { get; init; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string? Link { get; init; }
 
-        [VectorStoreVectorProperty(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
 }

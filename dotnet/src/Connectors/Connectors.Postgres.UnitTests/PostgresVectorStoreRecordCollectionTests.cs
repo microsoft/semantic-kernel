@@ -184,22 +184,22 @@ public class PostgresVectorStoreRecordCollectionTests
 #pragma warning disable CA1812
     private sealed class TestRecord<TKey>
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public TKey? Key { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string? Data { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
+        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Vector { get; set; }
     }
 
     private sealed class TestRecordWithoutVectorProperty<TKey>
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public TKey? Key { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string? Data { get; set; }
     }
 #pragma warning restore CA1812

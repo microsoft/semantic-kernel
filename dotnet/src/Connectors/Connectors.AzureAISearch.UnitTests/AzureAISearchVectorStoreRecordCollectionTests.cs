@@ -585,21 +585,21 @@ public class AzureAISearchVectorStoreRecordCollectionTests
 
     public sealed class MultiPropsModel
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
         [JsonPropertyName("storage_data1")]
-        [VectorStoreDataProperty(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string Data1 { get; set; } = string.Empty;
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Data2 { get; set; } = string.Empty;
 
         [JsonPropertyName("storage_vector1")]
-        [VectorStoreVectorProperty(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
-        [VectorStoreVectorProperty(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string? NotAnnotated { get; set; }

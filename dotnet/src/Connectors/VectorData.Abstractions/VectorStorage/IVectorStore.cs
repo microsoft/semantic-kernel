@@ -28,9 +28,9 @@ public interface IVectorStore
     /// To successfully request a collection, either <typeparamref name="TRecord"/> must be annotated with attributes that define the schema of
     /// the record type, or <paramref name="vectorStoreRecordDefinition"/> must be provided.
     /// </remarks>
-    /// <seealso cref="VectorStoreKeyPropertyAttribute"/>
-    /// <seealso cref="VectorStoreDataPropertyAttribute"/>
-    /// <seealso cref="VectorStoreVectorPropertyAttribute"/>
+    /// <seealso cref="VectorStoreKeyAttribute"/>
+    /// <seealso cref="VectorStoreDataAttribute"/>
+    /// <seealso cref="VectorStoreVectorAttribute"/>
     IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull;

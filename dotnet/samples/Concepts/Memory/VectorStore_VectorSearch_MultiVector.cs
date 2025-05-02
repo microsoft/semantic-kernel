@@ -126,19 +126,19 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
     /// </remarks>
     private sealed class Product
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public int Key { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Description { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public List<string> FeatureList { get; set; }
 
-        [VectorStoreVectorProperty(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DescriptionEmbedding { get; set; }
 
-        [VectorStoreVectorProperty(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> FeatureListEmbedding { get; set; }
     }
 }

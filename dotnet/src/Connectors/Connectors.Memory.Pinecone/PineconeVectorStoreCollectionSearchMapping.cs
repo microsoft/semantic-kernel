@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;

@@ -632,25 +632,25 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
     private sealed class TestIndexingModel
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string? Id { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 2, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]
+        [VectorStoreVector(Dimensions: 2, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]
         public ReadOnlyMemory<float>? DescriptionEmbedding2 { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 3, DistanceFunction = DistanceFunction.DotProductSimilarity, IndexKind = IndexKind.QuantizedFlat)]
+        [VectorStoreVector(Dimensions: 3, DistanceFunction = DistanceFunction.DotProductSimilarity, IndexKind = IndexKind.QuantizedFlat)]
         public ReadOnlyMemory<byte>? DescriptionEmbedding3 { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance, IndexKind = IndexKind.DiskAnn)]
+        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance, IndexKind = IndexKind.DiskAnn)]
         public ReadOnlyMemory<sbyte>? DescriptionEmbedding4 { get; set; }
 
-        [VectorStoreDataProperty(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string? IndexableData1 { get; set; }
 
-        [VectorStoreDataProperty(IsFullTextIndexed = true)]
+        [VectorStoreData(IsFullTextIndexed = true)]
         public string? IndexableData2 { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string? NonIndexableData1 { get; set; }
     }
 #pragma warning restore CA1812

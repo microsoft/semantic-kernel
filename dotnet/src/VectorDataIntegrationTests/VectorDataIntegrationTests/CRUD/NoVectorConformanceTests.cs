@@ -100,10 +100,10 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
     {
         public const int DimensionCount = 3;
 
-        [VectorStoreKeyProperty(StoragePropertyName = "key")]
+        [VectorStoreKey(StoragePropertyName = "key")]
         public TKey Id { get; set; } = default!;
 
-        [VectorStoreDataProperty(StoragePropertyName = "text")]
+        [VectorStoreData(StoragePropertyName = "text")]
         public string? Text { get; set; }
 
         public void AssertEqual(NoVectorRecord? other)

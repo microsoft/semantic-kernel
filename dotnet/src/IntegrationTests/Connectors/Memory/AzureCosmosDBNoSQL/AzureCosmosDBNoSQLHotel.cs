@@ -12,39 +12,39 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 public record AzureCosmosDBNoSQLHotel()
 {
     /// <summary>The key of the record.</summary>
-    [VectorStoreKeyProperty]
+    [VectorStoreKey]
     public string HotelId { get; init; }
 
     /// <summary>A string metadata field.</summary>
-    [VectorStoreDataProperty(IsIndexed = true)]
+    [VectorStoreData(IsIndexed = true)]
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>
-    [VectorStoreDataProperty(IsFullTextIndexed = true)]
+    [VectorStoreData(IsFullTextIndexed = true)]
     public int HotelCode { get; set; }
 
     /// <summary>A float metadata field.</summary>
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
     [JsonPropertyName("parking_is_included")]
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public bool ParkingIncluded { get; set; }
 
     /// <summary>An array metadata field.</summary>
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public List<string> Tags { get; set; } = [];
 
     /// <summary>A data field.</summary>
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public string Description { get; set; }
 
     /// <summary>A datetime field.</summary>
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public DateTimeOffset Timestamp { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]
+    [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

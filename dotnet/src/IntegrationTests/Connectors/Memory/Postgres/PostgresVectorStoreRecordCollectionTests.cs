@@ -544,25 +544,25 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 #pragma warning disable CA1812, CA1859
     private sealed class RecordWithEnumerables
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public int Id { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
+        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Embedding { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public List<int>? ListInts { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public ICollection<int>? CollectionInts { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public IEnumerable<int>? EnumerableInts { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public IReadOnlyCollection<int>? ReadOnlyCollectionInts { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public IReadOnlyList<int>? ReadOnlyListInts { get; set; }
     }
 #pragma warning restore CA1812, CA1859

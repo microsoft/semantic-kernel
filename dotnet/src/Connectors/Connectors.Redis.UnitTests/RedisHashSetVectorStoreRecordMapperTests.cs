@@ -93,58 +93,58 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
 
     private sealed class AllTypesModel
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreDataProperty(StoragePropertyName = "storage_string_data")]
+        [VectorStoreData(StoragePropertyName = "storage_string_data")]
         public string StringData { get; set; } = string.Empty;
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public int IntData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public uint UIntData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public long LongData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public ulong ULongData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public double DoubleData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public float FloatData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public bool BoolData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public int? NullableIntData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public uint? NullableUIntData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public long? NullableLongData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public ulong? NullableULongData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public double? NullableDoubleData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public float? NullableFloatData { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public bool? NullableBoolData { get; set; }
 
-        [VectorStoreVectorProperty(10)]
+        [VectorStoreVector(10)]
         public ReadOnlyMemory<float>? FloatVector { get; set; }
 
-        [VectorStoreVectorProperty(10)]
+        [VectorStoreVector(10)]
         public ReadOnlyMemory<double>? DoubleVector { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;

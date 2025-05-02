@@ -10,35 +10,35 @@ namespace SemanticKernel.Connectors.MongoDB.UnitTests;
 public class MongoDBHotelModel(string hotelId)
 {
     /// <summary>The key of the record.</summary>
-    [VectorStoreKeyProperty]
+    [VectorStoreKey]
     public string HotelId { get; init; } = hotelId;
 
     /// <summary>A string metadata field.</summary>
-    [VectorStoreDataProperty(IsIndexed = true)]
+    [VectorStoreData(IsIndexed = true)]
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public int HotelCode { get; set; }
 
     /// <summary>A float metadata field.</summary>
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
     [BsonElement("parking_is_included")]
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public bool ParkingIncluded { get; set; }
 
     /// <summary>An array metadata field.</summary>
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public List<string> Tags { get; set; } = [];
 
     /// <summary>A data field.</summary>
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public string? Description { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineSimilarity)]
+    [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineSimilarity)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

@@ -119,7 +119,7 @@ public class CollectionModelBuilder
             PropertyModel? property = null;
             string? storageName = null;
 
-            if (clrProperty.GetCustomAttribute<VectorStoreKeyPropertyAttribute>() is { } keyAttribute)
+            if (clrProperty.GetCustomAttribute<VectorStoreKeyAttribute>() is { } keyAttribute)
             {
                 var keyProperty = new KeyPropertyModel(clrProperty.Name, clrProperty.PropertyType);
                 this.KeyProperties.Add(keyProperty);
@@ -127,12 +127,12 @@ public class CollectionModelBuilder
                 property = keyProperty;
             }
 
-            if (clrProperty.GetCustomAttribute<VectorStoreDataPropertyAttribute>() is { } dataAttribute)
+            if (clrProperty.GetCustomAttribute<VectorStoreDataAttribute>() is { } dataAttribute)
             {
                 if (property is not null)
                 {
                     // TODO: Test
-                    throw new InvalidOperationException($"Property '{type.Name}.{clrProperty.Name}' has multiple of {nameof(VectorStoreKeyPropertyAttribute)}, {nameof(VectorStoreDataPropertyAttribute)} or {nameof(VectorStoreVectorPropertyAttribute)}. Only one of these attributes can be specified on a property.");
+                    throw new InvalidOperationException($"Property '{type.Name}.{clrProperty.Name}' has multiple of {nameof(VectorStoreKeyAttribute)}, {nameof(VectorStoreDataAttribute)} or {nameof(VectorStoreVectorAttribute)}. Only one of these attributes can be specified on a property.");
                 }
 
                 var dataProperty = new DataPropertyModel(clrProperty.Name, clrProperty.PropertyType)
@@ -146,11 +146,11 @@ public class CollectionModelBuilder
                 property = dataProperty;
             }
 
-            if (clrProperty.GetCustomAttribute<VectorStoreVectorPropertyAttribute>() is { } vectorAttribute)
+            if (clrProperty.GetCustomAttribute<VectorStoreVectorAttribute>() is { } vectorAttribute)
             {
                 if (property is not null)
                 {
-                    throw new InvalidOperationException($"Only one of {nameof(VectorStoreKeyPropertyAttribute)}, {nameof(VectorStoreDataPropertyAttribute)} and {nameof(VectorStoreVectorPropertyAttribute)} can be applied to a property.");
+                    throw new InvalidOperationException($"Only one of {nameof(VectorStoreKeyAttribute)}, {nameof(VectorStoreDataAttribute)} and {nameof(VectorStoreVectorAttribute)} can be applied to a property.");
                 }
 
                 // If a record definition exists for the property, we must instantiate it via that definition, as the user may be using

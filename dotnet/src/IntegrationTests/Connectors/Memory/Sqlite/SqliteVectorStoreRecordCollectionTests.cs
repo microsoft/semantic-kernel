@@ -565,16 +565,16 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 #pragma warning disable CA1812
     private sealed class RecordWithSupportedDistanceFunctions
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public ulong Id { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
+        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Embedding1 { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance)]
+        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance)]
         public ReadOnlyMemory<float>? Embedding2 { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.ManhattanDistance)]
+        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.ManhattanDistance)]
         public ReadOnlyMemory<float>? Embedding3 { get; set; }
     }
 #pragma warning restore CA1812

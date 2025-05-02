@@ -527,21 +527,21 @@ public class RedisJsonVectorStoreRecordCollectionTests
 
     public sealed class MultiPropsModel
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
         [JsonPropertyName("data1_json_name")]
-        [VectorStoreDataProperty(IsIndexed = true, StoragePropertyName = "ignored_data1_storage_name")]
+        [VectorStoreData(IsIndexed = true, StoragePropertyName = "ignored_data1_storage_name")]
         public string Data1 { get; set; } = string.Empty;
 
-        [VectorStoreDataProperty(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string Data2 { get; set; } = string.Empty;
 
         [JsonPropertyName("vector1_json_name")]
-        [VectorStoreVectorProperty(4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "ignored_vector1_storage_name")]
+        [VectorStoreVector(4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "ignored_vector1_storage_name")]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
-        [VectorStoreVectorProperty(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string? NotAnnotated { get; set; }

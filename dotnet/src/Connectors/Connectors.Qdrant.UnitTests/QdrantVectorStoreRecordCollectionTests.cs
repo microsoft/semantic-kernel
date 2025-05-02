@@ -721,18 +721,18 @@ public class QdrantVectorStoreRecordCollectionTests
 
     public sealed class SinglePropsModel<T>
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public required T Key { get; set; }
 
-        [VectorStoreDataProperty(IsIndexed = true, IsFullTextIndexed = true)]
+        [VectorStoreData(IsIndexed = true, IsFullTextIndexed = true)]
         public string OriginalNameData { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_data_json_name")]
-        [VectorStoreDataProperty(IsIndexed = true, StoragePropertyName = "data_storage_name")]
+        [VectorStoreData(IsIndexed = true, StoragePropertyName = "data_storage_name")]
         public string Data { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_vector_json_name")]
-        [VectorStoreVectorProperty(4, StoragePropertyName = "vector_storage_name")]
+        [VectorStoreVector(4, StoragePropertyName = "vector_storage_name")]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

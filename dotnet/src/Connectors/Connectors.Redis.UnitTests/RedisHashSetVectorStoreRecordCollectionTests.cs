@@ -535,18 +535,18 @@ public class RedisHashSetVectorStoreRecordCollectionTests
 
     public sealed class SinglePropsModel
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreDataProperty(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string OriginalNameData { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_data_json_name")]
-        [VectorStoreDataProperty(IsIndexed = true, StoragePropertyName = "data_storage_name")]
+        [VectorStoreData(IsIndexed = true, StoragePropertyName = "data_storage_name")]
         public string Data { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_vector_json_name")]
-        [VectorStoreVectorProperty(4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "vector_storage_name")]
+        [VectorStoreVector(4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "vector_storage_name")]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

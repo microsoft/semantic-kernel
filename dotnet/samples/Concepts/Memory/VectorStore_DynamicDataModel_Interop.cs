@@ -124,16 +124,16 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
     /// </remarks>
     private sealed class Glossary
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public ulong Key { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Term { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Definition { get; set; }
 
-        [VectorStoreVectorProperty(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 

@@ -14,30 +14,30 @@ namespace SemanticKernel.Connectors.Postgres.UnitTests;
 public record PostgresHotel<T>()
 {
     /// <summary>The key of the record.</summary>
-    [VectorStoreKeyProperty]
+    [VectorStoreKey]
     public T HotelId { get; init; }
 
     /// <summary>A string metadata field.</summary>
-    [VectorStoreDataProperty()]
+    [VectorStoreData()]
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>
-    [VectorStoreDataProperty()]
+    [VectorStoreData()]
     public int HotelCode { get; set; }
 
     /// <summary>A  float metadata field.</summary>
-    [VectorStoreDataProperty()]
+    [VectorStoreData()]
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
-    [VectorStoreDataProperty(StoragePropertyName = "parking_is_included")]
+    [VectorStoreData(StoragePropertyName = "parking_is_included")]
     public bool ParkingIncluded { get; set; }
 
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public List<string> Tags { get; set; } = [];
 
     /// <summary>A data field.</summary>
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public string Description { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -45,7 +45,7 @@ public record PostgresHotel<T>()
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>A vector field.</summary>
-    [VectorStoreVectorProperty(4, DistanceFunction = IndexKind.Hnsw, IndexKind = DistanceFunction.ManhattanDistance)]
+    [VectorStoreVector(4, DistanceFunction = IndexKind.Hnsw, IndexKind = DistanceFunction.ManhattanDistance)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

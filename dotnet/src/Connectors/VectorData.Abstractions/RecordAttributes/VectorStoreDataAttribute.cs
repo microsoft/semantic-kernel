@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.VectorData;
 /// The characteristics defined here influence how the property is treated by the vector store.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public sealed class VectorStoreDataPropertyAttribute : Attribute
+public sealed class VectorStoreDataAttribute : Attribute
 {
     /// <summary>
     /// Gets or sets a value indicating whether this data property is filterable.

@@ -110,13 +110,13 @@ public class PostgresVectorStoreTests
 
     public sealed class SinglePropsModel<TKey>
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public required TKey Key { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreVectorProperty(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

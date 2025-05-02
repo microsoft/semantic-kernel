@@ -730,10 +730,10 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
 
     private sealed class VectorStoreTestModel
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string? Id { get; set; }
 
-        [VectorStoreDataProperty(StoragePropertyName = "hotel_name")]
+        [VectorStoreData(StoragePropertyName = "hotel_name")]
         public string? HotelName { get; set; }
     }
 
@@ -749,39 +749,39 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
     private sealed class BsonVectorStoreTestModel
     {
         [BsonId]
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string? Id { get; set; }
 
         [BsonElement("hotel_name")]
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string? HotelName { get; set; }
     }
 
     private sealed class BsonVectorStoreWithNameTestModel
     {
         [BsonId]
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string? Id { get; set; }
 
         [BsonElement("bson_hotel_name")]
-        [VectorStoreDataProperty(StoragePropertyName = "storage_hotel_name")]
+        [VectorStoreData(StoragePropertyName = "storage_hotel_name")]
         public string? HotelName { get; set; }
     }
 
     private sealed class VectorSearchModel
     {
         [BsonId]
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string? Id { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string? HotelName { get; set; }
 
-        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat, StoragePropertyName = "test_embedding_1")]
+        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat, StoragePropertyName = "test_embedding_1")]
         public ReadOnlyMemory<float> TestEmbedding1 { get; set; }
 
         [BsonElement("test_embedding_2")]
-        [VectorStoreVectorProperty(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat)]
+        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat)]
         public ReadOnlyMemory<float> TestEmbedding2 { get; set; }
     }
 #pragma warning restore CA1812

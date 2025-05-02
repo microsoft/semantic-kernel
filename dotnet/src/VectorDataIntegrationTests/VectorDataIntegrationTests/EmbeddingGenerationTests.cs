@@ -144,9 +144,9 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
     public class RawRecord
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public TKey Key { get; set; } = default!;
-        [VectorStoreVectorProperty(Dimensions: 3)]
+        [VectorStoreVector(Dimensions: 3)]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 
@@ -348,16 +348,16 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
     public class RecordWithAttributes
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public TKey Key { get; set; } = default!;
 
-        [VectorStoreVectorProperty(Dimensions: 3)]
+        [VectorStoreVector(Dimensions: 3)]
         public string? Embedding { get; set; }
 
-        [VectorStoreDataProperty(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public int Counter { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string? Text { get; set; }
     }
 

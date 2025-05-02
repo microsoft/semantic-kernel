@@ -93,19 +93,19 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
     /// </remarks>
     private sealed class Glossary
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string Key { get; set; }
 
-        [VectorStoreDataProperty(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string Category { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Term { get; set; }
 
-        [VectorStoreDataProperty(IsFullTextIndexed = true)]
+        [VectorStoreData(IsFullTextIndexed = true)]
         public string Definition { get; set; }
 
-        [VectorStoreVectorProperty(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 

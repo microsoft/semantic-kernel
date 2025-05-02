@@ -8,47 +8,47 @@ namespace PineconeIntegrationTests.Support;
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 public record PineconeAllTypes()
 {
-    [VectorStoreKeyProperty]
+    [VectorStoreKey]
     public string Id { get; set; }
 
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public bool BoolProperty { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public bool? NullableBoolProperty { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public string StringProperty { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public string? NullableStringProperty { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public int IntProperty { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public int? NullableIntProperty { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public long LongProperty { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public long? NullableLongProperty { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public float FloatProperty { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public float? NullableFloatProperty { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public double DoubleProperty { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public double? NullableDoubleProperty { get; set; }
 
 #pragma warning disable CA1819 // Properties should not return arrays
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public string[] StringArray { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public string[]? NullableStringArray { get; set; }
 #pragma warning restore CA1819 // Properties should not return arrays
 
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public List<string> StringList { get; set; }
-    [VectorStoreDataProperty]
+    [VectorStoreData]
     public List<string>? NullableStringList { get; set; }
 
-    [VectorStoreVectorProperty(Dimensions: 8, DistanceFunction = DistanceFunction.DotProductSimilarity)]
+    [VectorStoreVector(Dimensions: 8, DistanceFunction = DistanceFunction.DotProductSimilarity)]
     public ReadOnlyMemory<float>? Embedding { get; set; }
 
     internal void AssertEqual(PineconeAllTypes other)

@@ -115,10 +115,10 @@ public class QdrantServiceCollectionExtensionsTests
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public ulong Id { get; set; }
 
-        [VectorStoreVectorProperty(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float> Vector { get; set; }
     }
 }

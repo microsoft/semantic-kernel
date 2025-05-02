@@ -139,22 +139,22 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
     /// </remarks>
     public sealed class DataModel
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         [TextSearchResultName]
         public Guid Key { get; init; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         [TextSearchResultValue]
         public string Text { get; init; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         [TextSearchResultLink]
         public string Link { get; init; }
 
-        [VectorStoreDataProperty(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public required string Tag { get; init; }
 
-        [VectorStoreVectorProperty(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
     #endregion

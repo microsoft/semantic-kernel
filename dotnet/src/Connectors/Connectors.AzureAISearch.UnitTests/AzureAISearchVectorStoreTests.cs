@@ -90,13 +90,13 @@ public class AzureAISearchVectorStoreTests
 
     public sealed class SinglePropsModel
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreVectorProperty(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

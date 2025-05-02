@@ -496,10 +496,10 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 
     private sealed class VectorStoreTestModel
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string? HotelId { get; set; }
 
-        [VectorStoreDataProperty(StoragePropertyName = "hotel_name")]
+        [VectorStoreData(StoragePropertyName = "hotel_name")]
         public string? HotelName { get; set; }
     }
 
@@ -515,22 +515,22 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     private sealed class BsonVectorStoreTestModel
     {
         [BsonId]
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string? HotelId { get; set; }
 
         [BsonElement("hotel_name")]
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string? HotelName { get; set; }
     }
 
     private sealed class BsonVectorStoreWithNameTestModel
     {
         [BsonId]
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string? Id { get; set; }
 
         [BsonElement("bson_hotel_name")]
-        [VectorStoreDataProperty(StoragePropertyName = "storage_hotel_name")]
+        [VectorStoreData(StoragePropertyName = "storage_hotel_name")]
         public string? HotelName { get; set; }
     }
 

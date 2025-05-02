@@ -317,13 +317,13 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
 
     private sealed class ExampleRecord
     {
-        [VectorStoreKeyProperty]
+        [VectorStoreKey]
         public string Id { get; set; }
 
-        [VectorStoreDataProperty]
+        [VectorStoreData]
         public string Example { get; set; }
 
-        [VectorStoreVectorProperty(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> ExampleEmbedding { get; set; }
     }
 }
