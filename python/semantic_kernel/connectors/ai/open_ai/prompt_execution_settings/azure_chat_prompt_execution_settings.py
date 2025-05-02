@@ -13,7 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.memory.azure_cognitive_search.azure_ai_search_settings import AzureAISearchSettings
+    from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchSettings
 
 logger = logging.getLogger(__name__)
 

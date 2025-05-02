@@ -52,7 +52,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-TKey = TypeVar("TKey", str, int)
+TKey = TypeVar("TKey", bound=str | int)
 TModel = TypeVar("TModel")
 
 # maximum number of parameters for SQL Server
@@ -518,7 +518,7 @@ class SqlServerCollection(
         search_type: SearchType,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         if vector is None:
@@ -532,7 +532,7 @@ class SqlServerCollection(
             self.data_model_definition.vector_fields,
             vector,
             options,
-            self._build_filter(options.filter),
+            self._build_filter(options.filter),  # type: ignore
         )
 
         return KernelSearchResults(
@@ -559,8 +559,8 @@ class SqlServerCollection(
                 await asyncio.sleep(0)
 
     @override
-    def _lambda_parser(self, node: ast.AST) -> "SqlCommand":
-        """Parse a Python lambda AST node and return a SqlCommand object representing the SQL WHERE clause and parameters."""
+    def _lambda_parser(self, node: ast.AST) -> "SqlCommand":  # type: ignore
+        """Parse a Python lambda AST node and return a SqlCommand object."""
         command = SqlCommand()
 
         def parse(node: ast.AST) -> str:
@@ -575,37 +575,37 @@ class SqlServerCollection(
                             op = node.ops[idx]
                             values.append(parse(ast.Compare(left=left, ops=[op], comparators=[right])))
                         return f"({' AND '.join(values)})"
-                    left = parse(node.left)
+                    left = parse(node.left)  # type: ignore
                     right_node = node.comparators[0]
                     op = node.ops[0]
                     match op:
                         case ast.In():
-                            right = parse(right_node)
+                            right = parse(right_node)  # type: ignore
                             return f"{left} IN {right}"
                         case ast.NotIn():
-                            right = parse(right_node)
+                            right = parse(right_node)  # type: ignore
                             return f"{left} NOT IN {right}"
                         case ast.Eq():
-                            right = parse(right_node)
+                            right = parse(right_node)  # type: ignore
                             return f"{left} = {right}"
                         case ast.NotEq():
-                            right = parse(right_node)
+                            right = parse(right_node)  # type: ignore
                             return f"{left} <> {right}"
                         case ast.Gt():
-                            right = parse(right_node)
+                            right = parse(right_node)  # type: ignore
                             return f"{left} > {right}"
                         case ast.GtE():
-                            right = parse(right_node)
+                            right = parse(right_node)  # type: ignore
                             return f"{left} >= {right}"
                         case ast.Lt():
-                            right = parse(right_node)
+                            right = parse(right_node)  # type: ignore
                             return f"{left} < {right}"
                         case ast.LtE():
-                            right = parse(right_node)
+                            right = parse(right_node)  # type: ignore
                             return f"{left} <= {right}"
                     raise NotImplementedError(f"Unsupported operator: {type(op)}")
                 case ast.BoolOp():
-                    op = node.op
+                    op = node.op  # type: ignore
                     values = [parse(v) for v in node.values]
                     if isinstance(op, ast.And):
                         return f"({' AND '.join(values)})"
@@ -681,9 +681,32 @@ class SqlServerStore(VectorStore):
         env_file_encoding: str | None = None,
         **kwargs: Any,
     ):
+        """Initialize the SQL Store.
+
+        Args:
+            connection_string: The connection string to the database.
+            connection: The connection, make sure to set the `LongAsMax=yes` option on the construction string used.
+            embedding_generator: The embedding generator to use.
+            env_file_path: Use the environment settings file as a fallback to environment variables.
+            env_file_encoding: The encoding of the environment settings file.
+            **kwargs: Additional arguments.
+
+        """
+        if not connection:
+            try:
+                settings = SqlSettings(
+                    connection_string=connection_string,
+                    env_file_path=env_file_path,
+                    env_file_encoding=env_file_encoding,
+                )
+            except ValidationError as e:
+                raise VectorStoreInitializationException(
+                    "Invalid settings provided. Please check the connection string."
+                ) from e
+
         super().__init__(
             connection=connection,
-            settings=None,
+            settings=settings,
             embedding_generator=embedding_generator,
             **kwargs,
         )
@@ -733,6 +756,17 @@ class SqlServerStore(VectorStore):
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> "VectorStoreRecordCollection":
+        """Get a collection.
+
+        Args:
+            data_model_type: The type of the data model.
+            data_model_definition: The data model definition.
+            collection_name: The name of the collection, which corresponds to the table name.
+                When not provided, the collection name will be inferred from the data model.
+            embedding_generator: The embedding generator to use.
+            **kwargs: Additional arguments.
+
+        """
         return SqlServerCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
@@ -832,7 +866,8 @@ def _build_create_table_query(
         with command.query.in_parenthesis(suffix=";"):
             # add the key field
             command.query.append(
-                f'"{key_field.storage_property_name or key_field.name}" {_python_type_to_sql(key_field.property_type, is_key=True)} NOT NULL,\n'
+                f'"{key_field.storage_property_name or key_field.name}" '
+                f"{_python_type_to_sql(key_field.property_type, is_key=True)} NOT NULL,\n"
             )
             # add the data fields
             [
@@ -1045,7 +1080,7 @@ def _build_search_query(
     key_field: VectorStoreRecordKeyField,
     data_fields: list[VectorStoreRecordDataField],
     vector_fields: list[VectorStoreRecordVectorField],
-    vector: list[float],
+    vector: Sequence[float | int],
     options: VectorSearchOptions,
     filter: SqlCommand | list[SqlCommand] | None = None,
 ) -> SqlCommand:
@@ -1088,7 +1123,7 @@ def _build_search_query(
                 command.query.append(" WHERE ")
             else:
                 command.query.append(" AND ")
-            command.query.append(f.query)
+            command.query.append(str(f.query))
             command.add_parameters(f.parameters)
 
     # add the ORDER BY clause

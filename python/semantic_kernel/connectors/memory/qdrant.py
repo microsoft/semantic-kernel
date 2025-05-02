@@ -3,9 +3,9 @@
 import ast
 import logging
 import sys
-from collections.abc import Mapping, Sequence
+from collections.abc import MutableMapping, Sequence
 from copy import deepcopy
-from typing import Any, ClassVar, Final, Generic
+from typing import Any, ClassVar, Final, Generic, TypeVar
 
 from pydantic import HttpUrl, SecretStr, ValidationError, model_validator
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
@@ -34,7 +34,6 @@ from semantic_kernel.data.text_search import KernelSearchResults
 from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
-    TKey,
     TModel,
     VectorStore,
     VectorStoreRecordCollection,
@@ -56,6 +55,7 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 logger: logging.Logger = logging.getLogger(__name__)
+TKey = TypeVar("TKey", bound=str | int)
 
 DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, Distance]] = {
     DistanceFunction.COSINE_SIMILARITY: Distance.COSINE,
@@ -232,7 +232,7 @@ class QdrantCollection(
             points=records,
             **kwargs,
         )
-        return [record.id for record in records]
+        return [record.id for record in records]  # type: ignore
 
     @override
     async def _inner_get(
@@ -267,10 +267,10 @@ class QdrantCollection(
         search_type: SearchType,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        query_vector: tuple[str, list[float | int]] | list[float | int] | None = None
+        query_vector: tuple[str, Sequence[float | int]] | Sequence[float | int] | None = None
 
         if not vector:
             vector = await self._generate_vector_from_values(values, options)
@@ -278,12 +278,12 @@ class QdrantCollection(
         if not vector:
             raise VectorSearchExecutionException("Search requires a vector.")
 
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        if not vector_field:
+            raise VectorStoreOperationException(
+                f"Vector field {options.vector_field_name} not found in data model definition."
+            )
         if self.named_vectors:
-            vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
-            if not vector_field:
-                raise VectorStoreOperationException(
-                    f"Vector field {options.vector_field_name} not found in data model definition."
-                )
             query_vector = (vector_field.storage_property_name or vector_field.name, vector)
         else:
             query_vector = vector
@@ -292,7 +292,7 @@ class QdrantCollection(
         if search_type == SearchType.VECTOR:
             results = await self.qdrant_client.search(
                 collection_name=self.collection_name,
-                query_vector=query_vector,
+                query_vector=query_vector,  # type: ignore
                 query_filter=filter,
                 with_vectors=options.include_vectors,
                 limit=options.top,
@@ -329,11 +329,11 @@ class QdrantCollection(
             else:
                 keyword_filter.must = keyword_sub_filter
 
-            results = await self.qdrant_client.query_points(
+            points = await self.qdrant_client.query_points(
                 collection_name=self.collection_name,
                 prefetch=[
                     Prefetch(
-                        query=vector,
+                        query=vector,  # type: ignore
                         using=vector_field.storage_property_name or vector_field.name,
                         filter=filter,
                         limit=options.top,
@@ -346,7 +346,7 @@ class QdrantCollection(
                 with_vectors=options.include_vectors,
                 **kwargs,
             )
-            results = results.points
+            results = points.points
 
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(results, options),
@@ -401,7 +401,7 @@ class QdrantCollection(
                         return FieldCondition(key=left, range=Range(lte=right))
                 raise NotImplementedError(f"Unsupported operator: {type(op)}")
             case ast.BoolOp():
-                op = node.op
+                op = node.op  # type: ignore
                 values = [self._lambda_parser(v) for v in node.values]
                 if isinstance(op, ast.And):
                     return Filter(must=values)
@@ -487,8 +487,8 @@ class QdrantCollection(
                 Collection name will be set to the collection_name property, cannot be overridden.
         """
         if "vectors_config" not in kwargs:
-            vectors_config: VectorParams | Mapping[str, VectorParams] = {}
             if self.named_vectors:
+                vectors_config: MutableMapping[str, VectorParams] = {}
                 for field in self.data_model_definition.vector_fields:
                     if field.index_kind not in INDEX_KIND_MAP:
                         raise VectorStoreOperationException(f"Index kind {field.index_kind} is not supported.")
@@ -501,18 +501,20 @@ class QdrantCollection(
                         distance=DISTANCE_FUNCTION_MAP[field.distance_function],
                         datatype=TYPE_MAPPER_VECTOR[field.property_type or "default"],
                     )
+                kwargs["vectors_config"] = vectors_config
             else:
-                vector = self.data_model_definition.vector_fields[0]
+                vector = self.data_model_definition.try_get_vector_field(None)
+                if not vector:
+                    raise VectorStoreOperationException("Vector field not found in data model definition.")
                 if vector.distance_function not in DISTANCE_FUNCTION_MAP:
                     raise VectorStoreOperationException(
                         f"Distance function {vector.distance_function} is not supported."
                     )
-                vectors_config = VectorParams(
+                kwargs["vectors_config"] = VectorParams(
                     size=vector.dimensions,
                     distance=DISTANCE_FUNCTION_MAP[vector.distance_function],
                     datatype=TYPE_MAPPER_VECTOR[vector.property_type or "default"],
                 )
-            kwargs["vectors_config"] = vectors_config
         if "collection_name" not in kwargs:
             kwargs["collection_name"] = self.collection_name
         await self.qdrant_client.create_collection(**kwargs)

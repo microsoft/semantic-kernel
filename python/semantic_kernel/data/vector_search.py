@@ -101,7 +101,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         search_type: SearchType,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Inner search method.
@@ -226,7 +226,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         self,
         options: SearchOptions | None = None,
         *,
-        vector: list[float | int],
+        vector: Sequence[float | int],
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Search the vector store with Vector search for records that match the given vector and filter.
@@ -346,7 +346,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         self,
         values: Any | None,
         options: VectorSearchOptions,
-    ) -> list[float | int] | None:
+    ) -> Sequence[float | int] | None:
         """Generate a vector from the given keywords."""
         if not values:
             return None
@@ -358,6 +358,10 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         embedding_generator = (
             vector_field.embedding_generator if vector_field.embedding_generator else self.embedding_generator
         )
+        if not embedding_generator:
+            raise VectorSearchOptionsException(
+                f"Embedding generator not found for vector field '{options.vector_field_name}'."
+            )
 
         return (
             await embedding_generator.generate_embeddings(
@@ -414,21 +418,21 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
 
         filters = search_filter if isinstance(search_filter, list) else [search_filter]
 
-        filter_strings: list[Any] = []
+        created_filters: list[Any] = []
         for filter_ in filters:
             # parse lambda expression with AST
             tree = parse(filter_ if isinstance(filter_, str) else getsource(filter_).strip())
             for node in walk(tree):
                 if isinstance(node, Lambda):
-                    filter_strings.append(self._lambda_parser(node.body))
+                    created_filters.append(self._lambda_parser(node.body))
                     break
             else:
                 raise VectorStoreOperationException("No lambda expression found in the filter.")
-        if len(filter_strings) == 0:
+        if len(created_filters) == 0:
             raise VectorStoreOperationException("No filter strings found.")
-        if len(filter_strings) == 1:
-            return filter_strings[0]
-        return filter_strings
+        if len(created_filters) == 1:
+            return created_filters[0]
+        return created_filters
 
     @abstractmethod
     def _lambda_parser(self, node: AST) -> Any:

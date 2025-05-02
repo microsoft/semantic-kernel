@@ -11,42 +11,35 @@ from semantic_kernel.data import (
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.vector_search import VectorSearchFilter, VectorSearchOptions
+from semantic_kernel.data.vector_search import VectorSearchOptions
 from semantic_kernel.exceptions import VectorStoreInitializationException
 
 
 @fixture(scope="function")
 def data_model_def() -> VectorStoreRecordDefinition:
     return VectorStoreRecordDefinition(
-        fields={
-            "id": VectorStoreRecordKeyField(),
-            "content": VectorStoreRecordDataField(
-                has_embedding=True,
-                embedding_property_name="vector",
-            ),
-            "vector": VectorStoreRecordVectorField(
+        fields=[
+            VectorStoreRecordKeyField(name="id"),
+            VectorStoreRecordDataField(name="content"),
+            VectorStoreRecordVectorField(
+                name="vector",
                 dimensions=5,
                 index_kind="flat",
                 distance_function="dot_prod",
                 property_type="float",
             ),
-        }
+        ]
     )
 
 
 @fixture(scope="function")
 def faiss_collection(data_model_def):
-    return FaissCollection("test", dict, data_model_def)
-
-
-def test_store_init():
-    store = FaissStore()
-    assert store.vector_record_collections == {}
+    return FaissCollection(dict, data_model_def, "test")
 
 
 async def test_store_get_collection(data_model_def):
     store = FaissStore()
-    collection = store.get_collection("test", dict, data_model_def)
+    collection = store.get_collection(dict, data_model_definition=data_model_def, collection_name="test")
     assert collection.collection_name == "test"
     assert collection.data_model_type is dict
     assert collection.data_model_definition == data_model_def
@@ -168,20 +161,6 @@ async def test_text_search(faiss_collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await faiss_collection.upsert(record)
     results = await faiss_collection.text_search(search_text="content")
-    assert len([res async for res in results.results]) == 1
-    await faiss_collection.delete_collection()
-
-
-async def test_text_search_with_filter(faiss_collection):
-    await faiss_collection.create_collection()
-    record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
-    await faiss_collection.upsert(record)
-    results = await faiss_collection.text_search(
-        search_text="content",
-        options=VectorSearchOptions(
-            filter=VectorSearchFilter.any_tag_equal_to("vector", 0.1).equal_to("content", "content")
-        ),
-    )
     assert len([res async for res in results.results]) == 1
     await faiss_collection.delete_collection()
 

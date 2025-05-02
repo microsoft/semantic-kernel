@@ -5,7 +5,7 @@ import logging
 import sys
 from collections.abc import Sequence
 from inspect import isawaitable
-from typing import Any, ClassVar, Final, Generic
+from typing import Any, ClassVar, Final, Generic, TypeVar
 
 from pinecone import IndexModel, Metric, PineconeAsyncio, ServerlessSpec, Vector
 from pinecone.data.index_asyncio import _IndexAsyncio as IndexAsyncio
@@ -19,7 +19,6 @@ from semantic_kernel.data.text_search import KernelSearchResults
 from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
-    TKey,
     TModel,
     VectorStore,
     VectorStoreRecordCollection,
@@ -41,6 +40,7 @@ else:
 
 logger = logging.getLogger(__name__)
 
+TKey = TypeVar("TKey", bound=str)
 
 DISTANCE_METRIC_MAP: Final[dict[DistanceFunction, Metric]] = {
     DistanceFunction.COSINE_SIMILARITY: Metric.COSINE,
@@ -429,7 +429,7 @@ class PineconeCollection(
         search_type: SearchType,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Search the records in the Pinecone collection."""
@@ -451,7 +451,8 @@ class PineconeCollection(
         if self.embed_settings is not None:
             if not self.index_client or isinstance(self.index_client, GRPCIndex):
                 raise VectorStoreOperationException(
-                    "Pinecone GRPC client does not support integrated embeddings. Please use the Pinecone Asyncio client."
+                    "Pinecone GRPC client does not support integrated embeddings. "
+                    "Please use the Pinecone Asyncio client."
                 )
             search_args = {
                 "query": {"inputs": {"text": values}, "top_k": options.top},
@@ -522,7 +523,7 @@ class PineconeCollection(
                         return {left: {"$lte": right}}
                 raise NotImplementedError(f"Unsupported operator: {type(op)}")
             case ast.BoolOp():
-                op = node.op
+                op = node.op  # type: ignore
                 values = [self._lambda_parser(v) for v in node.values]
                 if isinstance(op, ast.And):
                     return {"$and": values}
@@ -537,11 +538,11 @@ class PineconeCollection(
                         if (
                             isinstance(operand, dict)
                             and len(operand) == 1
-                            and isinstance(list(operand.values())[0], dict)
-                            and "$in" in list(operand.values())[0]
+                            and isinstance(next(operand.values()), dict)
+                            and "$in" in next(operand.values())
                         ):
-                            field = list(operand.keys())[0]
-                            values = list(operand.values())[0]["$in"]
+                            field = next(operand.keys())
+                            values = next(operand.values())["$in"]
                             return {field: {"$nin": values}}
                         raise NotImplementedError(
                             "$not is only supported over $in (i.e., for ![...].contains(field)). "
@@ -615,6 +616,7 @@ class PineconeStore(VectorStore):
         Args:
             client: The Pinecone client to use. If not provided, a new client will be created.
             api_key: The Pinecone API key. If not provided, it will be read from the environment.
+            embedding_generator: The embedding generator to use. If not provided, it will be read from the environment.
             env_file_path: The path to the environment file. If not provided, it will be read from the default location.
             env_file_encoding: The encoding of the environment file.
             use_grpc: Whether to use the GRPC client or not. Default is False.

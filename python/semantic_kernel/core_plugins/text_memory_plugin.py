@@ -1,7 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
 import logging
+import sys
 from typing import Annotated, Any, Final
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 from pydantic import Field
 
@@ -18,6 +24,9 @@ RELEVANCE_PARAM: Final[str] = "relevance"
 DEFAULT_LIMIT: Final[int] = 1
 
 
+@deprecated(
+    "This class is deprecated and will be removed in a future version. Use the new `collection.as_text_search` instead."
+)
 class TextMemoryPlugin(KernelBaseModel):
     """A plugin to interact with a Semantic Text Memory."""
 

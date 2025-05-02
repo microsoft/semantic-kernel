@@ -3,9 +3,9 @@
 import ast
 import logging
 import sys
-from collections.abc import Sequence
+from collections.abc import MutableSequence, Sequence
 from importlib import metadata
-from typing import Any, ClassVar, Final, Generic
+from typing import Any, ClassVar, Final, Generic, TypeVar
 
 from pydantic import SecretStr, ValidationError
 from pymongo import AsyncMongoClient, ReplaceOne
@@ -21,7 +21,6 @@ from semantic_kernel.data.text_search import KernelSearchResults
 from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
-    TKey,
     TModel,
     VectorStore,
     VectorStoreRecordCollection,
@@ -46,6 +45,9 @@ if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override
+
+
+TKey = TypeVar("TKey", bound=str)
 
 DEFAULT_DB_NAME: Final[str] = "default"
 DEFAULT_SEARCH_INDEX_NAME: Final[str] = "default"
@@ -163,13 +165,13 @@ class MongoDBAtlasCollection(
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
         collection_name: str | None = None,
+        embedding_generator: EmbeddingGeneratorBase | None = None,
         index_name: str | None = None,
         mongo_client: AsyncMongoClient | None = None,
         connection_string: str | None = None,
         database_name: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
-        embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> None:
         """Initializes a new instance of the MongoDBAtlasCollection class.
@@ -178,9 +180,10 @@ class MongoDBAtlasCollection(
             data_model_type: The type of the data model.
             data_model_definition: The model definition, optional.
             collection_name: The name of the collection, optional.
+            embedding_generator: The embedding generator, optional.
+            index_name: The name of the index to use for searching, when not passed, will use <collection_name>_idx.
             mongo_client: The MongoDB client for interacting with MongoDB Atlas,
                 used for creating and deleting collections.
-            index_name: The name of the index to use for searching, when not passed, will use <collection_name>_idx.
             connection_string: The connection string for MongoDB Atlas, optional.
             Can be read from environment variables.
             database_name: The name of the database, will be filled from the env when this is not set.
@@ -201,6 +204,7 @@ class MongoDBAtlasCollection(
                 database_name=database_name or DEFAULT_DB_NAME,
                 index_name=index_name or DEFAULT_SEARCH_INDEX_NAME,
                 managed_client=managed_client,
+                embedding_generator=embedding_generator,
             )
             return
 
@@ -228,6 +232,7 @@ class MongoDBAtlasCollection(
             managed_client=managed_client,
             database_name=mongodb_atlas_settings.database_name,
             index_name=mongodb_atlas_settings.index_name,
+            embedding_generator=embedding_generator,
         )
 
     def _get_database(self) -> AsyncDatabase:
@@ -249,9 +254,8 @@ class MongoDBAtlasCollection(
         self,
         records: Sequence[Any],
         **kwargs: Any,
-    ) -> Sequence[str]:
-        operations = []
-        ids = []
+    ) -> Sequence[TKey]:
+        operations: MutableSequence[ReplaceOne] = []
         for record in records:
             operations.append(
                 ReplaceOne(
@@ -260,14 +264,13 @@ class MongoDBAtlasCollection(
                     upsert=True,
                 )
             )
-            ids.append(record[MONGODB_ID_FIELD])
         result = await self._get_collection().bulk_write(operations, ordered=False)
-        return [str(value) for key, value in result.upserted_ids.items()]
+        return [str(value) for _, value in result.upserted_ids.items()]  # type: ignore
 
     @override
     async def _inner_get(
         self,
-        keys: Sequence[str] | None = None,
+        keys: Sequence[TKey] | None = None,
         options: GetFilteredRecordOptions | None = None,
         **kwargs: Any,
     ) -> Sequence[dict[str, Any]] | None:
@@ -279,7 +282,7 @@ class MongoDBAtlasCollection(
         return await result.to_list(length=len(keys))
 
     @override
-    async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
+    async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
         collection = self._get_collection()
         await collection.delete_many({MONGODB_ID_FIELD: {"$in": keys}})
 
@@ -336,7 +339,7 @@ class MongoDBAtlasCollection(
         search_type: SearchType,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         if search_type == SearchType.VECTOR:
@@ -349,7 +352,7 @@ class MongoDBAtlasCollection(
         self,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         collection = self._get_collection()
@@ -393,11 +396,15 @@ class MongoDBAtlasCollection(
         self,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         collection = self._get_collection()
         vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        if not vector_field:
+            raise VectorStoreModelException(
+                f"Vector field '{options.vector_field_name}' not found in the data model definition."
+            )
         if not vector:
             vector = await self._generate_vector_from_values(values, options)
         vector_search_query: dict[str, Any] = {
@@ -466,7 +473,7 @@ class MongoDBAtlasCollection(
                         return {left: {"$lte": right}}
                 raise NotImplementedError(f"Unsupported operator: {type(op)}")
             case ast.BoolOp():
-                op = node.op
+                op = node.op  # type: ignore
                 values = [self._lambda_parser(v) for v in node.values]
                 if isinstance(op, ast.And):
                     return {"$and": values}
@@ -529,8 +536,8 @@ class MongoDBAtlasStore(VectorStore):
         self,
         connection_string: str | None = None,
         database_name: str | None = None,
-        mongo_client: AsyncMongoClient | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
+        mongo_client: AsyncMongoClient | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
         **kwargs: Any,
@@ -538,14 +545,15 @@ class MongoDBAtlasStore(VectorStore):
         """Initializes a new instance of the MongoDBAtlasStore client.
 
         Args:
-        connection_string: The connection string for MongoDB Atlas, optional.
-            Can be read from environment variables.
-        database_name: The name of the database, optional. Can be read from environment variables.
-        mongo_client: The MongoDB client, optional.
-        env_file_path: Use the environment settings file as a fallback
-            to environment variables.
-        env_file_encoding: The encoding of the environment settings file.
-        kwargs: Additional keyword arguments.
+            connection_string: The connection string for MongoDB Atlas, optional.
+                Can be read from environment variables.
+            database_name: The name of the database, optional. Can be read from environment variables.
+            embedding_generator: The embedding generator, optional.
+            mongo_client: The MongoDB client, optional.
+            env_file_path: Use the environment settings file as a fallback
+                to environment variables.
+            env_file_encoding: The encoding of the environment settings file.
+            kwargs: Additional keyword arguments.
         """
         managed_client = kwargs.get("managed_client", not mongo_client)
         if mongo_client:
@@ -556,7 +564,6 @@ class MongoDBAtlasStore(VectorStore):
                 embedding_generator=embedding_generator,
             )
             return
-        from semantic_kernel.connectors.memory.mongodb import MongoDBAtlasSettings
 
         try:
             mongodb_atlas_settings = MongoDBAtlasSettings(

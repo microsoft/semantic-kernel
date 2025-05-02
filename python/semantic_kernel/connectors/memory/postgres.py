@@ -7,8 +7,8 @@ import random
 import re
 import string
 import sys
-from collections.abc import AsyncGenerator, Sequence
-from typing import TYPE_CHECKING, Any, ClassVar, Final, Generic
+from collections.abc import AsyncGenerator, MutableSequence, Sequence
+from typing import TYPE_CHECKING, Any, ClassVar, Final, Generic, TypeVar
 
 from psycopg import sql
 from psycopg.conninfo import conninfo_to_dict
@@ -28,7 +28,6 @@ from semantic_kernel.data.text_search import KernelSearchResults
 from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
-    TKey,
     TModel,
     VectorStore,
     VectorStoreRecordCollection,
@@ -49,7 +48,7 @@ else:
 
 
 logger = logging.getLogger(__name__)
-
+TKey = TypeVar("TKey", bound=str | int)
 # region: Constants
 
 DEFAULT_SCHEMA: Final[str] = "public"
@@ -423,7 +422,7 @@ class PostgresCollection(
                 "Connection pool is not available, use the collection as a context manager."
             )
 
-        keys = []
+        keys: MutableSequence[TKey] = []
         async with (
             self.connection_pool.connection() as conn,
             conn.transaction(),
@@ -462,7 +461,8 @@ class PostgresCollection(
                     row_values,
                 )
                 keys.extend(
-                    record.get(self.data_model_definition.key_field_storage_property_name) for record in record_batch
+                    record[self.data_model_definition.key_field_storage_property_name]  # type: ignore
+                    for record in record_batch
                 )
         return keys
 
@@ -705,7 +705,7 @@ class PostgresCollection(
         search_type: SearchType,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         if self.connection_pool is None:
@@ -746,7 +746,7 @@ class PostgresCollection(
 
     def _construct_vector_query(
         self,
-        vector: list[float | int],
+        vector: Sequence[float | int],
         options: VectorSearchOptions,
         **kwargs: Any,
     ) -> tuple[sql.Composed, list[Any], list[tuple[str, VectorStoreRecordField | None]]]:
@@ -787,7 +787,7 @@ class PostgresCollection(
             table=sql.Identifier(self.collection_name),
         )
 
-        if where_clauses := self._build_filter(options.filter):
+        if where_clauses := self._build_filter(options.filter):  # type: ignore
             query += (
                 sql.SQL("WHERE {clause}").format(clause=sql.SQL(" AND ").join(where_clauses))
                 if isinstance(where_clauses, list)
@@ -878,7 +878,7 @@ class PostgresCollection(
                         return f"{left} <= {right}"
                 raise NotImplementedError(f"Unsupported operator: {type(op)}")
             case ast.BoolOp():
-                op = node.op
+                op = node.op  # type: ignore
                 values = [self._lambda_parser(v) for v in node.values]
                 if isinstance(op, ast.And):
                     return f"({' AND '.join(values)})"

@@ -32,10 +32,6 @@ if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
     from typing_extensions import Self  # pragma: no cover
-if sys.version_info >= (3, 13):
-    from warnings import deprecated  # pragma: no cover
-else:
-    from typing_extensions import deprecated  # pragma: no cover
 
 
 TModel = TypeVar("TModel", bound=object)
@@ -436,7 +432,6 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
         if (
             isinstance(data, dict)
             and not data.get("collection_name")
-            and data.get("data_model_type") is not None
             and (
                 collection_name := _get_collection_name_from_model(
                     data["data_model_type"], data.get("data_model_definition")
@@ -590,11 +585,6 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
 
     # region Public Methods
 
-    @deprecated("upsert_batch is deprecated, use upsert instead.")
-    async def upsert_batch(self, *args: Any, **kwargs: Any) -> Sequence[TKey]:
-        """Upsert a batch of records, this method is deprecated, use upsert instead."""
-        return await self.upsert(*args, **kwargs)  # type: ignore
-
     async def upsert(
         self,
         records: OneOrMany[TModel],
@@ -645,64 +635,119 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
             return results
         return results[0]
 
-    @deprecated("get_batch is deprecated, use get instead.")
-    async def get_batch(self, *args: Any, **kwargs: Any) -> OneOrMany[TModel] | None:
-        """Get a batch of records, this method is deprecated, use get instead."""
-        return await self.get(*args, **kwargs)
-
     @overload
     async def get(
         self,
-        *,
         top: int = ...,
         skip: int = ...,
-        order_by: OptionalOneOrMany[OrderBy] = None,
+        order_by: OptionalOneOrMany[OrderBy | dict[str, Any] | list[dict[str, Any]]] = None,
         include_vectors: bool = False,
         **kwargs: Any,
-    ) -> Sequence[TModel] | None: ...
-
-    @overload
-    async def get(
-        self,
-        *,
-        key: TKey,
-        include_vectors: bool = False,
-        **kwargs: Any,
-    ) -> TModel | None: ...
-
-    @overload
-    async def get(
-        self,
-        *,
-        keys: Sequence[TKey],
-        include_vectors: bool = False,
-        **kwargs: Any,
-    ) -> OneOrMany[TModel] | None: ...
-
-    async def get(
-        self,
-        *,
-        key: TKey = None,
-        keys: Sequence[TKey] | None = None,
-        top: int = 10,
-        skip: int = 0,
-        order_by: OptionalOneOrMany[OrderBy] = None,
-        include_vectors: bool = False,
-        **kwargs,
-    ) -> OneOrMany[TModel] | TModel | None:
-        """Get records by key(s) or by filter options.
+    ) -> Sequence[TModel] | None:
+        """Get records based on the ordering and selection criteria.
 
         Args:
-            key: The key to get.
-            keys: The keys to get.
+            include_vectors: Include the vectors in the response. Default is True.
+                Some vector stores do not support retrieving without vectors, even when set to false.
+                Some vector stores have specific parameters to control that behavior, when
+                that parameter is set, include_vectors is ignored.
             top: The number of records to return.
+                Only used if keys are not provided.
             skip: The number of records to skip.
-            order_by: The order by clause.
-            include_vectors: Include the vectors in the response.
+                Only used if keys are not provided.
+            order_by: The order by clause, this is a list of dicts with the field name and ascending flag,
+                (default is True, which means ascending).
+                Only used if keys are not provided.
             **kwargs: Additional arguments.
 
         Returns:
-            The records, either a list of TModel, a single TModel, or None.
+            The records, either a list of TModel or the container type.
+
+        Raises:
+            VectorStoreOperationException: If an error occurs during the get.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+        """
+        ...
+
+    @overload
+    async def get(
+        self,
+        key: TKey = ...,
+        include_vectors: bool = False,
+        **kwargs: Any,
+    ) -> TModel | None:
+        """Get a record if it exists.
+
+        Args:
+            key: The key to get.
+            include_vectors: Include the vectors in the response. Default is True.
+                Some vector stores do not support retrieving without vectors, even when set to false.
+                Some vector stores have specific parameters to control that behavior, when
+                that parameter is set, include_vectors is ignored.
+            **kwargs: Additional arguments.
+
+        Returns:
+            The records, either a list of TModel or the container type.
+
+        Raises:
+            VectorStoreOperationException: If an error occurs during the get.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+        """
+        ...
+
+    @overload
+    async def get(
+        self,
+        keys: Sequence[TKey] = ...,
+        include_vectors: bool = False,
+        **kwargs: Any,
+    ) -> OneOrMany[TModel] | None:
+        """Get a batch of records whose keys exist in the collection, i.e. keys that do not exist are ignored.
+
+        Args:
+            keys: The keys to get, if keys are provided, key is ignored.
+            include_vectors: Include the vectors in the response. Default is True.
+                Some vector stores do not support retrieving without vectors, even when set to false.
+                Some vector stores have specific parameters to control that behavior, when
+                that parameter is set, include_vectors is ignored.
+            **kwargs: Additional arguments.
+
+        Returns:
+            The records, either a list of TModel or the container type.
+
+        Raises:
+            VectorStoreOperationException: If an error occurs during the get.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+        """
+        ...
+
+    async def get(
+        self,
+        key=None,
+        keys=None,
+        include_vectors=False,
+        **kwargs,
+    ):
+        """Get a batch of records whose keys exist in the collection, i.e. keys that do not exist are ignored.
+
+        Args:
+            key: The key to get.
+            keys: The keys to get, if keys are provided, key is ignored.
+            include_vectors: Include the vectors in the response. Default is True.
+                Some vector stores do not support retrieving without vectors, even when set to false.
+                Some vector stores have specific parameters to control that behavior, when
+                that parameter is set, include_vectors is ignored.
+            top: The number of records to return.
+                Only used if keys are not provided.
+            skip: The number of records to skip.
+                Only used if keys are not provided.
+            order_by: The order by clause, this is a list of dicts with the field name and ascending flag,
+                (default is True, which means ascending).
+                Only used if keys are not provided.
+            **kwargs: Additional arguments.
+
+        Returns:
+            The records, either a list of TModel or the container type.
 
         Raises:
             VectorStoreOperationException: If an error occurs during the get.
@@ -710,23 +755,39 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
         """
         batch = True
         options = None
-        if keys is not None:
-            batch = True
-        elif key is not None:
-            keys = [key]
-            batch = False
-        else:
-            options = GetFilteredRecordOptions(top=top, skip=skip, order_by=order_by)
+        if not keys and key:
+            if not isinstance(key, list):
+                keys = [key]
+                batch = False
+            else:
+                keys = key
+        if not keys:
+            if kwargs:
+                try:
+                    options = GetFilteredRecordOptions(**kwargs)
+                except Exception as exc:
+                    raise VectorStoreOperationException(f"Error creating options: {exc}") from exc
+            else:
+                raise VectorStoreOperationException("Either key, keys or options must be provided.")
         try:
             records = await self._inner_get(keys, include_vectors=include_vectors, options=options, **kwargs)
         except Exception as exc:
             raise VectorStoreOperationException(f"Error getting record(s): {exc}") from exc
+
         if not records:
             return None
+
         try:
             model_records = self.deserialize(records if batch else records[0], **kwargs)
+        # the deserialize method will parse any exception into a VectorStoreModelDeserializationException
         except VectorStoreModelDeserializationException:
             raise
+
+        # there are many code paths within the deserialize method, some supplied by the developer,
+        # and so depending on what is used,
+        # it might return a sequence, so we just return the first element,
+        # there should never be multiple elements (this is not a batch get),
+        # hence a raise if there are.
         if batch:
             return model_records
         if not isinstance(model_records, Sequence):
@@ -737,27 +798,21 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
             f"Error deserializing record, multiple records returned: {model_records}"
         )
 
-    @deprecated("delete_batch is deprecated, use delete instead.")
-    async def delete_batch(self, *args: Any, **kwargs: Any) -> None:
-        """Delete a batch of records, this method is deprecated, use delete instead."""
-        return await self.delete(*args, **kwargs)
-
     async def delete(self, keys: OneOrMany[TKey], **kwargs):
         """Delete one or more records by key.
+
+        An exception will be raised at the end if any record does not exist.
 
         Args:
             keys: The key or keys to be deleted.
             **kwargs: Additional arguments.
-
-        Raises:
+        Exceptions:
             VectorStoreOperationException: If an error occurs during deletion or a record does not exist.
         """
-        if not isinstance(keys, Sequence) or isinstance(keys, str):
-            keys_seq: Sequence[TKey] = [keys]  # type: ignore
-        else:
-            keys_seq = keys  # type: ignore
+        if isinstance(keys, list):
+            keys = [keys]  # type: ignore
         try:
-            await self._inner_delete(keys_seq, **kwargs)
+            await self._inner_delete(keys, **kwargs)  # type: ignore
         except Exception as exc:
             raise VectorStoreOperationException(f"Error deleting record(s): {exc}") from exc
 
@@ -795,9 +850,7 @@ class VectorStore(KernelBaseModel):
         try:
             data_model = VectorStoreRecordDefinition(fields=[VectorStoreRecordKeyField(name="id")])
             collection = self.get_collection(
-                data_model_type=dict,
-                collection_name=collection_name,
-                data_model_definition=data_model
+                data_model_type=dict, data_model_definition=data_model, collection_name=collection_name
             )
             return await collection.does_collection_exist()
         except VectorStoreOperationException:
@@ -811,9 +864,7 @@ class VectorStore(KernelBaseModel):
         try:
             data_model = VectorStoreRecordDefinition(fields=[VectorStoreRecordKeyField(name="id")])
             collection = self.get_collection(
-                data_model_type=dict,
-                collection_name=collection_name,
-                data_model_definition=data_model
+                data_model_type=dict, data_model_definition=data_model, collection_name=collection_name
             )
             await collection.delete_collection()
         except VectorStoreOperationException:

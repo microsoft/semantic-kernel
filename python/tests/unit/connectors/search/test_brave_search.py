@@ -6,7 +6,7 @@ import httpx
 import pytest
 
 from semantic_kernel.connectors.search.brave import BraveSearch, BraveSearchResponse, BraveWebPage, BraveWebPages
-from semantic_kernel.data.text_search import KernelSearchResults, SearchFilter, TextSearchOptions, TextSearchResult
+from semantic_kernel.data.text_search import KernelSearchResults, TextSearchOptions, TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 
@@ -250,41 +250,3 @@ async def test_search_no_filter(brave_search, async_client_mock, mock_brave_sear
 
     # TODO check: shouldn't this output be "test query" instead of "test query+"?
     assert params["q"] == "test query"
-
-
-async def test_search_equal_to_filter(brave_search, async_client_mock, mock_brave_search_response):
-    """Test that search properly sets params with an EqualTo filter."""
-
-    # Arrange
-    my_filter = SearchFilter.equal_to(field_name="spellcheck", value=True)
-    options = TextSearchOptions(filter=my_filter)
-
-    # Act
-    await brave_search.search("test query", options)
-
-    # Assert
-    params = async_client_mock.get.call_args.kwargs["params"]
-
-    assert params["count"] == options.top
-    assert params["offset"] == options.skip
-    # 'spellcheck' is recognized in QUERY_PARAMETERS, so 'spellcheck' should be set
-    assert "spellcheck" in params
-    assert params["spellcheck"]
-
-    assert params["q"] == "test query"
-
-
-async def test_search_not_recognized_filter(brave_search, async_client_mock, mock_brave_search_response):
-    """Test that search properly appends non-recognized filters to the q parameter."""
-
-    # Arrange
-    # 'customProperty' is presumably not in QUERY_PARAMETERS
-    my_filter = SearchFilter.equal_to(field_name="customProperty", value="customValue")
-    options = TextSearchOptions(filter=my_filter)
-
-    # Act
-    with pytest.raises(ServiceInvalidRequestError) as exc_info:
-        await brave_search.search("test query", options)
-
-    # Assert
-    assert "Observed an unwanted parameter named customProperty with value customValue ." in str(exc_info.value)

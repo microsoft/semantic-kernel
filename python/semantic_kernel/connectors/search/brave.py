@@ -7,15 +7,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Final
 from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import Field, SecretStr, ValidationError
 
-from semantic_kernel.data.text_search import (
-    AnyTagsEqualTo,
-    EqualTo,
-    KernelSearchResults,
-    SearchFilter,
-    TextSearch,
-    TextSearchOptions,
-    TextSearchResult,
-)
+from semantic_kernel.data.text_search import KernelSearchResults, TextSearch, TextSearchOptions, TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel, KernelBaseSettings
 from semantic_kernel.utils.feature_stage_decorator import experimental
@@ -267,19 +259,7 @@ class BraveSearch(KernelBaseModel, TextSearch):
         params: dict[str, str | int] = {"q": query or "", "count": options.top, "offset": options.skip}
         if not options.filter:
             return params
-        for filter in options.filter.filters:
-            if isinstance(filter, EqualTo):
-                if filter.field_name in QUERY_PARAMETERS:
-                    params[filter.field_name] = filter.value
-                else:
-                    raise ServiceInvalidRequestError(
-                        f"Observed an unwanted parameter named {filter.field_name} with value {filter.value} ."
-                    )
-            elif isinstance(filter, SearchFilter):
-                logger.warning("Groups are not supported by Brave search, ignored.")
-                continue
-            elif isinstance(filter, AnyTagsEqualTo):
-                logger.debug("Any tag equals to filter is not supported by Brave Search API.")
+        # TODO (eavanvalkenburg): redo filters
         return params
 
 
