@@ -116,21 +116,6 @@ def test_configure_response_format_invalid_input_type():
 
 
 @pytest.mark.parametrize(
-    "message",
-    [
-        pytest.param(ChatMessageContent(role=AuthorRole.USER, content="text")),
-        pytest.param("text"),
-    ],
-)
-async def test_open_ai_assistant_agent_add_chat_message(message, openai_client, assistant_definition):
-    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
-    with patch(
-        "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.create_message",
-    ):
-        await agent.add_chat_message("threadId", message)
-
-
-@pytest.mark.parametrize(
     "arguments, include_args",
     [
         pytest.param({"extra_args": "extra_args"}, True),
