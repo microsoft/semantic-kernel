@@ -34,6 +34,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
     private JoinableTask? _processTask;
     private CancellationTokenSource? _processCancelSource;
+    private ProcessStateManager? _processStateManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LocalProcess"/> class.
@@ -186,6 +187,9 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
 
+        // TODO: Pull user state from persisted state on resume.
+        this._processStateManager = new ProcessStateManager(this._process.UserStateype, null);
+
         // Initialize threads. TODO: Need to implement state management here.
         foreach (var kvp in this._process.Threads)
         {
@@ -267,7 +271,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     throw new KernelException($"The thread name {agentStep.ThreadName} does not have a matching thread variable defined.").Log(this._logger);
                 }
 
-                localStep = new LocalAgentStep(agentStep, this._kernel, thread, this.ParentProcessId);
+                localStep = new LocalAgentStep(agentStep, this._kernel, thread, this._processStateManager, this.ParentProcessId);
             }
             else
             {
@@ -437,7 +441,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         var processState = new KernelProcessState(this.Name, this._stepState.Version, this.Id);
         var stepTasks = this._steps.Select(step => step.ToKernelProcessStepInfoAsync()).ToList();
         var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
-        return new KernelProcess(processState, steps, this._outputEdges);
+        return new KernelProcess(processState, steps, this._outputEdges, this._process.Threads);
     }
 
     /// <summary>

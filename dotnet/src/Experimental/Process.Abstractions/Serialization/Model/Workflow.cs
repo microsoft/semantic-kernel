@@ -568,6 +568,74 @@ public class EventEmission
 }
 
 /// <summary>
+/// Condition expression for a condition or hook.
+/// </summary>
+public class ConditionExpression
+{
+    /// <summary>
+    /// Gets or sets the path to the variable.
+    /// </summary>
+    public string Path { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the operator for the condition.
+    /// </summary>
+    public ConditionOperator Operator { get; set; } = ConditionOperator.Equal;
+
+    /// <summary>
+    /// Gets or sets the value for the condition.
+    /// </summary>
+    public object Value { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Operator for a condition.
+/// </summary>
+public enum ConditionOperator
+{
+    /// <summary>
+    /// Equal operator.
+    /// </summary>
+    Equal,
+    /// <summary>
+    /// Not equal operator.
+    /// </summary>
+    NotEqual,
+    /// <summary>
+    /// Greater than operator.
+    /// </summary>
+    GreaterThan,
+    /// <summary>
+    /// Less than operator.
+    /// </summary>
+    LessThan,
+    /// <summary>
+    /// Greater than or equal operator.
+    /// </summary>
+    GreaterThanOrEqual,
+    /// <summary>
+    /// Less than or equal operator.
+    /// </summary>
+    LessThanOrEqual
+}
+
+public enum StateUpdateOperations
+{
+    /// <summary>
+    /// Set operation.
+    /// </summary>
+    Set,
+    /// <summary>
+    /// Increment operation.
+    /// </summary>
+    Increment,
+    /// <summary>
+    /// Decrement operation.
+    /// </summary>
+    Decrement
+}
+
+/// <summary>
 /// Variable update for a condition or hook.
 /// </summary>
 public class VariableUpdate
@@ -577,14 +645,14 @@ public class VariableUpdate
     /// </summary>
     [YamlMember(Alias = "variable")]
     [JsonPropertyName("variable")]
-    public string Variable { get; set; } = string.Empty;
+    public string Path { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the operation to be performed on the variable.
     /// </summary>
     [YamlMember(Alias = "operation")]
     [JsonPropertyName("operation")]
-    public string Operation { get; set; } = string.Empty;
+    public StateUpdateOperations? Operation { get; set; }
 
     /// <summary>
     /// Gets or sets the value to be assigned to the variable.

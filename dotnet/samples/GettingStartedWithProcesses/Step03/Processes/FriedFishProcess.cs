@@ -40,7 +40,7 @@ public static class FriedFishProcess
 
         gatherIngredientsStep
             .OnEvent(GatherFriedFishIngredientsStep.OutputEvents.IngredientsGathered)
-            .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodStep.Functions.ChopFood));
+            .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodStep.ProcessStepFunctions.ChopFood));
 
         chopStep
             .OnEvent(CutFoodStep.OutputEvents.ChoppingReady)
@@ -68,7 +68,7 @@ public static class FriedFishProcess
 
         gatherIngredientsStep
             .OnEvent(GatherFriedFishIngredientsWithStockStep.OutputEvents.IngredientsGathered)
-            .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodWithSharpeningStep.Functions.ChopFood));
+            .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodWithSharpeningStep.ProcessStepFunctions.ChopFood));
 
         chopStep
             .OnEvent(CutFoodWithSharpeningStep.OutputEvents.ChoppingReady)
@@ -102,7 +102,7 @@ public static class FriedFishProcess
 
         gatherIngredientsStep
             .OnEvent(GatherFriedFishIngredientsWithStockStep.OutputEvents.IngredientsGathered)
-            .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodWithSharpeningStep.Functions.ChopFood));
+            .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodWithSharpeningStep.ProcessStepFunctions.ChopFood));
 
         gatherIngredientsStep
             .OnEvent(GatherFriedFishIngredientsWithStockStep.OutputEvents.IngredientsOutOfStock)
@@ -114,11 +114,11 @@ public static class FriedFishProcess
 
         chopStep
             .OnEvent(CutFoodWithSharpeningStep.OutputEvents.KnifeNeedsSharpening)
-            .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodWithSharpeningStep.Functions.SharpenKnife));
+            .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodWithSharpeningStep.ProcessStepFunctions.SharpenKnife));
 
         chopStep
             .OnEvent(CutFoodWithSharpeningStep.OutputEvents.KnifeSharpened)
-            .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodWithSharpeningStep.Functions.ChopFood));
+            .SendEventTo(new ProcessFunctionTargetBuilder(chopStep, functionName: CutFoodWithSharpeningStep.ProcessStepFunctions.ChopFood));
 
         fryStep
             .OnEvent(FryFoodStep.OutputEvents.FoodRuined)

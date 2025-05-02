@@ -42,6 +42,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     public string Version { get; init; } = "v1";
 
     /// <summary>
+    /// The type of the state. This is optional.
+    /// </summary>
+    public Type? StateType { get; init; } = null;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
     /// </summary>
     /// <param name="id">The name of the process. This is required.</param>
@@ -49,6 +54,8 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     public ProcessBuilder(string id, Type? stateType = null)
         : base(id)
     {
+        Verify.NotNullOrWhiteSpace(id, nameof(id));
+        this.StateType = stateType;
     }
 
     /// <summary>
@@ -443,7 +450,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
 
         // Create the process
         KernelProcessState state = new(this.Name, version: this.Version, id: this.HasParentProcess ? this.Id : null);
-        KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads };
+        KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads, UserStateype = this.StateType };
 
         return process;
     }

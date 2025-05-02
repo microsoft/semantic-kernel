@@ -170,16 +170,16 @@ public class Step04_AgentOrchestration : BaseTest
         userInputStep
             .OnEvent(CommonEvents.UserInputReceived)
             .SendEventTo(new(agentStep, parameterName: "message"))
-            .SendEventTo(new(renderMessageStep, RenderMessageStep.Functions.RenderUserText));
+            .SendEventTo(new(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderUserText));
 
         agentStep
             .OnFunctionResult()
             .SendEventTo(new(userInputStep))
-            .SendEventTo(new(renderMessageStep, RenderMessageStep.Functions.RenderMessage));
+            .SendEventTo(new(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderMessage));
 
         agentStep
             .OnFunctionError()
-            .SendEventTo(new(renderMessageStep, RenderMessageStep.Functions.RenderError, "error"))
+            .SendEventTo(new(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderError, "error"))
             .StopProcess();
 
         return process.Build();
@@ -196,17 +196,17 @@ public class Step04_AgentOrchestration : BaseTest
 
         AttachErrorStep(
             userInputStep,
-            ScriptedUserInputStep.Functions.GetUserInput);
+            ScriptedUserInputStep.ProcessStepFunctions.GetUserInput);
 
         AttachErrorStep(
             managerAgentStep,
-            ManagerAgentStep.Functions.InvokeAgent,
-            ManagerAgentStep.Functions.InvokeGroup,
-            ManagerAgentStep.Functions.ReceiveResponse);
+            ManagerAgentStep.ProcessStepFunctions.InvokeAgent,
+            ManagerAgentStep.ProcessStepFunctions.InvokeGroup,
+            ManagerAgentStep.ProcessStepFunctions.ReceiveResponse);
 
         AttachErrorStep(
             agentGroupStep,
-            AgentGroupChatStep.Functions.InvokeAgentGroup);
+            AgentGroupChatStep.ProcessStepFunctions.InvokeAgentGroup);
 
         // Entry point
         process.OnInputEvent(AgentOrchestrationEvents.StartProcess)
@@ -215,24 +215,24 @@ public class Step04_AgentOrchestration : BaseTest
         // Pass user input to primary agent
         userInputStep
             .OnEvent(CommonEvents.UserInputReceived)
-            .SendEventTo(new ProcessFunctionTargetBuilder(managerAgentStep, ManagerAgentStep.Functions.InvokeAgent))
-            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.Functions.RenderUserText, parameterName: "message"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(managerAgentStep, ManagerAgentStep.ProcessStepFunctions.InvokeAgent))
+            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderUserText, parameterName: "message"));
 
         // Process completed
         userInputStep
             .OnEvent(CommonEvents.UserInputComplete)
-            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.Functions.RenderDone))
+            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderDone))
             .StopProcess();
 
         // Render response from primary agent
         managerAgentStep
             .OnEvent(AgentOrchestrationEvents.AgentResponse)
-            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.Functions.RenderMessage, parameterName: "message"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderMessage, parameterName: "message"));
 
         // Request is complete
         managerAgentStep
             .OnEvent(CommonEvents.UserInputComplete)
-            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.Functions.RenderDone))
+            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderDone))
             .StopProcess();
 
         // Request more user input
@@ -243,7 +243,7 @@ public class Step04_AgentOrchestration : BaseTest
         // Delegate to inner agents
         managerAgentStep
             .OnEvent(AgentOrchestrationEvents.AgentWorking)
-            .SendEventTo(new ProcessFunctionTargetBuilder(managerAgentStep, ManagerAgentStep.Functions.InvokeGroup));
+            .SendEventTo(new ProcessFunctionTargetBuilder(managerAgentStep, ManagerAgentStep.ProcessStepFunctions.InvokeGroup));
 
         // Provide input to inner agents
         managerAgentStep
@@ -253,12 +253,12 @@ public class Step04_AgentOrchestration : BaseTest
         // Render response from inner chat (for visibility)
         agentGroupStep
             .OnEvent(AgentOrchestrationEvents.GroupMessage)
-            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.Functions.RenderInnerMessage, parameterName: "message"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderInnerMessage, parameterName: "message"));
 
         // Provide inner response to primary agent
         agentGroupStep
             .OnEvent(AgentOrchestrationEvents.GroupCompleted)
-            .SendEventTo(new ProcessFunctionTargetBuilder(managerAgentStep, ManagerAgentStep.Functions.ReceiveResponse, parameterName: "response"));
+            .SendEventTo(new ProcessFunctionTargetBuilder(managerAgentStep, ManagerAgentStep.ProcessStepFunctions.ReceiveResponse, parameterName: "response"));
 
         KernelProcess kernelProcess = process.Build();
 
@@ -270,7 +270,7 @@ public class Step04_AgentOrchestration : BaseTest
             {
                 step
                     .OnFunctionError(functionName)
-                    .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.Functions.RenderError, "error"))
+                    .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderError, "error"))
                     .StopProcess();
             }
         }

@@ -11,12 +11,14 @@ internal class LocalAgentStep : LocalStep
 {
     private new readonly KernelProcessAgentStep _stepInfo;
     private readonly KernelProcessAgentThread _agentThread;
+    private readonly ProcessStateManager _processStateManager;
     private readonly ILogger _logger;
 
-    public LocalAgentStep(KernelProcessAgentStep stepInfo, Kernel kernel, KernelProcessAgentThread agentThread, string? parentProcessId = null) : base(stepInfo, kernel, parentProcessId)
+    public LocalAgentStep(KernelProcessAgentStep stepInfo, Kernel kernel, KernelProcessAgentThread agentThread, ProcessStateManager processStateManager, string? parentProcessId = null) : base(stepInfo, kernel, parentProcessId)
     {
         this._stepInfo = stepInfo;
         this._agentThread = agentThread;
+        this._processStateManager = processStateManager;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalAgentStep>();
     }
 
@@ -52,9 +54,10 @@ internal class LocalAgentStep : LocalStep
         try
         {
             FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
+            object? result = invokeResult.GetValue<object>();
             this.EmitEvent(
                 ProcessEvent.Create(
-                    invokeResult.GetValue<object>(),
+                    result,
                     this._eventNamespace,
                     sourceId: $"{targetFunction}.OnResult",
                     eventVisibility: KernelProcessEventVisibility.Public));
@@ -64,18 +67,71 @@ internal class LocalAgentStep : LocalStep
                 int executedConditionCount = 0;
                 foreach (var onCompleteStateCondition in this._stepInfo.Actions.DeclarativeActions.OnComplete.StateConditions ?? [])
                 {
+                    if (onCompleteStateCondition.Expression is null)
+                    {
+                        throw new ArgumentException($"State condition expression is null in {this.Name}");
+                    }
+
                     executedConditionCount++;
+                    await this._processStateManager.ReduceAsync((state) =>
+                    {
+                        if (JMESPathConditionEvaluator.EvaluateCondition(state, onCompleteStateCondition.Expression))
+                        {
+                            if (onCompleteStateCondition.Emits is not null)
+                            {
+                                foreach (var emit in onCompleteStateCondition.Emits)
+                                {
+                                    this.EmitEvent(
+                                        ProcessEvent.Create(
+                                            result, // TODO: Use the correct value as defined in emit.Payload
+                                            this._eventNamespace,
+                                            sourceId: emit.EventType,
+                                            eventVisibility: KernelProcessEventVisibility.Public));
+                                }
+                            }
+                        }
+
+                        return Task.FromResult<object?>(state);
+                    }).ConfigureAwait(false);
+
+                    // Test condition
                     // TODO: Apply state conditions to the result and emit events
                 }
                 foreach (var onCompleteSemanticCondition in this._stepInfo.Actions.DeclarativeActions.OnComplete.SemanticConditions ?? [])
                 {
                     executedConditionCount++;
+
+                    //if (onCompleteSemanticCondition.Updates is not null)
+                    //{
+                    //    await this._processStateManager.ReduceAsync((state) =>
+                    //    {
+                    //        foreach (var update in onCompleteSemanticCondition.Updates)
+                    //        {
+                    //            this.UpdateState(state, update.Path, update.Operation.Value, update.Value);
+                    //        }
+
+                    //        return Task.FromResult(state);
+                    //    }).ConfigureAwait(false);
+                    //}
                     // TODO: Apply state conditions to the result and emit events
                 }
 
                 var defaultCondition = this._stepInfo.Actions.DeclarativeActions.OnComplete.Default;
                 if (executedConditionCount == 0 && defaultCondition != null)
                 {
+                    //if (defaultCondition.Updates is not null)
+                    //{
+                    //    await this._processStateManager.ReduceAsync((state) =>
+                    //    {
+                    //        foreach (var update in defaultCondition.Updates)
+                    //        {
+                    //            this.UpdateState(state, update.Path, update.Operation.Value, update.Value);
+                    //        }
+
+                    //        return Task.FromResult(state);
+                    //    }).ConfigureAwait(false);
+                    //}
+
                     // TODO: Apply state conditions to the result and emit events
                     if (defaultCondition.Emits is not null)
                     {
@@ -83,15 +139,11 @@ internal class LocalAgentStep : LocalStep
                         {
                             this.EmitEvent(
                                 ProcessEvent.Create(
-                                    invokeResult.GetValue<object>(), // TODO: Use the correct value as defined in emit.Payload
+                                    result, // TODO: Use the correct value as defined in emit.Payload
                                     this._eventNamespace,
                                     sourceId: emit.EventType,
                                     eventVisibility: KernelProcessEventVisibility.Public));
                         }
-                    }
-                    if (defaultCondition.Updates is not null)
-                    {
-                        // TODO: Apply state updates
                     }
                 }
             }

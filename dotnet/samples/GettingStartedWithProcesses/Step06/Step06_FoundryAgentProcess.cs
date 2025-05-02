@@ -100,4 +100,60 @@ public class Step06_FoundryAgentProcess : BaseTest
         Assert.NotNull(context);
         Assert.NotNull(agent1Result);
     }
+
+    [Fact]
+    public async Task ProcessWithExistingFoundryAgentsWithProcessStateUpdate()
+    {
+        // Define the agents
+        var foundryAgentDefinition1 = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
+
+        // Define the process with a state type
+        var processBuilder = new ProcessBuilder("foundry_agents", typeof(ProcessStateWithCounter));
+        processBuilder.AddThread<AzureAIAgentThread>("shared_thread", KernelProcessThreadLifetime.Scoped);
+
+        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, threadName: "shared_thread")
+            .OnComplete([
+            new DeclarativeProcessCondition
+            {
+                Type = "State",
+                Expression = "Counter <= '3'",
+                Updates = [new VariableUpdate() { Path = "Counter", Operation = StateUpdateOperations.Increment }]
+            },
+            new DeclarativeProcessCondition
+            {
+                Type = "State",
+                Expression = "Counter >= '3'",
+                Emits = [new EventEmission() { EventType = "Agent1Complete" }]
+            }]);
+
+        var agent2 = processBuilder.AddStepFromAgent(foundryAgentDefinition2, threadName: "shared_thread")
+            .OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent2Complete" }] }]);
+
+        processBuilder.OnInputEvent("start").SendEventTo(new(agent1));
+
+        processBuilder.ListenFor().Message("Agent1Complete", agent1).SendEventTo(new(agent2, (output) => output));
+        processBuilder.ListenFor().Message("Agent2Complete", agent2).StopProcess();
+
+        var process = processBuilder.Build();
+
+        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
+        var agentsClient = foundryClient.GetAgentsClient();
+
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.Services.AddSingleton(agentsClient);
+        kernelBuilder.Services.AddSingleton(foundryClient);
+        var kernel = kernelBuilder.Build();
+
+        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" });
+        var agent1Result = await context.GetStateAsync();
+
+        Assert.NotNull(context);
+        Assert.NotNull(agent1Result);
+    }
+
+    public class ProcessStateWithCounter
+    {
+        public int Counter { get; set; }
+    }
 }
