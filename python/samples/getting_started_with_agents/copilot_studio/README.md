@@ -65,7 +65,7 @@ You will create a **Native Client Application Identity** (no client secret requi
 
 ### Tip
 
-If you **do not see Power Platform API**, follow [Step 2 in Power Platform API Authentication](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/enabling-power-platform-api-authentication) to add the API to your tenant.
+If you **do not see Power Platform API**, follow [Step 2 in Power Platform API Authentication](https://learn.microsoft.com/en-us/power-platform/admin/programmability-authentication-v2) to add the API to your tenant.
 
 ---
 
