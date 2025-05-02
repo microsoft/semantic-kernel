@@ -50,7 +50,7 @@ kernel.add_service(embeddings)
 collection = AzureAISearchCollection[str, HotelSampleClass](
     collection_name=COLLECTION_NAME, data_model_type=HotelSampleClass
 )
-text_search = collection.as_text_search()
+text_search = collection.as_text_search(search_type="keyword_hybrid")
 
 
 # Before we create the plugin, we want to create a function that will help the plugin work the way we want it to.
@@ -70,7 +70,13 @@ def update_options_search(
     query: str, options: SearchOptions, parameters: list[Any] | None = None, **kwargs: Any
 ) -> tuple[Any, SearchOptions]:
     if "city" in kwargs:
-        options.filter.equal_to("address/city", kwargs["city"])
+        if options.filter is None:
+            options.filter = lambda x: x.address.city == kwargs["city"]
+        elif isinstance(options.filter, list):
+            options.filter.append(lambda x: x.address.city == kwargs["city"])
+        else:
+            options.filter = [options.filter, lambda x: x.address.city == kwargs["city"]]
+
     return query, options
 
 
@@ -96,7 +102,7 @@ plugin = kernel.add_functions(
             # this can include the `top` and `skip` parameters, but also filters that are always applied.
             # In this case, I am filtering by country, so only hotels in the USA are returned.
             options=VectorSearchOptions(
-                filter=VectorSearchFilter.equal_to("address/country", "USA"),
+                filter=lambda x: x.address.country == "USA",
             ),
             parameters=[
                 KernelParameterMetadata(

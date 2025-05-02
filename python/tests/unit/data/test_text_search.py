@@ -8,9 +8,7 @@ import pytest
 from pydantic import BaseModel
 
 from semantic_kernel import Kernel
-from semantic_kernel.data import (
-    TextSearch,
-)
+from semantic_kernel.data import TextSearch
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
 from semantic_kernel.data.text_search import (
     KernelSearchResults,
@@ -18,7 +16,6 @@ from semantic_kernel.data.text_search import (
     TextSearchOptions,
     TextSearchResult,
     create_options,
-    default_options_update_function,
 )
 from semantic_kernel.data.vector_search import VectorSearchOptions
 from semantic_kernel.exceptions import TextSearchException
@@ -187,56 +184,6 @@ async def test_create_kernel_function_inner_no_results(kernel: Kernel):
         await kernel_function.invoke(kernel, None)
 
 
-async def test_create_kernel_function_inner_update_options(kernel: Kernel):
-    test_search = TestSearch()
-
-    called = False
-    args = {}
-
-    def update_options(
-        query: str,
-        options: "SearchOptions",
-        parameters: list["KernelParameterMetadata"] | None = None,
-        **kwargs: Any,
-    ) -> tuple[str, SearchOptions]:
-        if options.filter is None:
-            options.filter = SearchFilter.equal_to(field_name="address/city", value=kwargs.get("city", ""))
-        else:
-            options.filter.equal_to("address/city", kwargs.get("city", ""))
-        nonlocal called, args
-        called = True
-        args = {"query": query, "options": options, "parameters": parameters}
-        args.update(kwargs)
-        return query, options
-
-    kernel_function = test_search._create_kernel_function(
-        search_function="search",
-        options=None,
-        parameters=[
-            KernelParameterMetadata(
-                name="city",
-                description="The city that you want to search for a hotel in.",
-                type="str",
-                is_required=False,
-                type_object=str,
-            )
-        ],
-        return_parameter=None,
-        function_name="search",
-        description="description",
-        string_mapper=None,
-        options_update_function=update_options,
-    )
-    results = await kernel_function.invoke(kernel, KernelArguments(city="city"))
-    assert results is not None
-    assert results.value == ["test"]
-    assert called
-    assert "options" in args
-    assert "city" in args
-    assert "query" in args
-    assert "parameters" in args
-
-
 async def test_default_map_to_string():
     test_search = TestSearch()
     assert (await test_search._map_results(results=KernelSearchResults(results=desync_list(["test"])))) == ["test"]
@@ -299,22 +246,6 @@ def test_create_options_from_dict():
     assert new_options.top == 1
     # if a non SearchOptions object is passed in, it should be ignored
     assert new_options.skip == 0
-
-
-def test_default_options_update_function():
-    options = SearchOptions()
-    params = [
-        KernelParameterMetadata(name="query", description="Test", type="str", type_object=str),
-        KernelParameterMetadata(name="test", description="Test", type="str", type_object=str),
-        KernelParameterMetadata(name="test2", description="Test2", type="str", type_object=str, default_value="test2"),
-    ]
-    query, options = default_options_update_function("test", options, params, test="test")
-    assert query == "test"
-    assert len(options.filter.filters) == 2
-    assert options.filter.filters[0].field_name == "test"
-    assert options.filter.filters[0].value == "test"
-    assert options.filter.filters[1].field_name == "test2"
-    assert options.filter.filters[1].value == "test2"
 
 
 def test_public_create_functions_search():
