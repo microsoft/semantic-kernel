@@ -19,7 +19,7 @@ namespace SemanticKernel.IntegrationTests.Plugins.Core;
 
 public sealed class SessionsPythonPluginTests : IDisposable
 {
-    private const string SkipReason = null;
+    private const string SkipReason = "For manual verification only";
 
     private readonly SessionsPythonSettings _settings;
     private readonly HttpClientFactory _httpClientFactory;
