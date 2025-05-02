@@ -326,7 +326,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -347,12 +347,10 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
                     maybePrefixedKey,
                     "$",
                     redisJsonRecord.SerializedRecord)).ConfigureAwait(false);
-
-        return (TKey)(object)redisJsonRecord.Key;
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -380,8 +378,6 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
             () => this._database
                 .JSON()
                 .MSetAsync(keyPathValues)).ConfigureAwait(false);
-
-        return redisRecords.Select(x => (TKey)(object)x.originalKey).ToList();
     }
 
     #region Search

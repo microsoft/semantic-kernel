@@ -344,14 +344,9 @@ public class RedisJsonVectorStoreRecordCollectionTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act
-        var actual = await sut.UpsertAsync([model1, model2]);
+        await sut.UpsertAsync([model1, model2]);
 
         // Assert
-        Assert.NotNull(actual);
-        Assert.Equal(2, actual.Count);
-        Assert.Equal(TestRecordKey1, actual[0]);
-        Assert.Equal(TestRecordKey2, actual[1]);
-
         // TODO: Fix issue where NotAnnotated is being included in the JSON.
         var expectedArgs = new object[] { TestRecordKey1, "$", """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4],"NotAnnotated":null}""", TestRecordKey2, "$", """{"data1_json_name":"data 1","Data2":"data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4],"NotAnnotated":null}""" };
         this._redisDatabaseMock

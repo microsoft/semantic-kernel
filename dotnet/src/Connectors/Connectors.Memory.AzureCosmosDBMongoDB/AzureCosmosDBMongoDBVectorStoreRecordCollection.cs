@@ -212,7 +212,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
     }
 
     /// <inheritdoc />
-    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -254,24 +254,19 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
 
         var key = storageModel[MongoDBConstants.MongoReservedKeyPropertyName].AsString;
 
-        return await this.RunOperationAsync(OperationName, async () =>
-        {
+        await this.RunOperationAsync(OperationName, async () =>
             await this._mongoCollection
                 .ReplaceOneAsync(this.GetFilterById(key), storageModel, replaceOptions, cancellationToken)
-                .ConfigureAwait(false);
-
-            return (TKey)(object)key;
-        }).ConfigureAwait(false);
+                .ConfigureAwait(false)).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
         var tasks = records.Select(record => this.UpsertAsync(record, cancellationToken));
-        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-        return results.Where(r => r is not null).ToList();
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     #region Search

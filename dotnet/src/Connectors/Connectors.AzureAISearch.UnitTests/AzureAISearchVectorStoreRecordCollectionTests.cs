@@ -366,13 +366,11 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var model = CreateModel(TestRecordKey1, true);
 
         // Act.
-        var actual = await sut.UpsertAsync(
+        await sut.UpsertAsync(
             model,
             cancellationToken: this._testCancellationToken);
 
         // Assert.
-        Assert.NotNull(actual);
-        Assert.Equal(TestRecordKey1, actual);
         this._searchClientMock.Verify(
             x => x.UploadDocumentsAsync(
                 It.Is<IEnumerable<MultiPropsModel>>(x => x.Count() == 1 && x.First().Key == TestRecordKey1),
@@ -412,16 +410,11 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act.
-        var actual = await sut.UpsertAsync(
+        await sut.UpsertAsync(
             [model1, model2],
             cancellationToken: this._testCancellationToken);
 
         // Assert.
-        Assert.NotNull(actual);
-        Assert.Equal(2, actual.Count);
-        Assert.Equal(TestRecordKey1, actual[0]);
-        Assert.Equal(TestRecordKey2, actual[1]);
-
         this._searchClientMock.Verify(
             x => x.UploadDocumentsAsync(
                 It.Is<IEnumerable<MultiPropsModel>>(x => x.Count() == 2 && x.First().Key == TestRecordKey1 && x.ElementAt(1).Key == TestRecordKey2),

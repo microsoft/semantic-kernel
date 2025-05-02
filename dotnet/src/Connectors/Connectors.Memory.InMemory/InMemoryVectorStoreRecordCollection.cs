@@ -231,15 +231,11 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
-    {
-        var keys = await this.UpsertAsync([record], cancellationToken).ConfigureAwait(false);
-
-        return keys.Single();
-    }
+    public Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+        => this.UpsertAsync([record], cancellationToken);
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -266,7 +262,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
                 if (recordsList.Count == 0)
                 {
-                    return [];
+                    return;
                 }
 
                 records = recordsList;
@@ -286,7 +282,6 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
             }
         }
 
-        var keys = new List<TKey>();
         var collectionDictionary = this.GetCollectionDictionary();
 
         var recordIndex = 0;
@@ -314,12 +309,8 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
             collectionDictionary.AddOrUpdate(key!, wrappedRecord, (key, currentValue) => wrappedRecord);
 
-            keys.Add(key);
-
             recordIndex++;
         }
-
-        return keys;
     }
 
     #region Search

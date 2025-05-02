@@ -63,8 +63,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Number = 100,
                 Floats = Enumerable.Range(0, 10).Select(i => (float)i).ToArray()
             };
-            string key = await collection.UpsertAsync(inserted);
-            Assert.Equal(inserted.Id, key);
+            await collection.UpsertAsync(inserted);
 
             TestModel? received = await collection.GetAsync(inserted.Id, new() { IncludeVectors = true });
             AssertEquality(inserted, received);
@@ -75,8 +74,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Number = inserted.Number + 200, // change one property
                 Floats = inserted.Floats
             };
-            key = await collection.UpsertAsync(updated);
-            Assert.Equal(inserted.Id, key);
+            await collection.UpsertAsync(updated);
 
             received = await collection.GetAsync(updated.Id, new() { IncludeVectors = true });
             AssertEquality(updated, received);
@@ -124,7 +122,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Number = 100,
                 Floats = Enumerable.Range(0, 10).Select(i => (float)i).ToArray()
             };
-            Assert.Equal(inserted.Id, await collection.UpsertAsync(inserted));
+            await collection.UpsertAsync(inserted);
 
             // Let's use a model with different storage names to trigger an SQL exception
             // which should be mapped to VectorStoreOperationException.
@@ -160,18 +158,15 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         {
             await collection.CreateCollectionIfNotExistsAsync();
 
+            var keys = Enumerable.Range(0, 10).Select(i => $"MyId{i}").ToArray();
             TestModel[] inserted = Enumerable.Range(0, 10).Select(i => new TestModel()
             {
-                Id = $"MyId{i}",
+                Id = keys[i],
                 Number = 100 + i,
                 Floats = Enumerable.Range(0, 10).Select(j => (float)(i + j)).ToArray()
             }).ToArray();
 
-            var keys = await collection.UpsertAsync(inserted);
-            for (int i = 0; i < inserted.Length; i++)
-            {
-                Assert.Equal(inserted[i].Id, keys[i]);
-            }
+            await collection.UpsertAsync(inserted);
 
             TestModel[] received = await collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
             for (int i = 0; i < inserted.Length; i++)
@@ -186,11 +181,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Floats = i.Floats
             }).ToArray();
 
-            keys = await collection.UpsertAsync(updated);
-            for (int i = 0; i < updated.Length; i++)
-            {
-                Assert.Equal(updated[i].Id, keys[i]);
-            }
+            await collection.UpsertAsync(updated);
 
             received = await collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
             for (int i = 0; i < updated.Length; i++)
@@ -292,8 +283,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Id = "MyId",
                 Time = new TimeOnly(12, 34, 56)
             };
-            string key = await collection.UpsertAsync(inserted);
-            Assert.Equal(inserted.Id, key);
+            await collection.UpsertAsync(inserted);
 
             TimeModel? received = await collection.GetAsync(inserted.Id, new() { IncludeVectors = true });
             Assert.NotNull(received);
@@ -338,9 +328,10 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         {
             await collection.CreateCollectionIfNotExistsAsync();
 
+            var key = testStore.GenerateKey<TKey>(1);
             FancyTestModel<TKey> inserted = new()
             {
-                Id = testStore.GenerateKey<TKey>(1),
+                Id = key,
                 Number8 = byte.MaxValue,
                 Number16 = short.MaxValue,
                 Number32 = int.MaxValue,
@@ -348,8 +339,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Floats = Enumerable.Range(0, 10).Select(i => (float)i).ToArray(),
                 Bytes = [1, 2, 3],
             };
-            TKey key = await collection.UpsertAsync(inserted);
-            Assert.NotEqual(default, key);
+            await collection.UpsertAsync(inserted);
 
             FancyTestModel<TKey>? received = await collection.GetAsync(key, new() { IncludeVectors = true });
             AssertEquality(inserted, received, key);
@@ -360,8 +350,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Number16 = short.MinValue, // change one property
                 Floats = inserted.Floats
             };
-            key = await collection.UpsertAsync(updated);
-            Assert.Equal(updated.Id, key);
+            await collection.UpsertAsync(updated);
 
             received = await collection.GetAsync(updated.Id, new() { IncludeVectors = true });
             AssertEquality(updated, received, key);

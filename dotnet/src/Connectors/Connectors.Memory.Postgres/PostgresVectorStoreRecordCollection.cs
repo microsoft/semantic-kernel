@@ -128,7 +128,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         const string OperationName = "Upsert";
 
@@ -166,15 +166,13 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         Verify.NotNull(keyObj);
         TKey key = (TKey)keyObj!;
 
-        return await this.RunOperationAsync(OperationName, async () =>
-            {
-                await this._client.UpsertAsync(this.Name, storageModel, this._model.KeyProperty.StorageName, cancellationToken).ConfigureAwait(false);
-                return key;
-            }).ConfigureAwait(false);
+        await this.RunOperationAsync(OperationName, async () =>
+            await this._client.UpsertAsync(this.Name, storageModel, this._model.KeyProperty.StorageName, cancellationToken).ConfigureAwait(false))
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -203,7 +201,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
                 if (recordsList.Count == 0)
                 {
-                    return [];
+                    return;
                 }
 
                 records = recordsList;
@@ -227,7 +225,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (storageModels.Count == 0)
         {
-            return [];
+            return;
         }
 
         var keys = storageModels.Select(model => model[this._model.KeyProperty.StorageName]!).ToList();
@@ -235,8 +233,6 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         await this.RunOperationAsync(OperationName, () =>
             this._client.UpsertBatchAsync(this.Name, storageModels, this._model.KeyProperty.StorageName, cancellationToken)
         ).ConfigureAwait(false);
-
-        return keys.Select(key => (TKey)key!).ToList();
     }
 
     /// <inheritdoc/>

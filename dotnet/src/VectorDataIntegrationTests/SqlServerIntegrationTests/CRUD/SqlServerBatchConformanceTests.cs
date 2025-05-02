@@ -35,8 +35,7 @@ public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
         var keys = inserted.Select(record => record.Id).ToArray();
 
         Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
-        var receivedKeys = await collection.UpsertAsync(inserted);
-        Assert.Equal(keys.ToHashSet(), receivedKeys.ToHashSet()); // .ToHashSet() to ignore order
+        await collection.UpsertAsync(inserted);
 
         var received = await collection.GetAsync(keys, new() { IncludeVectors = includeVectors }).ToArrayAsync();
         foreach (var record in inserted)

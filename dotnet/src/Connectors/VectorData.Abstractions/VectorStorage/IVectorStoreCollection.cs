@@ -113,9 +113,8 @@ public interface IVectorStoreCollection<TKey, TRecord> : IVectorSearch<TRecord>,
     /// </summary>
     /// <param name="record">The record to upsert.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The key for the records, to be used when keys are generated in the database.</returns>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default);
+    Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Upserts a batch of records into the vector store. Does not guarantee that the collection exists.
@@ -124,7 +123,6 @@ public interface IVectorStoreCollection<TKey, TRecord> : IVectorSearch<TRecord>,
     /// </summary>
     /// <param name="records">The records to upsert.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The keys for the records, to be used when keys are generated in the database.</returns>
     /// <remarks>
     /// <para>
     /// The exact method of upserting the batch is implementation-specific and can vary based on database support; some databases support batch upserts via a single, efficient
@@ -138,7 +136,7 @@ public interface IVectorStoreCollection<TKey, TRecord> : IVectorSearch<TRecord>,
     /// </para>
     /// </remarks>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default);
+    Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets matching records from the vector store. Does not guarantee that the collection exists.

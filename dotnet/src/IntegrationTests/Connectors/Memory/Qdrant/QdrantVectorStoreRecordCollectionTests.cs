@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
@@ -64,7 +63,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
         // Act
         await sut.CreateCollectionAsync();
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(30, new GetRecordOptions { IncludeVectors = true });
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var searchResults = await sut.VectorizedSearchAsync(
@@ -77,7 +76,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.True(collectionExistResult);
         await sut.DeleteCollectionAsync();
 
-        Assert.Equal(30ul, upsertResult);
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -100,7 +98,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
         // Output
         output.WriteLine(collectionExistResult.ToString());
-        output.WriteLine(upsertResult.ToString(CultureInfo.InvariantCulture));
         output.WriteLine(getResult?.ToString());
     }
 
@@ -140,11 +137,10 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var record = await this.CreateTestHotelAsync(20, fixture.EmbeddingGenerator);
 
         // Act.
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
 
         // Assert.
         var getResult = await sut.GetAsync(20, new GetRecordOptions { IncludeVectors = true });
-        Assert.Equal(20ul, upsertResult);
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -157,7 +153,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         //Assert.Equal(record.DescriptionEmbedding?.ToArray(), getResult?.DescriptionEmbedding?.ToArray());
 
         // Output.
-        output.WriteLine(upsertResult.ToString(CultureInfo.InvariantCulture));
         output.WriteLine(getResult?.ToString());
     }
 
@@ -177,11 +172,10 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         };
 
         // Act.
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
 
         // Assert.
         var getResult = await sut.GetAsync(Guid.Parse("55555555-5555-5555-5555-555555555555"), new GetRecordOptions { IncludeVectors = true });
-        Assert.Equal(Guid.Parse("55555555-5555-5555-5555-555555555555"), upsertResult);
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.Description, getResult?.Description);
@@ -193,7 +187,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Null(await sut.GetAsync(Guid.Parse("55555555-5555-5555-5555-555555555555")));
 
         // Output.
-        output.WriteLine(upsertResult.ToString("D"));
         output.WriteLine(getResult?.ToString());
     }
 
@@ -417,7 +410,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
         // Act
         var baseSetGetResult = await sut.GetAsync(11ul, new GetRecordOptions { IncludeVectors = true });
-        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
+        await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = 40ul,
 
@@ -443,8 +436,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal("This is a great hotel.", baseSetGetResult["Description"]);
         Assert.NotNull(baseSetGetResult["DescriptionEmbedding"]);
         Assert.IsType<ReadOnlyMemory<float>>(baseSetGetResult["DescriptionEmbedding"]);
-
-        Assert.Equal(40ul, upsertResult);
 
         Assert.NotNull(localGetResult);
         Assert.Equal(40ul, localGetResult["HotelId"]);

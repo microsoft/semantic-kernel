@@ -60,18 +60,16 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
         }));
         await Task.WhenAll(tasks);
 
-        // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => dynamicDataModelCollection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        // Upsert the glossary entries into the collection.
+        await dynamicDataModelCollection.UpsertAsync(glossaryEntries);
 
         // Get the collection using the custom data model.
         var customDataModelCollection = vectorStore.GetCollection<ulong, Glossary>("skglossary");
 
         // Retrieve one of the upserted records from the collection.
-        var upsertedRecord = await customDataModelCollection.GetAsync((ulong)upsertedKeys.First(), new() { IncludeVectors = true });
+        var upsertedRecord = await customDataModelCollection.GetAsync((ulong)glossaryEntries.First()["Key"]!, new() { IncludeVectors = true });
 
-        // Write upserted keys and one of the upserted records to the console.
-        Console.WriteLine($"Upserted keys: {string.Join(", ", upsertedKeys)}");
+        // Write one of the upserted records to the console.
         Console.WriteLine($"Upserted record: {JsonSerializer.Serialize(upsertedRecord, s_indentedSerializerOptions)}");
     }
 
@@ -101,17 +99,15 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
         await Task.WhenAll(tasks);
 
         // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => customDataModelCollection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        await customDataModelCollection.UpsertAsync(glossaryEntries);
 
         // Get the collection using the dynamic data model.
         var dynamicDataModelCollection = vectorStore.GetCollection<object, Dictionary<string, object?>>("skglossary", s_vectorStoreRecordDefinition);
 
         // Retrieve one of the upserted records from the collection.
-        var upsertedRecord = await dynamicDataModelCollection.GetAsync(upsertedKeys.First(), new() { IncludeVectors = true });
+        var upsertedRecord = await dynamicDataModelCollection.GetAsync(glossaryEntries.First().Key, new() { IncludeVectors = true });
 
-        // Write upserted keys and one of the upserted records to the console.
-        Console.WriteLine($"Upserted keys: {string.Join(", ", upsertedKeys)}");
+        // Write one of the upserted records to the console.
         Console.WriteLine($"Upserted record: {JsonSerializer.Serialize(upsertedRecord, s_indentedSerializerOptions)}");
     }
 

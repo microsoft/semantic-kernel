@@ -289,11 +289,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act
-        var result = await sut.UpsertAsync(hotel);
+        await sut.UpsertAsync(hotel);
 
         // Assert
-        Assert.Equal(id, result);
-
         var request = JsonSerializer.Deserialize<WeaviateUpsertCollectionObjectBatchRequest>(this._messageHandlerStub.RequestContent);
 
         Assert.NotNull(request?.CollectionObjects);
@@ -328,12 +326,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act
-        var results = await sut.UpsertAsync([hotel1, hotel2]);
+        await sut.UpsertAsync([hotel1, hotel2]);
 
         // Assert
-        Assert.Contains(id1, results);
-        Assert.Contains(id2, results);
-
         var request = JsonSerializer.Deserialize<WeaviateUpsertCollectionObjectBatchRequest>(this._messageHandlerStub.RequestContent);
 
         Assert.NotNull(request?.CollectionObjects);

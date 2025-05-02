@@ -77,14 +77,13 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
 
         // Act
         await sut.CreateCollectionAsync();
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = includeVectors });
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
         await sut.DeleteCollectionAsync();
 
-        Assert.Equal(HotelId, upsertResult);
         Assert.NotNull(getResult);
 
         Assert.Equal(record.HotelId, getResult.HotelId);
@@ -134,10 +133,9 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
 
         var record = this.CreateTestHotel(HotelId);
 
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId);
 
-        Assert.Equal(HotelId, upsertResult);
         Assert.NotNull(getResult);
 
         // Act
@@ -163,10 +161,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         var record2 = this.CreateTestHotel(HotelId2);
         var record3 = this.CreateTestHotel(HotelId3);
 
-        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
         var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
-
-        Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
 
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId1));
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId2));
@@ -190,17 +185,16 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
 
         var record = this.CreateTestHotel(HotelId);
 
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId);
 
-        Assert.Equal(HotelId, upsertResult);
         Assert.NotNull(getResult);
 
         // Act
         record.HotelName = "Updated name";
         record.HotelRating = 10;
 
-        upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         getResult = await sut.GetAsync(HotelId);
 
         // Assert
@@ -230,12 +224,10 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
             new() { VectorStoreRecordDefinition = definition });
 
         // Act
-        var upsertResult = await sut.UpsertAsync(model);
+        await sut.UpsertAsync(model);
         var getResult = await sut.GetAsync(model.Id);
 
         // Assert
-        Assert.Equal("key", upsertResult);
-
         Assert.NotNull(getResult);
         Assert.Equal("key", getResult.Id);
         Assert.Equal("Test Name", getResult.HotelName);
@@ -250,12 +242,10 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         var sut = new MongoDBVectorStoreRecordCollection<string, VectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
-        var upsertResult = await sut.UpsertAsync(model);
+        await sut.UpsertAsync(model);
         var getResult = await sut.GetAsync(model.HotelId);
 
         // Assert
-        Assert.Equal("key", upsertResult);
-
         Assert.NotNull(getResult);
         Assert.Equal("key", getResult.HotelId);
         Assert.Equal("Test Name", getResult.HotelName);
@@ -282,12 +272,10 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
             new() { VectorStoreRecordDefinition = definition });
 
         // Act
-        var upsertResult = await sut.UpsertAsync(model);
+        await sut.UpsertAsync(model);
         var getResult = await sut.GetAsync(model.Id);
 
         // Assert
-        Assert.Equal("key", upsertResult);
-
         Assert.NotNull(getResult);
         Assert.Equal("key", getResult.Id);
         Assert.Equal("Test Name", getResult.HotelName);
@@ -302,12 +290,10 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         var sut = new MongoDBVectorStoreRecordCollection<string, BsonVectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
-        var upsertResult = await sut.UpsertAsync(model);
+        await sut.UpsertAsync(model);
         var getResult = await sut.GetAsync(model.HotelId);
 
         // Assert
-        Assert.Equal("key", upsertResult);
-
         Assert.NotNull(getResult);
         Assert.Equal("key", getResult.HotelId);
         Assert.Equal("Test Name", getResult.HotelName);
@@ -322,12 +308,10 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         var sut = new MongoDBVectorStoreRecordCollection<string, BsonVectorStoreWithNameTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
-        var upsertResult = await sut.UpsertAsync(model);
+        await sut.UpsertAsync(model);
         var getResult = await sut.GetAsync(model.Id);
 
         // Assert
-        Assert.Equal("key", upsertResult);
-
         Assert.NotNull(getResult);
         Assert.Equal("key", getResult.Id);
         Assert.Equal("Test Name", getResult.HotelName);
@@ -437,7 +421,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         var sut = new MongoDBVectorStoreRecordCollection<object, Dictionary<string, object?>>(fixture.MongoDatabase, fixture.TestCollection, options);
 
         // Act
-        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
+        await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = "DynamicMapper-1",
 
@@ -454,9 +438,6 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         var localGetResult = await sut.GetAsync("DynamicMapper-1", new GetRecordOptions { IncludeVectors = true });
 
         // Assert
-        Assert.NotNull(upsertResult);
-        Assert.Equal("DynamicMapper-1", upsertResult);
-
         Assert.NotNull(localGetResult);
         Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
         Assert.Equal("This is a dynamic mapper hotel", localGetResult["Description"]);

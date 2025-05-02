@@ -48,8 +48,7 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
         };
 
         Assert.Null(await collection.GetAsync(expectedKey));
-        TKey key = await collection.UpsertAsync(inserted);
-        Assert.Equal(expectedKey, key);
+        await collection.UpsertAsync(inserted);
 
         var received = await collection.GetAsync(expectedKey, new() { IncludeVectors = includeVectors });
         inserted.AssertEqual(received, includeVectors, fixture.TestStore.VectorsComparable);
@@ -74,8 +73,7 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
         };
 
         Assert.NotNull(await collection.GetAsync(existingRecord.Id, new() { IncludeVectors = true }));
-        TKey key = await collection.UpsertAsync(updated);
-        Assert.Equal(existingRecord.Id, key);
+        await collection.UpsertAsync(updated);
 
         var received = await collection.GetAsync(existingRecord.Id, new() { IncludeVectors = includeVectors });
         updated.AssertEqual(received, includeVectors, fixture.TestStore.VectorsComparable);

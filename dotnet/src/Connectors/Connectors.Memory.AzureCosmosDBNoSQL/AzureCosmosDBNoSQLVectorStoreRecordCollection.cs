@@ -265,7 +265,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc />
-    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -327,24 +327,16 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
                 .GetContainer(this.Name)
                 .UpsertItemAsync(jsonObject, new PartitionKey(partitionKeyValue), cancellationToken: cancellationToken))
             .ConfigureAwait(false);
-
-        return typeof(TKey) switch
-        {
-            var t when t == typeof(AzureCosmosDBNoSQLCompositeKey) || t == typeof(object) => (TKey)(object)new AzureCosmosDBNoSQLCompositeKey(keyValue!, partitionKeyValue!),
-            var t when t == typeof(string) => (TKey)(object)keyValue!,
-            _ => throw new UnreachableException()
-        };
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
         // TODO: Do proper bulk upsert rather than parallel single inserts, #11350
         var tasks = records.Select(record => this.UpsertAsync(record, cancellationToken));
-        var keys = await Task.WhenAll(tasks).ConfigureAwait(false);
-        return keys.Where(k => k is not null).ToList();
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     #region Search

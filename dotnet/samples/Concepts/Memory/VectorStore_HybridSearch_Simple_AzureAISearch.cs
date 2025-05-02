@@ -50,8 +50,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
         await Task.WhenAll(tasks);
 
         // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => collection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        await collection.UpsertAsync(glossaryEntries);
 
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";

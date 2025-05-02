@@ -418,17 +418,15 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
-        var keys = await this.UpsertAsync([record], cancellationToken).ConfigureAwait(false);
-
-        return keys.Single();
+        await this.UpsertAsync([record], cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -453,7 +451,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
                 if (recordsList.Count == 0)
                 {
-                    return [];
+                    return;
                 }
 
                 records = recordsList;
@@ -478,22 +476,13 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         if (pointStructs is { Count: 0 })
         {
-            return Array.Empty<TKey>();
+            return;
         }
 
         // Upsert.
         await this.RunOperationAsync(
             UpsertName,
             () => this._qdrantClient.UpsertAsync(this._collectionName, pointStructs, true, cancellationToken: cancellationToken)).ConfigureAwait(false);
-
-        return pointStructs.Count == 0
-            ? []
-            : pointStructs[0].Id switch
-            {
-                { HasNum: true } => pointStructs.Select(pointStruct => (TKey)(object)pointStruct.Id.Num).ToList(),
-                { HasUuid: true } => pointStructs.Select(pointStruct => (TKey)(object)Guid.Parse(pointStruct.Id.Uuid)).ToList(),
-                _ => throw new UnreachableException("The Qdrant point ID is neither a number nor a UUID.")
-            };
     }
 
     #region Search

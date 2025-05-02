@@ -62,7 +62,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
 
         // Act
         await sut.CreateCollectionAsync();
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync("HUpsert-1", new GetRecordOptions { IncludeVectors = true });
         var searchResults = await sut
             .VectorizedSearchAsync(
@@ -75,7 +75,6 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.True(collectionExistResult);
         await sut.DeleteCollectionAsync();
 
-        Assert.Equal("HUpsert-1", upsertResult);
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -97,7 +96,6 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
 
         // Output
         output.WriteLine(collectionExistResult.ToString());
-        output.WriteLine(upsertResult);
         output.WriteLine(getResult?.ToString());
     }
 
@@ -136,11 +134,10 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var record = CreateTestHotel("HUpsert-2", 2);
 
         // Act.
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
 
         // Assert.
         var getResult = await sut.GetAsync("HUpsert-2", new GetRecordOptions { IncludeVectors = true });
-        Assert.Equal("HUpsert-2", upsertResult);
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -150,7 +147,6 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.Equal(record.DescriptionEmbedding?.ToArray(), getResult?.DescriptionEmbedding?.ToArray());
 
         // Output.
-        output.WriteLine(upsertResult);
         output.WriteLine(getResult?.ToString());
     }
 
@@ -168,27 +164,12 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
 
         // Act.
-        var results = sut.UpsertAsync(
+        await sut.UpsertAsync(
             [
                 CreateTestHotel("HUpsertMany-1", 1),
                 CreateTestHotel("HUpsertMany-2", 2),
                 CreateTestHotel("HUpsertMany-3", 3),
             ]);
-
-        // Assert.
-        Assert.NotNull(results);
-        var resultsList = await results;
-
-        Assert.Equal(3, resultsList.Count);
-        Assert.Contains("HUpsertMany-1", resultsList);
-        Assert.Contains("HUpsertMany-2", resultsList);
-        Assert.Contains("HUpsertMany-3", resultsList);
-
-        // Output
-        foreach (var result in resultsList)
-        {
-            output.WriteLine(result);
-        }
     }
 
     [Theory(Skip = SkipReason)]
@@ -437,7 +418,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
 
         // Act
         var baseSetGetResult = await sut.GetAsync("HBaseSet-1", new GetRecordOptions { IncludeVectors = true });
-        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
+        await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = "HDynamicMapper-1",
 
@@ -461,8 +442,6 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         Assert.Equal("This is a great hotel.", baseSetGetResult["Description"]);
         Assert.NotNull(baseSetGetResult["DescriptionEmbedding"]);
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)baseSetGetResult["DescriptionEmbedding"]!).ToArray());
-
-        Assert.Equal("HDynamicMapper-1", upsertResult);
 
         Assert.NotNull(localGetResult);
         Assert.Equal("HDynamicMapper-1", localGetResult["HotelId"]);

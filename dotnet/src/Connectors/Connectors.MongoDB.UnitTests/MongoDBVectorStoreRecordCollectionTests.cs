@@ -376,7 +376,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
     }
 
     [Fact]
-    public async Task UpsertReturnsRecordKeyAsync()
+    public async Task CanUpsertRecordAsync()
     {
         // Arrange
         var hotel = new MongoDBHotelModel("key") { HotelName = "Test Name" };
@@ -390,11 +390,9 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var result = await sut.UpsertAsync(hotel);
+        await sut.UpsertAsync(hotel);
 
         // Assert
-        Assert.Equal("key", result);
-
         this._mockMongoCollection.Verify(l => l.ReplaceOneAsync(
             It.Is<FilterDefinition<BsonDocument>>(definition =>
                 CompareFilterDefinitions(definition, expectedDefinition, documentSerializer, serializerRegistry)),
@@ -406,7 +404,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
     }
 
     [Fact]
-    public async Task UpsertBatchReturnsRecordKeysAsync()
+    public async Task CanUpsertManyRecordsAsync()
     {
         // Arrange
         var hotel1 = new MongoDBHotelModel("key1") { HotelName = "Test Name 1" };
@@ -418,15 +416,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var results = await sut.UpsertAsync([hotel1, hotel2, hotel3]);
-
-        // Assert
-        Assert.NotNull(results);
-        Assert.Equal(3, results.Count);
-
-        Assert.Equal("key1", results[0]);
-        Assert.Equal("key2", results[1]);
-        Assert.Equal("key3", results[2]);
+        await sut.UpsertAsync([hotel1, hotel2, hotel3]);
     }
 
     [Fact]
@@ -694,11 +684,9 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             options);
 
         // Act
-        var result = await sut.UpsertAsync(dataModel);
+        await sut.UpsertAsync(dataModel);
 
         // Assert
-        Assert.Equal("key", result);
-
         this._mockMongoCollection.Verify(l => l.ReplaceOneAsync(
             It.Is<FilterDefinition<BsonDocument>>(definition =>
                 CompareFilterDefinitions(definition, expectedDefinition, documentSerializer, serializerRegistry)),
