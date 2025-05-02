@@ -17,7 +17,7 @@ namespace SemanticKernel.UnitTests.Data;
 public class TextSearchBehaviorTests
 {
     [Theory]
-    [InlineData(null, null, "Consider the following information from source documents when responding to the user:", "Include citations to the source document including name and link.")]
+    [InlineData(null, null, "Consider the following information from source documents when responding to the user:", "Include citations to the source document with document name and link if document name and link is available.")]
     [InlineData("Custom context prompt", "Custom citations prompt", "Custom context prompt", "Custom citations prompt")]
     public async Task OnModelInvokeShouldIncludeSearchResultsInOutputAsync(
         string? overrideContextPrompt,
@@ -111,7 +111,7 @@ public class TextSearchBehaviorTests
     }
 
     [Theory]
-    [InlineData(null, null, "Consider the following information from source documents when responding to the user:", "Include citations to the source document including name and link.")]
+    [InlineData(null, null, "Consider the following information from source documents when responding to the user:", "Include citations to the source document with document name and link if document name and link is available.")]
     [InlineData("Custom context prompt", "Custom citations prompt", "Custom context prompt", "Custom citations prompt")]
     public async Task SearchAsyncShouldIncludeSearchResultsInOutputAsync(
         string? overrideContextPrompt,

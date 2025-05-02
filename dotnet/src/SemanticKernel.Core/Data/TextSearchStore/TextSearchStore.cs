@@ -89,13 +89,48 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
                 new VectorStoreRecordDataProperty("SourceId", typeof(string)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("Text", typeof(string)),
                 new VectorStoreRecordDataProperty("SourceName", typeof(string)),
-                new VectorStoreRecordDataProperty("SourceReference", typeof(string)),
+                new VectorStoreRecordDataProperty("SourceLink", typeof(string)),
                 new VectorStoreRecordVectorProperty("TextEmbedding", typeof(ReadOnlyMemory<float>), vectorDimensions),
             }
         };
 
         this._vectorStoreRecordCollection = new Lazy<IVectorStoreRecordCollection<TKey, TextRagStorageDocument<TKey>>>(() =>
             this._vectorStore.GetCollection<TKey, TextRagStorageDocument<TKey>>(collectionName, ragDocumentDefinition));
+    }
+
+    /// <summary>
+    /// Upserts a batch of text chunks into the vector store.
+    /// </summary>
+    /// <param name="textChunks">The text chunks to upload.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that completes when the documents have been upserted.</returns>
+    public async Task UpsertTextAsync(IEnumerable<string> textChunks, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(textChunks);
+
+        var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+
+        var storageDocumentsTasks = textChunks.Select(async textChunk =>
+        {
+            // Without text we cannot generate a vector.
+            if (string.IsNullOrWhiteSpace(textChunk))
+            {
+                throw new ArgumentException(nameof(textChunks), "One of the provided text chunks is null.");
+            }
+
+            var key = GenerateUniqueKey<TKey>(null);
+            var textEmbeddings = await this._textEmbeddingGenerationService.GenerateEmbeddingsAsync([textChunk]).ConfigureAwait(false);
+
+            return new TextRagStorageDocument<TKey>
+            {
+                Key = key,
+                Text = textChunk,
+                TextEmbedding = textEmbeddings.Single()
+            };
+        });
+
+        var storageDocuments = await Task.WhenAll(storageDocumentsTasks).ConfigureAwait(false);
+        await vectorStoreRecordCollection.UpsertAsync(storageDocuments, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
