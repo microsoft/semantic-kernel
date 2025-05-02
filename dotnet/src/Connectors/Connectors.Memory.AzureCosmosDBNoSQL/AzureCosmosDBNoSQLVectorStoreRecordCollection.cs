@@ -201,7 +201,19 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 
     /// <inheritdoc />
     public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
-        => this.DeleteAsync([key], cancellationToken);
+    {
+        Verify.NotNull(key);
+
+        var compositeKey = GetCompositeKeys([key]).Single();
+
+        Verify.NotNullOrWhiteSpace(compositeKey.RecordKey);
+        Verify.NotNullOrWhiteSpace(compositeKey.PartitionKey);
+
+        return this.RunOperationAsync("DeleteItem", () =>
+            this._database
+                .GetContainer(this.Name)
+                .DeleteItemAsync<JsonObject>(compositeKey.RecordKey, new PartitionKey(compositeKey.PartitionKey), cancellationToken: cancellationToken));
+    }
 
     // TODO: Implement bulk delete, #11350
 
