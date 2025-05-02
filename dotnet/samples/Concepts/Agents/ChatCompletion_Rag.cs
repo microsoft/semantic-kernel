@@ -14,7 +14,7 @@ namespace Agents;
 
 /// <summary>
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
-/// adding simple retrieval agumented generation (RAG) capabilities to it.
+/// adding simple retrieval augmented generation (RAG) capabilities to it.
 /// </summary>
 /// <remarks>
 /// This example shows how to use the <see cref="TextSearchStore{TKey}"/> class which is designed
