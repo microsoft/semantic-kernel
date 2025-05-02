@@ -7,7 +7,7 @@ namespace Plugins;
 /// <summary>
 /// This sample shows how to create templated plugins from file directories.
 /// </summary>
-public class CreatePromptPluginFromDirectory(ITestOutputHelper output) : BaseTest(output)
+public class CreatePromptPluginFromDirectory_OpenAI(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
     public async Task ImportAndUsePromptPluginFromDirectoryWithOpenAI()
