@@ -305,14 +305,9 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act
-        var actual = await sut.UpsertAsync([model1, model2]);
+        await sut.UpsertAsync([model1, model2]);
 
         // Assert
-        Assert.NotNull(actual);
-        Assert.Equal(2, actual.Count);
-        Assert.Equal(TestRecordKey1, actual[0]);
-        Assert.Equal(TestRecordKey2, actual[1]);
-
         this._redisDatabaseMock.Verify(
             x => x.HashSetAsync(
                 TestRecordKey1,

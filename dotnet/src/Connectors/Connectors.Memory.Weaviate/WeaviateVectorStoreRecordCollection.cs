@@ -250,15 +250,11 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
-    {
-        var keys = await this.UpsertAsync([record], cancellationToken).ConfigureAwait(false);
-
-        return keys.Single();
-    }
+    public Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+        => this.UpsertAsync([record], cancellationToken);
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -285,7 +281,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
                 if (recordsList.Count == 0)
                 {
-                    return [];
+                    return;
                 }
 
                 records = recordsList;
@@ -314,27 +310,12 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (jsonObjects.Count == 0)
         {
-            return [];
+            return;
         }
 
         using var request = new WeaviateUpsertCollectionObjectBatchRequest(jsonObjects).Build();
 
-        var responses = await this.ExecuteRequestAsync<List<WeaviateUpsertCollectionObjectBatchResponse>>(request, cancellationToken).ConfigureAwait(false);
-
-        var keys = new List<TKey>(jsonObjects.Count);
-
-        if (responses is not null)
-        {
-            foreach (var response in responses)
-            {
-                if (response?.Result?.IsSuccess is true)
-                {
-                    keys.Add((TKey)(object)response.Id);
-                }
-            }
-        }
-
-        return keys;
+        await this.ExecuteRequestAsync<List<WeaviateUpsertCollectionObjectBatchResponse>>(request, cancellationToken).ConfigureAwait(false);
     }
 
     #region Search

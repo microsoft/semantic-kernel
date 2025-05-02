@@ -47,9 +47,8 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
         }));
         await Task.WhenAll(tasks);
 
-        // Upsert the product records into the collection and return their keys.
-        var upsertedKeysTasks = productRecords.Select(x => collection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        // Upsert the product records into the collection.
+        await collection.UpsertAsync(productRecords);
 
         // Search the store using the description embedding.
         var searchString = "I am looking for a reasonably priced coffee maker";

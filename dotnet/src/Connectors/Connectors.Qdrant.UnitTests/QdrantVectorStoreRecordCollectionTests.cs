@@ -408,16 +408,11 @@ public class QdrantVectorStoreRecordCollectionTests
         var models = testRecordKeys.Select(x => CreateModel(x, true));
 
         // Act
-        var actual = await sut.UpsertAsync(
+        await sut.UpsertAsync(
             models,
             cancellationToken: this._testCancellationToken);
 
         // Assert
-        Assert.NotNull(actual);
-        Assert.Equal(2, actual.Count);
-        Assert.Equal(testRecordKeys[0], actual[0]);
-        Assert.Equal(testRecordKeys[1], actual[1]);
-
         this._qdrantClientMock
             .Verify(
                 x => x.UpsertAsync(

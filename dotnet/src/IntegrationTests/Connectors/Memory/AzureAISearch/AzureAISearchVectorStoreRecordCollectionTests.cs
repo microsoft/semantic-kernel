@@ -59,7 +59,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act
         await sut.CreateCollectionAsync();
-        var upsertResult = await sut.UpsertAsync(hotel);
+        await sut.UpsertAsync(hotel);
         var getResult = await sut.GetAsync("Upsert-1", new() { IncludeVectors = true });
         var embedding = fixture.Embedding;
         var searchResults = await sut.VectorizedSearchAsync(
@@ -75,9 +75,6 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var collectionExistResult = await sut.CollectionExistsAsync();
         Assert.True(collectionExistResult);
         await sut.DeleteCollectionAsync();
-
-        Assert.NotNull(upsertResult);
-        Assert.Equal("Upsert-1", upsertResult);
 
         Assert.NotNull(getResult);
         Assert.Equal(hotel.HotelName, getResult.HotelName);
@@ -102,7 +99,6 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Output
         output.WriteLine(collectionExistResult.ToString());
-        output.WriteLine(upsertResult);
         output.WriteLine(getResult.ToString());
     }
 
@@ -135,13 +131,10 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act
         var hotel = this.CreateTestHotel("Upsert-1");
-        var upsertResult = await sut.UpsertAsync(hotel);
+        await sut.UpsertAsync(hotel);
         var getResult = await sut.GetAsync("Upsert-1", new() { IncludeVectors = true });
 
         // Assert
-        Assert.NotNull(upsertResult);
-        Assert.Equal("Upsert-1", upsertResult);
-
         Assert.NotNull(getResult);
         Assert.Equal(hotel.HotelName, getResult.HotelName);
         Assert.Equal(hotel.Description, getResult.Description);
@@ -153,7 +146,6 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Equal(hotel.Rating, getResult.Rating);
 
         // Output
-        output.WriteLine(upsertResult);
         output.WriteLine(getResult.ToString());
     }
 
@@ -164,26 +156,12 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var sut = new AzureAISearchVectorStoreRecordCollection<string, AzureAISearchHotel>(fixture.SearchIndexClient, fixture.TestIndexName);
 
         // Act
-        var results = await sut.UpsertAsync(
+        await sut.UpsertAsync(
             [
                 this.CreateTestHotel("UpsertMany-1"),
                 this.CreateTestHotel("UpsertMany-2"),
                 this.CreateTestHotel("UpsertMany-3"),
             ]);
-
-        // Assert
-        Assert.NotNull(results);
-
-        Assert.Equal(3, results.Count);
-        Assert.Contains("UpsertMany-1", results);
-        Assert.Contains("UpsertMany-2", results);
-        Assert.Contains("UpsertMany-3", results);
-
-        // Output
-        foreach (var result in results)
-        {
-            output.WriteLine(result);
-        }
     }
 
     [Theory(Skip = SkipReason)]
@@ -399,7 +377,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var baseSetGetResult = await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true });
         var baseSetEmbedding = fixture.Embedding;
         var dynamicMapperEmbedding = fixture.Embedding;
-        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
+        await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = "DynamicMapper-1",
 
@@ -423,9 +401,6 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), baseSetGetResult["LastRenovationDate"]);
         Assert.Equal(3.6d, baseSetGetResult["Rating"]);
         Assert.Equal(baseSetEmbedding, (ReadOnlyMemory<float>)baseSetGetResult["DescriptionEmbedding"]!);
-
-        Assert.NotNull(upsertResult);
-        Assert.Equal("DynamicMapper-1", upsertResult);
 
         Assert.NotNull(localGetResult);
         Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);

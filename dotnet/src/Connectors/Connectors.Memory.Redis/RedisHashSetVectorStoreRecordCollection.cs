@@ -291,15 +291,15 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
     }
 
     /// <inheritdoc />
-    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         (_, var generatedEmbeddings) = await RedisVectorStoreRecordFieldMapping.ProcessEmbeddingsAsync<TRecord>(this._model, [record], cancellationToken).ConfigureAwait(false);
 
-        return await this.UpsertCoreAsync(record, 0, generatedEmbeddings, cancellationToken).ConfigureAwait(false);
+        await this.UpsertCoreAsync(record, 0, generatedEmbeddings, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -307,8 +307,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
 
         // Upsert records in parallel.
         var tasks = records.Select((r, i) => this.UpsertCoreAsync(r, i, generatedEmbeddings, cancellationToken));
-        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-        return results.Where(r => r is not null).ToList();
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     private async Task<TKey> UpsertCoreAsync(TRecord record, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings, CancellationToken cancellationToken = default)

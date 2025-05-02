@@ -329,7 +329,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -367,20 +367,21 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this._model,
             this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings));
 
-        return await connection.ExecuteWithErrorHandlingAsync(
+        await connection.ExecuteWithErrorHandlingAsync(
            this._collectionMetadata,
            "Upsert",
             async () =>
             {
                 using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
                 await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                // TODO: Currently unused (#11835), but will be injected into the record in the future.
                 return reader.GetFieldValue<TKey>(0);
             },
            cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -407,7 +408,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
                 if (recordsList.Count == 0)
                 {
-                    return [];
+                    return;
                 }
 
                 records = recordsList;
@@ -500,10 +501,6 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 #endif
             throw;
         }
-
-        var keyProperty = this._model.KeyProperty;
-
-        return records.Select(r => (TKey)keyProperty.GetValueAsObject(r)!).ToList();
     }
 
     #region Search

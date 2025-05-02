@@ -192,10 +192,8 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         var record2 = new PostgresHotel<int> { HotelId = HotelId2, HotelName = "Hotel 2", HotelCode = 1, ParkingIncluded = false, HotelRating = 3.5f, Tags = ["tag1", "tag3"] };
         var record3 = new PostgresHotel<int> { HotelId = HotelId3, HotelName = "Hotel 3", HotelCode = 1, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag4"] };
 
-        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
+        await sut.UpsertAsync([record1, record2, record3]);
         var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
-
-        Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
 
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId1));
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId2));
@@ -221,10 +219,9 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         var record = new PostgresHotel<int> { HotelId = HotelId, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
 
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = true });
 
-        Assert.Equal(HotelId, upsertResult);
         Assert.NotNull(getResult);
         Assert.Null(getResult!.DescriptionEmbedding);
 
@@ -233,7 +230,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         record.HotelRating = 10;
         record.DescriptionEmbedding = new[] { 1f, 2f, 3f, 4f };
 
-        upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = true });
 
         // Assert
@@ -292,7 +289,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         var record = new PostgresHotel<int> { HotelId = (int)HotelId, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
 
         // Act
-        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
+        await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = HotelId,
 
@@ -308,8 +305,6 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
 
         // Assert
-        Assert.Equal(HotelId, upsertResult);
-
         Assert.NotNull(localGetResult);
         Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
         Assert.Equal("This is a dynamic mapper hotel", localGetResult["Description"]);
@@ -319,7 +314,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         // Act - update with null embeddings
         // Act
-        var upsertResult2 = await sut.UpsertAsync(new Dictionary<string, object?>
+        await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = HotelId,
 

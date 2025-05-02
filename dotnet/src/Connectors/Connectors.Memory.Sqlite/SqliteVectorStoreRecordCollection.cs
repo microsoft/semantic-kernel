@@ -406,7 +406,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -446,14 +446,12 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         var condition = new SqliteWhereEqualsCondition(this._keyStorageName, key);
 
-        var upsertedRecordKeys = await this.InternalUpsertBatchAsync(connection, [storageModel], condition, cancellationToken)
+        await this.InternalUpsertBatchAsync(connection, [storageModel], condition, cancellationToken)
             .ConfigureAwait(false);
-
-        return upsertedRecordKeys.Single() ?? throw new VectorStoreOperationException("Error occurred during upsert operation.");
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -480,7 +478,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
                 if (recordsList.Count == 0)
                 {
-                    return [];
+                    return;
                 }
 
                 records = recordsList;
@@ -504,7 +502,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         if (storageModels.Count == 0)
         {
-            return [];
+            return;
         }
 
         var keys = storageModels.Select(model => model[this._keyStorageName]!).ToList();
@@ -512,7 +510,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
         var condition = new SqliteWhereInCondition(this._keyStorageName, keys);
 
-        return await this.InternalUpsertBatchAsync(connection, storageModels, condition, cancellationToken).ConfigureAwait(false);
+        await this.InternalUpsertBatchAsync(connection, storageModels, condition, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />

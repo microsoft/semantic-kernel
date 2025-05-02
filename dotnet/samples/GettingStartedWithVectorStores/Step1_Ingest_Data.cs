@@ -51,8 +51,9 @@ public class Step1_Ingest_Data(ITestOutputHelper output, VectorStoresFixture fix
         await Task.WhenAll(tasks);
 
         // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => collection.UpsertAsync(x));
-        return await Task.WhenAll(upsertedKeysTasks);
+        await collection.UpsertAsync(glossaryEntries);
+
+        return glossaryEntries.Select(g => g.Key);
     }
 
     /// <summary>

@@ -62,7 +62,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 
         // Act
         await sut.CreateCollectionAsync();
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync("Upsert-10", new GetRecordOptions { IncludeVectors = true });
         var searchResults = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
@@ -74,7 +74,6 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.True(collectionExistResult);
         await sut.DeleteCollectionAsync();
 
-        Assert.Equal("Upsert-10", upsertResult);
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -106,7 +105,6 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 
         // Output
         output.WriteLine(collectionExistResult.ToString());
-        output.WriteLine(upsertResult);
         output.WriteLine(getResult?.ToString());
     }
 
@@ -145,11 +143,10 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         RedisHotel record = CreateTestHotel("Upsert-2", 2);
 
         // Act.
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
 
         // Assert.
         var getResult = await sut.GetAsync("Upsert-2", new GetRecordOptions { IncludeVectors = true });
-        Assert.Equal("Upsert-2", upsertResult);
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -164,7 +161,6 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Equal(record.DescriptionEmbedding?.ToArray(), getResult?.DescriptionEmbedding?.ToArray());
 
         // Output.
-        output.WriteLine(upsertResult);
         output.WriteLine(getResult?.ToString());
     }
 
@@ -182,27 +178,12 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var sut = new RedisJsonVectorStoreRecordCollection<string, RedisHotel>(fixture.Database, TestCollectionName, options);
 
         // Act.
-        var results = sut.UpsertAsync(
+        await sut.UpsertAsync(
             [
                 CreateTestHotel("UpsertMany-1", 1),
                 CreateTestHotel("UpsertMany-2", 2),
                 CreateTestHotel("UpsertMany-3", 3),
             ]);
-
-        // Assert.
-        Assert.NotNull(results);
-        var resultsList = await results;
-
-        Assert.Equal(3, resultsList.Count);
-        Assert.Contains("UpsertMany-1", resultsList);
-        Assert.Contains("UpsertMany-2", resultsList);
-        Assert.Contains("UpsertMany-3", resultsList);
-
-        // Output
-        foreach (var result in resultsList)
-        {
-            output.WriteLine(result);
-        }
     }
 
     [Theory(Skip = SkipReason)]
@@ -457,7 +438,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 
         // Act
         var baseSetGetResult = await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true });
-        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
+        await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = "DynamicMapper-1",
 
@@ -488,8 +469,6 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Equal("Seattle", ((RedisHotelAddress)baseSetGetResult["Address"]!).City);
         Assert.Equal("This is a great hotel.", baseSetGetResult["Description"]);
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)baseSetGetResult["DescriptionEmbedding"]!).ToArray());
-
-        Assert.Equal("DynamicMapper-1", upsertResult);
 
         Assert.NotNull(localGetResult);
         Assert.Equal("DynamicMapper-1", localGetResult["HotelId"]);

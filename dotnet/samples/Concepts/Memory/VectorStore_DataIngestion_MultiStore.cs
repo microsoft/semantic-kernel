@@ -184,8 +184,9 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
             await Task.WhenAll(tasks);
 
             // Upsert the glossary entries into the collection and return their keys.
-            var upsertedKeys = glossaryEntries.Select(x => collection.UpsertAsync(x));
-            return await Task.WhenAll(upsertedKeys);
+            await collection.UpsertAsync(glossaryEntries);
+
+            return glossaryEntries.Select(entry => entry.Key);
         }
 
         /// <summary>

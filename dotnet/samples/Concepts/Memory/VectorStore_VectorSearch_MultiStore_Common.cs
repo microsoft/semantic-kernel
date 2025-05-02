@@ -44,9 +44,8 @@ public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore
         }));
         await Task.WhenAll(tasks);
 
-        // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => collection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        // Upsert the glossary entries into the collection.
+        await collection.UpsertAsync(glossaryEntries);
 
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";

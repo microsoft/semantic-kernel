@@ -110,14 +110,13 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         // Act
         await sut.CreateCollectionAsync();
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = includeVectors });
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
         await sut.DeleteCollectionAsync();
 
-        Assert.Equal(HotelId, upsertResult);
         Assert.NotNull(getResult);
 
         Assert.Equal(record.HotelId, getResult.HotelId);
@@ -149,10 +148,9 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         var record = CreateTestHotel(HotelId);
 
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId);
 
-        Assert.Equal(HotelId, upsertResult);
         Assert.NotNull(getResult);
 
         // Act
@@ -180,10 +178,8 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var record2 = CreateTestHotel(HotelId2);
         var record3 = CreateTestHotel(HotelId3);
 
-        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
+        await sut.UpsertAsync([record1, record2, record3]);
         var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
-
-        Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
 
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId1));
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId2));
@@ -214,10 +210,8 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var record2 = CreateTestHotel(HotelId2);
         var record3 = CreateTestHotel(HotelId3);
 
-        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
+        await sut.UpsertAsync([record1, record2, record3]);
         var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
-
-        Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
 
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId1));
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId2));
@@ -314,10 +308,9 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         var record = CreateTestHotel(HotelId);
 
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId);
 
-        Assert.Equal(HotelId, upsertResult);
         Assert.NotNull(getResult);
 
         // Act
@@ -325,7 +318,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         record.HotelRating = 10;
         record.DescriptionEmbedding = new[] { 1f, 2f, 3f, 4f };
 
-        upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = true });
 
         // Assert
@@ -453,7 +446,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var record = CreateTestHotel(HotelId);
 
         // Act
-        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
+        await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = HotelId,
 
@@ -468,8 +461,6 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
 
         // Assert
-        Assert.Equal(HotelId, (long)upsertResult);
-
         Assert.NotNull(localGetResult);
         Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
         Assert.Equal("This is a dynamic mapper hotel", localGetResult["Description"]);
@@ -496,7 +487,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var record = CreateTestHotel(HotelId);
 
         // Act
-        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
+        await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = HotelId,
 
@@ -511,8 +502,6 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
 
         // Assert
-        Assert.Equal(HotelId, upsertResult);
-
         Assert.NotNull(localGetResult);
         Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
         Assert.Equal("This is a dynamic mapper hotel", localGetResult["Description"]);

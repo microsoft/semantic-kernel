@@ -276,7 +276,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -308,12 +308,10 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         await this.RunIndexOperationAsync(
             "Upsert",
             indexClient => indexClient.UpsertAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
-
-        return (TKey)(object)vector.Id;
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -326,7 +324,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
 
             if (recordsList.Count == 0)
             {
-                return [];
+                return;
             }
 
             records = recordsList;
@@ -348,7 +346,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (vectors.Count == 0)
         {
-            return [];
+            return;
         }
 
         Sdk.UpsertRequest request = new()
@@ -360,8 +358,6 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         await this.RunIndexOperationAsync(
             "UpsertBatch",
             indexClient => indexClient.UpsertAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
-
-        return vectors.Select(x => (TKey)(object)x.Id).ToList();
     }
 
     #region Search

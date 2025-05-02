@@ -264,7 +264,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -272,27 +272,23 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         var innerOptions = new IndexDocumentsOptions { ThrowOnAnyError = true };
 
         // Upsert record.
-        var results = await this.MapToStorageModelAndUploadDocumentAsync([record], innerOptions, cancellationToken).ConfigureAwait(false);
-
-        return (TKey)(object)results.Value.Results[0].Key;
+        await this.MapToStorageModelAndUploadDocumentAsync([record], innerOptions, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
         if (!records.Any())
         {
-            return [];
+            return;
         }
 
         // Create Options
         var innerOptions = new IndexDocumentsOptions { ThrowOnAnyError = true };
 
         // Upsert records
-        var results = await this.MapToStorageModelAndUploadDocumentAsync(records, innerOptions, cancellationToken).ConfigureAwait(false);
-
-        return results.Value.Results.Select(x => (TKey)(object)x.Key).ToList();
+        await this.MapToStorageModelAndUploadDocumentAsync(records, innerOptions, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />

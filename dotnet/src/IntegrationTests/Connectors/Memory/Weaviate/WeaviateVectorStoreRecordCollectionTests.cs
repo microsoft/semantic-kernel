@@ -72,9 +72,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         // Act && Assert
         await sut.CreateCollectionAsync();
 
-        var upsertResult = await sut.UpsertAsync(record);
-
-        Assert.Equal(hotelId, upsertResult);
+        await sut.UpsertAsync(record);
 
         var getResult = await sut.GetAsync(hotelId, new() { IncludeVectors = includeVectors });
 
@@ -131,10 +129,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         var record = this.CreateTestHotel(hotelId);
 
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(hotelId);
 
-        Assert.Equal(hotelId, upsertResult);
         Assert.NotNull(getResult);
 
         // Act
@@ -162,10 +159,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         var record2 = this.CreateTestHotel(hotelId2);
         var record3 = this.CreateTestHotel(hotelId3);
 
-        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
+        await sut.UpsertAsync([record1, record2, record3]);
         var getResults = await sut.GetAsync([hotelId1, hotelId2, hotelId3]).ToListAsync();
-
-        Assert.Equal([hotelId1, hotelId2, hotelId3], upsertResults);
 
         Assert.NotNull(getResults.First(l => l.HotelId == hotelId1));
         Assert.NotNull(getResults.First(l => l.HotelId == hotelId2));
@@ -191,17 +186,16 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         var record = this.CreateTestHotel(hotelId);
 
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(hotelId);
 
-        Assert.Equal(hotelId, upsertResult);
         Assert.NotNull(getResult);
 
         // Act
         record.HotelName = "Updated name";
         record.HotelRating = 10;
 
-        upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         getResult = await sut.GetAsync(hotelId);
 
         // Assert
@@ -368,7 +362,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.CreateCollectionAsync();
 
         // Act
-        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
+        await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = hotelId,
 
@@ -385,8 +379,6 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         var localGetResult = await sut.GetAsync(hotelId, new GetRecordOptions { IncludeVectors = true });
 
         // Assert
-        Assert.Equal(hotelId, upsertResult);
-
         Assert.NotNull(localGetResult);
         Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
         Assert.Equal("This is a dynamic mapper hotel", localGetResult["Description"]);
