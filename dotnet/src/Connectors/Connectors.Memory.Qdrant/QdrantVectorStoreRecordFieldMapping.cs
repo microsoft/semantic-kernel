@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 internal static class QdrantVectorStoreRecordFieldMapping
 {
-    public static VectorStoreCollectionModelBuildingOptions GetModelBuildOptions(bool hasNamedVectors)
+    public static CollectionModelBuildingOptions GetModelBuildOptions(bool hasNamedVectors)
         => new()
         {
             RequiresAtLeastOneVector = !hasNamedVectors,

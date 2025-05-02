@@ -20,7 +20,7 @@ internal static class SqlServerCommandBuilder
         string? schema,
         string tableName,
         bool ifNotExists,
-        VectorStoreCollectionModel model)
+        CollectionModel model)
     {
         StringBuilder sb = new(200);
         if (ifNotExists)
@@ -121,7 +121,7 @@ internal static class SqlServerCommandBuilder
         SqlConnection connection,
         string? schema,
         string tableName,
-        VectorStoreCollectionModel model,
+        CollectionModel model,
         IDictionary<string, object?> record)
     {
         SqlCommand command = connection.CreateCommand();
@@ -147,7 +147,7 @@ internal static class SqlServerCommandBuilder
         sb.Append("UPDATE SET ");
         foreach (var property in model.Properties)
         {
-            if (property is not VectorStoreKeyPropertyModel) // don't update the key
+            if (property is not KeyPropertyModel) // don't update the key
             {
                 sb.AppendFormat("t.[{0}] = s.[{0}],", property.StorageName);
             }
@@ -173,7 +173,7 @@ internal static class SqlServerCommandBuilder
         SqlCommand command,
         string? schema,
         string tableName,
-        VectorStoreCollectionModel model,
+        CollectionModel model,
         IEnumerable<IDictionary<string, object?>> records)
     {
         StringBuilder sb = new(200);
@@ -214,7 +214,7 @@ internal static class SqlServerCommandBuilder
         sb.Append("UPDATE SET ");
         foreach (var property in model.Properties)
         {
-            if (property is not VectorStoreKeyPropertyModel) // don't update the key
+            if (property is not KeyPropertyModel) // don't update the key
             {
                 sb.AppendFormat("t.[{0}] = s.[{0}],", property.StorageName);
             }
@@ -241,7 +241,7 @@ internal static class SqlServerCommandBuilder
 
     internal static SqlCommand DeleteSingle(
         SqlConnection connection, string? schema, string tableName,
-        VectorStoreKeyPropertyModel keyProperty, object key)
+        KeyPropertyModel keyProperty, object key)
     {
         SqlCommand command = connection.CreateCommand();
 
@@ -259,7 +259,7 @@ internal static class SqlServerCommandBuilder
 
     internal static bool DeleteMany<TKey>(
         SqlCommand command, string? schema, string tableName,
-        VectorStoreKeyPropertyModel keyProperty, IEnumerable<TKey> keys)
+        KeyPropertyModel keyProperty, IEnumerable<TKey> keys)
     {
         StringBuilder sb = new(100);
         sb.Append("DELETE FROM ");
@@ -279,7 +279,7 @@ internal static class SqlServerCommandBuilder
 
     internal static SqlCommand SelectSingle(
         SqlConnection sqlConnection, string? schema, string collectionName,
-        VectorStoreCollectionModel model,
+        CollectionModel model,
         object key,
         bool includeVectors)
     {
@@ -303,7 +303,7 @@ internal static class SqlServerCommandBuilder
 
     internal static bool SelectMany<TKey>(
         SqlCommand command, string? schema, string tableName,
-        VectorStoreCollectionModel model,
+        CollectionModel model,
         IEnumerable<TKey> keys,
         bool includeVectors)
     {
@@ -329,8 +329,8 @@ internal static class SqlServerCommandBuilder
 
     internal static SqlCommand SelectVector<TRecord>(
         SqlConnection connection, string? schema, string tableName,
-        VectorStoreVectorPropertyModel vectorProperty,
-        VectorStoreCollectionModel model,
+        VectorPropertyModel vectorProperty,
+        CollectionModel model,
         int top,
         VectorSearchOptions<TRecord> options,
         ReadOnlyMemory<float> vector)
@@ -380,7 +380,7 @@ internal static class SqlServerCommandBuilder
         int top,
         GetFilteredRecordOptions<TRecord> options,
         SqlConnection connection, string? schema, string tableName,
-        VectorStoreCollectionModel model)
+        CollectionModel model)
     {
         SqlCommand command = connection.CreateCommand();
 
@@ -434,7 +434,7 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static StringBuilder AppendParameterName(this StringBuilder sb, VectorStorePropertyModel property, ref int paramIndex, out string parameterName)
+    internal static StringBuilder AppendParameterName(this StringBuilder sb, PropertyModel property, ref int paramIndex, out string parameterName)
     {
         // In SQL Server, parameter names cannot be just a number like "@1".
         // Parameter names must start with an alphabetic character or an underscore
@@ -489,14 +489,14 @@ internal static class SqlServerCommandBuilder
     }
 
     private static StringBuilder AppendColumnNames(this StringBuilder sb,
-        IEnumerable<VectorStorePropertyModel> properties,
+        IEnumerable<PropertyModel> properties,
         string? prefix = null,
         bool includeVectors = true)
     {
         bool any = false;
         foreach (var property in properties)
         {
-            if (!includeVectors && property is VectorStoreVectorPropertyModel)
+            if (!includeVectors && property is VectorPropertyModel)
             {
                 continue;
             }
@@ -519,7 +519,7 @@ internal static class SqlServerCommandBuilder
     }
 
     private static StringBuilder AppendKeyParameterList<TKey>(this StringBuilder sb,
-        IEnumerable<TKey> keys, SqlCommand command, VectorStoreKeyPropertyModel keyProperty, out bool emptyKeys)
+        IEnumerable<TKey> keys, SqlCommand command, KeyPropertyModel keyProperty, out bool emptyKeys)
     {
         int keyIndex = 0;
         foreach (TKey key in keys)
@@ -576,7 +576,7 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    private static void AddParameter(this SqlCommand command, VectorStorePropertyModel? property, string name, object? value)
+    private static void AddParameter(this SqlCommand command, PropertyModel? property, string name, object? value)
     {
         switch (value)
         {
@@ -599,15 +599,15 @@ internal static class SqlServerCommandBuilder
         }
     }
 
-    private static string Map(VectorStorePropertyModel property) => property.Type switch
+    private static string Map(PropertyModel property) => property.Type switch
     {
         Type t when t == typeof(byte) => "TINYINT",
         Type t when t == typeof(short) => "SMALLINT",
         Type t when t == typeof(int) => "INT",
         Type t when t == typeof(long) => "BIGINT",
         Type t when t == typeof(Guid) => "UNIQUEIDENTIFIER",
-        Type t when t == typeof(string) && property is VectorStoreKeyPropertyModel => "NVARCHAR(4000)",
-        Type t when t == typeof(string) && property is VectorStoreDataPropertyModel { IsIndexed: true } => "NVARCHAR(4000)",
+        Type t when t == typeof(string) && property is KeyPropertyModel => "NVARCHAR(4000)",
+        Type t when t == typeof(string) && property is DataPropertyModel { IsIndexed: true } => "NVARCHAR(4000)",
         Type t when t == typeof(string) => "NVARCHAR(MAX)",
         Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
         Type t when t == typeof(bool) => "BIT",

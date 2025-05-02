@@ -18,7 +18,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
     private readonly string _collectionName;
 
     /// <summary>The model.</summary>
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>A <see cref="JsonSerializerOptions"/> for serialization/deserialization of record properties.</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -39,7 +39,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
     public WeaviateDynamicDataModelMapper(
         string collectionName,
         bool hasNamedVectors,
-        VectorStoreCollectionModel model,
+        CollectionModel model,
         JsonSerializerOptions jsonSerializerOptions)
     {
         this._collectionName = collectionName;

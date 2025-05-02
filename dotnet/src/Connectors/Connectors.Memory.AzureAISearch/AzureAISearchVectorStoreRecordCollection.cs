@@ -60,7 +60,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     private readonly AzureAISearchDynamicDataModelMapper? _dynamicMapper;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -145,15 +145,15 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         {
             switch (property)
             {
-                case VectorStoreKeyPropertyModel p:
+                case KeyPropertyModel p:
                     searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapKeyField(p));
                     break;
 
-                case VectorStoreDataPropertyModel p:
+                case DataPropertyModel p:
                     searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(p));
                     break;
 
-                case VectorStoreVectorPropertyModel p:
+                case VectorPropertyModel p:
                     (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(p);
 
                     // Add the search field, plus its profile and algorithm configuration to the search config.
@@ -391,7 +391,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
 
         foreach (var pair in options.OrderBy.Values)
         {
-            VectorStorePropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
+            PropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
             string name = property.StorageName;
             // From https://learn.microsoft.com/dotnet/api/azure.search.documents.searchoptions.orderby:
             // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".

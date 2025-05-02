@@ -44,7 +44,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
         typeof(ReadOnlyMemory<double>?)
     ];
 
-    internal static readonly VectorStoreCollectionModelBuildingOptions ModelBuildingOptions = new()
+    internal static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,
@@ -71,7 +71,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     private readonly RedisJsonVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The model.</summary>
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>An array of the storage names of all the data properties that are part of the Redis payload, i.e. all properties except the key and vector properties.</summary>
     private readonly string[] _dataStoragePropertyNames;
@@ -108,8 +108,8 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
         this._options = options ?? new RedisJsonVectorStoreRecordCollectionOptions<TRecord>();
         this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
         this._model = isDynamic ?
-            new VectorStoreCollectionModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator) :
-            new VectorStoreCollectionJsonModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, this._jsonSerializerOptions);
+            new CollectionModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator) :
+            new CollectionJsonModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, this._jsonSerializerOptions);
 
         // Lookup storage property names.
         this._dataStoragePropertyNames = this._model.DataProperties.Select(p => p.StorageName).ToArray();
@@ -451,7 +451,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)

@@ -19,7 +19,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = JsonSerializerOptions.Default;
 
-    private static readonly VectorStoreCollectionModel s_model = new AzureCosmosDBNoSQLVectorStoreModelBuilder()
+    private static readonly CollectionModel s_model = new AzureCosmosDBNoSQLVectorStoreModelBuilder()
         .Build(
             typeof(Dictionary<string, object?>),
             new VectorStoreRecordDefinition

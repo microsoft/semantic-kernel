@@ -43,7 +43,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>Flag which indicates whether vector properties exist in the consumer data model.</summary>
     private readonly bool _vectorPropertiesExist;
@@ -93,7 +93,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         this._dataTableName = name.EscapeIdentifier();
         this._vectorTableName = GetVectorTableName(name, this._options).EscapeIdentifier();
 
-        this._model = new VectorStoreCollectionModelBuilder(SqliteConstants.ModelBuildingOptions)
+        this._model = new CollectionModelBuilder(SqliteConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
 
         this._vectorPropertiesExist = this._model.VectorProperties.Count > 0;
@@ -213,7 +213,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
@@ -830,14 +830,14 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
     private TRecord GetAndMapRecord(
         DbDataReader reader,
-        IReadOnlyList<VectorStorePropertyModel> properties,
+        IReadOnlyList<PropertyModel> properties,
         bool includeVectors)
     {
         var storageModel = new Dictionary<string, object?>();
 
         foreach (var property in properties)
         {
-            if (includeVectors || property is not VectorStoreVectorPropertyModel)
+            if (includeVectors || property is not VectorPropertyModel)
             {
                 var propertyValue = SqliteVectorStoreRecordPropertyMapping.GetPropertyValue(reader, property.StorageName, property.Type);
                 storageModel.Add(property.StorageName, propertyValue);

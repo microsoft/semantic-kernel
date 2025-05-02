@@ -13,7 +13,7 @@ internal static class PostgresConstants
     public const string VectorStoreSystemName = "postgresql";
 
     /// <summary>Validation options.</summary>
-    public static readonly VectorStoreCollectionModelBuildingOptions ModelBuildingOptions = new()
+    public static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,

@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 
 /// <inheritdoc />
 [Experimental("MEVD9001")]
-public sealed class VectorStoreVectorPropertyModel<TInput>(string modelName) : VectorStoreVectorPropertyModel(modelName, typeof(TInput))
+public sealed class VectorPropertyModel<TInput>(string modelName) : VectorPropertyModel(modelName, typeof(TInput))
 {
     /// <inheritdoc />
     public override bool TrySetupEmbeddingGeneration<TEmbedding, TUnwrappedEmbedding>(IEmbeddingGenerator embeddingGenerator, Type? embeddingType)

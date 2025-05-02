@@ -54,7 +54,7 @@ internal static class QdrantVectorStoreCollectionCreateMapping
     /// <param name="vectorProperty">The property to map.</param>
     /// <returns>The mapped <see cref="VectorParams"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the property is missing information or has unsupported options specified.</exception>
-    public static VectorParams MapSingleVector(VectorStoreVectorPropertyModel vectorProperty)
+    public static VectorParams MapSingleVector(VectorPropertyModel vectorProperty)
     {
         if (vectorProperty!.IndexKind is not null && vectorProperty!.IndexKind != IndexKind.Hnsw)
         {
@@ -70,7 +70,7 @@ internal static class QdrantVectorStoreCollectionCreateMapping
     /// <param name="vectorProperties">The properties to map.</param>
     /// <returns>THe mapped <see cref="VectorParamsMap"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the property is missing information or has unsupported options specified.</exception>
-    public static VectorParamsMap MapNamedVectors(IEnumerable<VectorStoreVectorPropertyModel> vectorProperties)
+    public static VectorParamsMap MapNamedVectors(IEnumerable<VectorPropertyModel> vectorProperties)
     {
         var vectorParamsMap = new VectorParamsMap();
 
@@ -90,7 +90,7 @@ internal static class QdrantVectorStoreCollectionCreateMapping
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The chosen <see cref="Distance"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if a distance function is chosen that isn't supported by qdrant.</exception>
-    public static Distance GetSDKDistanceAlgorithm(VectorStoreVectorPropertyModel vectorProperty)
+    public static Distance GetSDKDistanceAlgorithm(VectorPropertyModel vectorProperty)
         => vectorProperty.DistanceFunction switch
         {
             DistanceFunction.CosineSimilarity or null => Distance.Cosine,

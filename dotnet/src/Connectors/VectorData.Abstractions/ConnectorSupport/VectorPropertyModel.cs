@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 /// This is an internal support type meant for use by connectors only, and not for use by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public class VectorStoreVectorPropertyModel(string modelName, Type type) : VectorStorePropertyModel(modelName, type)
+public class VectorPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
 {
     private int _dimensions;
 
@@ -73,7 +73,7 @@ public class VectorStoreVectorPropertyModel(string modelName, Type type) : Vecto
 
     /// <summary>
     /// Checks whether the <see cref="EmbeddingGenerator"/> configured on this property supports the given embedding type.
-    /// The implementation on this non-generic <see cref="VectorStoreVectorPropertyModel"/> checks for <see cref="string"/>
+    /// The implementation on this non-generic <see cref="VectorPropertyModel"/> checks for <see cref="string"/>
     /// and <see cref="DataContent"/> as input types for <see cref="EmbeddingGenerator"/>.
     /// </summary>
     public virtual bool TrySetupEmbeddingGeneration<TEmbedding, TUnwrappedEmbedding>(IEmbeddingGenerator embeddingGenerator, Type? embeddingType)
@@ -110,7 +110,7 @@ public class VectorStoreVectorPropertyModel(string modelName, Type type) : Vecto
     /// representing the embedding generation operation. If <see cref="EmbeddingGenerator"/> does not support the given <typeparamref name="TEmbedding"/>, returns <see langword="false"/>.
     /// </para>
     /// <para>
-    /// The implementation on this non-generic <see cref="VectorStoreVectorPropertyModel"/> checks for <see cref="string"/>
+    /// The implementation on this non-generic <see cref="VectorPropertyModel"/> checks for <see cref="string"/>
     /// and <see cref="DataContent"/> as input types for <see cref="EmbeddingGenerator"/>.
     /// </para>
     /// </remarks>
@@ -161,7 +161,7 @@ public class VectorStoreVectorPropertyModel(string modelName, Type type) : Vecto
     /// representing the embedding generation operation. If <see cref="EmbeddingGenerator"/> does not support the given <typeparamref name="TEmbedding"/>, returns <see langword="false"/>.
     /// </para>
     /// <para>
-    /// The implementation on this non-generic <see cref="VectorStoreVectorPropertyModel"/> checks for <see cref="string"/>
+    /// The implementation on this non-generic <see cref="VectorPropertyModel"/> checks for <see cref="string"/>
     /// and <see cref="DataContent"/> as input types for <see cref="EmbeddingGenerator"/>.
     /// </para>
     /// </remarks>

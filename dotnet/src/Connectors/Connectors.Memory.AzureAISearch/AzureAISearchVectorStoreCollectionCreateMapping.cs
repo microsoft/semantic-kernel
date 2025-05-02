@@ -20,7 +20,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// </summary>
     /// <param name="keyProperty">The key property definition.</param>
     /// <returns>The <see cref="SearchableField"/> for the provided property definition.</returns>
-    public static SearchableField MapKeyField(VectorStoreKeyPropertyModel keyProperty)
+    public static SearchableField MapKeyField(KeyPropertyModel keyProperty)
     {
         return new SearchableField(keyProperty.StorageName) { IsKey = true, IsFilterable = true };
     }
@@ -31,7 +31,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// <param name="dataProperty">The data property definition.</param>
     /// <returns>The <see cref="SimpleField"/> for the provided property definition.</returns>
     /// <exception cref="InvalidOperationException">Throws when the definition is missing required information.</exception>
-    public static SimpleField MapDataField(VectorStoreDataPropertyModel dataProperty)
+    public static SimpleField MapDataField(DataPropertyModel dataProperty)
     {
         if (dataProperty.IsFullTextIndexed)
         {
@@ -63,7 +63,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The <see cref="VectorSearchField"/> and required index configuration.</returns>
     /// <exception cref="InvalidOperationException">Throws when the definition is missing required information, or unsupported options are configured.</exception>
-    public static (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) MapVectorField(VectorStoreVectorPropertyModel vectorProperty)
+    public static (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) MapVectorField(VectorPropertyModel vectorProperty)
     {
         // Build a name for the profile and algorithm configuration based on the property name
         // since we'll just create a separate one for each vector property.
@@ -91,7 +91,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// </summary>
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The configured or default <see cref="IndexKind"/>.</returns>
-    public static string GetSKIndexKind(VectorStoreVectorPropertyModel vectorProperty)
+    public static string GetSKIndexKind(VectorPropertyModel vectorProperty)
         => vectorProperty.IndexKind ?? IndexKind.Hnsw;
 
     /// <summary>
@@ -101,7 +101,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The chosen <see cref="VectorSearchAlgorithmMetric"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if a distance function is chosen that isn't supported by Azure AI Search.</exception>
-    public static VectorSearchAlgorithmMetric GetSDKDistanceAlgorithm(VectorStoreVectorPropertyModel vectorProperty)
+    public static VectorSearchAlgorithmMetric GetSDKDistanceAlgorithm(VectorPropertyModel vectorProperty)
         => vectorProperty.DistanceFunction switch
         {
             DistanceFunction.CosineSimilarity or null => VectorSearchAlgorithmMetric.Cosine,

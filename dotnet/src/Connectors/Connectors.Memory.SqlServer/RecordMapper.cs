@@ -8,7 +8,7 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
-internal sealed class RecordMapper<TRecord>(VectorStoreCollectionModel model)
+internal sealed class RecordMapper<TRecord>(CollectionModel model)
 {
     public IDictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
@@ -73,7 +73,7 @@ internal sealed class RecordMapper<TRecord>(VectorStoreCollectionModel model)
 
         return record;
 
-        static void SetValue(IDictionary<string, object?> storageModel, object record, VectorStorePropertyModel property, object? value)
+        static void SetValue(IDictionary<string, object?> storageModel, object record, PropertyModel property, object? value)
         {
             try
             {

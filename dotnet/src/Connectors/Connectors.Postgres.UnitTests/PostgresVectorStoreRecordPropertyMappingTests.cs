@@ -90,13 +90,13 @@ public sealed class PostgresVectorStoreRecordPropertyMappingTests
     public void GetIndexInfoReturnsCorrectValues()
     {
         // Arrange
-        List<VectorStorePropertyModel> vectorProperties =
+        List<PropertyModel> vectorProperties =
         [
-            new VectorStoreVectorPropertyModel("vector1", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Hnsw, Dimensions = 1000 },
-            new VectorStoreVectorPropertyModel("vector2", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Flat, Dimensions = 3000 },
-            new VectorStoreVectorPropertyModel("vector3", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Hnsw, Dimensions = 900, DistanceFunction = DistanceFunction.ManhattanDistance },
-            new VectorStoreDataPropertyModel("data1", typeof(string)) { IsIndexed = true },
-            new VectorStoreDataPropertyModel("data2", typeof(string)) { IsIndexed = false }
+            new VectorPropertyModel("vector1", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Hnsw, Dimensions = 1000 },
+            new VectorPropertyModel("vector2", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Flat, Dimensions = 3000 },
+            new VectorPropertyModel("vector3", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Hnsw, Dimensions = 900, DistanceFunction = DistanceFunction.ManhattanDistance },
+            new DataPropertyModel("data1", typeof(string)) { IsIndexed = true },
+            new DataPropertyModel("data2", typeof(string)) { IsIndexed = false }
         ];
 
         // Act
@@ -134,7 +134,7 @@ public sealed class PostgresVectorStoreRecordPropertyMappingTests
     public void GetVectorIndexInfoReturnsThrowsForInvalidDimensions(string indexKind, int dimensions)
     {
         // Arrange
-        var vectorProperty = new VectorStoreVectorPropertyModel("vector", typeof(ReadOnlyMemory<float>?)) { IndexKind = indexKind, Dimensions = dimensions };
+        var vectorProperty = new VectorPropertyModel("vector", typeof(ReadOnlyMemory<float>?)) { IndexKind = indexKind, Dimensions = dimensions };
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => PostgresVectorStoreRecordPropertyMapping.GetIndexInfo([vectorProperty]));

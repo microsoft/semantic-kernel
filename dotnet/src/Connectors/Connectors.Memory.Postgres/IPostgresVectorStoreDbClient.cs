@@ -49,7 +49,7 @@ internal interface IPostgresVectorStoreDbClient
     /// <param name="ifNotExists">Specifies whether to include IF NOT EXISTS in the command.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns></returns>
-    Task CreateTableAsync(string tableName, VectorStoreCollectionModel model, bool ifNotExists = true, CancellationToken cancellationToken = default);
+    Task CreateTableAsync(string tableName, CollectionModel model, bool ifNotExists = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Drop a table.
@@ -87,7 +87,7 @@ internal interface IPostgresVectorStoreDbClient
     /// <param name="includeVectors">If true, the vectors will be included in the entry.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The row if the key is found, otherwise null.</returns>
-    Task<Dictionary<string, object?>?> GetAsync<TKey>(string tableName, TKey key, VectorStoreCollectionModel model, bool includeVectors = false, CancellationToken cancellationToken = default)
+    Task<Dictionary<string, object?>?> GetAsync<TKey>(string tableName, TKey key, CollectionModel model, bool includeVectors = false, CancellationToken cancellationToken = default)
         where TKey : notnull;
 
     /// <summary>
@@ -99,7 +99,7 @@ internal interface IPostgresVectorStoreDbClient
     /// <param name="includeVectors">If true, the vectors will be included in the entries.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The rows that match the given keys.</returns>
-    IAsyncEnumerable<Dictionary<string, object?>> GetBatchAsync<TKey>(string tableName, IEnumerable<TKey> keys, VectorStoreCollectionModel model, bool includeVectors = false, CancellationToken cancellationToken = default)
+    IAsyncEnumerable<Dictionary<string, object?>> GetBatchAsync<TKey>(string tableName, IEnumerable<TKey> keys, CollectionModel model, bool includeVectors = false, CancellationToken cancellationToken = default)
         where TKey : notnull;
 
     /// <summary>
@@ -133,9 +133,9 @@ internal interface IPostgresVectorStoreDbClient
     /// <param name="options">The options that control the behavior of the search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An asynchronous stream of result objects that the nearest matches to the <see cref="Vector"/>.</returns>
-    IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync<TRecord>(string tableName, VectorStoreCollectionModel model, VectorStoreVectorPropertyModel vectorProperty, Vector vectorValue, int limit,
+    IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync<TRecord>(string tableName, CollectionModel model, VectorPropertyModel vectorProperty, Vector vectorValue, int limit,
         VectorSearchOptions<TRecord> options, CancellationToken cancellationToken = default);
 
-    IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecordsAsync<TRecord>(string tableName, VectorStoreCollectionModel model,
+    IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecordsAsync<TRecord>(string tableName, CollectionModel model,
         Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options, CancellationToken cancellationToken = default);
 }

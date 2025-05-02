@@ -17,8 +17,8 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests;
 /// </summary>
 public class QdrantVectorStoreCollectionSearchMappingTests
 {
-    private readonly VectorStoreCollectionModel _model =
-        new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
+    private readonly CollectionModel _model =
+        new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
         .Build(
             typeof(Dictionary<string, object?>),
             new()
@@ -118,7 +118,7 @@ public class QdrantVectorStoreCollectionSearchMappingTests
             Score = 0.5f
         };
 
-        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
+        var model = new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
             .Build(
                 typeof(DataModel),
                 new()

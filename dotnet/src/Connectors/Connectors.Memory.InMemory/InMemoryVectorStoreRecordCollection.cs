@@ -46,7 +46,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly string _collectionName;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>An function to look up vectors from the records.</summary>
     private readonly InMemoryVectorStoreVectorResolver<TRecord> _vectorResolver;
@@ -89,7 +89,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
                     throw new InvalidOperationException($"The collection does not have a vector field named '{vectorPropertyName}', so vector search is not possible.");
                 }
 
-                if (property is not VectorStoreVectorPropertyModel vectorProperty)
+                if (property is not VectorPropertyModel vectorProperty)
                 {
                     throw new InvalidOperationException($"The property '{vectorPropertyName}' isn't a vector property.");
                 }
@@ -377,7 +377,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)

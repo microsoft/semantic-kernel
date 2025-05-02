@@ -17,7 +17,7 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     public void MapSingleVectorCreatesVectorParams()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.DotProductSimilarity };
+        var vectorProperty = new VectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.DotProductSimilarity };
 
         // Act.
         var actual = QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty);
@@ -32,7 +32,7 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     public void MapSingleVectorDefaultsToCosine()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 };
+        var vectorProperty = new VectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 };
 
         // Act.
         var actual = QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty);
@@ -45,7 +45,7 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     public void MapSingleVectorThrowsForUnsupportedDistanceFunction()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.CosineDistance };
+        var vectorProperty = new VectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.CosineDistance };
 
         // Act and assert.
         Assert.Throws<InvalidOperationException>(() => QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty));
@@ -55,7 +55,7 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     public void MapNamedVectorsCreatesVectorParamsMap()
     {
         // Arrange.
-        var vectorProperties = new VectorStoreVectorPropertyModel[]
+        var vectorProperties = new VectorPropertyModel[]
         {
             new("testvector1", typeof(ReadOnlyMemory<float>))
             {

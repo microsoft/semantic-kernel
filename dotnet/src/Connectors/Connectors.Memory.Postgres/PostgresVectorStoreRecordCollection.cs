@@ -39,7 +39,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly PostgresVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
     private readonly PostgresVectorStoreRecordMapper<TRecord> _mapper;
@@ -78,7 +78,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         this.Name = name;
         this._options = options ?? new PostgresVectorStoreRecordCollectionOptions<TRecord>();
 
-        this._model = new VectorStoreCollectionModelBuilder(PostgresConstants.ModelBuildingOptions)
+        this._model = new CollectionModelBuilder(PostgresConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
 
         this._mapper = new PostgresVectorStoreRecordMapper<TRecord>(this._model);
@@ -362,7 +362,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)

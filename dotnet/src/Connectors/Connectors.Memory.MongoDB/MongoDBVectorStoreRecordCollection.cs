@@ -57,7 +57,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
     private readonly IMongoDBMapper<TRecord> _mapper;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
 
     /// <inheritdoc />
     public string Name { get; }
@@ -349,7 +349,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         MEVD.VectorSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)

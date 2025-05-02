@@ -14,14 +14,14 @@ namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 /// This is an internal support type meant for use by connectors only, and not for use by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public class VectorStoreCollectionJsonModelBuilder : VectorStoreCollectionModelBuilder
+public class CollectionJsonModelBuilder : CollectionModelBuilder
 {
     private JsonSerializerOptions _jsonSerializerOptions = JsonSerializerOptions.Default;
 
     /// <summary>
-    /// Constructs a new <see cref="VectorStoreCollectionJsonModelBuilder"/>.
+    /// Constructs a new <see cref="CollectionJsonModelBuilder"/>.
     /// </summary>
-    public VectorStoreCollectionJsonModelBuilder(VectorStoreCollectionModelBuildingOptions options)
+    public CollectionJsonModelBuilder(CollectionModelBuildingOptions options)
         : base(options)
     {
         if (!options.UsesExternalSerializer)
@@ -31,9 +31,9 @@ public class VectorStoreCollectionJsonModelBuilder : VectorStoreCollectionModelB
     }
 
     /// <summary>
-    /// Builds and returns an <see cref="VectorStoreCollectionModel"/> from the given <paramref name="type"/> and <paramref name="vectorStoreRecordDefinition"/>.
+    /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="vectorStoreRecordDefinition"/>.
     /// </summary>
-    public virtual VectorStoreCollectionModel Build(
+    public virtual CollectionModel Build(
         Type type,
         VectorStoreRecordDefinition? vectorStoreRecordDefinition,
         IEmbeddingGenerator? defaultEmbeddingGenerator,
@@ -57,7 +57,7 @@ public class VectorStoreCollectionJsonModelBuilder : VectorStoreCollectionModelB
 
         foreach (var property in this.Properties)
         {
-            var keyPropertyWithReservedName = this.Options.ReservedKeyStorageName is not null && property is VectorStoreKeyPropertyModel;
+            var keyPropertyWithReservedName = this.Options.ReservedKeyStorageName is not null && property is KeyPropertyModel;
             string storageName;
 
             if (property.PropertyInfo?.GetCustomAttribute<JsonPropertyNameAttribute>() is { } jsonPropertyNameAttribute)

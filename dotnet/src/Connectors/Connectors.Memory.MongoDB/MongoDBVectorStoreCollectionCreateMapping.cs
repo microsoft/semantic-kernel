@@ -17,7 +17,7 @@ internal static class MongoDBVectorStoreCollectionCreateMapping
     /// Returns an array of indexes to create for vector properties.
     /// </summary>
     /// <param name="vectorProperties">Collection of vector properties for index creation.</param>
-    public static BsonArray GetVectorIndexFields(IReadOnlyList<VectorStoreVectorPropertyModel> vectorProperties)
+    public static BsonArray GetVectorIndexFields(IReadOnlyList<VectorPropertyModel> vectorProperties)
     {
         var indexArray = new BsonArray();
 
@@ -42,7 +42,7 @@ internal static class MongoDBVectorStoreCollectionCreateMapping
     /// Returns an array of indexes to create for filterable data properties.
     /// </summary>
     /// <param name="dataProperties">Collection of data properties for index creation.</param>
-    public static BsonArray GetFilterableDataIndexFields(IReadOnlyList<VectorStoreDataPropertyModel> dataProperties)
+    public static BsonArray GetFilterableDataIndexFields(IReadOnlyList<DataPropertyModel> dataProperties)
     {
         var indexArray = new BsonArray();
 
@@ -68,7 +68,7 @@ internal static class MongoDBVectorStoreCollectionCreateMapping
     /// Returns a list of of fields to index for full text search data properties.
     /// </summary>
     /// <param name="dataProperties">Collection of data properties for index creation.</param>
-    public static List<BsonElement> GetFullTextSearchableDataIndexFields(IReadOnlyList<VectorStoreDataPropertyModel> dataProperties)
+    public static List<BsonElement> GetFullTextSearchableDataIndexFields(IReadOnlyList<DataPropertyModel> dataProperties)
     {
         var fieldElements = new List<BsonElement>();
 

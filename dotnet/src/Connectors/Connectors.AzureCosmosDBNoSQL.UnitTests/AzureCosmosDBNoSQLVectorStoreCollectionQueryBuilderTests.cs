@@ -18,7 +18,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
 {
     private const string ScorePropertyName = "TestScore";
 
-    private readonly VectorStoreCollectionModel _model = new AzureCosmosDBNoSQLVectorStoreModelBuilder().Build(
+    private readonly CollectionModel _model = new AzureCosmosDBNoSQLVectorStoreModelBuilder().Build(
         typeof(Dictionary<string, object?>),
         new()
         {

@@ -20,7 +20,7 @@ internal static class AzureAISearchVectorStoreCollectionSearchMapping
     /// <param name="model">The model.</param>
     /// <returns>The OData filter string.</returns>
     /// <exception cref="InvalidOperationException">Thrown when a provided filter value is not supported.</exception>
-    public static string BuildLegacyFilterString(VectorSearchFilter basicVectorSearchFilter, VectorStoreCollectionModel model)
+    public static string BuildLegacyFilterString(VectorSearchFilter basicVectorSearchFilter, CollectionModel model)
     {
         var filterString = string.Empty;
         if (basicVectorSearchFilter.FilterClauses is not null)
@@ -66,7 +66,7 @@ internal static class AzureAISearchVectorStoreCollectionSearchMapping
     /// <param name="fieldName">The name of the property in the data model.</param>
     /// <returns>The name that the property os stored under.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the property name is not found.</exception>
-    private static string GetStoragePropertyName(VectorStoreCollectionModel model, string fieldName)
+    private static string GetStoragePropertyName(CollectionModel model, string fieldName)
     {
         if (!model.PropertyMap.TryGetValue(fieldName, out var property))
         {

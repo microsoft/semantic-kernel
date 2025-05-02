@@ -7,11 +7,11 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 
 /// <summary>
-/// Contains options affecting model building; passed to <see cref="VectorStoreCollectionModelBuilder"/>.
+/// Contains options affecting model building; passed to <see cref="CollectionModelBuilder"/>.
 /// This is an internal support type meant for use by connectors only, and not for use by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public sealed class VectorStoreCollectionModelBuildingOptions
+public sealed class CollectionModelBuildingOptions
 {
     /// <summary>
     /// Whether multiple key properties are supported.

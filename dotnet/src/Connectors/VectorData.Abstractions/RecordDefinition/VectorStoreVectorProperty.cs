@@ -107,7 +107,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// </summary>
     public Type? EmbeddingType { get; init; }
 
-    internal virtual VectorStoreVectorPropertyModel CreatePropertyModel()
+    internal virtual VectorPropertyModel CreatePropertyModel()
         => new(this.DataModelPropertyName, this.PropertyType)
         {
             Dimensions = this.Dimensions,

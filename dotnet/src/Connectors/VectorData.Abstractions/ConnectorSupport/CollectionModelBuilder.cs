@@ -13,42 +13,42 @@ using Microsoft.Extensions.VectorData.Properties;
 namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 
 /// <summary>
-/// Represents a builder for a <see cref="VectorStoreCollectionModel"/>.
+/// Represents a builder for a <see cref="CollectionModel"/>.
 /// This is an internal support type meant for use by connectors only, and not for use by applications.
 /// </summary>
 /// <remarks>Note that this class is single-use only, and not thread-safe.</remarks>
 [Experimental("MEVD9001")]
-public class VectorStoreCollectionModelBuilder
+public class CollectionModelBuilder
 {
     /// <summary>
     /// Options for building the model.
     /// </summary>
-    protected VectorStoreCollectionModelBuildingOptions Options { get; }
+    protected CollectionModelBuildingOptions Options { get; }
 
     /// <summary>
     /// The key properties of the record.
     /// </summary>
-    protected List<VectorStoreKeyPropertyModel> KeyProperties { get; } = [];
+    protected List<KeyPropertyModel> KeyProperties { get; } = [];
 
     /// <summary>
     /// The data properties of the record.
     /// </summary>
-    protected List<VectorStoreDataPropertyModel> DataProperties { get; } = [];
+    protected List<DataPropertyModel> DataProperties { get; } = [];
 
     /// <summary>
     /// The vector properties of the record.
     /// </summary>
-    protected List<VectorStoreVectorPropertyModel> VectorProperties { get; } = [];
+    protected List<VectorPropertyModel> VectorProperties { get; } = [];
 
     /// <summary>
     /// All properties of the record, of all types.
     /// </summary>
-    protected IEnumerable<VectorStorePropertyModel> Properties => this.PropertyMap.Values;
+    protected IEnumerable<PropertyModel> Properties => this.PropertyMap.Values;
 
     /// <summary>
     /// All properties of the record, of all types, indexed by their model name.
     /// </summary>
-    protected Dictionary<string, VectorStorePropertyModel> PropertyMap { get; } = new();
+    protected Dictionary<string, PropertyModel> PropertyMap { get; } = new();
 
     /// <summary>
     /// The default embedding generator to use for vector properties, when none is specified at the property or collection level.
@@ -56,24 +56,24 @@ public class VectorStoreCollectionModelBuilder
     protected IEmbeddingGenerator? DefaultEmbeddingGenerator { get; private set; }
 
     /// <summary>
-    /// Constructs a new <see cref="VectorStoreCollectionModelBuilder"/>.
+    /// Constructs a new <see cref="CollectionModelBuilder"/>.
     /// </summary>
-    public VectorStoreCollectionModelBuilder(VectorStoreCollectionModelBuildingOptions options)
+    public CollectionModelBuilder(CollectionModelBuildingOptions options)
     {
         if (options.SupportsMultipleKeys && options.ReservedKeyStorageName is not null)
         {
-            throw new ArgumentException($"{nameof(VectorStoreCollectionModelBuildingOptions.ReservedKeyStorageName)} cannot be set when {nameof(VectorStoreCollectionModelBuildingOptions.SupportsMultipleKeys)} is set.");
+            throw new ArgumentException($"{nameof(CollectionModelBuildingOptions.ReservedKeyStorageName)} cannot be set when {nameof(CollectionModelBuildingOptions.SupportsMultipleKeys)} is set.");
         }
 
         this.Options = options;
     }
 
     /// <summary>
-    /// Builds and returns an <see cref="VectorStoreCollectionModel"/> from the given <paramref name="type"/> and <paramref name="vectorStoreRecordDefinition"/>.
+    /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="vectorStoreRecordDefinition"/>.
     /// </summary>
     [RequiresDynamicCode("Currently not compatible with NativeAOT code")]
     [RequiresUnreferencedCode("Currently not compatible with trimming")] // TODO
-    public virtual VectorStoreCollectionModel Build(Type type, VectorStoreRecordDefinition? vectorStoreRecordDefinition, IEmbeddingGenerator? defaultEmbeddingGenerator)
+    public virtual CollectionModel Build(Type type, VectorStoreRecordDefinition? vectorStoreRecordDefinition, IEmbeddingGenerator? defaultEmbeddingGenerator)
     {
         this.DefaultEmbeddingGenerator = defaultEmbeddingGenerator;
 
@@ -116,12 +116,12 @@ public class VectorStoreCollectionModelBuilder
         // (allowing the same CLR type + attributes to be used with different record definitions).
         foreach (var clrProperty in type.GetProperties())
         {
-            VectorStorePropertyModel? property = null;
+            PropertyModel? property = null;
             string? storageName = null;
 
             if (clrProperty.GetCustomAttribute<VectorStoreKeyPropertyAttribute>() is { } keyAttribute)
             {
-                var keyProperty = new VectorStoreKeyPropertyModel(clrProperty.Name, clrProperty.PropertyType);
+                var keyProperty = new KeyPropertyModel(clrProperty.Name, clrProperty.PropertyType);
                 this.KeyProperties.Add(keyProperty);
                 storageName = keyAttribute.StoragePropertyName;
                 property = keyProperty;
@@ -135,7 +135,7 @@ public class VectorStoreCollectionModelBuilder
                     throw new InvalidOperationException($"Property '{type.Name}.{clrProperty.Name}' has multiple of {nameof(VectorStoreKeyPropertyAttribute)}, {nameof(VectorStoreDataPropertyAttribute)} or {nameof(VectorStoreVectorPropertyAttribute)}. Only one of these attributes can be specified on a property.");
                 }
 
-                var dataProperty = new VectorStoreDataPropertyModel(clrProperty.Name, clrProperty.PropertyType)
+                var dataProperty = new DataPropertyModel(clrProperty.Name, clrProperty.PropertyType)
                 {
                     IsIndexed = dataAttribute.IsIndexed,
                     IsFullTextIndexed = dataAttribute.IsFullTextIndexed,
@@ -157,7 +157,7 @@ public class VectorStoreCollectionModelBuilder
                 // a generic VectorStoreRecordVectorProperty<TInput> for a custom input type.
                 var vectorProperty = vectorStoreRecordDefinition?.Properties.FirstOrDefault(p => p.DataModelPropertyName == clrProperty.Name) is VectorStoreVectorProperty definitionVectorProperty
                     ? definitionVectorProperty.CreatePropertyModel()
-                    : new VectorStoreVectorPropertyModel(clrProperty.Name, clrProperty.PropertyType);
+                    : new VectorPropertyModel(clrProperty.Name, clrProperty.PropertyType);
 
                 vectorProperty.Dimensions = vectorAttribute.Dimensions;
                 vectorProperty.IndexKind = vectorAttribute.IndexKind;
@@ -217,13 +217,13 @@ public class VectorStoreCollectionModelBuilder
                 switch (definitionProperty)
                 {
                     case VectorStoreKeyProperty definitionKeyProperty:
-                        var keyProperty = new VectorStoreKeyPropertyModel(definitionKeyProperty.DataModelPropertyName, definitionKeyProperty.PropertyType);
+                        var keyProperty = new KeyPropertyModel(definitionKeyProperty.DataModelPropertyName, definitionKeyProperty.PropertyType);
                         this.KeyProperties.Add(keyProperty);
                         this.PropertyMap.Add(definitionKeyProperty.DataModelPropertyName, keyProperty);
                         property = keyProperty;
                         break;
                     case VectorStoreDataProperty definitionDataProperty:
-                        var dataProperty = new VectorStoreDataPropertyModel(definitionDataProperty.DataModelPropertyName, definitionDataProperty.PropertyType);
+                        var dataProperty = new DataPropertyModel(definitionDataProperty.DataModelPropertyName, definitionDataProperty.PropertyType);
                         this.DataProperties.Add(dataProperty);
                         this.PropertyMap.Add(definitionDataProperty.DataModelPropertyName, dataProperty);
                         property = dataProperty;
@@ -257,7 +257,7 @@ public class VectorStoreCollectionModelBuilder
             switch (definitionProperty)
             {
                 case VectorStoreKeyProperty definitionKeyProperty:
-                    if (property is not VectorStoreKeyPropertyModel keyPropertyModel)
+                    if (property is not KeyPropertyModel keyPropertyModel)
                     {
                         throw new InvalidOperationException(
                             $"Property '{property.ModelName}' is present in the {nameof(VectorStoreRecordDefinition)} as a key property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
@@ -266,7 +266,7 @@ public class VectorStoreCollectionModelBuilder
                     break;
 
                 case VectorStoreDataProperty definitionDataProperty:
-                    if (property is not VectorStoreDataPropertyModel dataProperty)
+                    if (property is not DataPropertyModel dataProperty)
                     {
                         throw new InvalidOperationException(
                             $"Property '{property.ModelName}' is present in the {nameof(VectorStoreRecordDefinition)} as a data property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
@@ -278,7 +278,7 @@ public class VectorStoreCollectionModelBuilder
                     break;
 
                 case VectorStoreVectorProperty definitionVectorProperty:
-                    if (property is not VectorStoreVectorPropertyModel vectorProperty)
+                    if (property is not VectorPropertyModel vectorProperty)
                     {
                         throw new InvalidOperationException(
                             $"Property '{property.ModelName}' is present in the {nameof(VectorStoreRecordDefinition)} as a vector property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
@@ -344,9 +344,9 @@ public class VectorStoreCollectionModelBuilder
         }
     }
 
-    private void SetPropertyStorageName(VectorStorePropertyModel property, string? storageName, Type? type)
+    private void SetPropertyStorageName(PropertyModel property, string? storageName, Type? type)
     {
-        if (property is VectorStoreKeyPropertyModel && this.Options.ReservedKeyStorageName is not null)
+        if (property is KeyPropertyModel && this.Options.ReservedKeyStorageName is not null)
         {
             // If we have ReservedKeyStorageName, there can only be a single key property (validated in the constructor)
             property.StorageName = this.Options.ReservedKeyStorageName;
@@ -377,7 +377,7 @@ public class VectorStoreCollectionModelBuilder
     /// Can be overridden by connectors to provide support for other embedding types.
     /// </summary>
     protected virtual void SetupEmbeddingGeneration(
-        VectorStoreVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         IEmbeddingGenerator embeddingGenerator,
         Type? embeddingType)
     {
@@ -429,7 +429,7 @@ public class VectorStoreCollectionModelBuilder
             throw new NotSupportedException($"Multiple vector properties found on type '{type.Name}' or the provided {nameof(VectorStoreRecordDefinition)} while only one is supported.");
         }
 
-        var storageNameMap = new Dictionary<string, VectorStorePropertyModel>();
+        var storageNameMap = new Dictionary<string, PropertyModel>();
 
         foreach (var property in this.PropertyMap.Values)
         {
@@ -447,7 +447,7 @@ public class VectorStoreCollectionModelBuilder
     /// <summary>
     /// Validates a single property, performing validation on it.
     /// </summary>
-    protected virtual void ValidateProperty(VectorStorePropertyModel propertyModel)
+    protected virtual void ValidateProperty(PropertyModel propertyModel)
     {
         var type = propertyModel.Type;
 
@@ -460,21 +460,21 @@ public class VectorStoreCollectionModelBuilder
 
         switch (propertyModel)
         {
-            case VectorStoreKeyPropertyModel keyProperty:
+            case KeyPropertyModel keyProperty:
                 if (this.Options.SupportedKeyPropertyTypes is not null)
                 {
                     ValidatePropertyType(propertyModel.ModelName, type, "Key", this.Options.SupportedKeyPropertyTypes);
                 }
                 break;
 
-            case VectorStoreDataPropertyModel dataProperty:
+            case DataPropertyModel dataProperty:
                 if (this.Options.SupportedDataPropertyTypes is not null)
                 {
                     ValidatePropertyType(propertyModel.ModelName, type, "Data", this.Options.SupportedDataPropertyTypes, this.Options.SupportedEnumerableDataPropertyElementTypes);
                 }
                 break;
 
-            case VectorStoreVectorPropertyModel vectorProperty:
+            case VectorPropertyModel vectorProperty:
                 Debug.Assert(vectorProperty.EmbeddingGenerator is null ^ vectorProperty.Type != vectorProperty.EmbeddingType);
 
                 if (!this.Options.SupportedVectorPropertyTypes.Contains(vectorProperty.EmbeddingType))

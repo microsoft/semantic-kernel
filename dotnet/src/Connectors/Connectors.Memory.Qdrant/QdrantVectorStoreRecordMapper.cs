@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// Mapper between a Qdrant record and the consumer data model that uses json as an intermediary to allow supporting a wide range of models.
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
-internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreCollectionModel model, bool hasNamedVectors)
+internal sealed class QdrantVectorStoreRecordMapper<TRecord>(CollectionModel model, bool hasNamedVectors)
 {
     /// <inheritdoc />
     public PointStruct MapFromDataToStorageModel(TRecord dataModel, int recordIndex, GeneratedEmbeddings<Embedding<float>>?[]? generatedEmbeddings)
@@ -85,7 +85,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreCollecti
 
         return pointStruct;
 
-        Vector GetVector(VectorStorePropertyModel property, object? embedding)
+        Vector GetVector(PropertyModel property, object? embedding)
             => embedding switch
             {
                 ReadOnlyMemory<float> floatVector => floatVector.ToArray(),

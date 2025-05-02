@@ -180,8 +180,8 @@ public sealed class PostgresVectorStoreRecordMapperTests
         };
     }
 
-    private static VectorStoreCollectionModel GetModel<TRecord>(VectorStoreRecordDefinition definition)
-        => new VectorStoreCollectionModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(TRecord), definition, defaultEmbeddingGenerator: null);
+    private static CollectionModel GetModel<TRecord>(VectorStoreRecordDefinition definition)
+        => new CollectionModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(TRecord), definition, defaultEmbeddingGenerator: null);
 
 #pragma warning disable CA1812
     private sealed class TestRecord<TKey>

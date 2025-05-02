@@ -16,7 +16,7 @@ namespace SemanticKernel.Connectors.MongoDB.UnitTests;
 /// </summary>
 public sealed class MongoDBDynamicDataModelMapperTests
 {
-    private static readonly VectorStoreCollectionModel s_model = BuildModel(
+    private static readonly CollectionModel s_model = BuildModel(
     [
         new VectorStoreKeyProperty("Key", typeof(string)),
         new VectorStoreDataProperty("BoolDataProp", typeof(bool)),
@@ -286,6 +286,6 @@ public sealed class MongoDBDynamicDataModelMapperTests
         Assert.False(dataModel.ContainsKey("FloatVector"));
     }
 
-    private static VectorStoreCollectionModel BuildModel(IReadOnlyList<VectorStoreProperty> properties)
+    private static CollectionModel BuildModel(IReadOnlyList<VectorStoreProperty> properties)
         => new MongoDBModelBuilder().Build(typeof(Dictionary<string, object?>), new() { Properties = properties }, defaultEmbeddingGenerator: null);
 }

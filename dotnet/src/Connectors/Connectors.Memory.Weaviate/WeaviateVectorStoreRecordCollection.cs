@@ -58,7 +58,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly WeaviateVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
     private readonly IWeaviateMapper<TRecord> _mapper;
@@ -404,7 +404,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)

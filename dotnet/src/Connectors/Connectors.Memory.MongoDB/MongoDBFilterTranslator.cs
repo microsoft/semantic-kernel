@@ -17,10 +17,10 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 // Information specific to vector search pre-filter: https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-stage/#atlas-vector-search-pre-filter
 internal class MongoDBFilterTranslator
 {
-    private VectorStoreCollectionModel _model = null!;
+    private CollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
-    internal BsonDocument Translate(LambdaExpression lambdaExpression, VectorStoreCollectionModel model)
+    internal BsonDocument Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
         this._model = model;
 
@@ -68,7 +68,7 @@ internal class MongoDBFilterTranslator
                 ? this.GenerateEqualityComparison(property, leftConstant, binary.NodeType)
                 : throw new NotSupportedException("Invalid equality/comparison");
 
-    private BsonDocument GenerateEqualityComparison(VectorStorePropertyModel property, object? value, ExpressionType nodeType)
+    private BsonDocument GenerateEqualityComparison(PropertyModel property, object? value, ExpressionType nodeType)
     {
         if (value is null)
         {
@@ -224,7 +224,7 @@ internal class MongoDBFilterTranslator
         }
     }
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStorePropertyModel? property)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
     {
         var unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)

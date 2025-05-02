@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 /// </summary>
 public class RedisHashSetDynamicDataModelMapperTests
 {
-    private static readonly VectorStoreCollectionModel s_model = BuildModel(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
+    private static readonly CollectionModel s_model = BuildModel(RedisHashSetVectorStoreMappingTestHelpers.s_vectorStoreRecordDefinition);
 
     private static readonly float[] s_floatVector = new float[] { 1.0f, 2.0f, 3.0f, 4.0f };
     private static readonly double[] s_doubleVector = new double[] { 5.0d, 6.0d, 7.0d, 8.0d };
@@ -60,7 +60,7 @@ public class RedisHashSetDynamicDataModelMapperTests
     public void MapFromDataToStorageModelMapsNullValues()
     {
         // Arrange
-        VectorStoreCollectionModel model = BuildModel(new()
+        CollectionModel model = BuildModel(new()
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -206,7 +206,7 @@ public class RedisHashSetDynamicDataModelMapperTests
         Assert.Equal("key", dataModel["Key"]);
     }
 
-    private static VectorStoreCollectionModel BuildModel(VectorStoreRecordDefinition definition)
-        => new VectorStoreCollectionModelBuilder(RedisHashSetVectorStoreRecordCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
+    private static CollectionModel BuildModel(VectorStoreRecordDefinition definition)
+        => new CollectionModelBuilder(RedisHashSetVectorStoreRecordCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
             .Build(typeof(Dictionary<string, object?>), definition, defaultEmbeddingGenerator: null);
 }

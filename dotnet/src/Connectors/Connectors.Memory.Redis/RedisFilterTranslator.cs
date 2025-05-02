@@ -14,11 +14,11 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 internal class RedisFilterTranslator
 {
-    private VectorStoreCollectionModel _model = null!;
+    private CollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
     private readonly StringBuilder _filter = new();
 
-    internal string Translate(LambdaExpression lambdaExpression, VectorStoreCollectionModel model)
+    internal string Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
         Debug.Assert(this._filter.Length == 0);
 
@@ -196,7 +196,7 @@ internal class RedisFilterTranslator
         throw new NotSupportedException("Contains supported only over tag field");
     }
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStorePropertyModel? property)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
     {
         var unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)

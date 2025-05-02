@@ -6,7 +6,7 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
-internal class AzureCosmosDBNoSQLVectorStoreModelBuilder() : VectorStoreCollectionJsonModelBuilder(s_modelBuildingOptions)
+internal class AzureCosmosDBNoSQLVectorStoreModelBuilder() : CollectionJsonModelBuilder(s_modelBuildingOptions)
 {
     private static readonly HashSet<Type> s_supportedDataTypes =
     [
@@ -34,7 +34,7 @@ internal class AzureCosmosDBNoSQLVectorStoreModelBuilder() : VectorStoreCollecti
         typeof(ReadOnlyMemory<sbyte>?),
     ];
 
-    private static readonly VectorStoreCollectionModelBuildingOptions s_modelBuildingOptions = new()
+    private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,

@@ -28,7 +28,7 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
     /// <param name="model">The model.</param>
     /// <exception cref="NotSupportedException">Thrown when the provided filter type is unsupported.</exception>
     /// <exception cref="InvalidOperationException">Thrown when property name specified in filter doesn't exist.</exception>
-    public static BsonDocument? BuildFilter(VectorSearchFilter? vectorSearchFilter, VectorStoreCollectionModel model)
+    public static BsonDocument? BuildFilter(VectorSearchFilter? vectorSearchFilter, CollectionModel model)
     {
         const string EqualOperator = "$eq";
 

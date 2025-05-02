@@ -197,7 +197,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
     [Fact]
     public void ResolveDistanceFunctionReturnsCosineSimilarityIfNoDistanceFunctionSpecified()
     {
-        var property = new VectorStoreVectorPropertyModel("Prop", typeof(ReadOnlyMemory<float>));
+        var property = new VectorPropertyModel("Prop", typeof(ReadOnlyMemory<float>));
 
         // Act.
         var resolvedDistanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(property);
@@ -209,7 +209,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
     [Fact]
     public void ResolveDistanceFunctionReturnsDistanceFunctionFromProvidedProperty()
     {
-        var property = new VectorStoreVectorPropertyModel("Prop", typeof(ReadOnlyMemory<float>)) { DistanceFunction = DistanceFunction.DotProductSimilarity };
+        var property = new VectorPropertyModel("Prop", typeof(ReadOnlyMemory<float>)) { DistanceFunction = DistanceFunction.DotProductSimilarity };
 
         // Act.
         var resolvedDistanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(property);
@@ -241,8 +241,8 @@ public class RedisVectorStoreCollectionSearchMappingTests
     private sealed class DummyType;
 #pragma warning restore CA1812
 
-    private static VectorStoreCollectionModel BuildModel(List<VectorStoreProperty> properties)
-        => new VectorStoreCollectionModelBuilder(RedisHashSetVectorStoreRecordCollection<string, DummyType>.ModelBuildingOptions)
+    private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
+        => new CollectionModelBuilder(RedisHashSetVectorStoreRecordCollection<string, DummyType>.ModelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
                 new() { Properties = properties },

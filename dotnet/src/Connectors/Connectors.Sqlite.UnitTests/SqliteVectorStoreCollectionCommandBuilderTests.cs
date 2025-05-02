@@ -117,12 +117,12 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         const string TableName = "TestTable";
         const string RowIdentifier = "Id";
 
-        VectorStorePropertyModel[] properties =
+        PropertyModel[] properties =
         [
-            new VectorStoreKeyPropertyModel("Id", typeof(string)),
-            new VectorStoreDataPropertyModel("Name", typeof(string)),
-            new VectorStoreDataPropertyModel("Age", typeof(int)),
-            new VectorStoreDataPropertyModel("Address", typeof(string)),
+            new KeyPropertyModel("Id", typeof(string)),
+            new DataPropertyModel("Name", typeof(string)),
+            new DataPropertyModel("Age", typeof(int)),
+            new DataPropertyModel("Address", typeof(string)),
         ];
         var records = new List<Dictionary<string, object?>>
         {
@@ -330,8 +330,8 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         this._connection.Dispose();
     }
 
-    private static VectorStoreCollectionModel BuildModel(List<VectorStoreProperty> properties)
-        => new VectorStoreCollectionModelBuilder(SqliteConstants.ModelBuildingOptions)
+    private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
+        => new CollectionModelBuilder(SqliteConstants.ModelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
                 new() { Properties = properties },

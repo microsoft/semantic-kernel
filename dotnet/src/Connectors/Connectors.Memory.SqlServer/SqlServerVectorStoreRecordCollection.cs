@@ -34,7 +34,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
     private readonly string _connectionString;
     private readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> _options;
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
     private readonly RecordMapper<TRecord> _mapper;
 
     /// <summary>
@@ -51,7 +51,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNull(name);
 
-        this._model = new VectorStoreCollectionModelBuilder(SqlServerConstants.ModelBuildingOptions)
+        this._model = new CollectionModelBuilder(SqlServerConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), options?.RecordDefinition, options?.EmbeddingGenerator);
 
         this._connectionString = connectionString;
@@ -559,7 +559,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)

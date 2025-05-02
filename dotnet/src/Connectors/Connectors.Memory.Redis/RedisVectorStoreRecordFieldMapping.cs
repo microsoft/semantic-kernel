@@ -37,7 +37,7 @@ internal static class RedisVectorStoreRecordFieldMapping
     }
 
     internal static async ValueTask<(IEnumerable<TRecord> records, IReadOnlyList<Embedding>?[]?)> ProcessEmbeddingsAsync<TRecord>(
-        VectorStoreCollectionModel model,
+        CollectionModel model,
         IEnumerable<TRecord> records,
         CancellationToken cancellationToken)
         where TRecord : notnull

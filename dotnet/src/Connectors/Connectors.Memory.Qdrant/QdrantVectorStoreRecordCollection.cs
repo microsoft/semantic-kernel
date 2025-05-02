@@ -55,7 +55,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     private readonly QdrantVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>A mapper to use for converting between qdrant point and consumer models.</summary>
     private readonly QdrantVectorStoreRecordMapper<TRecord> _mapper;
@@ -97,7 +97,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         this._collectionName = name;
         this._options = options ?? new QdrantVectorStoreRecordCollectionOptions<TRecord>();
 
-        this._model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(this._options.HasNamedVectors))
+        this._model = new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(this._options.HasNamedVectors))
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
 
         this._mapper = new QdrantVectorStoreRecordMapper<TRecord>(this._model, this._options.HasNamedVectors);
@@ -549,7 +549,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)

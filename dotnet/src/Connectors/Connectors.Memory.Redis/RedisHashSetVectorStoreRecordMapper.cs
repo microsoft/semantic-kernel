@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// Class for mapping between a hashset stored in redis, and the consumer data model.
 /// </summary>
 /// <typeparam name="TConsumerDataModel">The consumer data model to map to or from.</typeparam>
-internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(VectorStoreCollectionModel model)
+internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(CollectionModel model)
 {
     /// <inheritdoc />
     public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(TConsumerDataModel dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)

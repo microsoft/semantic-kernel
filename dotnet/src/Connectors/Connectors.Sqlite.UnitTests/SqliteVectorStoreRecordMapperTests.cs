@@ -171,8 +171,8 @@ public sealed class SqliteVectorStoreRecordMapperTests
         };
     }
 
-    private static VectorStoreCollectionModel BuildModel(Type type, VectorStoreRecordDefinition definition)
-        => new VectorStoreCollectionModelBuilder(SqliteConstants.ModelBuildingOptions).Build(type, definition, defaultEmbeddingGenerator: null);
+    private static CollectionModel BuildModel(Type type, VectorStoreRecordDefinition definition)
+        => new CollectionModelBuilder(SqliteConstants.ModelBuildingOptions).Build(type, definition, defaultEmbeddingGenerator: null);
 
 #pragma warning disable CA1812
     private sealed class TestRecord<TKey>

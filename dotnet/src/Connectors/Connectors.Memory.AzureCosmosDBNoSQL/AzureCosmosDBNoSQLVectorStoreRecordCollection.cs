@@ -50,11 +50,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     private readonly AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
 
     // TODO: Refactor this into the model (Co)
     /// <summary>The property to use as partition key.</summary>
-    private readonly VectorStorePropertyModel _partitionKeyProperty;
+    private readonly PropertyModel _partitionKeyProperty;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Azure CosmosDB NoSQL record.</summary>
     private readonly ICosmosNoSQLMapper<TRecord> _mapper;
@@ -426,7 +426,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)

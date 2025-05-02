@@ -6,9 +6,9 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-internal class WeaviateModelBuilder(bool hasNamedVectors) : VectorStoreCollectionJsonModelBuilder(GetModelBuildingOptions(hasNamedVectors))
+internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelBuilder(GetModelBuildingOptions(hasNamedVectors))
 {
-    private static VectorStoreCollectionModelBuildingOptions GetModelBuildingOptions(bool hasNamedVectors)
+    private static CollectionModelBuildingOptions GetModelBuildingOptions(bool hasNamedVectors)
     {
         return new()
         {

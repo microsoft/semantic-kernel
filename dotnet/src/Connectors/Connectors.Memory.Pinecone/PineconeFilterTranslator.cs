@@ -20,10 +20,10 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 // as we sometimes need to extend the collection (with for example another condition).
 internal class PineconeFilterTranslator
 {
-    private VectorStoreCollectionModel _model = null!;
+    private Extensions.VectorData.ConnectorSupport.CollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
-    internal Metadata Translate(LambdaExpression lambdaExpression, VectorStoreCollectionModel model)
+    internal Metadata Translate(LambdaExpression lambdaExpression, Extensions.VectorData.ConnectorSupport.CollectionModel model)
     {
         this._model = model;
 
@@ -71,7 +71,7 @@ internal class PineconeFilterTranslator
                 ? this.GenerateEqualityComparison(property, leftConstant, binary.NodeType)
                 : throw new NotSupportedException("Invalid equality/comparison");
 
-    private Metadata GenerateEqualityComparison(VectorStorePropertyModel property, object? value, ExpressionType nodeType)
+    private Metadata GenerateEqualityComparison(PropertyModel property, object? value, ExpressionType nodeType)
     {
         if (value is null)
         {
@@ -227,7 +227,7 @@ internal class PineconeFilterTranslator
         }
     }
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStorePropertyModel? property)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
     {
         var unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)

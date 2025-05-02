@@ -16,46 +16,46 @@ namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 /// This is an internal support type meant for use by connectors only, and not for use by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public sealed class VectorStoreCollectionModel
+public sealed class CollectionModel
 {
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
     private readonly Type _recordType;
 
-    private VectorStoreKeyPropertyModel? _singleKeyProperty;
-    private VectorStoreVectorPropertyModel? _singleVectorProperty;
-    private VectorStoreDataPropertyModel? _singleFullTextSearchProperty;
+    private KeyPropertyModel? _singleKeyProperty;
+    private VectorPropertyModel? _singleVectorProperty;
+    private DataPropertyModel? _singleFullTextSearchProperty;
 
     /// <summary>
     /// The key properties of the record.
     /// </summary>
-    public IReadOnlyList<VectorStoreKeyPropertyModel> KeyProperties { get; }
+    public IReadOnlyList<KeyPropertyModel> KeyProperties { get; }
 
     /// <summary>
     /// The data properties of the record.
     /// </summary>
-    public IReadOnlyList<VectorStoreDataPropertyModel> DataProperties { get; }
+    public IReadOnlyList<DataPropertyModel> DataProperties { get; }
 
     /// <summary>
     /// The vector properties of the record.
     /// </summary>
-    public IReadOnlyList<VectorStoreVectorPropertyModel> VectorProperties { get; }
+    public IReadOnlyList<VectorPropertyModel> VectorProperties { get; }
 
     /// <summary>
     /// All properties of the record, of all types.
     /// </summary>
-    public IReadOnlyList<VectorStorePropertyModel> Properties { get; }
+    public IReadOnlyList<PropertyModel> Properties { get; }
 
     /// <summary>
     /// All properties of the record, of all types, indexed by their model name.
     /// </summary>
-    public IReadOnlyDictionary<string, VectorStorePropertyModel> PropertyMap { get; }
+    public IReadOnlyDictionary<string, PropertyModel> PropertyMap { get; }
 
-    internal VectorStoreCollectionModel(
+    internal CollectionModel(
         Type recordType,
-        IReadOnlyList<VectorStoreKeyPropertyModel> keyProperties,
-        IReadOnlyList<VectorStoreDataPropertyModel> dataProperties,
-        IReadOnlyList<VectorStoreVectorPropertyModel> vectorProperties,
-        IReadOnlyDictionary<string, VectorStorePropertyModel> propertyMap)
+        IReadOnlyList<KeyPropertyModel> keyProperties,
+        IReadOnlyList<DataPropertyModel> dataProperties,
+        IReadOnlyList<VectorPropertyModel> vectorProperties,
+        IReadOnlyDictionary<string, PropertyModel> propertyMap)
     {
         this._recordType = recordType;
         this.KeyProperties = keyProperties;
@@ -67,15 +67,15 @@ public sealed class VectorStoreCollectionModel
 
     /// <summary>
     /// Returns the single key property in the model, and throws if there are multiple key properties.
-    /// Suitable for connectors where validation is in place for single keys only (<see cref="VectorStoreCollectionModelBuildingOptions.SupportsMultipleKeys"/>).
+    /// Suitable for connectors where validation is in place for single keys only (<see cref="CollectionModelBuildingOptions.SupportsMultipleKeys"/>).
     /// </summary>
-    public VectorStoreKeyPropertyModel KeyProperty => this._singleKeyProperty ??= this.KeyProperties.Single();
+    public KeyPropertyModel KeyProperty => this._singleKeyProperty ??= this.KeyProperties.Single();
 
     /// <summary>
     /// Returns the single vector property in the model, and throws if there are multiple vector properties.
-    /// Suitable for connectors where validation is in place for single vectors only (<see cref="VectorStoreCollectionModelBuildingOptions.SupportsMultipleVectors"/>).
+    /// Suitable for connectors where validation is in place for single vectors only (<see cref="CollectionModelBuildingOptions.SupportsMultipleVectors"/>).
     /// </summary>
-    public VectorStoreVectorPropertyModel VectorProperty => this._singleVectorProperty ??= this.VectorProperties.Single();
+    public VectorPropertyModel VectorProperty => this._singleVectorProperty ??= this.VectorProperties.Single();
 
     /// <summary>
     /// Instantiates a new record of the specified type.
@@ -98,7 +98,7 @@ public sealed class VectorStoreCollectionModel
     /// </summary>
     /// <param name="searchOptions">The search options.</param>
     /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid vector property name.</exception>
-    public VectorStoreVectorPropertyModel GetVectorPropertyOrSingle<TRecord>(VectorSearchOptions<TRecord> searchOptions)
+    public VectorPropertyModel GetVectorPropertyOrSingle<TRecord>(VectorSearchOptions<TRecord> searchOptions)
     {
 #pragma warning disable CS0618 // Type or member is obsolete
         string? vectorPropertyName = searchOptions.VectorPropertyName;
@@ -113,7 +113,7 @@ public sealed class VectorStoreCollectionModel
         }
         else if (searchOptions.VectorProperty is Expression<Func<TRecord, object?>> expression)
         {
-            return this.GetMatchingProperty<TRecord, VectorStoreVectorPropertyModel>(expression, data: false);
+            return this.GetMatchingProperty<TRecord, VectorPropertyModel>(expression, data: false);
         }
 
         // If vector property name is not provided, check if there is a single vector property, or throw if there are no vectors or more than one.
@@ -132,11 +132,11 @@ public sealed class VectorStoreCollectionModel
     /// </summary>
     /// <param name="expression">The full text search property selector.</param>
     /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid text data property name.</exception>
-    public VectorStoreDataPropertyModel GetFullTextDataPropertyOrSingle<TRecord>(Expression<Func<TRecord, object?>>? expression)
+    public DataPropertyModel GetFullTextDataPropertyOrSingle<TRecord>(Expression<Func<TRecord, object?>>? expression)
     {
         if (expression is not null)
         {
-            var property = this.GetMatchingProperty<TRecord, VectorStoreDataPropertyModel>(expression, data: true);
+            var property = this.GetMatchingProperty<TRecord, DataPropertyModel>(expression, data: true);
 
             return property.IsFullTextIndexed
                 ? property
@@ -167,11 +167,11 @@ public sealed class VectorStoreCollectionModel
     /// </summary>
     /// <param name="expression">The property selector.</param>
     /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid data or key property name.</exception>
-    public VectorStorePropertyModel GetDataOrKeyProperty<TRecord>(Expression<Func<TRecord, object?>> expression)
-        => this.GetMatchingProperty<TRecord, VectorStorePropertyModel>(expression, data: true);
+    public PropertyModel GetDataOrKeyProperty<TRecord>(Expression<Func<TRecord, object?>> expression)
+        => this.GetMatchingProperty<TRecord, PropertyModel>(expression, data: true);
 
     private TProperty GetMatchingProperty<TRecord, TProperty>(Expression<Func<TRecord, object?>> expression, bool data)
-        where TProperty : VectorStorePropertyModel
+        where TProperty : PropertyModel
     {
         var node = expression.Body;
 

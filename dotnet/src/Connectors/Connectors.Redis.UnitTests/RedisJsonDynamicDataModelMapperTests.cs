@@ -18,8 +18,8 @@ public class RedisJsonDynamicDataModelMapperTests
 {
     private static readonly float[] s_floatVector = new float[] { 1.0f, 2.0f, 3.0f, 4.0f };
 
-    private static readonly VectorStoreCollectionModel s_model
-        = new VectorStoreCollectionJsonModelBuilder(RedisJsonVectorStoreRecordCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
+    private static readonly CollectionModel s_model
+        = new CollectionJsonModelBuilder(RedisJsonVectorStoreRecordCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
                 new()

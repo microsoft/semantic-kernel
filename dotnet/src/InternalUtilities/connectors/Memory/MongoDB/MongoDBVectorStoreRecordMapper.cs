@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 internal sealed class MongoDBVectorStoreRecordMapper<TRecord> : IMongoDBMapper<TRecord>
 #pragma warning restore CS0618
 {
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>A key property info of the data model.</summary>
     private readonly PropertyInfo? _keyClrProperty;
@@ -30,7 +30,7 @@ internal sealed class MongoDBVectorStoreRecordMapper<TRecord> : IMongoDBMapper<T
     /// Initializes a new instance of the <see cref="MongoDBVectorStoreRecordMapper{TRecord}"/> class.
     /// </summary>
     /// <param name="model">The model.</param>
-    public MongoDBVectorStoreRecordMapper(VectorStoreCollectionModel model)
+    public MongoDBVectorStoreRecordMapper(CollectionModel model)
     {
         this._model = model;
 

@@ -18,7 +18,7 @@ namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
 /// </summary>
 public sealed class AzureCosmosDBMongoDBVectorStoreCollectionSearchMappingTests
 {
-    private readonly VectorStoreCollectionModel _model = new MongoDBModelBuilder()
+    private readonly CollectionModel _model = new MongoDBModelBuilder()
         .Build(
             typeof(Dictionary<string, object?>),
             new()
@@ -102,7 +102,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreCollectionSearchMappingTests
         Assert.Equal(expectedFilter.ToJson(), filter.ToJson());
     }
 
-    private static VectorStoreCollectionModel BuildModel(List<VectorStoreProperty> properties)
+    private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
     => new MongoDBModelBuilder()
         .Build(
             typeof(Dictionary<string, object?>),

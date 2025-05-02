@@ -31,7 +31,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
         }
     };
 
-    private static readonly VectorStoreCollectionModel s_model = new WeaviateModelBuilder(HasNamedVectors)
+    private static readonly CollectionModel s_model = new WeaviateModelBuilder(HasNamedVectors)
         .Build(
             typeof(Dictionary<string, object?>),
             new VectorStoreRecordDefinition

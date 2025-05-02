@@ -32,7 +32,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         }
     };
 
-    private readonly VectorStoreCollectionModel _model = new WeaviateModelBuilder(hasNamedVectors: true)
+    private readonly CollectionModel _model = new WeaviateModelBuilder(hasNamedVectors: true)
         .Build(
             typeof(Dictionary<string, object?>),
             new()

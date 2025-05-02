@@ -35,7 +35,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
-    private readonly VectorStoreCollectionModel _model;
+    private readonly Extensions.VectorData.ConnectorSupport.CollectionModel _model;
     private readonly PineconeVectorStoreRecordMapper<TRecord> _mapper;
     private IndexClient? _indexClient;
 
@@ -63,7 +63,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._pineconeClient = pineconeClient;
         this.Name = name;
         this._options = options ?? new PineconeVectorStoreRecordCollectionOptions<TRecord>();
-        this._model = new VectorStoreCollectionModelBuilder(PineconeVectorStoreRecordFieldMapping.ModelBuildingOptions)
+        this._model = new CollectionModelBuilder(PineconeVectorStoreRecordFieldMapping.ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
         this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._model);
 
@@ -417,7 +417,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -602,7 +602,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             _ => throw new ArgumentException($"Invalid serverless index cloud: {serverlessIndexCloud}.", nameof(serverlessIndexCloud))
         };
 
-    private static CreateIndexRequestMetric MapDistanceFunction(VectorStoreVectorPropertyModel vectorProperty)
+    private static CreateIndexRequestMetric MapDistanceFunction(VectorPropertyModel vectorProperty)
         => vectorProperty.DistanceFunction switch
         {
             DistanceFunction.CosineSimilarity or null => CreateIndexRequestMetric.Cosine,

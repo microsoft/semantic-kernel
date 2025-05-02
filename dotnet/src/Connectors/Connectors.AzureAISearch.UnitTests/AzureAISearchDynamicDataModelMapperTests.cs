@@ -16,7 +16,7 @@ namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;
 /// </summary>
 public class AzureAISearchDynamicDataModelMapperTests
 {
-    private static readonly VectorStoreCollectionModel s_model = BuildModel(
+    private static readonly CollectionModel s_model = BuildModel(
     [
         new VectorStoreKeyProperty("Key", typeof(string)),
         new VectorStoreDataProperty("StringDataProp", typeof(string)),
@@ -270,8 +270,8 @@ public class AzureAISearchDynamicDataModelMapperTests
         Assert.False(dataModel.ContainsKey("FloatVector"));
     }
 
-    private static VectorStoreCollectionModel BuildModel(List<VectorStoreProperty> properties)
-        => new VectorStoreCollectionJsonModelBuilder(AzureAISearchModelBuilder.s_modelBuildingOptions)
+    private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
+        => new CollectionJsonModelBuilder(AzureAISearchModelBuilder.s_modelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
                 new() { Properties = properties },

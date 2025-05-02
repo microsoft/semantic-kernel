@@ -42,7 +42,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
         typeof(ReadOnlyMemory<double>?)
     ];
 
-    internal static readonly VectorStoreCollectionModelBuildingOptions ModelBuildingOptions = new()
+    internal static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,
@@ -80,7 +80,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
     private readonly RedisHashSetVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The model.</summary>
-    private readonly VectorStoreCollectionModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>An array of the names of all the data properties that are part of the Redis payload as RedisValue objects, i.e. all properties except the key and vector properties.</summary>
     private readonly RedisValue[] _dataStoragePropertyNameRedisValues;
@@ -113,7 +113,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
         this._database = database;
         this._collectionName = name;
         this._options = options ?? new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>();
-        this._model = new VectorStoreCollectionModelBuilder(ModelBuildingOptions)
+        this._model = new CollectionModelBuilder(ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
 
         // Lookup storage property names.
@@ -398,7 +398,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)

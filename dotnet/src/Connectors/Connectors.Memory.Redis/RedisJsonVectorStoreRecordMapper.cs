@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </summary>
 /// <typeparam name="TConsumerDataModel">The consumer data model to map to or from.</typeparam>
 internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel>(
-    VectorStoreCollectionModel model,
+    CollectionModel model,
     JsonSerializerOptions jsonSerializerOptions)
     : IRedisJsonMapper<TConsumerDataModel>
 {
@@ -76,7 +76,7 @@ internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel>(
             JsonArray and [JsonObject arrayEntryJsonObject] => arrayEntryJsonObject,
             JsonValue when model.DataProperties.Count + model.VectorProperties.Count == 1 => new JsonObject
             {
-                [model.DataProperties.Concat<VectorStorePropertyModel>(model.VectorProperties).First().StorageName] = storageModel.Node
+                [model.DataProperties.Concat<PropertyModel>(model.VectorProperties).First().StorageName] = storageModel.Node
             },
             _ => throw new InvalidOperationException($"Invalid data format for document with key '{storageModel.Key}'")
         };

@@ -20,7 +20,7 @@ internal static class QdrantVectorStoreCollectionSearchMapping
     /// <param name="model">The model.</param>
     /// <returns>The Qdrant <see cref="Filter"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the provided filter contains unsupported types, values or unknown properties.</exception>
-    public static Filter BuildFromLegacyFilter(VectorSearchFilter basicVectorSearchFilter, VectorStoreCollectionModel model)
+    public static Filter BuildFromLegacyFilter(VectorSearchFilter basicVectorSearchFilter, CollectionModel model)
     {
         var filter = new Filter();
 

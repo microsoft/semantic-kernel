@@ -24,7 +24,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(ulong));
-        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
+        var model = new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
             .Build(typeof(SinglePropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(model, hasNamedVectors);
 
@@ -54,7 +54,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(Guid));
-        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
+        var model = new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
             .Build(typeof(SinglePropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(model, hasNamedVectors);
 
@@ -77,7 +77,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(ulong));
-        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
+        var model = new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
             .Build(typeof(SinglePropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(model, hasNamedVectors);
 
@@ -109,7 +109,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(Guid));
-        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
+        var model = new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
             .Build(typeof(SinglePropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(model, hasNamedVectors);
 
@@ -137,7 +137,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(ulong));
-        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+        var model = new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
             .Build(typeof(MultiPropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
 
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(model, hasNamedVectors: true);
@@ -166,7 +166,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(Guid));
-        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+        var model = new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
             .Build(typeof(MultiPropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(model, hasNamedVectors: true);
 
@@ -196,7 +196,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(ulong));
-        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+        var model = new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
             .Build(typeof(MultiPropsModel<ulong>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(model, hasNamedVectors: true);
 
@@ -235,7 +235,7 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(Guid));
-        var model = new VectorStoreCollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+        var model = new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
             .Build(typeof(MultiPropsModel<Guid>), definition, defaultEmbeddingGenerator: null);
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(model, hasNamedVectors: true);
 

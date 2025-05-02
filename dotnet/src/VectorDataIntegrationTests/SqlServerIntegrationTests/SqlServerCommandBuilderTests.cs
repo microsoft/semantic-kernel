@@ -35,7 +35,7 @@ public class SqlServerCommandBuilderTests
     {
         StringBuilder builder = new();
         StringBuilder expectedBuilder = new();
-        VectorStoreKeyPropertyModel keyProperty = new(propertyName, typeof(string));
+        KeyPropertyModel keyProperty = new(propertyName, typeof(string));
 
         int paramIndex = 0; // we need a dedicated variable to ensure that AppendParameterName increments the index
         for (int i = 0; i < 10; i++)
@@ -255,7 +255,7 @@ public class SqlServerCommandBuilderTests
     [Fact]
     public void DeleteSingle()
     {
-        VectorStoreKeyPropertyModel keyProperty = new("id", typeof(long));
+        KeyPropertyModel keyProperty = new("id", typeof(long));
         using SqlConnection connection = CreateConnection();
 
         using SqlCommand command = SqlServerCommandBuilder.DeleteSingle(connection,
@@ -270,7 +270,7 @@ public class SqlServerCommandBuilderTests
     public void DeleteMany()
     {
         string[] keys = ["key1", "key2"];
-        VectorStoreKeyPropertyModel keyProperty = new("id", typeof(string));
+        KeyPropertyModel keyProperty = new("id", typeof(string));
         using SqlConnection connection = CreateConnection();
         using SqlCommand command = connection.CreateCommand();
 
@@ -344,8 +344,8 @@ public class SqlServerCommandBuilderTests
     private static SqlConnection CreateConnection()
         => new("Server=localhost;Database=master;Integrated Security=True;");
 
-    private static VectorStoreCollectionModel BuildModel(List<VectorStoreProperty> properties)
-        => new VectorStoreCollectionModelBuilder(SqlServerConstants.ModelBuildingOptions)
+    private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
+        => new CollectionModelBuilder(SqlServerConstants.ModelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
                 new() { Properties = properties },

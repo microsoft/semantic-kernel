@@ -22,7 +22,7 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
     /// <param name="hasNamedVectors">Gets a value indicating whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector in Weaviate collection.</param>
     /// <param name="model">The model.</param>
     /// <returns>Weaviate collection schema.</returns>
-    public static WeaviateCollectionSchema MapToSchema(string collectionName, bool hasNamedVectors, VectorStoreCollectionModel model)
+    public static WeaviateCollectionSchema MapToSchema(string collectionName, bool hasNamedVectors, CollectionModel model)
     {
         var schema = new WeaviateCollectionSchema(collectionName);
 

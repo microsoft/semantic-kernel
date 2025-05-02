@@ -21,7 +21,7 @@ internal static class PineconeVectorStoreRecordFieldMapping
         typeof(ReadOnlyMemory<float>?),
     ];
 
-    public static readonly VectorStoreCollectionModelBuildingOptions ModelBuildingOptions = new()
+    public static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = true,
         SupportsMultipleKeys = false,

@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// Class for mapping between a dictionary and the consumer data model.
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
-internal sealed class SqliteVectorStoreRecordMapper<TRecord>(VectorStoreCollectionModel model)
+internal sealed class SqliteVectorStoreRecordMapper<TRecord>(CollectionModel model)
 {
     public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {

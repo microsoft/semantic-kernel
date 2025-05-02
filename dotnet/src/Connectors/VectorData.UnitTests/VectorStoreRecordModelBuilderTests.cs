@@ -285,10 +285,10 @@ public class VectorStoreRecordModelBuilderTests
         public string LastName { get; set; }
     }
 
-    private sealed class CustomModelBuilder(VectorStoreCollectionModelBuildingOptions? options = null)
-        : VectorStoreCollectionModelBuilder(options ?? s_defaultOptions)
+    private sealed class CustomModelBuilder(CollectionModelBuildingOptions? options = null)
+        : CollectionModelBuilder(options ?? s_defaultOptions)
     {
-        private static readonly VectorStoreCollectionModelBuildingOptions s_defaultOptions = new()
+        private static readonly CollectionModelBuildingOptions s_defaultOptions = new()
         {
             SupportsMultipleKeys = false,
             SupportsMultipleVectors = true,
@@ -301,7 +301,7 @@ public class VectorStoreRecordModelBuilderTests
         };
 
         protected override void SetupEmbeddingGeneration(
-            VectorStoreVectorPropertyModel vectorProperty,
+            VectorPropertyModel vectorProperty,
             IEmbeddingGenerator embeddingGenerator,
             Type? embeddingType)
         {

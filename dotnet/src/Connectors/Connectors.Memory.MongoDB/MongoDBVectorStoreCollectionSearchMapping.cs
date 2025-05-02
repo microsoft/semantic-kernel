@@ -24,7 +24,7 @@ internal static class MongoDBVectorStoreCollectionSearchMapping
     /// <exception cref="InvalidOperationException">Thrown when property name specified in filter doesn't exist.</exception>
     public static BsonDocument? BuildLegacyFilter(
         VectorSearchFilter vectorSearchFilter,
-        VectorStoreCollectionModel model)
+        CollectionModel model)
     {
         const string EqualOperator = "$eq";
 

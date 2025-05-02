@@ -17,7 +17,7 @@ namespace SemanticKernel.Connectors.MongoDB.UnitTests;
 /// </summary>
 public sealed class MongoDBVectorStoreCollectionSearchMappingTests
 {
-    private readonly VectorStoreCollectionModel _model = new MongoDBModelBuilder()
+    private readonly CollectionModel _model = new MongoDBModelBuilder()
         .Build(
             typeof(Dictionary<string, object?>),
             new()
