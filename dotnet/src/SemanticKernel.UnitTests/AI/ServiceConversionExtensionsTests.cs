@@ -110,7 +110,7 @@ public class ServiceConversionExtensionsTests
             },
         }.AsEmbeddingGenerator();
 
-        ReadOnlyMemory<float> embedding = await generator.GenerateEmbeddingVectorAsync("some text");
+        ReadOnlyMemory<float> embedding = await generator.GenerateVectorAsync("some text");
         Assert.Equal([1f, 2f, 3f], embedding.ToArray());
     }
 

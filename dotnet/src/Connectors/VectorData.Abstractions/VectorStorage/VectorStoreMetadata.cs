@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>Provides metadata about an <see cref="IVectorStore"/>.</summary>
-[Experimental("MEVD9000")]
 public class VectorStoreMetadata
 {
     /// <summary>The name of the vector store system.</summary>

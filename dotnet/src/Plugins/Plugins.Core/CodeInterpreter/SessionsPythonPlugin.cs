@@ -18,10 +18,10 @@ namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 /// <summary>
 /// A plugin for running Python code in an Azure Container Apps dynamic sessions code interpreter.
 /// </summary>
-public partial class SessionsPythonPlugin
+public sealed partial class SessionsPythonPlugin
 {
     private static readonly string s_assemblyVersion = typeof(Kernel).Assembly.GetName().Version!.ToString();
-    private const string ApiVersion = "2024-02-02-preview";
+    private const string ApiVersion = "2024-10-02-preview";
     private readonly Uri _poolManagementEndpoint;
     private readonly SessionsPythonSettings _settings;
     private readonly Func<Task<string>>? _authTokenProvider;
@@ -90,14 +90,11 @@ public partial class SessionsPythonPlugin
 
         using var httpClient = this._httpClientFactory.CreateClient();
 
-        var requestBody = new
-        {
-            properties = new SessionsPythonCodeExecutionProperties(this._settings, code)
-        };
+        var requestBody = new SessionsPythonCodeExecutionProperties(this._settings, code);
 
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, this._poolManagementEndpoint + $"python/execute?api-version={ApiVersion}")
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}/executions?identifier={this._settings.SessionId}&api-version={ApiVersion}")
         {
             Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json")
         };
@@ -110,17 +107,19 @@ public partial class SessionsPythonPlugin
             throw new HttpRequestException($"Failed to execute python code. Status: {response.StatusCode}. Details: {errorBody}.");
         }
 
-        var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+        var responseContent = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+
+        var result = responseContent.GetProperty("result");
 
         return $"""
             Status:
-            {jsonElementResult.GetProperty("status").GetRawText()}
+            {responseContent.GetProperty("status").GetRawText()}
             Result:
-            {jsonElementResult.GetProperty("result").GetRawText()}
+            {result.GetProperty("executionResult").GetRawText()}
             Stdout:
-            {jsonElementResult.GetProperty("stdout").GetRawText()}
+            {result.GetProperty("stdout").GetRawText()}
             Stderr:
-            {jsonElementResult.GetProperty("stderr").GetRawText()}
+            {result.GetProperty("stderr").GetRawText()}
             """;
     }
 
@@ -135,33 +134,33 @@ public partial class SessionsPythonPlugin
     }
 
     /// <summary>
-    /// Upload a file to the session pool.
+    /// Uploads a file to the `/mnt/data` directory of the current session.
     /// </summary>
-    /// <param name="remoteFilePath">The path to the file in the session.</param>
+    /// <param name="remoteFileName">The name of the remote file, relative to `/mnt/data`.</param>
     /// <param name="localFilePath">The path to the file on the local machine.</param>
     /// <returns>The metadata of the uploaded file.</returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="HttpRequestException"></exception>
-    [KernelFunction, Description("Uploads a file for the current session id pool.")]
+    [KernelFunction, Description("Uploads a file to the `/mnt/data` directory of the current session.")]
     public async Task<SessionsRemoteFileMetadata> UploadFileAsync(
-        [Description("The path to the file in the session.")] string remoteFilePath,
-        [Description("The path to the file on the local machine.")] string? localFilePath)
+        [Description("The name of the remote file, relative to `/mnt/data`.")] string remoteFileName,
+        [Description("The path to the file on the local machine.")] string localFilePath)
     {
-        Verify.NotNullOrWhiteSpace(remoteFilePath, nameof(remoteFilePath));
+        Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
         Verify.NotNullOrWhiteSpace(localFilePath, nameof(localFilePath));
 
-        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFilePath}", localFilePath, remoteFilePath);
+        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFilePath}", localFilePath, remoteFileName);
 
         using var httpClient = this._httpClientFactory.CreateClient();
 
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
         using var fileContent = new ByteArrayContent(File.ReadAllBytes(localFilePath));
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}files/upload?identifier={this._settings.SessionId}&api-version={ApiVersion}")
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}files?identifier={this._settings.SessionId}&api-version={ApiVersion}")
         {
             Content = new MultipartFormDataContent
             {
-                { fileContent, "file", remoteFilePath },
+                { fileContent, "file", remoteFileName },
             }
         };
 
@@ -173,30 +172,30 @@ public partial class SessionsPythonPlugin
             throw new HttpRequestException($"Failed to upload file. Status code: {response.StatusCode}. Details: {errorBody}.");
         }
 
-        var JsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
+        var stringContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-        return JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(JsonElementResult.GetProperty("value")[0].GetProperty("properties").GetRawText())!;
+        return JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(stringContent)!;
     }
 
     /// <summary>
-    /// Downloads a file from the current Session ID.
+    /// Downloads a file from the `/mnt/data` directory of the current session.
     /// </summary>
-    /// <param name="remoteFilePath"> The path to download the file from, relative to `/mnt/data`. </param>
-    /// <param name="localFilePath"> The path to save the downloaded file to. If not provided won't save it in the disk.</param>
-    /// <returns> The data of the downloaded file as byte array. </returns>
-    [KernelFunction, Description("Downloads a file from the current Session ID.")]
+    /// <param name="remoteFileName">The name of the remote file to download, relative to `/mnt/data`.</param>
+    /// <param name="localFilePath">The path to save the downloaded file to. If not provided won't save it in the disk.</param>
+    /// <returns>The data of the downloaded file as byte array.</returns>
+    [KernelFunction, Description("Downloads a file from the `/mnt/data` directory of the current session.")]
     public async Task<byte[]> DownloadFileAsync(
-        [Description("The path to download the file from, relative to `/mnt/data`.")] string remoteFilePath,
+        [Description("The name of the remote file to download, relative to `/mnt/data`.")] string remoteFileName,
         [Description("The path to save the downloaded file to. If not provided won't save it in the disk.")] string? localFilePath = null)
     {
-        Verify.NotNullOrWhiteSpace(remoteFilePath, nameof(remoteFilePath));
+        Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
 
-        this._logger.LogTrace("Downloading file: {RemoteFilePath} to {LocalFilePath}", remoteFilePath, localFilePath);
+        this._logger.LogTrace("Downloading file: {RemoteFilePath} to {LocalFilePath}", remoteFileName, localFilePath);
 
         using var httpClient = this._httpClientFactory.CreateClient();
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
-        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}python/downloadFile?identifier={this._settings.SessionId}&filename={remoteFilePath}&api-version={ApiVersion}")).ConfigureAwait(false);
+        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}/files/{Uri.EscapeDataString(remoteFileName)}/content?identifier={this._settings.SessionId}&api-version={ApiVersion}")).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -221,10 +220,10 @@ public partial class SessionsPythonPlugin
     }
 
     /// <summary>
-    /// Lists all files in the provided session id pool.
+    /// Lists all entities: files or directories in the `/mnt/data` directory of the current session.
     /// </summary>
-    /// <returns> The list of files in the session. </returns>
-    [KernelFunction, Description("Lists all files in the provided session id pool.")]
+    /// <returns>The list of files in the session.</returns>
+    [KernelFunction, Description("Lists all entities: files or directories in the `/mnt/data` directory of the current session.")]
     public async Task<IReadOnlyList<SessionsRemoteFileMetadata>> ListFilesAsync()
     {
         this._logger.LogTrace("Listing files for Session ID: {SessionId}", this._settings.SessionId);
@@ -243,14 +242,7 @@ public partial class SessionsPythonPlugin
 
         var files = jsonElementResult.GetProperty("value");
 
-        var result = new SessionsRemoteFileMetadata[files.GetArrayLength()];
-
-        for (var i = 0; i < result.Length; i++)
-        {
-            result[i] = JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(files[i].GetProperty("properties").GetRawText())!;
-        }
-
-        return result;
+        return files.Deserialize<SessionsRemoteFileMetadata[]>()!;
     }
 
     private static Uri GetBaseEndpoint(Uri endpoint)

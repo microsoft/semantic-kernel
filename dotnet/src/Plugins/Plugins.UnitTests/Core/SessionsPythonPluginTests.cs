@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -71,7 +70,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         };
         var expectedResult = """
                        Status:
-                       "Success"
+                       "Succeeded"
                        Result:
                        ""
                        Stdout:
@@ -168,7 +167,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         await plugin.UploadFileAsync(".test.txt", FileTestDataFilePath);
 
         // Assert
-        Assert.Contains(expectedSessionId, Encoding.UTF8.GetString(multiMessageHandlerStub.RequestContents[0]!), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedSessionId, multiMessageHandlerStub.RequestUris[0]!.Query, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(expectedSessionId, multiMessageHandlerStub.RequestUris[1]!.Query, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(expectedSessionId, multiMessageHandlerStub.RequestUris[2]!.Query, StringComparison.OrdinalIgnoreCase);
 
@@ -191,18 +190,24 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
-        var result = await plugin.ListFilesAsync();
+        var files = await plugin.ListFilesAsync();
 
         // Assert
-        Assert.Contains<SessionsRemoteFileMetadata>(result, (item) =>
-            item.Filename == "test-file.txt" &&
-            item.Size == 516 &&
-            item.LastModifiedTime!.Value.Ticks == 638585580822423944);
+        Assert.Equal(2, files.Count);
 
-        Assert.Contains<SessionsRemoteFileMetadata>(result, (item) =>
-            item.Filename == "test-file2.txt" &&
-            item.Size == 211 &&
-            item.LastModifiedTime!.Value.Ticks == 638585580822423944);
+        var firstFile = files[0];
+        Assert.Equal("test-file.txt", firstFile.Name);
+        Assert.Equal(516, firstFile.SizeInBytes);
+        Assert.Equal("file", firstFile.Type);
+        Assert.Equal("text/plain; charset=utf-8", firstFile.ContentType);
+        Assert.Equal(638585580822423944, firstFile.LastModifiedAt.Ticks);
+
+        var secondFile = files[1];
+        Assert.Equal("test-file2.txt", secondFile.Name);
+        Assert.Equal(211, secondFile.SizeInBytes);
+        Assert.Equal("file", secondFile.Type);
+        Assert.Equal("text/plain; charset=utf-8", secondFile.ContentType);
+        Assert.Equal(638585580822423944, secondFile.LastModifiedAt.Ticks);
     }
 
     [Fact]
@@ -212,9 +217,13 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
         var requestPayload = await File.ReadAllBytesAsync(FileTestDataFilePath);
 
-        var expectedResponse = new SessionsRemoteFileMetadata("test-file.txt", 516)
+        var expectedResponse = new SessionsRemoteFileMetadata()
         {
-            LastModifiedTime = new DateTime(638585526384228269)
+            Name = "test-file.txt",
+            SizeInBytes = 516,
+            Type = "file",
+            LastModifiedAt = new DateTime(638585526384228269),
+            ContentType = "text/plain; charset=utf-8",
         };
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -228,10 +237,12 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var result = await plugin.UploadFileAsync("test-file.txt", FileTestDataFilePath);
 
         // Assert
-        Assert.Equal(result.Filename, expectedResponse.Filename);
-        Assert.Equal(result.Size, expectedResponse.Size);
-        Assert.Equal(result.LastModifiedTime, expectedResponse.LastModifiedTime);
-        Assert.Equal(requestPayload, this._messageHandlerStub.FirstMultipartContent);
+        Assert.Equal(expectedResponse.Name, result.Name);
+        Assert.Equal(expectedResponse.SizeInBytes, result.SizeInBytes);
+        Assert.Equal(expectedResponse.LastModifiedAt, result.LastModifiedAt);
+        Assert.Equal(expectedResponse.Type, result.Type);
+        Assert.Equal(expectedResponse.ContentType, result.ContentType);
+        Assert.Equal(this._messageHandlerStub.FirstMultipartContent, requestPayload);
     }
 
     [Fact]
