@@ -159,8 +159,7 @@ internal class AzureCosmosDBNoSqlFilterTranslator
                     var i = 0;
                     do
                     {
-                        name = baseName;
-                        i++;
+                        name = baseName + (i++);
                     } while (this._parameters.ContainsKey(name));
                 }
 

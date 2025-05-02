@@ -93,19 +93,6 @@ public class CreatePromptPluginFromDirectory_OpenAI(ITestOutputHelper output) : 
 
             {{$input}}
             +++++
-            WRITE EXACTLY ONE JOKE or HUMOROUS STORY ABOUT THE TOPIC BELOW
-
-            JOKE MUST BE:
-            - G RATED
-            - WORKPLACE/FAMILY SAFE
-            NO SEXISM, RACISM OR OTHER BIAS/BIGOTRY
-
-            BE CREATIVE AND FUNNY. I WANT TO LAUGH.
-            Incorporate the style suggestion, if provided: {{$style}}
-            +++++
-
-            {{$input}}
-            +++++
             """;
 
         // Create the directory structure
