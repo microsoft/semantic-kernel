@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -89,23 +90,16 @@ public sealed partial class SessionsPythonPlugin
         this._logger.LogTrace("Executing Python code: {Code}", code);
 
         using var httpClient = this._httpClientFactory.CreateClient();
+        await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
         var requestBody = new SessionsPythonCodeExecutionProperties(this._settings, code);
-
-        await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
         using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}/executions?identifier={this._settings.SessionId}&api-version={ApiVersion}")
         {
             Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json")
         };
 
-        var response = await httpClient.SendAsync(request).ConfigureAwait(false);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new HttpRequestException($"Failed to execute python code. Status: {response.StatusCode}. Details: {errorBody}.");
-        }
+        using var response = await httpClient.SendWithSuccessCheckAsync(request, CancellationToken.None).ConfigureAwait(false);
 
         var responseContent = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
 
@@ -121,16 +115,6 @@ public sealed partial class SessionsPythonPlugin
             Stderr:
             {result.GetProperty("stderr").GetRawText()}
             """;
-    }
-
-    private async Task AddHeadersAsync(HttpClient httpClient)
-    {
-        httpClient.DefaultRequestHeaders.Add("User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)");
-
-        if (this._authTokenProvider is not null)
-        {
-            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {(await this._authTokenProvider().ConfigureAwait(false))}");
-        }
     }
 
     /// <summary>
@@ -149,10 +133,9 @@ public sealed partial class SessionsPythonPlugin
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
         Verify.NotNullOrWhiteSpace(localFilePath, nameof(localFilePath));
 
-        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFilePath}", localFilePath, remoteFileName);
+        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", localFilePath, remoteFileName);
 
         using var httpClient = this._httpClientFactory.CreateClient();
-
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
         using var fileContent = new ByteArrayContent(File.ReadAllBytes(localFilePath));
@@ -164,13 +147,7 @@ public sealed partial class SessionsPythonPlugin
             }
         };
 
-        var response = await httpClient.SendAsync(request).ConfigureAwait(false);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new HttpRequestException($"Failed to upload file. Status code: {response.StatusCode}. Details: {errorBody}.");
-        }
+        using var response = await httpClient.SendWithSuccessCheckAsync(request, CancellationToken.None).ConfigureAwait(false);
 
         var stringContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
@@ -190,17 +167,14 @@ public sealed partial class SessionsPythonPlugin
     {
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
 
-        this._logger.LogTrace("Downloading file: {RemoteFilePath} to {LocalFilePath}", remoteFileName, localFilePath);
+        this._logger.LogTrace("Downloading file: {RemoteFileName} to {LocalFileName}", remoteFileName, localFilePath);
 
         using var httpClient = this._httpClientFactory.CreateClient();
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
-        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}/files/{Uri.EscapeDataString(remoteFileName)}/content?identifier={this._settings.SessionId}&api-version={ApiVersion}")).ConfigureAwait(false);
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new HttpRequestException($"Failed to download file. Status code: {response.StatusCode}. Details: {errorBody}.");
-        }
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{this._poolManagementEndpoint}/files/{Uri.EscapeDataString(remoteFileName)}/content?identifier={this._settings.SessionId}&api-version={ApiVersion}");
+
+        using var response = await httpClient.SendWithSuccessCheckAsync(request, CancellationToken.None).ConfigureAwait(false);
 
         var fileContent = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
@@ -231,12 +205,9 @@ public sealed partial class SessionsPythonPlugin
         using var httpClient = this._httpClientFactory.CreateClient();
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
-        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}/files?identifier={this._settings.SessionId}&api-version={ApiVersion}")).ConfigureAwait(false);
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{this._poolManagementEndpoint}/files?identifier={this._settings.SessionId}&api-version={ApiVersion}");
 
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new HttpRequestException($"Failed to list files. Status code: {response.StatusCode}");
-        }
+        using var response = await httpClient.SendWithSuccessCheckAsync(request, CancellationToken.None).ConfigureAwait(false);
 
         var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
 
@@ -275,6 +246,20 @@ public sealed partial class SessionsPythonPlugin
         code = RemoveTrailingWhitespaceBackticks().Replace(code, "");
 
         return code;
+    }
+
+    /// <summary>
+    /// Add headers to the HTTP client.
+    /// </summary>
+    /// <param name="httpClient">The HTTP client to add headers to.</param>
+    private async Task AddHeadersAsync(HttpClient httpClient)
+    {
+        httpClient.DefaultRequestHeaders.Add("User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)");
+
+        if (this._authTokenProvider is not null)
+        {
+            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {(await this._authTokenProvider().ConfigureAwait(false))}");
+        }
     }
 
 #if NET
