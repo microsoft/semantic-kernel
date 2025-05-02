@@ -69,7 +69,8 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
                 var i = 0;
                 do
                 {
-                    name = baseName + (i++);
+                    name = baseName + i;
+                    i++;
                 } while (this._parameters.ContainsKey(name));
             }
 

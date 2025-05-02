@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Text;
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CA1812 // Instantiated via JsonConverterAttribute
 
 /// <summary>

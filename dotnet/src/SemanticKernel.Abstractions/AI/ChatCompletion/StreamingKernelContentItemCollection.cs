@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
+#pragma warning disable IDE0290 // Use primary constructor
 #pragma warning disable CA1033 // Interface methods should be callable by child types
 
 /// <summary>
