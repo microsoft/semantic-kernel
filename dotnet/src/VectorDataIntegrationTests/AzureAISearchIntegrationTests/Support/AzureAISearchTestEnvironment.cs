@@ -10,7 +10,7 @@ internal static class AzureAISearchTestEnvironment
 {
     public static readonly string? ServiceUrl, ApiKey;
 
-    public static bool IsConnectionInfoDefined => ServiceUrl is not null && ApiKey is not null;
+    public static bool IsConnectionInfoDefined => ServiceUrl is not null;
 
     static AzureAISearchTestEnvironment()
     {

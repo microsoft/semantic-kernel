@@ -2,15 +2,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.Properties;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MEVD = Microsoft.Extensions.VectorData;
 
@@ -19,13 +21,16 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses MongoDB as the underlying storage.
 /// </summary>
+/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IKeywordHybridSearch<TRecord>
+public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>, IKeywordHybridSearch<TRecord>
+    where TKey : notnull
+    where TRecord : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "MongoDB";
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
     /// <summary>Property name to be used for search similarity score value.</summary>
     private const string ScorePropertyName = "similarityScore";
@@ -49,60 +54,58 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     private readonly MongoDBVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
-    private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
+    private readonly IMongoDBMapper<TRecord> _mapper;
 
-    /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it for data and vector properties.</summary>
-    private readonly Dictionary<string, string> _storagePropertyNames;
-
-    /// <summary>Collection of vector storage property names.</summary>
-    private readonly List<string> _vectorStoragePropertyNames;
-
-    /// <summary>A helper to access property information for the current data model and record definition.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
+    /// <summary>The model for this collection.</summary>
+    private readonly VectorStoreRecordModel _model;
 
     /// <inheritdoc />
-    public string CollectionName { get; }
+    public string Name { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MongoDBVectorStoreRecordCollection{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="MongoDBVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="mongoDatabase"><see cref="IMongoDatabase"/> that can be used to manage the collections in MongoDB.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="MongoDBVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="MongoDBVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public MongoDBVectorStoreRecordCollection(
         IMongoDatabase mongoDatabase,
-        string collectionName,
+        string name,
         MongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
-        Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.BsonDocumentCustomMapper is not null, MongoDBConstants.SupportedKeyTypes);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
+        Verify.NotNullOrWhiteSpace(name);
+
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
+        {
+            throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
+        }
 
         // Assign.
         this._mongoDatabase = mongoDatabase;
-        this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(collectionName);
-        this.CollectionName = collectionName;
+        this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
+        this.Name = name;
         this._options = options ?? new MongoDBVectorStoreRecordCollectionOptions<TRecord>();
-        this._propertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), this._options.VectorStoreRecordDefinition, new() { RequiresAtLeastOneVector = false, SupportsMultipleKeys = false, SupportsMultipleVectors = true });
+        this._model = new MongoDBModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
+        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? (new MongoDBDynamicDataModelMapper(this._model) as IMongoDBMapper<TRecord>)!
+            : new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
 
-        this._storagePropertyNames = GetStoragePropertyNames(this._propertyReader.Properties, typeof(TRecord));
-
-        // Use Mongo reserved key property name as storage key property name
-        this._storagePropertyNames[this._propertyReader.KeyPropertyName] = MongoDBConstants.MongoReservedKeyPropertyName;
-
-        this._vectorStoragePropertyNames = this._propertyReader.VectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
-
-        this._mapper = this.InitializeMapper();
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
+            VectorStoreName = mongoDatabase.DatabaseNamespace?.DatabaseName,
+            CollectionName = name
+        };
     }
 
     /// <inheritdoc />
-    public virtual Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
         => this.RunOperationAsync("ListCollectionNames", () => this.InternalCollectionExistsAsync(cancellationToken));
 
     /// <inheritdoc />
-    public virtual async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // The IMongoDatabase.CreateCollectionAsync "Creates a new collection if not already available".
         // To make sure that all the connectors are consistent, we throw when the collection exists.
@@ -110,8 +113,9 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         {
             throw new VectorStoreOperationException("Collection already exists.")
             {
-                VectorStoreType = DatabaseName,
-                CollectionName = this.CollectionName,
+                VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
                 OperationName = "CreateCollection"
             };
         }
@@ -120,56 +124,62 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     }
 
     /// <inheritdoc />
-    public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         // The IMongoDatabase.CreateCollectionAsync "Creates a new collection if not already available".
         // So for CreateCollectionIfNotExistsAsync, we don't perform an additional check.
         await this.RunOperationAsync("CreateCollection",
-            () => this._mongoDatabase.CreateCollectionAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            () => this._mongoDatabase.CreateCollectionAsync(this.Name, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         await this.RunOperationWithRetryAsync(
             "CreateIndexes",
             this._options.MaxRetries,
             this._options.DelayInMilliseconds,
-            () => this.CreateIndexesAsync(this.CollectionName, cancellationToken),
+            () => this.CreateIndexesAsync(this.Name, cancellationToken),
             cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public virtual async Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(key);
+        var stringKey = this.GetStringKey(key);
 
-        await this.RunOperationAsync("DeleteOne", () => this._mongoCollection.DeleteOneAsync(this.GetFilterById(key), cancellationToken))
+        await this.RunOperationAsync("DeleteOne", () => this._mongoCollection.DeleteOneAsync(this.GetFilterById(stringKey), cancellationToken))
             .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public virtual async Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
-        await this.RunOperationAsync("DeleteMany", () => this._mongoCollection.DeleteManyAsync(this.GetFilterByIds(keys), cancellationToken))
+        var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
+
+        await this.RunOperationAsync("DeleteMany", () => this._mongoCollection.DeleteManyAsync(this.GetFilterByIds(stringKeys), cancellationToken))
             .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
-        => this.RunOperationAsync("DropCollection", () => this._mongoDatabase.DropCollectionAsync(this.CollectionName, cancellationToken));
+    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+        => this.RunOperationAsync("DropCollection", () => this._mongoDatabase.DropCollectionAsync(this.Name, cancellationToken));
 
     /// <inheritdoc />
-    public virtual async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(key);
-
         const string OperationName = "Find";
 
+        var stringKey = this.GetStringKey(key);
+
         var includeVectors = options?.IncludeVectors ?? false;
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
         var record = await this.RunOperationAsync(OperationName, async () =>
         {
             using var cursor = await this
-                .FindAsync(this.GetFilterById(key), options, cancellationToken)
+                .FindAsync(this.GetFilterById(stringKey), options, cancellationToken)
                 .ConfigureAwait(false);
 
             return await cursor.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
@@ -181,15 +191,16 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         }
 
         return VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
-            this.CollectionName,
+            MongoDBConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
+            this.Name,
             OperationName,
             () => this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors }));
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<TRecord> GetBatchAsync(
-        IEnumerable<string> keys,
+    public async IAsyncEnumerable<TRecord> GetAsync(
+        IEnumerable<TKey> keys,
         GetRecordOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -197,8 +208,15 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         const string OperationName = "Find";
 
+        if (options?.IncludeVectors == true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
+
+        var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
+
         using var cursor = await this
-            .FindAsync(this.GetFilterByIds(keys), options, cancellationToken)
+            .FindAsync(this.GetFilterByIds(stringKeys), options, cancellationToken)
             .ConfigureAwait(false);
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
@@ -208,8 +226,9 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                 if (record is not null)
                 {
                     yield return VectorStoreErrorHandler.RunModelConversion(
-                        DatabaseName,
-                        this.CollectionName,
+                        MongoDBConstants.VectorStoreSystemName,
+                        this._collectionMetadata.VectorStoreName,
+                        this.Name,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(record, new()));
                 }
@@ -218,80 +237,174 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     }
 
     /// <inheritdoc />
-    public virtual Task<string> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
         const string OperationName = "ReplaceOne";
 
+        Embedding?[]? generatedEmbeddings = null;
+
+        var vectorPropertyCount = this._model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
+        {
+            var vectorProperty = this._model.VectorProperties[i];
+
+            if (vectorProperty.EmbeddingGenerator is null)
+            {
+                continue;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var floatTask))
+            {
+                generatedEmbeddings ??= new Embedding?[vectorPropertyCount];
+                generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
+            }
+            else if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<double>, ReadOnlyMemory<double>>(record, cancellationToken, out var doubleTask))
+            {
+                generatedEmbeddings ??= new Embedding?[vectorPropertyCount];
+                generatedEmbeddings[i] = await doubleTask.ConfigureAwait(false);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
+            }
+        }
+
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
-            this.CollectionName,
+            MongoDBConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
+            this.Name,
             OperationName,
-            () => this._mapper.MapFromDataToStorageModel(record));
+            () => this._mapper.MapFromDataToStorageModel(record, generatedEmbeddings));
 
         var key = storageModel[MongoDBConstants.MongoReservedKeyPropertyName].AsString;
 
-        return this.RunOperationAsync(OperationName, async () =>
+        return await this.RunOperationAsync(OperationName, async () =>
         {
             await this._mongoCollection
                 .ReplaceOneAsync(this.GetFilterById(key), storageModel, replaceOptions, cancellationToken)
                 .ConfigureAwait(false);
 
-            return key;
-        });
+            return (TKey)(object)key;
+        }).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
         var tasks = records.Select(record => this.UpsertAsync(record, cancellationToken));
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        return results.Where(r => r is not null).ToList();
+    }
 
-        foreach (var result in results)
+    #region Search
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+        TInput value,
+        int top,
+        MEVD.VectorSearchOptions<TRecord>? options = default,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        switch (vectorProperty.EmbeddingGenerator)
         {
-            if (result is not null)
+            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
             {
-                yield return result;
+                var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
             }
+
+            case IEmbeddingGenerator<TInput, Embedding<double>> generator:
+            {
+                var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+            }
+
+            case null:
+                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
+
+            default:
+                throw new InvalidOperationException(
+                    MongoDBConstants.SupportedVectorTypes.Contains(typeof(TInput))
+                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
+                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
         }
     }
 
     /// <inheritdoc />
-    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
+        int top,
         MEVD.VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
+        where TVector : notnull
+    {
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
+    }
+
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorStoreRecordVectorPropertyModel vectorProperty,
+        string operationName,
+        MEVD.VectorSearchOptions<TRecord> options,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TVector : notnull
     {
         Array vectorArray = VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
-        var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
-        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = searchOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._storagePropertyNames),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoDBFilterTranslator().Translate(newFilter, this._storagePropertyNames),
+            { OldFilter: VectorSearchFilter legacyFilter } => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoDBFilterTranslator().Translate(newFilter, this._model),
             _ => null
         };
 #pragma warning restore CS0618
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
-        var itemsAmount = searchOptions.Skip + searchOptions.Top;
+        var itemsAmount = options.Skip + top;
 
         var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
 
         var searchQuery = MongoDBVectorStoreCollectionSearchMapping.GetSearchQuery(
             vectorArray,
             this._options.VectorIndexName,
-            vectorPropertyName,
+            vectorProperty.StorageName,
             itemsAmount,
             numCandidates,
             filter);
@@ -302,7 +415,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         BsonDocument[] pipeline = [searchQuery, projectionQuery];
 
-        return await this.RunOperationWithRetryAsync(
+        var results = await this.RunOperationWithRetryAsync(
             "VectorizedSearch",
             this._options.MaxRetries,
             this._options.DelayInMilliseconds,
@@ -312,53 +425,123 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                     .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-                return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken));
+                return this.EnumerateAndMapSearchResultsAsync(cursor, options.Skip, options.IncludeVectors, cancellationToken);
             },
             cancellationToken).ConfigureAwait(false);
+
+        await foreach (var result in results.ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, MEVD.VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        where TVector : notnull
+        => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
+
+    #endregion Search
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        // Translate the filter now, so if it fails, we throw immediately.
+        var translatedFilter = new MongoDBFilterTranslator().Translate(filter, this._model);
+        SortDefinition<BsonDocument>? sortDefinition = null;
+        if (options.OrderBy.Values.Count > 0)
+        {
+            sortDefinition = Builders<BsonDocument>.Sort.Combine(
+                options.OrderBy.Values.Select(pair =>
+                {
+                    var storageName = this._model.GetDataOrKeyProperty(pair.PropertySelector).StorageName;
+
+                    return pair.Ascending
+                        ? Builders<BsonDocument>.Sort.Ascending(storageName)
+                        : Builders<BsonDocument>.Sort.Descending(storageName);
+                }));
+        }
+
+        using IAsyncCursor<BsonDocument> cursor = await this.RunOperationWithRetryAsync(
+            "GetAsync",
+            this._options.MaxRetries,
+            this._options.DelayInMilliseconds,
+            async () =>
+            {
+                return await this._mongoCollection.FindAsync(translatedFilter,
+                    new()
+                    {
+                        Limit = top,
+                        Skip = options.Skip,
+                        Sort = sortDefinition
+                    },
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+            },
+            cancellationToken).ConfigureAwait(false);
+
+        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        {
+            foreach (var response in cursor.Current)
+            {
+                var record = VectorStoreErrorHandler.RunModelConversion(
+                    MongoDBConstants.VectorStoreSystemName,
+                    this._collectionMetadata.VectorStoreName,
+                    this.Name,
+                    "GetAsync",
+                    () => this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors }));
+
+                yield return record;
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Array vectorArray = VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
-        var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
-        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
-        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalProperty);
-        var textDataPropertyName = this._storagePropertyNames[textDataProperty.DataModelPropertyName];
+        options ??= s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = searchOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._storagePropertyNames),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoDBFilterTranslator().Translate(newFilter, this._storagePropertyNames),
+            { OldFilter: VectorSearchFilter legacyFilter } => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoDBFilterTranslator().Translate(newFilter, this._model),
             _ => null
         };
 #pragma warning restore CS0618
 
         // Constructing a query to fetch "skip + top" total items
-        // to perform skip logic locally, since skip option is not part of API. 
-        var itemsAmount = searchOptions.Skip + searchOptions.Top;
+        // to perform skip logic locally, since skip option is not part of API.
+        var itemsAmount = options.Skip + top;
 
         var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
 
         BsonDocument[] pipeline = MongoDBVectorStoreCollectionSearchMapping.GetHybridSearchPipeline(
             vectorArray,
             keywords,
-            this.CollectionName,
+            this.Name,
             this._options.VectorIndexName,
             this._options.FullTextSearchIndexName,
-            vectorPropertyName,
-            textDataPropertyName,
+            vectorProperty.StorageName,
+            textDataProperty.StorageName,
             ScorePropertyName,
             DocumentPropertyName,
             itemsAmount,
             numCandidates,
             filter);
 
-        return await this.RunOperationWithRetryAsync(
+        var results = await this.RunOperationWithRetryAsync(
             "KeywordVectorizedHybridSearch",
             this._options.MaxRetries,
             this._options.DelayInMilliseconds,
@@ -368,9 +551,28 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                     .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-                return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken));
+                return this.EnumerateAndMapSearchResultsAsync(cursor, options.Skip, options.IncludeVectors, cancellationToken);
             },
             cancellationToken).ConfigureAwait(false);
+
+        await foreach (var result in results.ConfigureAwait(false))
+        {
+            yield return result;
+        }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(IMongoDatabase) ? this._mongoDatabase :
+            serviceType == typeof(IMongoCollection<BsonDocument>) ? this._mongoCollection :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     #region private
@@ -387,13 +589,8 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         {
             var fieldsArray = new BsonArray();
 
-            fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetVectorIndexFields(
-                this._propertyReader.VectorProperties,
-                this._storagePropertyNames));
-
-            fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetFilterableDataIndexFields(
-                this._propertyReader.DataProperties,
-                this._storagePropertyNames));
+            fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetVectorIndexFields(this._model.VectorProperties));
+            fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetFilterableDataIndexFields(this._model.DataProperties));
 
             if (fieldsArray.Count > 0)
             {
@@ -411,9 +608,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         {
             var fieldsDocument = new BsonDocument();
 
-            fieldsDocument.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetFullTextSearchableDataIndexFields(
-                this._propertyReader.DataProperties,
-                this._storagePropertyNames));
+            fieldsDocument.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetFullTextSearchableDataIndexFields(this._model.DataProperties));
 
             if (fieldsDocument.ElementCount > 0)
             {
@@ -455,13 +650,13 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         var includeVectors = options?.IncludeVectors ?? false;
 
-        if (!includeVectors && this._vectorStoragePropertyNames.Count > 0)
+        if (!includeVectors)
         {
-            foreach (var vectorPropertyName in this._vectorStoragePropertyNames)
+            foreach (var vectorPropertyName in this._model.VectorProperties)
             {
                 projectionDefinition = projectionDefinition is not null ?
-                    projectionDefinition.Exclude(vectorPropertyName) :
-                    projectionBuilder.Exclude(vectorPropertyName);
+                    projectionDefinition.Exclude(vectorPropertyName.StorageName) :
+                    projectionBuilder.Exclude(vectorPropertyName.StorageName);
             }
         }
 
@@ -490,8 +685,9 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                 {
                     var score = response[ScorePropertyName].AsDouble;
                     var record = VectorStoreErrorHandler.RunModelConversion(
-                        DatabaseName,
-                        this.CollectionName,
+                        MongoDBConstants.VectorStoreSystemName,
+                        this._collectionMetadata.VectorStoreName,
+                        this.Name,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new() { IncludeVectors = includeVectors }));
 
@@ -511,7 +707,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
     private async Task<bool> InternalCollectionExistsAsync(CancellationToken cancellationToken)
     {
-        var filter = new BsonDocument("name", this.CollectionName);
+        var filter = new BsonDocument("name", this.Name);
         var options = new ListCollectionNamesOptions { Filter = filter };
 
         using var cursor = await this._mongoDatabase.ListCollectionNamesAsync(options, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -529,8 +725,9 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
-                CollectionName = this.CollectionName,
+                VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
                 OperationName = operationName
             };
         }
@@ -546,8 +743,9 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
-                CollectionName = this.CollectionName,
+                VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
                 OperationName = operationName
             };
         }
@@ -577,8 +775,9 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                 {
                     throw new VectorStoreOperationException("Call to vector store failed.", ex)
                     {
-                        VectorStoreType = DatabaseName,
-                        CollectionName = this.CollectionName,
+                        VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
+                        VectorStoreName = this._collectionMetadata.VectorStoreName,
+                        CollectionName = this.Name,
                         OperationName = operationName
                     };
                 }
@@ -611,8 +810,9 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                 {
                     throw new VectorStoreOperationException("Call to vector store failed.", ex)
                     {
-                        VectorStoreType = DatabaseName,
-                        CollectionName = this.CollectionName,
+                        VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
+                        VectorStoreName = this._collectionMetadata.VectorStoreName,
+                        CollectionName = this.Name,
                         OperationName = operationName
                     };
                 }
@@ -622,55 +822,6 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         }
 
         throw new VectorStoreOperationException("Retry logic failed.");
-    }
-
-    /// <summary>
-    /// Gets storage property names taking into account BSON serialization attributes.
-    /// </summary>
-    private static Dictionary<string, string> GetStoragePropertyNames(
-        IReadOnlyList<VectorStoreRecordProperty> properties,
-        Type dataModel)
-    {
-        var storagePropertyNames = new Dictionary<string, string>();
-
-        foreach (var property in properties)
-        {
-            var propertyInfo = dataModel.GetProperty(property.DataModelPropertyName);
-            string propertyName;
-
-            if (propertyInfo != null)
-            {
-                var bsonElementAttribute = propertyInfo.GetCustomAttribute<BsonElementAttribute>();
-
-                propertyName = bsonElementAttribute?.ElementName ?? property.DataModelPropertyName;
-            }
-            else
-            {
-                propertyName = property.DataModelPropertyName;
-            }
-
-            storagePropertyNames[property.DataModelPropertyName] = propertyName;
-        }
-
-        return storagePropertyNames;
-    }
-
-    /// <summary>
-    /// Returns custom mapper, generic data model mapper or default record mapper.
-    /// </summary>
-    private IVectorStoreRecordMapper<TRecord, BsonDocument> InitializeMapper()
-    {
-        if (this._options.BsonDocumentCustomMapper is not null)
-        {
-            return this._options.BsonDocumentCustomMapper;
-        }
-
-        if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
-        {
-            return (new MongoDBGenericDataModelMapper(this._propertyReader.RecordDefinition) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
-        }
-
-        return new MongoDBVectorStoreRecordMapper<TRecord>(this._propertyReader);
     }
 
     private static Array VerifyVectorParam<TVector>(TVector vector)
@@ -688,5 +839,17 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                     typeof(ReadOnlyMemory<double>).FullName])}")
         };
     }
+
+    private string GetStringKey(TKey key)
+    {
+        Verify.NotNull(key);
+
+        var stringKey = key as string ?? throw new UnreachableException("string key should have been validated during model building");
+
+        Verify.NotNullOrWhiteSpace(stringKey, nameof(key));
+
+        return stringKey;
+    }
+
     #endregion
 }

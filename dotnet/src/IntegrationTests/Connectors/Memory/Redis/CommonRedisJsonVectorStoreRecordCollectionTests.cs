@@ -23,7 +23,7 @@ public class CommonRedisJsonVectorStoreRecordCollectionTests(RedisVectorStoreFix
 
     protected override IVectorStoreRecordCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
     {
-        return new RedisJsonVectorStoreRecordCollection<TRecord>(fixture.Database, recordCollectionName + "json", new()
+        return new RedisJsonVectorStoreRecordCollection<string, TRecord>(fixture.Database, recordCollectionName + "json", new()
         {
             VectorStoreRecordDefinition = vectorStoreRecordDefinition
         });

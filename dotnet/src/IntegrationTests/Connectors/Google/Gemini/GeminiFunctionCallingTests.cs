@@ -241,6 +241,28 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
     [RetryTheory]
     [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
     [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    public async Task ChatGenerationAutoInvokeNullablePropertiesWorksAsync(ServiceType serviceType)
+    {
+        var kernel = new Kernel();
+        kernel.ImportPluginFromType<NullableTestPlugin>();
+        var sut = this.GetChatService(serviceType);
+
+        var executionSettings = new GeminiPromptExecutionSettings()
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+        };
+
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("Hi, what's the weather in New York?");
+
+        var response = await sut.GetChatMessageContentAsync(chatHistory, executionSettings);
+
+        Assert.NotNull(response);
+    }
+
+    [RetryTheory]
+    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
     public async Task ChatGenerationAutoInvokeTwoPluginsShouldGetDateAndReturnTasksByDateParamAndReturnResponseAsync(ServiceType serviceType)
     {
         // Arrange
@@ -442,4 +464,21 @@ public sealed class GeminiFunctionCallingTests(ITestOutputHelper output) : Tests
             return numbers.Sum();
         }
     }
+
+#pragma warning disable CA1812 // Uninstantiated internal types
+    private sealed class NullableTestPlugin
+    {
+        [KernelFunction]
+        [Description("Get the weather for a given location.")]
+        private string GetWeather(Request request)
+        {
+            return $"The weather in {request?.Location} is sunny.";
+        }
+    }
+
+    private sealed class Request
+    {
+        public string? Location { get; set; }
+    }
+#pragma warning disable CA1812 // Uninstantiated internal types
 }

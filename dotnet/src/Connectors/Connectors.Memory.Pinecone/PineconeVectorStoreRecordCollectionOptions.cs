@@ -1,18 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
-/// Options when creating a <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Pinecone vector.
     /// </summary>
+    [Obsolete("Custom mappers are no longer supported.", error: true)]
     public IVectorStoreRecordMapper<TRecord, Vector>? VectorCustomMapper { get; init; } = null;
 
     /// <summary>
@@ -45,4 +48,9 @@ public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
     /// This option is only used when creating a new Pinecone index. Default value is 'us-east-1'.
     /// </remarks>
     public string ServerlessIndexRegion { get; init; } = "us-east-1";
+
+    /// <summary>
+    /// Gets or sets the default embedding generator for vector properties in this collection.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

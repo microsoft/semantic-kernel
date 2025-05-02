@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -14,11 +15,11 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
     private int _parameterIndex;
 
     internal SqlServerFilterTranslator(
-        IReadOnlyDictionary<string, string> storagePropertyNames,
+        VectorStoreRecordModel model,
         LambdaExpression lambdaExpression,
         StringBuilder sql,
         int startParamIndex)
-        : base(storagePropertyNames, lambdaExpression, sql)
+        : base(model, lambdaExpression, sql)
     {
         this._parameterIndex = startParamIndex;
     }
@@ -44,34 +45,29 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         }
     }
 
-    protected override void TranslateColumn(string column, MemberExpression memberExpression, Expression? parent)
+    protected override void GenerateColumn(string column, bool isSearchCondition = false)
     {
+        this._sql.Append('[').Append(column).Append(']');
+
         // "SELECT * FROM MyTable WHERE BooleanColumn;" is not supported.
         // "SELECT * FROM MyTable WHERE BooleanColumn = 1;" is supported.
-        if (memberExpression.Type == typeof(bool)
-            && (parent is null // Where(x => x.Bool)
-                || parent is UnaryExpression { NodeType: ExpressionType.Not } // Where(x => !x.Bool)
-                || parent is BinaryExpression { NodeType: ExpressionType.AndAlso or ExpressionType.OrElse })) // Where(x => x.Bool && other)
+        if (isSearchCondition)
         {
-            this.TranslateBinary(Expression.Equal(memberExpression, Expression.Constant(true)));
-        }
-        else
-        {
-            this._sql.Append('[').Append(column).Append(']');
+            this._sql.Append(" = 1");
         }
     }
 
-    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item, MethodCallExpression parent)
+    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
         => throw new NotSupportedException("Unsupported Contains expression");
 
-    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, MethodCallExpression parent, object? value)
+    protected override void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value)
     {
         if (value is not IEnumerable elements)
         {
             throw new NotSupportedException("Unsupported Contains expression");
         }
 
-        this.Translate(item, parent);
+        this.Translate(item);
         this._sql.Append(" IN (");
 
         var isFirst = true;
@@ -92,17 +88,17 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    protected override void TranslateCapturedVariable(string name, object? capturedValue)
+    protected override void TranslateQueryParameter(string name, object? value)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)
-        if (capturedValue is null)
+        if (value is null)
         {
             this._sql.Append("NULL");
         }
         else
         {
-            this._parameterValues.Add(capturedValue);
+            this._parameterValues.Add(value);
             // SQL Server parameters can't start with a digit (but underscore is OK).
             this._sql.Append("@_").Append(this._parameterIndex++);
         }

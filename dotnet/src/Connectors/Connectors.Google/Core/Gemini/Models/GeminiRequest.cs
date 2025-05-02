@@ -343,7 +343,7 @@ internal sealed class GeminiRequest
     /// - Replaces the type array with a single type value
     /// - Adds "nullable": true as a property
     /// </remarks>
-    private static JsonElement TransformToOpenApi3Schema(JsonElement jsonElement)
+    internal static JsonElement TransformToOpenApi3Schema(JsonElement jsonElement)
     {
         JsonNode? node = JsonNode.Parse(jsonElement.GetRawText());
         if (node is JsonObject rootObject)

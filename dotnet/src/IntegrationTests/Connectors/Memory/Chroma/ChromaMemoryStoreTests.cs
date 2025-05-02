@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Chroma;
 /// Integration tests for <see cref="ChromaMemoryStore"/> class.
 /// Tests work with local Chroma server. To setup the server, see dotnet/src/Connectors/Connectors.Memory.Chroma/README.md.
 /// </summary>
+[Experimental("SKEXP0020")]
 public sealed class ChromaMemoryStoreTests : IDisposable
 {
     // If null, all tests will be enabled

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,10 +11,12 @@ using MongoDB.Driver.Core.Configuration;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
+#pragma warning disable SKEXP0001 // IMemoryStore is experimental (but we're obsoleting)
+
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a MongoDB database.
 /// </summary>
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and MongoDBVectorStore")]
 public class MongoDBMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>

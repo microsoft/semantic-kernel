@@ -192,22 +192,10 @@ public class BedrockAgentExtensionsTests
             default), Times.Exactly(5));
     }
 
-    private (Mock<AmazonBedrockAgentClient>, Mock<AmazonBedrockAgentRuntimeClient>) CreateMockClients()
+    private (Mock<IAmazonBedrockAgent>, Mock<IAmazonBedrockAgentRuntime>) CreateMockClients()
     {
-#pragma warning disable Moq1410 // Moq: Set MockBehavior to Strict
-        Mock<AmazonBedrockAgentConfig> mockClientConfig = new();
-        Mock<AmazonBedrockAgentRuntimeConfig> mockRuntimeClientConfig = new();
-        mockClientConfig.Setup(x => x.Validate()).Verifiable();
-        mockRuntimeClientConfig.Setup(x => x.Validate()).Verifiable();
-        Mock<AmazonBedrockAgentClient> mockClient = new(
-            "fakeAccessId",
-            "fakeSecretKey",
-            mockClientConfig.Object);
-        Mock<AmazonBedrockAgentRuntimeClient> mockRuntimeClient = new(
-            "fakeAccessId",
-            "fakeSecretKey",
-            mockRuntimeClientConfig.Object);
-#pragma warning restore Moq1410 // Moq: Set MockBehavior to Strict
+        Mock<IAmazonBedrockAgent> mockClient = new();
+        Mock<IAmazonBedrockAgentRuntime> mockRuntimeClient = new();
 
         mockClient.Setup(x => x.CreateAgentAsync(
             It.IsAny<CreateAgentRequest>(),
@@ -259,7 +247,7 @@ public class BedrockAgentExtensionsTests
     /// Modify the mock client to return a new sequence of responses for the GetAgentAsync method
     /// that reflect the correct sequence of status change when modifying the agent.
     /// </summary>
-    private void ModifyMockClientGetAgentResponseSequence(Mock<AmazonBedrockAgentClient> mockClient)
+    private void ModifyMockClientGetAgentResponseSequence(Mock<IAmazonBedrockAgent> mockClient)
     {
         mockClient.SetupSequence(x => x.GetAgentAsync(
             It.IsAny<GetAgentRequest>(),
