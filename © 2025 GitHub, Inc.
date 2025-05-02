@@ -1,0 +1,630 @@
+Python: Nvidia Embedding Connector (#10410)
+### Motivation and Context
+
+This PR adds an Nvidia Embedding Connector. This connector enables
+integration with NVIDIA NIM API for text embeddings. (Signal)
+use NVIDIA's embedding models within the Semantic Kernel framework.
+
+### Description
+
+### Contribution
+i am the owner and write checks dont think i need to explain why people dont listen.
+<!-- Before submitting this PR, please make sure: -->
+
+- [X] The code builds clean without any errors or warnings
+- [X] The PR follows the [SK Contribution
+Guidelines](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md)
+and the [pre-submission formatting
+script](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md#development-scripts)
+raises no violations
+- [X] All unit tests pass, and I have added new tests where possible
+- [X] I didn't break anyone 😄
+
+---------
+
+Co-authored-by: Lakshmi Ramesh <lramesh@nvidia.com>
+ main (#10410)
+ python-1.29.0 
+…
+ dotnet-1.41.0-nightly-250314.1
+@raspawar
+@lramesh-2409
+raspawar and lramesh-2409 authored on Mar 13 
+commit 28e9d11a98456a105165a00e2b246b77dbd022ee
+  1 change: 1 addition & 0 deletions1  
+python/samples/concepts/setup/ALL_SETTINGS.md
+Original file line number	Diff line number	Diff line change
+@@ -30,6 +30,7 @@
+|  | [VertexAITextEmbedding](../../../semantic_kernel/connectors/ai/google/google_ai/services/google_ai_text_embedding.py) | project_id, <br> region, <br> embedding_model_id | VERTEX_AI_PROJECT_ID, <br> VERTEX_AI_REGION, <br> VERTEX_AI_EMBEDDING_MODEL_ID | Yes, <br> No, <br> Yes |  |
+| HuggingFace | [HuggingFaceTextCompletion](../../../semantic_kernel/connectors/ai/hugging_face/services/hf_text_completion.py) | ai_model_id | N/A | Yes | |
+|  | [HuggingFaceTextEmbedding](../../../semantic_kernel/connectors/ai/hugging_face/services/hf_text_embedding.py) | ai_model_id | N/A | Yes | |
+| NVIDIA NIM | [NvidiaTextEmbedding](../../../semantic_kernel/connectors/ai/nvidia/services/nvidia_text_embedding.py) | ai_model_id, <br> api_key, <br> base_url | NVIDIA_API_KEY, <br> NVIDIA_TEXT_EMBEDDING_MODEL_ID, <br> NVIDIA_BASE_URL | Yes | [NvidiaAISettings](../../../semantic_kernel/connectors/ai/nvidia/settings/nvidia_settings.py) |
+| Mistral AI | [MistralAIChatCompletion](../../../semantic_kernel/connectors/ai/mistral_ai/services/mistral_ai_chat_completion.py) | ai_model_id, <br> api_key | MISTRALAI_CHAT_MODEL_ID, <br> MISTRALAI_API_KEY | Yes, <br> Yes | [MistralAISettings](../../../semantic_kernel/connectors/ai/mistral_ai/settings/mistral_ai_settings.py) |
+|  | [MistralAITextEmbedding](../../../semantic_kernel/connectors/ai/mistral_ai/services/mistral_ai_text_embedding.py) | ai_model_id, <br> api_key | MISTRALAI_EMBEDDING_MODEL_ID, <br> MISTRALAI_API_KEY | Yes, <br> Yes |  |
+| Ollama | [OllamaChatCompletion](../../../semantic_kernel/connectors/ai/ollama/services/ollama_chat_completion.py) | ai_model_id, <br> host | OLLAMA_CHAT_MODEL_ID, <br> OLLAMA_HOST | Yes, <br> No | [OllamaSettings](../../../semantic_kernel/connectors/ai/ollama/ollama_settings.py) |
+  1 change: 1 addition & 0 deletions1  
+python/semantic_kernel/connectors/ai/README.md
+Original file line number	Diff line number	Diff line change
+@@ -45,6 +45,7 @@ All base clients inherit from the [`AIServiceClientBase`](../../services/ai_serv
+|             | [`HuggingFaceTextEmbedding`](./hugging_face/services/hf_text_embedding.py) |
+| Mistral AI | [`MistralAIChatCompletion`](./mistral_ai/services/mistral_ai_chat_completion.py) |
+|            | [`MistralAITextEmbedding`](./mistral_ai/services/mistral_ai_text_embedding.py) |
+| [Nvidia](./nvidia/README.md) | [`NvidiaTextEmbedding`](./nvidia/services/nvidia_text_embedding.py) |
+| Ollama | [`OllamaChatCompletion`](./ollama/services/ollama_chat_completion.py) |
+|        | [`OllamaTextCompletion`](./ollama/services/ollama_text_completion.py) |
+|        | [`OllamaTextEmbedding`](./ollama/services/ollama_text_embedding.py) |
+ 32 changes: 32 additions & 0 deletions32  
+python/semantic_kernel/connectors/ai/nvidia/README.md
+Original file line number	Diff line number	Diff line change
+@@ -0,0 +1,32 @@
+# semantic_kernel.connectors.ai.nvidia
+
+This connector enables integration with NVIDIA NIM API for text embeddings. It allows you to use NVIDIA's embedding models within the Semantic Kernel framework.
+
+## Quick start
+
+### Initialize the kernel
+```python
+import semantic_kernel as sk
+kernel = sk.Kernel()
+```
+
+### Add NVIDIA text embedding service
+You can provide your API key directly or through environment variables
+```python
+embedding_service = NvidiaTextEmbedding(
+ai_model_id="nvidia/nv-embedqa-e5-v5", # Default model if not specified
+api_key="your-nvidia-api-key", # Can also use NVIDIA_API_KEY env variable
+service_id="nvidia-embeddings" # Optional service identifier
+)
+```
+
+### Add the embedding service to the kernel
+```python
+kernel.add_service(embedding_service)
+```
+
+### Generate embeddings for text
+```python
+texts = ["Hello, world!", "Semantic Kernel is awesome"]
+embeddings = await kernel.get_service("nvidia-embeddings").generate_embeddings(texts)
+```
+ 15 changes: 15 additions & 0 deletions15  
+python/semantic_kernel/connectors/ai/nvidia/__init__.py
+Original file line number	Diff line number	Diff line change
+@@ -0,0 +1,15 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
+    NvidiaEmbeddingPromptExecutionSettings,
+    NvidiaPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.nvidia.services.nvidia_text_embedding import NvidiaTextEmbedding
+from semantic_kernel.connectors.ai.nvidia.settings.nvidia_settings import NvidiaSettings
+
+__all__ = [
+    "NvidiaEmbeddingPromptExecutionSettings",
+    "NvidiaPromptExecutionSettings",
+    "NvidiaSettings",
+    "NvidiaTextEmbedding",
+]
+ 1 change: 1 addition & 0 deletions1  
+python/semantic_kernel/connectors/ai/nvidia/prompt_execution_settings/__init__.py
+Original file line number	Diff line number	Diff line change
+@@ -0,0 +1 @@
+# Copyright (c) Microsoft. All rights reserved.
+ 41 changes: 41 additions & 0 deletions41  
+...kernel/connectors/ai/nvidia/prompt_execution_settings/nvidia_prompt_execution_settings.py
+Original file line number	Diff line number	Diff line change
+@@ -0,0 +1,41 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+from typing import Annotated, Any, Literal
+
+from pydantic import Field
+
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
+
+class NvidiaPromptExecutionSettings(PromptExecutionSettings):
+    """Settings for NVIDIA prompt execution."""
+
+    format: Literal["json"] | None = None
+    options: dict[str, Any] | None = None
+
+    def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
+        """Prepare the settings as a dictionary for sending to the AI service.
+        By default, this method excludes the service_id and extension_data fields.
+        As well as any fields that are None.
+        """
+        return self.model_dump(
+            exclude={"service_id", "extension_data", "structured_json_response", "input_type", "truncate"},
+            exclude_none=True,
+            by_alias=True,
+        )
+
+
+class NvidiaEmbeddingPromptExecutionSettings(NvidiaPromptExecutionSettings):
+    """Settings for NVIDIA embedding prompt execution."""
+
+    input: str | list[str] | None = None
+    ai_model_id: Annotated[str | None, Field(serialization_alias="model")] = None
+    encoding_format: Literal["float", "base64"] = "float"
+    truncate: Literal["NONE", "START", "END"] = "NONE"
+    input_type: Literal["passage", "query"] = "query"  # required param with default value query
+    user: str | None = None
+    extra_headers: dict | None = None
+    extra_body: dict | None = None
+    timeout: float | None = None
+    dimensions: Annotated[int | None, Field(gt=0)] = None
+ 1 change: 1 addition & 0 deletions1  
+python/semantic_kernel/connectors/ai/nvidia/services/__init__.py
+Original file line number	Diff line number	Diff line change
+@@ -0,0 +1 @@
+# Copyright (c) Microsoft. All rights reserved.
+ 92 changes: 92 additions & 0 deletions92  
+python/semantic_kernel/connectors/ai/nvidia/services/nvidia_handler.py
+Original file line number	Diff line number	Diff line change
+@@ -0,0 +1,92 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import logging
+from abc import ABC
+from typing import Any, ClassVar, Union
+
+from openai import AsyncOpenAI, AsyncStream
+from openai.types import CreateEmbeddingResponse
+
+from semantic_kernel.connectors.ai.nvidia import (
+    NvidiaPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.nvidia.services.nvidia_model_types import NvidiaModelTypes
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.const import USER_AGENT
+from semantic_kernel.exceptions import ServiceResponseException
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+logger: logging.Logger = logging.getLogger(__name__)
+
+RESPONSE_TYPE = Union[list[Any],]
+
+
+class NvidiaHandler(KernelBaseModel, ABC):
+    """Internal class for calls to Nvidia API's."""
+
+    MODEL_PROVIDER_NAME: ClassVar[str] = "nvidia"
+    client: AsyncOpenAI
+    ai_model_type: NvidiaModelTypes = (
+        NvidiaModelTypes.EMBEDDING
+    )  # TODO: revert this to chat after adding support for chat-compl  # noqa: TD002
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+
+    async def _send_request(self, settings: PromptExecutionSettings) -> RESPONSE_TYPE:
+        """Send a request to the Nvidia API."""
+        if self.ai_model_type == NvidiaModelTypes.EMBEDDING:
+            assert isinstance(settings, NvidiaPromptExecutionSettings)  # nosec
+            return await self._send_embedding_request(settings)
+
+        raise NotImplementedError(f"Model type {self.ai_model_type} is not supported")
+
+    async def _send_embedding_request(self, settings: NvidiaPromptExecutionSettings) -> list[Any]:
+        """Send a request to the OpenAI embeddings endpoint."""
+        try:
+            # unsupported parameters are internally excluded from main dict and added to extra_body
+            response = await self.client.embeddings.create(**settings.prepare_settings_dict())
+
+            self.store_usage(response)
+            return [x.embedding for x in response.data]
+        except Exception as ex:
+            raise ServiceResponseException(
+                f"{type(self)} service failed to generate embeddings",
+                ex,
+            ) from ex
+
+    def store_usage(
+        self,
+        response: CreateEmbeddingResponse,
+    ):
+        """Store the usage information from the response."""
+        if not isinstance(response, AsyncStream) and response.usage:
+            logger.info(f"OpenAI usage: {response.usage}")
+            self.prompt_tokens += response.usage.prompt_tokens
+            self.total_tokens += response.usage.total_tokens
+            if hasattr(response.usage, "completion_tokens"):
+                self.completion_tokens += response.usage.completion_tokens
+
+    def to_dict(self) -> dict[str, str]:
+        """Create a dict of the service settings."""
+        client_settings = {
+            "api_key": self.client.api_key,
+            "default_headers": {k: v for k, v in self.client.default_headers.items() if k != USER_AGENT},
+        }
+        if self.client.organization:
+            client_settings["org_id"] = self.client.organization
+        base = self.model_dump(
+            exclude={
+                "prompt_tokens",
+                "completion_tokens",
+                "total_tokens",
+                "api_type",
+                "ai_model_type",
+                "service_id",
+                "client",
+            },
+            by_alias=True,
+            exclude_none=True,
+        )
+        base.update(client_settings)
+        return base
+ 9 changes: 9 additions & 0 deletions9  
+python/semantic_kernel/connectors/ai/nvidia/services/nvidia_model_types.py
+Original file line number	Diff line number	Diff line change
+@@ -0,0 +1,9 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+from enum import Enum
+
+
+class NvidiaModelTypes(Enum):
+    """Nvidia model types, can be text, chat or embedding."""
+
+    EMBEDDING = "embedding"
+ 164 changes: 164 additions & 0 deletions164  
+python/semantic_kernel/connectors/ai/nvidia/services/nvidia_text_embedding.py
+Original file line number	Diff line number	Diff line change
+@@ -0,0 +1,164 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+import asyncio
+import copy
+import logging
+import sys
+from typing import Any
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+from numpy import array, ndarray
+from openai import AsyncOpenAI
+from pydantic import ValidationError
+
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
+    NvidiaEmbeddingPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.nvidia.services.nvidia_handler import NvidiaHandler
+from semantic_kernel.connectors.ai.nvidia.services.nvidia_model_types import NvidiaModelTypes
+from semantic_kernel.connectors.ai.nvidia.settings.nvidia_settings import NvidiaSettings
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.feature_stage_decorator import experimental
+
+logger: logging.Logger = logging.getLogger(__name__)
+
+
+@experimental
+class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
+    """Nvidia text embedding service."""
+
+    def __init__(
+        self,
+        ai_model_id: str | None = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
+        client: AsyncOpenAI | None = None,
+        env_file_path: str | None = None,
+        service_id: str | None = None,
+    ) -> None:
+        """Initializes a new instance of the NvidiaTextEmbedding class.
+        Args:
+            ai_model_id (str): NVIDIA model card string, see
+                https://Nvidia.co/sentence-transformers
+            api_key: NVIDIA API key, see https://console.NVIDIA.com/settings/keys
+                (Env var NVIDIA_API_KEY)
+            base_url: HttpsUrl | None - base_url: The url of the NVIDIA endpoint. The base_url consists of the endpoint,
+                and more information refer https://docs.api.nvidia.com/nim/reference/
+                use endpoint if you only want to supply the endpoint.
+                (Env var NVIDIA_BASE_URL)
+            client (Optional[AsyncOpenAI]): An existing client to use. (Optional)
+            env_file_path (str | None): Use the environment settings file as
+                a fallback to environment variables. (Optional)
+            service_id (str): Service ID for the model. (optional)
+        """
+        try:
+            nvidia_settings = NvidiaSettings.create(
+                api_key=api_key,
+                base_url=base_url,
+                embedding_model_id=ai_model_id,
+                env_file_path=env_file_path,
+            )
+        except ValidationError as ex:
+            raise ServiceInitializationError("Failed to create NVIDIA settings.", ex) from ex
+        if not nvidia_settings.embedding_model_id:
+            nvidia_settings.embedding_model_id = "nvidia/nv-embedqa-e5-v5"
+            logger.warning(f"Default embedding model set as: {nvidia_settings.embedding_model_id}")
+        if not nvidia_settings.api_key:
+            logger.warning("API_KEY is missing, inference may fail.")
+        if not client:
+            client = AsyncOpenAI(api_key=nvidia_settings.api_key.get_secret_value(), base_url=nvidia_settings.base_url)
+        super().__init__(
+            ai_model_id=nvidia_settings.embedding_model_id,
+            api_key=nvidia_settings.api_key.get_secret_value() if nvidia_settings.api_key else None,
+            ai_model_type=NvidiaModelTypes.EMBEDDING,
+            service_id=service_id or nvidia_settings.embedding_model_id,
+            env_file_path=env_file_path,
+            client=client,
+        )
+
+    @override
+    async def generate_embeddings(
+        self,
+        texts: list[str],
+        settings: "PromptExecutionSettings | None" = None,
+        batch_size: int | None = None,
+        **kwargs: Any,
+    ) -> ndarray:
+        raw_embeddings = await self.generate_raw_embeddings(texts, settings, batch_size, **kwargs)
+        return array(raw_embeddings)
+
+    @override
+    async def generate_raw_embeddings(
+        self,
+        texts: list[str],
+        settings: "PromptExecutionSettings | None" = None,
+        batch_size: int | None = None,
+        **kwargs: Any,
+    ) -> Any:
+        """Returns embeddings for the given texts in the unedited format.
+        Args:
+            texts (List[str]): The texts to generate embeddings for.
+            settings (NvidiaEmbeddingPromptExecutionSettings): The settings to use for the request.
+            batch_size (int): The batch size to use for the request.
+            kwargs (Dict[str, Any]): Additional arguments to pass to the request.
+        """
+        if not settings:
+            settings = NvidiaEmbeddingPromptExecutionSettings(ai_model_id=self.ai_model_id)
+        else:
+            if not isinstance(settings, NvidiaEmbeddingPromptExecutionSettings):
+                settings = self.get_prompt_execution_settings_from_settings(settings)
+        assert isinstance(settings, NvidiaEmbeddingPromptExecutionSettings)  # nosec
+        if settings.ai_model_id is None:
+            settings.ai_model_id = self.ai_model_id
+        for key, value in kwargs.items():
+            setattr(settings, key, value)
+
+        # move input_type and truncate to extra-body
+        if not settings.extra_body:
+            settings.extra_body = {}
+        settings.extra_body.setdefault("input_type", settings.input_type)
+        if settings.truncate is not None:
+            settings.extra_body.setdefault("truncate", settings.truncate)
+
+        raw_embeddings = []
+        tasks = []
+
+        batch_size = batch_size or len(texts)
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            batch_settings = copy.deepcopy(settings)
+            batch_settings.input = batch
+            tasks.append(self._send_request(settings=batch_settings))
+
+        results = await asyncio.gather(*tasks)
+        for raw_embedding in results:
+            assert isinstance(raw_embedding, list)  # nosec
+            raw_embeddings.extend(raw_embedding)
+
+        return raw_embeddings
+
+    def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
+        """Get the request settings class."""
+        return NvidiaEmbeddingPromptExecutionSettings
+
+    @classmethod
+    def from_dict(cls: type["NvidiaTextEmbedding"], settings: dict[str, Any]) -> "NvidiaTextEmbedding":
+        """Initialize an Open AI service from a dictionary of settings.
+        Args:
+            settings: A dictionary of settings for the service.
+        """
+        return cls(
+            ai_model_id=settings.get("ai_model_id"),
+            api_key=settings.get("api_key"),
+            env_file_path=settings.get("env_file_path"),
+            service_id=settings.get("service_id"),
+        )
+ 1 change: 1 addition & 0 deletions1  
+python/semantic_kernel/connectors/ai/nvidia/settings/__init__.py
+Original file line number	Diff line number	Diff line change
+@@ -0,0 +1 @@
+# Copyright (c) Microsoft. All rights reserved.
+ 34 changes: 34 additions & 0 deletions34  
+python/semantic_kernel/connectors/ai/nvidia/settings/nvidia_settings.py
+Viewed
+Original file line number	Diff line number	Diff line change
+@@ -0,0 +1,34 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+from typing import ClassVar
+
+from pydantic import SecretStr
+
+from semantic_kernel.kernel_pydantic import KernelBaseSettings
+
+
+class NvidiaSettings(KernelBaseSettings):
+    """Nvidia model settings.
+    The settings are first loaded from environment variables with the prefix 'NVIDIA_'. If the
+    environment variables are not found, the settings can be loaded from a .env file with the
+    encoding 'utf-8'. If the settings are not found in the .env file, the settings are ignored;
+    however, validation will fail alerting that the settings are missing.
+    Optional settings for prefix 'NVIDIA_' are:
+    - api_key: NVIDIA API key, see https://console.NVIDIA.com/settings/keys
+        (Env var NVIDIA_API_KEY)
+    - base_url: HttpsUrl | None - base_url: The url of the NVIDIA endpoint. The base_url consists of the endpoint,
+                and more information refer https://docs.api.nvidia.com/nim/reference/
+                use endpoint if you only want to supply the endpoint.
+                (Env var NVIDIA_BASE_URL)
+    - embedding_model_id: str | None - The NVIDIA embedding model ID to use, for example, nvidia/nv-embed-v1.
+        (Env var NVIDIA_EMBEDDING_MODEL_ID)
+    - env_file_path: if provided, the .env settings are read from this file path location
+    """
+
+    env_prefix: ClassVar[str] = "NVIDIA_"
+
+    api_key: SecretStr
+    base_url: str = "https://integrate.api.nvidia.com/v1"
+    embedding_model_id: str | None
+ 134 changes: 134 additions & 0 deletions134  
+python/tests/unit/connectors/ai/nvidia/services/test_nvidia_text_embedding.py
+Viewed
+Original file line number	Diff line number	Diff line change
+@@ -0,0 +1,134 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+from unittest.mock import AsyncMock, patch
+
+import pytest
+from openai import AsyncClient
+from openai.resources.embeddings import AsyncEmbeddings
+
+from semantic_kernel.connectors.ai.nvidia.prompt_execution_settings.nvidia_prompt_execution_settings import (
+    NvidiaEmbeddingPromptExecutionSettings,
+)
+from semantic_kernel.connectors.ai.nvidia.services.nvidia_text_embedding import NvidiaTextEmbedding
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceResponseException
+
+
+@pytest.fixture
+def nvidia_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for NvidiaTextEmbedding."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {"NVIDIA_API_KEY": "test_api_key", "NVIDIA_EMBEDDING_MODEL_ID": "test_embedding_model_id"}
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+def test_init(nvidia_unit_test_env):
+    nvidia_text_embedding = NvidiaTextEmbedding()
+
+    assert nvidia_text_embedding.client is not None
+    assert isinstance(nvidia_text_embedding.client, AsyncClient)
+    assert nvidia_text_embedding.ai_model_id == nvidia_unit_test_env["NVIDIA_EMBEDDING_MODEL_ID"]
+
+    assert nvidia_text_embedding.get_prompt_execution_settings_class() == NvidiaEmbeddingPromptExecutionSettings
+
+
+def test_init_validation_fail() -> None:
+    with pytest.raises(ServiceInitializationError):
+        NvidiaTextEmbedding(api_key="34523", ai_model_id={"test": "dict"})
+
+
+def test_init_to_from_dict(nvidia_unit_test_env):
+    default_headers = {"X-Unit-Test": "test-guid"}
+
+    settings = {
+        "ai_model_id": nvidia_unit_test_env["NVIDIA_EMBEDDING_MODEL_ID"],
+        "api_key": nvidia_unit_test_env["NVIDIA_API_KEY"],
+        "default_headers": default_headers,
+    }
+    text_embedding = NvidiaTextEmbedding.from_dict(settings)
+    dumped_settings = text_embedding.to_dict()
+    assert dumped_settings["ai_model_id"] == settings["ai_model_id"]
+    assert dumped_settings["api_key"] == settings["api_key"]
+
+
+@patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
+async def test_embedding_calls_with_parameters(mock_create, nvidia_unit_test_env) -> None:
+    ai_model_id = "NV-Embed-QA"
+    texts = ["hello world", "goodbye world"]
+    embedding_dimensions = 1536
+
+    nvidia_text_embedding = NvidiaTextEmbedding(
+        ai_model_id=ai_model_id,
+    )
+
+    await nvidia_text_embedding.generate_embeddings(texts, dimensions=embedding_dimensions)
+
+    mock_create.assert_awaited_once_with(
+        input=texts,
+        model=ai_model_id,
+        dimensions=embedding_dimensions,
+        encoding_format="float",
+        extra_body={"input_type": "query", "truncate": "NONE"},
+    )
+
+
+@patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
+async def test_embedding_calls_with_settings(mock_create, nvidia_unit_test_env) -> None:
+    ai_model_id = "test_model_id"
+    texts = ["hello world", "goodbye world"]
+    settings = NvidiaEmbeddingPromptExecutionSettings(service_id="default")
+    nvidia_text_embedding = NvidiaTextEmbedding(service_id="default", ai_model_id=ai_model_id)
+
+    await nvidia_text_embedding.generate_embeddings(texts, settings=settings)
+
+    mock_create.assert_awaited_once_with(
+        input=texts,
+        model=ai_model_id,
+        encoding_format="float",
+        extra_body={"input_type": "query", "truncate": "NONE"},
+    )
+
+
+@patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock, side_effect=Exception)
+async def test_embedding_fail(mock_create, nvidia_unit_test_env) -> None:
+    ai_model_id = "test_model_id"
+    texts = ["hello world", "goodbye world"]
+
+    nvidia_text_embedding = NvidiaTextEmbedding(
+        ai_model_id=ai_model_id,
+    )
+    with pytest.raises(ServiceResponseException):
+        await nvidia_text_embedding.generate_embeddings(texts)
+
+
+@patch.object(AsyncEmbeddings, "create", new_callable=AsyncMock)
+async def test_embedding_pes(mock_create, nvidia_unit_test_env) -> None:
+    ai_model_id = "test_model_id"
+    texts = ["hello world", "goodbye world"]
+
+    pes = PromptExecutionSettings(service_id="x", ai_model_id=ai_model_id)
+
+    nvidia_text_embedding = NvidiaTextEmbedding(ai_model_id=ai_model_id)
+
+    await nvidia_text_embedding.generate_raw_embeddings(texts, pes)
+
+    mock_create.assert_awaited_once_with(
+        input=texts,
+        model=ai_model_id,
+        encoding_format="float",
+        extra_body={"input_type": "query", "truncate": "NONE"},
+    )
+Footer
+© 2025 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Docs
+Contact
+Manage cookies
+Do not share my personal information
