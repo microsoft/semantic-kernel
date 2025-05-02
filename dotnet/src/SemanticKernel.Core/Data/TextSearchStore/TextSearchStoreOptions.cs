@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Memory;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Contains options for the <see cref="TextRagStore{TKey}"/>.
+/// Contains options for the <see cref="TextSearchStore{TKey}"/>.
 /// </summary>
-public sealed class TextRagStoreOptions
+public sealed class TextSearchStoreOptions
 {
     /// <summary>
     /// Gets or sets an optional namespace to pre-filter the possible
@@ -35,16 +36,12 @@ public sealed class TextRagStoreOptions
     public bool? UseSourceIdAsPrimaryKey { get; init; }
 
     /// <summary>
-    /// Gets or sets an optional callback to load the source text from the source id or source link
+    /// Gets or sets an optional callback to load the source text using the source id or source link
     /// if the source text is not persisted in the database.
     /// </summary>
-    public SourceRetriever? SourceRetrievalCallback { get; init; }
-
-    /// <summary>
-    /// Delegate type for loading the source text from the source id or source link
-    /// if the source text is not persisted in the database.
-    /// </summary>
-    /// <param name="sourceIds">The ids and links of the text to load.</param>
-    /// <returns>The source text with the source id or source link.</returns>
-    public delegate Task<IEnumerable<(string? sourceId, string? sourceLink, string text)>> SourceRetriever(List<(string? sourceId, string? sourceLink)> sourceIds);
+    /// <remarks>
+    /// The response should include the source id or source link, as provided in the request,
+    /// plus the source text loaded from the source.
+    /// </remarks>
+    public Func<List<TextSearchStoreSourceRetrievalRequest>, Task<IEnumerable<TextSearchStoreSourceRetrievalResponse>>>? SourceRetrievalCallback { get; init; }
 }

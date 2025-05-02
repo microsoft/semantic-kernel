@@ -8,24 +8,34 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Memory.TextRag;
+using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Memory;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// A class that allows for easy storage and retrieval of documents in a Vector Store for Retrieval Augmented Generation (RAG).
 /// </summary>
+/// <remarks>
+/// <para>
+/// This class provides an opinionated schema for storing documents in a vector store. It is valuable for simple scenarios
+/// where you want to store text + embedding, or a reference to an external document + embedding without needing to customize the schema.
+/// If you want to control the schema yourself, you can use an implementation of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>
+/// with the <see cref="VectorStoreTextSearch{TRecord}"/> class instead.
+/// </para>
+/// <para>
+/// This class can also be used with the <see cref="TextRagComponent"/> to easily add RAG capabilities to an Agent.
+/// </para>
+/// </remarks>
 /// <typeparam name="TKey">The key type to use with the vector store.</typeparam>
 [Experimental("SKEXP0130")]
-public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
+public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
     where TKey : notnull
 {
     private readonly IVectorStore _vectorStore;
     private readonly ITextEmbeddingGenerationService _textEmbeddingGenerationService;
     private readonly int _vectorDimensions;
-    private readonly TextRagStoreOptions _options;
+    private readonly TextSearchStoreOptions _options;
 
     private readonly Lazy<IVectorStoreRecordCollection<TKey, TextRagStorageDocument<TKey>>> _vectorStoreRecordCollection;
     private readonly SemaphoreSlim _collectionInitializationLock = new(1, 1);
@@ -33,7 +43,7 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
     private bool _disposedValue;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorDataTextMemoryStore{TKey}"/> class.
+    /// Initializes a new instance of the <see cref="TextSearchStore{TKey}"/> class.
     /// </summary>
     /// <param name="vectorStore">The vector store to store and read the memories from.</param>
     /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings for the memories.</param>
@@ -41,12 +51,12 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="options">Options to configure the behavior of this class.</param>
     /// <exception cref="NotSupportedException">Thrown if the key type provided is not supported.</exception>
-    public TextRagStore(
+    public TextSearchStore(
         IVectorStore vectorStore,
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
         string collectionName,
         int vectorDimensions,
-        TextRagStoreOptions? options = default)
+        TextSearchStoreOptions? options = default)
     {
         // Verify
         Verify.NotNull(vectorStore);
@@ -61,14 +71,14 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
 
         if (typeof(TKey) != typeof(string) && options?.UseSourceIdAsPrimaryKey is true)
         {
-            throw new NotSupportedException($"The {nameof(TextRagStoreOptions.UseSourceIdAsPrimaryKey)} option can only be used when the key type is 'string'.");
+            throw new NotSupportedException($"The {nameof(TextSearchStoreOptions.UseSourceIdAsPrimaryKey)} option can only be used when the key type is 'string'.");
         }
 
         // Assign
         this._vectorStore = vectorStore;
         this._textEmbeddingGenerationService = textEmbeddingGenerationService;
         this._vectorDimensions = vectorDimensions;
-        this._options = options ?? new TextRagStoreOptions();
+        this._options = options ?? new TextSearchStoreOptions();
 
         // Create a definition so that we can use the dimensions provided at runtime.
         VectorStoreRecordDefinition ragDocumentDefinition = new()
@@ -96,7 +106,7 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
     /// <param name="options">Optional options to control the upsert behavior.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the documents have been upserted.</returns>
-    public async Task UpsertDocumentsAsync(IEnumerable<TextRagDocument> documents, TextRagStoreUpsertOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task UpsertDocumentsAsync(IEnumerable<TextSearchDocument> documents, TextSearchStoreUpsertOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(documents);
 
@@ -112,13 +122,13 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
             // Without text we cannot generate a vector.
             if (string.IsNullOrWhiteSpace(document.Text))
             {
-                throw new ArgumentException($"The {nameof(TextRagDocument.Text)} property must be set.", nameof(document));
+                throw new ArgumentException($"The {nameof(TextSearchDocument.Text)} property must be set.", nameof(document));
             }
 
             // If we aren't persisting the text, we need a source id or link to refer back to the original document.
             if (options?.PersistSourceText is false && string.IsNullOrWhiteSpace(document.SourceId) && string.IsNullOrWhiteSpace(document.SourceLink))
             {
-                throw new ArgumentException($"Either the {nameof(TextRagDocument.SourceId)} or {nameof(TextRagDocument.SourceLink)} properties must be set when the {nameof(TextRagStoreUpsertOptions.PersistSourceText)} setting is false.", nameof(document));
+                throw new ArgumentException($"Either the {nameof(TextSearchDocument.SourceId)} or {nameof(TextSearchDocument.SourceLink)} properties must be set when the {nameof(TextSearchStoreUpsertOptions.PersistSourceText)} setting is false.", nameof(document));
             }
 
             var key = GenerateUniqueKey<TKey>(this._options.UseSourceIdAsPrimaryKey ?? false ? document.SourceId : null);
@@ -195,49 +205,49 @@ public sealed class TextRagStore<TKey> : ITextSearch, IDisposable
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         // Retrieve the documents from the search results.
-        var retrievedDocs = await searchResult
+        var searchResponseDocs = await searchResult
             .Results
             .SelectAsync(x => x.Record, cancellationToken)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
         // Find any source ids and links for which the text needs to be retrieved.
-        var sourceIdsToRetrieve = retrievedDocs
+        var sourceIdsToRetrieve = searchResponseDocs
             .Where(x => string.IsNullOrWhiteSpace(x.Text))
-            .Select(x => (x.SourceId, x.SourceLink))
+            .Select(x => new TextSearchStoreSourceRetrievalRequest(x.SourceId, x.SourceLink))
             .ToList();
 
         if (sourceIdsToRetrieve.Count > 0)
         {
             if (this._options.SourceRetrievalCallback is null)
             {
-                throw new InvalidOperationException($"The {nameof(TextRagStoreOptions.SourceRetrievalCallback)} option must be set if retrieving documents without stored text.");
+                throw new InvalidOperationException($"The {nameof(TextSearchStoreOptions.SourceRetrievalCallback)} option must be set if retrieving documents without stored text.");
             }
 
-            var retrievedText = await this._options.SourceRetrievalCallback(sourceIdsToRetrieve).ConfigureAwait(false);
+            var retrievalResponses = await this._options.SourceRetrievalCallback(sourceIdsToRetrieve).ConfigureAwait(false);
 
-            if (retrievedText is null)
+            if (retrievalResponses is null)
             {
-                throw new InvalidOperationException($"The {nameof(TextRagStoreOptions.SourceRetrievalCallback)} must return a non-null value.");
+                throw new InvalidOperationException($"The {nameof(TextSearchStoreOptions.SourceRetrievalCallback)} must return a non-null value.");
             }
 
             // Update the retrieved documents with the retrieved text.
-            retrievedDocs = retrievedDocs.GroupJoin(
-                retrievedText,
-                retrievedDocs => (retrievedDocs.SourceId, retrievedDocs.SourceLink),
-                retrievedText => (retrievedText.sourceId, retrievedText.sourceLink),
-                (retrievedDoc, retrievedText) => (retrievedDoc, retrievedText))
+            searchResponseDocs = searchResponseDocs.GroupJoin(
+                retrievalResponses,
+                searchResponseDoc => (searchResponseDoc.SourceId, searchResponseDoc.SourceLink),
+                retrievalResponse => (retrievalResponse.SourceId, retrievalResponse.SourceLink),
+                (searchResponseDoc, textRetrievalResponse) => (searchResponseDoc, textRetrievalResponse))
                 .SelectMany(
-                    joinedSet => joinedSet.retrievedText.DefaultIfEmpty(),
-                    (combined, retrievedText) =>
+                    joinedSet => joinedSet.textRetrievalResponse.DefaultIfEmpty(),
+                    (combined, textRetrievalResponse) =>
                     {
-                        combined.retrievedDoc.Text = retrievedText.text ?? combined.retrievedDoc.Text;
-                        return combined.retrievedDoc;
+                        combined.searchResponseDoc.Text = textRetrievalResponse?.Text ?? combined.searchResponseDoc.Text;
+                        return combined.searchResponseDoc;
                     })
                 .ToList();
         }
 
-        return retrievedDocs;
+        return searchResponseDocs;
     }
 
     /// <summary>

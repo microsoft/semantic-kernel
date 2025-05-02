@@ -3,13 +3,13 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Memory.TextRag;
+namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Represents a document that can be used for Retrieval Augmented Generation (RAG).
 /// </summary>
 [Experimental("SKEXP0130")]
-public sealed class TextRagDocument
+public sealed class TextSearchDocument
 {
     /// <summary>
     /// Gets or sets an optional list of namespaces that the document should belong to.
