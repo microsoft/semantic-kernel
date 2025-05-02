@@ -210,6 +210,7 @@ select = [
 ignore = [
     "D100", #allow missing docstring in public module
     "D104", #allow missing docstring in public package
+    "B009", #get-attr-with-constant
     "B010", #set-attr-with-constant
     "B904", #raise-without-from-inside-excepta
     "B905", #zip-without-explicit-strict
