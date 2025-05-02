@@ -15,7 +15,7 @@ public class MongoDBHotel
     public string HotelId { get; init; }
 
     /// <summary>A string metadata field.</summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>
@@ -43,6 +43,6 @@ public class MongoDBHotel
     public DateTime Timestamp { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.IvfFlat)]
+    [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.IvfFlat)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

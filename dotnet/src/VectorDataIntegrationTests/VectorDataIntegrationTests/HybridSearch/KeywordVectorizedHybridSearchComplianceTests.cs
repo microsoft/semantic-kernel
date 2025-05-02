@@ -29,10 +29,8 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         // Act
         // All records have the same vector, but the third contains Grapes, so searching for
         // Grapes should return the third record first.
-        var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["Grapes"]);
-
+        var results = await hybridSearch!.HybridSearchAsync(vector, ["Grapes"], top: 3).ToListAsync();
         // Assert
-        var results = await searchResult.Results.ToListAsync();
         Assert.Equal(3, results.Count);
 
         Assert.Equal(3, results[0].Record.Code);
@@ -55,10 +53,9 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
             OldFilter = new VectorSearchFilter().EqualTo("Code", 1)
         };
 #pragma warning restore CS0618 // Type or member is obsolete
-        var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], options);
+        var results = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], top: 3, options).ToListAsync();
 
         // Assert
-        var results = await searchResult.Results.ToListAsync();
         Assert.Single(results);
 
         Assert.Equal(1, results[0].Record.Code);
@@ -75,10 +72,9 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         // Act
         // All records have the same vector, but the second contains Oranges, so the
         // second should be returned first.
-        var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], new() { Top = 1 });
+        var results = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], top: 1).ToListAsync();
 
         // Assert
-        var results = await searchResult.Results.ToListAsync();
         Assert.Single(results);
 
         Assert.Equal(2, results[0].Record.Code);
@@ -95,10 +91,9 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         // Act
         // All records have the same vector, but the first and third contain healthy,
         // so when skipping the first two results, we should get the second record.
-        var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["healthy"], new() { Skip = 2 });
+        var results = await hybridSearch!.HybridSearchAsync(vector, ["healthy"], top: 3, new() { Skip = 2 }).ToListAsync();
 
         // Assert
-        var results = await searchResult.Results.ToListAsync();
         Assert.Single(results);
 
         Assert.Equal(2, results[0].Record.Code);
@@ -113,10 +108,9 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
         // Act
-        var searchResult = await hybridSearch!.HybridSearchAsync(vector, ["tangy", "nourishing"]);
+        var results = await hybridSearch!.HybridSearchAsync(vector, ["tangy", "nourishing"], top: 3).ToListAsync();
 
         // Assert
-        var results = await searchResult.Results.ToListAsync();
         Assert.Equal(3, results.Count);
 
         Assert.True(results[0].Record.Code.Equals(1) || results[0].Record.Code.Equals(2));
@@ -133,17 +127,15 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
         // Act
-        var searchResult1 = await hybridSearch!.HybridSearchAsync(vector, ["Apples"], new() { AdditionalProperty = r => r.Text2 });
-        var searchResult2 = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], new() { AdditionalProperty = r => r.Text2 });
+        var results1 = await hybridSearch!.HybridSearchAsync(vector, ["Apples"], top: 3, new() { AdditionalProperty = r => r.Text2 }).ToListAsync();
+        var results2 = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], top: 3, new() { AdditionalProperty = r => r.Text2 }).ToListAsync();
 
         // Assert
-        var results1 = await searchResult1.Results.ToListAsync();
         Assert.Equal(2, results1.Count);
 
         Assert.Equal(2, results1[0].Record.Code);
         Assert.Equal(1, results1[1].Record.Code);
 
-        var results2 = await searchResult2.Results.ToListAsync();
         Assert.Equal(2, results2.Count);
 
         Assert.Equal(1, results2[0].Record.Code);
@@ -176,17 +168,17 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
 
     public abstract class VectorAndStringFixture : VectorStoreCollectionFixture<TKey, VectorAndStringRecord<TKey>>
     {
-        protected override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
+        public override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
 
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties = new List<VectorStoreRecordProperty>()
                 {
                     new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                    new VectorStoreRecordDataProperty("Text", typeof(string)) { IsFullTextSearchable = true },
-                    new VectorStoreRecordDataProperty("Code", typeof(int)) { IsFilterable = true },
-                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = this.IndexKind },
+                    new VectorStoreRecordDataProperty("Text", typeof(string)) { IsFullTextIndexed = true },
+                    new VectorStoreRecordDataProperty("Code", typeof(int)) { IsIndexed = true },
+                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
                 }
             };
 
@@ -229,18 +221,18 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
 
     public abstract class MultiTextFixture : VectorStoreCollectionFixture<TKey, MultiTextStringRecord<TKey>>
     {
-        protected override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
+        public override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
 
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties = new List<VectorStoreRecordProperty>()
                 {
                     new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                    new VectorStoreRecordDataProperty("Text1", typeof(string)) { IsFullTextSearchable = true },
-                    new VectorStoreRecordDataProperty("Text2", typeof(string)) { IsFullTextSearchable = true },
-                    new VectorStoreRecordDataProperty("Code", typeof(int)) { IsFilterable = true },
-                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = this.IndexKind },
+                    new VectorStoreRecordDataProperty("Text1", typeof(string)) { IsFullTextIndexed = true },
+                    new VectorStoreRecordDataProperty("Text2", typeof(string)) { IsFullTextIndexed = true },
+                    new VectorStoreRecordDataProperty("Code", typeof(int)) { IsIndexed = true },
+                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
                 }
             };
 

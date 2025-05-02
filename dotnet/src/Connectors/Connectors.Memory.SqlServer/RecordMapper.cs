@@ -2,37 +2,38 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Diagnostics;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
-internal sealed class RecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, IDictionary<string, object?>>
+internal sealed class RecordMapper<TRecord>(VectorStoreRecordModel model)
 {
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
-
-    internal RecordMapper(VectorStoreRecordPropertyReader propertyReader) => this._propertyReader = propertyReader;
-
-    public IDictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
+    public IDictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         Dictionary<string, object?> map = new(StringComparer.Ordinal);
 
-        map[SqlServerCommandBuilder.GetColumnName(this._propertyReader.KeyProperty)] = this._propertyReader.KeyPropertyInfo.GetValue(dataModel);
+        map[model.KeyProperty.StorageName] = model.KeyProperty.GetValueAsObject(dataModel!);
 
-        var dataProperties = this._propertyReader.DataProperties;
-        var dataPropertiesInfo = this._propertyReader.DataPropertiesInfo;
-        for (int i = 0; i < dataProperties.Count; i++)
+        foreach (var property in model.DataProperties)
         {
-            object? value = dataPropertiesInfo[i].GetValue(dataModel);
-            map[SqlServerCommandBuilder.GetColumnName(dataProperties[i])] = value;
+            map[property.StorageName] = property.GetValueAsObject(dataModel!);
         }
-        var vectorProperties = this._propertyReader.VectorProperties;
-        var vectorPropertiesInfo = this._propertyReader.VectorPropertiesInfo;
-        for (int i = 0; i < vectorProperties.Count; i++)
+
+        for (var i = 0; i < model.VectorProperties.Count; i++)
         {
-            // We restrict the vector properties to ReadOnlyMemory<float> so the cast here is safe.
-            ReadOnlyMemory<float> floats = (ReadOnlyMemory<float>)vectorPropertiesInfo[i].GetValue(dataModel)!;
-            map[SqlServerCommandBuilder.GetColumnName(vectorProperties[i])] = floats;
+            var property = model.VectorProperties[i];
+
+            // We restrict the vector properties to ReadOnlyMemory<float> in model validation
+            map[property.StorageName] = generatedEmbeddings?[i] is IReadOnlyList<Embedding> e
+                ? e[recordIndex] switch
+                {
+                    Embedding<float> fe => fe.Vector,
+                    _ => throw new UnreachableException()
+                }
+                : (ReadOnlyMemory<float>)property.GetValueAsObject(dataModel!)!;
         }
 
         return map;
@@ -40,33 +41,32 @@ internal sealed class RecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, 
 
     public TRecord MapFromStorageToDataModel(IDictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
     {
-        TRecord record = Activator.CreateInstance<TRecord>()!;
-        SetValue(storageModel, record, this._propertyReader.KeyPropertyInfo, this._propertyReader.KeyProperty);
-        var data = this._propertyReader.DataProperties;
-        var dataInfo = this._propertyReader.DataPropertiesInfo;
-        for (int i = 0; i < data.Count; i++)
+        var record = model.CreateRecord<TRecord>()!;
+
+        SetValue(storageModel, record, model.KeyProperty, storageModel[model.KeyProperty.StorageName]);
+
+        foreach (var property in model.DataProperties)
         {
-            SetValue(storageModel, record, dataInfo[i], data[i]);
+            SetValue(storageModel, record, property, storageModel[property.StorageName]);
         }
 
         if (options.IncludeVectors)
         {
-            var vector = this._propertyReader.VectorProperties;
-            var vectorInfo = this._propertyReader.VectorPropertiesInfo;
-            for (int i = 0; i < vector.Count; i++)
+            foreach (var property in model.VectorProperties)
             {
-                object? value = storageModel[SqlServerCommandBuilder.GetColumnName(vector[i])];
+                var value = storageModel[property.StorageName];
+
                 if (value is not null)
                 {
                     if (value is ReadOnlyMemory<float> floats)
                     {
-                        vectorInfo[i].SetValue(record, floats);
+                        SetValue(storageModel, record, property, floats);
                     }
                     else
                     {
                         // When deserializing a string to a ReadOnlyMemory<float> fails in SqlDataReaderDictionary,
                         // we store the raw value so the user can handle the error in a custom mapper.
-                        throw new VectorStoreRecordMappingException($"Failed to deserialize vector property '{vector[i].DataModelPropertyName}', it contained value '{value}'.");
+                        throw new VectorStoreRecordMappingException($"Failed to deserialize vector property '{property.ModelName}', it contained value '{value}'.");
                     }
                 }
             }
@@ -74,25 +74,15 @@ internal sealed class RecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, 
 
         return record;
 
-        static void SetValue(IDictionary<string, object?> storageModel, object record, PropertyInfo propertyInfo, VectorStoreRecordProperty property)
+        static void SetValue(IDictionary<string, object?> storageModel, object record, VectorStoreRecordPropertyModel property, object? value)
         {
-            // If we got here, there should be no column name mismatch (the query would fail).
-            object? value = storageModel[SqlServerCommandBuilder.GetColumnName(property)];
-
-            if (value is null)
-            {
-                // There is no need to call the reflection to set the null,
-                // as it's the default value of every .NET reference type field.
-                return;
-            }
-
             try
             {
-                propertyInfo.SetValue(record, value);
+                property.SetValueAsObject(record, value);
             }
             catch (Exception ex)
             {
-                throw new VectorStoreRecordMappingException($"Failed to set value '{value}' on property '{propertyInfo.Name}' of type '{propertyInfo.PropertyType.FullName}'.", ex);
+                throw new VectorStoreRecordMappingException($"Failed to set value '{value}' on property '{property.ModelName}' of type '{property.Type.Name}'.", ex);
             }
         }
     }

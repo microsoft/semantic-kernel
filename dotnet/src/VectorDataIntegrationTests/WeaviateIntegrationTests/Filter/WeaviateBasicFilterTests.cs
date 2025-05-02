@@ -61,12 +61,10 @@ public class WeaviateBasicFilterTests(WeaviateBasicFilterTests.Fixture fixture)
     // In Weaviate, string equality on multi-word textual properties depends on tokenization
     // (https://weaviate.io/developers/weaviate/api/graphql/filters#multi-word-queries-in-equal-filters)
     public override Task Equal_with_string_is_not_Contains()
-        => Assert.ThrowsAsync<EqualException>(() => base.Equal_with_string_is_not_Contains());
+        => Assert.ThrowsAsync<FailException>(() => base.Equal_with_string_is_not_Contains());
 
     public new class Fixture : BasicFilterTests<Guid>.Fixture
     {
-        public override TestStore TestStore => WeaviateTestStore.Instance;
-
-        protected override string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
+        public override TestStore TestStore => WeaviateTestStore.NamedVectorsInstance;
     }
 }

@@ -17,7 +17,7 @@ public class AzureAISearchHotel
     public string HotelId { get; set; }
 
     [SearchableField(IsFilterable = true, IsSortable = true)]
-    [VectorStoreRecordData(IsFilterable = true, IsFullTextSearchable = true)]
+    [VectorStoreRecordData(IsIndexed = true, IsFullTextIndexed = true)]
     public string HotelName { get; set; }
 
     [SearchableField(AnalyzerName = LexicalAnalyzerName.Values.EnLucene)]
@@ -28,18 +28,18 @@ public class AzureAISearchHotel
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 
     [SearchableField(IsFilterable = true, IsFacetable = true)]
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
 #pragma warning disable CA1819 // Properties should not return arrays
     public string[] Tags { get; set; }
 #pragma warning restore CA1819 // Properties should not return arrays
 
     [JsonPropertyName("parking_is_included")]
     [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
     public bool? ParkingIncluded { get; set; }
 
     [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
     public DateTimeOffset? LastRenovationDate { get; set; }
 
     [SimpleField(IsFilterable = true, IsSortable = true, IsFacetable = true)]

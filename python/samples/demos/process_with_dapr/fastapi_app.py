@@ -21,17 +21,17 @@ logging.basicConfig(level=logging.WARNING)
 # Define the kernel that is used throughout the process
 kernel = Kernel()
 
-#########################################################################
-# The following Process and Dapr runtime sample uses a FastAPI app      #
-# to start a process and run steps. The process is defined in the       #
-# process/process.py file and the steps are defined in the steps.py     #
-# file. The process is started by calling the /processes/{process_id}   #
-# endpoint. The actors are registered with the Dapr runtime using       #
-# the DaprActor class. The ProcessActor and the StepActor require a     #
-# kernel dependency to be injected during creation. This is done by     #
-# defining a factory function that takes the kernel as a parameter      #
-# and returns the actor instance with the kernel injected.              #
-#########################################################################
+"""
+The following Process and Dapr runtime sample uses a FastAPI app
+to start a process and run steps. The process is defined in the
+process/process.py file and the steps are defined in the steps.py
+file. The process is started by calling the /processes/{process_id}
+endpoint. The actors are registered with the Dapr runtime using
+the DaprActor class. The ProcessActor and the StepActor require a
+kernel dependency to be injected during creation. This is done by
+defining a factory function that takes the kernel as a parameter
+and returns the actor instance with the kernel injected.
+"""
 
 # Get the process which means we have the `KernelProcess` object
 # along with any defined step factories
@@ -66,6 +66,11 @@ async def start_process(process_id: str):
             process_id=process_id,
         )
         kernel_process = await context.get_state()
+
+        # If desired, uncomment the following lines to see the process state
+        # final_state = kernel_process.to_process_state_metadata()
+        # print(final_state.model_dump(exclude_none=True, by_alias=True, mode="json"))
+
         c_step_state: KernelProcessStepState[CStepState] = next(
             (s.state for s in kernel_process.steps if s.state.name == "CStep"), None
         )
