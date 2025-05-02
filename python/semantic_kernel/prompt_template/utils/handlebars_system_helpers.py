@@ -70,7 +70,7 @@ def _range(this, *args, **kwargs):
             try:
                 args[index] = int(arg)
             except ValueError:
-                args.pop(index)  # noqa: B909
+                args.pop(index)
     if len(args) == 1:
         return list(range(args[0]))
     if len(args) == 2:

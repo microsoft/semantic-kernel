@@ -326,7 +326,7 @@ through prompt_template_config or in the prompt_template."
     def update_arguments_with_defaults(self, arguments: KernelArguments) -> None:
         """Update any missing values with their defaults."""
         for parameter in self.prompt_template.prompt_template_config.input_variables:
-            if parameter.name not in arguments and parameter.default not in {None, "", False}:
+            if parameter.name not in arguments and parameter.default not in {None, "", False, 0}:
                 arguments[parameter.name] = parameter.default
 
     @classmethod

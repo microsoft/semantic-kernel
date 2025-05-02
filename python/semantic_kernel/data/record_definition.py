@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 @experimental
 @dataclass
-class VectorStoreRecordField(ABC):  # noqa: B024
+class VectorStoreRecordField(ABC):
     """Base class for all Vector Store Record Fields."""
 
     name: str = ""
