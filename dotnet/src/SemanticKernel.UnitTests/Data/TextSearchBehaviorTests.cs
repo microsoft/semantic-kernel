@@ -6,16 +6,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Data;
-using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Memory;
+namespace SemanticKernel.UnitTests.Data;
 
 /// <summary>
-/// Contains tests for <see cref="TextRagComponent"/>
+/// Contains tests for <see cref="TextSearchBehavior"/>
 /// </summary>
-public class TextRagComponentTests
+public class TextSearchBehaviorTests
 {
     [Theory]
     [InlineData(null, null, "Consider the following information when responding to the user:", "Include citations to the relevant information where it is referenced in the response.")]
@@ -56,15 +55,15 @@ public class TextRagComponentTests
             It.IsAny<CancellationToken>()))
             .ReturnsAsync(new KernelSearchResults<TextSearchResult>(searchResults.Object));
 
-        var options = new TextRagComponentOptions
+        var options = new TextSearchBehaviorOptions
         {
-            SearchTime = TextRagComponentOptions.RagBehavior.BeforeAIInvoke,
+            SearchTime = TextSearchBehaviorOptions.RagBehavior.BeforeAIInvoke,
             Top = 2,
             ContextPrompt = overrideContextPrompt,
             IncludeCitationsPrompt = overrideCitationsPrompt
         };
 
-        var component = new TextRagComponent(mockTextSearch.Object, options);
+        var component = new TextSearchBehavior(mockTextSearch.Object, options);
 
         // Act
         var result = await component.OnModelInvokeAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
@@ -93,14 +92,14 @@ public class TextRagComponentTests
     {
         // Arrange
         var mockTextSearch = new Mock<ITextSearch>();
-        var options = new TextRagComponentOptions
+        var options = new TextSearchBehaviorOptions
         {
-            SearchTime = TextRagComponentOptions.RagBehavior.ViaPlugin,
+            SearchTime = TextSearchBehaviorOptions.RagBehavior.ViaPlugin,
             PluginFunctionName = overridePluginFunctionName,
             PluginFunctionDescription = overridePluginFunctionDescription
         };
 
-        var component = new TextRagComponent(mockTextSearch.Object, options);
+        var component = new TextSearchBehavior(mockTextSearch.Object, options);
 
         // Act
         var aiFunctions = component.AIFunctions;
@@ -153,13 +152,13 @@ public class TextRagComponentTests
             It.IsAny<CancellationToken>()))
             .ReturnsAsync(new KernelSearchResults<TextSearchResult>(searchResults.Object));
 
-        var options = new TextRagComponentOptions
+        var options = new TextSearchBehaviorOptions
         {
             ContextPrompt = overrideContextPrompt,
             IncludeCitationsPrompt = overrideCitationsPrompt
         };
 
-        var component = new TextRagComponent(mockTextSearch.Object, options);
+        var component = new TextSearchBehavior(mockTextSearch.Object, options);
 
         // Act
         var result = await component.SearchAsync("Sample user question?", CancellationToken.None);
@@ -210,17 +209,17 @@ public class TextRagComponentTests
             It.IsAny<CancellationToken>()))
             .ReturnsAsync(new KernelSearchResults<TextSearchResult>(searchResults.Object));
 
-        var customFormatter = new TextRagComponentOptions.ContextFormatterType(results =>
+        var customFormatter = new TextSearchBehaviorOptions.ContextFormatterType(results =>
             $"Custom formatted context with {results.Count} results.");
 
-        var options = new TextRagComponentOptions
+        var options = new TextSearchBehaviorOptions
         {
-            SearchTime = TextRagComponentOptions.RagBehavior.BeforeAIInvoke,
+            SearchTime = TextSearchBehaviorOptions.RagBehavior.BeforeAIInvoke,
             Top = 2,
             ContextFormatter = customFormatter
         };
 
-        var component = new TextRagComponent(mockTextSearch.Object, options);
+        var component = new TextSearchBehavior(mockTextSearch.Object, options);
 
         // Act
         var result = await component.OnModelInvokeAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
