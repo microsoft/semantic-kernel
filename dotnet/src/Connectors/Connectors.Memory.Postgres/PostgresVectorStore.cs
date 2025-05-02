@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <summary>
 /// Represents a vector store implementation using PostgreSQL.
 /// </summary>
-public sealed class PostgresVectorStore : IVectorStore
+public sealed class PostgresVectorStore : VectorStore
 {
     private readonly IPostgresVectorStoreDbClient _postgresClient;
     private readonly NpgsqlDataSource? _dataSource;
@@ -60,7 +60,7 @@ public sealed class PostgresVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._postgresClient.GetTablesAsync(cancellationToken),
@@ -70,9 +70,7 @@ public sealed class PostgresVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        where TKey : notnull
-        where TRecord : notnull
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         => new PostgresVectorStoreRecordCollection<TKey, TRecord>(
             this._postgresClient,
             name,
@@ -85,21 +83,21 @@ public sealed class PostgresVectorStore : IVectorStore
         );
 
     /// <inheritdoc />
-    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
+    public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
         var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
     {
         var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
         return collection.DeleteCollectionAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 

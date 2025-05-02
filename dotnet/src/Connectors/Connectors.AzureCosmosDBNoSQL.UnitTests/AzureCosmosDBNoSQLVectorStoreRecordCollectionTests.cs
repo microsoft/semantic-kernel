@@ -271,7 +271,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
                 this._mockDatabase.Object,
                 "collection");
 
-            await ((IVectorStoreCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel>)sut).DeleteAsync(
+            await ((VectorStoreCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel>)sut).DeleteAsync(
                 new AzureCosmosDBNoSQLCompositeKey(RecordKey, PartitionKey));
         }
         else
@@ -280,7 +280,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
                 this._mockDatabase.Object,
                 "collection");
 
-            await ((IVectorStoreCollection<string, AzureCosmosDBNoSQLHotel>)sut).DeleteAsync(
+            await ((VectorStoreCollection<string, AzureCosmosDBNoSQLHotel>)sut).DeleteAsync(
                 RecordKey);
         }
 

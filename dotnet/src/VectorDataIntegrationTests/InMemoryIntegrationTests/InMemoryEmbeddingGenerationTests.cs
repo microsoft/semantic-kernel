@@ -33,7 +33,7 @@ public class InMemoryEmbeddingGenerationTests(InMemoryEmbeddingGenerationTests.F
         public override TestStore TestStore => InMemoryTestStore.Instance;
 
         // Note that with InMemory specifically, we can't create a vector store with an embedding generator, since it wouldn't share the seeded data with the fixture store.
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => InMemoryTestStore.Instance.DefaultVectorStore;
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>

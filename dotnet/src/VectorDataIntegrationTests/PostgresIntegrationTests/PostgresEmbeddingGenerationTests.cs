@@ -18,7 +18,7 @@ public class PostgresEmbeddingGenerationTests(PostgresEmbeddingGenerationTests.F
     {
         public override TestStore TestStore => PostgresTestStore.Instance;
 
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => PostgresTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>

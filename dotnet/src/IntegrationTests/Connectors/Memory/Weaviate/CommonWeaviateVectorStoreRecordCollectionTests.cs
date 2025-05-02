@@ -10,7 +10,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 
 /// <summary>
-/// Inherits common integration tests that should pass for any <see cref="IVectorStoreCollection{TKey, TRecord}"/>.
+/// Inherits common integration tests that should pass for any <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 /// <param name="fixture">Weaviate setup and teardown.</param>
 [Collection("WeaviateVectorStoreCollection")]
@@ -24,7 +24,7 @@ public class CommonWeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreF
 
     protected override int DelayAfterUploadInMilliseconds => 1000;
 
-    protected override IVectorStoreCollection<Guid, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected override VectorStoreCollection<Guid, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
     {
         // Weaviate collection names must start with an upper case letter.
         var recordCollectionNameChars = recordCollectionName.ToCharArray();

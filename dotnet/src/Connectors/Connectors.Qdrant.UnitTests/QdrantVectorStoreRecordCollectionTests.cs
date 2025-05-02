@@ -674,7 +674,7 @@ public class QdrantVectorStoreRecordCollectionTests
         return point;
     }
 
-    private IVectorStoreCollection<T, SinglePropsModel<T>> CreateRecordCollection<T>(bool useDefinition, bool hasNamedVectors)
+    private VectorStoreCollection<T, SinglePropsModel<T>> CreateRecordCollection<T>(bool useDefinition, bool hasNamedVectors)
         where T : notnull
     {
         var store = new QdrantVectorStoreRecordCollection<T, SinglePropsModel<T>>(
@@ -684,7 +684,7 @@ public class QdrantVectorStoreRecordCollectionTests
             {
                 VectorStoreRecordDefinition = useDefinition ? CreateSinglePropsDefinition(typeof(T)) : null,
                 HasNamedVectors = hasNamedVectors
-            }) as IVectorStoreCollection<T, SinglePropsModel<T>>;
+            }) as VectorStoreCollection<T, SinglePropsModel<T>>;
         return store!;
     }
 

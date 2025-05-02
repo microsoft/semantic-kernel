@@ -25,7 +25,7 @@ internal sealed class QdrantTestStore : TestStore
 
     public QdrantClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
 
-    public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public QdrantVectorStore GetVectorStore(QdrantVectorStoreOptions options)
         => new(this.Client, options);

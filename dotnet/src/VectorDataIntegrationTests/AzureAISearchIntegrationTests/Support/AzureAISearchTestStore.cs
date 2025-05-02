@@ -20,7 +20,7 @@ internal sealed class AzureAISearchTestStore : TestStore
     public SearchIndexClient Client
         => this._client ?? throw new InvalidOperationException("Call InitializeAsync() first");
 
-    public override IVectorStore DefaultVectorStore
+    public override VectorStore DefaultVectorStore
         => this._defaultVectorStore ?? throw new InvalidOperationException("Call InitializeAsync() first");
 
     public AzureAISearchVectorStore GetVectorStore(AzureAISearchVectorStoreOptions options)
@@ -49,7 +49,7 @@ internal sealed class AzureAISearchTestStore : TestStore
     }
 
     public override async Task WaitForDataAsync<TKey, TRecord>(
-        IVectorStoreCollection<TKey, TRecord> collection,
+        VectorStoreCollection<TKey, TRecord> collection,
         int recordCount,
         Expression<Func<TRecord, bool>>? filter = null,
         int vectorSize = 3)

@@ -29,23 +29,21 @@ public static class RedisFactory
     };
 
     /// <summary>
-    /// Create a new Redis-backed <see cref="IVectorStore"/> that can be used to read data that was ingested using Langchain.
+    /// Create a new Redis-backed <see cref="VectorStore"/> that can be used to read data that was ingested using Langchain.
     /// </summary>
     /// <param name="database">The redis database to read/write from.</param>
-    /// <returns>The <see cref="IVectorStore"/>.</returns>
-    public static IVectorStore CreateRedisLangchainInteropVectorStore(IDatabase database)
+    /// <returns>The <see cref="VectorStore"/>.</returns>
+    public static VectorStore CreateRedisLangchainInteropVectorStore(IDatabase database)
         => new RedisLangchainInteropVectorStore(new RedisVectorStore(database), database);
 
     private sealed class RedisLangchainInteropVectorStore(
-        IVectorStore innerStore,
+        VectorStore innerStore,
         IDatabase database)
-        : IVectorStore
+        : VectorStore
     {
         private readonly IDatabase _database = database;
 
-        public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-            where TKey : notnull
-            where TRecord : notnull
+        public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         {
             if (typeof(TKey) != typeof(string) || typeof(TRecord) != typeof(LangchainDocument<string>))
             {
@@ -62,15 +60,15 @@ public static class RedisFactory
                 new()
                 {
                     VectorStoreRecordDefinition = s_recordDefinition
-                }) as IVectorStoreCollection<TKey, TRecord>)!;
+                }) as VectorStoreCollection<TKey, TRecord>)!;
         }
 
-        public object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);
+        public override object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);
 
-        public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => innerStore.ListCollectionNamesAsync(cancellationToken);
+        public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => innerStore.ListCollectionNamesAsync(cancellationToken);
 
-        public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) => innerStore.CollectionExistsAsync(name, cancellationToken);
+        public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) => innerStore.CollectionExistsAsync(name, cancellationToken);
 
-        public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default) => innerStore.DeleteCollectionAsync(name, cancellationToken);
+        public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default) => innerStore.DeleteCollectionAsync(name, cancellationToken);
     }
 }

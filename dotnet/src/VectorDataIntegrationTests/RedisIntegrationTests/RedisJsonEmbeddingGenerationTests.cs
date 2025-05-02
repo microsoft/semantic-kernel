@@ -18,7 +18,7 @@ public class RedisJsonEmbeddingGenerationTests(RedisJsonEmbeddingGenerationTests
     {
         public override TestStore TestStore => RedisTestStore.JsonInstance;
 
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => RedisTestStore.JsonInstance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>

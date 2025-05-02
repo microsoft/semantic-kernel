@@ -10,8 +10,8 @@ using Microsoft.SemanticKernel.Embeddings;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Extension methods for <see cref="IVectorStore"/> which allow:
-/// 1. Creating an instance of <see cref="IVectorStoreCollection{TKey, TRecord}"/> from a list of strings.
+/// Extension methods for <see cref="VectorStore"/> which allow:
+/// 1. Creating an instance of <see cref="VectorStoreCollection{TKey, TRecord}"/> from a list of strings.
 /// </summary>
 public static class VectorStoreExtensions
 {
@@ -30,19 +30,19 @@ public static class VectorStoreExtensions
     public delegate TRecord CreateRecordFromTextSearchResult<TKey, TRecord>(TextSearchResult searchResult, ReadOnlyMemory<float> vector) where TKey : notnull;
 
     /// <summary>
-    /// Create a <see cref="IVectorStoreCollection{TKey, TRecord}"/> from a list of strings by:
-    /// 1. Getting an instance of <see cref="IVectorStoreCollection{TKey, TRecord}"/>
+    /// Create a <see cref="VectorStoreCollection{TKey, TRecord}"/> from a list of strings by:
+    /// 1. Getting an instance of <see cref="VectorStoreCollection{TKey, TRecord}"/>
     /// 2. Generating embeddings for each string.
     /// 3. Creating a record with a valid key for each string and it's embedding.
     /// 4. Insert the records into the collection.
     /// </summary>
-    /// <param name="vectorStore">Instance of <see cref="IVectorStore"/> used to created the collection.</param>
+    /// <param name="vectorStore">Instance of <see cref="VectorStore"/> used to created the collection.</param>
     /// <param name="collectionName">The collection name.</param>
     /// <param name="entries">A list of strings.</param>
     /// <param name="embeddingGenerationService">A text embedding generation service.</param>
     /// <param name="createRecord">A delegate which can create a record with a valid key for each string and it's embedding.</param>
-    internal static async Task<IVectorStoreCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
-        this IVectorStore vectorStore,
+    internal static async Task<VectorStoreCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
+        this VectorStore vectorStore,
         string collectionName,
         string[] entries,
         ITextEmbeddingGenerationService embeddingGenerationService,
@@ -66,19 +66,19 @@ public static class VectorStoreExtensions
     }
 
     /// <summary>
-    /// Create a <see cref="IVectorStoreCollection{TKey, TRecord}"/> from a list of strings by:
-    /// 1. Getting an instance of <see cref="IVectorStoreCollection{TKey, TRecord}"/>
+    /// Create a <see cref="VectorStoreCollection{TKey, TRecord}"/> from a list of strings by:
+    /// 1. Getting an instance of <see cref="VectorStoreCollection{TKey, TRecord}"/>
     /// 2. Generating embeddings for each string.
     /// 3. Creating a record with a valid key for each string and it's embedding.
     /// 4. Insert the records into the collection.
     /// </summary>
-    /// <param name="vectorStore">Instance of <see cref="IVectorStore"/> used to created the collection.</param>
+    /// <param name="vectorStore">Instance of <see cref="VectorStore"/> used to created the collection.</param>
     /// <param name="collectionName">The collection name.</param>
     /// <param name="searchResults">A list of <see cref="TextSearchResult" />s.</param>
     /// <param name="embeddingGenerationService">A text embedding generation service.</param>
     /// <param name="createRecord">A delegate which can create a record with a valid key for each string and it's embedding.</param>
-    internal static async Task<IVectorStoreCollection<TKey, TRecord>> CreateCollectionFromTextSearchResultsAsync<TKey, TRecord>(
-        this IVectorStore vectorStore,
+    internal static async Task<VectorStoreCollection<TKey, TRecord>> CreateCollectionFromTextSearchResultsAsync<TKey, TRecord>(
+        this VectorStore vectorStore,
         string collectionName,
         IList<TextSearchResult> searchResults,
         ITextEmbeddingGenerationService embeddingGenerationService,

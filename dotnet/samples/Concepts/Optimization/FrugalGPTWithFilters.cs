@@ -168,7 +168,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
     /// which are similar to original request.
     /// </summary>
     private sealed class FewShotPromptOptimizationFilter(
-        IVectorStore vectorStore,
+        VectorStore vectorStore,
         ITextEmbeddingGenerationService textEmbeddingGenerationService) : IPromptRenderFilter
     {
         /// <summary>

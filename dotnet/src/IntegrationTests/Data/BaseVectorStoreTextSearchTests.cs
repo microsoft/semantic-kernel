@@ -21,7 +21,7 @@ namespace SemanticKernel.IntegrationTests.Data;
 /// </summary>
 public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
 {
-    protected IVectorStore? VectorStore { get; set; }
+    protected VectorStore? VectorStore { get; set; }
 
     protected ITextEmbeddingGenerationService? EmbeddingGenerator { get; set; }
 
@@ -35,8 +35,8 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     /// <summary>
     /// Add sample records to the vector store record collection.
     /// </summary>
-    public static async Task<IVectorStoreCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
-        IVectorStore vectorStore,
+    public static async Task<VectorStoreCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
+        VectorStore vectorStore,
         string collectionName,
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecordFromString<TKey, TRecord> createRecord)

@@ -26,7 +26,7 @@ public abstract class TestStore
     protected virtual Task StopAsync()
         => Task.CompletedTask;
 
-    public abstract IVectorStore DefaultVectorStore { get; }
+    public abstract VectorStore DefaultVectorStore { get; }
 
     public virtual async Task ReferenceCountingStartAsync()
     {
@@ -75,7 +75,7 @@ public abstract class TestStore
     /// <summary>Loops until the expected number of records is visible in the given collection.</summary>
     /// <remarks>Some databases upsert asynchronously, meaning that our seed data may not be visible immediately to tests.</remarks>
     public virtual async Task WaitForDataAsync<TKey, TRecord>(
-        IVectorStoreCollection<TKey, TRecord> collection,
+        VectorStoreCollection<TKey, TRecord> collection,
         int recordCount,
         Expression<Func<TRecord, bool>>? filter = null,
         int vectorSize = 3)

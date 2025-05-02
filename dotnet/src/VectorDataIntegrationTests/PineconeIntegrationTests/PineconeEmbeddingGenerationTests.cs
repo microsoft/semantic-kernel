@@ -34,7 +34,7 @@ public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.F
         // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
         public override string CollectionName => "embedding-generation-tests";
 
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => PineconeTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>

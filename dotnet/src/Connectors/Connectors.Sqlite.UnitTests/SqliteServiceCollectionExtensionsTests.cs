@@ -22,7 +22,7 @@ public sealed class SqliteServiceCollectionExtensionsTests
         this._serviceCollection.AddSqliteVectorStore("Data Source=:memory:");
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
 
         // Assert
         Assert.NotNull(vectorStore);
@@ -38,7 +38,7 @@ public sealed class SqliteServiceCollectionExtensionsTests
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
         // Assert
-        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<string, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<SqliteVectorStoreRecordCollection<string, TestRecord>>(collection);
 
@@ -56,7 +56,7 @@ public sealed class SqliteServiceCollectionExtensionsTests
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
         // Assert
-        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<ulong, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<ulong, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<SqliteVectorStoreRecordCollection<ulong, TestRecord>>(collection);
 

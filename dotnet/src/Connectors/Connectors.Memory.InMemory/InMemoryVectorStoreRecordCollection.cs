@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreCollection<TKey, TRecord>
+public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : notnull
@@ -41,9 +41,6 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord> _options;
-
-    /// <summary>The name of the collection that this <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/> will access.</summary>
-    private readonly string _collectionName;
 
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
@@ -65,7 +62,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         Verify.NotNullOrWhiteSpace(name);
 
         // Assign.
-        this._collectionName = name;
+        this.Name = name;
         this._internalCollections = new();
         this._internalCollectionTypes = new();
         this._options = options ?? new InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>();
@@ -124,20 +121,20 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public string Name => this._collectionName;
+    public override string Name { get; }
 
     /// <inheritdoc />
-    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this._internalCollections.ContainsKey(this._collectionName) ? Task.FromResult(true) : Task.FromResult(false);
+        return this._internalCollections.ContainsKey(this.Name) ? Task.FromResult(true) : Task.FromResult(false);
     }
 
     /// <inheritdoc />
-    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        if (!this._internalCollections.ContainsKey(this._collectionName)
-            && this._internalCollections.TryAdd(this._collectionName, new ConcurrentDictionary<object, object>())
-            && this._internalCollectionTypes.TryAdd(this._collectionName, typeof(TRecord)))
+        if (!this._internalCollections.ContainsKey(this.Name)
+            && this._internalCollections.TryAdd(this.Name, new ConcurrentDictionary<object, object>())
+            && this._internalCollectionTypes.TryAdd(this.Name, typeof(TRecord)))
         {
             return Task.CompletedTask;
         }
@@ -151,7 +148,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -160,15 +157,15 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        this._internalCollections.TryRemove(this._collectionName, out _);
-        this._internalCollectionTypes.TryRemove(this._collectionName, out _);
+        this._internalCollections.TryRemove(this.Name, out _);
+        this._internalCollectionTypes.TryRemove(this.Name, out _);
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (options?.IncludeVectors == true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
@@ -186,7 +183,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -207,7 +204,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
         var collectionDictionary = this.GetCollectionDictionary();
 
@@ -216,7 +213,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public override Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -231,11 +228,11 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public override Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
         => this.UpsertAsync([record], cancellationToken);
 
     /// <inheritdoc />
-    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -316,12 +313,11 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     #region Search
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+    public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
         VectorSearchOptions<TRecord>? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        where TInput : notnull
     {
         options ??= s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
@@ -352,12 +348,11 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
         VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
-        where TVector : notnull
     {
         options ??= s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
@@ -438,14 +433,13 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        where TVector : notnull
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
 
     /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 
@@ -458,7 +452,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+    public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
         GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
@@ -508,9 +502,9 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <returns>The retrieved collection dictionary.</returns>
     internal ConcurrentDictionary<object, object> GetCollectionDictionary()
     {
-        if (!this._internalCollections.TryGetValue(this._collectionName, out var collectionDictionary))
+        if (!this._internalCollections.TryGetValue(this.Name, out var collectionDictionary))
         {
-            throw new VectorStoreOperationException($"Call to vector store failed. Collection '{this._collectionName}' does not exist.");
+            throw new VectorStoreOperationException($"Call to vector store failed. Collection '{this.Name}' does not exist.");
         }
 
         return collectionDictionary;

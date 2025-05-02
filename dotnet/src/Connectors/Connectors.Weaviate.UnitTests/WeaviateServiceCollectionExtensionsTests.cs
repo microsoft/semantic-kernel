@@ -28,7 +28,7 @@ public sealed class WeaviateServiceCollectionExtensionsTests
         this._serviceCollection.AddWeaviateVectorStore();
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
 
         // Assert
         Assert.NotNull(vectorStore);
@@ -53,7 +53,7 @@ public sealed class WeaviateServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<Guid, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<Guid, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<WeaviateVectorStoreRecordCollection<Guid, TestRecord>>(collection);
 

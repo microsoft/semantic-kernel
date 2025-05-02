@@ -18,7 +18,7 @@ public class WeaviateEmbeddingGenerationTests(WeaviateEmbeddingGenerationTests.F
     {
         public override TestStore TestStore => WeaviateTestStore.NamedVectorsInstance;
 
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => WeaviateTestStore.NamedVectorsInstance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>

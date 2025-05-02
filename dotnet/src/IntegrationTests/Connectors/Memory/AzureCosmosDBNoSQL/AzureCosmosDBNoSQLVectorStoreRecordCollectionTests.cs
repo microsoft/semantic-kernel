@@ -167,7 +167,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         const string HotelId = "55555555-5555-5555-5555-555555555555";
         const string HotelName = "Test Hotel Name";
 
-        IVectorStoreCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel> sut =
+        VectorStoreCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel> sut =
             new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel>(
                 fixture.Database!,
                 "delete-with-partition-key",

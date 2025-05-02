@@ -29,7 +29,7 @@ public class InMemoryServiceCollectionExtensionsTests
 
         // Assert.
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
         Assert.NotNull(vectorStore);
         Assert.IsType<InMemoryVectorStore>(vectorStore);
     }
@@ -48,7 +48,7 @@ public class InMemoryServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<string, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<InMemoryVectorStoreRecordCollection<string, TestRecord>>(collection);
 

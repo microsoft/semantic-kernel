@@ -75,7 +75,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
             await using var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+            var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
             var collection = vectorStore.GetCollection<TKey, Record>(fixture.CollectionName, fixture.GetRecordDefinition());
 
             var result = await collection.SearchAsync("[1, 1, 0]", top: 1).SingleAsync();
@@ -96,7 +96,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
             await using var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<TKey, RecordWithAttributes>>();
+            var collection = serviceProvider.GetRequiredService<VectorStoreCollection<TKey, RecordWithAttributes>>();
 
             var result = await collection.SearchAsync("[1, 1, 0]", top: 1).SingleAsync();
 
@@ -376,7 +376,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         public string? LastName { get; set; }
     }
 
-    private IVectorStoreCollection<TKey, TRecord> GetCollection<TRecord>(
+    private VectorStoreCollection<TKey, TRecord> GetCollection<TRecord>(
         bool storeGenerator = false,
         bool collectionGenerator = false,
         bool propertyGenerator = false)
@@ -451,14 +451,14 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
             }
         ];
 
-        public virtual IVectorStoreCollection<TKey, TRecord> GetCollection<TRecord>(
-            IVectorStore vectorStore,
+        public virtual VectorStoreCollection<TKey, TRecord> GetCollection<TRecord>(
+            VectorStore vectorStore,
             string collectionName,
             VectorStoreRecordDefinition? recordDefinition = null)
             where TRecord : notnull
             => vectorStore.GetCollection<TKey, TRecord>(collectionName, recordDefinition);
 
-        public abstract IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator = null);
+        public abstract VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator = null);
 
         public abstract Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates { get; }
         public abstract Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates { get; }

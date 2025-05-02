@@ -18,7 +18,7 @@ public class QdrantEmbeddingGenerationTests(QdrantEmbeddingGenerationTests.Fixtu
     {
         public override TestStore TestStore => QdrantTestStore.UnnamedVectorInstance;
 
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => QdrantTestStore.UnnamedVectorInstance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>

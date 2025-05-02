@@ -202,7 +202,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         const string HotelId2 = "22222222-2222-2222-2222-222222222222";
         const string HotelId3 = "33333333-3333-3333-3333-333333333333";
 
-        var sut = fixture.GetCollection<string, SqliteHotel<string>>("GetUpsertDeleteBatchWithStringKey") as IVectorStoreCollection<string, SqliteHotel<string>>;
+        var sut = fixture.GetCollection<string, SqliteHotel<string>>("GetUpsertDeleteBatchWithStringKey") as VectorStoreCollection<string, SqliteHotel<string>>;
 
         await sut.CreateCollectionAsync();
 
@@ -480,7 +480,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         };
 
         var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithStringKey", options)
-            as IVectorStoreCollection<object, Dictionary<string, object?>>;
+            as VectorStoreCollection<object, Dictionary<string, object?>>;
 
         await sut.CreateCollectionAsync();
 

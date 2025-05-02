@@ -161,7 +161,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     {
         // Arrange.
         var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfoWithGuidId> { HasNamedVectors = false };
-        IVectorStoreCollection<Guid, HotelInfoWithGuidId> sut = new QdrantVectorStoreRecordCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
+        VectorStoreCollection<Guid, HotelInfoWithGuidId> sut = new QdrantVectorStoreRecordCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
 
         var record = new HotelInfoWithGuidId
         {

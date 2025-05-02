@@ -23,7 +23,7 @@ internal sealed class MongoDBTestStore : TestStore
     public MongoClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
     public IMongoDatabase Database => this._database ?? throw new InvalidOperationException("Not initialized");
 
-    public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public MongoDBVectorStore GetVectorStore(MongoDBVectorStoreOptions options)
         => new(this.Database, options);

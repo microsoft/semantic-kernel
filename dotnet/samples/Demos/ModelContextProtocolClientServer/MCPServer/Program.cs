@@ -31,7 +31,7 @@ kernelBuilder.Plugins.AddFromType<MailboxUtils>();
 kernelBuilder.Plugins.AddFromFunctions("Agents", [AgentKernelFunctionFactory.CreateFromAgent(CreateSalesAssistantAgent(chatModelId, apiKey))]);
 
 // Register embedding generation service and in-memory vector store
-kernelBuilder.Services.AddSingleton<IVectorStore, InMemoryVectorStore>();
+kernelBuilder.Services.AddSingleton<VectorStore, InMemoryVectorStore>();
 kernelBuilder.Services.AddOpenAITextEmbeddingGeneration(embeddingModelId, apiKey);
 
 // Register MCP server
@@ -97,11 +97,11 @@ static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel
             string collection,
             string prompt,
             [FromKernelServices] ITextEmbeddingGenerationService embeddingGenerationService,
-            [FromKernelServices] IVectorStore vectorStore,
+            [FromKernelServices] VectorStore vectorStore,
             CancellationToken cancellationToken) =>
         {
             // Get the vector store collection
-            IVectorStoreCollection<Guid, TextDataModel> vsCollection = vectorStore.GetCollection<Guid, TextDataModel>(collection);
+            VectorStoreCollection<Guid, TextDataModel> vsCollection = vectorStore.GetCollection<Guid, TextDataModel>(collection);
 
             // Check if the collection exists, if not create and populate it
             if (!await vsCollection.CollectionExistsAsync(cancellationToken))

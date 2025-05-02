@@ -29,7 +29,7 @@ internal sealed class CosmosNoSQLTestStore : TestStore
     public Database Database
         => this._database ?? throw new InvalidOperationException("Call InitializeAsync() first");
 
-    public override IVectorStore DefaultVectorStore
+    public override VectorStore DefaultVectorStore
         => this._defaultVectorStore ?? throw new InvalidOperationException("Call InitializeAsync() first");
 
     public AzureCosmosDBNoSQLVectorStore GetVectorStore(AzureCosmosDBNoSQLVectorStoreOptions options)

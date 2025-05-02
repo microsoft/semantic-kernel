@@ -21,7 +21,7 @@ internal sealed class PostgresTestStore : TestStore
 
     public NpgsqlDataSource DataSource => this._dataSource ?? throw new InvalidOperationException("Not initialized");
 
-    public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public PostgresVectorStore GetVectorStore(PostgresVectorStoreOptions options)
         => new(this.DataSource, options);

@@ -182,7 +182,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// </summary>
     public sealed class PromptCacheFilter(
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        IVectorStore vectorStore)
+        VectorStore vectorStore)
         : CacheBaseFilter, IPromptRenderFilter
     {
         public async Task OnPromptRenderAsync(PromptRenderContext context, Func<PromptRenderContext, Task> next)
@@ -219,7 +219,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// </summary>
     public sealed class FunctionCacheFilter(
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        IVectorStore vectorStore)
+        VectorStore vectorStore)
         : CacheBaseFilter, IFunctionInvocationFilter
     {
         public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
