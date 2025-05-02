@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// This class is used to provide a dictionary-like interface to a <see cref="SqlDataReader"/>.
 /// The goal is to avoid the need of allocating a new dictionary for each row read from the database.
 /// </summary>
-internal sealed class SqlDataReaderDictionary(SqlDataReader sqlDataReader, IReadOnlyList<VectorStoreRecordVectorPropertyModel> vectorProperties)
+internal sealed class SqlDataReaderDictionary(SqlDataReader sqlDataReader, IReadOnlyList<VectorPropertyModel> vectorProperties)
     : IDictionary<string, object?>
 {
     // This field will get instantiated lazily, only if needed by a custom mapper.

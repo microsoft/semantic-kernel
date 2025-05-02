@@ -16,11 +16,11 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 // https://weaviate.io/developers/weaviate/api/graphql/filters#filter-structure
 internal class WeaviateFilterTranslator
 {
-    private VectorStoreRecordModel _model = null!;
+    private CollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
     private readonly StringBuilder _filter = new();
 
-    internal string Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
+    internal string Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
         Debug.Assert(this._filter.Length == 0);
 
@@ -236,7 +236,7 @@ internal class WeaviateFilterTranslator
         throw new NotSupportedException("Contains supported only over tag field");
     }
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
     {
         var unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)

@@ -13,26 +13,26 @@ namespace Microsoft.Extensions.VectorData;
 /// The characteristics defined here influence how the property is treated by the vector store.
 /// </para>
 /// <para>
-/// This generic version of <see cref="VectorStoreRecordVectorProperty"/> only needs to be used when an <see cref="IEmbeddingGenerator"/> is
+/// This generic version of <see cref="VectorStoreVectorProperty"/> only needs to be used when an <see cref="IEmbeddingGenerator"/> is
 /// configured on the property, and a custom .NET type is used as input (any type other than <see cref="string"/> or <see cref="DataContent"/>).
 /// </para>
 /// </remarks>
-public class VectorStoreRecordVectorProperty<TInput> : VectorStoreRecordVectorProperty
+public class VectorStoreVectorProperty<TInput> : VectorStoreVectorProperty
 {
     /// <inheritdoc />
-    public VectorStoreRecordVectorProperty(string propertyName, int dimensions)
+    public VectorStoreVectorProperty(string propertyName, int dimensions)
         : base(propertyName, typeof(TInput), dimensions)
     {
     }
 
     /// <inheritdoc />
-    public VectorStoreRecordVectorProperty(VectorStoreRecordVectorProperty<TInput> source)
+    public VectorStoreVectorProperty(VectorStoreVectorProperty<TInput> source)
         : base(source)
     {
     }
 
-    internal override VectorStoreRecordVectorPropertyModel CreatePropertyModel()
-        => new VectorStoreRecordVectorPropertyModel<TInput>(this.DataModelPropertyName)
+    internal override VectorPropertyModel CreatePropertyModel()
+        => new VectorPropertyModel<TInput>(this.DataModelPropertyName)
         {
             Dimensions = this.Dimensions,
             IndexKind = this.IndexKind,

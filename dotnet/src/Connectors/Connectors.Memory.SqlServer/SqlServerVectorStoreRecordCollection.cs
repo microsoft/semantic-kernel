@@ -17,24 +17,24 @@ using Microsoft.Extensions.VectorData.Properties;
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 /// <summary>
-/// An implementation of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> backed by a SQL Server or Azure SQL database.
+/// An implementation of <see cref="IVectorStoreCollection{TKey, TRecord}"/> backed by a SQL Server or Azure SQL database.
 /// </summary>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
 public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711
-    : IVectorStoreRecordCollection<TKey, TRecord>
+    : IVectorStoreCollection<TKey, TRecord>
     where TKey : notnull
     where TRecord : notnull
 {
     /// <summary>Metadata about vector store record collection.</summary>
-    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+    private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
     private static readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> s_defaultOptions = new();
 
     private readonly string _connectionString;
     private readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> _options;
-    private readonly VectorStoreRecordModel _model;
+    private readonly CollectionModel _model;
     private readonly RecordMapper<TRecord> _mapper;
 
     /// <summary>
@@ -51,7 +51,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNull(name);
 
-        this._model = new VectorStoreRecordModelBuilder(SqlServerConstants.ModelBuildingOptions)
+        this._model = new CollectionModelBuilder(SqlServerConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), options?.RecordDefinition, options?.EmbeddingGenerator);
 
         this._connectionString = connectionString;
@@ -559,7 +559,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreRecordVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
@@ -619,7 +619,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
         return
             serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }

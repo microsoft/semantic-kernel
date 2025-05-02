@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 /// This is an internal support type meant for use by connectors only, and not for use by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public class VectorStoreRecordDataPropertyModel(string modelName, Type type) : VectorStoreRecordPropertyModel(modelName, type)
+public class DataPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
 {
     /// <summary>
     /// Gets or sets a value indicating whether this data property is indexed.

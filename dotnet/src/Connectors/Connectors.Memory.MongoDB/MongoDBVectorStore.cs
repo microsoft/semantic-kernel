@@ -28,7 +28,7 @@ public sealed class MongoDBVectorStore : IVectorStore
     private readonly MongoDBVectorStoreOptions _options;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoDBVectorStore"/> class.
@@ -50,7 +50,7 @@ public sealed class MongoDBVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
         => new MongoDBVectorStoreRecordCollection<TKey, TRecord>(
@@ -60,7 +60,7 @@ public sealed class MongoDBVectorStore : IVectorStore
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            }) as IVectorStoreCollection<TKey, TRecord>;
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

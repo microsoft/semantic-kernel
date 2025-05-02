@@ -62,25 +62,25 @@ public class VectorStore_ConsumeFromMemoryStore_AzureAISearch(ITestOutputHelper 
     /// </summary>
     private sealed class VectorStoreRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Description { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Text { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public bool IsReference { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string ExternalSourceName { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string AdditionalMetadata { get; set; }
 
-        [VectorStoreRecordVector(VectorSize)]
+        [VectorStoreVector(VectorSize)]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 }

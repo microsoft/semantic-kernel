@@ -22,13 +22,13 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : notnull
 {
     /// <summary>Metadata about vector store record collection.</summary>
-    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+    private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -46,7 +46,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly string _collectionName;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreRecordModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>An function to look up vectors from the records.</summary>
     private readonly InMemoryVectorStoreVectorResolver<TRecord> _vectorResolver;
@@ -89,7 +89,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
                     throw new InvalidOperationException($"The collection does not have a vector field named '{vectorPropertyName}', so vector search is not possible.");
                 }
 
-                if (property is not VectorStoreRecordVectorPropertyModel vectorProperty)
+                if (property is not VectorPropertyModel vectorProperty)
                 {
                     throw new InvalidOperationException($"The property '{vectorPropertyName}' isn't a vector property.");
                 }
@@ -377,7 +377,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreRecordVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
@@ -460,7 +460,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return
             serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
             serviceType == typeof(ConcurrentDictionary<string, ConcurrentDictionary<object, object>>) ? this._internalCollections :
             serviceType.IsInstanceOfType(this) ? this :
             null;

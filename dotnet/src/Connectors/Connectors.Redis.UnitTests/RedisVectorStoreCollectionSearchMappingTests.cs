@@ -68,8 +68,8 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var byteArray = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
         ]);
 
         // Act.
@@ -92,8 +92,8 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var vectorSearchOptions = new VectorSearchOptions<DummyType> { Skip = 3 };
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "storage_Vector" }
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "storage_Vector" }
         ]);
         var selectFields = new string[] { "storage_Field1", "storage_Field2" };
 
@@ -128,9 +128,9 @@ public class RedisVectorStoreCollectionSearchMappingTests
 
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("Data1", typeof(string)) { StoragePropertyName = "storage_Data1" },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("Data1", typeof(string)) { StoragePropertyName = "storage_Data1" },
+            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
         ]);
 
         // Act.
@@ -163,9 +163,9 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var basicVectorSearchFilter = new VectorSearchFilter().EqualTo("Data1", true);
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("Data1", typeof(string)) { StoragePropertyName = "storage_Data1" },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("Data1", typeof(string)) { StoragePropertyName = "storage_Data1" },
+            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
         ]);
 
         // Act & Assert.
@@ -182,9 +182,9 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var basicVectorSearchFilter = new VectorSearchFilter().EqualTo("UnknownData", "value");
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("Data1", typeof(string)) { StoragePropertyName = "storage_Data1" },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("Data1", typeof(string)) { StoragePropertyName = "storage_Data1" },
+            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
         ]);
 
         // Act & Assert.
@@ -197,7 +197,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
     [Fact]
     public void ResolveDistanceFunctionReturnsCosineSimilarityIfNoDistanceFunctionSpecified()
     {
-        var property = new VectorStoreRecordVectorPropertyModel("Prop", typeof(ReadOnlyMemory<float>));
+        var property = new VectorPropertyModel("Prop", typeof(ReadOnlyMemory<float>));
 
         // Act.
         var resolvedDistanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(property);
@@ -209,7 +209,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
     [Fact]
     public void ResolveDistanceFunctionReturnsDistanceFunctionFromProvidedProperty()
     {
-        var property = new VectorStoreRecordVectorPropertyModel("Prop", typeof(ReadOnlyMemory<float>)) { DistanceFunction = DistanceFunction.DotProductSimilarity };
+        var property = new VectorPropertyModel("Prop", typeof(ReadOnlyMemory<float>)) { DistanceFunction = DistanceFunction.DotProductSimilarity };
 
         // Act.
         var resolvedDistanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(property);
@@ -241,8 +241,8 @@ public class RedisVectorStoreCollectionSearchMappingTests
     private sealed class DummyType;
 #pragma warning restore CA1812
 
-    private static VectorStoreRecordModel BuildModel(List<VectorStoreRecordProperty> properties)
-        => new VectorStoreRecordModelBuilder(RedisHashSetVectorStoreRecordCollection<string, DummyType>.ModelBuildingOptions)
+    private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
+        => new CollectionModelBuilder(RedisHashSetVectorStoreRecordCollection<string, DummyType>.ModelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
                 new() { Properties = properties },

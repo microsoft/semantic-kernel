@@ -2,8 +2,8 @@
 
 namespace Microsoft.Extensions.VectorData;
 
-/// <summary>Provides metadata about an <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</summary>
-public class VectorStoreRecordCollectionMetadata
+/// <summary>Provides metadata about an <see cref="IVectorStoreCollection{TKey, TRecord}"/>.</summary>
+public class VectorStoreCollectionMetadata
 {
     /// <summary>The name of the vector store system.</summary>
     /// <remarks>

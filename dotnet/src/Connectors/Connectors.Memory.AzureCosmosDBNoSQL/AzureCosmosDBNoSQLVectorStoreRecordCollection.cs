@@ -29,13 +29,13 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>, IKeywordHybridSearch<TRecord>
+public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreCollection<TKey, TRecord>, IKeywordHybridSearch<TRecord>
     where TKey : notnull
     where TRecord : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect
 {
     /// <summary>Metadata about vector store record collection.</summary>
-    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+    private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -50,11 +50,11 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     private readonly AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreRecordModel _model;
+    private readonly CollectionModel _model;
 
     // TODO: Refactor this into the model (Co)
     /// <summary>The property to use as partition key.</summary>
-    private readonly VectorStoreRecordPropertyModel _partitionKeyProperty;
+    private readonly PropertyModel _partitionKeyProperty;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Azure CosmosDB NoSQL record.</summary>
     private readonly ICosmosNoSQLMapper<TRecord> _mapper;
@@ -426,7 +426,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreRecordVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
@@ -549,7 +549,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 
         return
             serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
             serviceType == typeof(Database) ? this._database :
             serviceType.IsInstanceOfType(this) ? this :
             null;
@@ -669,7 +669,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             IndexKind.DiskAnn or null => VectorIndexType.DiskANN,
             IndexKind.Flat => VectorIndexType.Flat,
             IndexKind.QuantizedFlat => VectorIndexType.QuantizedFlat,
-            _ => throw new InvalidOperationException($"Index kind '{indexKind}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB NoSQL VectorStore.")
+            _ => throw new InvalidOperationException($"Index kind '{indexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB NoSQL VectorStore.")
         };
 
     /// <summary>
@@ -688,7 +688,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             SKDistanceFunction.CosineSimilarity => DistanceFunction.Cosine,
             SKDistanceFunction.DotProductSimilarity => DistanceFunction.DotProduct,
             SKDistanceFunction.EuclideanDistance => DistanceFunction.Euclidean,
-            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB NoSQL VectorStore.")
+            _ => throw new InvalidOperationException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB NoSQL VectorStore.")
         };
     }
 
@@ -701,7 +701,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             Type type when type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<float>?) => VectorDataType.Float32,
             Type type when type == typeof(ReadOnlyMemory<byte>) || type == typeof(ReadOnlyMemory<byte>?) => VectorDataType.Uint8,
             Type type when type == typeof(ReadOnlyMemory<sbyte>) || type == typeof(ReadOnlyMemory<sbyte>?) => VectorDataType.Int8,
-            _ => throw new InvalidOperationException($"Data type '{vectorDataType}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB NoSQL VectorStore.")
+            _ => throw new InvalidOperationException($"Data type '{vectorDataType}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB NoSQL VectorStore.")
         };
 
     private async IAsyncEnumerable<T> GetItemsAsync<T>(QueryDefinition queryDefinition, string operationName, [EnumeratorCancellation] CancellationToken cancellationToken)

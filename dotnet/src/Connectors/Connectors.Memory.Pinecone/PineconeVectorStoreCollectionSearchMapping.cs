@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -21,7 +20,7 @@ internal static class PineconeVectorStoreCollectionSearchMapping
     /// <param name="model">The model.</param>
     /// <returns>The Pinecone <see cref="Metadata"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown for invalid property names, value types or filter clause types.</exception>
-    public static Metadata BuildSearchFilter(IEnumerable<FilterClause>? filterClauses, VectorStoreRecordModel model)
+    public static Metadata BuildSearchFilter(IEnumerable<FilterClause>? filterClauses, Extensions.VectorData.ConnectorSupport.CollectionModel model)
     {
         var metadataMap = new Metadata();
 

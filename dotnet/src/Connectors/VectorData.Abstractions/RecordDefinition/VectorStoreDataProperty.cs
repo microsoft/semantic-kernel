@@ -10,23 +10,23 @@ namespace Microsoft.Extensions.VectorData;
 /// <remarks>
 /// The characteristics defined here influence how the property is treated by the vector store.
 /// </remarks>
-public sealed class VectorStoreRecordDataProperty : VectorStoreRecordProperty
+public sealed class VectorStoreDataProperty : VectorStoreProperty
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreRecordDataProperty"/> class.
+    /// Initializes a new instance of the <see cref="VectorStoreDataProperty"/> class.
     /// </summary>
     /// <param name="propertyName">The name of the property.</param>
     /// <param name="propertyType">The type of the property.</param>
-    public VectorStoreRecordDataProperty(string propertyName, Type propertyType)
+    public VectorStoreDataProperty(string propertyName, Type propertyType)
         : base(propertyName, propertyType)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreRecordDataProperty"/> class by cloning the given source.
+    /// Initializes a new instance of the <see cref="VectorStoreDataProperty"/> class by cloning the given source.
     /// </summary>
     /// <param name="source">The source to clone.</param>
-    public VectorStoreRecordDataProperty(VectorStoreRecordDataProperty source)
+    public VectorStoreDataProperty(VectorStoreDataProperty source)
         : base(source)
     {
         this.IsIndexed = source.IsIndexed;

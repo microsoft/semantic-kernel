@@ -14,9 +14,9 @@ internal class ErrorHandlingAsyncCursor<T> : IAsyncCursor<T>
 {
     private readonly IAsyncCursor<T> _cursor;
     private readonly string _operationName;
-    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+    private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
-    public ErrorHandlingAsyncCursor(IAsyncCursor<T> cursor, VectorStoreRecordCollectionMetadata collectionMetadata, string operationName)
+    public ErrorHandlingAsyncCursor(IAsyncCursor<T> cursor, VectorStoreCollectionMetadata collectionMetadata, string operationName)
     {
         this._cursor = cursor;
         this._operationName = operationName;
@@ -27,7 +27,7 @@ internal class ErrorHandlingAsyncCursor<T> : IAsyncCursor<T>
     {
         this._cursor = cursor;
         this._operationName = operationName;
-        this._collectionMetadata = new VectorStoreRecordCollectionMetadata()
+        this._collectionMetadata = new VectorStoreCollectionMetadata()
         {
             CollectionName = null,
             VectorStoreName = metadata.VectorStoreName,

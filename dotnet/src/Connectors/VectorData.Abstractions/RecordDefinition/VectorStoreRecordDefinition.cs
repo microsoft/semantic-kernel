@@ -14,12 +14,12 @@ namespace Microsoft.Extensions.VectorData;
 public sealed class VectorStoreRecordDefinition
 {
     /// <summary>Empty static list for initialization purposes.</summary>
-    private static readonly List<VectorStoreRecordProperty> s_emptyFields = new();
+    private static readonly List<VectorStoreProperty> s_emptyFields = new();
 
     /// <summary>
     /// Gets or sets the list of properties that are stored in the record.
     /// </summary>
-    public IReadOnlyList<VectorStoreRecordProperty> Properties { get; init; } = s_emptyFields;
+    public IReadOnlyList<VectorStoreProperty> Properties { get; init; } = s_emptyFields;
 
     /// <summary>
     /// Gets or sets the default embedding generator for vector properties in this collection.

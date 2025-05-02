@@ -19,7 +19,7 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
 
     public InMemoryVectorStore InMemoryVectorStore { get; private set; }
 
-    public IVectorStoreRecordCollection<Guid, DataModel> VectorStoreRecordCollection { get; private set; }
+    public IVectorStoreCollection<Guid, DataModel> VectorStoreRecordCollection { get; private set; }
 
     public string CollectionName => "records";
 
@@ -58,9 +58,9 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
 
     #region private
     /// <summary>
-    /// Initialize a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with a list of strings.
+    /// Initialize a <see cref="IVectorStoreCollection{TKey, TRecord}"/> with a list of strings.
     /// </summary>
-    private async Task<IVectorStoreRecordCollection<Guid, DataModel>> InitializeRecordCollectionAsync()
+    private async Task<IVectorStoreCollection<Guid, DataModel>> InitializeRecordCollectionAsync()
     {
         // Delegate which will create a record.
         static DataModel CreateRecord(int index, string text, ReadOnlyMemory<float> embedding)
@@ -101,15 +101,15 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
     internal delegate TRecord CreateRecord<TKey, TRecord>(int index, string text, ReadOnlyMemory<float> vector) where TKey : notnull;
 
     /// <summary>
-    /// Create a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> from a list of strings by:
-    /// 1. Creating an instance of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>
+    /// Create a <see cref="IVectorStoreCollection{TKey, TRecord}"/> from a list of strings by:
+    /// 1. Creating an instance of <see cref="IVectorStoreCollection{TKey, TRecord}"/>
     /// 2. Generating embeddings for each string.
     /// 3. Creating a record with a valid key for each string and it's embedding.
     /// 4. Insert the records into the collection.
     /// </summary>
     /// <param name="entries">A list of strings.</param>
     /// <param name="createRecord">A delegate which can create a record with a valid key for each string and it's embedding.</param>
-    private async Task<IVectorStoreRecordCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
+    private async Task<IVectorStoreCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
         string[] entries,
         CreateRecord<TKey, TRecord> createRecord)
         where TKey : notnull
@@ -139,22 +139,22 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
     /// </remarks>
     public sealed class DataModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         [TextSearchResultName]
         public Guid Key { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         [TextSearchResultValue]
         public string Text { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         [TextSearchResultLink]
         public string Link { get; init; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public required string Tag { get; init; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
     #endregion

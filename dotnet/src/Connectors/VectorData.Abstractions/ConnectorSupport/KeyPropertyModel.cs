@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 /// This is an internal support type meant for use by connectors only, and not for use by applications.
 /// </summary>
 [Experimental("MEVD9001")]
-public class VectorStoreRecordKeyPropertyModel(string modelName, Type type) : VectorStoreRecordPropertyModel(modelName, type)
+public class KeyPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
 {
     /// <inheritdoc/>
     public override string ToString()

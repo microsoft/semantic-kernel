@@ -67,16 +67,16 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         this.SearchIndexClient = new SearchIndexClient(new Uri(config.ServiceUrl), new AzureKeyCredential(config.ApiKey));
         this.VectorStoreRecordDefinition = new VectorStoreRecordDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
-                new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 1536),
-                new VectorStoreRecordDataProperty("Tags", typeof(string[])) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool?)) { IsIndexed = true, StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset?)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("Rating", typeof(double?))
+                new VectorStoreKeyProperty("HotelId", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
+                new VectorStoreDataProperty("Description", typeof(string)),
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 1536),
+                new VectorStoreDataProperty("Tags", typeof(string[])) { IsIndexed = true },
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool?)) { IsIndexed = true, StoragePropertyName = "parking_is_included" },
+                new VectorStoreDataProperty("LastRenovationDate", typeof(DateTimeOffset?)) { IsIndexed = true },
+                new VectorStoreDataProperty("Rating", typeof(double?))
             }
         };
         AzureOpenAIConfiguration? embeddingsConfig = s_configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();

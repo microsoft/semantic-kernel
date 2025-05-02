@@ -31,44 +31,44 @@ public sealed class WeaviateDynamicDataModelMapperTests
         }
     };
 
-    private static readonly VectorStoreRecordModel s_model = new WeaviateModelBuilder(HasNamedVectors)
+    private static readonly CollectionModel s_model = new WeaviateModelBuilder(HasNamedVectors)
         .Build(
             typeof(Dictionary<string, object?>),
             new VectorStoreRecordDefinition
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
+                    new VectorStoreKeyProperty("Key", typeof(Guid)),
 
-                    new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                    new VectorStoreRecordDataProperty("BoolDataProp", typeof(bool)),
-                    new VectorStoreRecordDataProperty("NullableBoolDataProp", typeof(bool?)),
-                    new VectorStoreRecordDataProperty("IntDataProp", typeof(int)),
-                    new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                    new VectorStoreRecordDataProperty("LongDataProp", typeof(long)),
-                    new VectorStoreRecordDataProperty("NullableLongDataProp", typeof(long?)),
-                    new VectorStoreRecordDataProperty("ShortDataProp", typeof(short)),
-                    new VectorStoreRecordDataProperty("NullableShortDataProp", typeof(short?)),
-                    new VectorStoreRecordDataProperty("ByteDataProp", typeof(byte)),
-                    new VectorStoreRecordDataProperty("NullableByteDataProp", typeof(byte?)),
-                    new VectorStoreRecordDataProperty("FloatDataProp", typeof(float)),
-                    new VectorStoreRecordDataProperty("NullableFloatDataProp", typeof(float?)),
-                    new VectorStoreRecordDataProperty("DoubleDataProp", typeof(double)),
-                    new VectorStoreRecordDataProperty("NullableDoubleDataProp", typeof(double?)),
-                    new VectorStoreRecordDataProperty("DecimalDataProp", typeof(decimal)),
-                    new VectorStoreRecordDataProperty("NullableDecimalDataProp", typeof(decimal?)),
-                    new VectorStoreRecordDataProperty("DateTimeDataProp", typeof(DateTime)),
-                    new VectorStoreRecordDataProperty("NullableDateTimeDataProp", typeof(DateTime?)),
-                    new VectorStoreRecordDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
-                    new VectorStoreRecordDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
-                    new VectorStoreRecordDataProperty("GuidDataProp", typeof(Guid)),
-                    new VectorStoreRecordDataProperty("NullableGuidDataProp", typeof(Guid?)),
-                    new VectorStoreRecordDataProperty("TagListDataProp", typeof(List<string>)),
+                    new VectorStoreDataProperty("StringDataProp", typeof(string)),
+                    new VectorStoreDataProperty("BoolDataProp", typeof(bool)),
+                    new VectorStoreDataProperty("NullableBoolDataProp", typeof(bool?)),
+                    new VectorStoreDataProperty("IntDataProp", typeof(int)),
+                    new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+                    new VectorStoreDataProperty("LongDataProp", typeof(long)),
+                    new VectorStoreDataProperty("NullableLongDataProp", typeof(long?)),
+                    new VectorStoreDataProperty("ShortDataProp", typeof(short)),
+                    new VectorStoreDataProperty("NullableShortDataProp", typeof(short?)),
+                    new VectorStoreDataProperty("ByteDataProp", typeof(byte)),
+                    new VectorStoreDataProperty("NullableByteDataProp", typeof(byte?)),
+                    new VectorStoreDataProperty("FloatDataProp", typeof(float)),
+                    new VectorStoreDataProperty("NullableFloatDataProp", typeof(float?)),
+                    new VectorStoreDataProperty("DoubleDataProp", typeof(double)),
+                    new VectorStoreDataProperty("NullableDoubleDataProp", typeof(double?)),
+                    new VectorStoreDataProperty("DecimalDataProp", typeof(decimal)),
+                    new VectorStoreDataProperty("NullableDecimalDataProp", typeof(decimal?)),
+                    new VectorStoreDataProperty("DateTimeDataProp", typeof(DateTime)),
+                    new VectorStoreDataProperty("NullableDateTimeDataProp", typeof(DateTime?)),
+                    new VectorStoreDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
+                    new VectorStoreDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
+                    new VectorStoreDataProperty("GuidDataProp", typeof(Guid)),
+                    new VectorStoreDataProperty("NullableGuidDataProp", typeof(Guid?)),
+                    new VectorStoreDataProperty("TagListDataProp", typeof(List<string>)),
 
-                    new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
-                    new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
-                    new VectorStoreRecordVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>), 10),
-                    new VectorStoreRecordVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?), 10)
+                    new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+                    new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
+                    new VectorStoreVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>), 10),
+                    new VectorStoreVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?), 10)
                 ]
             },
             defaultEmbeddingGenerator: null,
@@ -162,15 +162,15 @@ public sealed class WeaviateDynamicDataModelMapperTests
     {
         // Arrange
         var key = new Guid("55555555-5555-5555-5555-555555555555");
-        var keyProperty = new VectorStoreRecordKeyProperty("Key", typeof(Guid));
+        var keyProperty = new VectorStoreKeyProperty("Key", typeof(Guid));
 
-        var dataProperties = new List<VectorStoreRecordDataProperty>
+        var dataProperties = new List<VectorStoreDataProperty>
         {
             new("StringDataProp", typeof(string)),
             new("NullableIntDataProp", typeof(int?)),
         };
 
-        var vectorProperties = new List<VectorStoreRecordVectorProperty>
+        var vectorProperties = new List<VectorStoreVectorProperty>
         {
             new("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10)
         };
@@ -282,15 +282,15 @@ public sealed class WeaviateDynamicDataModelMapperTests
     {
         // Arrange
         var key = new Guid("55555555-5555-5555-5555-555555555555");
-        var keyProperty = new VectorStoreRecordKeyProperty("Key", typeof(Guid));
+        var keyProperty = new VectorStoreKeyProperty("Key", typeof(Guid));
 
-        var dataProperties = new List<VectorStoreRecordDataProperty>
+        var dataProperties = new List<VectorStoreDataProperty>
         {
             new("StringDataProp", typeof(string)),
             new("NullableIntDataProp", typeof(int?)),
         };
 
-        var vectorProperties = new List<VectorStoreRecordVectorProperty>
+        var vectorProperties = new List<VectorStoreVectorProperty>
         {
             new("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10)
         };
@@ -342,10 +342,10 @@ public sealed class WeaviateDynamicDataModelMapperTests
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10)
+                new VectorStoreKeyProperty("Key", typeof(Guid)),
+                new VectorStoreDataProperty("StringDataProp", typeof(string)),
+                new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+                new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10)
             ]
         };
 
@@ -373,10 +373,10 @@ public sealed class WeaviateDynamicDataModelMapperTests
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10)
+                new VectorStoreKeyProperty("Key", typeof(Guid)),
+                new VectorStoreDataProperty("StringDataProp", typeof(string)),
+                new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+                new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10)
             ]
         };
 
@@ -410,8 +410,8 @@ public sealed class WeaviateDynamicDataModelMapperTests
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 4)
+                new VectorStoreKeyProperty("Key", typeof(Guid)),
+                new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 4)
             ]
         };
 
@@ -442,8 +442,8 @@ public sealed class WeaviateDynamicDataModelMapperTests
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 4)
+                new VectorStoreKeyProperty("Key", typeof(Guid)),
+                new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 4)
             ]
         };
 

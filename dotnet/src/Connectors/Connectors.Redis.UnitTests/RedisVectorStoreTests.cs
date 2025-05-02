@@ -92,13 +92,13 @@ public class RedisVectorStoreTests
 
     public sealed class SinglePropsModel<TKey>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public required TKey Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

@@ -92,7 +92,7 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<string, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<AzureCosmosDBNoSQLVectorStoreRecordCollection<string, TestRecord>>(collection);
 
@@ -105,7 +105,7 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; } = string.Empty;
     }
 }

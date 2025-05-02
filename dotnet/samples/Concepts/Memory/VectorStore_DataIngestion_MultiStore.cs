@@ -242,16 +242,16 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
     /// <typeparam name="TKey">The type of the model key.</typeparam>
     private sealed class Glossary<TKey>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public TKey Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Term { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Definition { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 }

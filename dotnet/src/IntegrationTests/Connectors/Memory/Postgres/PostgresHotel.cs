@@ -14,37 +14,37 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
 public record PostgresHotel<T>()
 {
     /// <summary>The key of the record.</summary>
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     public T HotelId { get; init; }
 
     /// <summary>A string metadata field.</summary>
-    [VectorStoreRecordData()]
+    [VectorStoreData()]
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>
-    [VectorStoreRecordData()]
+    [VectorStoreData()]
     public int HotelCode { get; set; }
 
     /// <summary>A  float metadata field.</summary>
-    [VectorStoreRecordData()]
+    [VectorStoreData()]
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
-    [VectorStoreRecordData(StoragePropertyName = "parking_is_included")]
+    [VectorStoreData(StoragePropertyName = "parking_is_included")]
     public bool ParkingIncluded { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public List<string> Tags { get; set; } = [];
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public List<int>? ListInts { get; set; } = null;
 
     /// <summary>A data field.</summary>
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public string Description { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance, IndexKind = IndexKind.Hnsw)]
+    [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance, IndexKind = IndexKind.Hnsw)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

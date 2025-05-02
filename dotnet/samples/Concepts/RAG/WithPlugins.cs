@@ -118,14 +118,14 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
 
     private sealed class FinanceInfo
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
         [TextSearchResultValue]
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Text { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public string Embedding => this.Text;
     }
 

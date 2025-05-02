@@ -17,17 +17,17 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests;
 /// </summary>
 public class QdrantVectorStoreCollectionSearchMappingTests
 {
-    private readonly VectorStoreRecordModel _model =
-        new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
+    private readonly CollectionModel _model =
+        new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
         .Build(
             typeof(Dictionary<string, object?>),
             new()
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty("Key", typeof(Guid)) { StoragePropertyName = "storage_key" },
-                    new VectorStoreRecordDataProperty("FieldName", typeof(string)) { StoragePropertyName = "storage_FieldName" },
-                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "storage_vector" },
+                    new VectorStoreKeyProperty("Key", typeof(Guid)) { StoragePropertyName = "storage_key" },
+                    new VectorStoreDataProperty("FieldName", typeof(string)) { StoragePropertyName = "storage_FieldName" },
+                    new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "storage_vector" },
                 ]
             },
             defaultEmbeddingGenerator: null);
@@ -118,16 +118,16 @@ public class QdrantVectorStoreCollectionSearchMappingTests
             Score = 0.5f
         };
 
-        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
+        var model = new CollectionModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
             .Build(
                 typeof(DataModel),
                 new()
                 {
                     Properties =
                     [
-                        new VectorStoreRecordKeyProperty("Id", typeof(ulong)),
-                        new VectorStoreRecordDataProperty("DataField", typeof(string)) { StoragePropertyName = "storage_DataField" },
-                        new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 10),
+                        new VectorStoreKeyProperty("Id", typeof(ulong)),
+                        new VectorStoreDataProperty("DataField", typeof(string)) { StoragePropertyName = "storage_DataField" },
+                        new VectorStoreVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 10),
                     ]
                 },
                 defaultEmbeddingGenerator: null);

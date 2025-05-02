@@ -18,17 +18,17 @@ public sealed class MongoDBVectorStoreRecordMapperTests
 
     public MongoDBVectorStoreRecordMapperTests()
     {
-        var keyProperty = new VectorStoreRecordKeyProperty("HotelId", typeof(string));
+        var keyProperty = new VectorStoreKeyProperty("HotelId", typeof(string));
 
         var definition = new VectorStoreRecordDefinition
         {
             Properties =
             [
                 keyProperty,
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)),
-                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 10)
+                new VectorStoreDataProperty("HotelName", typeof(string)),
+                new VectorStoreDataProperty("Tags", typeof(List<string>)),
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)),
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 10)
             ]
         };
 

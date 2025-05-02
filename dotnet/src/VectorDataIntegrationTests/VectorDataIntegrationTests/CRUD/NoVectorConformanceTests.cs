@@ -100,10 +100,10 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
     {
         public const int DimensionCount = 3;
 
-        [VectorStoreRecordKey(StoragePropertyName = "key")]
+        [VectorStoreKey(StoragePropertyName = "key")]
         public TKey Id { get; set; } = default!;
 
-        [VectorStoreRecordData(StoragePropertyName = "text")]
+        [VectorStoreData(StoragePropertyName = "text")]
         public string? Text { get; set; }
 
         public void AssertEqual(NoVectorRecord? other)
@@ -148,8 +148,8 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty(nameof(NoVectorRecord.Id), typeof(TKey)) { StoragePropertyName = "key" },
-                    new VectorStoreRecordDataProperty(nameof(NoVectorRecord.Text), typeof(string)) { IsIndexed = true, StoragePropertyName = "text" },
+                    new VectorStoreKeyProperty(nameof(NoVectorRecord.Id), typeof(TKey)) { StoragePropertyName = "key" },
+                    new VectorStoreDataProperty(nameof(NoVectorRecord.Text), typeof(string)) { IsIndexed = true, StoragePropertyName = "text" },
                 ]
             };
 

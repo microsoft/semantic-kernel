@@ -26,13 +26,13 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="Guid"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>, IKeywordHybridSearch<TRecord>
+public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreCollection<TKey, TRecord>, IKeywordHybridSearch<TRecord>
     where TKey : notnull
     where TRecord : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>
-    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+    private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>Default JSON serializer options.</summary>
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
@@ -58,7 +58,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly WeaviateVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreRecordModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
     private readonly IWeaviateMapper<TRecord> _mapper;
@@ -404,7 +404,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreRecordVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
@@ -496,7 +496,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return
             serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
             serviceType == typeof(HttpClient) ? this._httpClient :
             serviceType.IsInstanceOfType(this) ? this :
             null;

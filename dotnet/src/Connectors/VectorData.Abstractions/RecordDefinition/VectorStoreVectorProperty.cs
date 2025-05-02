@@ -12,38 +12,38 @@ namespace Microsoft.Extensions.VectorData;
 /// <remarks>
 /// The characteristics defined here influence how the property is treated by the vector store.
 /// </remarks>
-public class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
+public class VectorStoreVectorProperty : VectorStoreProperty
 {
     private int _dimensions;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreRecordVectorProperty"/> class.
+    /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class.
     /// </summary>
     /// <param name="propertyName">The name of the property.</param>
     /// <param name="propertyType">The type of the property.</param>
     [Obsolete("This constructor is obsolete, since dimensions is now a required parameter.", error: true)]
-    public VectorStoreRecordVectorProperty(string propertyName, Type propertyType)
+    public VectorStoreVectorProperty(string propertyName, Type propertyType)
         : base(propertyName, propertyType)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreRecordVectorProperty"/> class.
+    /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class.
     /// </summary>
     /// <param name="propertyName">The name of the property.</param>
     /// <param name="propertyType">The type of the property.</param>
     /// <param name="dimensions">The number of dimensions that the vector has.</param>
-    public VectorStoreRecordVectorProperty(string propertyName, Type propertyType, int dimensions)
+    public VectorStoreVectorProperty(string propertyName, Type propertyType, int dimensions)
         : base(propertyName, propertyType)
     {
         this.Dimensions = dimensions;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreRecordVectorProperty"/> class by cloning the given source.
+    /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class by cloning the given source.
     /// </summary>
     /// <param name="source">The source to clone.</param>
-    public VectorStoreRecordVectorProperty(VectorStoreRecordVectorProperty source)
+    public VectorStoreVectorProperty(VectorStoreVectorProperty source)
         : base(source)
     {
         this.Dimensions = source.Dimensions;
@@ -107,7 +107,7 @@ public class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
     /// </summary>
     public Type? EmbeddingType { get; init; }
 
-    internal virtual VectorStoreRecordVectorPropertyModel CreatePropertyModel()
+    internal virtual VectorPropertyModel CreatePropertyModel()
         => new(this.DataModelPropertyName, this.PropertyType)
         {
             Dimensions = this.Dimensions,

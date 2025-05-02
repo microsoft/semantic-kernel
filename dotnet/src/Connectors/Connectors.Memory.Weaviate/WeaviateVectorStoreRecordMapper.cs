@@ -14,7 +14,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IWeaviateMapper
 {
     private readonly string _collectionName;
     private readonly bool _hasNamedVectors;
-    private readonly VectorStoreRecordModel _model;
+    private readonly CollectionModel _model;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     private readonly string _vectorPropertyName;
@@ -22,7 +22,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IWeaviateMapper
     public WeaviateVectorStoreRecordMapper(
         string collectionName,
         bool hasNamedVectors,
-        VectorStoreRecordModel model,
+        CollectionModel model,
         JsonSerializerOptions jsonSerializerOptions)
     {
         this._collectionName = collectionName;

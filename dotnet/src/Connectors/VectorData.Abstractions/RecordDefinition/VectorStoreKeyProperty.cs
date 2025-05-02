@@ -10,23 +10,23 @@ namespace Microsoft.Extensions.VectorData;
 /// <remarks>
 /// The characteristics defined here influence how the property is treated by the vector store.
 /// </remarks>
-public sealed class VectorStoreRecordKeyProperty : VectorStoreRecordProperty
+public sealed class VectorStoreKeyProperty : VectorStoreProperty
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreRecordKeyProperty"/> class.
+    /// Initializes a new instance of the <see cref="VectorStoreKeyProperty"/> class.
     /// </summary>
     /// <param name="propertyName">The name of the property.</param>
     /// <param name="propertyType">The type of the property.</param>
-    public VectorStoreRecordKeyProperty(string propertyName, Type propertyType)
+    public VectorStoreKeyProperty(string propertyName, Type propertyType)
         : base(propertyName, propertyType)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreRecordKeyProperty"/> class by cloning the given source.
+    /// Initializes a new instance of the <see cref="VectorStoreKeyProperty"/> class by cloning the given source.
     /// </summary>
     /// <param name="source">The source to clone.</param>
-    public VectorStoreRecordKeyProperty(VectorStoreRecordKeyProperty source)
+    public VectorStoreKeyProperty(VectorStoreKeyProperty source)
         : base(source)
     {
         this.AutoGenerate = source.AutoGenerate;

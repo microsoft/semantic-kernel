@@ -41,7 +41,7 @@ internal static class RedisVectorStoreCollectionSearchMapping
     /// <param name="vectorProperty">The vector property.</param>
     /// <param name="selectFields">The set of fields to limit the results to. Null for all.</param>
     /// <returns>The <see cref="Query"/>.</returns>
-    public static Query BuildQuery<TRecord>(byte[] vectorBytes, int top, VectorSearchOptions<TRecord> options, VectorStoreRecordModel model, VectorStoreRecordVectorPropertyModel vectorProperty, string[]? selectFields)
+    public static Query BuildQuery<TRecord>(byte[] vectorBytes, int top, VectorSearchOptions<TRecord> options, CollectionModel model, VectorPropertyModel vectorProperty, string[]? selectFields)
     {
         // Build search query.
         var redisLimit = top + options.Skip;
@@ -71,7 +71,7 @@ internal static class RedisVectorStoreCollectionSearchMapping
         return query;
     }
 
-    internal static Query BuildQuery<TRecord>(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options, VectorStoreRecordModel model)
+    internal static Query BuildQuery<TRecord>(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options, CollectionModel model)
     {
         var translatedFilter = new RedisFilterTranslator().Translate(filter, model);
         Query query = new Query(translatedFilter)
@@ -102,7 +102,7 @@ internal static class RedisVectorStoreCollectionSearchMapping
     /// <returns>The Redis filter string.</returns>
     /// <exception cref="InvalidOperationException">Thrown when a provided filter value is not supported.</exception>
 #pragma warning disable CS0618 // Type or member is obsolete
-    public static string BuildLegacyFilter(VectorSearchFilter basicVectorSearchFilter, VectorStoreRecordModel model)
+    public static string BuildLegacyFilter(VectorSearchFilter basicVectorSearchFilter, CollectionModel model)
     {
         var filterClauses = basicVectorSearchFilter.FilterClauses.Select(clause =>
         {
@@ -141,7 +141,7 @@ internal static class RedisVectorStoreCollectionSearchMapping
     /// </summary>
     /// <param name="vectorProperty">The vector property to be used.</param>
     /// <returns>The distance function for the vector we want to search.</returns>
-    public static string ResolveDistanceFunction(VectorStoreRecordVectorPropertyModel vectorProperty)
+    public static string ResolveDistanceFunction(VectorPropertyModel vectorProperty)
         => vectorProperty.DistanceFunction ?? DistanceFunction.CosineSimilarity;
 
     /// <summary>
@@ -176,7 +176,7 @@ internal static class RedisVectorStoreCollectionSearchMapping
     /// <param name="fieldName">The name of the property in the data model.</param>
     /// <returns>The name that the property os stored under.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the property name is not found.</exception>
-    private static string GetStoragePropertyName(VectorStoreRecordModel model, string fieldName)
+    private static string GetStoragePropertyName(CollectionModel model, string fieldName)
     {
         if (!model.PropertyMap.TryGetValue(fieldName, out var property))
         {

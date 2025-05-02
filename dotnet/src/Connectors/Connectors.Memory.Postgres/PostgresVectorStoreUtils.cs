@@ -49,7 +49,7 @@ internal static class PostgresVectorStoreUtils
     public static async IAsyncEnumerable<T> WrapAsyncEnumerableAsync<T>(
         IAsyncEnumerable<T> asyncEnumerable,
         string operationName,
-        VectorStoreRecordCollectionMetadata metadata)
+        VectorStoreCollectionMetadata metadata)
     {
         var errorHandlingEnumerable = new ConfiguredCancelableErrorHandlingAsyncEnumerable<T, NpgsqlException>(
             asyncEnumerable.ConfigureAwait(false),

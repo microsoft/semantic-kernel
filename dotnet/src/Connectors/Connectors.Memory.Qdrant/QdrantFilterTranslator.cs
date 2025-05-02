@@ -17,10 +17,10 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal class QdrantFilterTranslator
 {
-    private VectorStoreRecordModel _model = null!;
+    private CollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
-    internal Filter Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
+    internal Filter Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
         this._model = model;
 
@@ -343,7 +343,7 @@ internal class QdrantFilterTranslator
         }
     }
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
     {
         var unwrappedExpression = expression;
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)

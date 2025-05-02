@@ -42,7 +42,7 @@ public sealed class InMemoryVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
     {
@@ -59,7 +59,7 @@ public sealed class InMemoryVectorStore : IVectorStore
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            }) as IVectorStoreCollection<TKey, TRecord>;
         return collection!;
     }
 

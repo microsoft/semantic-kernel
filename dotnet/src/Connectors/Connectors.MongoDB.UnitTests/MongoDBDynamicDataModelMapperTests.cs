@@ -16,29 +16,29 @@ namespace SemanticKernel.Connectors.MongoDB.UnitTests;
 /// </summary>
 public sealed class MongoDBDynamicDataModelMapperTests
 {
-    private static readonly VectorStoreRecordModel s_model = BuildModel(
+    private static readonly CollectionModel s_model = BuildModel(
     [
-        new VectorStoreRecordKeyProperty("Key", typeof(string)),
-        new VectorStoreRecordDataProperty("BoolDataProp", typeof(bool)),
-        new VectorStoreRecordDataProperty("NullableBoolDataProp", typeof(bool?)),
-        new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-        new VectorStoreRecordDataProperty("IntDataProp", typeof(int)),
-        new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-        new VectorStoreRecordDataProperty("LongDataProp", typeof(long)),
-        new VectorStoreRecordDataProperty("NullableLongDataProp", typeof(long?)),
-        new VectorStoreRecordDataProperty("FloatDataProp", typeof(float)),
-        new VectorStoreRecordDataProperty("NullableFloatDataProp", typeof(float?)),
-        new VectorStoreRecordDataProperty("DoubleDataProp", typeof(double)),
-        new VectorStoreRecordDataProperty("NullableDoubleDataProp", typeof(double?)),
-        new VectorStoreRecordDataProperty("DecimalDataProp", typeof(decimal)),
-        new VectorStoreRecordDataProperty("NullableDecimalDataProp", typeof(decimal?)),
-        new VectorStoreRecordDataProperty("DateTimeDataProp", typeof(DateTime)),
-        new VectorStoreRecordDataProperty("NullableDateTimeDataProp", typeof(DateTime?)),
-        new VectorStoreRecordDataProperty("TagListDataProp", typeof(List<string>)),
-        new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
-        new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
-        new VectorStoreRecordVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>), 10),
-        new VectorStoreRecordVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?), 10)
+        new VectorStoreKeyProperty("Key", typeof(string)),
+        new VectorStoreDataProperty("BoolDataProp", typeof(bool)),
+        new VectorStoreDataProperty("NullableBoolDataProp", typeof(bool?)),
+        new VectorStoreDataProperty("StringDataProp", typeof(string)),
+        new VectorStoreDataProperty("IntDataProp", typeof(int)),
+        new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+        new VectorStoreDataProperty("LongDataProp", typeof(long)),
+        new VectorStoreDataProperty("NullableLongDataProp", typeof(long?)),
+        new VectorStoreDataProperty("FloatDataProp", typeof(float)),
+        new VectorStoreDataProperty("NullableFloatDataProp", typeof(float?)),
+        new VectorStoreDataProperty("DoubleDataProp", typeof(double)),
+        new VectorStoreDataProperty("NullableDoubleDataProp", typeof(double?)),
+        new VectorStoreDataProperty("DecimalDataProp", typeof(decimal)),
+        new VectorStoreDataProperty("NullableDecimalDataProp", typeof(decimal?)),
+        new VectorStoreDataProperty("DateTimeDataProp", typeof(DateTime)),
+        new VectorStoreDataProperty("NullableDateTimeDataProp", typeof(DateTime?)),
+        new VectorStoreDataProperty("TagListDataProp", typeof(List<string>)),
+        new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+        new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
+        new VectorStoreVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>), 10),
+        new VectorStoreVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?), 10)
     ]);
 
     private static readonly float[] s_floatVector = [1.0f, 2.0f, 3.0f];
@@ -110,10 +110,10 @@ public sealed class MongoDBDynamicDataModelMapperTests
         // Arrange
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10)
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+            new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10)
         ]);
 
         var dataModel = new Dictionary<string, object?>
@@ -198,10 +198,10 @@ public sealed class MongoDBDynamicDataModelMapperTests
         // Arrange
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10)
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+            new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10)
         ]);
 
         var storageModel = new BsonDocument
@@ -242,9 +242,9 @@ public sealed class MongoDBDynamicDataModelMapperTests
         // Arrange
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
         ]);
 
         var dataModel = new Dictionary<string, object?> { ["Key"] = "key" };
@@ -265,9 +265,9 @@ public sealed class MongoDBDynamicDataModelMapperTests
         // Arrange
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
         ]);
 
         var storageModel = new BsonDocument
@@ -286,6 +286,6 @@ public sealed class MongoDBDynamicDataModelMapperTests
         Assert.False(dataModel.ContainsKey("FloatVector"));
     }
 
-    private static VectorStoreRecordModel BuildModel(IReadOnlyList<VectorStoreRecordProperty> properties)
+    private static CollectionModel BuildModel(IReadOnlyList<VectorStoreProperty> properties)
         => new MongoDBModelBuilder().Build(typeof(Dictionary<string, object?>), new() { Properties = properties }, defaultEmbeddingGenerator: null);
 }

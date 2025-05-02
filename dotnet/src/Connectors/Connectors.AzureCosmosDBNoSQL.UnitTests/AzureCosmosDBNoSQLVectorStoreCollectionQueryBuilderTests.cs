@@ -18,16 +18,16 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
 {
     private const string ScorePropertyName = "TestScore";
 
-    private readonly VectorStoreRecordModel _model = new AzureCosmosDBNoSQLVectorStoreModelBuilder().Build(
+    private readonly CollectionModel _model = new AzureCosmosDBNoSQLVectorStoreModelBuilder().Build(
         typeof(Dictionary<string, object?>),
         new()
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordVectorProperty("TestProperty1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "test_property_1" },
-                new VectorStoreRecordDataProperty("TestProperty2", typeof(string)) { StoragePropertyName = "test_property_2" },
-                new VectorStoreRecordDataProperty("TestProperty3", typeof(string)) { StoragePropertyName = "test_property_3" }
+                new VectorStoreKeyProperty("Key", typeof(string)),
+                new VectorStoreVectorProperty("TestProperty1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "test_property_1" },
+                new VectorStoreDataProperty("TestProperty2", typeof(string)) { StoragePropertyName = "test_property_2" },
+                new VectorStoreDataProperty("TestProperty3", typeof(string)) { StoragePropertyName = "test_property_3" }
             ]
         },
         defaultEmbeddingGenerator: null);
@@ -199,9 +199,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                    new VectorStoreRecordDataProperty("TestProperty1", typeof(string)),
-                    new VectorStoreRecordDataProperty("TestProperty2", typeof(string))
+                    new VectorStoreKeyProperty("Key", typeof(string)),
+                    new VectorStoreDataProperty("TestProperty1", typeof(string)),
+                    new VectorStoreDataProperty("TestProperty2", typeof(string))
                 ]
             },
             defaultEmbeddingGenerator: null);

@@ -17,15 +17,15 @@ namespace SemanticKernel.Connectors.MongoDB.UnitTests;
 /// </summary>
 public sealed class MongoDBVectorStoreCollectionSearchMappingTests
 {
-    private readonly VectorStoreRecordModel _model = new MongoDBModelBuilder()
+    private readonly CollectionModel _model = new MongoDBModelBuilder()
         .Build(
             typeof(Dictionary<string, object?>),
             new()
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty("Property1", typeof(string)) { StoragePropertyName = "property_1" },
-                    new VectorStoreRecordDataProperty("Property2", typeof(string)) { StoragePropertyName = "property_2" },
+                    new VectorStoreKeyProperty("Property1", typeof(string)) { StoragePropertyName = "property_1" },
+                    new VectorStoreDataProperty("Property2", typeof(string)) { StoragePropertyName = "property_2" },
                 ]
             },
             defaultEmbeddingGenerator: null);

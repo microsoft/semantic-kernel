@@ -55,7 +55,7 @@ public class VectorStoreTextSearchTestBase
     /// Add sample records to the vector store record collection.
     /// </summary>
     public static async Task AddRecordsAsync(
-        IVectorStoreRecordCollection<Guid, DataModel> recordCollection,
+        IVectorStoreCollection<Guid, DataModel> recordCollection,
         int? count = 10)
     {
         await recordCollection.CreateCollectionIfNotExistsAsync();
@@ -76,7 +76,7 @@ public class VectorStoreTextSearchTestBase
     /// Add sample records to the vector store record collection.
     /// </summary>
     public static async Task AddRecordsAsync(
-        IVectorStoreRecordCollection<Guid, DataModelWithRawEmbedding> recordCollection,
+        IVectorStoreCollection<Guid, DataModelWithRawEmbedding> recordCollection,
         ITextEmbeddingGenerationService embeddingService,
         int? count = 10)
     {
@@ -158,16 +158,16 @@ public class VectorStoreTextSearchTestBase
     public sealed class DataModel
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public Guid Key { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public required string Text { get; init; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public required string Tag { get; init; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public string? Embedding { get; init; }
     }
 
@@ -182,16 +182,16 @@ public class VectorStoreTextSearchTestBase
     public sealed class DataModelWithRawEmbedding
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public Guid Key { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public required string Text { get; init; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public required string Tag { get; init; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
 }

@@ -25,13 +25,13 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreCollection<TKey, TRecord>
     where TKey : notnull
     where TRecord : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>
-    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+    private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>A set of types that vectors on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedVectorTypes =
@@ -42,7 +42,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
         typeof(ReadOnlyMemory<double>?)
     ];
 
-    internal static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
+    internal static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,
@@ -80,7 +80,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
     private readonly RedisHashSetVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The model.</summary>
-    private readonly VectorStoreRecordModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>An array of the names of all the data properties that are part of the Redis payload as RedisValue objects, i.e. all properties except the key and vector properties.</summary>
     private readonly RedisValue[] _dataStoragePropertyNameRedisValues;
@@ -113,7 +113,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
         this._database = database;
         this._collectionName = name;
         this._options = options ?? new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>();
-        this._model = new VectorStoreRecordModelBuilder(ModelBuildingOptions)
+        this._model = new CollectionModelBuilder(ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
 
         // Lookup storage property names.
@@ -398,7 +398,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreRecordVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -502,7 +502,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
 
         return
             serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
             serviceType == typeof(IDatabase) ? this._database :
             serviceType.IsInstanceOfType(this) ? this :
             null;

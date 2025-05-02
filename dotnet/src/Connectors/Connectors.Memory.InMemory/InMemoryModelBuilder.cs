@@ -5,9 +5,9 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.InMemory;
 
-internal class InMemoryModelBuilder() : VectorStoreRecordModelBuilder(ValidationOptions)
+internal class InMemoryModelBuilder() : CollectionModelBuilder(ValidationOptions)
 {
-    internal static readonly VectorStoreRecordModelBuildingOptions ValidationOptions = new()
+    internal static readonly CollectionModelBuildingOptions ValidationOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,

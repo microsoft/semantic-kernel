@@ -441,11 +441,11 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Arrange.
         var definition = new VectorStoreRecordDefinition()
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("Data1", typeof(string)),
-                new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 4),
+                new VectorStoreKeyProperty("Key", typeof(string)),
+                new VectorStoreDataProperty("Data1", typeof(string)),
+                new VectorStoreVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 4),
             }
         };
 
@@ -575,31 +575,31 @@ public class AzureAISearchVectorStoreRecordCollectionTests
     {
         Properties =
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("Data1", typeof(string)),
-            new VectorStoreRecordDataProperty("Data2", typeof(string)),
-            new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 4),
-            new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>), 4)
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("Data1", typeof(string)),
+            new VectorStoreDataProperty("Data2", typeof(string)),
+            new VectorStoreVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 4),
+            new VectorStoreVectorProperty("Vector2", typeof(ReadOnlyMemory<float>), 4)
         ]
     };
 
     public sealed class MultiPropsModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
         [JsonPropertyName("storage_data1")]
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string Data1 { get; set; } = string.Empty;
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Data2 { get; set; } = string.Empty;
 
         [JsonPropertyName("storage_vector1")]
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string? NotAnnotated { get; set; }

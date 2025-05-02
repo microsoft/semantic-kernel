@@ -39,7 +39,7 @@ internal interface IPostgresVectorStoreCollectionSqlBuilder
     /// <param name="model">The collection model.</param>
     /// <param name="ifNotExists">Specifies whether to include IF NOT EXISTS in the command.</param>
     /// <returns>The built SQL command info.</returns>
-    PostgresSqlCommandInfo BuildCreateTableCommand(string schema, string tableName, VectorStoreRecordModel model, bool ifNotExists = true);
+    PostgresSqlCommandInfo BuildCreateTableCommand(string schema, string tableName, CollectionModel model, bool ifNotExists = true);
 
     /// <summary>
     /// Builds a SQL command to create a vector index in the Postgres vector store.
@@ -91,7 +91,7 @@ internal interface IPostgresVectorStoreCollectionSqlBuilder
     /// <param name="key">The key of the record to get.</param>
     /// <param name="includeVectors">Specifies whether to include vectors in the record.</param>
     /// <returns>The built SQL command info.</returns>
-    PostgresSqlCommandInfo BuildGetCommand<TKey>(string schema, string tableName, VectorStoreRecordModel model, TKey key, bool includeVectors = false) where TKey : notnull;
+    PostgresSqlCommandInfo BuildGetCommand<TKey>(string schema, string tableName, CollectionModel model, TKey key, bool includeVectors = false) where TKey : notnull;
 
     /// <summary>
     /// Builds a SQL command to get a batch of records from the Postgres vector store.
@@ -102,7 +102,7 @@ internal interface IPostgresVectorStoreCollectionSqlBuilder
     /// <param name="keys">The keys of the records to get.</param>
     /// <param name="includeVectors">Specifies whether to include vectors in the records.</param>
     /// <returns>The built SQL command info.</returns>
-    PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, VectorStoreRecordModel model, List<TKey> keys, bool includeVectors = false) where TKey : notnull;
+    PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, CollectionModel model, List<TKey> keys, bool includeVectors = false) where TKey : notnull;
 
     /// <summary>
     /// Builds a SQL command to delete a record from the Postgres vector store.
@@ -139,6 +139,6 @@ internal interface IPostgresVectorStoreCollectionSqlBuilder
     /// <param name="limit">The maximum number of records to return.</param>
     /// <returns>The built SQL command info.</returns>
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-    PostgresSqlCommandInfo BuildGetNearestMatchCommand<TRecord>(string schema, string tableName, VectorStoreRecordModel model, VectorStoreRecordVectorPropertyModel vectorProperty, Vector vectorValue, VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter, int? skip, bool includeVectors, int limit);
+    PostgresSqlCommandInfo BuildGetNearestMatchCommand<TRecord>(string schema, string tableName, CollectionModel model, VectorPropertyModel vectorProperty, Vector vectorValue, VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter, int? skip, bool includeVectors, int limit);
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 }

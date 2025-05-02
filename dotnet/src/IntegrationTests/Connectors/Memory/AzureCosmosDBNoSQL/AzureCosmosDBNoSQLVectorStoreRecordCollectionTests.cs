@@ -169,7 +169,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         const string HotelId = "55555555-5555-5555-5555-555555555555";
         const string HotelName = "Test Hotel Name";
 
-        IVectorStoreRecordCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel> sut =
+        IVectorStoreCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel> sut =
             new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel>(
                 fixture.Database!,
                 "delete-with-partition-key",
@@ -450,15 +450,15 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)),
-                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)),
-                new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
-                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
-                new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.CosineSimilarity }
+                new VectorStoreKeyProperty("HotelId", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string)),
+                new VectorStoreDataProperty("HotelCode", typeof(int)),
+                new VectorStoreDataProperty("parking_is_included", typeof(bool)),
+                new VectorStoreDataProperty("HotelRating", typeof(float)),
+                new VectorStoreDataProperty("Tags", typeof(List<string>)),
+                new VectorStoreDataProperty("Description", typeof(string)),
+                new VectorStoreDataProperty("Timestamp", typeof(DateTimeOffset)),
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.Flat, DistanceFunction = DistanceFunction.CosineSimilarity }
             ]
         };
     }

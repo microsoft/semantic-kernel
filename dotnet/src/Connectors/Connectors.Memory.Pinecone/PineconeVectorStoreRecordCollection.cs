@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreCollection<TKey, TRecord>
     where TKey : notnull
     where TRecord : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -31,11 +31,11 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>Metadata about vector store record collection.</summary>
-    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+    private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
-    private readonly VectorStoreRecordModel _model;
+    private readonly Extensions.VectorData.ConnectorSupport.CollectionModel _model;
     private readonly PineconeVectorStoreRecordMapper<TRecord> _mapper;
     private IndexClient? _indexClient;
 
@@ -63,7 +63,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._pineconeClient = pineconeClient;
         this.Name = name;
         this._options = options ?? new PineconeVectorStoreRecordCollectionOptions<TRecord>();
-        this._model = new VectorStoreRecordModelBuilder(PineconeVectorStoreRecordFieldMapping.ModelBuildingOptions)
+        this._model = new CollectionModelBuilder(PineconeVectorStoreRecordFieldMapping.ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
         this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._model);
 
@@ -417,7 +417,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreRecordVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -564,7 +564,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return
             serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
             serviceType == typeof(Sdk.PineconeClient) ? this._pineconeClient :
             serviceType.IsInstanceOfType(this) ? this :
             null;
@@ -602,7 +602,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             _ => throw new ArgumentException($"Invalid serverless index cloud: {serverlessIndexCloud}.", nameof(serverlessIndexCloud))
         };
 
-    private static CreateIndexRequestMetric MapDistanceFunction(VectorStoreRecordVectorPropertyModel vectorProperty)
+    private static CreateIndexRequestMetric MapDistanceFunction(VectorPropertyModel vectorProperty)
         => vectorProperty.DistanceFunction switch
         {
             DistanceFunction.CosineSimilarity or null => CreateIndexRequestMetric.Cosine,

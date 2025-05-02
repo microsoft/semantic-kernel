@@ -19,7 +19,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapKeyFieldCreatesSearchableField()
     {
         // Arrange
-        var keyProperty = new VectorStoreRecordKeyPropertyModel("testkey", typeof(string)) { StorageName = "test_key" };
+        var keyProperty = new KeyPropertyModel("testkey", typeof(string)) { StorageName = "test_key" };
 
         // Act
         var result = AzureAISearchVectorStoreCollectionCreateMapping.MapKeyField(keyProperty);
@@ -37,7 +37,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapFilterableStringDataFieldCreatesSimpleField(bool isFilterable)
     {
         // Arrange
-        var dataProperty = new VectorStoreRecordDataPropertyModel("testdata", typeof(string))
+        var dataProperty = new DataPropertyModel("testdata", typeof(string))
         {
             IsIndexed = isFilterable,
             StorageName = "test_data"
@@ -60,7 +60,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapFullTextSearchableStringDataFieldCreatesSearchableField(bool isFilterable)
     {
         // Arrange
-        var dataProperty = new VectorStoreRecordDataPropertyModel("testdata", typeof(string))
+        var dataProperty = new DataPropertyModel("testdata", typeof(string))
         {
             IsIndexed = isFilterable,
             IsFullTextIndexed = true,
@@ -82,7 +82,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapFullTextSearchableStringDataFieldThrowsForInvalidType()
     {
         // Arrange
-        var dataProperty = new VectorStoreRecordDataPropertyModel("testdata", typeof(int))
+        var dataProperty = new DataPropertyModel("testdata", typeof(int))
         {
             IsFullTextIndexed = true,
             StorageName = "test_data"
@@ -98,7 +98,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapDataFieldCreatesSimpleField(bool isFilterable)
     {
         // Arrange
-        var dataProperty = new VectorStoreRecordDataPropertyModel("testdata", typeof(int))
+        var dataProperty = new DataPropertyModel("testdata", typeof(int))
         {
             IsIndexed = isFilterable,
             StorageName = "test_data"
@@ -120,7 +120,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapVectorFieldCreatesVectorSearchField()
     {
         // Arrange
-        var vectorProperty = new VectorStoreRecordVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>))
+        var vectorProperty = new VectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>))
         {
             Dimensions = 10,
             IndexKind = IndexKind.Flat,
@@ -153,7 +153,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapVectorFieldCreatesExpectedAlgoConfigTypes(string indexKind, Type algoConfigType)
     {
         // Arrange
-        var vectorProperty = new VectorStoreRecordVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>))
+        var vectorProperty = new VectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>))
         {
             Dimensions = 10,
             IndexKind = indexKind,
@@ -173,7 +173,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapVectorFieldDefaultsToHsnwAndCosine()
     {
         // Arrange
-        var vectorProperty = new VectorStoreRecordVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 10 };
+        var vectorProperty = new VectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 10 };
 
         // Act
         var (vectorSearchField, algorithmConfiguration, vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty);
@@ -188,7 +188,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapVectorFieldThrowsForUnsupportedDistanceFunction()
     {
         // Arrange
-        var vectorProperty = new VectorStoreRecordVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>))
+        var vectorProperty = new VectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>))
         {
             Dimensions = 10,
             DistanceFunction = DistanceFunction.ManhattanDistance,

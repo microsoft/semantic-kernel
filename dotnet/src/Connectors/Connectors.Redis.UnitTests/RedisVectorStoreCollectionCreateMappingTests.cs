@@ -21,22 +21,22 @@ public class RedisVectorStoreCollectionCreateMappingTests
     public void MapToSchemaCreatesSchema(bool useDollarPrefix)
     {
         // Arrange.
-        VectorStoreRecordPropertyModel[] properties =
+        PropertyModel[] properties =
         [
-            new VectorStoreRecordKeyPropertyModel("Key", typeof(string)),
+            new KeyPropertyModel("Key", typeof(string)),
 
-            new VectorStoreRecordDataPropertyModel("FilterableString", typeof(string)) { IsIndexed = true },
-            new VectorStoreRecordDataPropertyModel("FullTextSearchableString", typeof(string)) { IsFullTextIndexed = true },
-            new VectorStoreRecordDataPropertyModel("FilterableStringEnumerable", typeof(string[])) { IsIndexed = true },
-            new VectorStoreRecordDataPropertyModel("FullTextSearchableStringEnumerable", typeof(string[])) { IsFullTextIndexed = true },
+            new DataPropertyModel("FilterableString", typeof(string)) { IsIndexed = true },
+            new DataPropertyModel("FullTextSearchableString", typeof(string)) { IsFullTextIndexed = true },
+            new DataPropertyModel("FilterableStringEnumerable", typeof(string[])) { IsIndexed = true },
+            new DataPropertyModel("FullTextSearchableStringEnumerable", typeof(string[])) { IsFullTextIndexed = true },
 
-            new VectorStoreRecordDataPropertyModel("FilterableInt", typeof(int)) { IsIndexed = true },
-            new VectorStoreRecordDataPropertyModel("FilterableNullableInt", typeof(int)) { IsIndexed = true },
+            new DataPropertyModel("FilterableInt", typeof(int)) { IsIndexed = true },
+            new DataPropertyModel("FilterableNullableInt", typeof(int)) { IsIndexed = true },
 
-            new VectorStoreRecordDataPropertyModel("NonFilterableString", typeof(string)),
+            new DataPropertyModel("NonFilterableString", typeof(string)),
 
-            new VectorStoreRecordVectorPropertyModel("VectorDefaultIndexingOptions", typeof(ReadOnlyMemory<float>)) { Dimensions = 10, EmbeddingType = typeof(ReadOnlyMemory<float>) },
-            new VectorStoreRecordVectorPropertyModel("VectorSpecificIndexingOptions", typeof(ReadOnlyMemory<float>))
+            new VectorPropertyModel("VectorDefaultIndexingOptions", typeof(ReadOnlyMemory<float>)) { Dimensions = 10, EmbeddingType = typeof(ReadOnlyMemory<float>) },
+            new VectorPropertyModel("VectorSpecificIndexingOptions", typeof(ReadOnlyMemory<float>))
             {
                 Dimensions = 20,
                 IndexKind = IndexKind.Flat,
@@ -102,7 +102,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
     public void GetSDKIndexKindThrowsOnUnsupportedIndexKind()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorPropertyModel("VectorProperty", typeof(ReadOnlyMemory<float>)) { IndexKind = "Unsupported" };
+        var vectorProperty = new VectorPropertyModel("VectorProperty", typeof(ReadOnlyMemory<float>)) { IndexKind = "Unsupported" };
 
         // Act and assert.
         Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.GetSDKIndexKind(vectorProperty));
@@ -112,7 +112,7 @@ public class RedisVectorStoreCollectionCreateMappingTests
     public void GetSDKDistanceAlgorithmThrowsOnUnsupportedDistanceFunction()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorPropertyModel("VectorProperty", typeof(ReadOnlyMemory<float>)) { DistanceFunction = "Unsupported" };
+        var vectorProperty = new VectorPropertyModel("VectorProperty", typeof(ReadOnlyMemory<float>)) { DistanceFunction = "Unsupported" };
 
         // Act and assert.
         Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.GetSDKDistanceAlgorithm(vectorProperty));

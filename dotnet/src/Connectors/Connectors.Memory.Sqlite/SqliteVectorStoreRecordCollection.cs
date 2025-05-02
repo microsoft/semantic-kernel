@@ -22,13 +22,13 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// <typeparam name="TKey">The data type of the record key. Can be <see cref="string"/> or <see cref="ulong"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreCollection<TKey, TRecord>
     where TKey : notnull
     where TRecord : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect
 {
     /// <summary>Metadata about vector store record collection.</summary>
-    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+    private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</summary>
     private readonly string _connectionString;
@@ -43,7 +43,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreRecordModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>Flag which indicates whether vector properties exist in the consumer data model.</summary>
     private readonly bool _vectorPropertiesExist;
@@ -93,7 +93,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         this._dataTableName = name.EscapeIdentifier();
         this._vectorTableName = GetVectorTableName(name, this._options).EscapeIdentifier();
 
-        this._model = new VectorStoreRecordModelBuilder(SqliteConstants.ModelBuildingOptions)
+        this._model = new CollectionModelBuilder(SqliteConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
 
         this._vectorPropertiesExist = this._model.VectorProperties.Count > 0;
@@ -213,7 +213,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreRecordVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
@@ -553,7 +553,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         return
             serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
@@ -830,14 +830,14 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
     private TRecord GetAndMapRecord(
         DbDataReader reader,
-        IReadOnlyList<VectorStoreRecordPropertyModel> properties,
+        IReadOnlyList<PropertyModel> properties,
         bool includeVectors)
     {
         var storageModel = new Dictionary<string, object?>();
 
         foreach (var property in properties)
         {
-            if (includeVectors || property is not VectorStoreRecordVectorPropertyModel)
+            if (includeVectors || property is not VectorPropertyModel)
             {
                 var propertyValue = SqliteVectorStoreRecordPropertyMapping.GetPropertyValue(reader, property.StorageName, property.Type);
                 storageModel.Add(property.StorageName, propertyValue);

@@ -21,7 +21,7 @@ internal static class SqlServerConstants
         typeof(ReadOnlyMemory<float>?)
     ];
 
-    public static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
+    public static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,

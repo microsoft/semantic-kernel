@@ -47,13 +47,13 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
 
     public class Record
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Text { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 768)]
+        [VectorStoreVector(Dimensions: 768)]
         public string Embedding { get; set; }
     }
 

@@ -517,31 +517,31 @@ public class RedisJsonVectorStoreRecordCollectionTests
     {
         Properties =
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("Data1", typeof(string)) { IsIndexed = true, StoragePropertyName = "ignored_data1_storage_name" },
-            new VectorStoreRecordDataProperty("Data2", typeof(string)) { IsIndexed = true },
-            new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 4) { DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "ignored_vector1_storage_name" },
-            new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>), 4)
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("Data1", typeof(string)) { IsIndexed = true, StoragePropertyName = "ignored_data1_storage_name" },
+            new VectorStoreDataProperty("Data2", typeof(string)) { IsIndexed = true },
+            new VectorStoreVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 4) { DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "ignored_vector1_storage_name" },
+            new VectorStoreVectorProperty("Vector2", typeof(ReadOnlyMemory<float>), 4)
         ]
     };
 
     public sealed class MultiPropsModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
         [JsonPropertyName("data1_json_name")]
-        [VectorStoreRecordData(IsIndexed = true, StoragePropertyName = "ignored_data1_storage_name")]
+        [VectorStoreData(IsIndexed = true, StoragePropertyName = "ignored_data1_storage_name")]
         public string Data1 { get; set; } = string.Empty;
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string Data2 { get; set; } = string.Empty;
 
         [JsonPropertyName("vector1_json_name")]
-        [VectorStoreRecordVector(4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "ignored_vector1_storage_name")]
+        [VectorStoreVector(4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "ignored_vector1_storage_name")]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string? NotAnnotated { get; set; }

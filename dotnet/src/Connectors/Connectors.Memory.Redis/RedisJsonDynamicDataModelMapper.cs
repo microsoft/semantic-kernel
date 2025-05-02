@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <summary>
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Redis when using JSON.
 /// </summary>
-internal class RedisJsonDynamicDataModelMapper(VectorStoreRecordModel model, JsonSerializerOptions jsonSerializerOptions) : IRedisJsonMapper<Dictionary<string, object?>>
+internal class RedisJsonDynamicDataModelMapper(CollectionModel model, JsonSerializerOptions jsonSerializerOptions) : IRedisJsonMapper<Dictionary<string, object?>>
 {
     /// <inheritdoc />
     public (string Key, JsonNode Node) MapFromDataToStorageModel(Dictionary<string, object?> dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)

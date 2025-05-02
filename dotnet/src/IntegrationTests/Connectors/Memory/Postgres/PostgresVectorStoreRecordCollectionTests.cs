@@ -501,15 +501,15 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     {
         Properties =
         [
-            new VectorStoreRecordKeyProperty("HotelId", typeof(TKey)),
-            new VectorStoreRecordDataProperty("HotelName", typeof(string)),
-            new VectorStoreRecordDataProperty("HotelCode", typeof(int)),
-            new VectorStoreRecordDataProperty("HotelRating", typeof(float?)),
-            new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
-            new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
-            new VectorStoreRecordDataProperty("ListInts", typeof(List<int>)),
-            new VectorStoreRecordDataProperty("Description", typeof(string)),
-            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.Hnsw, DistanceFunction = distanceFunction }
+            new VectorStoreKeyProperty("HotelId", typeof(TKey)),
+            new VectorStoreDataProperty("HotelName", typeof(string)),
+            new VectorStoreDataProperty("HotelCode", typeof(int)),
+            new VectorStoreDataProperty("HotelRating", typeof(float?)),
+            new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
+            new VectorStoreDataProperty("Tags", typeof(List<string>)),
+            new VectorStoreDataProperty("ListInts", typeof(List<int>)),
+            new VectorStoreDataProperty("Description", typeof(string)),
+            new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.Hnsw, DistanceFunction = distanceFunction }
         ]
     };
 
@@ -544,25 +544,25 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 #pragma warning disable CA1812, CA1859
     private sealed class RecordWithEnumerables
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public int Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
+        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Embedding { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public List<int>? ListInts { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public ICollection<int>? CollectionInts { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public IEnumerable<int>? EnumerableInts { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public IReadOnlyCollection<int>? ReadOnlyCollectionInts { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public IReadOnlyList<int>? ReadOnlyListInts { get; set; }
     }
 #pragma warning restore CA1812, CA1859

@@ -37,32 +37,32 @@ public class RedisVectorStoreFixture : IAsyncLifetime
         this._client = dockerClientConfiguration.CreateClient();
         this.VectorStoreRecordDefinition = new VectorStoreRecordDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("Description", typeof(string)) { IsFullTextIndexed = true },
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4),
-                new VectorStoreRecordDataProperty("Tags", typeof(string[])) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("FTSTags", typeof(string[])) { IsFullTextIndexed = true },
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset)),
-                new VectorStoreRecordDataProperty("Rating", typeof(double)),
-                new VectorStoreRecordDataProperty("Address", typeof(RedisHotelAddress))
+                new VectorStoreKeyProperty("HotelId", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true },
+                new VectorStoreDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
+                new VectorStoreDataProperty("Description", typeof(string)) { IsFullTextIndexed = true },
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4),
+                new VectorStoreDataProperty("Tags", typeof(string[])) { IsIndexed = true },
+                new VectorStoreDataProperty("FTSTags", typeof(string[])) { IsFullTextIndexed = true },
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
+                new VectorStoreDataProperty("LastRenovationDate", typeof(DateTimeOffset)),
+                new VectorStoreDataProperty("Rating", typeof(double)),
+                new VectorStoreDataProperty("Address", typeof(RedisHotelAddress))
             }
         };
         this.BasicVectorStoreRecordDefinition = new VectorStoreRecordDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("Description", typeof(string)) { IsFullTextIndexed = true },
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4),
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("Rating", typeof(double)),
+                new VectorStoreKeyProperty("HotelId", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true },
+                new VectorStoreDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
+                new VectorStoreDataProperty("Description", typeof(string)) { IsFullTextIndexed = true },
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4),
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
+                new VectorStoreDataProperty("Rating", typeof(double)),
             }
         };
     }

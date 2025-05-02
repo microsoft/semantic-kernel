@@ -20,7 +20,7 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromDataToStorageModel()
     {
         // Arrange.
-        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
+        var model = new CollectionJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
             .Build(typeof(MultiPropsModel), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
         var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(model, JsonSerializerOptions.Default);
 
@@ -42,7 +42,7 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     {
         // Arrange.
         var jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
+        var model = new CollectionJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
             .Build(typeof(MultiPropsModel), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
         var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(model, jsonSerializerOptions);
 
@@ -63,7 +63,7 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromStorageToDataModel()
     {
         // Arrange.
-        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
+        var model = new CollectionJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
             .Build(typeof(MultiPropsModel), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
         var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(model, JsonSerializerOptions.Default);
 
@@ -89,7 +89,7 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     {
         // Arrange.
         var jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
+        var model = new CollectionJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
             .Build(typeof(MultiPropsModel), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
         var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(model, jsonSerializerOptions);
 
@@ -125,19 +125,19 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
 
     private sealed class MultiPropsModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Data1 { get; set; } = string.Empty;
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Data2 { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(10)]
+        [VectorStoreVector(10)]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
-        [VectorStoreRecordVector(10)]
+        [VectorStoreVector(10)]
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;
