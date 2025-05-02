@@ -23,10 +23,15 @@ internal class ProcessStateManager
         }
     }
 
-    public async Task ReduceAsync(Func<object?, Task<object?>> func)
+    public async Task ReduceAsync(Func<Type, object?, Task<object?>> func)
     {
         Verify.NotNull(func);
-        await func(this._instance).ConfigureAwait(false);
+        if (this._stateType is null)
+        {
+            throw new KernelException("State type is not defined.");
+        }
+
+        await func(this._stateType, this._instance).ConfigureAwait(false);
     }
 }
 

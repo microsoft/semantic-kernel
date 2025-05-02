@@ -4,10 +4,6 @@ name: student_teacher_chat
 description:
   A workflow that has student and teacher that does question answering
   about math
-metadata:
-  suggested_inputs:
-    messages:
-      - Ask teacher to give you a math problem to solve
 inputs:
   messages: {}
 variables: {}

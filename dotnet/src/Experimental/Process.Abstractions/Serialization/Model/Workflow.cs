@@ -619,6 +619,9 @@ public enum ConditionOperator
     LessThanOrEqual
 }
 
+/// <summary>
+/// Operations for updating the state.
+/// </summary>
 public enum StateUpdateOperations
 {
     /// <summary>
@@ -652,14 +655,14 @@ public class VariableUpdate
     /// </summary>
     [YamlMember(Alias = "operation")]
     [JsonPropertyName("operation")]
-    public StateUpdateOperations? Operation { get; set; }
+    public StateUpdateOperations Operation { get; set; }
 
     /// <summary>
     /// Gets or sets the value to be assigned to the variable.
     /// </summary>
     [YamlMember(Alias = "value")]
     [JsonPropertyName("value")]
-    public string Value { get; set; } = string.Empty;
+    public object? Value { get; set; } = string.Empty;
 }
 
 /// <summary>

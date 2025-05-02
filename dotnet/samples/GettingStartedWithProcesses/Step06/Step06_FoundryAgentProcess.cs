@@ -33,7 +33,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         var foundryAgentDefinition1 = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
         var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
-        var processBuilder = new ProcessBuilder("foundry_agents");
+        var processBuilder = new FoundryProcessBuilder("foundry_agents");
 
         var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1)
             .OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent1Complete" }] }]);
@@ -69,9 +69,9 @@ public class Step06_FoundryAgentProcess : BaseTest
         var foundryAgentDefinition1 = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
         var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
-        var processBuilder = new ProcessBuilder("foundry_agents");
+        var processBuilder = new FoundryProcessBuilder("foundry_agents");
 
-        processBuilder.AddThread<AzureAIAgentThread>("shared_thread", KernelProcessThreadLifetime.Scoped);
+        processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
 
         var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, threadName: "shared_thread")
             .OnComplete([new DeclarativeProcessCondition { Type = "Default", Emits = [new EventEmission() { EventType = "Agent1Complete" }] }]);
@@ -109,21 +109,21 @@ public class Step06_FoundryAgentProcess : BaseTest
         var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
-        var processBuilder = new ProcessBuilder("foundry_agents", typeof(ProcessStateWithCounter));
-        processBuilder.AddThread<AzureAIAgentThread>("shared_thread", KernelProcessThreadLifetime.Scoped);
+        var processBuilder = new FoundryProcessBuilder("foundry_agents", typeof(ProcessStateWithCounter));
+        processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
 
         var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, threadName: "shared_thread")
             .OnComplete([
             new DeclarativeProcessCondition
             {
                 Type = "State",
-                Expression = "Counter <= '3'",
-                Updates = [new VariableUpdate() { Path = "Counter", Operation = StateUpdateOperations.Increment }]
+                Expression = "Counter < `3`",
+                Updates = [new VariableUpdate() { Path = "Counter", Operation = StateUpdateOperations.Increment, Value = 1 }]
             },
             new DeclarativeProcessCondition
             {
                 Type = "State",
-                Expression = "Counter >= '3'",
+                Expression = "Counter >= `3`",
                 Emits = [new EventEmission() { EventType = "Agent1Complete" }]
             }]);
 

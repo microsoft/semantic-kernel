@@ -7,7 +7,7 @@ using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process.Models;
 
-namespace Microsoft.SemanticKernel.Process;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Builder for a process step that represents an agent.

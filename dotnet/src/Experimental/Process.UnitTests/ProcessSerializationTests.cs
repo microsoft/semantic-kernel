@@ -146,16 +146,6 @@ public class ProcessSerializationTests
             .SendEventTo(new ProcessFunctionTargetBuilder(myAStep))
             .SendEventTo(new ProcessFunctionTargetBuilder(myBStep));
 
-        //// When AStep finishes, send its output to CStep.
-        //myAStep
-        //    .OnEvent(CommonEvents.AStepDone)
-        //    .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "astepdata"));
-
-        //// When BStep finishes, send its output to CStep also.
-        //myBStep
-        //    .OnEvent(CommonEvents.BStepDone)
-        //    .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "bstepdata"));
-
         processBuilder
             .ListenFor()
                 .AllOf(new()
