@@ -198,17 +198,21 @@ select = [
     "CPY", #copyright
     "ISC", #implicit string concat
     "INP", #implicit namespace package
+    "B", #flake8-bugbear
     "RSE", #raise exception parantheses check
     "RET", #flake8-return check
     "SIM", #flake8-simplify check
     "TD", #todos
-    "FIX", #fixme checks 
+    "FIX", #fixme checks
     "ERA", #remove connected out code
     "RUF" #RUF specific rules
 ]
 ignore = [
     "D100", #allow missing docstring in public module
     "D104", #allow missing docstring in public package
+    "B010", #set-attr-with-constant
+    "B904", #raise-without-from-inside-excepta
+    "B905", #zip-without-explicit-strict
     "TD003", #allow missing link to todo issue
     "FIX002" #allow todo
 ]
@@ -221,8 +225,8 @@ convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
 # Ignore all directories named `tests` and `samples`.
-"tests/**" = ["D", "INP", "TD", "ERA001", "RUF"]
-"samples/**" = ["D", "INP", "ERA001", "RUF"]
+"tests/**" = ["D", "INP", "B", "TD", "ERA001", "RUF"]
+"samples/**" = ["D", "INP", "B", "ERA001", "RUF"]
 # Ignore all files that end in `_test.py`.
 "*_test.py" = ["D"]
 "*.ipynb" = ["CPY", "E501"]
