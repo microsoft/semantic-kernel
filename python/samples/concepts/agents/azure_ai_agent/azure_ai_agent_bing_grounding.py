@@ -6,7 +6,7 @@ from azure.ai.projects.models import BingGroundingTool
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents import AnnotationContent
 
 """
 The following sample demonstrates how to create an Azure AI agent that

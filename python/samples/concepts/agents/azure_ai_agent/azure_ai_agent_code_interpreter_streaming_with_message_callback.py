@@ -7,8 +7,7 @@ from azure.ai.projects.models import CodeInterpreterTool
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents import ChatMessageContent, StreamingChatMessageContent
 
 """
 The following sample demonstrates how to create an Azure AI agent that

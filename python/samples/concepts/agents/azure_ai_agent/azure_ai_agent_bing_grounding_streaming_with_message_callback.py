@@ -1,16 +1,25 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+from functools import reduce
 
 from azure.ai.projects.models import BingGroundingTool
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
+from semantic_kernel.contents import (
+    ChatMessageContent,
+    FunctionCallContent,
+    StreamingAnnotationContent,
+    StreamingChatMessageContent,
+)
 
 """
 The following sample demonstrates how to create an Azure AI agent that
 uses the Bing grounding tool to answer a user's question.
+
+Additionally, the `on_intermediate_message` callback is used to handle intermediate messages
+from the agent.
 
 Note: Please visit the following link to learn more about the Bing grounding tool:
 
@@ -18,6 +27,12 @@ https://learn.microsoft.com/en-us/azure/ai-services/agents/how-to/tools/bing-gro
 """
 
 TASK = "Which team won the 2025 NCAA basketball championship?"
+
+intermediate_steps: list[ChatMessageContent] = []
+
+
+async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> None:
+    intermediate_steps.append(message)
 
 
 async def main() -> None:
@@ -54,7 +69,9 @@ async def main() -> None:
         try:
             print(f"# User: '{TASK}'")
             # 6. Invoke the agent for the specified thread for response
-            async for response in agent.invoke_stream(messages=TASK, thread=thread):
+            async for response in agent.invoke_stream(
+                messages=TASK, thread=thread, on_intermediate_message=handle_streaming_intermediate_steps
+            ):
                 print(f"{response}", end="", flush=True)
                 thread = response.thread
 
@@ -71,6 +88,24 @@ async def main() -> None:
             # 8. Cleanup: Delete the thread and agent
             await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
+
+        print("====================================================")
+        print("\nResponse complete:\n")
+        # Combine the intermediate `StreamingChatMessageContent` chunks into a single message
+        filtered_steps = [step for step in intermediate_steps if isinstance(step, StreamingChatMessageContent)]
+        streaming_full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, filtered_steps)
+        # Grab the other messages that are not `StreamingChatMessageContent`
+        other_steps = [s for s in intermediate_steps if not isinstance(s, StreamingChatMessageContent)]
+        final_msgs = [streaming_full_completion] + other_steps
+        for msg in final_msgs:
+            if any(isinstance(item, FunctionCallContent) for item in msg.items):
+                for item in msg.items:
+                    if isinstance(item, FunctionCallContent):
+                        # Note: the AI Projects SDK is not returning a `requesturl` for streaming events
+                        # The issue was raised with the AI Projects team
+                        print(f"Function call: {item.function_name} with arguments: {item.arguments}")
+
+            print(f"{msg.content}")
 
         """
         Sample Output:
