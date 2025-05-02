@@ -197,17 +197,17 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         var firstFile = files[0];
         Assert.Equal("test-file.txt", firstFile.Name);
-        Assert.Equal(516, firstFile.Size);
+        Assert.Equal(516, firstFile.SizeInBytes);
         Assert.Equal("file", firstFile.Type);
         Assert.Equal("text/plain; charset=utf-8", firstFile.ContentType);
-        Assert.Equal(638585580822423944, firstFile.LastModifiedTime.Ticks);
+        Assert.Equal(638585580822423944, firstFile.LastModifiedAt.Ticks);
 
         var secondFile = files[1];
         Assert.Equal("test-file2.txt", secondFile.Name);
-        Assert.Equal(211, secondFile.Size);
+        Assert.Equal(211, secondFile.SizeInBytes);
         Assert.Equal("file", secondFile.Type);
         Assert.Equal("text/plain; charset=utf-8", secondFile.ContentType);
-        Assert.Equal(638585580822423944, secondFile.LastModifiedTime.Ticks);
+        Assert.Equal(638585580822423944, secondFile.LastModifiedAt.Ticks);
     }
 
     [Fact]
@@ -220,9 +220,9 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var expectedResponse = new SessionsRemoteFileMetadata()
         {
             Name = "test-file.txt",
-            Size = 516,
+            SizeInBytes = 516,
             Type = "file",
-            LastModifiedTime = new DateTime(638585526384228269),
+            LastModifiedAt = new DateTime(638585526384228269),
             ContentType = "text/plain; charset=utf-8",
         };
 
@@ -238,8 +238,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         // Assert
         Assert.Equal(expectedResponse.Name, result.Name);
-        Assert.Equal(expectedResponse.Size, result.Size);
-        Assert.Equal(expectedResponse.LastModifiedTime, result.LastModifiedTime);
+        Assert.Equal(expectedResponse.SizeInBytes, result.SizeInBytes);
+        Assert.Equal(expectedResponse.LastModifiedAt, result.LastModifiedAt);
         Assert.Equal(expectedResponse.Type, result.Type);
         Assert.Equal(expectedResponse.ContentType, result.ContentType);
         Assert.Equal(this._messageHandlerStub.FirstMultipartContent, requestPayload);

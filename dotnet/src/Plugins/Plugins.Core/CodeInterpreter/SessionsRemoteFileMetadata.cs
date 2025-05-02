@@ -23,14 +23,14 @@ public sealed class SessionsRemoteFileMetadata
     /// </summary>
     [Description("The size of the entity in bytes.")]
     [JsonPropertyName("sizeInBytes")]
-    public int? Size { get; set; }
+    public int? SizeInBytes { get; set; }
 
     /// <summary>
     /// The entity last modified time.
     /// </summary>
     [Description("The entity last modified time.")]
     [JsonPropertyName("lastModifiedAt")]
-    public required DateTime LastModifiedTime { get; set; }
+    public required DateTime LastModifiedAt { get; set; }
 
     /// <summary>
     /// The type of the entity content.

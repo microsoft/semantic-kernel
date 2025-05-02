@@ -58,7 +58,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         // Assert
         Assert.Equal("test_file.txt", result.Name);
-        Assert.Equal(322, result.Size);
+        Assert.Equal(322, result.SizeInBytes);
         Assert.Equal("file", result.Type);
         Assert.Equal("text/plain; charset=utf-8", result.ContentType);
     }
@@ -91,13 +91,13 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         var firstFile = files[0];
         Assert.Equal("test_file_1.txt", firstFile.Name);
-        Assert.Equal(322, firstFile.Size);
+        Assert.Equal(322, firstFile.SizeInBytes);
         Assert.Equal("file", firstFile.Type);
         Assert.Equal("text/plain; charset=utf-8", firstFile.ContentType);
 
         var secondFile = files[1];
         Assert.Equal("test_file_2.txt", secondFile.Name);
-        Assert.Equal(336, secondFile.Size);
+        Assert.Equal(336, secondFile.SizeInBytes);
         Assert.Equal("file", secondFile.Type);
         Assert.Equal("text/plain; charset=utf-8", secondFile.ContentType);
     }
