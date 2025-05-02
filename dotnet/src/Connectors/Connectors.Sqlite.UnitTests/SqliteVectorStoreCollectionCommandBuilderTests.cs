@@ -117,12 +117,12 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         const string TableName = "TestTable";
         const string RowIdentifier = "Id";
 
-        VectorStoreRecordPropertyModel[] properties =
+        PropertyModel[] properties =
         [
-            new VectorStoreRecordKeyPropertyModel("Id", typeof(string)),
-            new VectorStoreRecordDataPropertyModel("Name", typeof(string)),
-            new VectorStoreRecordDataPropertyModel("Age", typeof(int)),
-            new VectorStoreRecordDataPropertyModel("Address", typeof(string)),
+            new KeyPropertyModel("Id", typeof(string)),
+            new DataPropertyModel("Name", typeof(string)),
+            new DataPropertyModel("Age", typeof(int)),
+            new DataPropertyModel("Address", typeof(string)),
         ];
         var records = new List<Dictionary<string, object?>>
         {
@@ -184,10 +184,10 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
 
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Id", typeof(string)),
-            new VectorStoreRecordDataProperty("Name", typeof(string)),
-            new VectorStoreRecordDataProperty("Age", typeof(string)),
-            new VectorStoreRecordDataProperty("Address", typeof(string)),
+            new VectorStoreKeyProperty("Id", typeof(string)),
+            new VectorStoreDataProperty("Name", typeof(string)),
+            new VectorStoreDataProperty("Age", typeof(string)),
+            new VectorStoreDataProperty("Address", typeof(string)),
         ]);
         var conditions = new List<SqliteWhereCondition>
         {
@@ -238,10 +238,10 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
 
         var model = BuildModel(
         [
-            new VectorStoreRecordKeyProperty("Id", typeof(string)),
-            new VectorStoreRecordDataProperty("Name", typeof(string)),
-            new VectorStoreRecordVectorProperty("Age", typeof(ReadOnlyMemory<float>), 10),
-            new VectorStoreRecordVectorProperty("Address", typeof(ReadOnlyMemory<float>), 10),
+            new VectorStoreKeyProperty("Id", typeof(string)),
+            new VectorStoreDataProperty("Name", typeof(string)),
+            new VectorStoreVectorProperty("Age", typeof(ReadOnlyMemory<float>), 10),
+            new VectorStoreVectorProperty("Address", typeof(ReadOnlyMemory<float>), 10),
         ]);
 
         var conditions = new List<SqliteWhereCondition>
@@ -330,8 +330,8 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         this._connection.Dispose();
     }
 
-    private static VectorStoreRecordModel BuildModel(List<VectorStoreRecordProperty> properties)
-        => new VectorStoreRecordModelBuilder(SqliteConstants.ModelBuildingOptions)
+    private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
+        => new CollectionModelBuilder(SqliteConstants.ModelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
                 new() { Properties = properties },

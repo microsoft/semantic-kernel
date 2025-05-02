@@ -24,10 +24,10 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordMapperTests
                 {
                     Properties =
                     [
-                        new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                        new VectorStoreRecordVectorProperty("TestProperty1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "test_property_1" },
-                        new VectorStoreRecordDataProperty("TestProperty2", typeof(string)) { StoragePropertyName = "test_property_2" },
-                        new VectorStoreRecordDataProperty("TestProperty3", typeof(string)) { StoragePropertyName = "test_property_3" }
+                        new VectorStoreKeyProperty("HotelId", typeof(string)),
+                        new VectorStoreVectorProperty("TestProperty1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "test_property_1" },
+                        new VectorStoreDataProperty("TestProperty2", typeof(string)) { StoragePropertyName = "test_property_2" },
+                        new VectorStoreDataProperty("TestProperty3", typeof(string)) { StoragePropertyName = "test_property_3" }
                     ]
                 },
                 defaultEmbeddingGenerator: null,

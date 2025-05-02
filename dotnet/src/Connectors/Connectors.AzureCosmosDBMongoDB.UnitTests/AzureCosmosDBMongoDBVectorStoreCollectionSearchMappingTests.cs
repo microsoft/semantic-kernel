@@ -18,15 +18,15 @@ namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
 /// </summary>
 public sealed class AzureCosmosDBMongoDBVectorStoreCollectionSearchMappingTests
 {
-    private readonly VectorStoreRecordModel _model = new MongoDBModelBuilder()
+    private readonly CollectionModel _model = new MongoDBModelBuilder()
         .Build(
             typeof(Dictionary<string, object?>),
             new()
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty("Property1", typeof(string)) { StoragePropertyName = "property_1" },
-                    new VectorStoreRecordDataProperty("Property2", typeof(string)) { StoragePropertyName = "property_2" }
+                    new VectorStoreKeyProperty("Property1", typeof(string)) { StoragePropertyName = "property_1" },
+                    new VectorStoreDataProperty("Property2", typeof(string)) { StoragePropertyName = "property_2" }
                 ]
             },
             defaultEmbeddingGenerator: null);
@@ -102,7 +102,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreCollectionSearchMappingTests
         Assert.Equal(expectedFilter.ToJson(), filter.ToJson());
     }
 
-    private static VectorStoreRecordModel BuildModel(List<VectorStoreRecordProperty> properties)
+    private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
     => new MongoDBModelBuilder()
         .Build(
             typeof(Dictionary<string, object?>),

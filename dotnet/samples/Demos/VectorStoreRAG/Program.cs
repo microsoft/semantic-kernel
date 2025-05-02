@@ -69,29 +69,29 @@ switch (appConfig.RagConfig.AIEmbeddingService)
 switch (appConfig.RagConfig.VectorStoreType)
 {
     case "AzureAISearch":
-        kernelBuilder.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             new Uri(appConfig.AzureAISearchConfig.Endpoint),
             new AzureKeyCredential(appConfig.AzureAISearchConfig.ApiKey));
         break;
     case "AzureCosmosDBMongoDB":
-        kernelBuilder.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             appConfig.AzureCosmosDBMongoDBConfig.ConnectionString,
             appConfig.AzureCosmosDBMongoDBConfig.DatabaseName);
         break;
     case "AzureCosmosDBNoSQL":
-        kernelBuilder.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             appConfig.AzureCosmosDBNoSQLConfig.ConnectionString,
             appConfig.AzureCosmosDBNoSQLConfig.DatabaseName);
         break;
     case "InMemory":
-        kernelBuilder.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(
+        kernelBuilder.Services.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(
             appConfig.RagConfig.CollectionName);
         break;
     case "Qdrant":
-        kernelBuilder.AddQdrantVectorStoreRecordCollection<Guid, TextSnippet<Guid>>(
+        kernelBuilder.Services.AddQdrantVectorStoreRecordCollection<Guid, TextSnippet<Guid>>(
             appConfig.RagConfig.CollectionName,
             appConfig.QdrantConfig.Host,
             appConfig.QdrantConfig.Port,
@@ -99,12 +99,12 @@ switch (appConfig.RagConfig.VectorStoreType)
             appConfig.QdrantConfig.ApiKey);
         break;
     case "Redis":
-        kernelBuilder.AddRedisJsonVectorStoreRecordCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddRedisJsonVectorStoreRecordCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             appConfig.RedisConfig.ConnectionConfiguration);
         break;
     case "Weaviate":
-        kernelBuilder.AddWeaviateVectorStoreRecordCollection<TextSnippet<Guid>>(
+        kernelBuilder.Services.AddWeaviateVectorStoreRecordCollection<TextSnippet<Guid>>(
             // Weaviate collection names must start with an upper case letter.
             char.ToUpper(appConfig.RagConfig.CollectionName[0], CultureInfo.InvariantCulture) + appConfig.RagConfig.CollectionName.Substring(1),
             null,

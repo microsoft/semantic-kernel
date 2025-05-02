@@ -47,38 +47,6 @@ public sealed class SqliteVectorStoreTests
         Assert.NotNull(collectionWithStringKey);
     }
 
-#pragma warning disable CS0618 // ISqliteVectorStoreRecordCollectionFactory is obsolete
-    [Fact]
-    public void GetCollectionWithFactoryReturnsCustomCollection()
-    {
-        // Arrange
-        var mockFactory = new Mock<ISqliteVectorStoreRecordCollectionFactory>();
-        var mockRecordCollection = new Mock<IVectorStoreRecordCollection<string, SqliteHotel<string>>>();
-        var mockConnection = Mock.Of<SqliteConnection>();
-
-        mockFactory
-            .Setup(l => l.CreateVectorStoreRecordCollection<string, SqliteHotel<string>>(
-                mockConnection,
-                "collection",
-                It.IsAny<VectorStoreRecordDefinition>()))
-            .Returns(mockRecordCollection.Object);
-
-        var sut = new SqliteVectorStore(
-            mockConnection,
-            new SqliteVectorStoreOptions { VectorStoreCollectionFactory = mockFactory.Object });
-
-        // Act
-        var collection = sut.GetCollection<string, SqliteHotel<string>>("collection");
-
-        // Assert
-        Assert.Same(mockRecordCollection.Object, collection);
-        mockFactory.Verify(l => l.CreateVectorStoreRecordCollection<string, SqliteHotel<string>>(
-            mockConnection,
-            "collection",
-            It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
-    }
-#pragma warning restore CS0618
-
     [Fact]
     public async Task ListCollectionNamesReturnsCollectionNamesAsync()
     {

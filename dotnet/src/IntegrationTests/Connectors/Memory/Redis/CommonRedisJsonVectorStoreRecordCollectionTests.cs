@@ -9,7 +9,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 
 /// <summary>
-/// Inherits common integration tests that should pass for any <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.
+/// Inherits common integration tests that should pass for any <see cref="IVectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 /// <param name="fixture">Redis setup and teardown.</param>
 [Collection("RedisVectorStoreCollection")]
@@ -21,7 +21,7 @@ public class CommonRedisJsonVectorStoreRecordCollectionTests(RedisVectorStoreFix
     protected override string Key3 => "3";
     protected override string Key4 => "4";
 
-    protected override IVectorStoreRecordCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected override IVectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
     {
         return new RedisJsonVectorStoreRecordCollection<string, TRecord>(fixture.Database, recordCollectionName + "json", new()
         {

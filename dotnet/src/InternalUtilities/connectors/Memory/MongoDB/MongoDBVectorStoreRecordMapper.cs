@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -19,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 internal sealed class MongoDBVectorStoreRecordMapper<TRecord> : IMongoDBMapper<TRecord>
 #pragma warning restore CS0618
 {
-    private readonly VectorStoreRecordModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>A key property info of the data model.</summary>
     private readonly PropertyInfo? _keyClrProperty;
@@ -31,7 +30,7 @@ internal sealed class MongoDBVectorStoreRecordMapper<TRecord> : IMongoDBMapper<T
     /// Initializes a new instance of the <see cref="MongoDBVectorStoreRecordMapper{TRecord}"/> class.
     /// </summary>
     /// <param name="model">The model.</param>
-    public MongoDBVectorStoreRecordMapper(VectorStoreRecordModel model)
+    public MongoDBVectorStoreRecordMapper(CollectionModel model)
     {
         this._model = model;
 
@@ -88,7 +87,7 @@ internal sealed class MongoDBVectorStoreRecordMapper<TRecord> : IMongoDBMapper<T
         return document;
     }
 
-    public TRecord MapFromStorageToDataModel(BsonDocument storageModel, StorageToDataModelMapperOptions options)
+    public TRecord MapFromStorageToDataModel(BsonDocument storageModel, bool includeVectors)
     {
         // Handle key property mapping due to reserved key name in Mongo.
         if (!this._keyPropertyModelName.Equals(MongoDBConstants.DataModelReservedKeyPropertyName, StringComparison.OrdinalIgnoreCase) &&
@@ -104,7 +103,7 @@ internal sealed class MongoDBVectorStoreRecordMapper<TRecord> : IMongoDBMapper<T
         // For vector properties which have embedding generation configured, we need to remove the embeddings before deserializing
         // (we can't go back from an embedding to e.g. string).
         // For other cases (no embedding generation), we leave the properties even if IncludeVectors is false.
-        if (!options.IncludeVectors)
+        if (!includeVectors)
         {
             foreach (var vectorProperty in this._model.VectorProperties)
             {

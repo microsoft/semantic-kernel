@@ -78,13 +78,13 @@ public class VectorStore_VectorSearch_Paging(ITestOutputHelper output) : BaseTes
     /// </remarks>
     private sealed class TextSnippet
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public int Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Text { get; set; }
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float> TextEmbedding { get; set; }
     }
 }

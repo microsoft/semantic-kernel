@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <typeparam name="TKey">The type of the key.</typeparam>
 /// <typeparam name="TRecord">The type of the record.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : notnull
@@ -30,7 +30,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     public string Name { get; }
 
     /// <summary>Metadata about vector store record collection.</summary>
-    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+    private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>Postgres client that is used to interact with the database.</summary>
     private readonly IPostgresVectorStoreDbClient _client;
@@ -39,7 +39,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly PostgresVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The model for this collection.</summary>
-    private readonly VectorStoreRecordModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
     private readonly PostgresVectorStoreRecordMapper<TRecord> _mapper;
@@ -78,7 +78,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         this.Name = name;
         this._options = options ?? new PostgresVectorStoreRecordCollectionOptions<TRecord>();
 
-        this._model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions)
+        this._model = new CollectionModelBuilder(PostgresConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
 
         this._mapper = new PostgresVectorStoreRecordMapper<TRecord>(this._model);
@@ -158,12 +158,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
             }
         }
 
-        var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            PostgresConstants.VectorStoreSystemName,
-            this._collectionMetadata.VectorStoreName,
-            this.Name,
-            OperationName,
-            () => this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings));
+        var storageModel = this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings);
 
         Verify.NotNull(storageModel);
 
@@ -228,12 +223,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
             }
         }
 
-        var storageModels = VectorStoreErrorHandler.RunModelConversion(
-            PostgresConstants.VectorStoreSystemName,
-            this._collectionMetadata.VectorStoreName,
-            this.Name,
-            OperationName,
-            () => records.Select((r, i) => this._mapper.MapFromDataToStorageModel(r, i, generatedEmbeddings)).ToList());
+        var storageModels = records.Select((r, i) => this._mapper.MapFromDataToStorageModel(r, i, generatedEmbeddings)).ToList();
 
         if (storageModels.Count == 0)
         {
@@ -268,12 +258,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
             var row = await this._client.GetAsync(this.Name, key, this._model, includeVectors, cancellationToken).ConfigureAwait(false);
 
             if (row is null) { return default; }
-            return VectorStoreErrorHandler.RunModelConversion(
-                PostgresConstants.VectorStoreSystemName,
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
-                OperationName,
-                () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors }));
+            return this._mapper.MapFromStorageToDataModel(row, includeVectors);
         });
     }
 
@@ -294,17 +279,11 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._client.GetBatchAsync(this.Name, keys, this._model, includeVectors, cancellationToken)
                 .SelectAsync(row =>
-                    VectorStoreErrorHandler.RunModelConversion(
-                        PostgresConstants.VectorStoreSystemName,
-                        this._collectionMetadata.VectorStoreName,
-                        this.Name,
-                        OperationName,
-                        () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors })),
+                    this._mapper.MapFromStorageToDataModel(row, includeVectors),
                     cancellationToken
                 ),
             OperationName,
-            this._collectionMetadata.VectorStoreName,
-            this.Name
+            this._collectionMetadata
         );
     }
 
@@ -383,7 +362,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
         TVector vector,
         int top,
-        VectorStoreRecordVectorPropertyModel vectorProperty,
+        VectorPropertyModel vectorProperty,
         string operationName,
         VectorSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
@@ -414,24 +393,16 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
         var limit = top + options.Skip;
 
-        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
-
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._client.GetNearestMatchesAsync(this.Name, this._model, vectorProperty, pgVector, top, options, cancellationToken)
                 .SelectAsync(result =>
                 {
-                    var record = VectorStoreErrorHandler.RunModelConversion(
-                        PostgresConstants.VectorStoreSystemName,
-                        this._collectionMetadata.VectorStoreName,
-                        this.Name,
-                        operationName,
-                        () => this._mapper.MapFromStorageToDataModel(result.Row, mapperOptions));
+                    var record = this._mapper.MapFromStorageToDataModel(result.Row, options.IncludeVectors);
 
                     return new VectorSearchResult<TRecord>(record, result.Distance);
                 }, cancellationToken),
             operationName,
-            this._collectionMetadata.VectorStoreName,
-            this.Name
+            this._collectionMetadata
         );
     }
 
@@ -452,22 +423,14 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         options ??= new();
 
-        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
-
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._client.GetMatchingRecordsAsync(this.Name, this._model, filter, top, options, cancellationToken)
                 .SelectAsync(dictionary =>
                 {
-                    return VectorStoreErrorHandler.RunModelConversion(
-                        PostgresConstants.VectorStoreSystemName,
-                        this._collectionMetadata.VectorStoreName,
-                        this.Name,
-                        "Get",
-                        () => this._mapper.MapFromStorageToDataModel(dictionary, mapperOptions));
+                    return this._mapper.MapFromStorageToDataModel(dictionary, options.IncludeVectors);
                 }, cancellationToken),
             "Get",
-            this._collectionMetadata.VectorStoreName,
-            this.Name);
+            this._collectionMetadata);
     }
 
     /// <inheritdoc />
@@ -477,7 +440,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return
             serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
             serviceType == typeof(NpgsqlDataSource) ? this._client.DataSource :
             serviceType.IsInstanceOfType(this) ? this :
             null;
@@ -488,39 +451,15 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         return this._client.CreateTableAsync(this.Name, this._model, ifNotExists, cancellationToken);
     }
 
-    private async Task RunOperationAsync(string operationName, Func<Task> operation)
-    {
-        try
-        {
-            await operation.Invoke().ConfigureAwait(false);
-        }
-        catch (Exception ex) when (ex is not NotSupportedException)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
-                OperationName = operationName
-            };
-        }
-    }
+    private Task RunOperationAsync(string operationName, Func<Task> operation)
+        => VectorStoreErrorHandler.RunOperationAsync<NpgsqlException>(
+            this._collectionMetadata,
+            operationName,
+            operation);
 
-    private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
-    {
-        try
-        {
-            return await operation.Invoke().ConfigureAwait(false);
-        }
-        catch (Exception ex) when (ex is not NotSupportedException)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
-                OperationName = operationName
-            };
-        }
-    }
+    private Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
+        => VectorStoreErrorHandler.RunOperationAsync<T, NpgsqlException>(
+            this._collectionMetadata,
+            operationName,
+            operation);
 }

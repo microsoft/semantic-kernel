@@ -31,6 +31,9 @@ public class MongoDBBasicQueryTests(MongoDBBasicQueryTests.Fixture fixture)
     public override Task NotEqual_with_null_captured()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.NotEqual_with_null_captured());
 
+    public override Task Equal_int_property_with_null_nullable_int()
+        => Assert.ThrowsAsync<NotSupportedException>(() => base.Equal_int_property_with_null_nullable_int());
+
     // MongoDB currently doesn't support NOT in vector search pre-filters
     // (https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-stage/#atlas-vector-search-pre-filter)
     public override Task Not_over_And()

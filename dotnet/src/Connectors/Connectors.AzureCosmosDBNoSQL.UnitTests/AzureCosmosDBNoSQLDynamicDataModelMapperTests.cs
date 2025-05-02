@@ -19,34 +19,34 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = JsonSerializerOptions.Default;
 
-    private static readonly VectorStoreRecordModel s_model = new AzureCosmosDBNoSQLVectorStoreModelBuilder()
+    private static readonly CollectionModel s_model = new AzureCosmosDBNoSQLVectorStoreModelBuilder()
         .Build(
             typeof(Dictionary<string, object?>),
             new VectorStoreRecordDefinition
             {
-                Properties = new List<VectorStoreRecordProperty>
+                Properties = new List<VectorStoreProperty>
                 {
-                    new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                    new VectorStoreRecordDataProperty("BoolDataProp", typeof(bool)),
-                    new VectorStoreRecordDataProperty("NullableBoolDataProp", typeof(bool?)),
-                    new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                    new VectorStoreRecordDataProperty("IntDataProp", typeof(int)),
-                    new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                    new VectorStoreRecordDataProperty("LongDataProp", typeof(long)),
-                    new VectorStoreRecordDataProperty("NullableLongDataProp", typeof(long?)),
-                    new VectorStoreRecordDataProperty("FloatDataProp", typeof(float)),
-                    new VectorStoreRecordDataProperty("NullableFloatDataProp", typeof(float?)),
-                    new VectorStoreRecordDataProperty("DoubleDataProp", typeof(double)),
-                    new VectorStoreRecordDataProperty("NullableDoubleDataProp", typeof(double?)),
-                    new VectorStoreRecordDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
-                    new VectorStoreRecordDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
-                    new VectorStoreRecordDataProperty("TagListDataProp", typeof(List<string>)),
-                    new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
-                    new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
-                    new VectorStoreRecordVectorProperty("ByteVector", typeof(ReadOnlyMemory<byte>), 10),
-                    new VectorStoreRecordVectorProperty("NullableByteVector", typeof(ReadOnlyMemory<byte>?), 10),
-                    new VectorStoreRecordVectorProperty("SByteVector", typeof(ReadOnlyMemory<sbyte>), 10),
-                    new VectorStoreRecordVectorProperty("NullableSByteVector", typeof(ReadOnlyMemory<sbyte>?), 10),
+                    new VectorStoreKeyProperty("Key", typeof(string)),
+                    new VectorStoreDataProperty("BoolDataProp", typeof(bool)),
+                    new VectorStoreDataProperty("NullableBoolDataProp", typeof(bool?)),
+                    new VectorStoreDataProperty("StringDataProp", typeof(string)),
+                    new VectorStoreDataProperty("IntDataProp", typeof(int)),
+                    new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+                    new VectorStoreDataProperty("LongDataProp", typeof(long)),
+                    new VectorStoreDataProperty("NullableLongDataProp", typeof(long?)),
+                    new VectorStoreDataProperty("FloatDataProp", typeof(float)),
+                    new VectorStoreDataProperty("NullableFloatDataProp", typeof(float?)),
+                    new VectorStoreDataProperty("DoubleDataProp", typeof(double)),
+                    new VectorStoreDataProperty("NullableDoubleDataProp", typeof(double?)),
+                    new VectorStoreDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
+                    new VectorStoreDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
+                    new VectorStoreDataProperty("TagListDataProp", typeof(List<string>)),
+                    new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+                    new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
+                    new VectorStoreVectorProperty("ByteVector", typeof(ReadOnlyMemory<byte>), 10),
+                    new VectorStoreVectorProperty("NullableByteVector", typeof(ReadOnlyMemory<byte>?), 10),
+                    new VectorStoreVectorProperty("SByteVector", typeof(ReadOnlyMemory<sbyte>), 10),
+                    new VectorStoreVectorProperty("NullableSByteVector", typeof(ReadOnlyMemory<sbyte>?), 10),
                 },
             },
             defaultEmbeddingGenerator: null);
@@ -122,12 +122,12 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         // Arrange
         VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
+                new VectorStoreKeyProperty("Key", typeof(string)),
+                new VectorStoreDataProperty("StringDataProp", typeof(string)),
+                new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+                new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
             },
         };
 
@@ -182,7 +182,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         };
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal("key", dataModel["Key"]);
@@ -214,12 +214,12 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         // Arrange
         VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
+                new VectorStoreKeyProperty("Key", typeof(string)),
+                new VectorStoreDataProperty("StringDataProp", typeof(string)),
+                new VectorStoreDataProperty("NullableIntDataProp", typeof(int?)),
+                new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
             },
         };
 
@@ -234,7 +234,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         var sut = new AzureCosmosDBNoSQLDynamicDataModelMapper(s_model, s_jsonSerializerOptions);
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal("key", dataModel["Key"]);
@@ -252,8 +252,8 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         var storageModel = new JsonObject();
 
         // Act & Assert
-        var exception = Assert.Throws<VectorStoreRecordMappingException>(
-            () => sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true }));
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => sut.MapFromStorageToDataModel(storageModel, includeVectors: true));
     }
 
     [Fact]
@@ -262,11 +262,11 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         // Arrange
         VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+                new VectorStoreKeyProperty("Key", typeof(string)),
+                new VectorStoreDataProperty("StringDataProp", typeof(string)),
+                new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
             },
         };
 
@@ -288,11 +288,11 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         // Arrange
         VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+                new VectorStoreKeyProperty("Key", typeof(string)),
+                new VectorStoreDataProperty("StringDataProp", typeof(string)),
+                new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
             },
         };
 
@@ -304,7 +304,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         var sut = new AzureCosmosDBNoSQLDynamicDataModelMapper(s_model, s_jsonSerializerOptions);
 
         // Act
-        var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
 
         // Assert
         Assert.Equal("key", dataModel["Key"]);

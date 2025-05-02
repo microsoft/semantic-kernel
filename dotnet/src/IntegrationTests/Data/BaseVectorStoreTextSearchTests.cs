@@ -35,7 +35,7 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     /// <summary>
     /// Add sample records to the vector store record collection.
     /// </summary>
-    public static async Task<IVectorStoreRecordCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
+    public static async Task<IVectorStoreCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
         IVectorStore vectorStore,
         string collectionName,
         ITextEmbeddingGenerationService embeddingGenerationService,
@@ -108,19 +108,19 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     protected sealed class DataModel
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public Guid Key { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public required string Text { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public required string Link { get; init; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public required string Tag { get; init; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
 }

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using MEAI = Microsoft.Extensions.AI;
 
@@ -14,10 +13,10 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// Class for mapping between a json node stored in Azure CosmosDB NoSQL and the consumer data model.
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
-internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model, JsonSerializerOptions? jsonSerializerOptions)
+internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(CollectionModel model, JsonSerializerOptions? jsonSerializerOptions)
     : ICosmosNoSQLMapper<TRecord>
 {
-    private readonly VectorStoreRecordKeyPropertyModel _keyProperty = model.KeyProperty;
+    private readonly KeyPropertyModel _keyProperty = model.KeyProperty;
 
     public JsonObject MapFromDataToStorageModel(TRecord dataModel, MEAI.Embedding?[]? generatedEmbeddings)
     {
@@ -53,7 +52,7 @@ internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(VectorS
         return jsonObject;
     }
 
-    public TRecord MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
+    public TRecord MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
         // See above comment.
         RenameJsonProperty(storageModel, AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName, this._keyProperty.TemporaryStorageName!);

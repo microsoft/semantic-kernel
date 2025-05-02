@@ -29,6 +29,9 @@ public class WeaviateBasicQueryTests(WeaviateBasicQueryTests.Fixture fixture)
     public override Task NotEqual_with_null_reference_type()
         => Assert.ThrowsAsync<VectorStoreOperationException>(() => base.NotEqual_with_null_reference_type());
 
+    public override Task Equal_int_property_with_null_nullable_int()
+        => Assert.ThrowsAsync<VectorStoreOperationException>(() => base.Equal_int_property_with_null_nullable_int());
+
     #endregion
 
     #region Not

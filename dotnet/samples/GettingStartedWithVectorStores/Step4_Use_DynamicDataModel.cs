@@ -38,13 +38,13 @@ public class Step4_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFi
         // E.g. it can be read from a configuration or retrieved from a service.
         var recordDefinition = new VectorStoreRecordDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("Category", typeof(string)),
-                new VectorStoreRecordDataProperty("Term", typeof(string)),
-                new VectorStoreRecordDataProperty("Definition", typeof(string)),
-                new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536),
+                new VectorStoreKeyProperty("Key", typeof(string)),
+                new VectorStoreDataProperty("Category", typeof(string)),
+                new VectorStoreDataProperty("Term", typeof(string)),
+                new VectorStoreDataProperty("Definition", typeof(string)),
+                new VectorStoreVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536),
             }
         };
 

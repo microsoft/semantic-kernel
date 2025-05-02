@@ -55,16 +55,16 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         if (databaseType == "Redis")
         {
             await redisFixture.ManualInitializeAsync();
-            kernelBuilder.AddRedisVectorStore("localhost:6379");
+            kernelBuilder.Services.AddRedisVectorStore("localhost:6379");
         }
         else if (databaseType == "Qdrant")
         {
             await qdrantFixture.ManualInitializeAsync();
-            kernelBuilder.AddQdrantVectorStore("localhost");
+            kernelBuilder.Services.AddQdrantVectorStore("localhost");
         }
         else if (databaseType == "InMemory")
         {
-            kernelBuilder.AddInMemoryVectorStore();
+            kernelBuilder.Services.AddInMemoryVectorStore();
         }
 
         // Register the DataIngestor with the DI container.
@@ -242,16 +242,16 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
     /// <typeparam name="TKey">The type of the model key.</typeparam>
     private sealed class Glossary<TKey>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public TKey Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Term { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Definition { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 }

@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Moq;
 using Xunit;
@@ -56,37 +55,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreTests
         Assert.NotNull(collectionWithStringKey);
         Assert.NotNull(collectionWithCompositeKey);
     }
-
-#pragma warning disable CS0618 // IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory is obsolete
-    [Fact]
-    public void GetCollectionWithFactoryReturnsCustomCollection()
-    {
-        // Arrange
-        var mockFactory = new Mock<IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory>();
-        var mockRecordCollection = new Mock<IVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>>();
-
-        mockFactory
-            .Setup(l => l.CreateVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
-                this._mockDatabase.Object,
-                "collection",
-                It.IsAny<VectorStoreRecordDefinition>()))
-            .Returns(mockRecordCollection.Object);
-
-        var sut = new AzureCosmosDBNoSQLVectorStore(
-            this._mockDatabase.Object,
-            new AzureCosmosDBNoSQLVectorStoreOptions { VectorStoreCollectionFactory = mockFactory.Object });
-
-        // Act
-        var collection = sut.GetCollection<string, AzureCosmosDBNoSQLHotel>("collection");
-
-        // Assert
-        Assert.Same(mockRecordCollection.Object, collection);
-        mockFactory.Verify(l => l.CreateVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
-            this._mockDatabase.Object,
-            "collection",
-            It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
-    }
-#pragma warning restore CS0618
 
     [Fact]
     public void GetCollectionWithoutFactoryReturnsDefaultCollection()

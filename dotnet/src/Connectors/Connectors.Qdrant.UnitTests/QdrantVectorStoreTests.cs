@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Moq;
-using Qdrant.Client;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests;
@@ -41,27 +40,6 @@ public class QdrantVectorStoreTests
         Assert.IsType<QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>>(actual);
     }
 
-#pragma warning disable CS0618 // IQdrantVectorStoreRecordCollectionFactory is obsolete
-    [Fact]
-    public void GetCollectionCallsFactoryIfProvided()
-    {
-        // Arrange.
-        var factoryMock = new Mock<IQdrantVectorStoreRecordCollectionFactory>(MockBehavior.Strict);
-        var collectionMock = new Mock<IVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>>(MockBehavior.Strict);
-        factoryMock
-            .Setup(x => x.CreateVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(It.IsAny<QdrantClient>(), TestCollectionName, null))
-            .Returns(collectionMock.Object);
-        var sut = new QdrantVectorStore(this._qdrantClientMock.Object, new() { VectorStoreCollectionFactory = factoryMock.Object });
-
-        // Act.
-        var actual = sut.GetCollection<ulong, SinglePropsModel<ulong>>(TestCollectionName);
-
-        // Assert.
-        Assert.Equal(collectionMock.Object, actual);
-        factoryMock.Verify(x => x.CreateVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(It.IsAny<QdrantClient>(), TestCollectionName, null), Times.Once);
-    }
-#pragma warning restore CS0618
-
     [Fact]
     public void GetCollectionThrowsForInvalidKeyType()
     {
@@ -91,13 +69,13 @@ public class QdrantVectorStoreTests
 
     public sealed class SinglePropsModel<TKey>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public required TKey Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

@@ -72,7 +72,7 @@ public class RedisServiceCollectionExtensionsTests
     private void AssertHashSetVectorStoreRecordCollectionCreated<TRecord>() where TRecord : notnull
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TRecord>>();
+        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<string, TRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<RedisHashSetVectorStoreRecordCollection<string, TRecord>>(collection);
     }
@@ -80,7 +80,7 @@ public class RedisServiceCollectionExtensionsTests
     private void AssertJsonVectorStoreRecordCollectionCreated<TRecord>() where TRecord : notnull
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TRecord>>();
+        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<string, TRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<RedisJsonVectorStoreRecordCollection<string, TRecord>>(collection);
     }
@@ -89,7 +89,7 @@ public class RedisServiceCollectionExtensionsTests
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; } = string.Empty;
     }
 }

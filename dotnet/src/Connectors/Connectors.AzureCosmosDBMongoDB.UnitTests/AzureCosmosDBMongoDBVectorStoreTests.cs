@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using MongoDB.Driver;
 using Moq;
@@ -29,37 +28,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreTests
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<Guid, AzureCosmosDBMongoDBHotelModel>("collection"));
     }
-
-#pragma warning disable CS0618 // IAzureCosmosDBMongoDBVectorStoreRecordCollectionFactory is obsolete
-    [Fact]
-    public void GetCollectionWithFactoryReturnsCustomCollection()
-    {
-        // Arrange
-        var mockFactory = new Mock<IAzureCosmosDBMongoDBVectorStoreRecordCollectionFactory>();
-        var mockRecordCollection = new Mock<IVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>>();
-
-        mockFactory
-            .Setup(l => l.CreateVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
-                this._mockMongoDatabase.Object,
-                "collection",
-                It.IsAny<VectorStoreRecordDefinition>()))
-            .Returns(mockRecordCollection.Object);
-
-        var sut = new AzureCosmosDBMongoDBVectorStore(
-            this._mockMongoDatabase.Object,
-            new AzureCosmosDBMongoDBVectorStoreOptions { VectorStoreCollectionFactory = mockFactory.Object });
-
-        // Act
-        var collection = sut.GetCollection<string, AzureCosmosDBMongoDBHotelModel>("collection");
-
-        // Assert
-        Assert.Same(mockRecordCollection.Object, collection);
-        mockFactory.Verify(l => l.CreateVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
-            this._mockMongoDatabase.Object,
-            "collection",
-            It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
-    }
-#pragma warning restore CS0618
 
     [Fact]
     public void GetCollectionWithoutFactoryReturnsDefaultCollection()

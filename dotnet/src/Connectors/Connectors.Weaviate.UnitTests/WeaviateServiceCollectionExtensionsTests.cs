@@ -53,7 +53,7 @@ public sealed class WeaviateServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<Guid, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<Guid, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<WeaviateVectorStoreRecordCollection<Guid, TestRecord>>(collection);
 
@@ -66,7 +66,7 @@ public sealed class WeaviateServiceCollectionExtensionsTests
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public Guid Id { get; set; }
     }
 }

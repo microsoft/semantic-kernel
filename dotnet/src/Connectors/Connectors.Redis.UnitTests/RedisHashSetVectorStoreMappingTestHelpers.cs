@@ -17,26 +17,26 @@ internal static class RedisHashSetVectorStoreMappingTestHelpers
 {
     public static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
     {
-        Properties = new List<VectorStoreRecordProperty>()
+        Properties = new List<VectorStoreProperty>()
         {
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
-            new VectorStoreRecordDataProperty("IntData", typeof(int)),
-            new VectorStoreRecordDataProperty("UIntData", typeof(uint)),
-            new VectorStoreRecordDataProperty("LongData", typeof(long)),
-            new VectorStoreRecordDataProperty("ULongData", typeof(ulong)),
-            new VectorStoreRecordDataProperty("DoubleData", typeof(double)),
-            new VectorStoreRecordDataProperty("FloatData", typeof(float)),
-            new VectorStoreRecordDataProperty("BoolData", typeof(bool)),
-            new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
-            new VectorStoreRecordDataProperty("NullableUIntData", typeof(uint?)),
-            new VectorStoreRecordDataProperty("NullableLongData", typeof(long?)),
-            new VectorStoreRecordDataProperty("NullableULongData", typeof(ulong?)),
-            new VectorStoreRecordDataProperty("NullableDoubleData", typeof(double?)),
-            new VectorStoreRecordDataProperty("NullableFloatData", typeof(float?)),
-            new VectorStoreRecordDataProperty("NullableBoolData", typeof(bool?)),
-            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
-            new VectorStoreRecordVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>), 10),
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
+            new VectorStoreDataProperty("IntData", typeof(int)),
+            new VectorStoreDataProperty("UIntData", typeof(uint)),
+            new VectorStoreDataProperty("LongData", typeof(long)),
+            new VectorStoreDataProperty("ULongData", typeof(ulong)),
+            new VectorStoreDataProperty("DoubleData", typeof(double)),
+            new VectorStoreDataProperty("FloatData", typeof(float)),
+            new VectorStoreDataProperty("BoolData", typeof(bool)),
+            new VectorStoreDataProperty("NullableIntData", typeof(int?)),
+            new VectorStoreDataProperty("NullableUIntData", typeof(uint?)),
+            new VectorStoreDataProperty("NullableLongData", typeof(long?)),
+            new VectorStoreDataProperty("NullableULongData", typeof(ulong?)),
+            new VectorStoreDataProperty("NullableDoubleData", typeof(double?)),
+            new VectorStoreDataProperty("NullableFloatData", typeof(float?)),
+            new VectorStoreDataProperty("NullableBoolData", typeof(bool?)),
+            new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+            new VectorStoreVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>), 10),
         }
     };
 

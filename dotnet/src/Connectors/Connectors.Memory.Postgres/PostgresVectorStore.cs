@@ -22,7 +22,7 @@ public sealed class PostgresVectorStore : IVectorStore
     private readonly VectorStoreMetadata _metadata;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
@@ -65,23 +65,15 @@ public sealed class PostgresVectorStore : IVectorStore
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._postgresClient.GetTablesAsync(cancellationToken),
             "ListCollectionNames",
-            this._metadata.VectorStoreName
+            this._metadata
         );
     }
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
-    {
-#pragma warning disable CS0618 // IPostgresVectorStoreRecordCollectionFactory is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
-        {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._postgresClient.DataSource, name, vectorStoreRecordDefinition);
-        }
-#pragma warning restore CS0618
-
-        var recordCollection = new PostgresVectorStoreRecordCollection<TKey, TRecord>(
+        => new PostgresVectorStoreRecordCollection<TKey, TRecord>(
             this._postgresClient,
             name,
             new PostgresVectorStoreRecordCollectionOptions<TRecord>()
@@ -91,9 +83,6 @@ public sealed class PostgresVectorStore : IVectorStore
                 EmbeddingGenerator = this._options.EmbeddingGenerator,
             }
         );
-
-        return recordCollection as IVectorStoreRecordCollection<TKey, TRecord> ?? throw new InvalidOperationException("Failed to cast record collection.");
-    }
 
     /// <inheritdoc />
     public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)

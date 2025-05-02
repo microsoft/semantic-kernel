@@ -56,27 +56,6 @@ public class RedisVectorStoreTests
         Assert.IsType<RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel<string>>>(actual);
     }
 
-#pragma warning disable CS0618 // IRedisVectorStoreRecordCollectionFactory is obsolete
-    [Fact]
-    public void GetCollectionCallsFactoryIfProvided()
-    {
-        // Arrange.
-        var factoryMock = new Mock<IRedisVectorStoreRecordCollectionFactory>(MockBehavior.Strict);
-        var collectionMock = new Mock<IVectorStoreRecordCollection<string, SinglePropsModel<string>>>(MockBehavior.Strict);
-        factoryMock
-            .Setup(x => x.CreateVectorStoreRecordCollection<string, SinglePropsModel<string>>(It.IsAny<IDatabase>(), TestCollectionName, null))
-            .Returns(collectionMock.Object);
-        var sut = new RedisVectorStore(this._redisDatabaseMock.Object, new() { VectorStoreCollectionFactory = factoryMock.Object });
-
-        // Act.
-        var actual = sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName);
-
-        // Assert.
-        Assert.Equal(collectionMock.Object, actual);
-        factoryMock.Verify(x => x.CreateVectorStoreRecordCollection<string, SinglePropsModel<string>>(It.IsAny<IDatabase>(), TestCollectionName, null), Times.Once);
-    }
-#pragma warning restore CS0618
-
     [Fact]
     public void GetCollectionThrowsForInvalidKeyType()
     {
@@ -113,13 +92,13 @@ public class RedisVectorStoreTests
 
     public sealed class SinglePropsModel<TKey>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public required TKey Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

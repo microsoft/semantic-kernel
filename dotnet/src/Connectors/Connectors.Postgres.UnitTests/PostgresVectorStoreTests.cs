@@ -53,31 +53,6 @@ public class PostgresVectorStoreTests
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<ulong, SinglePropsModel<ulong>>(TestCollectionName));
     }
 
-#pragma warning disable CS0618 // IPostgresVectorStoreRecordCollectionFactory is obsolete
-    [Fact]
-    public void GetCollectionCallsFactoryIfProvided()
-    {
-        // Arrange.
-        var factoryMock = new Mock<IPostgresVectorStoreRecordCollectionFactory>(MockBehavior.Strict);
-        var collectionMock = new Mock<IVectorStoreRecordCollection<int, SinglePropsModel<int>>>(MockBehavior.Strict);
-        var clientMock = new Mock<IPostgresVectorStoreDbClient>(MockBehavior.Strict);
-
-        clientMock.Setup(x => x.DataSource).Returns<NpgsqlDataSource>(null);
-        clientMock.Setup(x => x.DatabaseName).Returns("TestDatabase");
-
-        factoryMock
-            .Setup(x => x.CreateVectorStoreRecordCollection<int, SinglePropsModel<int>>(It.IsAny<NpgsqlDataSource>(), TestCollectionName, null))
-            .Returns(collectionMock.Object);
-        var sut = new PostgresVectorStore(clientMock.Object, new() { VectorStoreCollectionFactory = factoryMock.Object });
-
-        // Act.
-        var actual = sut.GetCollection<int, SinglePropsModel<int>>(TestCollectionName);
-
-        // Assert.
-        Assert.Equal(collectionMock.Object, actual);
-    }
-#pragma warning restore CS0618
-
     [Fact]
     public async Task ListCollectionNamesCallsSDKAsync()
     {
@@ -126,7 +101,7 @@ public class PostgresVectorStoreTests
         {
             if (itemIndex == 1)
             {
-                throw new InvalidOperationException("Test exception");
+                throw new NpgsqlException("Test exception");
             }
             yield return item;
             itemIndex++;
@@ -135,13 +110,13 @@ public class PostgresVectorStoreTests
 
     public sealed class SinglePropsModel<TKey>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public required TKey Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

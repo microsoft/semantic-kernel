@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Connectors.InMemory;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.InMemory;
 
 /// <summary>
-/// Inherits common integration tests that should pass for any <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.
+/// Inherits common integration tests that should pass for any <see cref="IVectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 public class CommonInMemoryVectorStoreRecordCollectionTests() : BaseVectorStoreRecordCollectionTests<string>
 {
@@ -16,7 +16,7 @@ public class CommonInMemoryVectorStoreRecordCollectionTests() : BaseVectorStoreR
     protected override string Key3 => "3";
     protected override string Key4 => "4";
 
-    protected override IVectorStoreRecordCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected override IVectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
     {
         return new InMemoryVectorStoreRecordCollection<string, TRecord>(recordCollectionName, new()
         {

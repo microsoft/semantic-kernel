@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// </summary>
 [ExcludeFromCodeCoverage]
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model) : IMongoDBMapper<Dictionary<string, object?>>
+internal sealed class MongoDBDynamicDataModelMapper(CollectionModel model) : IMongoDBMapper<Dictionary<string, object?>>
 #pragma warning restore CS0618
 {
     /// <inheritdoc />
@@ -29,7 +29,7 @@ internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model
         var document = new BsonDocument();
 
         document[MongoDBConstants.MongoReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
-            ? throw new KeyNotFoundException($"Missing value for key property '{model.KeyProperty.ModelName}")
+            ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
             : keyValue switch
             {
                 string s => s,
@@ -77,7 +77,7 @@ internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model
     }
 
     /// <inheritdoc />
-    public Dictionary<string, object?> MapFromStorageToDataModel(BsonDocument storageModel, StorageToDataModelMapperOptions options)
+    public Dictionary<string, object?> MapFromStorageToDataModel(BsonDocument storageModel, bool includeVectors)
     {
         Verify.NotNull(storageModel);
 
@@ -88,21 +88,21 @@ internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model
         {
             switch (property)
             {
-                case VectorStoreRecordKeyPropertyModel keyProperty:
+                case KeyPropertyModel keyProperty:
                     result[keyProperty.ModelName] = storageModel.TryGetValue(MongoDBConstants.MongoReservedKeyPropertyName, out var keyValue)
                         ? keyValue.AsString
-                        : throw new VectorStoreRecordMappingException("No key property was found in the record retrieved from storage.");
+                        : throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
                     continue;
 
-                case VectorStoreRecordDataPropertyModel dataProperty:
+                case DataPropertyModel dataProperty:
                     if (storageModel.TryGetValue(dataProperty.StorageName, out var dataValue))
                     {
                         result.Add(dataProperty.ModelName, GetDataPropertyValue(property.ModelName, property.Type, dataValue));
                     }
                     continue;
 
-                case VectorStoreRecordVectorPropertyModel vectorProperty:
-                    if (options.IncludeVectors && storageModel.TryGetValue(vectorProperty.StorageName, out var vectorValue))
+                case VectorPropertyModel vectorProperty:
+                    if (includeVectors && storageModel.TryGetValue(vectorProperty.StorageName, out var vectorValue))
                     {
                         result.Add(vectorProperty.ModelName, GetVectorPropertyValue(property.ModelName, property.Type, vectorValue));
                     }

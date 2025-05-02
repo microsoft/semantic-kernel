@@ -22,7 +22,7 @@ public sealed class SqlServerVectorStore : IVectorStore
     private readonly VectorStoreMetadata _metadata;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStore"/> class.
@@ -50,7 +50,7 @@ public sealed class SqlServerVectorStore : IVectorStore
     }
 
     /// <inheritdoc/>
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
     {
@@ -73,19 +73,16 @@ public sealed class SqlServerVectorStore : IVectorStore
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.SelectTableNames(connection, this._options.Schema);
 
-        using SqlDataReader reader = await ExceptionWrapper.WrapAsync(
-            connection,
-            command,
-            static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
+        using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
+            this._metadata,
             operationName: "ListCollectionNames",
-            vectorStoreName: this._metadata.VectorStoreName,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            () => command.ExecuteReaderAsync(cancellationToken),
+            cancellationToken).ConfigureAwait(false);
 
-        while (await ExceptionWrapper.WrapReadAsync(
-            reader,
+        while (await reader.ReadWithErrorHandlingAsync(
+            this._metadata,
             operationName: "ListCollectionNames",
-            vectorStoreName: this._metadata.VectorStoreName,
-            cancellationToken: cancellationToken).ConfigureAwait(false))
+            cancellationToken).ConfigureAwait(false))
         {
             yield return reader.GetString(reader.GetOrdinal("table_name"));
         }

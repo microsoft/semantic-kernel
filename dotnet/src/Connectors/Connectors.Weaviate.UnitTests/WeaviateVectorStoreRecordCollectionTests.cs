@@ -63,7 +63,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         // Arrange
         var definition = new VectorStoreRecordDefinition
         {
-            Properties = [new VectorStoreRecordKeyProperty("Id", typeof(Guid))]
+            Properties = [new VectorStoreKeyProperty("Id", typeof(Guid))]
         };
 
         // Act

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +30,7 @@ public sealed class RedisVectorStore : IVectorStore
     private readonly RedisVectorStoreOptions _options;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisVectorStore"/> class.
@@ -51,56 +52,35 @@ public sealed class RedisVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
-    {
-#pragma warning disable CS0618 // IRedisVectorStoreRecordCollectionFactory is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
+        => this._options.StorageType switch
         {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._database, name, vectorStoreRecordDefinition);
-        }
-#pragma warning restore CS0618
+            RedisStorageType.HashSet => new RedisHashSetVectorStoreRecordCollection<TKey, TRecord>(this._database, name, new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>()
+            {
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._options.EmbeddingGenerator
+            }),
 
-        if (this._options.StorageType == RedisStorageType.HashSet)
-        {
-            var recordCollection = new RedisHashSetVectorStoreRecordCollection<TKey, TRecord>(this._database, name, new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>()
+            RedisStorageType.Json => new RedisJsonVectorStoreRecordCollection<TKey, TRecord>(this._database, name, new RedisJsonVectorStoreRecordCollectionOptions<TRecord>()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
-            return recordCollection!;
-        }
-        else
-        {
-            var recordCollection = new RedisJsonVectorStoreRecordCollection<TKey, TRecord>(this._database, name, new RedisJsonVectorStoreRecordCollectionOptions<TRecord>()
-            {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
-            return recordCollection!;
-        }
-    }
+            }),
+
+            _ => throw new UnreachableException()
+        };
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        const string OperationName = "";
-        RedisResult[] listResult;
+        const string OperationName = "FT._LIST";
 
-        try
-        {
-            listResult = await this._database.FT()._ListAsync().ConfigureAwait(false);
-        }
-        catch (RedisException ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
-                VectorStoreName = this._metadata.VectorStoreName,
-                OperationName = OperationName
-            };
-        }
+        var listResult = await VectorStoreErrorHandler.RunOperationAsync<RedisResult[], RedisException>(
+            this._metadata,
+            OperationName,
+            () => this._database.FT()._ListAsync()).ConfigureAwait(false);
 
         foreach (var item in listResult)
         {

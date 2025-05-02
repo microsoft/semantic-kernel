@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using StackExchange.Redis;
 
@@ -15,13 +14,13 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// Class for mapping between a hashset stored in redis, and the consumer data model.
 /// </summary>
 /// <typeparam name="TConsumerDataModel">The consumer data model to map to or from.</typeparam>
-internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(VectorStoreRecordModel model)
+internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(CollectionModel model)
 {
     /// <inheritdoc />
     public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(TConsumerDataModel dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         var keyValue = model.KeyProperty.GetValueAsObject(dataModel!) as string ??
-            throw new VectorStoreRecordMappingException($"Missing key property {model.KeyProperty.ModelName} on provided record of type '{typeof(TConsumerDataModel).Name}'.");
+            throw new InvalidOperationException($"Missing key property {model.KeyProperty.ModelName} on provided record of type '{typeof(TConsumerDataModel).Name}'.");
 
         var hashEntries = new List<HashEntry>();
         foreach (var property in model.DataProperties)
@@ -58,7 +57,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
                         continue;
 
                     default:
-                        throw new VectorStoreRecordMappingException($"Unsupported vector type '{value.GetType()}'. Only float and double vectors are supported.");
+                        throw new InvalidOperationException($"Unsupported vector type '{value.GetType()}'. Only float and double vectors are supported.");
                 }
             }
         }
@@ -67,7 +66,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
     }
 
     /// <inheritdoc />
-    public TConsumerDataModel MapFromStorageToDataModel((string Key, HashEntry[] HashEntries) storageModel, StorageToDataModelMapperOptions options)
+    public TConsumerDataModel MapFromStorageToDataModel((string Key, HashEntry[] HashEntries) storageModel, bool includeVectors)
     {
         var hashEntriesDictionary = storageModel.HashEntries.ToDictionary(x => (string)x.Name!, x => x.Value);
 
@@ -78,7 +77,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
         model.KeyProperty.SetValueAsObject(outputRecord, storageModel.Key);
 
         // Set each vector property if embeddings should be returned.
-        if (options?.IncludeVectors is true)
+        if (includeVectors)
         {
             foreach (var property in model.VectorProperties)
             {
@@ -96,7 +95,7 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
                             => new ReadOnlyMemory<float>(MemoryMarshal.Cast<byte, float>((byte[])vector!).ToArray()),
                         Type t when t == typeof(ReadOnlyMemory<double>) || t == typeof(ReadOnlyMemory<double>?)
                             => new ReadOnlyMemory<double>(MemoryMarshal.Cast<byte, double>((byte[])vector!).ToArray()),
-                        _ => throw new VectorStoreRecordMappingException($"Unsupported vector type '{property.Type}'. Only float and double vectors are supported.")
+                        _ => throw new InvalidOperationException($"Unsupported vector type '{property.Type}'. Only float and double vectors are supported.")
                     });
                 }
             }

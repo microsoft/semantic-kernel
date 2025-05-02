@@ -41,7 +41,7 @@ public class VectorStore_VectorSearch_MultiStore_Qdrant(ITestOutputHelper output
 
         // Initialize the Qdrant docker container via the fixtures and register the Qdrant VectorStore.
         await qdrantFixture.ManualInitializeAsync();
-        kernelBuilder.AddQdrantVectorStore("localhost");
+        kernelBuilder.Services.AddQdrantVectorStore("localhost");
 
         // Register the test output helper common processor with the DI container.
         kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);

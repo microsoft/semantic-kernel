@@ -28,7 +28,7 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
     private readonly AzureCosmosDBNoSQLVectorStoreOptions _options;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCosmosDBNoSQLVectorStore"/> class.
@@ -50,21 +50,10 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
-    {
-#pragma warning disable CS0618 // IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
-        {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(
-                this._database,
-                name,
-                vectorStoreRecordDefinition);
-        }
-#pragma warning restore CS0618
-
-        var recordCollection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>(
+        => new AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>(
             this._database,
             name,
             new()
@@ -72,17 +61,19 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 JsonSerializerOptions = this._options.JsonSerializerOptions,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
-
-        return recordCollection!;
-    }
+            }) as IVectorStoreCollection<TKey, TRecord>;
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string Query = "SELECT VALUE(c.id) FROM c";
 
-        using var feedIterator = this._database.GetContainerQueryIterator<string>(Query);
+        const string OperationName = "ListCollectionNamesAsync";
+        using var feedIterator = VectorStoreErrorHandler.RunOperation<FeedIterator<string>, CosmosException>(
+            this._metadata,
+            OperationName,
+            () => this._database.GetContainerQueryIterator<string>(Query));
+        using var errorHandlingFeedIterator = new ErrorHandlingFeedIterator<string>(feedIterator, this._metadata, OperationName);
 
         while (feedIterator.HasMoreResults)
         {

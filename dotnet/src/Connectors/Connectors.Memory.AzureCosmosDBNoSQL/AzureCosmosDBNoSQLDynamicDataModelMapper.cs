@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using MEAI = Microsoft.Extensions.AI;
 
@@ -14,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// <summary>
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Azure CosmosDB NoSQL.
 /// </summary>
-internal sealed class AzureCosmosDBNoSQLDynamicDataModelMapper(VectorStoreRecordModel model, JsonSerializerOptions jsonSerializerOptions)
+internal sealed class AzureCosmosDBNoSQLDynamicDataModelMapper(CollectionModel model, JsonSerializerOptions jsonSerializerOptions)
     : ICosmosNoSQLMapper<Dictionary<string, object?>>
 {
     /// <summary>A default <see cref="JsonSerializerOptions"/> for serialization/deserialization of vector properties.</summary>
@@ -81,7 +80,7 @@ internal sealed class AzureCosmosDBNoSQLDynamicDataModelMapper(VectorStoreRecord
         return jsonObject;
     }
 
-    public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
+    public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
         Verify.NotNull(storageModel);
 
@@ -92,21 +91,21 @@ internal sealed class AzureCosmosDBNoSQLDynamicDataModelMapper(VectorStoreRecord
         {
             switch (property)
             {
-                case VectorStoreRecordKeyPropertyModel keyProperty:
+                case KeyPropertyModel keyProperty:
                     result[keyProperty.ModelName] = storageModel.TryGetPropertyValue(AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName, out var keyValue)
                         ? keyValue?.GetValue<string>()
-                        : throw new VectorStoreRecordMappingException("No key property was found in the record retrieved from storage.");
+                        : throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
                     continue;
 
-                case VectorStoreRecordDataPropertyModel dataProperty:
+                case DataPropertyModel dataProperty:
                     if (storageModel.TryGetPropertyValue(dataProperty.StorageName, out var dataValue))
                     {
                         result.Add(property.ModelName, dataValue.Deserialize(property.Type, jsonSerializerOptions));
                     }
                     continue;
 
-                case VectorStoreRecordVectorPropertyModel vectorProperty:
-                    if (options.IncludeVectors && storageModel.TryGetPropertyValue(vectorProperty.StorageName, out var vectorValue))
+                case VectorPropertyModel vectorProperty:
+                    if (includeVectors && storageModel.TryGetPropertyValue(vectorProperty.StorageName, out var vectorValue))
                     {
                         result.Add(property.ModelName, vectorValue.Deserialize(property.Type, s_vectorJsonSerializerOptions));
                     }

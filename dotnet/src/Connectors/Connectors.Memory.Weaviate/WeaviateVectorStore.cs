@@ -29,7 +29,7 @@ public sealed class WeaviateVectorStore : IVectorStore
     private readonly WeaviateVectorStoreOptions _options;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(Guid)), new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 1)] };
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(Guid)), new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 1)] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStore"/> class.
@@ -55,21 +55,10 @@ public sealed class WeaviateVectorStore : IVectorStore
 
     /// <inheritdoc />
     /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
-    {
-#pragma warning disable CS0618 // IWeaviateVectorStoreRecordCollectionFactory is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
-        {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(
-                this._httpClient,
-                name,
-                vectorStoreRecordDefinition);
-        }
-#pragma warning restore CS0618
-
-        var recordCollection = new WeaviateVectorStoreRecordCollection<TKey, TRecord>(
+        => new WeaviateVectorStoreRecordCollection<TKey, TRecord>(
             this._httpClient,
             name,
             new()
@@ -79,36 +68,31 @@ public sealed class WeaviateVectorStore : IVectorStore
                 ApiKey = this._options.ApiKey,
                 HasNamedVectors = this._options.HasNamedVectors,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
-
-        return recordCollection;
-    }
+            });
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        const string OperationName = "ListCollectionNames";
+
         using var request = new WeaviateGetCollectionsRequest().Build();
-        WeaviateGetCollectionsResponse collectionsResponse;
 
-        try
-        {
-            var httpResponse = await this._httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
-
-            httpResponse.EnsureSuccessStatusCode();
-
-            var httpResponseContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
-            collectionsResponse = JsonSerializer.Deserialize<WeaviateGetCollectionsResponse>(httpResponseContent)!;
-        }
-        catch (Exception e)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", e)
+        var httpResponseContent = await VectorStoreErrorHandler.RunOperationAsync<string, HttpRequestException>(
+            this._metadata,
+            OperationName,
+            async () =>
             {
-                VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName,
-                VectorStoreName = this._metadata.VectorStoreName,
-                OperationName = "ListCollectionNames"
-            };
-        }
+                var httpResponse = await this._httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
+
+                httpResponse.EnsureSuccessStatusCode();
+
+                return await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+
+        var collectionsResponse = VectorStoreErrorHandler.RunOperation<WeaviateGetCollectionsResponse?, JsonException>(
+            this._metadata,
+            OperationName,
+            () => JsonSerializer.Deserialize<WeaviateGetCollectionsResponse>(httpResponseContent));
 
         if (collectionsResponse?.Collections is not null)
         {

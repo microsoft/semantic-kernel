@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Extension methods for <see cref="IVectorStore"/> which allow:
-/// 1. Creating an instance of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> from a list of strings.
+/// 1. Creating an instance of <see cref="IVectorStoreCollection{TKey, TRecord}"/> from a list of strings.
 /// </summary>
 public static class VectorStoreExtensions
 {
@@ -30,8 +30,8 @@ public static class VectorStoreExtensions
     public delegate TRecord CreateRecordFromTextSearchResult<TKey, TRecord>(TextSearchResult searchResult, ReadOnlyMemory<float> vector) where TKey : notnull;
 
     /// <summary>
-    /// Create a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> from a list of strings by:
-    /// 1. Getting an instance of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>
+    /// Create a <see cref="IVectorStoreCollection{TKey, TRecord}"/> from a list of strings by:
+    /// 1. Getting an instance of <see cref="IVectorStoreCollection{TKey, TRecord}"/>
     /// 2. Generating embeddings for each string.
     /// 3. Creating a record with a valid key for each string and it's embedding.
     /// 4. Insert the records into the collection.
@@ -41,7 +41,7 @@ public static class VectorStoreExtensions
     /// <param name="entries">A list of strings.</param>
     /// <param name="embeddingGenerationService">A text embedding generation service.</param>
     /// <param name="createRecord">A delegate which can create a record with a valid key for each string and it's embedding.</param>
-    internal static async Task<IVectorStoreRecordCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
+    internal static async Task<IVectorStoreCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
         this IVectorStore vectorStore,
         string collectionName,
         string[] entries,
@@ -66,8 +66,8 @@ public static class VectorStoreExtensions
     }
 
     /// <summary>
-    /// Create a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> from a list of strings by:
-    /// 1. Getting an instance of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>
+    /// Create a <see cref="IVectorStoreCollection{TKey, TRecord}"/> from a list of strings by:
+    /// 1. Getting an instance of <see cref="IVectorStoreCollection{TKey, TRecord}"/>
     /// 2. Generating embeddings for each string.
     /// 3. Creating a record with a valid key for each string and it's embedding.
     /// 4. Insert the records into the collection.
@@ -77,7 +77,7 @@ public static class VectorStoreExtensions
     /// <param name="searchResults">A list of <see cref="TextSearchResult" />s.</param>
     /// <param name="embeddingGenerationService">A text embedding generation service.</param>
     /// <param name="createRecord">A delegate which can create a record with a valid key for each string and it's embedding.</param>
-    internal static async Task<IVectorStoreRecordCollection<TKey, TRecord>> CreateCollectionFromTextSearchResultsAsync<TKey, TRecord>(
+    internal static async Task<IVectorStoreCollection<TKey, TRecord>> CreateCollectionFromTextSearchResultsAsync<TKey, TRecord>(
         this IVectorStore vectorStore,
         string collectionName,
         IList<TextSearchResult> searchResults,

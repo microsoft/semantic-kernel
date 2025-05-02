@@ -18,7 +18,7 @@ public static class VectorStoreExtensions
     public delegate TRecord CreateRecordFromString<TKey, TRecord>(string text, ReadOnlyMemory<float> vector) where TKey : notnull;
 
     /// <summary>
-    /// Create a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> from a list of strings by:
+    /// Create a <see cref="IVectorStoreCollection{TKey, TRecord}"/> from a list of strings by:
     /// </summary>
     /// <typeparam name="TKey">The data type of the record key.</typeparam>
     /// <typeparam name="TRecord">The data type of the record.</typeparam>
@@ -28,7 +28,7 @@ public static class VectorStoreExtensions
     /// <param name="embeddingGenerationService">The text embedding generation service.</param>
     /// <param name="createRecord">The delegate which can create a record for each string and its embedding.</param>
     /// <returns>The created collection.</returns>
-    public static async Task<IVectorStoreRecordCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
+    public static async Task<IVectorStoreCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
         this IVectorStore vectorStore,
         string collectionName,
         string[] entries,

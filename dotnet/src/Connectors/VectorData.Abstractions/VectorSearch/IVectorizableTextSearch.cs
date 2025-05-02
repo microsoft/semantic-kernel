@@ -34,7 +34,7 @@ public interface IVectorizableTextSearch<TRecord>
     /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// The purpose of this method is to allow for the retrieval of strongly-typed services that might be provided by the <see cref="IVectorizableTextSearch{TRecord}"/>,
-    /// including itself or any services it might be wrapping. For example, to access the <see cref="VectorStoreRecordCollectionMetadata"/> for the instance,
+    /// including itself or any services it might be wrapping. For example, to access the <see cref="VectorStoreCollectionMetadata"/> for the instance,
     /// <see cref="GetService"/> may be used to request it.
     /// </remarks>
     object? GetService(Type serviceType, object? serviceKey = null);

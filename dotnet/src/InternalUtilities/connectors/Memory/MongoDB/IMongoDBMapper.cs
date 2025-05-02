@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 
 internal interface IMongoDBMapper<TRecord>
@@ -14,5 +13,5 @@ internal interface IMongoDBMapper<TRecord>
     /// <summary>
     /// Maps from the storage model to the consumer record data model.
     /// </summary>
-    TRecord MapFromStorageToDataModel(BsonDocument storageModel, StorageToDataModelMapperOptions options);
+    TRecord MapFromStorageToDataModel(BsonDocument storageModel, bool includeVectors);
 }

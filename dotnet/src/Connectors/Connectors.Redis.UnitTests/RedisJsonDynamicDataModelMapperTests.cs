@@ -18,20 +18,20 @@ public class RedisJsonDynamicDataModelMapperTests
 {
     private static readonly float[] s_floatVector = new float[] { 1.0f, 2.0f, 3.0f, 4.0f };
 
-    private static readonly VectorStoreRecordModel s_model
-        = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
+    private static readonly CollectionModel s_model
+        = new CollectionJsonModelBuilder(RedisJsonVectorStoreRecordCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
                 new()
                 {
                     Properties =
                     [
-                        new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                        new VectorStoreRecordDataProperty("StringData", typeof(string)),
-                        new VectorStoreRecordDataProperty("IntData", typeof(int)),
-                        new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
-                        new VectorStoreRecordDataProperty("ComplexObjectData", typeof(ComplexObject)),
-                        new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+                        new VectorStoreKeyProperty("Key", typeof(string)),
+                        new VectorStoreDataProperty("StringData", typeof(string)),
+                        new VectorStoreDataProperty("IntData", typeof(int)),
+                        new VectorStoreDataProperty("NullableIntData", typeof(int?)),
+                        new VectorStoreDataProperty("ComplexObjectData", typeof(ComplexObject)),
+                        new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
                     ]
                 },
                 defaultEmbeddingGenerator: null);
@@ -105,7 +105,7 @@ public class RedisJsonDynamicDataModelMapperTests
         };
 
         // Act.
-        var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), new() { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), includeVectors: true);
 
         // Assert.
         Assert.Equal("key", dataModel["Key"]);
@@ -131,7 +131,7 @@ public class RedisJsonDynamicDataModelMapperTests
         };
 
         // Act.
-        var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), new() { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), includeVectors: true);
 
         // Assert.
         Assert.Equal("key", dataModel["Key"]);
@@ -166,7 +166,7 @@ public class RedisJsonDynamicDataModelMapperTests
         var sut = new RedisJsonDynamicDataModelMapper(s_model, JsonSerializerOptions.Default);
 
         // Act.
-        var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), new() { IncludeVectors = true });
+        var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), includeVectors: true);
 
         // Assert.
         Assert.Equal("key", dataModel["Key"]);

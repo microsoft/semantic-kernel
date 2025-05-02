@@ -58,11 +58,11 @@ public sealed class SqliteVectorStoreRecordPropertyMappingTests
     public void GetColumnsReturnsCollectionOfColumns(bool data)
     {
         // Arrange
-        var properties = new List<VectorStoreRecordPropertyModel>()
+        var properties = new List<PropertyModel>()
         {
-            new VectorStoreRecordKeyPropertyModel("Key", typeof(string)) { StorageName = "Key" },
-            new VectorStoreRecordDataPropertyModel("Data", typeof(int)) { StorageName = "my_data", IsIndexed = true },
-            new VectorStoreRecordVectorPropertyModel("Vector", typeof(ReadOnlyMemory<float>))
+            new KeyPropertyModel("Key", typeof(string)) { StorageName = "Key" },
+            new DataPropertyModel("Data", typeof(int)) { StorageName = "my_data", IsIndexed = true },
+            new VectorPropertyModel("Vector", typeof(ReadOnlyMemory<float>))
             {
                 Dimensions = 4,
                 DistanceFunction = DistanceFunction.ManhattanDistance,

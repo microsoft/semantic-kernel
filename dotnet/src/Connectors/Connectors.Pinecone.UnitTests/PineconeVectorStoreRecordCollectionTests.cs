@@ -27,11 +27,11 @@ public class PineconeVectorStoreRecordCollectionTests
         // Arrange.
         var definition = new VectorStoreRecordDefinition()
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)),
-                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>?), 4),
+                new VectorStoreKeyProperty("Key", typeof(string)),
+                new VectorStoreDataProperty("OriginalNameData", typeof(string)),
+                new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>?), 4),
             }
         };
         var pineconeClient = new Sdk.PineconeClient("fake api key");

@@ -27,8 +27,8 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                 {
                     Properties =
                     [
-                        new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { IndexKind = "non-existent-index-kind" }
+                        new VectorStoreKeyProperty("Key", typeof(Guid)),
+                        new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { IndexKind = "non-existent-index-kind" }
                     ]
                 },
                 defaultEmbeddingGenerator: null);
@@ -51,8 +51,8 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                 {
                     Properties =
                     [
-                        new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { IndexKind = indexKind }
+                        new VectorStoreKeyProperty("Key", typeof(Guid)),
+                        new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { IndexKind = indexKind }
                     ]
                 },
                 defaultEmbeddingGenerator: null);
@@ -76,8 +76,8 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                 {
                     Properties =
                     [
-                        new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { DistanceFunction = "unsupported-distance-function" }
+                        new VectorStoreKeyProperty("Key", typeof(Guid)),
+                        new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { DistanceFunction = "unsupported-distance-function" }
                     ]
                 },
                 defaultEmbeddingGenerator: null);
@@ -102,8 +102,8 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                 {
                     Properties =
                     [
-                        new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { DistanceFunction = distanceFunction }
+                        new VectorStoreKeyProperty("Key", typeof(Guid)),
+                        new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { DistanceFunction = distanceFunction }
                     ]
                 },
                 defaultEmbeddingGenerator: null);
@@ -174,9 +174,9 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                 {
                     Properties =
                     [
-                        new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                        new VectorStoreRecordDataProperty("PropertyName", propertyType) { IsIndexed = true, IsFullTextIndexed = true },
-                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
+                        new VectorStoreKeyProperty("Key", typeof(Guid)),
+                        new VectorStoreDataProperty("PropertyName", propertyType) { IsIndexed = true, IsFullTextIndexed = true },
+                        new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
                     ]
                 },
                 defaultEmbeddingGenerator: null,
@@ -207,8 +207,8 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                 {
                     Properties =
                     [
-                        new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4)
+                        new VectorStoreKeyProperty("Key", typeof(Guid)),
+                        new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4)
                         {
                             DistanceFunction = DistanceFunction.CosineDistance,
                             IndexKind = IndexKind.Hnsw

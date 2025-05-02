@@ -37,7 +37,7 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
     /// <param name="searchString">The string to search matches for.</param>
     /// <param name="textEmbeddingGenerationService">The service to generate embeddings with.</param>
     /// <returns>The top search result.</returns>
-    internal static async Task<VectorSearchResult<Glossary>> SearchVectorStoreAsync(IVectorStoreRecordCollection<string, Glossary> collection, string searchString, ITextEmbeddingGenerationService textEmbeddingGenerationService)
+    internal static async Task<VectorSearchResult<Glossary>> SearchVectorStoreAsync(IVectorStoreCollection<string, Glossary> collection, string searchString, ITextEmbeddingGenerationService textEmbeddingGenerationService)
     {
         // Generate an embedding from the search string.
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
@@ -75,7 +75,7 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
         Console.WriteLine(searchResultItems.First().Score);
     }
 
-    private async Task<IVectorStoreRecordCollection<string, Glossary>> GetVectorStoreCollectionWithDataAsync()
+    private async Task<IVectorStoreCollection<string, Glossary>> GetVectorStoreCollectionWithDataAsync()
     {
         // Construct the vector store and get the collection.
         var vectorStore = new InMemoryVectorStore();

@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using Google.Protobuf.Collections;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client.Grpc;
 
@@ -15,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// Mapper between a Qdrant record and the consumer data model that uses json as an intermediary to allow supporting a wide range of models.
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
-internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model, bool hasNamedVectors)
+internal sealed class QdrantVectorStoreRecordMapper<TRecord>(CollectionModel model, bool hasNamedVectors)
 {
     /// <inheritdoc />
     public PointStruct MapFromDataToStorageModel(TRecord dataModel, int recordIndex, GeneratedEmbeddings<Embedding<float>>?[]? generatedEmbeddings)
@@ -26,14 +25,14 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
         {
             var t when t == typeof(ulong) => new PointId
             {
-                Num = (ulong?)keyProperty.GetValueAsObject(dataModel!) ?? throw new VectorStoreRecordMappingException($"Missing key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
+                Num = (ulong?)keyProperty.GetValueAsObject(dataModel!) ?? throw new InvalidOperationException($"Missing key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
             },
 
             var t when t == typeof(Guid) => new PointId
             {
-                Uuid = ((Guid?)keyProperty.GetValueAsObject(dataModel!))?.ToString("D") ?? throw new VectorStoreRecordMappingException($"Missing key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
+                Uuid = ((Guid?)keyProperty.GetValueAsObject(dataModel!))?.ToString("D") ?? throw new InvalidOperationException($"Missing key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
             },
-            _ => throw new VectorStoreRecordMappingException($"Unsupported key type '{keyProperty.Type.Name}' for key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
+            _ => throw new InvalidOperationException($"Unsupported key type '{keyProperty.Type.Name}' for key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
         };
 
         // Create point.
@@ -86,17 +85,17 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
 
         return pointStruct;
 
-        Vector GetVector(VectorStoreRecordPropertyModel property, object? embedding)
+        Vector GetVector(PropertyModel property, object? embedding)
             => embedding switch
             {
                 ReadOnlyMemory<float> floatVector => floatVector.ToArray(),
-                null => throw new VectorStoreRecordMappingException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null when not using named vectors."),
-                var unknownEmbedding => throw new VectorStoreRecordMappingException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' has unsupported embedding type '{unknownEmbedding.GetType().Name}'.")
+                null => throw new InvalidOperationException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null when not using named vectors."),
+                var unknownEmbedding => throw new InvalidOperationException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' has unsupported embedding type '{unknownEmbedding.GetType().Name}'.")
             };
     }
 
     /// <inheritdoc />
-    public TRecord MapFromStorageToDataModel(PointId pointId, MapField<string, Value> payload, VectorsOutput vectorsOutput, StorageToDataModelMapperOptions options)
+    public TRecord MapFromStorageToDataModel(PointId pointId, MapField<string, Value> payload, VectorsOutput vectorsOutput, bool includeVectors)
     {
         var outputRecord = model.CreateRecord<TRecord>()!;
 
@@ -109,7 +108,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
         });
 
         // Set each vector property if embeddings are included in the point.
-        if (options?.IncludeVectors is true)
+        if (includeVectors)
         {
             if (hasNamedVectors)
             {

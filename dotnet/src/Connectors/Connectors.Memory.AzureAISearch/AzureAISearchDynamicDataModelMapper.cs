@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -15,9 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <summary>
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Azure AI Search.
 /// </summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel model)
-#pragma warning restore CS0618
+internal sealed class AzureAISearchDynamicDataModelMapper(CollectionModel model)
 {
     /// <inheritdoc />
     public JsonObject MapFromDataToStorageModel(Dictionary<string, object?> dataModel)
@@ -31,12 +28,12 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
         {
             switch (property)
             {
-                case VectorStoreRecordKeyPropertyModel keyProperty:
+                case KeyPropertyModel keyProperty:
                     storageJsonObject.Add(keyProperty.StorageName, (string)model.KeyProperty.GetValueAsObject(dataModel)!);
                     continue;
 
-                case VectorStoreRecordDataPropertyModel dataProperty:
-                case VectorStoreRecordVectorPropertyModel vectorProperty:
+                case DataPropertyModel dataProperty:
+                case VectorPropertyModel vectorProperty:
                     if (dataModel.TryGetValue(property.ModelName, out var dataValue))
                     {
                         var serializedJsonNode = JsonSerializer.SerializeToNode(dataValue);
@@ -53,7 +50,7 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
     }
 
     /// <inheritdoc />
-    public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
+    public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
         Verify.NotNull(storageModel);
 
@@ -65,13 +62,13 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
         {
             switch (property)
             {
-                case VectorStoreRecordKeyPropertyModel keyProperty:
+                case KeyPropertyModel keyProperty:
                     result[keyProperty.ModelName] = (string?)storageModel[keyProperty.StorageName]
-                        ?? throw new VectorStoreRecordMappingException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
+                        ?? throw new InvalidOperationException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
 
                     continue;
 
-                case VectorStoreRecordDataPropertyModel dataProperty:
+                case DataPropertyModel dataProperty:
                 {
                     if (storageModel.TryGetPropertyValue(dataProperty.StorageName, out var value))
                     {
@@ -80,7 +77,7 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
                     continue;
                 }
 
-                case VectorStoreRecordVectorPropertyModel vectorProperty when options.IncludeVectors:
+                case VectorPropertyModel vectorProperty when includeVectors:
                 {
                     if (storageModel.TryGetPropertyValue(vectorProperty.StorageName, out var value))
                     {
@@ -98,7 +95,7 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
                     continue;
                 }
 
-                case VectorStoreRecordVectorPropertyModel vectorProperty when !options.IncludeVectors:
+                case VectorPropertyModel vectorProperty when !includeVectors:
                     break;
 
                 default:

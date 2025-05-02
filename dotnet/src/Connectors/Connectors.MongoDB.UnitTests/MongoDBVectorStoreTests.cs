@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Driver;
 using Moq;
@@ -29,37 +28,6 @@ public sealed class MongoDBVectorStoreTests
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<Guid, MongoDBHotelModel>("collection"));
     }
-
-#pragma warning disable CS0618 // IMongoDBVectorStoreRecordCollectionFactoryß is obsolete
-    [Fact]
-    public void GetCollectionWithFactoryReturnsCustomCollection()
-    {
-        // Arrange
-        var mockFactory = new Mock<IMongoDBVectorStoreRecordCollectionFactory>();
-        var mockRecordCollection = new Mock<IVectorStoreRecordCollection<string, MongoDBHotelModel>>();
-
-        mockFactory
-            .Setup(l => l.CreateVectorStoreRecordCollection<string, MongoDBHotelModel>(
-                this._mockMongoDatabase.Object,
-                "collection",
-                It.IsAny<VectorStoreRecordDefinition>()))
-            .Returns(mockRecordCollection.Object);
-
-        var sut = new MongoDBVectorStore(
-            this._mockMongoDatabase.Object,
-            new MongoDBVectorStoreOptions { VectorStoreCollectionFactory = mockFactory.Object });
-
-        // Act
-        var collection = sut.GetCollection<string, MongoDBHotelModel>("collection");
-
-        // Assert
-        Assert.Same(mockRecordCollection.Object, collection);
-        mockFactory.Verify(l => l.CreateVectorStoreRecordCollection<string, MongoDBHotelModel>(
-            this._mockMongoDatabase.Object,
-            "collection",
-            It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
-    }
-#pragma warning restore CS0618
 
     [Fact]
     public void GetCollectionWithoutFactoryReturnsDefaultCollection()

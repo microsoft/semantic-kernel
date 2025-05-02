@@ -422,7 +422,6 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
     /// In this case, the expectation is that a custom mapper will be provided to map between the
@@ -434,11 +433,11 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         // Arrange.
         var definition = new VectorStoreRecordDefinition()
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty(nameof(SinglePropsModel.Key), typeof(string)),
-                new VectorStoreRecordDataProperty(nameof(SinglePropsModel.OriginalNameData), typeof(string)),
-                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel.Vector), typeof(ReadOnlyMemory<float>?), 4),
+                new VectorStoreKeyProperty(nameof(SinglePropsModel.Key), typeof(string)),
+                new VectorStoreDataProperty(nameof(SinglePropsModel.OriginalNameData), typeof(string)),
+                new VectorStoreVectorProperty(nameof(SinglePropsModel.Vector), typeof(ReadOnlyMemory<float>?), 4),
             }
         };
 
@@ -448,7 +447,6 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition });
     }
-#pragma warning restore CS0618
 
     private RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel> CreateRecordCollection(bool useDefinition)
     {
@@ -528,27 +526,27 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     {
         Properties =
         [
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)),
-            new VectorStoreRecordDataProperty("Data", typeof(string)) { StoragePropertyName = "data_storage_name" },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector_storage_name", DistanceFunction = DistanceFunction.CosineDistance }
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("OriginalNameData", typeof(string)),
+            new VectorStoreDataProperty("Data", typeof(string)) { StoragePropertyName = "data_storage_name" },
+            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector_storage_name", DistanceFunction = DistanceFunction.CosineDistance }
         ]
     };
 
     public sealed class SinglePropsModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string OriginalNameData { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_data_json_name")]
-        [VectorStoreRecordData(IsIndexed = true, StoragePropertyName = "data_storage_name")]
+        [VectorStoreData(IsIndexed = true, StoragePropertyName = "data_storage_name")]
         public string Data { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_vector_json_name")]
-        [VectorStoreRecordVector(4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "vector_storage_name")]
+        [VectorStoreVector(4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "vector_storage_name")]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

@@ -29,7 +29,7 @@ public sealed class SqliteVectorStore : IVectorStore
     private readonly SqliteVectorStoreOptions _options;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteVectorStore"/> class.
@@ -64,21 +64,10 @@ public sealed class SqliteVectorStore : IVectorStore
         => throw new InvalidOperationException("Use the constructor that accepts a connection string instead.");
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
-    {
-#pragma warning disable CS0618 // ISqliteVectorStoreRecordCollectionFactory is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
-        {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(
-                this._connectionString,
-                name,
-                vectorStoreRecordDefinition);
-        }
-#pragma warning restore CS0618
-
-        var recordCollection = new SqliteVectorStoreRecordCollection<TKey, TRecord>(
+        => new SqliteVectorStoreRecordCollection<TKey, TRecord>(
             this._connectionString,
             name,
             new()
@@ -87,14 +76,12 @@ public sealed class SqliteVectorStore : IVectorStore
                 VectorSearchExtensionName = this._options.VectorSearchExtensionName,
                 VectorVirtualTableName = this._options.VectorVirtualTableName,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
-
-        return recordCollection!;
-    }
+            }) as IVectorStoreCollection<TKey, TRecord>;
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        const string OperationName = "ListCollectionNames";
         const string TablePropertyName = "name";
         const string Query = $"SELECT {TablePropertyName} FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';";
 
@@ -104,9 +91,16 @@ public sealed class SqliteVectorStore : IVectorStore
 
         command.CommandText = Query;
 
-        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await connection.ExecuteWithErrorHandlingAsync(
+            this._metadata,
+            OperationName,
+            () => command.ExecuteReaderAsync(cancellationToken),
+            cancellationToken).ConfigureAwait(false);
 
-        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        while (await reader.ReadWithErrorHandlingAsync(
+            this._metadata,
+            OperationName,
+            cancellationToken).ConfigureAwait(false))
         {
             var ordinal = reader.GetOrdinal(TablePropertyName);
             yield return reader.GetString(ordinal);

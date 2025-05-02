@@ -11,7 +11,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory;
 
 /// <summary>
-/// Base class for common integration tests that should pass for any <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.
+/// Base class for common integration tests that should pass for any <see cref="IVectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 /// <typeparam name="TKey">The type of key to use with the record collection.</typeparam>
 public abstract class BaseVectorStoreRecordCollectionTests<TKey>
@@ -24,7 +24,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
 
     protected abstract HashSet<string> GetSupportedDistanceFunctions();
 
-    protected abstract IVectorStoreRecordCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TRecord : notnull;
+    protected abstract IVectorStoreCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TRecord : notnull;
 
     protected virtual int DelayAfterIndexCreateInMilliseconds { get; } = 0;
 
@@ -121,8 +121,8 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), vectorDimensions) { DistanceFunction = distanceFunction },
+                new VectorStoreKeyProperty("Key", typeof(TKey)),
+                new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), vectorDimensions) { DistanceFunction = distanceFunction },
             ],
         };
 

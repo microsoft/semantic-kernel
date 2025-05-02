@@ -19,12 +19,12 @@ public static class RedisFactory
     /// </summary>
     private static readonly VectorStoreRecordDefinition s_recordDefinition = new()
     {
-        Properties = new List<VectorStoreRecordProperty>
+        Properties = new List<VectorStoreProperty>
         {
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("Content", typeof(string)) { StoragePropertyName = "text" },
-            new VectorStoreRecordDataProperty("Source", typeof(string)) { StoragePropertyName = "source" },
-            new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 1536) { StoragePropertyName = "embedding" }
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("Content", typeof(string)) { StoragePropertyName = "text" },
+            new VectorStoreDataProperty("Source", typeof(string)) { StoragePropertyName = "source" },
+            new VectorStoreVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 1536) { StoragePropertyName = "embedding" }
         }
     };
 
@@ -43,7 +43,7 @@ public static class RedisFactory
     {
         private readonly IDatabase _database = database;
 
-        public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
             where TKey : notnull
             where TRecord : notnull
         {
@@ -62,7 +62,7 @@ public static class RedisFactory
                 new()
                 {
                     VectorStoreRecordDefinition = s_recordDefinition
-                }) as IVectorStoreRecordCollection<TKey, TRecord>)!;
+                }) as IVectorStoreCollection<TKey, TRecord>)!;
         }
 
         public object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);

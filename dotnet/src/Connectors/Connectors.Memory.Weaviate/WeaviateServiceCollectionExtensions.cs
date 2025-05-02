@@ -49,17 +49,17 @@ public static class WeaviateServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Weaviate <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID.
+    /// Register a Weaviate <see cref="IVectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="httpClient">
     /// <see cref="HttpClient"/> that is used to interact with Weaviate API.
     /// <see cref="HttpClient.BaseAddress"/> should point to remote or local cluster and API key can be configured via <see cref="HttpClient.DefaultRequestHeaders"/>.
     /// It's also possible to provide these parameters via <see cref="WeaviateVectorStoreOptions"/>.
     /// </param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddWeaviateVectorStoreRecordCollection<TRecord>(
@@ -70,7 +70,7 @@ public static class WeaviateServiceCollectionExtensions
         string? serviceId = default)
         where TRecord : notnull
     {
-        services.AddKeyedTransient<IVectorStoreRecordCollection<Guid, TRecord>>(
+        services.AddKeyedTransient<IVectorStoreCollection<Guid, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
@@ -89,7 +89,7 @@ public static class WeaviateServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
+    /// Also register the <see cref="IVectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
@@ -100,7 +100,7 @@ public static class WeaviateServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<Guid, TRecord>>(serviceId);
+                return sp.GetRequiredKeyedService<IVectorStoreCollection<Guid, TRecord>>(serviceId);
             });
     }
 }

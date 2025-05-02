@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
@@ -13,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// A mapper class that handles the conversion between data models and storage models for Postgres vector store.
 /// </summary>
 /// <typeparam name="TRecord">The type of the data model record.</typeparam>
-internal sealed class PostgresVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model)
+internal sealed class PostgresVectorStoreRecordMapper<TRecord>(CollectionModel model)
     where TRecord : notnull
 {
     public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
@@ -49,7 +48,7 @@ internal sealed class PostgresVectorStoreRecordMapper<TRecord>(VectorStoreRecord
         return properties;
     }
 
-    public TRecord MapFromStorageToDataModel(Dictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
+    public TRecord MapFromStorageToDataModel(Dictionary<string, object?> storageModel, bool includeVectors)
     {
         var record = model.CreateRecord<TRecord>()!;
 
@@ -62,7 +61,7 @@ internal sealed class PostgresVectorStoreRecordMapper<TRecord>(VectorStoreRecord
             dataProperty.SetValueAsObject(record, storageModel[dataProperty.StorageName]);
         }
 
-        if (options.IncludeVectors)
+        if (includeVectors)
         {
             foreach (var vectorProperty in model.VectorProperties)
             {

@@ -13,7 +13,7 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
     private int _parameterIndex;
 
     internal PostgresFilterTranslator(
-        VectorStoreRecordModel model,
+        CollectionModel model,
         LambdaExpression lambdaExpression,
         int startParamIndex,
         StringBuilder? sql = null) : base(model, lambdaExpression, sql)

@@ -112,11 +112,11 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>, <see cref="IVectorSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
+    /// Register an Azure AI Search <see cref="IVectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
     /// specified service ID and where <see cref="SearchIndexClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
@@ -130,7 +130,7 @@ public static class AzureAISearchServiceCollectionExtensions
     {
         // If we are not constructing the SearchIndexClient, add the IVectorStore as transient, since we
         // cannot make assumptions about how SearchIndexClient is being managed.
-        services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
+        services.AddKeyedTransient<IVectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
@@ -149,11 +149,11 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>, <see cref="IVectorSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
+    /// Register an Azure AI Search <see cref="IVectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
     /// provided <see cref="Uri"/> and <see cref="TokenCredential"/> and the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="endpoint">The service endpoint for Azure AI Search.</param>
     /// <param name="tokenCredential">The credential to authenticate to Azure AI Search with.</param>
@@ -172,7 +172,7 @@ public static class AzureAISearchServiceCollectionExtensions
         Verify.NotNull(endpoint);
         Verify.NotNull(tokenCredential);
 
-        services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
+        services.AddKeyedSingleton<IVectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
@@ -193,11 +193,11 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>, <see cref="IVectorSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
+    /// Register an Azure AI Search <see cref="IVectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
     /// provided <see cref="Uri"/> and <see cref="AzureKeyCredential"/> and the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="endpoint">The service endpoint for Azure AI Search.</param>
     /// <param name="credential">The credential to authenticate to Azure AI Search with.</param>
@@ -216,7 +216,7 @@ public static class AzureAISearchServiceCollectionExtensions
         Verify.NotNull(endpoint);
         Verify.NotNull(credential);
 
-        services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
+        services.AddKeyedSingleton<IVectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
@@ -237,7 +237,7 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
+    /// Also register the <see cref="IVectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
@@ -248,7 +248,7 @@ public static class AzureAISearchServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceId);
+                return sp.GetRequiredKeyedService<IVectorStoreCollection<string, TRecord>>(serviceId);
             });
     }
 

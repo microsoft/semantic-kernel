@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -19,7 +18,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
     private readonly string _collectionName;
 
     /// <summary>The model.</summary>
-    private readonly VectorStoreRecordModel _model;
+    private readonly CollectionModel _model;
 
     /// <summary>A <see cref="JsonSerializerOptions"/> for serialization/deserialization of record properties.</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -40,7 +39,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
     public WeaviateDynamicDataModelMapper(
         string collectionName,
         bool hasNamedVectors,
-        VectorStoreRecordModel model,
+        CollectionModel model,
         JsonSerializerOptions jsonSerializerOptions)
     {
         this._collectionName = collectionName;
@@ -118,7 +117,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
         };
     }
 
-    public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
+    public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
         Verify.NotNull(storageModel);
 
@@ -129,7 +128,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
 
         if (!key.HasValue)
         {
-            throw new VectorStoreRecordMappingException("No key property was found in the record retrieved from storage.");
+            throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
         }
 
         result[this._model.KeyProperty.ModelName] = key.Value;
@@ -146,7 +145,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
         }
 
         // Populate vector properties.
-        if (options.IncludeVectors)
+        if (includeVectors)
         {
             if (this._hasNamedVectors)
             {

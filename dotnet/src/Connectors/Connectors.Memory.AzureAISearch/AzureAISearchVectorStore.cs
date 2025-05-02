@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.VectorData;
+using static Microsoft.Extensions.VectorData.VectorStoreErrorHandler;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
@@ -29,7 +30,7 @@ public sealed class AzureAISearchVectorStore : IVectorStore
     private readonly AzureAISearchVectorStoreOptions _options;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAISearchVectorStore"/> class.
@@ -51,18 +52,10 @@ public sealed class AzureAISearchVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : notnull
-    {
-#pragma warning disable CS0618 // IAzureAISearchVectorStoreRecordCollectionFactor is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
-        {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._searchIndexClient, name, vectorStoreRecordDefinition);
-        }
-#pragma warning restore CS0618
-
-        var recordCollection = new AzureAISearchVectorStoreRecordCollection<TKey, TRecord>(
+        => new AzureAISearchVectorStoreRecordCollection<TKey, TRecord>(
             this._searchIndexClient,
             name,
             new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>()
@@ -70,22 +63,21 @@ public sealed class AzureAISearchVectorStore : IVectorStore
                 JsonSerializerOptions = this._options.JsonSerializerOptions,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
-
-        return recordCollection!;
-    }
+            });
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
-        var indexNamesEnumerator = indexNamesEnumerable.GetAsyncEnumerator();
+        const string OperationName = "GetIndexNames";
 
-        var nextResult = await this.GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
-        while (nextResult.more)
+        var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
+        var errorHandlingEnumerable = new ConfiguredCancelableErrorHandlingAsyncEnumerable<string, RequestFailedException>(indexNamesEnumerable, this._metadata, OperationName);
+
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task: False Positive
+        await foreach (var item in errorHandlingEnumerable.ConfigureAwait(false))
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
         {
-            yield return nextResult.name;
-            nextResult = await this.GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
+            yield return item;
         }
     }
 
@@ -114,42 +106,5 @@ public sealed class AzureAISearchVectorStore : IVectorStore
             serviceType == typeof(SearchIndexClient) ? this._searchIndexClient :
             serviceType.IsInstanceOfType(this) ? this :
             null;
-    }
-
-    /// <summary>
-    /// Helper method to get the next index name from the enumerator with a try catch around the move next call to convert
-    /// any <see cref="RequestFailedException"/> to <see cref="VectorStoreOperationException"/>, since try catch is not supported
-    /// around a yield return.
-    /// </summary>
-    /// <param name="enumerator">The enumerator to get the next result from.</param>
-    /// <returns>A value indicating whether there are more results and the current string if true.</returns>
-    private async Task<(string name, bool more)> GetNextIndexNameAsync(
-        ConfiguredCancelableAsyncEnumerable<string>.Enumerator enumerator)
-    {
-        const string OperationName = "GetIndexNames";
-
-        try
-        {
-            var more = await enumerator.MoveNextAsync();
-            return (enumerator.Current, more);
-        }
-        catch (AggregateException ex) when (ex.InnerException is RequestFailedException innerEx)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
-                VectorStoreName = this._metadata.VectorStoreName,
-                OperationName = OperationName
-            };
-        }
-        catch (RequestFailedException ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
-                VectorStoreName = this._metadata.VectorStoreName,
-                OperationName = OperationName
-            };
-        }
     }
 }
