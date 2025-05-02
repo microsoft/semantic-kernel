@@ -79,7 +79,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
     /// <remarks>
     /// <para>
     /// The exact method of retrieval is implementation-specific and can vary based on database support.
-    /// The default implementation of this method retrieves the record one by one, but implementations which supporting batching can override to provide a more efficient implementation.
+    /// The default implementation of this method retrieves the records one after the other, but implementations which supporting batching can override to provide a more efficient implementation.
     /// </para>
     /// <para>
     /// Only found records are returned, so the result set might be smaller than the requested keys.
@@ -120,7 +120,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
     /// <remarks>
     /// <para>
     /// The exact method of deleting is implementation-specific and can vary based on database support.
-    /// The default implementation of this method deletes the records one by one, but implementations which supporting batching can override to provide a more efficient implementation.
+    /// The default implementation of this method deletes the records one after the other, but implementations which supporting batching can override to provide a more efficient implementation.
     /// </para>
     /// <para>
     /// If a record isn't found, it is ignored and the batch succeeds.
