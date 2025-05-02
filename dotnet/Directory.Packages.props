@@ -95,8 +95,8 @@
     <PackageVersion Include="SharpToken" Version="2.0.3" />
     <!-- Microsoft.Extensions.* -->
     <PackageVersion Include="Microsoft.Extensions.AI" Version="9.4.3-preview.1.25230.7" />
-    <PackageVersion Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.4.3-preview.1.25230.7" />
     <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="9.4.3-preview.1.25230.7" />
+    <PackageVersion Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.4.3-preview.1.25230.7" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="9.4.3-preview.1.25230.7" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
