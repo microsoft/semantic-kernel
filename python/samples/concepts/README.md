@@ -10,7 +10,7 @@
 - [Azure AI Agent with Auto Function Invocation Filter Streaming](./agents/azure_ai_agent/azure_ai_agent_auto_func_invocation_filter_streaming.py)
 - [Azure AI Agent with Auto Function Invocation Filter](./agents/azure_ai_agent/azure_ai_agent_auto_func_invocation_filter.py)
 - [Azure AI Agent with Azure AI Search](./agents/azure_ai_agent/azure_ai_agent_azure_ai_search.py)
-- [Azure AI Agent with Bing Grounding Streaming with Message Callback](./agents/azure_ai_agent/azure_ai_agent_bing_grounding_streaming.py)
+- [Azure AI Agent with Bing Grounding Streaming with Message Callback](./agents/azure_ai_agent/azure_ai_agent_bing_grounding_streaming_with_message_callback.py)
 - [Azure AI Agent with Bing Grounding](./agents/azure_ai_agent/azure_ai_agent_bing_grounding.py)
 - [Azure AI Agent with Code Interpreter Streaming with Message Callback](./agents/azure_ai_agent/azure_ai_agent_code_interpreter_streaming_with_message_callback.py)
 - [Azure AI Agent File Manipulation](./agents/azure_ai_agent/azure_ai_agent_file_manipulation.py)
