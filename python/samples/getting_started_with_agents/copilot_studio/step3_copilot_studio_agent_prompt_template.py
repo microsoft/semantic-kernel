@@ -7,9 +7,9 @@ from microsoft.agents.copilotstudio.client import (
 )
 
 from semantic_kernel.agents import CopilotStudioAgent, CopilotStudioAgentThread
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.contents import ChatMessageContent
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.prompt_template import PromptTemplateConfig
 
 """
 This sample demonstrates how to use the Copilot Studio agent to answer questions from the user.
