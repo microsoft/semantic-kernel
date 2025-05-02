@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Global.json = Global.json
+		Nuget.config = Nuget.config
+		solutions\readme.md = solutions\readme.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloAgents.ChatCompletion.Direct", "solutions\ChatCompletion.Direct\HelloAgents.ChatCompletion.Direct.csproj", "{DB95C4EC-9440-5B70-7399-142B41FE1774}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloAgents.ChatCompletion.Connection", "solutions\ChatCompletion.Connection\HelloAgents.ChatCompletion.Connection.csproj", "{33F7FE04-60E0-DED5-A3D2-8941A9ED424A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloAgents.ChatCompletion.Inference", "solutions\ChatCompletion.Inference\HelloAgents.ChatCompletion.Inference.csproj", "{FA30B87E-EAEF-93AE-4A5A-0EF3335EE9CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloAgents.AzureAgent.Existing", "solutions\AzureAgent.Existing\HelloAgents.AzureAgent.Existing.csproj", "{2C846E4A-95F7-6B5A-CD5D-8F5A7FD198F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloAgents.AzureAgent.New", "solutions\AzureAgent.New\HelloAgents.AzureAgent.New.csproj", "{0BF83E22-010B-FF4D-A5F1-67FE30247678}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Overview", "Overview", "{4B81D791-F444-47CB-922F-A24925080DB5}"
+	ProjectSection(SolutionItems) = preProject
+		solutions\Readme.md = solutions\Readme.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DB95C4EC-9440-5B70-7399-142B41FE1774}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB95C4EC-9440-5B70-7399-142B41FE1774}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB95C4EC-9440-5B70-7399-142B41FE1774}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB95C4EC-9440-5B70-7399-142B41FE1774}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33F7FE04-60E0-DED5-A3D2-8941A9ED424A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33F7FE04-60E0-DED5-A3D2-8941A9ED424A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33F7FE04-60E0-DED5-A3D2-8941A9ED424A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33F7FE04-60E0-DED5-A3D2-8941A9ED424A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA30B87E-EAEF-93AE-4A5A-0EF3335EE9CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA30B87E-EAEF-93AE-4A5A-0EF3335EE9CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA30B87E-EAEF-93AE-4A5A-0EF3335EE9CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA30B87E-EAEF-93AE-4A5A-0EF3335EE9CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C846E4A-95F7-6B5A-CD5D-8F5A7FD198F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C846E4A-95F7-6B5A-CD5D-8F5A7FD198F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C846E4A-95F7-6B5A-CD5D-8F5A7FD198F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C846E4A-95F7-6B5A-CD5D-8F5A7FD198F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BF83E22-010B-FF4D-A5F1-67FE30247678}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BF83E22-010B-FF4D-A5F1-67FE30247678}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BF83E22-010B-FF4D-A5F1-67FE30247678}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BF83E22-010B-FF4D-A5F1-67FE30247678}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FEC1EDB2-8509-422E-8A08-4574492E248F}
+	EndGlobalSection
+EndGlobal
