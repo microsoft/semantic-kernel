@@ -63,12 +63,14 @@ logger: logging.Logger = logging.getLogger(__name__)
 # region Token Factory
 
 
+@experimental
 def _log_auth_failure(result: dict[str, Any]) -> None:
     category = result.get("error", "unknown_error")
     corr_id = result.get("correlation_id", "n/a")[:8]  # Only log the first 8 characters
     logger.error(f"Copilot auth failure, category={category}, corr_id={corr_id}")
 
 
+@experimental
 class _CopilotStudioAgentTokenFactory:
     """A CopilotStudioAgentTokenFactory to handle authentication for the Copilot Studio agent."""
 
@@ -113,11 +115,16 @@ class _CopilotStudioAgentTokenFactory:
 
     def acquire(self) -> str:
         """Return a valid bearer token or raise AgentInitializationException."""
+        if self.mode is CopilotStudioAgentAuthMode.SERVICE:
+            # SERVICE auth wiring is present but not yet supported end-to-end.
+            logger.warning("SERVICE authentication mode is not yet supported; falling back to error.")
+            raise AgentInitializationException(
+                "Copilot Studio SERVICE authentication is not available yet. Please use INTERACTIVE mode instead."
+            )
+
         match self.mode:
             case CopilotStudioAgentAuthMode.SERVICE:
-                return self._acquire_service_token()
-            case CopilotStudioAgentAuthMode.OBO:
-                return self._acquire_obo_token()
+                return self._acquire_service_token()  # unreachable until the guard is removed
             case _:
                 return self._acquire_interactive_token()
 
@@ -153,18 +160,6 @@ class _CopilotStudioAgentTokenFactory:
         # proactive caching
         result = app.acquire_token_silent(self.scopes, account=None) or app.acquire_token_for_client(scopes=self.scopes)
 
-        return self._unwrap(result)
-
-    # on-behalf-of
-    def _acquire_obo_token(self) -> str:
-        if not self.user_assertion:
-            raise AgentInitializationException("user_assertion is required for on-behalf-of flow.")
-
-        app = self._new_confidential_client(client_credential=self.client_secret)
-        result = app.acquire_token_on_behalf_of(
-            user_assertion=self.user_assertion,
-            scopes=self.scopes,
-        )
         return self._unwrap(result)
 
     # interactive

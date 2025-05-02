@@ -13,12 +13,12 @@ from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
+@experimental
 class CopilotStudioAgentAuthMode(str, Enum):
     """The Copilot Studio agent authentication mode."""
 
-    INTERACTIVE = "interactive"  # legacy fallback
+    INTERACTIVE = "interactive"  # user authentication
     SERVICE = "service"  # client-credentials (app secret/cert)
-    OBO = "obo"  # on-behalf-of (user assertion)
 
 
 @experimental
