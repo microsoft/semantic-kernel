@@ -220,7 +220,7 @@ class CopilotStudioAgentThread(AgentThread):
             raise AgentThreadInitializationException("CopilotClient cannot be None")
 
         self._client = client
-        self._conversation_id: str | None = conversation_id  # Copilot Studio conversation ID
+        self._conversation_id = conversation_id  # Copilot Studio conversation ID
 
     @property
     def conversation_id(self) -> str | None:
