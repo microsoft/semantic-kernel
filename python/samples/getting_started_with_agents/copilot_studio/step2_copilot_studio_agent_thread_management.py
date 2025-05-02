@@ -15,14 +15,18 @@ It demonstrates how to use a thread to maintain context between user inputs.
 
 
 async def main() -> None:
-    client: CopilotClient = CopilotStudioAgent.setup_resources()
+    # As an example, manually create the client and pass it in to the agent
+    # 1. Create the client
+    client: CopilotClient = CopilotStudioAgent.create_client(auth_mode="interactive")
 
+    # 2. Create the agent
     agent = CopilotStudioAgent(
         client=client,
         name="PhysicsAgent",
         instructions="You are help answer questions about physics.",
     )
 
+    # 3. Create a list of user inputs
     USER_INPUTS = [
         "Hello! Who are you? My name is John Doe.",
         "What is the speed of light?",
@@ -30,13 +34,21 @@ async def main() -> None:
         "What is my name?",
     ]
 
+    # 4. Create a thread to maintain context between user inputs
+    # If no thread is provided, a new thread will be created
+    # and returned in the response
     thread: CopilotStudioAgentThread | None = None
 
+    # 5. Loop through the user inputs and get responses from the agent
     for user_input in USER_INPUTS:
         print(f"# User: {user_input}")
         response = await agent.get_response(messages=user_input, thread=thread)
         print(f"# {response.name}: {response}")
         thread = response.thread
+
+    # 6. If a thread was created, delete it when done
+    if thread:
+        await thread.delete()
 
     """
     Sample output:

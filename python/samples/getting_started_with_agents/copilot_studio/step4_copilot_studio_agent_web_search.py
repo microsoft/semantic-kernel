@@ -2,10 +2,6 @@
 
 import asyncio
 
-from microsoft.agents.copilotstudio.client import (
-    CopilotClient,
-)
-
 from semantic_kernel.agents import CopilotStudioAgent, CopilotStudioAgentThread
 
 """
@@ -16,26 +12,30 @@ If not already enabled, make sure to (re-)publish the agent so the changes take 
 
 
 async def main() -> None:
-    client: CopilotClient = CopilotStudioAgent.setup_resources()
-
+    # 1. Create the agent
     agent = CopilotStudioAgent(
-        client=client,
         name="WebSearchAgent",
         instructions="Help answer the user's questions by searching the web.",
     )
 
+    # 2. Create a list of user inputs
     USER_INPUTS = [
         "Which team won the 2025 NCAA Basketball championship?",
     ]
 
+    # 3. Create a thread to maintain context between user inputs
     thread: CopilotStudioAgentThread | None = None
 
+    # 4. Loop through the user inputs and get responses from the agent
     for user_input in USER_INPUTS:
         print(f"# User: {user_input}")
         async for response in agent.invoke(messages=user_input, thread=thread):
             print(f"# {response.name}: {response}")
             thread = response.thread
 
+    # 5. If a thread was created, delete it when done
+    if thread:
+        await thread.delete()
     """
     Sample output:
 

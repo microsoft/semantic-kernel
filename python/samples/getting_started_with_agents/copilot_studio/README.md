@@ -86,3 +86,33 @@ COPILOT_STUDIO_AGENT_AUTH_MODE=interactive
 ## Create an Application Registration in Entra ID – Service Principal Login
 
 > **Warning**: Service Principal login is **not yet supported** in the current version of the `CopilotStudioClient`.  
+
+## Creating a `CopilotStudioAgent` Client
+
+If all required environment variables are set correctly, you don't need to manually create or pass a `client`. Semantic Kernel will automatically construct the client using the environment configuration.
+
+However, if you need to override any environment variables—such as when specifying custom credentials or cloud settings—you should create the `client` explicitly using `CopilotStudioAgent.create_client(...)` and then pass it to the agent constructor.
+
+```python
+client: CopilotClient = CopilotStudioAgent.create_client(
+   auth_mode: CopilotStudioAgentAuthMode | Literal["interactive", "service"] | None = None,
+   agent_identifier: str | None = None,
+   app_client_id: str | None = None,
+   client_secret: str | None = None,
+   client_certificate: str | None = None,
+   cloud: PowerPlatformCloud | None = None,
+   copilot_agent_type: AgentType | None = None,
+   custom_power_platform_cloud: str | None = None,
+   env_file_encoding: str | None = None,
+   env_file_path: str | None = None,
+   environment_id: str | None = None,
+   tenant_id: str | None = None,
+   user_assertion: str | None = None,
+)
+
+agent = CopilotStudioAgent(
+   client=client,
+   name="<name>",
+   instructions="<instructions>",
+)
+```

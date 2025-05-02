@@ -2,10 +2,6 @@
 
 import asyncio
 
-from microsoft.agents.copilotstudio.client import (
-    CopilotClient,
-)
-
 from semantic_kernel.agents import CopilotStudioAgent, CopilotStudioAgentThread
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.functions import KernelArguments
@@ -19,19 +15,20 @@ It also demonstrates how to use a custom prompt template.
 
 
 async def main() -> None:
-    client: CopilotClient = CopilotStudioAgent.setup_resources()
-
+    # 1. Create the agent
     agent = CopilotStudioAgent(
-        client=client,
         name="JokeAgent",
         instructions="You are a joker. Tell kid-friendly jokes.",
         prompt_template_config=PromptTemplateConfig(template="Craft jokes about {{$topic}}"),
     )
 
+    # 2. Create a list of user inputs
     USER_INPUTS = [ChatMessageContent(role="user", content="Tell me a joke to make me laugh.")]
 
+    # 3. Create a thread to maintain context between user inputs
     thread: CopilotStudioAgentThread | None = None
 
+    # 4. Loop through the user inputs and get responses from the agent
     for user_input in USER_INPUTS:
         print(f"# User: {user_input}")
         response = await agent.get_response(
@@ -39,6 +36,10 @@ async def main() -> None:
         )
         print(f"# {response.name}: {response}")
         thread = response.thread
+
+    # 5. If a thread was created, delete it when done
+    if thread:
+        await thread.delete()
 
     """
     # User: Tell me a joke to make me laugh.

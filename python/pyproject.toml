@@ -88,7 +88,7 @@ faiss = [
     "faiss-cpu>=1.10.0"
 ]
 google = [
-    "google-cloud-aiplatform == 1.87.0",
+    "google-cloud-aiplatform == 1.89.0",
     "google-generativeai ~= 0.8"
 ]
 hugging_face = [
@@ -107,7 +107,7 @@ mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.12",
+    "pymongo >= 4.8.0, < 4.13",
     "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [

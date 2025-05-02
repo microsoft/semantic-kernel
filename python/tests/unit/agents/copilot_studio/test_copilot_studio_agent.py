@@ -212,7 +212,7 @@ def test_setup_resources_settings_validation_error():
             match="Failed to create Copilot Studio Agent settings",
         ),
     ):
-        _ = CopilotStudioAgent.setup_resources(app_client_id="appid", tenant_id="tenantid")
+        _ = CopilotStudioAgent.create_client(app_client_id="appid", tenant_id="tenantid")
 
 
 def test_setup_resources_missing_ids():
@@ -230,7 +230,7 @@ def test_setup_resources_missing_ids():
             match="Missing required configuration field\\(s\\): app_client_id, tenant_id",
         ),
     ):
-        _ = CopilotStudioAgent.setup_resources()
+        _ = CopilotStudioAgent.create_client()
 
 
 def test_setup_resources_happy_path(tmp_path, monkeypatch):
@@ -259,7 +259,7 @@ def test_setup_resources_happy_path(tmp_path, monkeypatch):
         cache_path = tmp_path / "cache.bin"
         monkeypatch.setenv("TOKEN_CACHE_PATH", str(cache_path))
 
-        returned = CopilotStudioAgent.setup_resources(
+        returned = CopilotStudioAgent.create_client(
             app_client_id="appid",
             tenant_id="tenantid",
             environment_id="env-id",
@@ -335,7 +335,12 @@ def stub_cache(monkeypatch):
 @pytest.mark.parametrize(
     "fake_app, expected_token, mode",
     [
-        (FakeAppSilent, "silent-token", CopilotStudioAgentAuthMode.SERVICE),
+        pytest.param(
+            FakeAppSilent,
+            "silent-token",
+            CopilotStudioAgentAuthMode.SERVICE,
+            marks=pytest.mark.skip(reason="Skipping SERVICE auth mode test as the mode is not yet supported."),
+        ),
         (FakeAppInteractive, "interactive-token", CopilotStudioAgentAuthMode.INTERACTIVE),
     ],
 )

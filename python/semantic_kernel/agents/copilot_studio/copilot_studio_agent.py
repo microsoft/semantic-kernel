@@ -272,7 +272,7 @@ class CopilotStudioAgent(Agent):
     def __init__(
         self,
         *,
-        client: CopilotClient,
+        client: CopilotClient | None = None,
         arguments: KernelArguments | None = None,
         description: str | None = None,
         id: str | None = None,
@@ -294,6 +294,9 @@ class CopilotStudioAgent(Agent):
             name: The name of the agent.
             prompt_template_config: The prompt template configuration for the agent.
         """
+        if client is None:
+            client = self.create_client()
+
         args: dict[str, Any] = {
             "client": client,
             "name": name or f"copilot_agent_{generate_random_ascii_name(6)}",
@@ -331,9 +334,9 @@ class CopilotStudioAgent(Agent):
             logger.warning("Plugins are not supported by CopilotStudioAgent; any kernel plugins will be ignored.")
 
     @staticmethod
-    def setup_resources(
+    def create_client(
         *,
-        auth_mode: CopilotStudioAgentAuthMode | Literal["interactive", "service", "obo"] | None = None,
+        auth_mode: CopilotStudioAgentAuthMode | Literal["interactive", "service"] | None = None,
         agent_identifier: str | None = None,
         app_client_id: str | None = None,
         client_secret: str | None = None,
@@ -347,10 +350,10 @@ class CopilotStudioAgent(Agent):
         tenant_id: str | None = None,
         user_assertion: str | None = None,
     ) -> CopilotClient:
-        """Set up the resources needed for the Copilot Studio agent.
+        """Create the Copilot Studio Agent Client.
 
         Args:
-            auth_mode: The authentication mode. This can be either `interactive`, `service`, or `obo` (on-behalf-of).
+            auth_mode: The authentication mode. This can be either `interactive` or `service`.
             agent_identifier: The agent identifier. This is the `Schema Name` of the agent from the
                 Copilot Studio Advanced Metadata settings.
             app_client_id: The app client ID. This is the app ID of the app registration configured in Entra.
