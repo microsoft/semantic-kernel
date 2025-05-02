@@ -131,5 +131,4 @@ public sealed class ApiManifestKernelExtensionsTests
         Assert.True(plugin.Contains("directoryObject_GetDirectoryObject"));
         Assert.Contains(plugin["directoryObject_GetDirectoryObject"].Metadata.AdditionalProperties, static p => p.Key == "method" && p.Value?.ToString() == "GET");
     }
-
 }
