@@ -3,10 +3,10 @@
 import ast
 import logging
 import sys
-from collections.abc import Sequence
-from typing import Any, ClassVar, Final, Generic
+from collections.abc import MutableSequence, Sequence
+from typing import Any, ClassVar, Final, Generic, TypeVar
 
-from chromadb import Client, Collection, QueryResult
+from chromadb import Client, Collection, GetResult, QueryResult
 from chromadb.api import ClientAPI
 from chromadb.api.collection_configuration import CreateCollectionConfiguration, CreateHNSWConfiguration
 from chromadb.api.types import EmbeddingFunction, Space
@@ -19,7 +19,6 @@ from semantic_kernel.data.text_search import KernelSearchResults
 from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
-    TKey,
     TModel,
     VectorStore,
     VectorStoreRecordCollection,
@@ -39,6 +38,8 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 logger = logging.getLogger(__name__)
+
+TKey = TypeVar("TKey", bound=str)
 
 
 DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, Space]] = {
@@ -231,8 +232,8 @@ class ChromaCollection(
         self,
         records: Sequence[Any],
         **kwargs: Any,
-    ) -> Sequence[str]:
-        upsert_obj = {"ids": [], "metadatas": []}
+    ) -> Sequence[TKey]:
+        upsert_obj: dict[str, Any] = {"ids": [], "metadatas": []}
         if self.embedding_func:
             upsert_obj["documents"] = []
         else:
@@ -274,22 +275,22 @@ class ChromaCollection(
         return self._unpack_results(results, include_vectors)
 
     def _unpack_results(
-        self, results: QueryResult, include_vectors: bool, include_distances: bool = False
+        self, results: QueryResult | GetResult, include_vectors: bool, include_distances: bool = False
     ) -> Sequence[dict[str, Any]]:
         try:
             if isinstance(results["ids"][0], str):
                 for k, v in results.items():
-                    results[k] = [v]
+                    results[k] = [v]  # type: ignore
         except IndexError:
             return []
-        records: list[dict[str, Any]] = []
+        records: MutableSequence[dict[str, Any]] = []
 
         if include_vectors and include_distances:
             for id, vector_field, metadata, distance in zip(
                 results["ids"][0],
-                results["documents" if self.embedding_func else "embeddings"][0],
-                results["metadatas"][0],
-                results["distances"][0],
+                results["documents" if self.embedding_func else "embeddings"][0],  # type: ignore
+                results["metadatas"][0],  # type: ignore
+                results["distances"][0],  # type: ignore
             ):
                 record: dict[str, Any] = (
                     {"id": id, "document": vector_field, "distance": distance}
@@ -297,54 +298,54 @@ class ChromaCollection(
                     else {"id": id, "embedding": vector_field, "distance": distance}
                 )
                 if metadata:
-                    record.update(metadata)
+                    record.update(metadata)  # type: ignore
                 records.append(record)
             return records
         if include_vectors and not include_distances:
             for id, vector_field, metadata in zip(
                 results["ids"][0],
-                results["documents" if self.embedding_func else "embeddings"][0],
-                results["metadatas"][0],
+                results["documents" if self.embedding_func else "embeddings"][0],  # type: ignore
+                results["metadatas"][0],  # type: ignore
             ):
-                record: dict[str, Any] = (
+                record = (
                     {"id": id, "document": vector_field}
                     if self.embedding_func
                     else {"id": id, "embedding": vector_field}
                 )
                 if metadata:
-                    record.update(metadata)
+                    record.update(metadata)  # type: ignore
                 records.append(record)
             return records
         if not include_vectors and include_distances:
             for id, document, metadata, distance in zip(
                 results["ids"][0],
-                results["documents"][0],
-                results["metadatas"][0],
-                results["distances"][0],
+                results["documents"][0],  # type: ignore
+                results["metadatas"][0],  # type: ignore
+                results["distances"][0],  # type: ignore
             ):
-                record: dict[str, Any] = (
+                record = (
                     {"id": id, "document": document, "distance": distance}
                     if self.embedding_func
                     else {"id": id, "distance": distance}
                 )
                 if metadata:
-                    record.update(metadata)
+                    record.update(metadata)  # type: ignore
                 records.append(record)
             return records
         for id, document, metadata in zip(
             results["ids"][0],
-            results["documents"][0],
-            results["metadatas"][0],
+            results["documents"][0],  # type: ignore
+            results["metadatas"][0],  # type: ignore
         ):
-            record: dict[str, Any] = {"id": id, "document": document} if self.embedding_func else {"id": id}
+            record = {"id": id, "document": document} if self.embedding_func else {"id": id}
             if metadata:
-                record.update(metadata)
+                record.update(metadata)  # type: ignore
             records.append(record)
         return records
 
     @override
-    async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
-        self._get_collection().delete(ids=keys)
+    async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
+        self._get_collection().delete(ids=keys)  # type: ignore
 
     @override
     async def _inner_search(
@@ -352,7 +353,7 @@ class ChromaCollection(
         search_type: SearchType,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
@@ -363,11 +364,11 @@ class ChromaCollection(
         include = ["metadatas", "distances"]
         if options.include_vectors:
             include.append("documents" if self.embedding_func else "embeddings")
-        args = {
+        args: dict[str, Any] = {
             "n_results": options.top,
             "include": include,
         }
-        if filter := self._build_filter(options.filter):
+        if filter := self._build_filter(options.filter):  # type: ignore
             args["where"] = filter if isinstance(filter, dict) else {"$and": filter}
         if self.embedding_func:
             args["query_texts"] = values
@@ -390,7 +391,7 @@ class ChromaCollection(
         return result["distance"]
 
     @override
-    def _lambda_parser(self, node: ast.AST) -> Any:
+    def _lambda_parser(self, node: ast.AST) -> dict[str, Any] | str | int | float | bool | None:  # type: ignore
         # Comparison operations
         match node:
             case ast.Compare():
@@ -403,30 +404,30 @@ class ChromaCollection(
                         op = node.ops[idx]
                         values.append(self._lambda_parser(ast.Compare(left=left, ops=[op], comparators=[right])))
                     return {"$and": values}
-                left = self._lambda_parser(node.left)
-                right = self._lambda_parser(node.comparators[0])
+                left = self._lambda_parser(node.left)  # type: ignore
+                right = self._lambda_parser(node.comparators[0])  # type: ignore
                 op = node.ops[0]
                 match op:
                     case ast.In():
-                        return {left: {"$in": right}}
+                        return {left: {"$in": right}}  # type: ignore
                     case ast.NotIn():
-                        return {left: {"$nin": right}}
+                        return {left: {"$nin": right}}  # type: ignore
                     case ast.Eq():
                         # Chroma allows short form: {field: value}
-                        return {left: right}
+                        return {left: right}  # type: ignore
                     case ast.NotEq():
-                        return {left: {"$ne": right}}
+                        return {left: {"$ne": right}}  # type: ignore
                     case ast.Gt():
-                        return {left: {"$gt": right}}
+                        return {left: {"$gt": right}}  # type: ignore
                     case ast.GtE():
-                        return {left: {"$gte": right}}
+                        return {left: {"$gte": right}}  # type: ignore
                     case ast.Lt():
-                        return {left: {"$lt": right}}
+                        return {left: {"$lt": right}}  # type: ignore
                     case ast.LtE():
-                        return {left: {"$lte": right}}
+                        return {left: {"$lte": right}}  # type: ignore
                 raise NotImplementedError(f"Unsupported operator: {type(op)}")
             case ast.BoolOp():
-                op = node.op
+                op = node.op  # type: ignore
                 values = [self._lambda_parser(v) for v in node.values]
                 if isinstance(op, ast.And):
                     return {"$and": values}

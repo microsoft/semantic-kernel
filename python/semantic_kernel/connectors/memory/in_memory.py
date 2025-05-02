@@ -3,7 +3,7 @@
 import ast
 import sys
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
-from typing import Any, ClassVar, Final, Generic
+from typing import Any, ClassVar, Final, Generic, TypeVar
 
 from numpy import dot
 from pydantic import Field
@@ -17,7 +17,6 @@ from semantic_kernel.data.text_search import KernelSearchResults
 from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
-    TKey,
     TModel,
     VectorStore,
     VectorStoreRecordCollection,
@@ -33,6 +32,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+TKey = TypeVar("TKey", bound=str | int | float)
 
 IN_MEMORY_SCORE_KEY: Final[str] = "in_memory_search_score"
 DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction | str, Callable[..., Any]]] = {
@@ -129,7 +129,7 @@ class InMemoryCollection(
         search_type: SearchType,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Inner search method."""
@@ -143,7 +143,8 @@ class InMemoryCollection(
             )
         if field.distance_function not in DISTANCE_FUNCTION_MAP:
             raise VectorSearchExecutionException(
-                f"Distance function '{field.distance_function}' is not supported. Supported functions are: {list(DISTANCE_FUNCTION_MAP.keys())}"
+                f"Distance function '{field.distance_function}' is not supported. "
+                f"Supported functions are: {list(DISTANCE_FUNCTION_MAP.keys())}"
             )
         distance_func = DISTANCE_FUNCTION_MAP[field.distance_function]
 
@@ -151,7 +152,7 @@ class InMemoryCollection(
             if vector and field is not None:
                 return_records[key] = self._calculate_vector_similarity(
                     vector,
-                    record[field],
+                    record[field.storage_property_name or field.name],
                     distance_func,
                     invert_score=field.distance_function == DistanceFunction.COSINE_SIMILARITY,
                 )
@@ -221,8 +222,8 @@ class InMemoryCollection(
 
     def _calculate_vector_similarity(
         self,
-        search_vector: list[float | int],
-        record_vector: list[float | int],
+        search_vector: Sequence[float | int],
+        record_vector: Sequence[float | int],
         distance_func: Callable,
         invert_score: bool = False,
     ) -> float:
@@ -247,6 +248,7 @@ class InMemoryStore(VectorStore):
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ):
+        """Create a In Memory Vector Store."""
         super().__init__(embedding_generator=embedding_generator, **kwargs)
 
     @override
@@ -263,6 +265,7 @@ class InMemoryStore(VectorStore):
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> "VectorStoreRecordCollection":
+        """Get a collection."""
         return InMemoryCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,

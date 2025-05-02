@@ -7,12 +7,10 @@ from typing import TYPE_CHECKING, Annotated
 from unittest.mock import MagicMock
 from uuid import uuid4
 
-import numpy as np
 import pandas as pd
 from pydantic import BaseModel
 from pytest import fixture
 
-from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings
 from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
     VectorStoreRecordDefinition,
@@ -325,9 +323,8 @@ def dataclass_vector_data_model(
     @dataclass
     class MyDataModel:
         vector: Annotated[
-            list[float] | None,
+            str | list[float] | None,
             VectorStoreRecordVectorField(
-                embedding_settings={"default": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
                 index_kind=index_kind,
                 dimensions=dimensions,
                 distance_function=distance_function,
@@ -335,36 +332,7 @@ def dataclass_vector_data_model(
             ),
         ] = None
         id: Annotated[str, VectorStoreRecordKeyField(property_type="str")] = field(default_factory=lambda: str(uuid4()))
-        content: Annotated[
-            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
-        ] = "content1"
-
-    return MyDataModel
-
-
-@fixture
-def dataclass_vector_data_model_array(
-    index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
-) -> object:
-    @vectorstoremodel
-    @dataclass
-    class MyDataModel:
-        vector: Annotated[
-            list[float] | None,
-            VectorStoreRecordVectorField(
-                embedding_settings={"default": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
-                index_kind=index_kind,
-                dimensions=dimensions,
-                distance_function=distance_function,
-                property_type=vector_property_type,
-                serialize_function=np.ndarray.tolist,
-                deserialize_function=np.array,
-            ),
-        ] = None
-        id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
-        content: Annotated[
-            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
-        ] = "content1"
+        content: Annotated[str, VectorStoreRecordDataField(property_type="str")] = "content1"
 
     return MyDataModel
 
@@ -374,18 +342,17 @@ def data_model_definition(
     index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
 ) -> VectorStoreRecordDefinition:
     return VectorStoreRecordDefinition(
-        fields={
-            "id": VectorStoreRecordKeyField(property_type="str"),
-            "content": VectorStoreRecordDataField(
-                has_embedding=True, embedding_property_name="vector", property_type="str", is_full_text_indexed=True
-            ),
-            "vector": VectorStoreRecordVectorField(
+        fields=[
+            VectorStoreRecordKeyField(name="id", property_type="str"),
+            VectorStoreRecordDataField(name="content", property_type="str", is_full_text_indexed=True),
+            VectorStoreRecordVectorField(
+                name="vector",
                 dimensions=dimensions,
                 index_kind=index_kind,
                 distance_function=distance_function,
                 property_type=vector_property_type,
             ),
-        }
+        ]
     )
 
 
@@ -394,19 +361,17 @@ def data_model_definition_pandas(
     index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
 ) -> object:
     return VectorStoreRecordDefinition(
-        fields={
-            "vector": VectorStoreRecordVectorField(
+        fields=[
+            VectorStoreRecordVectorField(
                 name="vector",
                 index_kind=index_kind,
                 dimensions=dimensions,
                 distance_function=distance_function,
                 property_type=vector_property_type,
             ),
-            "id": VectorStoreRecordKeyField(name="id"),
-            "content": VectorStoreRecordDataField(
-                name="content", has_embedding=True, embedding_property_name="vector", property_type="str"
-            ),
-        },
+            VectorStoreRecordKeyField(name="id"),
+            VectorStoreRecordDataField(name="content", property_type="str"),
+        ],
         container_mode=True,
         to_dict=lambda x: x.to_dict(orient="records"),
         from_dict=lambda x, **_: pd.DataFrame(x),
@@ -417,9 +382,9 @@ def data_model_definition_pandas(
 def data_model_type(index_kind: str, distance_function: str, vector_property_type: str, dimensions: int) -> object:
     @vectorstoremodel
     class DataModelClass(BaseModel):
-        content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")]
+        content: Annotated[str, VectorStoreRecordDataField()]
         vector: Annotated[
-            list[float],
+            str | list[float] | None,
             VectorStoreRecordVectorField(
                 index_kind=index_kind,
                 distance_function=distance_function,
@@ -440,9 +405,9 @@ def data_model_type_with_key_as_key_field(
 
     @vectorstoremodel
     class DataModelClass(BaseModel):
-        content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")]
+        content: Annotated[str, VectorStoreRecordDataField()]
         vector: Annotated[
-            list[float],
+            str | list[float] | None,
             VectorStoreRecordVectorField(
                 index_kind=index_kind,
                 distance_function=distance_function,

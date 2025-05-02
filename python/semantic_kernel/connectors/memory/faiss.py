@@ -9,17 +9,17 @@ import numpy as np
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.connectors.memory.in_memory import IN_MEMORY_SCORE_KEY, InMemoryCollection, InMemoryStore
+from semantic_kernel.connectors.memory.in_memory import IN_MEMORY_SCORE_KEY, InMemoryCollection, InMemoryStore, TKey
 from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
 from semantic_kernel.data.text_search import KernelSearchResults
 from semantic_kernel.data.vector_search import SearchType, VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import TKey, TModel
+from semantic_kernel.data.vector_storage import TModel
 from semantic_kernel.exceptions import VectorStoreInitializationException, VectorStoreOperationException
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException
 
 if TYPE_CHECKING:
-    from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
+    pass
 
 
 if sys.version_info >= (3, 12):
@@ -161,21 +161,21 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
     @override
     async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         """Upsert records."""
-        for vector_field in self.data_model_definition.vector_field_names:
-            vectors_to_add = [record.get(vector_field) for record in records]
+        for vector_field in self.data_model_definition.vector_fields:
+            vectors_to_add = [record.get(vector_field.storage_property_name or vector_field.name) for record in records]
             vectors = np.array(vectors_to_add, dtype=np.float32)
-            if not self.indexes[vector_field].is_trained:
+            if not self.indexes[vector_field.name].is_trained:
                 raise VectorStoreOperationException(
-                    f"This index (of type {type(self.indexes[vector_field])}) requires training, "
+                    f"This index (of type {type(self.indexes[vector_field.name])}) requires training, "
                     "which is not supported. To train the index, "
-                    f"use <collection>.indexes[{vector_field}].train, "
+                    f"use <collection>.indexes[{vector_field.name}].train, "
                     "see faiss docs for more details."
                 )
-            self.indexes[vector_field].add(vectors)  # type: ignore[call-arg]
-            start = len(self.indexes_key_map[vector_field])
+            self.indexes[vector_field.name].add(vectors)  # type: ignore
+            start = len(self.indexes_key_map[vector_field.name])
             for i, record in enumerate(records):
                 key = record[self.data_model_definition.key_field.name]
-                self.indexes_key_map[vector_field][key] = start + i
+                self.indexes_key_map[vector_field.name][key] = start + i
         return await super()._inner_upsert(records, **kwargs)
 
     @override
@@ -207,7 +207,7 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
         search_type: SearchType,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Inner search method."""
@@ -223,11 +223,13 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
         filtered_records = self._get_filtered_records(options)
         np_vector = np.array(vector, dtype=np.float32).reshape(1, -1)
         # then do the actual vector search
-        distances, indexes = self.indexes[field].search(np_vector, min(options.top, self.indexes[field].ntotal))  # type: ignore[call-arg]
+        distances, indexes = self.indexes[field.name].search(
+            np_vector, min(options.top, self.indexes[field.name].ntotal)
+        )  # type: ignore[call-arg]
         # we then iterate through the results, the order is the order of relevance
         # (less or most distance, dependant on distance metric used)
         for i, index in enumerate(indexes[0]):
-            key = list(self.indexes_key_map[field].keys())[index]
+            key = list(self.indexes_key_map[field.name].keys())[index]
             # if the key is not in the filtered records, we ignore it
             if key not in filtered_records:
                 continue
@@ -248,6 +250,7 @@ class FaissStore(InMemoryStore):
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ):
+        """Create a Faiss store."""
         super().__init__(embedding_generator=embedding_generator, **kwargs)
 
     @override
@@ -259,7 +262,8 @@ class FaissStore(InMemoryStore):
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
+    ) -> FaissCollection:
+        """Get a Faiss collection."""
         return FaissCollection(
             collection_name=collection_name,
             data_model_type=data_model_type,

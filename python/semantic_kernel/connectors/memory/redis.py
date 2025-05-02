@@ -7,7 +7,7 @@ import json
 import logging
 import sys
 from abc import abstractmethod
-from collections.abc import Sequence
+from collections.abc import MutableSequence, Sequence
 from copy import copy
 from enum import Enum
 from typing import Any, ClassVar, Final, Generic, TypeVar
@@ -35,7 +35,6 @@ from semantic_kernel.data.text_search import KernelSearchResults
 from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
-    TKey,
     TModel,
     VectorStore,
     VectorStoreRecordCollection,
@@ -57,7 +56,7 @@ else:
 
 logger = logging.getLogger(__name__)
 
-
+TKey = TypeVar("TKey", bound=str)
 TQuery = TypeVar("TQuery", bound=BaseQuery)
 
 
@@ -164,9 +163,9 @@ def _data_model_definition_to_redis_fields(
         if isinstance(field, VectorStoreRecordKeyField):
             continue
         if collection_type == RedisCollectionTypes.HASHSET:
-            fields.append(_field_to_redis_field_hashset(field.storage_property_name or field.name, field))
+            fields.append(_field_to_redis_field_hashset(field.storage_property_name or field.name, field))  # type: ignore
         elif collection_type == RedisCollectionTypes.JSON:
-            fields.append(_field_to_redis_field_json(field.storage_property_name or field.name, field))
+            fields.append(_field_to_redis_field_json(field.storage_property_name or field.name, field))  # type: ignore
     return fields
 
 
@@ -251,14 +250,14 @@ class RedisCollection(
             **kwargs,
         )
 
-    def _get_redis_key(self, key: str) -> str:
+    def _get_redis_key(self, key: TKey) -> TKey:
         if self.prefix_collection_name_to_key_names:
-            return f"{self.collection_name}:{key}"
+            return f"{self.collection_name}:{key}"  # type: ignore
         return key
 
-    def _unget_redis_key(self, key: str) -> str:
+    def _unget_redis_key(self, key: TKey) -> TKey:
         if self.prefix_collection_name_to_key_names and ":" in key:
-            return key[len(self.collection_name) + 1 :]
+            return key[len(self.collection_name) + 1 :]  # type: ignore
         return key
 
     @override
@@ -306,7 +305,7 @@ class RedisCollection(
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         """Exit the context manager."""
         if self.managed_client:
-            await self.redis_database.aclose()
+            await self.redis_database.aclose()  # type: ignore
 
     @override
     async def _inner_search(
@@ -314,7 +313,7 @@ class RedisCollection(
         search_type: SearchType,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         if not vector:
@@ -322,7 +321,7 @@ class RedisCollection(
         if not vector:
             raise VectorSearchExecutionException("No vector found.")
         query = self._construct_vector_query(vector, options, **kwargs)
-        results = await self.redis_database.ft(self.collection_name).search(
+        results = await self.redis_database.ft(self.collection_name).search(  # type: ignore
             query=query.query, query_params=query.params
         )
         processed = process_results(results, query, STORAGE_TYPE_MAP[self.collection_type])
@@ -332,20 +331,20 @@ class RedisCollection(
         )
 
     def _construct_vector_query(
-        self, vector: list[float | int], options: VectorSearchOptions, **kwargs: Any
+        self, vector: Sequence[float | int], options: VectorSearchOptions, **kwargs: Any
     ) -> VectorQuery:
         vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
         if not vector_field:
             raise VectorSearchOptionsException("Vector field not found.")
 
         query = VectorQuery(
-            vector=vector,
+            vector=vector,  # type: ignore
             vector_field_name=vector_field.storage_property_name or vector_field.name,  # type: ignore
             num_results=options.top + options.skip,
             dialect=2,
             return_score=True,
         )
-        if filter := self._build_filter(options.filter):
+        if filter := self._build_filter(options.filter):  # type: ignore
             if isinstance(filter, list):
                 expr = filter[0]
                 for v in filter[1:]:
@@ -451,7 +450,7 @@ class RedisCollection(
                     raise NotImplementedError(f"Unsupported operator: {type(op)}")
                 raise NotImplementedError("Comparison must be between a field and a value.")
             case ast.BoolOp():
-                op = node.op
+                op = node.op  # type: ignore
                 values = [self._lambda_parser(v) for v in node.values]
                 if isinstance(op, ast.And):
                     expr = values[0]
@@ -552,17 +551,17 @@ class RedisHashsetCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel
         )
 
     @override
-    async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[str]:
+    async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         return await asyncio.gather(*[self._single_upsert(record) for record in records])
 
-    async def _single_upsert(self, upsert_record: Any) -> str:
+    async def _single_upsert(self, upsert_record: Any) -> TKey:
         await self.redis_database.hset(**upsert_record)
         return self._unget_redis_key(upsert_record["name"])
 
     @override
     async def _inner_get(
         self,
-        keys: Sequence[str] | None = None,
+        keys: Sequence[TKey] | None = None,
         options: GetFilteredRecordOptions | None = None,
         **kwargs,
     ) -> Sequence[dict[str, Any]] | None:
@@ -581,7 +580,7 @@ class RedisHashsetCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel
         return result
 
     @override
-    async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
+    async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
         await self.redis_database.delete(*[self._get_redis_key(key) for key in keys])
 
     @override
@@ -591,9 +590,9 @@ class RedisHashsetCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel
         **kwargs: Any,
     ) -> Sequence[dict[str, Any]]:
         """Serialize the dict to a Redis store model."""
-        results = []
+        results: MutableSequence[dict[str, Any]] = []
         for record in records:
-            result = {"mapping": {}}
+            result: dict[str, Any] = {"mapping": {}}
             for field in self.data_model_definition.fields:
                 if isinstance(field, VectorStoreRecordVectorField):
                     dtype = DATATYPE_MAP_VECTOR[field.property_type or "default"].lower()
@@ -682,20 +681,20 @@ class RedisJsonCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel]):
         )
 
     @override
-    async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[str]:
+    async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         return await asyncio.gather(*[self._single_upsert(record) for record in records])
 
-    async def _single_upsert(self, upsert_record: Any) -> str:
+    async def _single_upsert(self, upsert_record: Any) -> TKey:
         await self.redis_database.json().set(upsert_record["name"], "$", upsert_record["value"])
         return self._unget_redis_key(upsert_record["name"])
 
     @override
     async def _inner_get(
         self,
-        keys: Sequence[str] | None = None,
+        keys: Sequence[TKey] | None = None,
         options: GetFilteredRecordOptions | None = None,
         **kwargs,
-    ) -> Sequence[dict[bytes, bytes]] | None:
+    ) -> Sequence[dict[str, Any]] | None:
         if not keys:
             if options is not None:
                 raise NotImplementedError("Get without keys is not yet implemented.")
@@ -706,7 +705,7 @@ class RedisJsonCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel]):
         results = await self.redis_database.json().mget(redis_keys, "$", **kwargs_copy)
         return [self._add_key(key, result[0]) for key, result in zip(redis_keys, results) if result]
 
-    def _add_key(self, key: str, record: dict[str, Any]) -> dict[str, Any]:
+    def _add_key(self, key: TKey, record: dict[str, Any]) -> dict[str, Any]:
         record[self.data_model_definition.key_field_name] = key
         return record
 
@@ -721,9 +720,9 @@ class RedisJsonCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel]):
         **kwargs: Any,
     ) -> Sequence[dict[str, Any]]:
         """Serialize the dict to a Redis store model."""
-        results = []
+        results: MutableSequence[dict[str, Any]] = []
         for record in records:
-            result = {"value": {}}
+            result: dict[str, Any] = {"value": {}}
             for field in self.data_model_definition.fields:
                 if isinstance(field, VectorStoreRecordKeyField):
                     result["name"] = self._get_redis_key(record[field.name])
@@ -775,6 +774,7 @@ class RedisStore(VectorStore):
         redis_database: Redis | None = None,
         **kwargs: Any,
     ) -> None:
+        """RedisMemoryStore is an abstracted interface to interact with a Redis instance."""
         if redis_database:
             super().__init__(
                 redis_database=redis_database,
@@ -814,25 +814,37 @@ class RedisStore(VectorStore):
         """Get a RedisCollection..
 
         Args:
-            collection_name (str): The name of the collection.
-            data_model_type (type[TModel]): The type of the data model.
-            data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
-            collection_type (RedisCollectionTypes): The type of the collection, can be JSON or HASHSET.
-
+            data_model_type: The type of the data model.
+            data_model_definition: The model fields, optional.
+            collection_name: The name of the collection.
+            embedding_generator: The embedding generator to use.
+            collection_type: The type of the collection, can be JSON or HASHSET.
             **kwargs: Additional keyword arguments, passed to the collection constructor.
         """
-        return RedisCollection(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
-            collection_name=collection_name,
-            redis_database=self.redis_database,
-            collection_type=collection_type,
-            embedding_generator=embedding_generator or self.embedding_generator,
-            **kwargs,
+        if collection_type == RedisCollectionTypes.HASHSET:
+            return RedisHashsetCollection(
+                data_model_type=data_model_type,
+                data_model_definition=data_model_definition,
+                collection_name=collection_name,
+                redis_database=self.redis_database,
+                embedding_generator=embedding_generator or self.embedding_generator,
+                **kwargs,
+            )
+        if collection_type == RedisCollectionTypes.JSON:
+            return RedisJsonCollection(
+                data_model_type=data_model_type,
+                data_model_definition=data_model_definition,
+                collection_name=collection_name,
+                redis_database=self.redis_database,
+                embedding_generator=embedding_generator or self.embedding_generator,
+                **kwargs,
+            )
+        raise VectorStoreOperationException(
+            f"Collection type {collection_type} is not supported. Supported types are: {RedisCollectionTypes}"
         )
 
     @override
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         """Exit the context manager."""
         if self.managed_client:
-            await self.redis_database.aclose()
+            await self.redis_database.aclose()  # type: ignore

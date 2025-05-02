@@ -5,7 +5,7 @@ import asyncio
 import logging
 import sys
 from collections.abc import Sequence
-from typing import Any, ClassVar, Final, Generic
+from typing import Any, ClassVar, Final, Generic, TypeVar
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.credentials_async import AsyncTokenCredential
@@ -40,7 +40,6 @@ from semantic_kernel.data.text_search import KernelSearchResults
 from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.data.vector_storage import (
     GetFilteredRecordOptions,
-    TKey,
     TModel,
     VectorStore,
     VectorStoreRecordCollection,
@@ -63,7 +62,8 @@ else:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-__all__ = ["AzureAISearchCollection", "AzureAISearchSettings", "AzureAISearchStore"]
+
+TKey = TypeVar("TKey", bound=str)
 
 INDEX_ALGORITHM_MAP: Final[dict[IndexKind, tuple[type, type]]] = {
     IndexKind.HNSW: (HnswAlgorithmConfiguration, HnswParameters),
@@ -453,7 +453,7 @@ class AzureAISearchCollection(
         search_type: SearchType,
         options: VectorSearchOptions,
         values: Any | None = None,
-        vector: list[float | int] | None = None,
+        vector: Sequence[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         search_args: dict[str, Any] = {
@@ -473,7 +473,7 @@ class AzureAISearchCollection(
                     vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
                     search_args["vector_queries"] = [
                         VectorizedQuery(
-                            vector=vector,
+                            vector=vector,  # type: ignore
                             fields=vector_field.name if vector_field else None,
                         )
                     ]
@@ -483,7 +483,7 @@ class AzureAISearchCollection(
                     if generated_vector is not None:
                         search_args["vector_queries"] = [
                             VectorizedQuery(
-                                vector=generated_vector,
+                                vector=generated_vector,  # type: ignore
                                 fields=vector_field.name if vector_field else None,
                             )
                         ]
@@ -517,7 +517,7 @@ class AzureAISearchCollection(
                 if vector is not None:
                     search_args["vector_queries"] = [
                         VectorizedQuery(
-                            vector=vector,
+                            vector=vector,  # type: ignore
                             fields=vector_field.name if vector_field else None,
                         )
                     ]
@@ -642,6 +642,7 @@ class AzureAISearchStore(VectorStore):
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> None:
+        """Initializes a new instance of the AzureAISearchStore class."""
         managed_client: bool = False
         if not search_index_client:
             try:

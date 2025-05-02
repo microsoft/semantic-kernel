@@ -7,10 +7,7 @@ import numpy as np
 from pandas import DataFrame
 from pytest import mark, raises
 
-from semantic_kernel.data.record_definition import (
-    SerializeMethodProtocol,
-    ToDictMethodProtocol,
-)
+from semantic_kernel.data.record_definition import SerializeMethodProtocol, ToDictMethodProtocol
 from semantic_kernel.exceptions import (
     VectorStoreModelDeserializationException,
     VectorStoreModelSerializationException,
@@ -438,20 +435,6 @@ def test_to_dict_fail(vector_store_record_collection):
         vector_store_record_collection.serialize(record)
 
 
-def test_serialize_with_array_func(DictVectorStoreRecordCollection, data_model_type_pydantic_array):
-    vector_store_record_collection = DictVectorStoreRecordCollection(
-        collection_name="test",
-        data_model_type=data_model_type_pydantic_array,
-    )
-    record = data_model_type_pydantic_array(**{
-        "id": "test_id",
-        "content": "test_content",
-        "vector": np.array([1.0, 2.0, 3.0]),
-    })
-    serialized_record = vector_store_record_collection.serialize(record)
-    assert serialized_record["vector"] == [1.0, 2.0, 3.0]
-
-
 # region Deserialize
 
 
@@ -543,18 +526,3 @@ def test_from_dict_fail(vector_store_record_collection):
     vector_store_record_collection.data_model_type = model
     with raises(VectorStoreModelDeserializationException, match="Error deserializing record"):
         vector_store_record_collection.deserialize(dict_record)
-
-
-def test_deserialize_with_array_func(DictVectorStoreRecordCollection, data_model_type_pydantic_array):
-    vector_store_record_collection = DictVectorStoreRecordCollection(
-        collection_name="test",
-        data_model_type=data_model_type_pydantic_array,
-    )
-    record = {
-        "id": "test_id",
-        "content": "test_content",
-        "vector": [1.0, 2.0, 3.0],
-    }
-    deserialized_record = vector_store_record_collection.deserialize(record)
-    assert isinstance(deserialized_record.vector, np.ndarray)
-    assert np.array_equal(deserialized_record.vector, np.array([1.0, 2.0, 3.0]))

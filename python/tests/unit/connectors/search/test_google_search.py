@@ -5,12 +5,12 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import HTTPStatusError, RequestError, Response
 
-from semantic_kernel.connectors.search.google.google_search import GoogleSearch
-from semantic_kernel.connectors.search.google.google_search_response import (
+from semantic_kernel.connectors.search.google import (
+    GoogleSearch,
     GoogleSearchInformation,
     GoogleSearchResponse,
+    GoogleSearchResult,
 )
-from semantic_kernel.connectors.search.google.google_search_result import GoogleSearchResult
 from semantic_kernel.data.text_search import TextSearchOptions
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
@@ -132,16 +132,6 @@ async def test_get_search_results(google_search) -> None:
         assert len(items) == 2
         assert items[0].title == "Title1"
         assert items[1].link == "Link2"
-
-
-async def test_build_query_equal_to_filter(google_search) -> None:
-    """Test that if an EqualTo filter is recognized, it is sent along in query params."""
-    options = TextSearchOptions()
-    options.filter = SearchFilter.equal_to(field_name="lr", value="lang_en")
-    options.filter.filters.append(AnyTagsEqualTo(field_name="tags", value="tag1"))
-
-    with patch.object(google_search, "_inner_search", new=AsyncMock(return_value=GoogleSearchResponse())):
-        await google_search.search(query="hello world", options=options)
 
 
 async def test_google_search_includes_total_count(google_search) -> None:

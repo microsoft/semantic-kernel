@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-from abc import ABC
 from collections.abc import Sequence
 from inspect import Parameter, _empty, signature
 from types import MappingProxyType, NoneType
@@ -25,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 @release_candidate
 @dataclass(kw_only=True, config=ConfigDict(extra="allow"))
-class VectorStoreRecordField(ABC):
+class VectorStoreRecordField:
     """Vector store record fields.
 
     Args:
@@ -234,6 +233,8 @@ class ToDictMethodProtocol(Protocol):
 
 # region: VectorStoreRecordDefinition
 
+VectorStoreRecordFields = VectorStoreRecordKeyField | VectorStoreRecordDataField | VectorStoreRecordVectorField
+
 
 @release_candidate
 class VectorStoreRecordDefinition(KernelBaseModel):
@@ -248,7 +249,7 @@ class VectorStoreRecordDefinition(KernelBaseModel):
 
     """
 
-    fields: list[VectorStoreRecordField]
+    fields: list[VectorStoreRecordFields]
     key_field_name: str = Field(default="", init=False)
     container_mode: bool = False
     collection_name: str | None = None
@@ -270,7 +271,7 @@ class VectorStoreRecordDefinition(KernelBaseModel):
     @property
     def key_field(self) -> "VectorStoreRecordKeyField":
         """Get the key field."""
-        return next((field for field in self.fields if field.name == self.key_field_name), None)  # type: ignore[return-value, arg-type]
+        return next((field for field in self.fields if field.name == self.key_field_name), None)  # type: ignore
 
     @property
     def key_field_storage_property_name(self) -> str:
