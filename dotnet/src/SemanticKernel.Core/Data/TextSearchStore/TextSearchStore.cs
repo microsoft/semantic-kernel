@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -24,7 +23,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// with the <see cref="VectorStoreTextSearch{TRecord}"/> class instead.
 /// </para>
 /// <para>
-/// This class can also be used with the <see cref="TextRagComponent"/> to easily add RAG capabilities to an Agent.
+/// This class can also be used with the <see cref="TextSearchBehavior"/> to easily add RAG capabilities to an Agent.
 /// </para>
 /// </remarks>
 /// <typeparam name="TKey">The key type to use with the vector store.</typeparam>
