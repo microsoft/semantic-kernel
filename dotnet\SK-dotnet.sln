@@ -1,0 +1,11 @@
+dotnet\SK-dotnet.sln
+
+@@ -552,6 +552,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime.InProcess.UnitTests
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorData.UnitTests", "src\Connectors\VectorData.UnitTests\VectorData.UnitTests.csproj", "{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorData.UnitTests", "src\Connectors\VectorData.UnitTests\VectorData.UnitTests.csproj", "{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
