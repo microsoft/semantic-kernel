@@ -17,7 +17,7 @@ namespace SemanticKernel.UnitTests.Data;
 public class TextSearchBehaviorTests
 {
     [Theory]
-    [InlineData(null, null, "Consider the following information when responding to the user:", "Include citations to the relevant information where it is referenced in the response.")]
+    [InlineData(null, null, "Consider the following information from source documents when responding to the user:", "Include citations to the source document including name and link.")]
     [InlineData("Custom context prompt", "Custom citations prompt", "Custom context prompt", "Custom citations prompt")]
     public async Task OnModelInvokeShouldIncludeSearchResultsInOutputAsync(
         string? overrideContextPrompt,
@@ -70,13 +70,11 @@ public class TextSearchBehaviorTests
 
         // Assert
         Assert.Contains(expectedContextPrompt, result);
-        Assert.Contains("Item 1:", result);
-        Assert.Contains("Name: Doc1", result);
-        Assert.Contains("Link: http://example.com/doc1", result);
+        Assert.Contains("SourceDocName: Doc1", result);
+        Assert.Contains("SourceDocLink: http://example.com/doc1", result);
         Assert.Contains("Contents: Content of Doc1", result);
-        Assert.Contains("Item 2:", result);
-        Assert.Contains("Name: Doc2", result);
-        Assert.Contains("Link: http://example.com/doc2", result);
+        Assert.Contains("SourceDocName: Doc2", result);
+        Assert.Contains("SourceDocLink: http://example.com/doc2", result);
         Assert.Contains("Contents: Content of Doc2", result);
         Assert.Contains(expectedCitationsPrompt, result);
     }
@@ -113,7 +111,7 @@ public class TextSearchBehaviorTests
     }
 
     [Theory]
-    [InlineData(null, null, "Consider the following information when responding to the user:", "Include citations to the relevant information where it is referenced in the response.")]
+    [InlineData(null, null, "Consider the following information from source documents when responding to the user:", "Include citations to the source document including name and link.")]
     [InlineData("Custom context prompt", "Custom citations prompt", "Custom context prompt", "Custom citations prompt")]
     public async Task SearchAsyncShouldIncludeSearchResultsInOutputAsync(
         string? overrideContextPrompt,
@@ -165,13 +163,11 @@ public class TextSearchBehaviorTests
 
         // Assert
         Assert.Contains(expectedContextPrompt, result);
-        Assert.Contains("Item 1:", result);
-        Assert.Contains("Name: Doc1", result);
-        Assert.Contains("Link: http://example.com/doc1", result);
+        Assert.Contains("SourceDocName: Doc1", result);
+        Assert.Contains("SourceDocLink: http://example.com/doc1", result);
         Assert.Contains("Contents: Content of Doc1", result);
-        Assert.Contains("Item 2:", result);
-        Assert.Contains("Name: Doc2", result);
-        Assert.Contains("Link: http://example.com/doc2", result);
+        Assert.Contains("SourceDocName: Doc2", result);
+        Assert.Contains("SourceDocLink: http://example.com/doc2", result);
         Assert.Contains("Contents: Content of Doc2", result);
         Assert.Contains(expectedCitationsPrompt, result);
     }
