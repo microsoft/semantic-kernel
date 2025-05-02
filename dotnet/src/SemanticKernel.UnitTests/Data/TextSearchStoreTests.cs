@@ -66,8 +66,8 @@ public class TextSearchStoreTests
     {
         // Arrange
         this._recordCollectionMock
-            .Setup(r => r.UpsertBatchAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable.Empty<string>());
+            .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<string>());
 
         using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128);
 
@@ -82,7 +82,7 @@ public class TextSearchStoreTests
         // Assert
         this._recordCollectionMock.Verify(r => r.CreateCollectionIfNotExistsAsync(It.IsAny<CancellationToken>()), Times.Once);
         this._embeddingServiceMock.Verify(e => e.GenerateEmbeddingsAsync(It.Is<IList<string>>(texts => texts.Count == 1 && texts[0] == "Sample text"), null, It.IsAny<CancellationToken>()), Times.Once);
-        this._recordCollectionMock.Verify(r => r.UpsertBatchAsync(
+        this._recordCollectionMock.Verify(r => r.UpsertAsync(
             It.Is<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(doc =>
                 doc.Count() == 1 &&
                 doc.First().Text == "Sample text" &&
@@ -100,8 +100,8 @@ public class TextSearchStoreTests
     {
         // Arrange
         this._recordCollectionMock
-            .Setup(r => r.UpsertBatchAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable.Empty<string>());
+            .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<string>());
 
         using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128, new() { UseSourceIdAsPrimaryKey = true });
 
@@ -114,7 +114,7 @@ public class TextSearchStoreTests
         await store.UpsertDocumentsAsync(documents);
 
         // Assert
-        this._recordCollectionMock.Verify(r => r.UpsertBatchAsync(
+        this._recordCollectionMock.Verify(r => r.UpsertAsync(
             It.Is<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(doc =>
                 doc.Count() == 1 &&
                 doc.First().Key == "sid" &&
@@ -133,8 +133,8 @@ public class TextSearchStoreTests
     {
         // Arrange
         this._recordCollectionMock
-            .Setup(r => r.UpsertBatchAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
-            .Returns(AsyncEnumerable.Empty<string>());
+            .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<string>());
 
         using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128);
 
@@ -147,7 +147,7 @@ public class TextSearchStoreTests
         await store.UpsertDocumentsAsync(documents, new() { PersistSourceText = false });
 
         // Assert
-        this._recordCollectionMock.Verify(r => r.UpsertBatchAsync(
+        this._recordCollectionMock.Verify(r => r.UpsertAsync(
             It.Is<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(doc =>
                 doc.Count() == 1 &&
                 doc.First().Text == null &&
@@ -170,8 +170,8 @@ public class TextSearchStoreTests
         };
 
         this._recordCollectionMock
-            .Setup(r => r.VectorizedSearchAsync(It.IsAny<ReadOnlyMemory<float>>(), It.IsAny<VectorSearchOptions<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new VectorSearchResults<TextSearchStore<string>.TextRagStorageDocument<string>>(mockResults.ToAsyncEnumerable()));
+            .Setup(r => r.SearchEmbeddingAsync(It.IsAny<ReadOnlyMemory<float>>(), It.IsAny<int>(), It.IsAny<VectorSearchOptions<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
+            .Returns(mockResults.ToAsyncEnumerable());
 
         using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128);
 
@@ -196,8 +196,8 @@ public class TextSearchStoreTests
         };
 
         this._recordCollectionMock
-            .Setup(r => r.VectorizedSearchAsync(It.IsAny<ReadOnlyMemory<float>>(), It.IsAny<VectorSearchOptions<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new VectorSearchResults<TextSearchStore<string>.TextRagStorageDocument<string>>(mockResults.ToAsyncEnumerable()));
+            .Setup(r => r.SearchEmbeddingAsync(It.IsAny<ReadOnlyMemory<float>>(), It.IsAny<int>(), It.IsAny<VectorSearchOptions<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
+            .Returns(mockResults.ToAsyncEnumerable());
 
         using var store = new TextSearchStore<string>(
             this._vectorStoreMock.Object,

@@ -86,12 +86,12 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
             Properties = new List<VectorStoreRecordProperty>()
             {
                 new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                new VectorStoreRecordDataProperty("Namespaces", typeof(List<string>)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("SourceId", typeof(string)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("Namespaces", typeof(List<string>)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty("SourceId", typeof(string)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("Text", typeof(string)),
                 new VectorStoreRecordDataProperty("SourceName", typeof(string)),
                 new VectorStoreRecordDataProperty("SourceReference", typeof(string)),
-                new VectorStoreRecordVectorProperty("TextEmbedding", typeof(ReadOnlyMemory<float>)) { Dimensions = vectorDimensions },
+                new VectorStoreRecordVectorProperty("TextEmbedding", typeof(ReadOnlyMemory<float>), vectorDimensions),
             }
         };
 
@@ -147,7 +147,7 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
         });
 
         var storageDocuments = await Task.WhenAll(storageDocumentsTasks).ConfigureAwait(false);
-        await vectorStoreRecordCollection.UpsertBatchAsync(storageDocuments, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        await vectorStoreRecordCollection.UpsertAsync(storageDocuments, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -195,18 +195,17 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
 
         // Generate the vector for the query and search.
         var vector = await this._textEmbeddingGenerationService.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
-        var searchResult = await vectorStoreRecordCollection.VectorizedSearchAsync(
+        var searchResult = vectorStoreRecordCollection.SearchEmbeddingAsync(
             vector,
+            searchOptions?.Top ?? 3,
             options: new()
             {
-                Top = searchOptions?.Top ?? 3,
                 Filter = filter,
             },
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken);
 
         // Retrieve the documents from the search results.
         var searchResponseDocs = await searchResult
-            .Results
             .SelectAsync(x => x.Record, cancellationToken)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
