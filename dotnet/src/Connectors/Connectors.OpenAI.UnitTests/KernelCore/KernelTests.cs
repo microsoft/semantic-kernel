@@ -63,13 +63,13 @@ public sealed class KernelTests : IDisposable
         // Set up a MeterListener to capture the measurements
         using MeterListener listener = EnableTelemetryMeters();
 
-        var measurements = new Dictionary<string, List<int>>
+        var measurements = new Dictionary<string, List<long>>
         {
             ["semantic_kernel.function.invocation.token_usage.prompt"] = [],
             ["semantic_kernel.function.invocation.token_usage.completion"] = [],
         };
 
-        listener.SetMeasurementEventCallback<int>((instrument, measurement, tags, state) =>
+        listener.SetMeasurementEventCallback<long>((instrument, measurement, tags, state) =>
         {
             if (instrument.Name == "semantic_kernel.function.invocation.token_usage.prompt" ||
                 instrument.Name == "semantic_kernel.function.invocation.token_usage.completion")

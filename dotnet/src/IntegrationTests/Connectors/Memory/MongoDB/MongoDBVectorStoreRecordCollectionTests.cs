@@ -20,7 +20,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture fixture)
 {
     // If null, all tests will be enabled
-    private const string? SkipReason = null;
+    private const string? SkipReason = "The MongoDB container is intermittently timing out at startup time blocking prs, so these test should be run manually.";
 
     [RetryTheory(typeof(MongoCommandException), Skip = SkipReason)]
     [InlineData("sk-test-hotels", true)]
