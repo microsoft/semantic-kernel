@@ -89,8 +89,15 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     public CancellationToken CancellationToken { get; init; }
 
     /// <summary>
-    /// Gets the arguments associated with the operation.
+    /// Gets the <see cref="KernelArguments"/> specialized version of <see cref="AIFunctionArguments"/> associated with the operation.
     /// </summary>
+    /// <remarks>
+    /// If the arguments are not a <see cref="KernelArguments"/> class use the <see cref="AIArguments"/> property instead.
+    /// <para>
+    /// Due to a clash with the <see cref="Microsoft.Extensions.AI.FunctionInvocationContext.Arguments"/> as a <see cref="AIFunctionArguments"/> type, this property hides
+    /// it to not break existing code that relies on the <see cref="AutoFunctionInvocationContext.Arguments"/> as a <see cref="KernelArguments"/> type.
+    /// </para>
+    /// </remarks>
     public new KernelArguments? Arguments
     {
         get
@@ -111,7 +118,6 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     public AIFunctionArguments AIArguments
     {
         get => base.Arguments;
-        init => base.Arguments = value;
     }
 
     /// <summary>
@@ -175,6 +181,10 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
     /// </summary>
+    /// <para>
+    /// Due to a clash with the <see cref="Microsoft.Extensions.AI.FunctionInvocationContext.Function"/> as a <see cref="AIFunction"/> type, this property hides
+    /// it to not break existing code that relies on the <see cref="AutoFunctionInvocationContext.Function"/> as a <see cref="KernelFunction"/> type.
+    /// </para>
     public new KernelFunction Function
     {
         get
