@@ -55,7 +55,7 @@ public class VectorStoreTextSearchTestBase
     /// Add sample records to the vector store record collection.
     /// </summary>
     public static async Task AddRecordsAsync(
-        IVectorStoreCollection<Guid, DataModel> recordCollection,
+        VectorStoreCollection<Guid, DataModel> recordCollection,
         int? count = 10)
     {
         await recordCollection.CreateCollectionIfNotExistsAsync();
@@ -76,7 +76,7 @@ public class VectorStoreTextSearchTestBase
     /// Add sample records to the vector store record collection.
     /// </summary>
     public static async Task AddRecordsAsync(
-        IVectorStoreCollection<Guid, DataModelWithRawEmbedding> recordCollection,
+        VectorStoreCollection<Guid, DataModelWithRawEmbedding> recordCollection,
         ITextEmbeddingGenerationService embeddingService,
         int? count = 10)
     {

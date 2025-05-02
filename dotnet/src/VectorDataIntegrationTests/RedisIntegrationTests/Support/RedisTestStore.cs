@@ -27,7 +27,7 @@ internal sealed class RedisTestStore : TestStore
 
     public IDatabase Database => this._database ?? throw new InvalidOperationException("Not initialized");
 
-    public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public RedisVectorStore GetVectorStore(RedisVectorStoreOptions options)
         => new(this.Database, options);

@@ -23,7 +23,7 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
     protected virtual string DistanceFunction => this.TestStore.DefaultDistanceFunction;
     protected virtual string IndexKind => this.TestStore.DefaultIndexKind;
 
-    protected virtual IVectorStoreCollection<TKey, TRecord> GetCollection()
+    protected virtual VectorStoreCollection<TKey, TRecord> GetCollection()
         => this.TestStore.DefaultVectorStore.GetCollection<TKey, TRecord>(this.CollectionName, this.GetRecordDefinition());
 
     public override async Task InitializeAsync()
@@ -41,7 +41,7 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
         await this.SeedAsync();
     }
 
-    public virtual IVectorStoreCollection<TKey, TRecord> Collection { get; private set; } = null!;
+    public virtual VectorStoreCollection<TKey, TRecord> Collection { get; private set; } = null!;
 
     public List<TRecord> TestData => this._testData ??= this.BuildTestData();
 

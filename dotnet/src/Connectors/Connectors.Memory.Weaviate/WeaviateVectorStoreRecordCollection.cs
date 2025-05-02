@@ -26,7 +26,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="Guid"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreCollection<TKey, TRecord>, IKeywordHybridSearch<TRecord>
+public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearch<TRecord>
     where TKey : notnull
     where TRecord : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -70,7 +70,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly string? _apiKey;
 
     /// <inheritdoc />
-    public string Name { get; }
+    public override string Name { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -121,7 +121,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public override async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         using var request = new WeaviateGetCollectionSchemaRequest(this.Name).Build();
 
@@ -133,7 +133,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(
             this.Name,
@@ -146,7 +146,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -155,7 +155,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         using var request = new WeaviateDeleteCollectionSchemaRequest(this.Name).Build();
 
@@ -163,7 +163,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    public override async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
         var guid = key switch
         {
@@ -178,7 +178,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public override async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         const string ContainsAnyOperator = "ContainsAny";
 
@@ -207,7 +207,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         var guid = key as Guid? ?? throw new InvalidCastException("Only Guid keys are supported");
         var includeVectors = options?.IncludeVectors is true;
@@ -229,7 +229,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(
+    public override async IAsyncEnumerable<TRecord> GetAsync(
         IEnumerable<TKey> keys,
         GetRecordOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -250,11 +250,11 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public override Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
         => this.UpsertAsync([record], cancellationToken);
 
     /// <inheritdoc />
-    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -321,12 +321,11 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     #region Search
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+    public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
         VectorSearchOptions<TRecord>? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        where TInput : notnull
     {
         options ??= s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
@@ -369,12 +368,11 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
         VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
-        where TVector : notnull
     {
         options ??= s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
@@ -416,14 +414,13 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        where TVector : notnull
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+    public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
         GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
@@ -471,7 +468,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 

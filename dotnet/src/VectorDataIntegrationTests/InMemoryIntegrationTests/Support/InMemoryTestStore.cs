@@ -12,7 +12,7 @@ internal sealed class InMemoryTestStore : TestStore
 
     private InMemoryVectorStore _defaultVectorStore = new();
 
-    public override IVectorStore DefaultVectorStore => this._defaultVectorStore;
+    public override VectorStore DefaultVectorStore => this._defaultVectorStore;
 
     public InMemoryVectorStore GetVectorStore(InMemoryVectorStoreOptions options)
         => new(new() { EmbeddingGenerator = options.EmbeddingGenerator });

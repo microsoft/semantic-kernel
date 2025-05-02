@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 /// <summary>
 /// Service for storing and retrieving vector records, and managing vector record collections, that uses an in memory dictionary as the underlying storage.
 /// </summary>
-public sealed class InMemoryVectorStore : IVectorStore
+public sealed class InMemoryVectorStore : VectorStore
 {
     private readonly InMemoryVectorStoreOptions _options;
 
@@ -42,9 +42,7 @@ public sealed class InMemoryVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        where TKey : notnull
-        where TRecord : notnull
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
     {
         if (this._internalCollectionTypes.TryGetValue(name, out var existingCollectionDataType) && existingCollectionDataType != typeof(TRecord))
         {
@@ -59,24 +57,24 @@ public sealed class InMemoryVectorStore : IVectorStore
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreCollection<TKey, TRecord>;
+            }) as VectorStoreCollection<TKey, TRecord>;
         return collection!;
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
         return this._internalCollections.Keys.ToAsyncEnumerable();
     }
 
     /// <inheritdoc />
-    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
+    public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
         return this._internalCollections.ContainsKey(name) ? Task.FromResult(true) : Task.FromResult(false);
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
     {
         this._internalCollections.TryRemove(name, out _);
         this._internalCollectionTypes.TryRemove(name, out _);
@@ -84,7 +82,7 @@ public sealed class InMemoryVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 

@@ -105,7 +105,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
                 TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
 
         // Construct the chosen vector store and initialize docker containers via the fixtures where needed.
-        IVectorStore vectorStore;
+        VectorStore vectorStore;
         if (databaseType == "Redis")
         {
             await redisFixture.ManualInitializeAsync();
@@ -161,7 +161,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
     /// </summary>
     /// <param name="vectorStore">The vector store to ingest data into.</param>
     /// <param name="textEmbeddingGenerationService">Used to generate embeddings for the data being ingested.</param>
-    private sealed class DataIngestor(IVectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService)
+    private sealed class DataIngestor(VectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService)
     {
         /// <summary>
         /// Create some glossary entries and upsert them into the vector store.

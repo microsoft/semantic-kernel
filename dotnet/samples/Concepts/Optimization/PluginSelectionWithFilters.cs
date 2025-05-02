@@ -281,7 +281,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
 
     public class FunctionProvider(
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        IVectorStore vectorStore,
+        VectorStore vectorStore,
         IFunctionKeyProvider functionKeyProvider) : IFunctionProvider
     {
         public async Task<List<KernelFunction>> GetBestFunctionsAsync(
@@ -310,7 +310,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
 
     public class PluginStore(
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        IVectorStore vectorStore,
+        VectorStore vectorStore,
         IFunctionKeyProvider functionKeyProvider) : IPluginStore
     {
         public async Task SaveAsync(string collectionName, KernelPluginCollection plugins, CancellationToken cancellationToken = default)

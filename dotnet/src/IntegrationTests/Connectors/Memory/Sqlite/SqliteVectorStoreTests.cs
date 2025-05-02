@@ -29,7 +29,7 @@ public sealed class SqliteVectorStoreTests(SqliteVectorStoreFixture fixture)
 
         var provider = serviceCollection.BuildServiceProvider();
 
-        var sut = provider.GetRequiredService<IVectorStore>();
+        var sut = provider.GetRequiredService<VectorStore>();
 
         var collection1 = sut.GetCollection<string, SqliteHotel<string>>("ListCollectionNames1");
         var collection2 = sut.GetCollection<string, SqliteHotel<string>>("ListCollectionNames2");

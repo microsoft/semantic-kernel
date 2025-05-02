@@ -93,7 +93,7 @@ public class QdrantServiceCollectionExtensionsTests
     private void AssertVectorStoreCreated()
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
         Assert.NotNull(vectorStore);
         Assert.IsType<QdrantVectorStore>(vectorStore);
     }
@@ -102,7 +102,7 @@ public class QdrantServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<ulong, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<ulong, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<QdrantVectorStoreRecordCollection<ulong, TestRecord>>(collection);
 

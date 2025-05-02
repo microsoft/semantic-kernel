@@ -94,7 +94,7 @@ public class AzureAISearchServiceCollectionExtensionsTests
     private void AssertVectorStoreCreated()
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
         Assert.NotNull(vectorStore);
         Assert.IsType<AzureAISearchVectorStore>(vectorStore);
     }
@@ -103,7 +103,7 @@ public class AzureAISearchServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<string, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<AzureAISearchVectorStoreRecordCollection<string, TestRecord>>(collection);
 

@@ -19,7 +19,7 @@ public class RedisHashSetEmbeddingGenerationTests(RedisHashSetEmbeddingGeneratio
     {
         public override TestStore TestStore => RedisTestStore.HashSetInstance;
 
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => RedisTestStore.HashSetInstance.GetVectorStore(new() { StorageType = RedisStorageType.HashSet, EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>

@@ -18,7 +18,7 @@ public sealed class CosmosMongoDBTestStore : TestStore
     public MongoClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
     public IMongoDatabase Database => this._database ?? throw new InvalidOperationException("Not initialized");
 
-    public override IVectorStore DefaultVectorStore
+    public override VectorStore DefaultVectorStore
         => this._defaultVectorStore ?? throw new InvalidOperationException("Call InitializeAsync() first");
 
     public override string DefaultIndexKind => Microsoft.Extensions.VectorData.IndexKind.IvfFlat;

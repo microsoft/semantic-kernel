@@ -33,7 +33,7 @@ internal sealed class PineconeTestStore : TestStore
 
     public Pinecone.PineconeClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
 
-    public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public PineconeVectorStore GetVectorStore(PineconeVectorStoreOptions options)
         => new(this.Client, options);

@@ -543,7 +543,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             // Derived types may override this to provide different vectors for different records.
             => new(Enumerable.Range(1, count).Select(i => (float)i).ToArray());
 
-        public virtual IVectorStoreCollection<object, Dictionary<string, object?>> DynamicCollection { get; protected set; } = null!;
+        public virtual VectorStoreCollection<object, Dictionary<string, object?>> DynamicCollection { get; protected set; } = null!;
 
         public virtual bool TestDynamic => true;
 

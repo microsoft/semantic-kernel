@@ -18,7 +18,7 @@ public class MongoDBEmbeddingGenerationTests(MongoDBEmbeddingGenerationTests.Fix
     {
         public override TestStore TestStore => MongoDBTestStore.Instance;
 
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => MongoDBTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>

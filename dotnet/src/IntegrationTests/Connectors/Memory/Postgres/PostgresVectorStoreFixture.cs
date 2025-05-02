@@ -42,7 +42,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// Gets a vector store to use for tests.
     /// </summary>
-    public IVectorStore VectorStore => new PostgresVectorStore(this.DataSource!);
+    public VectorStore VectorStore => new PostgresVectorStore(this.DataSource!);
 
     /// <summary>
     /// Get a database connection
@@ -52,7 +52,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
         return this.DataSource!.OpenConnection();
     }
 
-    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
+    public VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
         string collectionName,
         VectorStoreRecordDefinition? recordDefinition = default)
         where TKey : notnull

@@ -18,7 +18,7 @@ public class CosmosNoSQLEmbeddingGenerationTests(CosmosNoSQLEmbeddingGenerationT
     {
         public override TestStore TestStore => CosmosNoSQLTestStore.Instance;
 
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => CosmosNoSQLTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>

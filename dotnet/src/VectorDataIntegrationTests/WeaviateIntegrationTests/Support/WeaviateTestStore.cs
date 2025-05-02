@@ -24,7 +24,7 @@ public sealed class WeaviateTestStore : TestStore
 
     public HttpClient Client => this._httpClient ?? throw new InvalidOperationException("Not initialized");
 
-    public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public WeaviateVectorStore GetVectorStore(WeaviateVectorStoreOptions options)
         => new(this.Client, options);

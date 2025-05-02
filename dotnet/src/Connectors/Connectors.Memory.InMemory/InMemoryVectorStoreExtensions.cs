@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 public static class InMemoryVectorStoreExtensions
 {
     /// <summary>
-    /// Serialize a <see cref="IVectorStoreCollection{TKey, TRecord}"/> to a stream as JSON.
+    /// Serialize a <see cref="VectorStoreCollection{TKey, TRecord}"/> to a stream as JSON.
     /// </summary>
     /// <typeparam name="TKey">Type of the record key.</typeparam>
     /// <typeparam name="TRecord">Type of the record.</typeparam>
@@ -50,19 +50,19 @@ public static class InMemoryVectorStoreExtensions
     }
 
     /// <summary>
-    /// Deserialize a <see cref="IVectorStoreCollection{TKey, TRecord}"/> to a stream as JSON.
+    /// Deserialize a <see cref="VectorStoreCollection{TKey, TRecord}"/> to a stream as JSON.
     /// </summary>
     /// <typeparam name="TKey">Type of the record key.</typeparam>
     /// <typeparam name="TRecord">Type of the record.</typeparam>
     /// <param name="vectorStore">Instance of <see cref="InMemoryVectorStore"/> used to retrieve the collection.</param>
     /// <param name="stream">The stream to read the serialized JSON from.</param>
-    public static async Task<IVectorStoreCollection<TKey, TRecord>?> DeserializeCollectionFromJsonAsync<TKey, TRecord>(
+    public static async Task<VectorStoreCollection<TKey, TRecord>?> DeserializeCollectionFromJsonAsync<TKey, TRecord>(
         this InMemoryVectorStore vectorStore,
         Stream stream)
         where TKey : notnull
         where TRecord : notnull
     {
-        IVectorStoreCollection<TKey, TRecord>? collection = null;
+        VectorStoreCollection<TKey, TRecord>? collection = null;
 
         using (StreamReader streamReader = new(stream))
         {

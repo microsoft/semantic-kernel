@@ -53,7 +53,7 @@ public class VectorStore_Langchain_Interop(ITestOutputHelper output) : BaseTest(
     /// <param name="vectorStore">The vector store to search.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <returns>An async task.</returns>
-    private async Task ReadDataFromCollectionAsync(IVectorStore vectorStore, string collectionName)
+    private async Task ReadDataFromCollectionAsync(VectorStore vectorStore, string collectionName)
     {
         // Create an embedding generation service.
         var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(

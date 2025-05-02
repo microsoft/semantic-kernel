@@ -18,7 +18,7 @@ public class SqliteEmbeddingGenerationTests(SqliteEmbeddingGenerationTests.Fixtu
     {
         public override TestStore TestStore => SqliteTestStore.Instance;
 
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => SqliteTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>

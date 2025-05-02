@@ -16,7 +16,7 @@ internal sealed class SqliteTestStore : TestStore
     public static SqliteTestStore Instance { get; } = new();
 
     private SqliteVectorStore? _defaultVectorStore;
-    public override IVectorStore DefaultVectorStore
+    public override VectorStore DefaultVectorStore
         => this._defaultVectorStore ?? throw new InvalidOperationException("Call InitializeAsync() first");
 
     public override string DefaultDistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;

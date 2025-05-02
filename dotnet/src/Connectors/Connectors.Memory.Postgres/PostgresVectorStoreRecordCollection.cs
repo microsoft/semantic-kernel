@@ -21,13 +21,13 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <typeparam name="TKey">The type of the key.</typeparam>
 /// <typeparam name="TRecord">The type of the record.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreCollection<TKey, TRecord>
+public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : notnull
 {
     /// <inheritdoc />
-    public string Name { get; }
+    public override string Name { get; }
 
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
@@ -92,7 +92,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         const string OperationName = "DoesTableExists";
         return this.RunOperationAsync(OperationName, () =>
@@ -101,7 +101,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         const string OperationName = "CreateCollection";
         return this.RunOperationAsync(OperationName, () =>
@@ -110,7 +110,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public override Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         const string OperationName = "CreateCollectionIfNotExists";
         return this.RunOperationAsync(OperationName, () =>
@@ -119,7 +119,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         const string OperationName = "DeleteCollection";
         return this.RunOperationAsync(OperationName, () =>
@@ -128,7 +128,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public override async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         const string OperationName = "Upsert";
 
@@ -172,7 +172,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -236,7 +236,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "Get";
 
@@ -259,7 +259,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "GetBatch";
 
@@ -284,7 +284,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
         const string OperationName = "Delete";
         return this.RunOperationAsync(OperationName, () =>
@@ -293,7 +293,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public override Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -306,12 +306,11 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     #region Search
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+    public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
         VectorSearchOptions<TRecord>? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        where TInput : notnull
     {
         options ??= s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
@@ -342,12 +341,11 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
         VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
-        where TVector : notnull
     {
         options ??= s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
@@ -404,14 +402,13 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        where TVector : notnull
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+    public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
         GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
@@ -430,7 +427,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 

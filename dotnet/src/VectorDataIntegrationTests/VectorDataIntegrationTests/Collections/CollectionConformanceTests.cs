@@ -170,7 +170,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         }
     }
 
-    protected virtual async Task<IVectorStoreCollection<TKey, TRecord>> GetNonExistingCollectionAsync<TRecord>() where TRecord : notnull
+    protected virtual async Task<VectorStoreCollection<TKey, TRecord>> GetNonExistingCollectionAsync<TRecord>() where TRecord : notnull
     {
         var definition = new VectorStoreRecordDefinition()
         {

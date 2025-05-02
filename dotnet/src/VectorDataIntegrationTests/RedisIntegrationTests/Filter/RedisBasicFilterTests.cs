@@ -84,7 +84,7 @@ public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterT
                 Properties = base.GetRecordDefinition().Properties.Where(p => p.PropertyType != typeof(bool)).ToList()
             };
 
-        protected override IVectorStoreCollection<string, FilterRecord> GetCollection()
+        protected override VectorStoreCollection<string, FilterRecord> GetCollection()
             => new RedisJsonVectorStoreRecordCollection<string, FilterRecord>(
                 RedisTestStore.JsonInstance.Database,
                 this.CollectionName,
@@ -139,7 +139,7 @@ public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicF
                     p.PropertyType != typeof(List<string>)).ToList()
             };
 
-        protected override IVectorStoreCollection<string, FilterRecord> GetCollection()
+        protected override VectorStoreCollection<string, FilterRecord> GetCollection()
             => new RedisHashSetVectorStoreRecordCollection<string, FilterRecord>(
                 RedisTestStore.HashSetInstance.Database,
                 this.CollectionName,

@@ -27,7 +27,7 @@ public sealed class PostgresServiceCollectionExtensionsTests
         this._serviceCollection.AddPostgresVectorStore();
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
 
         // Assert
         Assert.NotNull(vectorStore);
@@ -47,7 +47,7 @@ public sealed class PostgresServiceCollectionExtensionsTests
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
         // Assert
-        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<string, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<PostgresVectorStoreRecordCollection<string, TestRecord>>(collection);
 

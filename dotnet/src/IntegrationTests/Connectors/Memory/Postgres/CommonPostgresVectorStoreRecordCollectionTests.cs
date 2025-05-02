@@ -8,7 +8,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
 
 /// <summary>
-/// Inherits common integration tests that should pass for any <see cref="IVectorStoreCollection{TKey, TRecord}"/>.
+/// Inherits common integration tests that should pass for any <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 /// <param name="fixture">Postres setup and teardown.</param>
 [Collection("PostgresVectorStoreCollection")]
@@ -19,7 +19,7 @@ public class CommonPostgresVectorStoreRecordCollectionTests(PostgresVectorStoreF
     protected override string Key3 => "3";
     protected override string Key4 => "4";
 
-    protected override IVectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected override VectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
     {
         return new PostgresVectorStoreRecordCollection<string, TRecord>(fixture.DataSource!, recordCollectionName, new()
         {

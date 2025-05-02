@@ -20,7 +20,7 @@ namespace Memory;
 /// <param name="vectorStore">The vector store to ingest data into.</param>
 /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings.</param>
 /// <param name="output">A helper to write output to the xunit test output stream.</param>
-public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService, ITestOutputHelper output)
+public class VectorStore_VectorSearch_MultiStore_Common(VectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService, ITestOutputHelper output)
 {
     /// <summary>
     /// Ingest data into a collection with the given name, and search over that data.

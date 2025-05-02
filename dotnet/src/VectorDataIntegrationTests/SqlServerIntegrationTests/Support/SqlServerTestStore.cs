@@ -13,7 +13,7 @@ public sealed class SqlServerTestStore : TestStore
 
     public static readonly SqlServerTestStore Instance = new();
 
-    public override IVectorStore DefaultVectorStore
+    public override VectorStore DefaultVectorStore
         => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public SqlServerVectorStore GetVectorStore(SqlServerVectorStoreOptions options)

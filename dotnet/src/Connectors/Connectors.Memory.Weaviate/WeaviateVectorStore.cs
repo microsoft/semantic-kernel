@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public sealed class WeaviateVectorStore : IVectorStore
+public sealed class WeaviateVectorStore : VectorStore
 {
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
@@ -55,9 +55,7 @@ public sealed class WeaviateVectorStore : IVectorStore
 
     /// <inheritdoc />
     /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
-    public IVectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        where TKey : notnull
-        where TRecord : notnull
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         => new WeaviateVectorStoreRecordCollection<TKey, TRecord>(
             this._httpClient,
             name,
@@ -71,7 +69,7 @@ public sealed class WeaviateVectorStore : IVectorStore
             });
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string OperationName = "ListCollectionNames";
 
@@ -104,21 +102,21 @@ public sealed class WeaviateVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
+    public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
         var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
     {
         var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
         return collection.DeleteCollectionAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 

@@ -29,7 +29,7 @@ public sealed class AzureCosmosDBMongoDBServiceCollectionExtensionsTests
         this._serviceCollection.AddAzureCosmosDBMongoDBVectorStore();
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
 
         // Assert
         Assert.NotNull(vectorStore);
@@ -43,7 +43,7 @@ public sealed class AzureCosmosDBMongoDBServiceCollectionExtensionsTests
         this._serviceCollection.AddAzureCosmosDBMongoDBVectorStore("mongodb://localhost:27017", "mydb");
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
 
         // Assert
         Assert.NotNull(vectorStore);
@@ -80,7 +80,7 @@ public sealed class AzureCosmosDBMongoDBServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreCollection<string, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TestRecord>>();
         Assert.NotNull(collection);
         Assert.IsType<AzureCosmosDBMongoDBVectorStoreRecordCollection<string, TestRecord>>(collection);
 

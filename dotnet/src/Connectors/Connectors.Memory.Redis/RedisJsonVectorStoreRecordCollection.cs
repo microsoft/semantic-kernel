@@ -28,7 +28,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreCollection<TKey, TRecord>
+public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
     where TRecord : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -63,9 +63,6 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
 
     /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
-
-    /// <summary>The name of the collection that this <see cref="RedisJsonVectorStoreRecordCollection{TKey, TRecord}"/> will access.</summary>
-    private readonly string _collectionName;
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly RedisJsonVectorStoreRecordCollectionOptions<TRecord> _options;
@@ -104,7 +101,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
 
         // Assign.
         this._database = database;
-        this._collectionName = name;
+        this.Name = name;
         this._options = options ?? new RedisJsonVectorStoreRecordCollectionOptions<TRecord>();
         this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
         this._model = isDynamic ?
@@ -128,14 +125,14 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public string Name => this._collectionName;
+    public override string Name { get; }
 
     /// <inheritdoc />
-    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public override async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            await this._database.FT().InfoAsync(this._collectionName).ConfigureAwait(false);
+            await this._database.FT().InfoAsync(this.Name).ConfigureAwait(false);
             return true;
         }
         catch (RedisServerException ex) when (ex.Message.Contains("Unknown index name"))
@@ -148,14 +145,14 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
             {
                 VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this._collectionName,
+                CollectionName = this.Name,
                 OperationName = "FT.INFO"
             };
         }
     }
 
     /// <inheritdoc />
-    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // Map the record definition to a schema.
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._model.Properties, useDollarPrefix: true);
@@ -163,15 +160,15 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
         // Create the index creation params.
         // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
         var createParams = new FTCreateParams()
-            .AddPrefix($"{this._collectionName}:")
+            .AddPrefix($"{this.Name}:")
             .On(IndexDataType.JSON);
 
         // Create the index.
-        return this.RunOperationAsync("FT.CREATE", () => this._database.FT().CreateAsync(this._collectionName, createParams, schema));
+        return this.RunOperationAsync("FT.CREATE", () => this._database.FT().CreateAsync(this.Name, createParams, schema));
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -180,12 +177,12 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             await this.RunOperationAsync("FT.DROPINDEX",
-                () => this._database.FT().DropIndexAsync(this._collectionName)).ConfigureAwait(false);
+                () => this._database.FT().DropIndexAsync(this.Name)).ConfigureAwait(false);
         }
         catch (VectorStoreOperationException ex) when (ex.InnerException is RedisServerException)
         {
@@ -202,7 +199,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         var stringKey = this.GetStringKey(key);
 
@@ -245,7 +242,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -300,7 +297,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
         var stringKey = this.GetStringKey(key);
 
@@ -316,7 +313,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public override Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -326,7 +323,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public override async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -350,7 +347,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -383,12 +380,11 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     #region Search
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+    public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
         VectorSearchOptions<TRecord>? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        where TInput : notnull
     {
         options ??= s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
@@ -431,12 +427,11 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
         VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
-        where TVector : notnull
     {
         options ??= s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
@@ -474,7 +469,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
             "FT.SEARCH",
             () => this._database
                 .FT()
-                .SearchAsync(this._collectionName, query)).ConfigureAwait(false);
+                .SearchAsync(this.Name, query)).ConfigureAwait(false);
 
         // Loop through result and convert to the caller's data model.
         var mappedResults = results.Documents.Select(result =>
@@ -501,14 +496,13 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        where TVector : notnull
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+    public override async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
         GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
@@ -525,7 +519,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
             "FT.SEARCH",
             () => this._database
                 .FT()
-                .SearchAsync(this._collectionName, query)).ConfigureAwait(false);
+                .SearchAsync(this.Name, query)).ConfigureAwait(false);
 
         foreach (var document in results.Documents)
         {
@@ -538,7 +532,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 
@@ -559,7 +553,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     {
         if (this._options.PrefixCollectionNameToKeyNames)
         {
-            return $"{this._collectionName}:{key}";
+            return $"{this.Name}:{key}";
         }
 
         return key;
@@ -572,7 +566,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     /// <returns>The updated key if updating is required, otherwise the input key.</returns>
     private string RemoveKeyPrefixIfNeeded(string key)
     {
-        var prefixLength = this._collectionName.Length + 1;
+        var prefixLength = this.Name.Length + 1;
 
         if (this._options.PrefixCollectionNameToKeyNames && key.Length > prefixLength)
         {

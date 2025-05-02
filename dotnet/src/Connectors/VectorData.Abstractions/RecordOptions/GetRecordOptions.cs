@@ -6,8 +6,8 @@ using System.Threading;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines options for calling <see cref="IVectorStoreCollection{TKey, TDataModel}.GetAsync(TKey, GetRecordOptions?, CancellationToken)"/>
-/// or <see cref="IVectorStoreCollection{TKey, TRecord}.GetAsync(IEnumerable{TKey}, GetRecordOptions?, CancellationToken)"/>.
+/// Defines options for calling <see cref="VectorStoreCollection{TKey, TDataModel}.GetAsync(TKey, GetRecordOptions?, CancellationToken)"/>
+/// or <see cref="VectorStoreCollection{TKey, TRecord}.GetAsync(IEnumerable{TKey}, GetRecordOptions?, CancellationToken)"/>.
 /// </summary>
 public class GetRecordOptions
 {

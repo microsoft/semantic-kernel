@@ -27,7 +27,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 #pragma warning disable CS0618 // IVectorizableTextSearch is obsolete
 public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
-    IVectorStoreCollection<TKey, TRecord>,
+    VectorStoreCollection<TKey, TRecord>,
     IVectorizableTextSearch<TRecord>,
     IKeywordHybridSearch<TRecord>
     where TKey : notnull
@@ -49,9 +49,6 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
 
     /// <summary>Azure AI Search client that can be used to manage data in an Azure AI Search Service index.</summary>
     private readonly SearchClient _searchClient;
-
-    /// <summary>The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> will access.</summary>
-    private readonly string _collectionName;
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly AzureAISearchVectorStoreRecordCollectionOptions<TRecord> _options;
@@ -83,7 +80,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
 
         // Assign.
         this._searchIndexClient = searchIndexClient;
-        this._collectionName = name;
+        this.Name = name;
         this._options = options ?? new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>();
         this._searchClient = this._searchIndexClient.GetSearchClient(name);
 
@@ -108,14 +105,14 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public string Name => this._collectionName;
+    public override string Name { get; }
 
     /// <inheritdoc />
-    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public override async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            await this._searchIndexClient.GetIndexAsync(this._collectionName, cancellationToken).ConfigureAwait(false);
+            await this._searchIndexClient.GetIndexAsync(this.Name, cancellationToken).ConfigureAwait(false);
             return true;
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
@@ -128,14 +125,14 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             {
                 VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this._collectionName,
+                CollectionName = this.Name,
                 OperationName = "GetIndex"
             };
         }
     }
 
     /// <inheritdoc />
-    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         var vectorSearchConfig = new VectorSearch();
         var searchFields = new List<SearchField>();
@@ -168,7 +165,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         }
 
         // Create the index.
-        var searchIndex = new SearchIndex(this._collectionName, searchFields);
+        var searchIndex = new SearchIndex(this.Name, searchFields);
         searchIndex.VectorSearch = vectorSearchConfig;
 
         return this.RunOperationAsync(
@@ -177,7 +174,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -186,7 +183,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         return this.RunOperationAsync<Response>(
             "DeleteIndex",
@@ -194,7 +191,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             {
                 try
                 {
-                    return await this._searchIndexClient.DeleteIndexAsync(this._collectionName, cancellationToken).ConfigureAwait(false);
+                    return await this._searchIndexClient.DeleteIndexAsync(this.Name, cancellationToken).ConfigureAwait(false);
                 }
                 catch (RequestFailedException ex) when (ex.Status == 404)
                 {
@@ -204,7 +201,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public override Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         // Create Options.
         var innerOptions = this.ConvertGetDocumentOptions(options);
@@ -215,7 +212,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -236,7 +233,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
         var stringKey = this.GetStringKey(key);
 
@@ -247,7 +244,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public override Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
         if (!keys.Any())
@@ -264,7 +261,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public override async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -276,7 +273,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
         if (!records.Any())
@@ -292,12 +289,11 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
         VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
-        where TVector : notnull
     {
         options ??= s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
@@ -353,12 +349,11 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        where TVector : notnull
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+    public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
         GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
@@ -405,12 +400,11 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
         VectorSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
-        where TInput : notnull
     {
         var searchText = value switch
         {
@@ -540,7 +534,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 
@@ -748,7 +742,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             {
                 VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this._collectionName,
+                CollectionName = this.Name,
                 OperationName = OperationName
             };
         }
@@ -758,7 +752,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             {
                 VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this._collectionName,
+                CollectionName = this.Name,
                 OperationName = OperationName
             };
         }

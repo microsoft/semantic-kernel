@@ -11,7 +11,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory;
 
 /// <summary>
-/// Base class for common integration tests that should pass for any <see cref="IVectorStoreCollection{TKey, TRecord}"/>.
+/// Base class for common integration tests that should pass for any <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 /// <typeparam name="TKey">The type of key to use with the record collection.</typeparam>
 public abstract class BaseVectorStoreRecordCollectionTests<TKey>
@@ -24,7 +24,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
 
     protected abstract HashSet<string> GetSupportedDistanceFunctions();
 
-    protected abstract IVectorStoreCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TRecord : notnull;
+    protected abstract VectorStoreCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TRecord : notnull;
 
     protected virtual int DelayAfterIndexCreateInMilliseconds { get; } = 0;
 

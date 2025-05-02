@@ -9,22 +9,22 @@ using StackExchange.Redis;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Extension methods to register Redis <see cref="IVectorStore"/> instances on an <see cref="IServiceCollection"/>.
+/// Extension methods to register Redis <see cref="VectorStore"/> instances on an <see cref="IServiceCollection"/>.
 /// </summary>
 public static class RedisServiceCollectionExtensions
 {
     /// <summary>
-    /// Register a Redis <see cref="IVectorStore"/> with the specified service ID and where the Redis <see cref="IDatabase"/> is retrieved from the dependency injection container.
+    /// Register a Redis <see cref="VectorStore"/> with the specified service ID and where the Redis <see cref="IDatabase"/> is retrieved from the dependency injection container.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStore"/> on.</param>
+    /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddRedisVectorStore(this IServiceCollection services, RedisVectorStoreOptions? options = default, string? serviceId = default)
     {
         // If we are not constructing the ConnectionMultiplexer, add the IVectorStore as transient, since we
         // cannot make assumptions about how IDatabase is being managed.
-        services.AddKeyedTransient<IVectorStore>(
+        services.AddKeyedTransient<VectorStore>(
             serviceId,
             (sp, obj) =>
             {
@@ -41,18 +41,18 @@ public static class RedisServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Redis <see cref="IVectorStore"/> with the specified service ID and where the Redis <see cref="IDatabase"/> is constructed using the provided <paramref name="redisConnectionConfiguration"/>.
+    /// Register a Redis <see cref="VectorStore"/> with the specified service ID and where the Redis <see cref="IDatabase"/> is constructed using the provided <paramref name="redisConnectionConfiguration"/>.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStore"/> on.</param>
     /// <param name="redisConnectionConfiguration">The Redis connection configuration string. If not provided, an <see cref="IDatabase"/> instance will be requested from the dependency injection container.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddRedisVectorStore(this IServiceCollection services, string redisConnectionConfiguration, RedisVectorStoreOptions? options = default, string? serviceId = default)
     {
         // If we are constructing the ConnectionMultiplexer, add the IVectorStore as singleton, since we are managing the lifetime
         // of the ConnectionMultiplexer, and the recommendation from StackExchange.Redis is to share the ConnectionMultiplexer.
-        services.AddKeyedSingleton<IVectorStore>(
+        services.AddKeyedSingleton<VectorStore>(
             serviceId,
             (sp, obj) =>
             {
@@ -69,13 +69,13 @@ public static class RedisServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Redis <see cref="IVectorStoreCollection{TKey, TRecord}"/> with the specified service ID
+    /// Register a Redis <see cref="VectorStoreCollection{TKey, TRecord}"/> with the specified service ID
     /// and where the Redis <see cref="IDatabase"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreCollection{TKey, TRecord}"/>.</param>
+    /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddRedisHashSetVectorStoreRecordCollection<TRecord>(
@@ -85,7 +85,7 @@ public static class RedisServiceCollectionExtensions
         string? serviceId = default)
         where TRecord : notnull
     {
-        services.AddKeyedTransient<IVectorStoreCollection<string, TRecord>>(
+        services.AddKeyedTransient<VectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
@@ -104,14 +104,14 @@ public static class RedisServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Redis <see cref="IVectorStoreCollection{TKey, TRecord}"/> with the specified service ID
+    /// Register a Redis <see cref="VectorStoreCollection{TKey, TRecord}"/> with the specified service ID
     /// and where the Redis <see cref="IDatabase"/> is constructed using the provided <paramref name="redisConnectionConfiguration"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="redisConnectionConfiguration">The Redis connection configuration string.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreCollection{TKey, TRecord}"/>.</param>
+    /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddRedisHashSetVectorStoreRecordCollection<TRecord>(
@@ -122,7 +122,7 @@ public static class RedisServiceCollectionExtensions
         string? serviceId = default)
         where TRecord : notnull
     {
-        services.AddKeyedSingleton<IVectorStoreCollection<string, TRecord>>(
+        services.AddKeyedSingleton<VectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
@@ -141,13 +141,13 @@ public static class RedisServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Redis <see cref="IVectorStoreCollection{TKey, TRecord}"/> with the specified service ID
+    /// Register a Redis <see cref="VectorStoreCollection{TKey, TRecord}"/> with the specified service ID
     /// and where the Redis <see cref="IDatabase"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreCollection{TKey, TRecord}"/>.</param>
+    /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddRedisJsonVectorStoreRecordCollection<TRecord>(
@@ -157,7 +157,7 @@ public static class RedisServiceCollectionExtensions
         string? serviceId = default)
         where TRecord : notnull
     {
-        services.AddKeyedTransient<IVectorStoreCollection<string, TRecord>>(
+        services.AddKeyedTransient<VectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
@@ -176,14 +176,14 @@ public static class RedisServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Redis <see cref="IVectorStoreCollection{TKey, TRecord}"/> with the specified service ID
+    /// Register a Redis <see cref="VectorStoreCollection{TKey, TRecord}"/> with the specified service ID
     /// and where the Redis <see cref="IDatabase"/> is constructed using the provided <paramref name="redisConnectionConfiguration"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="redisConnectionConfiguration">The Redis connection configuration string.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreCollection{TKey, TRecord}"/>.</param>
+    /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddRedisJsonVectorStoreRecordCollection<TRecord>(
@@ -194,7 +194,7 @@ public static class RedisServiceCollectionExtensions
         string? serviceId = default)
         where TRecord : notnull
     {
-        services.AddKeyedSingleton<IVectorStoreCollection<string, TRecord>>(
+        services.AddKeyedSingleton<VectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
@@ -213,7 +213,7 @@ public static class RedisServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
+    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
@@ -224,7 +224,7 @@ public static class RedisServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                return sp.GetRequiredKeyedService<IVectorStoreCollection<string, TRecord>>(serviceId);
+                return sp.GetRequiredKeyedService<VectorStoreCollection<string, TRecord>>(serviceId);
             });
     }
 }
