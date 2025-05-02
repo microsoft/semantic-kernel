@@ -20,22 +20,23 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 {
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
-    /// provided <see cref="IVectorizedSearch{TRecord}"/> for performing searches and
+    /// provided <see cref="IVectorSearch{TRecord}"/> for performing searches and
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
-    /// <param name="vectorizedSearch"><see cref="IVectorizedSearch{TRecord}"/> instance used to perform the search.</param>
+    /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the search.</param>
     /// <param name="textEmbeddingGeneration"><see cref="ITextEmbeddingGenerationService"/> instance used to create a vector from the text query.</param>
     /// <param name="stringMapper"><see cref="MapFromResultToString" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="MapFromResultToTextSearchResult" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
+    [Obsolete("Use the constructor without an ITextEmbeddingGenerationService and pass a vectorSearch configured to perform embedding generation with IEmbeddingGenerator")]
     public VectorStoreTextSearch(
-        IVectorizedSearch<TRecord> vectorizedSearch,
+        IVectorSearch<TRecord> vectorSearch,
         ITextEmbeddingGenerationService textEmbeddingGeneration,
         MapFromResultToString stringMapper,
         MapFromResultToTextSearchResult resultMapper,
         VectorStoreTextSearchOptions? options = null) :
         this(
-            vectorizedSearch,
+            vectorSearch,
             textEmbeddingGeneration,
             stringMapper is null ? null : new TextSearchStringMapper(stringMapper),
             resultMapper is null ? null : new TextSearchResultMapper(resultMapper),
@@ -45,25 +46,26 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
-    /// provided <see cref="IVectorizedSearch{TRecord}"/> for performing searches and
+    /// provided <see cref="IVectorSearch{TRecord}"/> for performing searches and
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
-    /// <param name="vectorizedSearch"><see cref="IVectorizedSearch{TRecord}"/> instance used to perform the search.</param>
+    /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the search.</param>
     /// <param name="textEmbeddingGeneration"><see cref="ITextEmbeddingGenerationService"/> instance used to create a vector from the text query.</param>
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
+    [Obsolete("Use the constructor without an ITextEmbeddingGenerationService and pass a vectorSearch configured to perform embedding generation with IEmbeddingGenerator")]
     public VectorStoreTextSearch(
-        IVectorizedSearch<TRecord> vectorizedSearch,
+        IVectorSearch<TRecord> vectorSearch,
         ITextEmbeddingGenerationService textEmbeddingGeneration,
         ITextSearchStringMapper? stringMapper = null,
         ITextSearchResultMapper? resultMapper = null,
         VectorStoreTextSearchOptions? options = null)
     {
-        Verify.NotNull(vectorizedSearch);
+        Verify.NotNull(vectorSearch);
         Verify.NotNull(textEmbeddingGeneration);
 
-        this._vectorizedSearch = vectorizedSearch;
+        this._vectorSearch = vectorSearch;
         this._textEmbeddingGeneration = textEmbeddingGeneration;
         this._propertyReader = new Lazy<TextSearchResultPropertyReader>(() => new TextSearchResultPropertyReader(typeof(TRecord)));
         this._stringMapper = stringMapper ?? this.CreateTextSearchStringMapper();
@@ -75,17 +77,17 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// provided <see cref="IVectorizableTextSearch{TRecord}"/> for performing searches and
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
-    /// <param name="vectorizableTextSearch"><see cref="IVectorizableTextSearch{TRecord}"/> instance used to perform the text search.</param>
+    /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the text search.</param>
     /// <param name="stringMapper"><see cref="MapFromResultToString" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="MapFromResultToTextSearchResult" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     public VectorStoreTextSearch(
-        IVectorizableTextSearch<TRecord> vectorizableTextSearch,
+        IVectorSearch<TRecord> vectorSearch,
         MapFromResultToString stringMapper,
         MapFromResultToTextSearchResult resultMapper,
         VectorStoreTextSearchOptions? options = null) :
         this(
-            vectorizableTextSearch,
+            vectorSearch,
             new TextSearchStringMapper(stringMapper),
             new TextSearchResultMapper(resultMapper),
             options)
@@ -97,52 +99,51 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// provided <see cref="IVectorizableTextSearch{TRecord}"/> for performing searches and
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
-    /// <param name="vectorizableTextSearch"><see cref="IVectorizableTextSearch{TRecord}"/> instance used to perform the text search.</param>
+    /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the text search.</param>
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     public VectorStoreTextSearch(
-        IVectorizableTextSearch<TRecord> vectorizableTextSearch,
+        IVectorSearch<TRecord> vectorSearch,
         ITextSearchStringMapper? stringMapper = null,
         ITextSearchResultMapper? resultMapper = null,
         VectorStoreTextSearchOptions? options = null)
     {
-        Verify.NotNull(vectorizableTextSearch);
+        Verify.NotNull(vectorSearch);
 
-        this._vectorizableTextSearch = vectorizableTextSearch;
+        this._vectorSearch = vectorSearch;
         this._propertyReader = new Lazy<TextSearchResultPropertyReader>(() => new TextSearchResultPropertyReader(typeof(TRecord)));
         this._stringMapper = stringMapper ?? this.CreateTextSearchStringMapper();
         this._resultMapper = resultMapper ?? this.CreateTextSearchResultMapper();
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
 
-        return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse.Results, cancellationToken), searchResponse.TotalCount, searchResponse.Metadata);
+        return Task.FromResult(new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken)));
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
 
-        return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse.Results, cancellationToken), searchResponse.TotalCount, searchResponse.Metadata);
+        return Task.FromResult(new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken)));
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
 
-        return new KernelSearchResults<object>(this.GetResultsAsRecordAsync(searchResponse.Results, cancellationToken), searchResponse.TotalCount, searchResponse.Metadata);
+        return Task.FromResult(new KernelSearchResults<object>(this.GetResultsAsRecordAsync(searchResponse, cancellationToken)));
     }
 
     #region private
-    private readonly IVectorizedSearch<TRecord>? _vectorizedSearch;
     private readonly ITextEmbeddingGenerationService? _textEmbeddingGeneration;
-    private readonly IVectorizableTextSearch<TRecord>? _vectorizableTextSearch;
+    private readonly IVectorSearch<TRecord>? _vectorSearch;
     private readonly ITextSearchStringMapper _stringMapper;
     private readonly ITextSearchResultMapper _resultMapper;
     private readonly Lazy<TextSearchResultPropertyReader> _propertyReader;
@@ -194,7 +195,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Search options.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    private async Task<VectorSearchResults<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, CancellationToken cancellationToken)
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         searchOptions ??= new TextSearchOptions();
         var vectorSearchOptions = new VectorSearchOptions<TRecord>
@@ -203,17 +204,24 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             OldFilter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
             Skip = searchOptions.Skip,
-            Top = searchOptions.Top,
         };
 
-        if (this._vectorizedSearch is not null)
+        if (this._textEmbeddingGeneration is not null)
         {
             var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            return await this._vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, vectorSearchOptions, cancellationToken).ConfigureAwait(false);
+            await foreach (var result in this._vectorSearch!.SearchEmbeddingAsync(vectorizedQuery, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
+            {
+                yield return result;
+            }
+
+            yield break;
         }
 
-        return await this._vectorizableTextSearch!.VectorizableTextSearchAsync(query, vectorSearchOptions, cancellationToken).ConfigureAwait(false);
+        await foreach (var result in this._vectorSearch!.SearchAsync(query, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
     /// <summary>

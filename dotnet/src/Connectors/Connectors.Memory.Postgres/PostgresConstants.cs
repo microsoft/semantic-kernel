@@ -3,66 +3,68 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 internal static class PostgresConstants
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    public const string DatabaseName = "Postgres";
+    /// <summary>The name of this vector store for telemetry purposes.</summary>
+    public const string VectorStoreSystemName = "postgresql";
 
-    /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
-    public static readonly HashSet<Type> SupportedKeyTypes =
-    [
-        typeof(short),
-        typeof(int),
-        typeof(long),
-        typeof(string),
-        typeof(Guid),
-    ];
+    /// <summary>Validation options.</summary>
+    public static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
+    {
+        RequiresAtLeastOneVector = false,
+        SupportsMultipleKeys = false,
+        SupportsMultipleVectors = true,
 
-    /// <summary>A <see cref="HashSet{T}"/> of types that data properties on the provided model may have.</summary>
-    public static readonly HashSet<Type> SupportedDataTypes =
-    [
-        typeof(bool),
-        typeof(bool?),
-        typeof(short),
-        typeof(short?),
-        typeof(int),
-        typeof(int?),
-        typeof(long),
-        typeof(long?),
-        typeof(float),
-        typeof(float?),
-        typeof(double),
-        typeof(double?),
-        typeof(decimal),
-        typeof(decimal?),
-        typeof(string),
-        typeof(DateTime),
-        typeof(DateTime?),
-        typeof(DateTimeOffset),
-        typeof(DateTimeOffset?),
-        typeof(Guid),
-        typeof(Guid?),
-        typeof(byte[]),
-    ];
+        SupportedKeyPropertyTypes =
+        [
+            typeof(short),
+            typeof(int),
+            typeof(long),
+            typeof(string),
+            typeof(Guid)
+        ],
 
-    /// <summary>A <see cref="HashSet{T}"/> of types that enumerable data properties on the provided model may use as their element types.</summary>
-    public static readonly HashSet<Type> SupportedEnumerableDataElementTypes =
-    [
-        typeof(bool),
-        typeof(short),
-        typeof(int),
-        typeof(long),
-        typeof(float),
-        typeof(double),
-        typeof(decimal),
-        typeof(string),
-        typeof(DateTime),
-        typeof(DateTimeOffset),
-        typeof(Guid),
-    ];
+        SupportedDataPropertyTypes =
+        [
+            typeof(bool),
+            typeof(short),
+            typeof(int),
+            typeof(long),
+            typeof(float),
+            typeof(double),
+            typeof(decimal),
+            typeof(string),
+            typeof(DateTime),
+            typeof(DateTimeOffset),
+            typeof(Guid),
+            typeof(byte[]),
+        ],
+
+        SupportedEnumerableDataPropertyElementTypes =
+        [
+            typeof(bool),
+            typeof(short),
+            typeof(int),
+            typeof(long),
+            typeof(float),
+            typeof(double),
+            typeof(decimal),
+            typeof(string),
+            typeof(DateTime),
+            typeof(DateTimeOffset),
+            typeof(Guid),
+        ],
+
+        SupportedVectorPropertyTypes =
+        [
+            typeof(ReadOnlyMemory<float>),
+            typeof(ReadOnlyMemory<float>?)
+        ]
+    };
 
     /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have.</summary>
     public static readonly HashSet<Type> SupportedVectorTypes =

@@ -30,15 +30,34 @@ public sealed class AzureAIAgentFactory : AgentFactory
     public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
-        Verify.NotNull(agentDefinition.Model);
-        Verify.NotNull(agentDefinition.Model.Id);
 
         if (agentDefinition.Type?.Equals(AzureAIAgentType, System.StringComparison.Ordinal) ?? false)
         {
             var projectClient = agentDefinition.GetAIProjectClient(kernel);
 
             AgentsClient client = projectClient.GetAgentsClient();
-            Azure.AI.Projects.Agent agent = await client.CreateAgentAsync(
+            Azure.AI.Projects.Agent agent;
+            if (!string.IsNullOrEmpty(agentDefinition.Id))
+            {
+                // Get an existing agent
+                agent = await client.GetAgentAsync(
+                    agentDefinition.Id,
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+
+                return new AzureAIAgent(agent, client)
+                {
+                    Kernel = kernel,
+                    Arguments = agentDefinition.GetDefaultKernelArguments(kernel) ?? [],
+                    Template = agentDefinition.GetPromptTemplate(kernel, agentCreationOptions?.PromptTemplateFactory),
+                    Instructions = agentDefinition.Instructions ?? agent.Instructions,
+                };
+            }
+
+            // Create a new agent
+            Verify.NotNull(agentDefinition.Model);
+            Verify.NotNull(agentDefinition.Model.Id);
+
+            agent = await client.CreateAgentAsync(
                 model: agentDefinition.Model.Id,
                 name: agentDefinition.Name,
                 description: agentDefinition.Description,

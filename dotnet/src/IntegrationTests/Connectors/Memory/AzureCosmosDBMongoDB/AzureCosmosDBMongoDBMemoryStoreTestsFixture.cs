@@ -10,6 +10,7 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class AzureCosmosDBMongoDBMemoryStoreTestsFixture : IAsyncLifetime
 {
     public AzureCosmosDBMongoDBMemoryStore MemoryStore { get; }

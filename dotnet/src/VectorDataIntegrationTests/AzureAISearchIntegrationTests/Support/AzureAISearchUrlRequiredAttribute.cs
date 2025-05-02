@@ -12,7 +12,7 @@ public sealed class AzureAISearchUrlRequiredAttribute : Attribute, ITestConditio
 {
     public ValueTask<bool> IsMetAsync() => new(AzureAISearchTestEnvironment.IsConnectionInfoDefined);
 
-    public string Skip { get; set; } = "Service URL and API key are not configured, set AzureAISearch:ServiceUrl and AzureAISearch:ApiKey.";
+    public string Skip { get; set; } = "Service URL is not configured, set AzureAISearch:ServiceUrl (and AzureAISearch:ApiKey if you don't use managed identity).";
 
     public string SkipReason
         => this.Skip;

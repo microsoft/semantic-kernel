@@ -20,7 +20,7 @@ public static class BedrockAgentExtensions
     /// <param name="request">The <see cref="CreateAgentRequest"/> instance.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> instance.</param>
     public static async Task<Amazon.BedrockAgent.Model.Agent> CreateAndPrepareAgentAsync(
-        this AmazonBedrockAgentClient client,
+        this IAmazonBedrockAgent client,
         CreateAgentRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -39,7 +39,7 @@ public static class BedrockAgentExtensions
     /// <param name="request">The <see cref="CreateAgentRequest"/> instance.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> instance.</param>
     public static async Task<Amazon.BedrockAgent.Model.Agent> CreateAgentAndWaitAsync(
-        this AmazonBedrockAgentClient client,
+        this IAmazonBedrockAgent client,
         CreateAgentRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -58,7 +58,7 @@ public static class BedrockAgentExtensions
     /// <param name="agent">The <see cref="Amazon.BedrockAgent.Model.Agent"/> instance.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> instance.</param>
     public static async Task<Amazon.BedrockAgent.Model.Agent> PrepareAgentAndWaitAsync(
-        this AmazonBedrockAgentClient client,
+        this IAmazonBedrockAgent client,
         Amazon.BedrockAgent.Model.Agent agent,
         CancellationToken cancellationToken = default)
     {
@@ -212,7 +212,7 @@ public static class BedrockAgentExtensions
     }
 
     private static async Task<Amazon.BedrockAgent.Model.Agent> PrepareAgentAndWaitUntilPreparedAsync(
-        this AmazonBedrockAgentClient client,
+        this IAmazonBedrockAgent client,
         Amazon.BedrockAgent.Model.Agent agent,
         CancellationToken cancellationToken = default)
     {
@@ -237,7 +237,7 @@ public static class BedrockAgentExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>The <see cref="Amazon.BedrockAgent.Model.Agent"/> instance.</returns>
     private static async Task<Amazon.BedrockAgent.Model.Agent> WaitForAgentStatusAsync(
-        this AmazonBedrockAgentClient client,
+        this IAmazonBedrockAgent client,
         Amazon.BedrockAgent.Model.Agent agent,
         AgentStatus status,
         int interval = 2,

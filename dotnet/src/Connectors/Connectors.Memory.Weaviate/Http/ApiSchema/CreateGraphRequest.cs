@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -9,7 +8,7 @@ using System.Net.Http;
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 // ReSharper disable once ClassCannotBeInstantiated
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and WeaviateVectorStore")]
 internal sealed class CreateGraphRequest
 {
 #pragma warning disable CS8618

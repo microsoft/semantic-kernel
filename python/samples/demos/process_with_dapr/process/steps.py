@@ -6,11 +6,9 @@ from typing import ClassVar
 
 from pydantic import Field
 
-from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
-from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process import (
     KernelProcessStep,
@@ -60,12 +58,10 @@ class AStep(KernelProcessStep):
 # As an example, this factory creates a kernel and adds an `AzureChatCompletion` service to it.
 async def bstep_factory():
     """Creates a BStep instance with ephemeral references like ChatCompletionAgent."""
-    kernel = Kernel()
-    kernel.add_service(AzureChatCompletion())
-
-    agent = ChatCompletionAgent(kernel=kernel, name="echo", instructions="repeat the input back")
+    agent = ChatCompletionAgent(service=AzureChatCompletion(), name="echo", instructions="repeat the input back")
     step_instance = BStep()
     step_instance.agent = agent
+    step_instance.thread = ChatHistoryAgentThread()
 
     return step_instance
 
@@ -80,6 +76,7 @@ class BStep(KernelProcessStep):
     # because we do not place them in a step state model.
     # We'll set this in the factory function:
     agent: ChatCompletionAgent | None = None
+    thread: ChatHistoryAgentThread | None = None
 
     @kernel_function(name="do_it")
     async def do_it(self, context: KernelProcessStepContext):
@@ -87,10 +84,8 @@ class BStep(KernelProcessStep):
         await asyncio.sleep(2)
 
         if self.agent:
-            history = ChatHistory()
-            history.add_user_message("Hello from BStep!")
-            async for msg in self.agent.invoke(history):
-                print(f"BStep got agent response: {msg.content}")
+            response = await self.agent.get_response(messages="Hello from BStep!")
+            print(f"BStep got agent response: {response.content}")
 
         await context.emit_event(process_event="BStepDone", data="I did B")
 

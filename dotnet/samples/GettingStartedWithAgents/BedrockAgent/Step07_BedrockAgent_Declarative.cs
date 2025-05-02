@@ -40,6 +40,24 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     }
 
     /// <summary>
+    /// Demonstrates loading an existing Bedrock Agent.
+    /// </summary>
+    [Fact]
+    public async Task BedrockAgentWithId()
+    {
+        var text =
+            """
+            id: ${BedrockAgent:AgentId}
+            type: bedrock_agent
+            """;
+        BedrockAgentFactory factory = new();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text, configuration: TestConfiguration.ConfigurationRoot);
+
+        await InvokeAgentAsync(agent!, "What is Semantic Kernel?", false);
+    }
+
+    /// <summary>
     /// Demonstrates creating and using a Bedrock Agent with a code interpreter.
     /// </summary>
     [Fact]
@@ -175,7 +193,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     /// <summary>
     /// Invoke the agent with the user input.
     /// </summary>
-    private async Task InvokeAgentAsync(Agent agent, string input)
+    private async Task InvokeAgentAsync(Agent agent, string input, bool deleteAgent = true)
     {
         AgentThread? agentThread = null;
         try
@@ -192,9 +210,11 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
         }
         finally
         {
-            var bedrockAgent = agent as BedrockAgent;
-            Assert.NotNull(bedrockAgent);
-            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            if (deleteAgent)
+            {
+                var bedrockAgent = agent as BedrockAgent;
+                await bedrockAgent!.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            }
 
             if (agentThread is not null)
             {
