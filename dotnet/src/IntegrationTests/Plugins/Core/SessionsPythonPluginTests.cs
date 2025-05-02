@@ -19,7 +19,7 @@ namespace SemanticKernel.IntegrationTests.Plugins.Core;
 
 public sealed class SessionsPythonPluginTests : IDisposable
 {
-    private const string SkipReason = "For manual verification only";
+    private const string SkipReason = null;
 
     private readonly SessionsPythonSettings _settings;
     private readonly HttpClientFactory _httpClientFactory;
@@ -61,7 +61,6 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(322, result.Size);
         Assert.Equal("file", result.Type);
         Assert.Equal("text/plain; charset=utf-8", result.ContentType);
-        Assert.NotNull(result.LastModifiedTime);
     }
 
     [Fact(Skip = SkipReason)]
@@ -95,14 +94,12 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(322, firstFile.Size);
         Assert.Equal("file", firstFile.Type);
         Assert.Equal("text/plain; charset=utf-8", firstFile.ContentType);
-        Assert.NotNull(firstFile.LastModifiedTime);
 
         var secondFile = files[1];
         Assert.Equal("test_file_2.txt", secondFile.Name);
         Assert.Equal(336, secondFile.Size);
         Assert.Equal("file", secondFile.Type);
         Assert.Equal("text/plain; charset=utf-8", secondFile.ContentType);
-        Assert.NotNull(secondFile.LastModifiedTime);
     }
 
     [Fact(Skip = SkipReason)]

@@ -200,14 +200,14 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(516, firstFile.Size);
         Assert.Equal("file", firstFile.Type);
         Assert.Equal("text/plain; charset=utf-8", firstFile.ContentType);
-        Assert.Equal(638585580822423944, firstFile.LastModifiedTime!.Value.Ticks);
+        Assert.Equal(638585580822423944, firstFile.LastModifiedTime.Ticks);
 
         var secondFile = files[1];
         Assert.Equal("test-file2.txt", secondFile.Name);
         Assert.Equal(211, secondFile.Size);
         Assert.Equal("file", secondFile.Type);
         Assert.Equal("text/plain; charset=utf-8", secondFile.ContentType);
-        Assert.Equal(638585580822423944, secondFile.LastModifiedTime!.Value.Ticks);
+        Assert.Equal(638585580822423944, secondFile.LastModifiedTime.Ticks);
     }
 
     [Fact]
@@ -217,8 +217,11 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
         var requestPayload = await File.ReadAllBytesAsync(FileTestDataFilePath);
 
-        var expectedResponse = new SessionsRemoteFileMetadata("test-file.txt", 516, "file")
+        var expectedResponse = new SessionsRemoteFileMetadata()
         {
+            Name = "test-file.txt",
+            Size = 516,
+            Type = "file",
             LastModifiedTime = new DateTime(638585526384228269),
             ContentType = "text/plain; charset=utf-8",
         };

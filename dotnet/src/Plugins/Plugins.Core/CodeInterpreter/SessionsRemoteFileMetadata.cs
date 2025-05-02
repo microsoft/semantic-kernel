@@ -12,22 +12,11 @@ namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 public sealed class SessionsRemoteFileMetadata
 {
     /// <summary>
-    /// Initializes a new instance of the SessionRemoteFileMetadata class.
-    /// </summary>
-    [JsonConstructor]
-    public SessionsRemoteFileMetadata(string name, int? size, string type)
-    {
-        this.Name = name;
-        this.Size = size;
-        this.Type = type;
-    }
-
-    /// <summary>
     /// The name of the entity.
     /// </summary>
     [Description("The name of the entity.")]
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public required string Name { get; set; }
 
     /// <summary>
     /// The size of the entity in bytes.
@@ -41,7 +30,7 @@ public sealed class SessionsRemoteFileMetadata
     /// </summary>
     [Description("The entity last modified time.")]
     [JsonPropertyName("lastModifiedAt")]
-    public DateTime? LastModifiedTime { get; set; }
+    public required DateTime LastModifiedTime { get; set; }
 
     /// <summary>
     /// The type of the entity content.
@@ -55,7 +44,7 @@ public sealed class SessionsRemoteFileMetadata
     /// </summary>
     [Description("The type of the entity.")]
     [JsonPropertyName("type")]
-    public string Type { get; set; }
+    public required string Type { get; set; }
 
     /// <summary>
     /// The full path of the entity.
