@@ -183,47 +183,11 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : VectorS
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(keys);
-
-        if (options?.IncludeVectors == true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
-        {
-            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
-        }
-
-        foreach (var key in keys)
-        {
-            var record = await this.GetAsync(key, options, cancellationToken).ConfigureAwait(false);
-
-            if (record is not null)
-            {
-                yield return record;
-            }
-        }
-    }
-
-    /// <inheritdoc />
     public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
         var collectionDictionary = this.GetCollectionDictionary();
 
         collectionDictionary.TryRemove(key, out _);
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public override Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(keys);
-
-        var collectionDictionary = this.GetCollectionDictionary();
-
-        foreach (var key in keys)
-        {
-            collectionDictionary.TryRemove(key, out _);
-        }
-
         return Task.CompletedTask;
     }
 

@@ -22,7 +22,7 @@ internal sealed class MongoDBDynamicDataModelMapper(CollectionModel model) : IMo
 #pragma warning restore CS0618
 {
     /// <inheritdoc />
-    public BsonDocument MapFromDataToStorageModel(Dictionary<string, object?> dataModel, Embedding?[]? generatedEmbeddings)
+    public BsonDocument MapFromDataToStorageModel(Dictionary<string, object?> dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         Verify.NotNull(dataModel);
 
@@ -52,24 +52,23 @@ internal sealed class MongoDBDynamicDataModelMapper(CollectionModel model) : IMo
         {
             var property = model.VectorProperties[i];
 
-            if (generatedEmbeddings?[i] is null)
-            {
-                // No generated embedding, read the vector directly from the data model
-                if (dataModel.TryGetValue(property.ModelName, out var vectorValue))
-                {
-                    document[property.StorageName] = BsonArray.Create(GetVectorArray(vectorValue));
-                }
-            }
-            else
+            if (generatedEmbeddings?[i]?[recordIndex] is Embedding embedding)
             {
                 Debug.Assert(property.EmbeddingGenerator is not null);
-                var embedding = generatedEmbeddings[i];
                 document[property.StorageName] = embedding switch
                 {
                     Embedding<float> e => BsonArray.Create(e.Vector.ToArray()),
                     Embedding<double> e => BsonArray.Create(e.Vector.ToArray()),
                     _ => throw new UnreachableException()
                 };
+            }
+            else
+            {
+                // No generated embedding, read the vector directly from the data model
+                if (dataModel.TryGetValue(property.ModelName, out var vectorValue))
+                {
+                    document[property.StorageName] = BsonArray.Create(GetVectorArray(vectorValue));
+                }
             }
         }
 

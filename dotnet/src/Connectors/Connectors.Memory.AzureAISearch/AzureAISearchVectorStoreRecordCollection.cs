@@ -220,14 +220,13 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         var innerOptions = this.ConvertGetDocumentOptions(options);
         var includeVectors = options?.IncludeVectors ?? false;
 
-        // Get records in parallel.
-        var tasks = keys.Select(key => this.GetDocumentAndMapToDataModelAsync(key, includeVectors, innerOptions, cancellationToken));
-        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-        foreach (var result in results)
+        foreach (var key in keys)
         {
-            if (result is not null)
+            var record = await this.GetDocumentAndMapToDataModelAsync(key, includeVectors, innerOptions, cancellationToken).ConfigureAwait(false);
+
+            if (record is not null)
             {
-                yield return result;
+                yield return record;
             }
         }
     }

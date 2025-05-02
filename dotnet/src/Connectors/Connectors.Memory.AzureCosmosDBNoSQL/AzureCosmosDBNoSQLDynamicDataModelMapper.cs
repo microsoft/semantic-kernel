@@ -22,7 +22,7 @@ internal sealed class AzureCosmosDBNoSQLDynamicDataModelMapper(CollectionModel m
         Converters = { new AzureCosmosDBNoSQLReadOnlyMemoryByteConverter() }
     };
 
-    public JsonObject MapFromDataToStorageModel(Dictionary<string, object?> dataModel, MEAI.Embedding?[]? generatedEmbeddings)
+    public JsonObject MapFromDataToStorageModel(Dictionary<string, object?> dataModel, int recordIndex, IReadOnlyList<MEAI.Embedding>?[]? generatedEmbeddings)
     {
         Verify.NotNull(dataModel);
 
@@ -51,20 +51,10 @@ internal sealed class AzureCosmosDBNoSQLDynamicDataModelMapper(CollectionModel m
         {
             var property = model.VectorProperties[i];
 
-            if (generatedEmbeddings?[i] is null)
-            {
-                // No generated embedding, read the vector directly from the data model
-                if (dataModel.TryGetValue(property.ModelName, out var sourceValue))
-                {
-                    jsonObject.Add(property.StorageName, sourceValue is null
-                        ? null
-                        : JsonSerializer.SerializeToNode(sourceValue, property.Type, s_vectorJsonSerializerOptions));
-                }
-            }
-            else
+            if (generatedEmbeddings?[i]?[recordIndex] is MEAI.Embedding embedding)
             {
                 Debug.Assert(property.EmbeddingGenerator is not null);
-                var embedding = generatedEmbeddings[i];
+
                 jsonObject.Add(
                     property.StorageName,
                     embedding switch
@@ -74,6 +64,16 @@ internal sealed class AzureCosmosDBNoSQLDynamicDataModelMapper(CollectionModel m
                         MEAI.Embedding<sbyte> e => JsonSerializer.SerializeToNode(e.Vector, s_vectorJsonSerializerOptions),
                         _ => throw new UnreachableException()
                     });
+            }
+            else
+            {
+                // No generated embedding, read the vector directly from the data model
+                if (dataModel.TryGetValue(property.ModelName, out var sourceValue))
+                {
+                    jsonObject.Add(property.StorageName, sourceValue is null
+                        ? null
+                        : JsonSerializer.SerializeToNode(sourceValue, property.Type, s_vectorJsonSerializerOptions));
+                }
             }
         }
 

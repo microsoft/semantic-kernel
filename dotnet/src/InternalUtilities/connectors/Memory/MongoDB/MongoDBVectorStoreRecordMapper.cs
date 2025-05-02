@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -49,7 +50,7 @@ internal sealed class MongoDBVectorStoreRecordMapper<TRecord> : IMongoDBMapper<T
             type => type == typeof(TRecord));
     }
 
-    public BsonDocument MapFromDataToStorageModel(TRecord dataModel, Embedding?[]? generatedEmbeddings)
+    public BsonDocument MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         var document = dataModel.ToBsonDocument();
 
@@ -69,11 +70,12 @@ internal sealed class MongoDBVectorStoreRecordMapper<TRecord> : IMongoDBMapper<T
         {
             for (var i = 0; i < this._model.VectorProperties.Count; i++)
             {
-                if (generatedEmbeddings[i] is not null)
+                if (generatedEmbeddings?[i]?[recordIndex] is Embedding embedding)
                 {
                     var property = this._model.VectorProperties[i];
+
                     Debug.Assert(property.EmbeddingGenerator is not null);
-                    var embedding = generatedEmbeddings[i];
+
                     document[property.StorageName] = embedding switch
                     {
                         Embedding<float> e => BsonArray.Create(e.Vector.ToArray()),

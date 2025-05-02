@@ -48,7 +48,7 @@ public sealed class MongoDBVectorStoreRecordMapperTests
         };
 
         // Act
-        var document = this._sut.MapFromDataToStorageModel(hotel, generatedEmbeddings: null);
+        var document = this._sut.MapFromDataToStorageModel(hotel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.NotNull(document);
