@@ -205,7 +205,7 @@ class TimePlugin(KernelBaseModel):
              {{time.date_matching_last_day_name $input}} => Sunday, 7 May, 2023
         """
         d = datetime.date.today()
-        for i in range(1, 8):
+        for _ in range(1, 8):
             d = d - datetime.timedelta(days=1)
             if d.strftime("%A") == day_name:
                 return d.strftime("%A, %d %B, %Y")

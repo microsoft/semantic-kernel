@@ -43,11 +43,11 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
         if not isinstance(settings, OpenAITextToImageExecutionSettings):
             settings = OpenAITextToImageExecutionSettings.from_prompt_execution_settings(settings)
         if width:
-            warn("The 'width' argument is deprecated. Use 'settings.size' instead.", DeprecationWarning)
+            warn("The 'width' argument is deprecated. Use 'settings.size' instead.", DeprecationWarning, stacklevel=1)
             if settings.size and not settings.size.width:
                 settings.size.width = width
         if height:
-            warn("The 'height' argument is deprecated. Use 'settings.size' instead.", DeprecationWarning)
+            warn("The 'height' argument is deprecated. Use 'settings.size' instead.", DeprecationWarning, stacklevel=1)
             if settings.size and not settings.size.height:
                 settings.size.height = height
         if not settings.size and width and height:

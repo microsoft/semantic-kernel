@@ -511,7 +511,7 @@ class BedrockAgent(BedrockAgentBase):
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = True
         kwargs.setdefault("sessionState", {})
 
-        for request_index in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
+        for _request_index in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
             response = await self._invoke_agent(thread.id, messages, agent_alias, **kwargs)
 
             all_function_call_messages: list[StreamingChatMessageContent] = []

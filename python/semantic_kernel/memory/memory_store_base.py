@@ -20,7 +20,7 @@ class MemoryStoreBase(ABC):
         """Exit the context manager."""
         await self.close()
 
-    async def close(self):
+    async def close(self):  # noqa: B027
         """Close the connection."""
         pass
 

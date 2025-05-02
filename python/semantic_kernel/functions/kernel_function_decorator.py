@@ -62,7 +62,7 @@ def kernel_function(
         setattr(func, "__kernel_function_description__", description or func.__doc__)
         setattr(func, "__kernel_function_name__", name or getattr(func, "__name__", "unknown"))
         setattr(func, "__kernel_function_streaming__", isasyncgenfunction(func) or isgeneratorfunction(func))
-        logger.debug(f"Parsing decorator for function: {getattr(func, '__kernel_function_name__')}")
+        logger.debug(f"Parsing decorator for function: {func.__kernel_function_name__}")
         func_sig = signature(func, eval_str=True)
 
         annotations = _process_signature(func_sig)
