@@ -14,7 +14,7 @@ informed: {}
 
 The industry is moving up the stack to build more complex systems using LLMs. From interacting with foundation models to building RAG systems, and now creating single AI agents to perform more complex tasks, the desire for a multi-agent system is growing.
 
-With the recent GA of the Semantic Kernel Agent Framework, which offers a stable agent abstraction and support for multiple agent services, we are now able to build on top of it to create multi-agent systems. This will allow our customers to unlock even more complex scenarios.
+With the recent GA of the Semantic Kernel Agent Framework, which offers a [stable agent abstraction/APIs](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/agents/agent.py) and support for multiple agent services such as OpenAI Assistant and Chat Completion services, we are now able to build on top of it to create multi-agent systems. This will allow our customers to unlock even more complex scenarios.
 
 In addition, the recent collaboration with the AutoGen team that resulted in the shared agent runtime abstraction allowed us to leverage their work as the foundation on which we can build our framework.
 
@@ -72,7 +72,9 @@ agent_2 = ChatCompletionAgent(...)
 
 group_chat = GroupChatOrchestration(members=[agent_1, agent_2], manager=RoundRobinGroupChatManager())
 
-runtime = SingleThreadedAgentRuntime()
+# The runtime can be a context manager for better resource management and developer experience.
+# We may also consider using a factory to create a default runtime instance.
+runtime = InProcessRuntime()
 runtime.start()
 
 orchestration_result = await group_chat.invoke(task="Hello world", runtime=runtime)
@@ -106,7 +108,7 @@ agent_2 = ChatCompletionAgent(...)
 
 group_chat = GroupChatOrchestration(members=[agent_1, agent_2], manager=RoundRobinGroupChatManager())
 
-runtime = SingleThreadedAgentRuntime()
+runtime = InProcessRuntime()
 runtime.start()
 
 task_1 = await group_chat.invoke(task=TASK_1, runtime=runtime)
@@ -227,7 +229,7 @@ Agent actors in other orchestrations will handle different message types or diff
 The signature of the data transform logic will be as follows:
 
 ```python
-DefaultTypeAlias = Union[ChatMessageContent, list[ChatMessageContent]]
+DefaultTypeAlias = ChatMessageContent | list[ChatMessageContent]
 
 TIn = TypeVar("TIn", default=DefaultTypeAlias)
 TOut = TypeVar("TOut", default=DefaultTypeAlias)
@@ -328,7 +330,7 @@ sequential_orchestration = SequentialOrchestration[MyTypeA, MyTypeB](
 And depending on the language, we can offer defaults so that only advanced users will need to set `TIn` and `TOut`. For example, in Python, we can do the following:
 
 ```python
-DefaultTypeAlias = Union[ChatMessageContent, list[ChatMessageContent]]
+DefaultTypeAlias = ChatMessageContent | list[ChatMessageContent]
 
 TIn = TypeVar("TIn", default=DefaultTypeAlias)
 TOut = TypeVar("TOut", default=DefaultTypeAlias)
@@ -407,6 +409,14 @@ Another type of states are the agents' conversational context. There is active w
 We mentioned in the [State management](#state-management) section that orchestrations do not manage the state of the agents, while we do want to support the ability to invoke/restart an orchestration on some existing agent context. This means that we need to have a way to provide the state of the agents to the orchestrations.
 
 An option is to have a context provider that provides agent contexts given an agent ID. The context provider will be attached to the agent actors for the agent actor to retrieve and update contexts. Each new invocation of an orchestration will return a text representation (see [Support declarative orchestrations](#support-declarative-orchestrations)) of the orchestration, which can be used to rehydrate the orchestration.
+
+### Error handling
+
+We need a clear story for customers on how to handle errors in the runtime. The runtime is managed by the application. Orchestrations will not be able to capture errors that happen in the runtime and actor level.
+
+The `in_process` runtime currently have a flag `ignore_unhandled_exceptions` which by default is set to `True` and can be set at construction time. Setting this flag to `False` will cause the runtime to stop and raise if an exception occurs during the execution.
+
+It will get more complicated when we have distributed runtimes. We should also consider retries and idempotency at the runtime level.
 
 ### Human in the loop
 
