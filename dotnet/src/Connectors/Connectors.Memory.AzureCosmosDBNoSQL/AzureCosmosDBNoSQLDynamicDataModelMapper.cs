@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using MEAI = Microsoft.Extensions.AI;
 
@@ -95,7 +94,7 @@ internal sealed class AzureCosmosDBNoSQLDynamicDataModelMapper(VectorStoreRecord
                 case VectorStoreRecordKeyPropertyModel keyProperty:
                     result[keyProperty.ModelName] = storageModel.TryGetPropertyValue(AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName, out var keyValue)
                         ? keyValue?.GetValue<string>()
-                        : throw new VectorStoreRecordMappingException("No key property was found in the record retrieved from storage.");
+                        : throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
                     continue;
 
                 case VectorStoreRecordDataPropertyModel dataProperty:

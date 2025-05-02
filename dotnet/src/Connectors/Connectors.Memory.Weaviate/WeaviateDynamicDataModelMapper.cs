@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -129,7 +128,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
 
         if (!key.HasValue)
         {
-            throw new VectorStoreRecordMappingException("No key property was found in the record retrieved from storage.");
+            throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
         }
 
         result[this._model.KeyProperty.ModelName] = key.Value;

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
@@ -66,7 +65,7 @@ internal sealed class RecordMapper<TRecord>(VectorStoreRecordModel model)
                     {
                         // When deserializing a string to a ReadOnlyMemory<float> fails in SqlDataReaderDictionary,
                         // we store the raw value so the user can handle the error in a custom mapper.
-                        throw new VectorStoreRecordMappingException($"Failed to deserialize vector property '{property.ModelName}', it contained value '{value}'.");
+                        throw new InvalidOperationException($"Failed to deserialize vector property '{property.ModelName}', it contained value '{value}'.");
                     }
                 }
             }
@@ -82,7 +81,7 @@ internal sealed class RecordMapper<TRecord>(VectorStoreRecordModel model)
             }
             catch (Exception ex)
             {
-                throw new VectorStoreRecordMappingException($"Failed to set value '{value}' on property '{property.ModelName}' of type '{property.Type.Name}'.", ex);
+                throw new InvalidOperationException($"Failed to set value '{value}' on property '{property.ModelName}' of type '{property.Type.Name}'.", ex);
             }
         }
     }

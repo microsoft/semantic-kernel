@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -77,7 +77,7 @@ internal class RedisJsonDynamicDataModelMapper(VectorStoreRecordModel model, Jso
         {
             JsonObject topLevelJsonObject => topLevelJsonObject,
             JsonArray jsonArray and [JsonObject arrayEntryJsonObject] => arrayEntryJsonObject,
-            _ => throw new VectorStoreRecordMappingException($"Invalid data format for document with key '{storageModel.Key}'"),
+            _ => throw new InvalidOperationException($"Invalid data format for document with key '{storageModel.Key}'"),
         };
 
         // The key was handled above

@@ -58,7 +58,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
     /// <param name="payloadValue">The value to convert to a native type.</param>
     /// <param name="targetType">The target type to convert the value to.</param>
     /// <returns>The converted native value.</returns>
-    /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when an unsupported type is encountered.</exception>
     public static object? ConvertFromGrpcFieldValueToNativeType(Value payloadValue, Type targetType)
     {
         return payloadValue.KindCase switch
@@ -79,7 +79,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
                 payloadValue.ListValue.Values.Select(
                     x => ConvertFromGrpcFieldValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))),
                 targetType),
-            _ => throw new VectorStoreRecordMappingException($"Unsupported grpc value kind {payloadValue.KindCase}."),
+            _ => throw new InvalidOperationException($"Unsupported grpc value kind {payloadValue.KindCase}."),
         };
 
         object ConvertStringValue(string stringValue)
@@ -97,7 +97,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
     /// </summary>
     /// <param name="sourceValue">The object to convert.</param>
     /// <returns>The converted Qdrant value.</returns>
-    /// <exception cref="VectorStoreRecordMappingException">Thrown when an unsupported type is encountered.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when an unsupported type is encountered.</exception>
     public static Value ConvertToGrpcFieldValue(object? sourceValue)
     {
         var value = new Value();
@@ -151,7 +151,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
         }
         else
         {
-            throw new VectorStoreRecordMappingException($"Unsupported source value type {sourceValue?.GetType().FullName}.");
+            throw new InvalidOperationException($"Unsupported source value type {sourceValue?.GetType().FullName}.");
         }
 
         return value;

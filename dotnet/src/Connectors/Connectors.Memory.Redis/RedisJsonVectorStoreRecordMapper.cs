@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -33,7 +33,7 @@ internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel>(
 
         if (!(jsonNode.TryGetPropertyValue(this._keyPropertyStorageName, out var keyField) && keyField is JsonValue jsonValue))
         {
-            throw new VectorStoreRecordMappingException($"Missing key field '{this._keyPropertyStorageName}' on provided record of type {typeof(TConsumerDataModel).FullName}.");
+            throw new InvalidOperationException($"Missing key field '{this._keyPropertyStorageName}' on provided record of type {typeof(TConsumerDataModel).FullName}.");
         }
 
         // Remove the key field from the JSON object since we don't want to store it in the redis payload.
@@ -78,13 +78,13 @@ internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel>(
             {
                 [model.DataProperties.Concat<VectorStoreRecordPropertyModel>(model.VectorProperties).First().StorageName] = storageModel.Node
             },
-            _ => throw new VectorStoreRecordMappingException($"Invalid data format for document with key '{storageModel.Key}'")
+            _ => throw new InvalidOperationException($"Invalid data format for document with key '{storageModel.Key}'")
         };
 
         // Check that the key field is not already present in the redis value.
         if (jsonObject.ContainsKey(this._keyPropertyStorageName))
         {
-            throw new VectorStoreRecordMappingException($"Invalid data format for document with key '{storageModel.Key}'. Key property '{this._keyPropertyStorageName}' is already present on retrieved object.");
+            throw new InvalidOperationException($"Invalid data format for document with key '{storageModel.Key}'. Key property '{this._keyPropertyStorageName}' is already present on retrieved object.");
         }
 
         // Since the key is not stored in the redis value, add it back in before deserializing into the data model.

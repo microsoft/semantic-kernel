@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -65,7 +64,7 @@ internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel
             {
                 case VectorStoreRecordKeyPropertyModel keyProperty:
                     result[keyProperty.ModelName] = (string?)storageModel[keyProperty.StorageName]
-                        ?? throw new VectorStoreRecordMappingException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
+                        ?? throw new InvalidOperationException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
 
                     continue;
 

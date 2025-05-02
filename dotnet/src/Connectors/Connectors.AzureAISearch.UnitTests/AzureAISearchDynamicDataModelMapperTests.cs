@@ -216,7 +216,7 @@ public class AzureAISearchDynamicDataModelMapperTests
         var storageModel = new JsonObject();
 
         // Act
-        var exception = Assert.Throws<VectorStoreRecordMappingException>(() => sut.MapFromStorageToDataModel(storageModel, includeVectors: true));
+        var exception = Assert.Throws<InvalidOperationException>(() => sut.MapFromStorageToDataModel(storageModel, includeVectors: true));
 
         // Assert
         Assert.Equal("The key property 'Key' is missing from the record retrieved from storage.", exception.Message);

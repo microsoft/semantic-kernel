@@ -278,7 +278,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var sut = new RedisJsonVectorStoreRecordCollection<string, RedisHotel>(fixture.Database, TestCollectionName, options);
 
         // Act & Assert.
-        await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("BaseSet-4-Invalid", new GetRecordOptions { IncludeVectors = true }));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await sut.GetAsync("BaseSet-4-Invalid", new GetRecordOptions { IncludeVectors = true }));
     }
 
     [Theory(Skip = SkipReason)]

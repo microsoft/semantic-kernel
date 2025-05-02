@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using Google.Protobuf.Collections;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client.Grpc;
 
@@ -26,14 +25,14 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
         {
             var t when t == typeof(ulong) => new PointId
             {
-                Num = (ulong?)keyProperty.GetValueAsObject(dataModel!) ?? throw new VectorStoreRecordMappingException($"Missing key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
+                Num = (ulong?)keyProperty.GetValueAsObject(dataModel!) ?? throw new InvalidOperationException($"Missing key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
             },
 
             var t when t == typeof(Guid) => new PointId
             {
-                Uuid = ((Guid?)keyProperty.GetValueAsObject(dataModel!))?.ToString("D") ?? throw new VectorStoreRecordMappingException($"Missing key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
+                Uuid = ((Guid?)keyProperty.GetValueAsObject(dataModel!))?.ToString("D") ?? throw new InvalidOperationException($"Missing key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
             },
-            _ => throw new VectorStoreRecordMappingException($"Unsupported key type '{keyProperty.Type.Name}' for key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
+            _ => throw new InvalidOperationException($"Unsupported key type '{keyProperty.Type.Name}' for key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
         };
 
         // Create point.
@@ -90,8 +89,8 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
             => embedding switch
             {
                 ReadOnlyMemory<float> floatVector => floatVector.ToArray(),
-                null => throw new VectorStoreRecordMappingException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null when not using named vectors."),
-                var unknownEmbedding => throw new VectorStoreRecordMappingException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' has unsupported embedding type '{unknownEmbedding.GetType().Name}'.")
+                null => throw new InvalidOperationException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null when not using named vectors."),
+                var unknownEmbedding => throw new InvalidOperationException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' has unsupported embedding type '{unknownEmbedding.GetType().Name}'.")
             };
     }
 

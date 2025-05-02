@@ -75,22 +75,12 @@ public sealed class RedisVectorStore : IVectorStore
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        const string OperationName = "";
-        RedisResult[] listResult;
+        const string OperationName = "FT._LIST";
 
-        try
-        {
-            listResult = await this._database.FT()._ListAsync().ConfigureAwait(false);
-        }
-        catch (RedisException ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
-            {
-                VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
-                VectorStoreName = this._metadata.VectorStoreName,
-                OperationName = OperationName
-            };
-        }
+        var listResult = await VectorStoreErrorHandler.RunOperationAsync<RedisResult[], RedisException>(
+            this._metadata,
+            OperationName,
+            () => this._database.FT()._ListAsync()).ConfigureAwait(false);
 
         foreach (var item in listResult)
         {

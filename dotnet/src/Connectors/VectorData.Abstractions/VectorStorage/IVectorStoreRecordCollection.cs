@@ -66,7 +66,6 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorSearch<TRe
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The record if found, otherwise null.</returns>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    /// <exception cref="VectorStoreRecordMappingException">The mapping between the storage model and record data model fails.</exception>
     Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -82,7 +81,6 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorSearch<TRe
     /// This method throws for any issues other than records not being found.
     /// </remarks>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    /// <exception cref="VectorStoreRecordMappingException">The mapping between the storage model and record data model fails.</exception>
     IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -117,7 +115,6 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorSearch<TRe
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The key for the records, to be used when keys are generated in the database.</returns>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    /// <exception cref="VectorStoreRecordMappingException">The mapping between the storage model and record data model fails.</exception>
     Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -141,7 +138,6 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorSearch<TRe
     /// </para>
     /// </remarks>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    /// <exception cref="VectorStoreRecordMappingException">The mapping between the storage model and record data model fails.</exception>
     Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -153,6 +149,5 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorSearch<TRe
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The records matching given predicate.</returns>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    /// <exception cref="VectorStoreRecordMappingException">The mapping between the storage model and record data model fails.</exception>
     IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default);
 }
