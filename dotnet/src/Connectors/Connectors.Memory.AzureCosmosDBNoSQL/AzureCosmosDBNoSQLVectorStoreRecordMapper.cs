@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -18,7 +19,7 @@ internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(Collect
 {
     private readonly KeyPropertyModel _keyProperty = model.KeyProperty;
 
-    public JsonObject MapFromDataToStorageModel(TRecord dataModel, MEAI.Embedding?[]? generatedEmbeddings)
+    public JsonObject MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<MEAI.Embedding>?[]? generatedEmbeddings)
     {
         var jsonObject = JsonSerializer.SerializeToNode(dataModel, jsonSerializerOptions)!.AsObject();
 
@@ -33,11 +34,12 @@ internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(Collect
         {
             for (var i = 0; i < model.VectorProperties.Count; i++)
             {
-                if (generatedEmbeddings[i] is not null)
+                if (generatedEmbeddings?[i]?[recordIndex] is MEAI.Embedding embedding)
                 {
                     var property = model.VectorProperties[i];
+
                     Debug.Assert(property.EmbeddingGenerator is not null);
-                    var embedding = generatedEmbeddings[i];
+
                     jsonObject[property.StorageName] = embedding switch
                     {
                         Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),

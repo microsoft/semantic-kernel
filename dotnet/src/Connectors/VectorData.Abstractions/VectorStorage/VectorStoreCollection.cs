@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -76,12 +77,30 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The records associated with the specified unique keys.</returns>
     /// <remarks>
-    /// Gets are made in a single request or in a single parallel batch depending on the available store functionality.
+    /// <para>
+    /// The exact method of retrieval is implementation-specific and can vary based on database support.
+    /// The default implementation of this method retrieves the record one by one, but implementations which supporting batching can override to provide a more efficient implementation.
+    /// </para>
+    /// <para>
     /// Only found records are returned, so the result set might be smaller than the requested keys.
+    /// </para>
+    /// <para>
     /// This method throws for any issues other than records not being found.
+    /// </para>
     /// </remarks>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    public abstract IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    public virtual async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        foreach (var key in keys)
+        {
+            var record = await this.GetAsync(key, options, cancellationToken).ConfigureAwait(false);
+
+            if (record is not null)
+            {
+                yield return record;
+            }
+        }
+    }
 
     /// <summary>
     /// Deletes a record from the vector store. Does not guarantee that the collection exists.
@@ -99,12 +118,23 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> that completes when the records have been deleted.</returns>
     /// <remarks>
-    /// Deletes are made in a single request or in a single parallel batch, depending on the available store functionality.
+    /// <para>
+    /// The exact method of deleting is implementation-specific and can vary based on database support.
+    /// The default implementation of this method deletes the records one by one, but implementations which supporting batching can override to provide a more efficient implementation.
+    /// </para>
+    /// <para>
     /// If a record isn't found, it is ignored and the batch succeeds.
     /// If any record can't be deleted for any other reason, the operation throws. Some records might have already been deleted while others might not have, so the entire operation should be retried.
+    /// </para>
     /// </remarks>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason other than that a record does not exist.</exception>
-    public abstract Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default);
+    public virtual async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    {
+        foreach (var key in keys)
+        {
+            await this.DeleteAsync(key, cancellationToken).ConfigureAwait(false);
+        }
+    }
 
     /// <summary>
     /// Upserts a record into the vector store. Does not guarantee that the collection exists.
@@ -125,14 +155,17 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <remarks>
     /// <para>
-    /// The exact method of upserting the batch is implementation-specific and can vary based on database support; some databases support batch upserts via a single, efficient
-    /// request, while in other cases the implementation might send multiple upserts in parallel.
+    /// The exact method of upserting the batch is implementation-specific and can vary based on database support.
     /// </para>
     /// <para>
-    /// Similarly, the error behavior can vary across databases: where possible, the batch will be upserted atomically, so that any errors cause the entire batch to be rolled
+    /// Similarly, the error behavior can vary across databases: where possible, the batch should be upserted atomically, so that any errors cause the entire batch to be rolled
     /// back. Where not supported, some records may be upserted while others are not. If key properties are set by the user, then the entire upsert operation is idempotent,
     /// and can simply be retried again if an error occurs. However, if store-generated keys are in use, the upsert operation is no longer idempotent; in that case, if the
     /// database doesn't guarantee atomicity, retrying could cause duplicate records to be created.
+    /// </para>
+    /// <para>
+    /// Implementations of <see cref="VectorStoreCollection{TKey,TRecord}"/> should implement this method in a way which performs embedding generation once for the batch, rather than
+    /// generating an embedding for each record separately. This is why a default implementation that calls <see cref="UpsertAsync(TRecord, CancellationToken)"/> is not provided.
     /// </para>
     /// </remarks>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>

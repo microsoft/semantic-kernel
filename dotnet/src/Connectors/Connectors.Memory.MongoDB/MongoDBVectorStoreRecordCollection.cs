@@ -224,41 +224,32 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : VectorSt
     {
         Verify.NotNull(record);
 
+        (_, var generatedEmbeddings) = await ProcessEmbeddingsAsync(this._model, [record], cancellationToken).ConfigureAwait(false);
+
+        await this.UpsertCoreAsync(record, recordIndex: 0, generatedEmbeddings, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(records);
+
+        (records, var generatedEmbeddings) = await ProcessEmbeddingsAsync(this._model, records, cancellationToken).ConfigureAwait(false);
+
+        var i = 0;
+
+        foreach (var record in records)
+        {
+            await this.UpsertCoreAsync(record, i++, generatedEmbeddings, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task UpsertCoreAsync(TRecord record, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings, CancellationToken cancellationToken = default)
+    {
         const string OperationName = "ReplaceOne";
 
-        Embedding?[]? generatedEmbeddings = null;
-
-        var vectorPropertyCount = this._model.VectorProperties.Count;
-        for (var i = 0; i < vectorPropertyCount; i++)
-        {
-            var vectorProperty = this._model.VectorProperties[i];
-
-            if (vectorProperty.EmbeddingGenerator is null)
-            {
-                continue;
-            }
-
-            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
-            // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new Embedding?[vectorPropertyCount];
-                generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
-            }
-            else if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<double>, ReadOnlyMemory<double>>(record, cancellationToken, out var doubleTask))
-            {
-                generatedEmbeddings ??= new Embedding?[vectorPropertyCount];
-                generatedEmbeddings[i] = await doubleTask.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
-        }
-
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
-        var storageModel = this._mapper.MapFromDataToStorageModel(record, generatedEmbeddings);
+        var storageModel = this._mapper.MapFromDataToStorageModel(record, recordIndex, generatedEmbeddings);
 
         var key = storageModel[MongoDBConstants.MongoReservedKeyPropertyName].AsString;
 
@@ -268,13 +259,60 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : VectorSt
                 .ConfigureAwait(false)).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    private static async ValueTask<(IEnumerable<TRecord> records, IReadOnlyList<Embedding>?[]?)> ProcessEmbeddingsAsync(
+        CollectionModel model,
+        IEnumerable<TRecord> records,
+        CancellationToken cancellationToken)
     {
-        Verify.NotNull(records);
+        IReadOnlyList<TRecord>? recordsList = null;
 
-        var tasks = records.Select(record => this.UpsertAsync(record, cancellationToken));
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+        // If an embedding generator is defined, invoke it once per property for all records.
+        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
+
+        var vectorPropertyCount = model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
+        {
+            var vectorProperty = model.VectorProperties[i];
+
+            if (vectorProperty.EmbeddingGenerator is null)
+            {
+                continue;
+            }
+
+            // We have a property with embedding generation; materialize the records' enumerable if needed, to
+            // prevent multiple enumeration.
+            if (recordsList is null)
+            {
+                recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+
+                if (recordsList.Count == 0)
+                {
+                    return (records, null);
+                }
+
+                records = recordsList;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var floatTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
+            }
+            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<double>, ReadOnlyMemory<double>>(records, cancellationToken, out var doubleTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = await doubleTask.ConfigureAwait(false);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
+            }
+        }
+
+        return (records, generatedEmbeddings);
     }
 
     #region Search

@@ -229,27 +229,6 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : VectorS
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<TRecord> GetAsync(
-        IEnumerable<TKey> keys,
-        GetRecordOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(keys);
-
-        var tasks = keys.Select(key => this.GetAsync(key, options, cancellationToken));
-
-        var records = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-        foreach (var record in records)
-        {
-            if (record is not null)
-            {
-                yield return record;
-            }
-        }
-    }
-
-    /// <inheritdoc />
     public override Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
         => this.UpsertAsync([record], cancellationToken);
 

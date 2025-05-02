@@ -78,7 +78,7 @@ public sealed class MongoDBDynamicDataModelMapperTests
         };
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel, generatedEmbeddings: null);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", storageModel["_id"]);
@@ -127,7 +127,7 @@ public sealed class MongoDBDynamicDataModelMapperTests
         var sut = new MongoDBDynamicDataModelMapper(model);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel, generatedEmbeddings: null);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal(BsonNull.Value, storageModel["StringDataProp"]);
@@ -251,7 +251,7 @@ public sealed class MongoDBDynamicDataModelMapperTests
         var sut = new MongoDBDynamicDataModelMapper(model);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel, generatedEmbeddings: null);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", (string?)storageModel["_id"]);

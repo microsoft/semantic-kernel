@@ -313,16 +313,6 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : Vector
     }
 
     /// <inheritdoc />
-    public override Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(keys);
-
-        // Remove records in parallel.
-        var tasks = keys.Select(key => this.DeleteAsync(key, cancellationToken));
-        return Task.WhenAll(tasks);
-    }
-
-    /// <inheritdoc />
     public override async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);

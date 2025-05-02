@@ -203,24 +203,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
         => this.DeleteAsync([key], cancellationToken);
 
-    /// <inheritdoc />
-    public override async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(keys);
-
-        var tasks = GetCompositeKeys(keys).Select(key =>
-        {
-            Verify.NotNullOrWhiteSpace(key.RecordKey);
-            Verify.NotNullOrWhiteSpace(key.PartitionKey);
-
-            return this.RunOperationAsync("DeleteItem", () =>
-                this._database
-                    .GetContainer(this.Name)
-                    .DeleteItemAsync<JsonObject>(key.RecordKey, new PartitionKey(key.PartitionKey), cancellationToken: cancellationToken));
-        });
-
-        await Task.WhenAll(tasks).ConfigureAwait(false);
-    }
+    // TODO: Implement bulk delete, #11350
 
     /// <inheritdoc />
     public override async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
@@ -269,45 +252,32 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     {
         Verify.NotNull(record);
 
+        (_, var generatedEmbeddings) = await ProcessEmbeddingsAsync(this._model, [record], cancellationToken).ConfigureAwait(false);
+
+        await this.UpsertCoreAsync(record, recordIndex: 0, generatedEmbeddings, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(records);
+
+        (records, var generatedEmbeddings) = await ProcessEmbeddingsAsync(this._model, records, cancellationToken).ConfigureAwait(false);
+
+        // TODO: Do proper bulk upsert rather than single inserts, #11350
+        var i = 0;
+
+        foreach (var record in records)
+        {
+            await this.UpsertCoreAsync(record, i++, generatedEmbeddings, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task UpsertCoreAsync(TRecord record, int recordIndex, IReadOnlyList<MEAI.Embedding>?[]? generatedEmbeddings, CancellationToken cancellationToken = default)
+    {
         const string OperationName = "UpsertItem";
 
-        MEAI.Embedding?[]? generatedEmbeddings = null;
-
-        var vectorPropertyCount = this._model.VectorProperties.Count;
-        for (var i = 0; i < vectorPropertyCount; i++)
-        {
-            var vectorProperty = this._model.VectorProperties[i];
-
-            if (vectorProperty.EmbeddingGenerator is null)
-            {
-                continue;
-            }
-
-            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
-            // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new MEAI.Embedding?[vectorPropertyCount];
-                generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
-            }
-            else if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<byte>, ReadOnlyMemory<byte>>(record, cancellationToken, out var byteTask))
-            {
-                generatedEmbeddings ??= new MEAI.Embedding?[vectorPropertyCount];
-                generatedEmbeddings[i] = await byteTask.ConfigureAwait(false);
-            }
-            else if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<sbyte>, ReadOnlyMemory<sbyte>>(record, cancellationToken, out var sbyteTask))
-            {
-                generatedEmbeddings ??= new MEAI.Embedding?[vectorPropertyCount];
-                generatedEmbeddings[i] = await sbyteTask.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of types '{typeof(Embedding<float>).Name}', '{typeof(Embedding<byte>).Name}' or '{typeof(Embedding<sbyte>).Name}' for the given input type.");
-            }
-        }
-
-        var jsonObject = this._mapper.MapFromDataToStorageModel(record, generatedEmbeddings);
+        var jsonObject = this._mapper.MapFromDataToStorageModel(record, recordIndex, generatedEmbeddings);
 
         var keyValue = jsonObject.TryGetPropertyValue(this._model.KeyProperty.StorageName!, out var jsonKey) ? jsonKey?.ToString() : null;
         var partitionKeyValue = jsonObject.TryGetPropertyValue(this._partitionKeyProperty.StorageName, out var jsonPartitionKey) ? jsonPartitionKey?.ToString() : null;
@@ -329,14 +299,65 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             .ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    private static async ValueTask<(IEnumerable<TRecord> records, IReadOnlyList<MEAI.Embedding>?[]?)> ProcessEmbeddingsAsync(
+        CollectionModel model,
+        IEnumerable<TRecord> records,
+        CancellationToken cancellationToken)
     {
-        Verify.NotNull(records);
+        IReadOnlyList<TRecord>? recordsList = null;
 
-        // TODO: Do proper bulk upsert rather than parallel single inserts, #11350
-        var tasks = records.Select(record => this.UpsertAsync(record, cancellationToken));
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+        // If an embedding generator is defined, invoke it once per property for all records.
+        IReadOnlyList<MEAI.Embedding>?[]? generatedEmbeddings = null;
+
+        var vectorPropertyCount = model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
+        {
+            var vectorProperty = model.VectorProperties[i];
+
+            if (vectorProperty.EmbeddingGenerator is null)
+            {
+                continue;
+            }
+
+            // We have a property with embedding generation; materialize the records' enumerable if needed, to
+            // prevent multiple enumeration.
+            if (recordsList is null)
+            {
+                recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+
+                if (recordsList.Count == 0)
+                {
+                    return (records, null);
+                }
+
+                records = recordsList;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var floatTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<MEAI.Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
+            }
+            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<byte>, ReadOnlyMemory<byte>>(records, cancellationToken, out var byteTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<MEAI.Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = await byteTask.ConfigureAwait(false);
+            }
+            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<sbyte>, ReadOnlyMemory<sbyte>>(records, cancellationToken, out var sbyteTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<MEAI.Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = await sbyteTask.ConfigureAwait(false);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
+            }
+        }
+
+        return (records, generatedEmbeddings);
     }
 
     #region Search

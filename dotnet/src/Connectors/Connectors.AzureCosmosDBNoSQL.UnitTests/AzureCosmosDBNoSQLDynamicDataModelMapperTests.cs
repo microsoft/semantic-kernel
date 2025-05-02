@@ -90,7 +90,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         };
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel, generatedEmbeddings: null);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", (string?)storageModel["id"]);
@@ -142,7 +142,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         var sut = new AzureCosmosDBNoSQLDynamicDataModelMapper(s_model, s_jsonSerializerOptions);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel, generatedEmbeddings: null);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Null(storageModel["StringDataProp"]);
@@ -274,7 +274,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
         var sut = new AzureCosmosDBNoSQLDynamicDataModelMapper(s_model, s_jsonSerializerOptions);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel, generatedEmbeddings: null);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", (string?)storageModel["id"]);
