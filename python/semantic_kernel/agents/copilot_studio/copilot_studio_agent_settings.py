@@ -37,4 +37,4 @@ class CopilotStudioAgentSettings(KernelBaseSettings):
     client_secret: SecretStr | None = None
     client_certificate: str | None = None
     user_assertion: str | None = None
-    auth_mode: CopilotStudioAgentAuthMode = Field(CopilotStudioAgentAuthMode.INTERACTIVE)
+    auth_mode: CopilotStudioAgentAuthMode = Field(default=CopilotStudioAgentAuthMode.INTERACTIVE)
