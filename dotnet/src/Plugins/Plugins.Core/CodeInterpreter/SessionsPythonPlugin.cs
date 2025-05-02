@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -94,12 +95,9 @@ public sealed partial class SessionsPythonPlugin
 
         var requestBody = new SessionsPythonCodeExecutionProperties(this._settings, code);
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}/executions?identifier={this._settings.SessionId}&api-version={ApiVersion}")
-        {
-            Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json")
-        };
+        using var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
 
-        using var response = await httpClient.SendWithSuccessCheckAsync(request, CancellationToken.None).ConfigureAwait(false);
+        using var response = await this.SendAsync(httpClient, HttpMethod.Post, "executions", content).ConfigureAwait(false);
 
         var responseContent = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
 
@@ -139,15 +137,13 @@ public sealed partial class SessionsPythonPlugin
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
         using var fileContent = new ByteArrayContent(File.ReadAllBytes(localFilePath));
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}files?identifier={this._settings.SessionId}&api-version={ApiVersion}")
+
+        using var multipartFormDataContent = new MultipartFormDataContent()
         {
-            Content = new MultipartFormDataContent
-            {
-                { fileContent, "file", remoteFileName },
-            }
+            { fileContent, "file", remoteFileName },
         };
 
-        using var response = await httpClient.SendWithSuccessCheckAsync(request, CancellationToken.None).ConfigureAwait(false);
+        using var response = await this.SendAsync(httpClient, HttpMethod.Post, "files", multipartFormDataContent).ConfigureAwait(false);
 
         var stringContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
@@ -172,9 +168,7 @@ public sealed partial class SessionsPythonPlugin
         using var httpClient = this._httpClientFactory.CreateClient();
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"{this._poolManagementEndpoint}/files/{Uri.EscapeDataString(remoteFileName)}/content?identifier={this._settings.SessionId}&api-version={ApiVersion}");
-
-        using var response = await httpClient.SendWithSuccessCheckAsync(request, CancellationToken.None).ConfigureAwait(false);
+        using var response = await this.SendAsync(httpClient, HttpMethod.Get, $"files/{Uri.EscapeDataString(remoteFileName)}/content").ConfigureAwait(false);
 
         var fileContent = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
@@ -205,9 +199,7 @@ public sealed partial class SessionsPythonPlugin
         using var httpClient = this._httpClientFactory.CreateClient();
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"{this._poolManagementEndpoint}/files?identifier={this._settings.SessionId}&api-version={ApiVersion}");
-
-        using var response = await httpClient.SendWithSuccessCheckAsync(request, CancellationToken.None).ConfigureAwait(false);
+        using var response = await this.SendAsync(httpClient, HttpMethod.Get, "files").ConfigureAwait(false);
 
         var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
 
@@ -260,6 +252,36 @@ public sealed partial class SessionsPythonPlugin
         {
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {(await this._authTokenProvider().ConfigureAwait(false))}");
         }
+    }
+
+    /// <summary>
+    /// Sends an HTTP request to the specified path with the specified method and content.
+    /// </summary>
+    /// <param name="httpClient">The HTTP client to use.</param>
+    /// <param name="method">The HTTP method to use.</param>
+    /// <param name="path">The path to send the request to.</param>
+    /// <param name="httpContent">The content to send with the request.</param>
+    /// <returns>The HTTP response message.</returns>
+    private async Task<HttpResponseMessage> SendAsync(HttpClient httpClient, HttpMethod method, string path, HttpContent? httpContent = null)
+    {
+        // The query string is the same for all operations
+        var pathWithQueryString = $"{path}?identifier={this._settings.SessionId}&api-version={ApiVersion}";
+
+        var uri = new Uri(this._poolManagementEndpoint, pathWithQueryString);
+
+        // If a list of allowed domains has been provided, the host of the provided
+        // uri is checked to verify it is in the allowed domain list.
+        if (!this._settings.AllowedDomains?.Contains(uri.Host) ?? false)
+        {
+            throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
+        }
+
+        using var request = new HttpRequestMessage(method, uri)
+        {
+            Content = httpContent,
+        };
+
+        return await httpClient.SendWithSuccessCheckAsync(request, CancellationToken.None).ConfigureAwait(false);
     }
 
 #if NET
