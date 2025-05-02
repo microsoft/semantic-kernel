@@ -10,6 +10,6 @@ namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 [Collection("MongoDBVectorStoreCollection")]
 [DisableVectorStoreTests(Skip = "The MongoDB container is intermittently timing out at startup time blocking prs, so these test should be run manually.")]
 public class MongoDBVectorStoreTests(MongoDBVectorStoreFixture fixture)
-    : BaseVectorStoreTests<string, MongoDBHotel>(new MongoDBVectorStore(fixture.MongoDatabase))
+    : BaseVectorStoreTests<string, MongoDBHotel>(new MongoVectorStore(fixture.MongoDatabase))
 {
 }

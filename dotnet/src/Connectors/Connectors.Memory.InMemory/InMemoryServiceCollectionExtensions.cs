@@ -53,7 +53,7 @@ public static class InMemoryServiceCollectionExtensions
     public static IServiceCollection AddInMemoryVectorStoreRecordCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
-        InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default,
+        InMemoryCollectionOptions<TKey, TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
         where TRecord : notnull
@@ -62,11 +62,11 @@ public static class InMemoryServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                options ??= sp.GetService<InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>>() ?? new()
+                options ??= sp.GetService<InMemoryCollectionOptions<TKey, TRecord>>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
-                return (new InMemoryVectorStoreRecordCollection<TKey, TRecord>(collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                return (new InMemoryCollection<TKey, TRecord>(collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
         services.AddKeyedSingleton<IVectorSearch<TRecord>>(

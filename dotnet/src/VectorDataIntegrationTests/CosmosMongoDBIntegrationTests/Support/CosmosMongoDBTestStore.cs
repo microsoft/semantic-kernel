@@ -13,7 +13,7 @@ public sealed class CosmosMongoDBTestStore : TestStore
 
     private MongoClient? _client;
     private IMongoDatabase? _database;
-    private AzureCosmosDBMongoDBVectorStore? _defaultVectorStore;
+    private CosmosMongoVectorStore? _defaultVectorStore;
 
     public MongoClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
     public IMongoDatabase Database => this._database ?? throw new InvalidOperationException("Not initialized");
@@ -25,7 +25,7 @@ public sealed class CosmosMongoDBTestStore : TestStore
 
     public override string DefaultDistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
 
-    public AzureCosmosDBMongoDBVectorStore GetVectorStore(AzureCosmosDBMongoDBVectorStoreOptions options)
+    public CosmosMongoVectorStore GetVectorStore(CosmosMongoVectorStoreOptions options)
         => new(this.Database, options);
 
     private CosmosMongoDBTestStore()

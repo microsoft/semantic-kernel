@@ -40,7 +40,7 @@ public class PostgresVectorStoreTests
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<PostgresVectorStoreRecordCollection<long, SinglePropsModel<long>>>(actual);
+        Assert.IsType<PostgresCollection<long, SinglePropsModel<long>>>(actual);
     }
 
     [Fact]

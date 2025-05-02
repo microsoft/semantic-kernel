@@ -82,7 +82,7 @@ public static class QdrantServiceCollectionExtensions
     public static IServiceCollection AddQdrantVectorStoreRecordCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
-        QdrantVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        QdrantCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
         where TRecord : notnull
@@ -92,12 +92,12 @@ public static class QdrantServiceCollectionExtensions
             (sp, obj) =>
             {
                 var qdrantClient = sp.GetRequiredService<QdrantClient>();
-                options ??= sp.GetService<QdrantVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<QdrantCollectionOptions<TRecord>>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return (new QdrantVectorStoreRecordCollection<TKey, TRecord>(qdrantClient, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                return (new QdrantCollection<TKey, TRecord>(qdrantClient, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);
@@ -127,7 +127,7 @@ public static class QdrantServiceCollectionExtensions
         int port = 6334,
         bool https = false,
         string? apiKey = default,
-        QdrantVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        QdrantCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
         where TRecord : notnull
@@ -137,12 +137,12 @@ public static class QdrantServiceCollectionExtensions
             (sp, obj) =>
             {
                 var qdrantClient = new QdrantClient(host, port, https, apiKey);
-                options ??= sp.GetService<QdrantVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<QdrantCollectionOptions<TRecord>>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return (new QdrantVectorStoreRecordCollection<TKey, TRecord>(qdrantClient, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                return (new QdrantCollection<TKey, TRecord>(qdrantClient, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);

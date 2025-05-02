@@ -21,7 +21,7 @@ public class CommonQdrantVectorStoreRecordCollectionTests(QdrantVectorStoreFixtu
 
     protected override VectorStoreCollection<ulong, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
     {
-        return new QdrantVectorStoreRecordCollection<ulong, TRecord>(fixture.QdrantClient, recordCollectionName, new()
+        return new QdrantCollection<ulong, TRecord>(fixture.QdrantClient, recordCollectionName, new()
         {
             HasNamedVectors = true,
             VectorStoreRecordDefinition = vectorStoreRecordDefinition

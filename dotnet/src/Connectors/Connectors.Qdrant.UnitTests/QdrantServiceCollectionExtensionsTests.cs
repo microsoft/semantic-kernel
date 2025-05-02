@@ -104,11 +104,11 @@ public class QdrantServiceCollectionExtensionsTests
 
         var collection = serviceProvider.GetRequiredService<VectorStoreCollection<ulong, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<QdrantVectorStoreRecordCollection<ulong, TestRecord>>(collection);
+        Assert.IsType<QdrantCollection<ulong, TestRecord>>(collection);
 
         var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<QdrantVectorStoreRecordCollection<ulong, TestRecord>>(vectorizedSearch);
+        Assert.IsType<QdrantCollection<ulong, TestRecord>>(vectorizedSearch);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes

@@ -85,7 +85,7 @@ public class RedisJsonCollectionBasicQueryTests(RedisJsonCollectionBasicQueryTes
             };
 
         protected override VectorStoreCollection<string, FilterRecord> GetCollection()
-            => new RedisJsonVectorStoreRecordCollection<string, FilterRecord>(
+            => new RedisJsonCollection<string, FilterRecord>(
                 RedisTestStore.JsonInstance.Database,
                 this.CollectionName,
                 new() { VectorStoreRecordDefinition = this.GetRecordDefinition() });
@@ -132,7 +132,7 @@ public class RedisHashSetCollectionBasicQueryTests(RedisHashSetCollectionBasicQu
             };
 
         protected override VectorStoreCollection<string, FilterRecord> GetCollection()
-            => new RedisHashSetVectorStoreRecordCollection<string, FilterRecord>(
+            => new RedisHashSetCollection<string, FilterRecord>(
                 RedisTestStore.HashSetInstance.Database,
                 this.CollectionName,
                 new() { VectorStoreRecordDefinition = this.GetRecordDefinition() });

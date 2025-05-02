@@ -65,7 +65,7 @@ public sealed class SqliteVectorStore : VectorStore
 
     /// <inheritdoc />
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        => new SqliteVectorStoreRecordCollection<TKey, TRecord>(
+        => new SqliteCollection<TKey, TRecord>(
             this._connectionString,
             name,
             new()

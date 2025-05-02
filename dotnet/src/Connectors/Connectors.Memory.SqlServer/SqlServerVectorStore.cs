@@ -54,7 +54,7 @@ public sealed class SqlServerVectorStore : VectorStore
     {
         Verify.NotNull(name);
 
-        return new SqlServerVectorStoreRecordCollection<TKey, TRecord>(
+        return new SqlServerCollection<TKey, TRecord>(
             this._connectionString,
             name,
             new()

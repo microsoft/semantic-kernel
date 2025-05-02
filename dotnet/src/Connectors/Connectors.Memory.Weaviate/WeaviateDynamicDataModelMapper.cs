@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// <summary>
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Weaviate.
 /// </summary>
-internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionary<string, object?>>
+internal sealed class WeaviateDynamicMapper : IWeaviateMapper<Dictionary<string, object?>>
 {
     /// <summary>The name of the Weaviate collection.</summary>
     private readonly string _collectionName;
@@ -30,13 +30,13 @@ internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionar
     private readonly string _vectorPropertyName;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="WeaviateDynamicDataModelMapper"/> class.
+    /// Initializes a new instance of the <see cref="WeaviateDynamicMapper"/> class.
     /// </summary>
     /// <param name="collectionName">The name of the Weaviate collection</param>
     /// <param name="hasNamedVectors">Gets or sets a value indicating whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector in Weaviate collection</param>
     /// <param name="model">The model</param>
     /// <param name="jsonSerializerOptions">A <see cref="JsonSerializerOptions"/> for serialization/deserialization of record properties.</param>
-    public WeaviateDynamicDataModelMapper(
+    public WeaviateDynamicMapper(
         string collectionName,
         bool hasNamedVectors,
         CollectionModel model,

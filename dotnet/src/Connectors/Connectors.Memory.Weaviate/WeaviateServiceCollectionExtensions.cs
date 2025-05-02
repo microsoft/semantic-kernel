@@ -66,7 +66,7 @@ public static class WeaviateServiceCollectionExtensions
         this IServiceCollection services,
         string collectionName,
         HttpClient? httpClient = default,
-        WeaviateVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        WeaviateCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TRecord : notnull
     {
@@ -75,12 +75,12 @@ public static class WeaviateServiceCollectionExtensions
             (sp, obj) =>
             {
                 var selectedHttpClient = HttpClientProvider.GetHttpClient(httpClient, sp);
-                options ??= sp.GetService<WeaviateVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<WeaviateCollectionOptions<TRecord>>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return new WeaviateVectorStoreRecordCollection<Guid, TRecord>(selectedHttpClient, collectionName, options);
+                return new WeaviateCollection<Guid, TRecord>(selectedHttpClient, collectionName, options);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);

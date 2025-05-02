@@ -16,7 +16,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
 
 /// <summary>
-/// Contains tests for the <see cref="RedisHashSetVectorStoreRecordCollection{TKey, TRecord}"/> class.
+/// Contains tests for the <see cref="RedisHashSetCollection{TKey, TRecord}"/> class.
 /// </summary>
 /// <param name="output">Used for logging.</param>
 /// <param name="fixture">Redis setup and teardown.</param>
@@ -34,7 +34,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange.
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, collectionName);
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, collectionName);
 
         // Act.
         var actual = await sut.CollectionExistsAsync();
@@ -53,12 +53,12 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var collectionNamePostfix = useRecordDefinition ? "WithDefinition" : "WithType";
         var testCollectionName = $"hashsetcreatetest{collectionNamePostfix}";
 
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<RedisBasicFloat32Hotel>
+        var options = new RedisHashSetCollectionOptions<RedisBasicFloat32Hotel>
         {
             PrefixCollectionNameToKeyNames = true,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, testCollectionName, options);
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, testCollectionName, options);
 
         // Act
         await sut.CreateCollectionAsync();
@@ -110,7 +110,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         createParams.AddPrefix(tempCollectionName);
         await fixture.Database.FT().CreateAsync(tempCollectionName, createParams, schema);
 
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, tempCollectionName);
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, tempCollectionName);
 
         // Act
         await sut.DeleteCollectionAsync();
@@ -125,12 +125,12 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task ItCanUpsertDocumentToVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange.
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<RedisBasicFloat32Hotel>
+        var options = new RedisHashSetCollectionOptions<RedisBasicFloat32Hotel>
         {
             PrefixCollectionNameToKeyNames = true,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
         var record = CreateTestHotel("HUpsert-2", 2);
 
         // Act.
@@ -156,12 +156,12 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task ItCanUpsertManyDocumentsToVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange.
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<RedisBasicFloat32Hotel>
+        var options = new RedisHashSetCollectionOptions<RedisBasicFloat32Hotel>
         {
             PrefixCollectionNameToKeyNames = true,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
 
         // Act.
         await sut.UpsertAsync(
@@ -180,12 +180,12 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task ItCanGetDocumentFromVectorStoreAsync(bool includeVectors, bool useRecordDefinition)
     {
         // Arrange.
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<RedisBasicFloat32Hotel>
+        var options = new RedisHashSetCollectionOptions<RedisBasicFloat32Hotel>
         {
             PrefixCollectionNameToKeyNames = true,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
 
         // Act.
         var getResult = await sut.GetAsync("HBaseSet-1", new GetRecordOptions { IncludeVectors = includeVectors });
@@ -214,8 +214,8 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task ItCanGetManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<RedisBasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        var options = new RedisHashSetCollectionOptions<RedisBasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
@@ -239,12 +239,12 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task ItCanRemoveDocumentFromVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange.
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<RedisBasicFloat32Hotel>
+        var options = new RedisHashSetCollectionOptions<RedisBasicFloat32Hotel>
         {
             PrefixCollectionNameToKeyNames = true,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
         var record = new RedisBasicFloat32Hotel
         {
             HotelId = "HRemove-1",
@@ -269,8 +269,8 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<RedisBasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        var options = new RedisHashSetCollectionOptions<RedisBasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
         await sut.UpsertAsync(CreateTestHotel("HRemoveMany-1", 1));
         await sut.UpsertAsync(CreateTestHotel("HRemoveMany-2", 2));
         await sut.UpsertAsync(CreateTestHotel("HRemoveMany-3", 3));
@@ -291,8 +291,8 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task ItCanSearchWithFloat32VectorAndFilterAsync(string filterType, bool includeVectors)
     {
         // Arrange
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<RedisBasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        var options = new RedisHashSetCollectionOptions<RedisBasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
         var vector = new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f });
         var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelCode", 1) : new VectorSearchFilter().EqualTo("HotelName", "My Hotel 1");
 
@@ -330,8 +330,8 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task ItCanSearchWithFloat32VectorAndTopSkipAsync()
     {
         // Arrange
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<RedisBasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName + "TopSkip", options);
+        var options = new RedisHashSetCollectionOptions<RedisBasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName + "TopSkip", options);
         await sut.CreateCollectionIfNotExistsAsync();
         await sut.UpsertAsync(new RedisBasicFloat32Hotel { HotelId = "HTopSkip_1", HotelName = "1", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 1.0f]) });
         await sut.UpsertAsync(new RedisBasicFloat32Hotel { HotelId = "HTopSkip_2", HotelName = "2", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 2.0f]) });
@@ -360,8 +360,8 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task ItCanSearchWithFloat64VectorAsync(bool includeVectors)
     {
         // Arrange
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<RedisBasicFloat64Hotel> { PrefixCollectionNameToKeyNames = true };
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat64Hotel>(fixture.Database, TestCollectionName + "Float64", options);
+        var options = new RedisHashSetCollectionOptions<RedisBasicFloat64Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat64Hotel>(fixture.Database, TestCollectionName + "Float64", options);
         await sut.CreateCollectionIfNotExistsAsync();
         await sut.UpsertAsync(new RedisBasicFloat64Hotel { HotelId = "HFloat64_1", HotelName = "1", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<double>([1.0d, 1.1d, 1.2d, 1.3d]) });
         await sut.UpsertAsync(new RedisBasicFloat64Hotel { HotelId = "HFloat64_2", HotelName = "2", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<double>([2.0d, 2.1d, 2.2d, 2.3d]) });
@@ -398,8 +398,8 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
     {
         // Arrange
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<RedisBasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
+        var options = new RedisHashSetCollectionOptions<RedisBasicFloat32Hotel> { PrefixCollectionNameToKeyNames = true };
+        var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
 
         // Act & Assert
         Assert.Null(await sut.GetAsync("HBaseSet-5", new GetRecordOptions { IncludeVectors = true }));
@@ -409,12 +409,12 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<Dictionary<string, object?>>
+        var options = new RedisHashSetCollectionOptions<Dictionary<string, object?>>
         {
             PrefixCollectionNameToKeyNames = true,
             VectorStoreRecordDefinition = fixture.BasicVectorStoreRecordDefinition
         };
-        var sut = new RedisHashSetVectorStoreRecordCollection<object, Dictionary<string, object?>>(fixture.Database, TestCollectionName, options);
+        var sut = new RedisHashSetCollection<object, Dictionary<string, object?>>(fixture.Database, TestCollectionName, options);
 
         // Act
         var baseSetGetResult = await sut.GetAsync("HBaseSet-1", new GetRecordOptions { IncludeVectors = true });

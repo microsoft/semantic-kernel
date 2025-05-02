@@ -46,7 +46,7 @@ public class AzureAISearchVectorStoreTests
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<AzureAISearchVectorStoreRecordCollection<string, SinglePropsModel>>(actual);
+        Assert.IsType<AzureAISearchCollection<string, SinglePropsModel>>(actual);
     }
 
     [Fact]

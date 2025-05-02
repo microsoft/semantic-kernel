@@ -16,7 +16,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
 
 /// <summary>
-/// Integration tests for <see cref="SqliteVectorStoreRecordCollection{TKey, TRecord}"/> class.
+/// Integration tests for <see cref="SqliteCollection{TKey, TRecord}"/> class.
 /// </summary>
 [Collection("SqliteVectorStoreCollection")]
 public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixture fixture)
@@ -99,7 +99,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var collectionNamePostfix = useRecordDefinition ? "WithDefinition" : "WithType";
         var collectionName = $"Collection{collectionNamePostfix}";
 
-        var options = new SqliteVectorStoreRecordCollectionOptions<SqliteHotel<ulong>>
+        var options = new SqliteCollectionOptions<SqliteHotel<ulong>>
         {
             VectorStoreRecordDefinition = useRecordDefinition ? GetVectorStoreRecordDefinition<ulong>() : null
         };
@@ -434,7 +434,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     {
         const long HotelId = 5;
 
-        var options = new SqliteVectorStoreRecordCollectionOptions<Dictionary<string, object?>>
+        var options = new SqliteCollectionOptions<Dictionary<string, object?>>
         {
             VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<ulong>()
         };
@@ -474,7 +474,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     {
         const string HotelId = "key";
 
-        var options = new SqliteVectorStoreRecordCollectionOptions<Dictionary<string, object?>>
+        var options = new SqliteCollectionOptions<Dictionary<string, object?>>
         {
             VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<string>()
         };

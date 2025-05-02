@@ -53,10 +53,10 @@ public sealed class AzureAISearchVectorStore : VectorStore
 
     /// <inheritdoc />
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        => new AzureAISearchVectorStoreRecordCollection<TKey, TRecord>(
+        => new AzureAISearchCollection<TKey, TRecord>(
             this._searchIndexClient,
             name,
-            new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>()
+            new AzureAISearchCollectionOptions<TRecord>()
             {
                 JsonSerializerOptions = this._options.JsonSerializerOptions,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,

@@ -25,12 +25,12 @@ public class QdrantTextSearchTests(QdrantVectorStoreFixture fixture) : BaseVecto
             this.VectorStore = new QdrantVectorStore(fixture.QdrantClient);
         }
 
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions<HotelInfo>
         {
             HasNamedVectors = true,
             VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition,
         };
-        var vectorSearch = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", options);
+        var vectorSearch = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", options);
         var stringMapper = new HotelInfoTextSearchStringMapper();
         var resultMapper = new HotelInfoTextSearchResultMapper();
 

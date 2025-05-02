@@ -12,13 +12,13 @@ public class SqliteVectorStoreFixture : IDisposable
 
     public string ConnectionString => $"Data Source={this._databasePath}";
 
-    public SqliteVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
+    public SqliteCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
         string collectionName,
-        SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default)
+        SqliteCollectionOptions<TRecord>? options = default)
         where TKey : notnull
         where TRecord : notnull
     {
-        return new SqliteVectorStoreRecordCollection<TKey, TRecord>(
+        return new SqliteCollection<TKey, TRecord>(
             this.ConnectionString,
             collectionName,
             options);

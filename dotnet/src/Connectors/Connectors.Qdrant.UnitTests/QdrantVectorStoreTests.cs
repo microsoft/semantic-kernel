@@ -37,7 +37,7 @@ public class QdrantVectorStoreTests
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>>(actual);
+        Assert.IsType<QdrantCollection<ulong, SinglePropsModel<ulong>>>(actual);
     }
 
     [Fact]

@@ -18,7 +18,7 @@ public class CommonInMemoryVectorStoreRecordCollectionTests() : BaseVectorStoreR
 
     protected override VectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
     {
-        return new InMemoryVectorStoreRecordCollection<string, TRecord>(recordCollectionName, new()
+        return new InMemoryCollection<string, TRecord>(recordCollectionName, new()
         {
             VectorStoreRecordDefinition = vectorStoreRecordDefinition
         });

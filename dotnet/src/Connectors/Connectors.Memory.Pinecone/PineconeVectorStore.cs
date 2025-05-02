@@ -48,10 +48,10 @@ public sealed class PineconeVectorStore : VectorStore
 
     /// <inheritdoc />
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        => (new PineconeVectorStoreRecordCollection<TKey, TRecord>(
+        => (new PineconeCollection<TKey, TRecord>(
             this._pineconeClient,
             name,
-            new PineconeVectorStoreRecordCollectionOptions<TRecord>()
+            new PineconeCollectionOptions<TRecord>()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator

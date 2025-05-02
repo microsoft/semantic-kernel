@@ -56,7 +56,7 @@ public sealed class WeaviateVectorStore : VectorStore
     /// <inheritdoc />
     /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        => new WeaviateVectorStoreRecordCollection<TKey, TRecord>(
+        => new WeaviateCollection<TKey, TRecord>(
             this._httpClient,
             name,
             new()

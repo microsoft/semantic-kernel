@@ -6,7 +6,7 @@ using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
-internal interface ICosmosNoSQLMapper<TRecord>
+internal interface ICosmosNoSqlMapper<TRecord>
 {
     /// <summary>
     /// Maps from the consumer record data model to the storage model.

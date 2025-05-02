@@ -55,11 +55,11 @@ public sealed class WeaviateServiceCollectionExtensionsTests
 
         var collection = serviceProvider.GetRequiredService<VectorStoreCollection<Guid, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<WeaviateVectorStoreRecordCollection<Guid, TestRecord>>(collection);
+        Assert.IsType<WeaviateCollection<Guid, TestRecord>>(collection);
 
         var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<WeaviateVectorStoreRecordCollection<Guid, TestRecord>>(vectorizedSearch);
+        Assert.IsType<WeaviateCollection<Guid, TestRecord>>(vectorizedSearch);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes

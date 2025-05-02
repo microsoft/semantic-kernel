@@ -55,13 +55,13 @@ public sealed class RedisVectorStore : VectorStore
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         => this._options.StorageType switch
         {
-            RedisStorageType.HashSet => new RedisHashSetVectorStoreRecordCollection<TKey, TRecord>(this._database, name, new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>()
+            RedisStorageType.HashSet => new RedisHashSetCollection<TKey, TRecord>(this._database, name, new RedisHashSetCollectionOptions<TRecord>()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
             }),
 
-            RedisStorageType.Json => new RedisJsonVectorStoreRecordCollection<TKey, TRecord>(this._database, name, new RedisJsonVectorStoreRecordCollectionOptions<TRecord>()
+            RedisStorageType.Json => new RedisJsonCollection<TKey, TRecord>(this._database, name, new RedisJsonCollectionOptions<TRecord>()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
