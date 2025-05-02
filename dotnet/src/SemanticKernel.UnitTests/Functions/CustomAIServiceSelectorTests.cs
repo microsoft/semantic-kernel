@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Services;
@@ -33,7 +35,8 @@ public class CustomAIServiceSelectorTests
     private sealed class CustomAIServiceSelector : IAIServiceSelector
     {
 #pragma warning disable CS8769 // Nullability of reference types in value doesn't match target type. Cannot use [NotNullWhen] because of access to internals from abstractions.
-        bool IAIServiceSelector.TrySelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, out T? service, out PromptExecutionSettings? serviceSettings) where T : class
+        public bool TrySelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings)
+            where T : class, IAIService
         {
             var keyedService = (kernel.Services as IKeyedServiceProvider)?.GetKeyedService<T>("service1");
             if (keyedService is null || keyedService.Attributes is null)
@@ -45,6 +48,12 @@ public class CustomAIServiceSelectorTests
 
             service = keyedService.Attributes.ContainsKey("Key1") ? keyedService as T : null;
             serviceSettings = null;
+
+            if (service is null)
+            {
+                throw new InvalidOperationException("Service not found");
+            }
+
             return true;
         }
     }

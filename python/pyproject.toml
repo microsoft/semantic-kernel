@@ -77,7 +77,7 @@ faiss = [
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 5.0",
-    "torch == 2.6.0"
+    "torch == 2.7.0"
 ]
 mcp = [
     "mcp ~= 1.6"

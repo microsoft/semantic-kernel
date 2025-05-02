@@ -1,0 +1,19 @@
+﻿{
+  // Foundry configuration settings used by this project.
+  "AzureOpenAI": {
+
+    // The name of the model deployment to target.
+    "ChatDeploymentName": "",
+
+    // The endpoint for Azure AI Services.
+    "Endpoint": "",
+
+    // An API key associated with the endpoint.
+    "ApiKey": ""
+  },
+  "AzureAI": {
+    // (Optional) The connection string for a Foundry Project.
+    // Only used when creating an AzureAIAgent or accessing AI services through a service connection.
+    "ConnectionString": ""
+  }
+}

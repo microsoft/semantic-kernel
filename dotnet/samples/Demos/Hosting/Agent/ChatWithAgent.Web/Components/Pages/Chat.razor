@@ -1,0 +1,74 @@
+﻿@page "/chat"
+@using Microsoft.SemanticKernel
+@attribute [StreamRendering(true)]
+@attribute [OutputCache(Duration = 5)]
+@rendermode InteractiveServer
+
+@inject AgentCompletionsApiClient AgentCompletionsApi
+
+<PageTitle>Chat</PageTitle>
+
+<div class="chat-page">
+    <div class="chat-container">
+        <div class="chat-history">
+            @foreach (var message in messages)
+            {
+                <div class="message @(message.Sender == "User" ? "user" : "agent")">
+                    @message.Text
+                </div>
+            }
+        </div>
+    </div>
+    <div class="chat-input">
+        <textarea @bind="userMessage" @bind:event="oninput" @onkeydown="HandleKeyDown" placeholder="Enter your message"></textarea>
+        <button class="btn btn-primary" @onclick="SendMessage" disabled="@string.IsNullOrWhiteSpace(userMessage)">Send</button>
+    </div>
+</div>
+
+@code {
+    private List<Message> messages = new();
+    private string userMessage = string.Empty;
+
+    private async Task SendMessage()
+    {
+        if (!string.IsNullOrWhiteSpace(userMessage))
+        {
+            messages.Add(new Message { Sender = "User", Text = userMessage });
+
+            userMessage = string.Empty;
+
+            bool agentMessageAdded = false;
+
+            var agentMessage = new Message { Sender = "Agent", Text = string.Empty };
+
+            await foreach (var update in AgentCompletionsApi.CompleteStreamingAsync(userMessage, CancellationToken.None))
+            {
+                if (!agentMessageAdded)
+                {
+                    messages.Add(agentMessage);
+                    agentMessageAdded = true;
+                }
+
+                agentMessage.Text += update;
+
+                // Trigger UI update
+                this.StateHasChanged();
+            }
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SendMessage();
+        }
+    }
+
+    private class Message
+    {
+        public required string Sender { get; set; }
+
+        public required string Text { get; set; }
+    }
+}

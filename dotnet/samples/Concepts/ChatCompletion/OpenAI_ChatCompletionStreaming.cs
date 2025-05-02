@@ -181,8 +181,6 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         Assert.NotNull(TestConfiguration.OpenAI.ChatModelId);
         Assert.NotNull(TestConfiguration.OpenAI.ApiKey);
 
-        Console.WriteLine("======== Stream Function Call Content ========");
-
         // Create chat completion service
         OpenAIChatCompletionService chatCompletionService = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
@@ -194,22 +192,49 @@ public class OpenAI_ChatCompletionStreaming(ITestOutputHelper output) : BaseTest
         ]);
 
         // Create execution settings with manual function calling
-        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) };
+        OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Create chat history with initial user question
-        ChatHistory chatHistory = [];
-        chatHistory.AddUserMessage("Hi, what is the current time?");
+        await InvokeStreaming("Hi");
+        await InvokeStreaming("Hi, what is the current time?");
+        await InvokeStreaming("Tell me a joke");
 
-        // Start streaming chat based on the chat history
-        await foreach (StreamingChatMessageContent chatUpdate in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel))
+        async Task InvokeStreaming(string input)
         {
-            // Getting list of function call updates requested by LLM
-            var streamingFunctionCallUpdates = chatUpdate.Items.OfType<StreamingFunctionCallUpdateContent>();
+            Console.WriteLine("============================================");
+            Console.WriteLine($"Input: {input}");
+            ChatHistory chatHistory = [];
+            chatHistory.AddUserMessage(input);
 
-            // Iterating over function call updates. Please use the unctionCallContentBuilder to simplify function call content building.
-            foreach (StreamingFunctionCallUpdateContent update in streamingFunctionCallUpdates)
+            bool functionInvoked = false;
+
+            // Start streaming chat based on the chat history
+            await foreach (StreamingChatMessageContent chatUpdate in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, settings, kernel))
             {
-                Console.WriteLine($"Function call update: callId={update.CallId}, name={update.Name}, arguments={update.Arguments?.Replace("\n", "\\n")}, functionCallIndex={update.FunctionCallIndex}");
+                Console.WriteLine($"History Length: {chatHistory.Count}");
+                // Getting list of function call updates requested by LLM
+                if (chatUpdate.Items.Count == 0)
+                {
+                    continue;
+                }
+                var streamingFunctionCallUpdates = chatUpdate.Items.OfType<StreamingFunctionCallUpdateContent>().ToArray();
+                if (streamingFunctionCallUpdates.Length == 0)
+                {
+                    if (!functionInvoked)
+                    {
+                        Console.WriteLine("Explict Result: Invalid input.");
+                        break;
+                    }
+                    // Disply the response
+                    Console.WriteLine($"Streamed result: {chatUpdate.Content}");
+                    continue;
+                }
+                functionInvoked = true;
+                // Iterating over function call updates. Please use the unctionCallContentBuilder to simplify function call content building.
+                foreach (StreamingFunctionCallUpdateContent update in streamingFunctionCallUpdates)
+                {
+                    Console.WriteLine($"Function call update: callId={update.CallId}, name={update.Name}, arguments={update.Arguments?.Replace("\n", "\\n")}, functionCallIndex={update.FunctionCallIndex}");
+                }
             }
         }
     }
