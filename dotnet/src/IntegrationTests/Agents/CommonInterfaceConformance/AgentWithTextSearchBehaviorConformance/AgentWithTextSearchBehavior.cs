@@ -28,11 +28,11 @@ public abstract class AgentWithTextSearchBehavior<TFixture>(Func<TFixture> creat
     [InlineData("What is DeltaSoft's market share in the enterprise software sector?", "35", "DeltaSoft holds a 35% market share in the enterprise software sector.", "Its closest competitor holds 25%.")]
     // Generate knowledge.
     [InlineData("When was the Eiffel Tower completed?", "1889", "The Eiffel Tower was completed in 1889.", "It is located in Paris, France.")]
-    [InlineData("At what temperature in Celcius does water boil?", "100", "Water boils at 212 degrees fahrenheit.", "Water boils at 100 degrees Celsius.")]
+    [InlineData("At what temperature in Celsius does water boil?", "100", "Water boils at 212 degrees fahrenheit.", "Water boils at 100 degrees Celsius.")]
     [InlineData("What did Einstein say about imagination?", "Imagination is more important than knowledge", "Albert Einstein said, 'Imagination is more important than knowledge.'")]
     // Data contradicting Generate knowledge.
     [InlineData("When was the Eiffel Tower completed?", "2005", "The Eiffel Tower was completed in 2005.", "It is located in Paris, France.")]
-    [InlineData("At what temperature in Celcius does water boil?", "150", "Water boils at 300 degrees fahrenheit.", "Water boils at 150 degrees Celsius.")]
+    [InlineData("At what temperature in Celsius does water boil?", "150", "Water boils at 300 degrees fahrenheit.", "Water boils at 150 degrees Celsius.")]
     // Check for citations
     [InlineData("When was the Eiffel Tower completed?", "http://mydata.mycompany.com/dataset2", "It is located in Paris, France.", "The Eiffel Tower was completed in 1889.")]
     [InlineData("What was Gamma Solutions' profit margin in FY 2024?", "http://mydata.mycompany.com/dataset1", "Gamma Solutions had a profit margin of 22% in FY 2024.", "This was an improvement from 18% in FY 2023.")]
