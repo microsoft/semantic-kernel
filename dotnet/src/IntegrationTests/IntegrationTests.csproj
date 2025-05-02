@@ -65,7 +65,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Testcontainers.Milvus" />
-    <PackageReference Include="Testcontainers.MongoDB" />
+    <PackageReference Include="Testcontainers.MongoDB"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Agents\AzureAI\Agents.AzureAI.csproj" />
@@ -109,12 +109,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TestData\SessionsPythonPlugin\file_to_upload_2.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\SessionsPythonPlugin\file_to_upload_1.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="testsettings.development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

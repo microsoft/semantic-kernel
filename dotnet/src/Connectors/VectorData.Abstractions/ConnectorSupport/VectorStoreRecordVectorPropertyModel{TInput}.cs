@@ -39,7 +39,7 @@ public sealed class VectorStoreRecordVectorPropertyModel<TInput>(string modelNam
         switch (this.EmbeddingGenerator)
         {
             case IEmbeddingGenerator<TInput, TEmbedding> generator when this.EmbeddingType == typeof(TUnwrappedEmbedding):
-                task = generator.GenerateAsync(
+                task = generator.GenerateEmbeddingAsync(
                     this.GetValueAsObject(record) is var value && value is TInput s
                         ? s
                         : throw new InvalidOperationException($"Property '{this.ModelName}' was configured with an embedding generator accepting a {nameof(TInput)}, but {value?.GetType().Name ?? "null"} was provided."),
