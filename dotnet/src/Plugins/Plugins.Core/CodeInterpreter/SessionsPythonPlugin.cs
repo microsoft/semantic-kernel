@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -89,23 +91,13 @@ public sealed partial class SessionsPythonPlugin
         this._logger.LogTrace("Executing Python code: {Code}", code);
 
         using var httpClient = this._httpClientFactory.CreateClient();
+        await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
         var requestBody = new SessionsPythonCodeExecutionProperties(this._settings, code);
 
-        await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
+        using var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}/executions?identifier={this._settings.SessionId}&api-version={ApiVersion}")
-        {
-            Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json")
-        };
-
-        var response = await httpClient.SendAsync(request).ConfigureAwait(false);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new HttpRequestException($"Failed to execute python code. Status: {response.StatusCode}. Details: {errorBody}.");
-        }
+        using var response = await this.SendAsync(httpClient, HttpMethod.Post, "executions", content).ConfigureAwait(false);
 
         var responseContent = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
 
@@ -121,16 +113,6 @@ public sealed partial class SessionsPythonPlugin
             Stderr:
             {result.GetProperty("stderr").GetRawText()}
             """;
-    }
-
-    private async Task AddHeadersAsync(HttpClient httpClient)
-    {
-        httpClient.DefaultRequestHeaders.Add("User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)");
-
-        if (this._authTokenProvider is not null)
-        {
-            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {(await this._authTokenProvider().ConfigureAwait(false))}");
-        }
     }
 
     /// <summary>
@@ -149,28 +131,19 @@ public sealed partial class SessionsPythonPlugin
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
         Verify.NotNullOrWhiteSpace(localFilePath, nameof(localFilePath));
 
-        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFilePath}", localFilePath, remoteFileName);
+        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", localFilePath, remoteFileName);
 
         using var httpClient = this._httpClientFactory.CreateClient();
-
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
         using var fileContent = new ByteArrayContent(File.ReadAllBytes(localFilePath));
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"{this._poolManagementEndpoint}files?identifier={this._settings.SessionId}&api-version={ApiVersion}")
+
+        using var multipartFormDataContent = new MultipartFormDataContent()
         {
-            Content = new MultipartFormDataContent
-            {
-                { fileContent, "file", remoteFileName },
-            }
+            { fileContent, "file", remoteFileName },
         };
 
-        var response = await httpClient.SendAsync(request).ConfigureAwait(false);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new HttpRequestException($"Failed to upload file. Status code: {response.StatusCode}. Details: {errorBody}.");
-        }
+        using var response = await this.SendAsync(httpClient, HttpMethod.Post, "files", multipartFormDataContent).ConfigureAwait(false);
 
         var stringContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
@@ -190,17 +163,12 @@ public sealed partial class SessionsPythonPlugin
     {
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
 
-        this._logger.LogTrace("Downloading file: {RemoteFilePath} to {LocalFilePath}", remoteFileName, localFilePath);
+        this._logger.LogTrace("Downloading file: {RemoteFileName} to {LocalFileName}", remoteFileName, localFilePath);
 
         using var httpClient = this._httpClientFactory.CreateClient();
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
-        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}/files/{Uri.EscapeDataString(remoteFileName)}/content?identifier={this._settings.SessionId}&api-version={ApiVersion}")).ConfigureAwait(false);
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            throw new HttpRequestException($"Failed to download file. Status code: {response.StatusCode}. Details: {errorBody}.");
-        }
+        using var response = await this.SendAsync(httpClient, HttpMethod.Get, $"files/{Uri.EscapeDataString(remoteFileName)}/content").ConfigureAwait(false);
 
         var fileContent = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
@@ -231,12 +199,7 @@ public sealed partial class SessionsPythonPlugin
         using var httpClient = this._httpClientFactory.CreateClient();
         await this.AddHeadersAsync(httpClient).ConfigureAwait(false);
 
-        var response = await httpClient.GetAsync(new Uri($"{this._poolManagementEndpoint}/files?identifier={this._settings.SessionId}&api-version={ApiVersion}")).ConfigureAwait(false);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new HttpRequestException($"Failed to list files. Status code: {response.StatusCode}");
-        }
+        using var response = await this.SendAsync(httpClient, HttpMethod.Get, "files").ConfigureAwait(false);
 
         var jsonElementResult = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
 
@@ -275,6 +238,50 @@ public sealed partial class SessionsPythonPlugin
         code = RemoveTrailingWhitespaceBackticks().Replace(code, "");
 
         return code;
+    }
+
+    /// <summary>
+    /// Add headers to the HTTP client.
+    /// </summary>
+    /// <param name="httpClient">The HTTP client to add headers to.</param>
+    private async Task AddHeadersAsync(HttpClient httpClient)
+    {
+        httpClient.DefaultRequestHeaders.Add("User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)");
+
+        if (this._authTokenProvider is not null)
+        {
+            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {(await this._authTokenProvider().ConfigureAwait(false))}");
+        }
+    }
+
+    /// <summary>
+    /// Sends an HTTP request to the specified path with the specified method and content.
+    /// </summary>
+    /// <param name="httpClient">The HTTP client to use.</param>
+    /// <param name="method">The HTTP method to use.</param>
+    /// <param name="path">The path to send the request to.</param>
+    /// <param name="httpContent">The content to send with the request.</param>
+    /// <returns>The HTTP response message.</returns>
+    private async Task<HttpResponseMessage> SendAsync(HttpClient httpClient, HttpMethod method, string path, HttpContent? httpContent = null)
+    {
+        // The query string is the same for all operations
+        var pathWithQueryString = $"{path}?identifier={this._settings.SessionId}&api-version={ApiVersion}";
+
+        var uri = new Uri(this._poolManagementEndpoint, pathWithQueryString);
+
+        // If a list of allowed domains has been provided, the host of the provided
+        // uri is checked to verify it is in the allowed domain list.
+        if (!this._settings.AllowedDomains?.Contains(uri.Host) ?? false)
+        {
+            throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
+        }
+
+        using var request = new HttpRequestMessage(method, uri)
+        {
+            Content = httpContent,
+        };
+
+        return await httpClient.SendWithSuccessCheckAsync(request, CancellationToken.None).ConfigureAwait(false);
     }
 
 #if NET

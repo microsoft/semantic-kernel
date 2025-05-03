@@ -291,6 +291,47 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(responseContent, await File.ReadAllBytesAsync(downloadDiskPath));
     }
 
+    /// <summary>
+    /// Test the allowed domains for the endpoint.
+    /// </summary>
+    /// <remarks>
+    /// Considering that the functionality which verifies endpoints against the allowed domains is located in one private method,
+    /// and the method is reused for all operations of the plugin, we test it only for one operation (ListFilesAsync).
+    /// </remarks>
+    [Theory]
+    [InlineData("fake-test-host.io", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
+    [InlineData("prod.fake-test-host.io", "https://prod.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
+    [InlineData("www.fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
+    [InlineData("www.prod.fake-test-host.io", "https://www.prod.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
+    [InlineData("fake-test-host.io", "https://fake-test-host-1.io/subscriptions/123/rg/456/sps/test-pool", false)]
+    [InlineData("fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
+    [InlineData("www.fake-test-host.io", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
+    public async Task ItShouldRespectAllowedDomainsAsync(string allowedDomain, string actualEndpoint, bool isAllowed)
+    {
+        // Arrange
+        this._defaultSettings.AllowedDomains = [allowedDomain];
+        this._defaultSettings.Endpoint = new Uri(actualEndpoint);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText(ListFilesTestDataFilePath)),
+        };
+
+        var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            await sut.ListFilesAsync();
+        }
+        catch when (!isAllowed)
+        {
+            // Ignore exception if the endpoint is not allowed since we expect it
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
+    }
+
     public void Dispose()
     {
         this._httpClient.Dispose();
