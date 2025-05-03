@@ -20,7 +20,7 @@ var configuration = new ConfigurationBuilder()
 
 var apiKey = configuration["OpenAI:ApiKey"];
 var modelId = configuration["OpenAI:ChatModelId"];
-var endpoint = configuration["AzureContainerApps:Endpoint"];
+var endpoint = configuration["AzureContainerAppSessionPool:Endpoint"];
 
 // Cached token for the Azure Container Apps service
 string? cachedToken = null;
