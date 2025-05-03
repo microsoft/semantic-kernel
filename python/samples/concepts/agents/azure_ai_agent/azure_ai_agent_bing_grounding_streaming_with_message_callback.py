@@ -41,7 +41,8 @@ async def main() -> None:
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Enter your Bing Grounding Connection Name
-        bing_connection = await client.connections.get(connection_name="<your-bing-grounding-connection-name>")
+        # <your-bing-grounding-connection-name>
+        bing_connection = await client.connections.get(connection_name="skbinggrounding")
         conn_id = bing_connection.id
 
         # 2. Initialize agent bing tool and add the connection id
@@ -69,9 +70,13 @@ async def main() -> None:
         try:
             print(f"# User: '{TASK}'")
             # 6. Invoke the agent for the specified thread for response
+            first_chunk = True
             async for response in agent.invoke_stream(
                 messages=TASK, thread=thread, on_intermediate_message=handle_streaming_intermediate_steps
             ):
+                if first_chunk:
+                    print(f"# {response.name}: ", end="", flush=True)
+                    first_chunk = False
                 print(f"{response}", end="", flush=True)
                 thread = response.thread
 
@@ -111,10 +116,19 @@ async def main() -> None:
         Sample Output:
         
         # User: 'Which team won the 2025 NCAA basketball championship?'
-        # BingGroundingAgent: The Florida Gators won the 2025 NCAA basketball championship, defeating the Houston Cougars 65-63 in the final to secure their third national title【3:5†source】【3:6†source】【3:9†source】.
-        Annotation :> https://www.usatoday.com/story/sports/ncaab/2025/04/07/houston-florida-live-updates-national-championship-score/82982004007/, source=【3:5†source】, with start_index=147 and end_index=159
-        Annotation :> https://bleacherreport.com/articles/25182096-winners-and-losers-2025-mens-ncaa-tournament, source=【3:6†source】, with start_index=159 and end_index=171
-        Annotation :> https://wtop.com/ncaa-basketball/2025/04/ncaa-basketball-champions/, source=【3:9†source】, with start_index=171 and end_index=183
+        # BingGroundingAgent: The Florida Gators won the 2025 NCAA men's basketball championship, defeating the Houston Cougars 65-63. It marked Florida's third national title and their first since back-to-back wins in 2006-2007【5:0†source】
+        Annotation :> https://www.usatoday.com/story/sports/ncaab/2025/04/07/houston-florida-live-updates-national-championship-score/82982004007/, source=Florida vs Houston final score: Gators win 2025 NCAA championship, with start_index=198 and end_index=210
+        【5:5†source】
+        Annotation :> https://www.nbcsports.com/mens-college-basketball/live/florida-vs-houston-live-score-updates-game-news-stats-highlights-for-2025-ncaa-march-madness-mens-national-championship, source=Houston vs. Florida RECAP: Highlights, stats, box score, results as ..., with start_index=210 and end_index=222
+        .
+        ====================================================
+
+        Response complete:
+
+        Function call: bing_grounding with arguments: None
+        Function call: bing_grounding with arguments: None
+
+        The Florida Gators won the 2025 NCAA men's basketball championship, defeating the Houston Cougars 65-63. It marked Florida's third national title and their first since back-to-back wins in 2006-2007【5:0†source】【5:5†source】.
         """  # noqa: E501
 
 
