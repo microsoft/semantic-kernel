@@ -107,7 +107,7 @@ public class AzureAISearchServiceCollectionExtensionsTests
         Assert.NotNull(collection);
         Assert.IsType<AzureAISearchCollection<string, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearchable<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<AzureAISearchCollection<string, TestRecord>>(vectorizedSearch);
     }

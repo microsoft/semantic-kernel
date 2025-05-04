@@ -112,7 +112,7 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
+    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearchable{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
     /// specified service ID and where <see cref="SearchIndexClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -149,7 +149,7 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
+    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearchable{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
     /// provided <see cref="Uri"/> and <see cref="TokenCredential"/> and the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -193,7 +193,7 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
+    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearchable{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
     /// provided <see cref="Uri"/> and <see cref="AzureKeyCredential"/> and the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -237,14 +237,14 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
+    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearchable{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
     private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : class
     {
-        services.AddKeyedTransient<IVectorSearch<TRecord>>(
+        services.AddKeyedTransient<IVectorSearchable<TRecord>>(
             serviceId,
             (sp, obj) =>
             {

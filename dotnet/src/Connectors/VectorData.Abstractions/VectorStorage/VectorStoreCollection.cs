@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.VectorData;
 /// </remarks>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
 #pragma warning disable CS0618 // IVectorizedSearch is obsolete
-public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TRecord>, IVectorizedSearch<TRecord>
+public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<TRecord>, IVectorizedSearch<TRecord>
 #pragma warning restore CS0618 // IVectorizedSearch is obsolete
 #pragma warning restore CA1711
     where TKey : notnull

@@ -29,7 +29,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 public sealed class AzureAISearchCollection<TKey, TRecord> :
     VectorStoreCollection<TKey, TRecord>,
     IVectorizableTextSearch<TRecord>,
-    IKeywordHybridSearch<TRecord>
+    IKeywordHybridSearchable<TRecord>
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CS0618 // IVectorizableTextSearch is obsolete

@@ -41,7 +41,7 @@ public static class InMemoryServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an InMemory <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID.
+    /// Register an InMemory <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the specified service ID.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
@@ -69,7 +69,7 @@ public static class InMemoryServiceCollectionExtensions
                 return (new InMemoryCollection<TKey, TRecord>(collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
-        services.AddKeyedSingleton<IVectorSearch<TRecord>>(
+        services.AddKeyedSingleton<IVectorSearchable<TRecord>>(
             serviceId,
             (sp, obj) =>
             {

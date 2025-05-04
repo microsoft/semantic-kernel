@@ -69,7 +69,7 @@ public static class QdrantServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Qdrant <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID
+    /// Register a Qdrant <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the specified service ID
     /// and where the Qdrant <see cref="QdrantClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
@@ -106,7 +106,7 @@ public static class QdrantServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Qdrant <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID
+    /// Register a Qdrant <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the specified service ID
     /// and where the Qdrant <see cref="QdrantClient"/> is constructed using the provided parameters.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
@@ -151,7 +151,7 @@ public static class QdrantServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
+    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearchable{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -161,7 +161,7 @@ public static class QdrantServiceCollectionExtensions
         where TKey : notnull
         where TRecord : class
     {
-        services.AddKeyedTransient<IVectorSearch<TRecord>>(
+        services.AddKeyedTransient<IVectorSearchable<TRecord>>(
             serviceId,
             (sp, obj) =>
             {

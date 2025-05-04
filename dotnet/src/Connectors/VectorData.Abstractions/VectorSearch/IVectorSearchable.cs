@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.VectorData;
 /// An interface for performing vector searches on a vector store.
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
-public interface IVectorSearch<TRecord>
+public interface IVectorSearchable<TRecord>
 {
     /// <summary>
     /// Searches the vector store for records that are similar to given value.
@@ -55,13 +55,13 @@ public interface IVectorSearch<TRecord>
         CancellationToken cancellationToken = default)
         where TVector : notnull;
 
-    /// <summary>Asks the <see cref="IVectorSearch{TRecord}"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
+    /// <summary>Asks the <see cref="IVectorSearchable{TRecord}"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>
     /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly-typed services that might be provided by the <see cref="IVectorSearch{TRecord}"/>,
+    /// The purpose of this method is to allow for the retrieval of strongly-typed services that might be provided by the <see cref="IVectorSearchable{TRecord}"/>,
     /// including itself or any services it might be wrapping. For example, to access the <see cref="VectorStoreCollectionMetadata"/> for the instance,
     /// <see cref="GetService"/> may be used to request it.
     /// </remarks>
