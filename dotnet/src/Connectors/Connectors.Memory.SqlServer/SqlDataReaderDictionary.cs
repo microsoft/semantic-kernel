@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 

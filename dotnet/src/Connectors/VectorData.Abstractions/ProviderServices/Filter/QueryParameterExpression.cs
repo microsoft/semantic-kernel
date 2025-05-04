@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-namespace Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
+namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
 
 /// <summary>
 /// An expression representation a query parameter (captured variable) in the filter expression.

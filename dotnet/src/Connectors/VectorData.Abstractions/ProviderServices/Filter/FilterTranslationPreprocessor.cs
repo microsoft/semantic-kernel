@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
+namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
 
 /// <summary>
 /// A processor for user-provided filter expressions which performs various common transformations before actual translation takes place.

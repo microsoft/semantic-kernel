@@ -12,8 +12,8 @@ using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 

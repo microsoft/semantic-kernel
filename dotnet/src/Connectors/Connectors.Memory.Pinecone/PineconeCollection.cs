@@ -10,8 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Pinecone;
 using Sdk = Pinecone;
 
@@ -35,7 +35,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeCollectionOptions _options;
-    private readonly Extensions.VectorData.ConnectorSupport.CollectionModel _model;
+    private readonly Extensions.VectorData.ProviderServices.CollectionModel _model;
     private readonly PineconeMapper<TRecord> _mapper;
     private IndexClient? _indexClient;
 

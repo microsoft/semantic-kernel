@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
