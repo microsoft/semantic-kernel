@@ -215,7 +215,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
             transaction.Rollback();
 #endif
 
-            throw new VectorStoreOperationException(ex.Message, ex)
+            throw new VectorStoreException(ex.Message, ex)
             {
                 VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -484,7 +484,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
             transaction.Rollback();
 #endif
 
-            throw new VectorStoreOperationException(ex.Message, ex)
+            throw new VectorStoreException(ex.Message, ex)
             {
                 VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,

@@ -121,7 +121,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
         }
         catch (RequestFailedException ex)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -737,7 +737,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
         }
         catch (AggregateException ex) when (ex.InnerException is RequestFailedException innerEx)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -747,7 +747,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
         }
         catch (RequestFailedException ex)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -758,7 +758,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     }
 
     /// <summary>
-    /// Run the given operation and wrap any <see cref="RequestFailedException"/> with <see cref="VectorStoreOperationException"/>."/>
+    /// Run the given operation and wrap any <see cref="RequestFailedException"/> with <see cref="VectorStoreException"/>."/>
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
     /// <param name="operationName">The type of database operation being run.</param>

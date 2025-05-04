@@ -145,7 +145,7 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
         }
         catch (RedisConnectionException ex)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -188,7 +188,7 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
             await this.RunOperationAsync("FT.DROPINDEX",
                 () => this._database.FT().DropIndexAsync(this.Name)).ConfigureAwait(false);
         }
-        catch (VectorStoreOperationException ex) when (ex.InnerException is RedisServerException)
+        catch (VectorStoreException ex) when (ex.InnerException is RedisServerException)
         {
             // The RedisServerException does not expose any reliable way of checking if the index does not exist.
             // It just sets the message to "Unknown index name".
@@ -508,7 +508,7 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
     }
 
     /// <summary>
-    /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreOperationException"/>."/>
+    /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreException"/>."/>
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
     /// <param name="operationName">The type of database operation being run.</param>
@@ -521,7 +521,7 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
             operation);
 
     /// <summary>
-    /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreOperationException"/>."/>
+    /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreException"/>."/>
     /// </summary>
     /// <param name="operationName">The type of database operation being run.</param>
     /// <param name="operation">The operation to run.</param>

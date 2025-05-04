@@ -286,7 +286,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var sut = new AzureAISearchCollection<string, AzureAISearchHotel>(searchIndexClient, fixture.TestIndexName);
 
         // Act & Assert
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new RecordRetrievalOptions { IncludeVectors = true }));
+        await Assert.ThrowsAsync<VectorStoreException>(async () => await sut.GetAsync("BaseSet-1", new RecordRetrievalOptions { IncludeVectors = true }));
     }
 
     [Fact(Skip = SkipReason)]
@@ -297,7 +297,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var sut = new AzureAISearchCollection<string, AzureAISearchHotel>(searchIndexClient, fixture.TestIndexName);
 
         // Act & Assert
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new RecordRetrievalOptions { IncludeVectors = true }));
+        await Assert.ThrowsAsync<VectorStoreException>(async () => await sut.GetAsync("BaseSet-1", new RecordRetrievalOptions { IncludeVectors = true }));
     }
 
     [Theory(Skip = SkipReason)]

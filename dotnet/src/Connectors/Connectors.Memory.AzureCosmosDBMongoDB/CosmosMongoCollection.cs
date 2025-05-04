@@ -108,7 +108,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
         // To make sure that all the connectors are consistent, we throw when the collection exists.
         if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            throw new VectorStoreOperationException("Collection already exists.")
+            throw new VectorStoreException("Collection already exists.")
             {
                 VectorStoreSystemName = CosmosMongoConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,

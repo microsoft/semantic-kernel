@@ -101,15 +101,15 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
     {
         int? i = null;
 
-        // TODO: Some connectors wrap filter translation exceptions in a VectorStoreOperationException (#11766)
+        // TODO: Some connectors wrap filter translation exceptions in a VectorStoreException (#11766)
         var exception = await Assert.ThrowsAnyAsync<Exception>(() => this.TestFilterAsync(
             r => r.Int == i.Value,
             r => (int)r["Int"] == i.Value,
             expectZeroResults: true));
 
-        if (exception is not InvalidOperationException and not VectorStoreOperationException { InnerException: InvalidOperationException })
+        if (exception is not InvalidOperationException and not VectorStoreException { InnerException: InvalidOperationException })
         {
-            Assert.Fail($"Expected {nameof(InvalidOperationException)} or {nameof(VectorStoreOperationException)} but got {exception.GetType()}");
+            Assert.Fail($"Expected {nameof(InvalidOperationException)} or {nameof(VectorStoreException)} but got {exception.GetType()}");
         }
     }
 #pragma warning restore CS8629

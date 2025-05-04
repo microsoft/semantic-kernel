@@ -63,7 +63,7 @@ public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
         var keys = inserted.Select(record => record.Id).Where(key => key is not null).ToArray();
         Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
 
-        VectorStoreOperationException ex = await Assert.ThrowsAsync<VectorStoreOperationException>(() => collection.UpsertAsync(inserted));
+        VectorStoreException ex = await Assert.ThrowsAsync<VectorStoreException>(() => collection.UpsertAsync(inserted));
         Assert.Equal("UpsertBatch", ex.OperationName);
 
         var metadata = collection.GetService(typeof(VectorStoreCollectionMetadata)) as VectorStoreCollectionMetadata;

@@ -471,7 +471,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         if (collectionResults is null)
         {
-            throw new VectorStoreOperationException($"Error occurred during vector search. Response: {content}")
+            throw new VectorStoreException($"Error occurred during vector search. Response: {content}")
             {
                 VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,

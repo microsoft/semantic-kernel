@@ -762,7 +762,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     }
 
     /// <summary>
-    /// Run the given operation and wrap any <see cref="RpcException"/> with <see cref="VectorStoreOperationException"/>."/>
+    /// Run the given operation and wrap any <see cref="RpcException"/> with <see cref="VectorStoreException"/>."/>
     /// </summary>
     /// <param name="operationName">The type of database operation being run.</param>
     /// <param name="operation">The operation to run.</param>
@@ -774,7 +774,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
             operation);
 
     /// <summary>
-    /// Run the given operation and wrap any <see cref="RpcException"/> with <see cref="VectorStoreOperationException"/>."/>
+    /// Run the given operation and wrap any <see cref="RpcException"/> with <see cref="VectorStoreException"/>."/>
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
     /// <param name="operationName">The type of database operation being run.</param>

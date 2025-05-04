@@ -125,7 +125,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             {
                 await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (VectorStoreOperationException ex) when (ex.InnerException is PineconeApiException apiEx && apiEx.InnerException is ConflictError)
+            catch (VectorStoreException ex) when (ex.InnerException is PineconeApiException apiEx && apiEx.InnerException is ConflictError)
             {
                 // If the collection got created in the meantime, we should ignore the exception.
             }
@@ -145,7 +145,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         }
         catch (PineconeApiException other)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", other)
+            throw new VectorStoreException("Call to vector store failed.", other)
             {
                 VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,

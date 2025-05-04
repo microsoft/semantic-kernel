@@ -137,7 +137,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 
     [ConditionalTheory]
     [MemberData(nameof(UseDynamicMappingData))]
-    public Task CreateCollectionCalledMoreThanOnceThrowsVectorStoreOperationException(bool useDynamicMapping)
+    public Task CreateCollectionCalledMoreThanOnceThrowsVectorStoreException(bool useDynamicMapping)
     {
         return useDynamicMapping ? Core<Dictionary<string, object?>>() : Core<SimpleRecord<TKey>>();
 
@@ -161,7 +161,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 
                 await collection.CreateCollectionIfNotExistsAsync();
 
-                await Assert.ThrowsAsync<VectorStoreOperationException>(() => collection.CreateCollectionAsync());
+                await Assert.ThrowsAsync<VectorStoreException>(() => collection.CreateCollectionAsync());
             }
             finally
             {

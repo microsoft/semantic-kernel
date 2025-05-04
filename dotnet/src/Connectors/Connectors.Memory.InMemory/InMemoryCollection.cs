@@ -139,7 +139,7 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
             return Task.CompletedTask;
         }
 
-        return Task.FromException(new VectorStoreOperationException("Collection already exists.")
+        return Task.FromException(new VectorStoreException("Collection already exists.")
         {
             VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
             CollectionName = this.Name,
@@ -468,7 +468,7 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
     {
         if (!this._internalCollections.TryGetValue(this.Name, out var collectionDictionary))
         {
-            throw new VectorStoreOperationException($"Call to vector store failed. Collection '{this.Name}' does not exist.");
+            throw new VectorStoreException($"Call to vector store failed. Collection '{this.Name}' does not exist.");
         }
 
         return collectionDictionary;

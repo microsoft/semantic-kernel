@@ -189,7 +189,7 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
         }
         catch (CosmosException ex)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = CosmosNoSqlConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -296,12 +296,12 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
 
         if (string.IsNullOrWhiteSpace(keyValue))
         {
-            throw new VectorStoreOperationException($"Key property {this._model.KeyProperty.ModelName} is not initialized.");
+            throw new ArgumentException($"Key property {this._model.KeyProperty.ModelName} is not initialized.");
         }
 
         if (string.IsNullOrWhiteSpace(partitionKeyValue))
         {
-            throw new VectorStoreOperationException($"Partition key property {this._partitionKeyProperty.ModelName} is not initialized.");
+            throw new ArgumentException($"Partition key property {this._partitionKeyProperty.ModelName} is not initialized.");
         }
 
         await this.RunOperationAsync(OperationName, () =>
