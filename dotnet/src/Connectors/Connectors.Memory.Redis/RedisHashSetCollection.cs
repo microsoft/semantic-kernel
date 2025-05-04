@@ -74,7 +74,7 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
     private readonly IDatabase _database;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly RedisHashSetCollectionOptions<TRecord> _options;
+    private readonly RedisHashSetCollectionOptions _options;
 
     /// <summary>The model.</summary>
     private readonly CollectionModel _model;
@@ -92,10 +92,10 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
     /// Initializes a new instance of the <see cref="RedisHashSetCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="database">The Redis database to read/write records from.</param>
-    /// <param name="name">The name of the collection that this <see cref="RedisHashSetCollectionOptions{TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="RedisHashSetCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
-    public RedisHashSetCollection(IDatabase database, string name, RedisHashSetCollectionOptions<TRecord>? options = null)
+    public RedisHashSetCollection(IDatabase database, string name, RedisHashSetCollectionOptions? options = null)
     {
         // Verify.
         Verify.NotNull(database);
@@ -109,7 +109,7 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
         // Assign.
         this._database = database;
         this.Name = name;
-        this._options = options ?? new RedisHashSetCollectionOptions<TRecord>();
+        this._options = options ?? new RedisHashSetCollectionOptions();
         this._model = new CollectionModelBuilder(ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
 

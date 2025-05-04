@@ -12,7 +12,7 @@ namespace VectorDataSpecificationTests.Support;
 /// </summary>
 public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreFixture
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 {
     private List<TRecord>? _testData;
 

@@ -82,7 +82,7 @@ public static class QdrantServiceCollectionExtensions
     public static IServiceCollection AddQdrantVectorStoreRecordCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
-        QdrantCollectionOptions<TRecord>? options = default,
+        QdrantCollectionOptions? options = default,
         string? serviceId = default)
         where TKey : notnull
         where TRecord : class
@@ -92,7 +92,7 @@ public static class QdrantServiceCollectionExtensions
             (sp, obj) =>
             {
                 var qdrantClient = sp.GetRequiredService<QdrantClient>();
-                options ??= sp.GetService<QdrantCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<QdrantCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -127,7 +127,7 @@ public static class QdrantServiceCollectionExtensions
         int port = 6334,
         bool https = false,
         string? apiKey = default,
-        QdrantCollectionOptions<TRecord>? options = default,
+        QdrantCollectionOptions? options = default,
         string? serviceId = default)
         where TKey : notnull
         where TRecord : class
@@ -137,7 +137,7 @@ public static class QdrantServiceCollectionExtensions
             (sp, obj) =>
             {
                 var qdrantClient = new QdrantClient(host, port, https, apiKey);
-                options ??= sp.GetService<QdrantCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<QdrantCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };

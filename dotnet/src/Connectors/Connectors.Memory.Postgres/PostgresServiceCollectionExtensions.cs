@@ -91,7 +91,7 @@ public static class PostgresServiceCollectionExtensions
     public static IServiceCollection AddPostgresVectorStoreRecordCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
-        PostgresCollectionOptions<TRecord>? options = default,
+        PostgresCollectionOptions? options = default,
         string? serviceId = default)
         where TKey : notnull
         where TRecord : class
@@ -101,7 +101,7 @@ public static class PostgresServiceCollectionExtensions
             (sp, obj) =>
             {
                 var dataSource = sp.GetRequiredService<NpgsqlDataSource>();
-                options ??= sp.GetService<PostgresCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<PostgresCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -130,7 +130,7 @@ public static class PostgresServiceCollectionExtensions
         this IServiceCollection services,
         string collectionName,
         string connectionString,
-        PostgresCollectionOptions<TRecord>? options = default,
+        PostgresCollectionOptions? options = default,
         string? serviceId = default)
         where TKey : notnull
         where TRecord : class
@@ -152,7 +152,7 @@ public static class PostgresServiceCollectionExtensions
             {
                 var dataSource = sp.GetRequiredKeyedService<NpgsqlDataSource>(npgsqlServiceId);
 
-                options ??= sp.GetService<PostgresCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<PostgresCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };

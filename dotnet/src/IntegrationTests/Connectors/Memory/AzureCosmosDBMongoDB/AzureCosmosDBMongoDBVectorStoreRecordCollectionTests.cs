@@ -68,7 +68,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         var collectionNamePostfix = useRecordDefinition ? "with-definition" : "with-type";
         var collectionName = $"collection-{collectionNamePostfix}";
 
-        var options = new CosmosMongoCollectionOptions<AzureCosmosDBMongoDBHotel>
+        var options = new CosmosMongoCollectionOptions
         {
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
@@ -416,7 +416,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
-        var options = new CosmosMongoCollectionOptions<Dictionary<string, object?>>
+        var options = new CosmosMongoCollectionOptions
         {
             VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
         };

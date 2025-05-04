@@ -64,7 +64,7 @@ public static class SqliteServiceCollectionExtensions
     public static IServiceCollection AddSqliteVectorStoreRecordCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
-        SqliteCollectionOptions<TRecord>? options = default,
+        SqliteCollectionOptions? options = default,
         string? serviceId = default)
         where TKey : notnull
         => throw new InvalidOperationException("Use AddSqliteVectorStore with connectionString instead.");
@@ -85,7 +85,7 @@ public static class SqliteServiceCollectionExtensions
         this IServiceCollection services,
         string collectionName,
         string connectionString,
-        SqliteCollectionOptions<TRecord>? options = default,
+        SqliteCollectionOptions? options = default,
         string? serviceId = default)
         where TKey : notnull
         where TRecord : class
@@ -96,7 +96,7 @@ public static class SqliteServiceCollectionExtensions
                 new SqliteCollection<TKey, TRecord>(
                     connectionString,
                     collectionName,
-                    options ?? sp.GetService<SqliteCollectionOptions<TRecord>>() ?? new()
+                    options ?? sp.GetService<SqliteCollectionOptions>() ?? new()
                     {
                         EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                     })

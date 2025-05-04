@@ -677,7 +677,7 @@ public sealed class CosmosMongoCollectionTests
         var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
         var expectedDefinition = Builders<BsonDocument>.Filter.Eq(document => document["_id"], "key");
 
-        CosmosMongoCollectionOptions<TDataModel>? options = definition != null ?
+        CosmosMongoCollectionOptions? options = definition != null ?
             new() { VectorStoreRecordDefinition = definition } :
             null;
 

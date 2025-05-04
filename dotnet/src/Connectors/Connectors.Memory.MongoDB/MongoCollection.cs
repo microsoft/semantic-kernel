@@ -50,7 +50,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     private readonly IMongoCollection<BsonDocument> _mongoCollection;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly MongoCollectionOptions<TRecord> _options;
+    private readonly MongoCollectionOptions _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
     private readonly IMongoMapper<TRecord> _mapper;
@@ -70,7 +70,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     public MongoCollection(
         IMongoDatabase mongoDatabase,
         string name,
-        MongoCollectionOptions<TRecord>? options = default)
+        MongoCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
@@ -85,7 +85,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
         this.Name = name;
-        this._options = options ?? new MongoCollectionOptions<TRecord>();
+        this._options = options ?? new MongoCollectionOptions();
         this._model = new MongoModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? (new MongoDynamicMapper(this._model) as IMongoMapper<TRecord>)!

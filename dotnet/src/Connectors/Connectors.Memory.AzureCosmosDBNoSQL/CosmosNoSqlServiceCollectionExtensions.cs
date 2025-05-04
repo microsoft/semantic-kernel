@@ -99,7 +99,7 @@ public static class CosmosNoSqlServiceCollectionExtensions
     public static IServiceCollection AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
-        CosmosNoSqlCollectionOptions<TRecord>? options = default,
+        CosmosNoSqlCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -108,7 +108,7 @@ public static class CosmosNoSqlServiceCollectionExtensions
             (sp, obj) =>
             {
                 var database = sp.GetRequiredService<Database>();
-                options ??= sp.GetService<CosmosNoSqlCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<CosmosNoSqlCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -138,7 +138,7 @@ public static class CosmosNoSqlServiceCollectionExtensions
         string collectionName,
         string connectionString,
         string databaseName,
-        CosmosNoSqlCollectionOptions<TRecord>? options = default,
+        CosmosNoSqlCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -153,7 +153,7 @@ public static class CosmosNoSqlServiceCollectionExtensions
                 });
 
                 var database = cosmosClient.GetDatabase(databaseName);
-                options ??= sp.GetService<CosmosNoSqlCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<CosmosNoSqlCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };

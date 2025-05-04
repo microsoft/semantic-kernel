@@ -34,7 +34,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     private readonly string _connectionString;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly SqliteCollectionOptions<TRecord> _options;
+    private readonly SqliteCollectionOptions _options;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the SQLite record.</summary>
     private readonly SqliteMapper<TRecord> _mapper;
@@ -72,7 +72,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     public SqliteCollection(
         string connectionString,
         string name,
-        SqliteCollectionOptions<TRecord>? options = default)
+        SqliteCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(connectionString);
@@ -889,7 +889,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// </remarks>
     private static string GetVectorTableName(
         string dataTableName,
-        SqliteCollectionOptions<TRecord> options)
+        SqliteCollectionOptions options)
     {
         const string DefaultVirtualTableNamePrefix = "vec_";
 

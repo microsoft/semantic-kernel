@@ -81,7 +81,7 @@ public static class RedisServiceCollectionExtensions
     public static IServiceCollection AddRedisHashSetVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
-        RedisHashSetCollectionOptions<TRecord>? options = default,
+        RedisHashSetCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -90,7 +90,7 @@ public static class RedisServiceCollectionExtensions
             (sp, obj) =>
             {
                 var database = sp.GetRequiredService<IDatabase>();
-                options ??= sp.GetService<RedisHashSetCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<RedisHashSetCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -118,7 +118,7 @@ public static class RedisServiceCollectionExtensions
         this IServiceCollection services,
         string collectionName,
         string redisConnectionConfiguration,
-        RedisHashSetCollectionOptions<TRecord>? options = default,
+        RedisHashSetCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -127,7 +127,7 @@ public static class RedisServiceCollectionExtensions
             (sp, obj) =>
             {
                 var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
-                options ??= sp.GetService<RedisHashSetCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<RedisHashSetCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -153,7 +153,7 @@ public static class RedisServiceCollectionExtensions
     public static IServiceCollection AddRedisJsonVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
-        RedisJsonCollectionOptions<TRecord>? options = default,
+        RedisJsonCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -162,7 +162,7 @@ public static class RedisServiceCollectionExtensions
             (sp, obj) =>
             {
                 var database = sp.GetRequiredService<IDatabase>();
-                options ??= sp.GetService<RedisJsonCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<RedisJsonCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -190,7 +190,7 @@ public static class RedisServiceCollectionExtensions
         this IServiceCollection services,
         string collectionName,
         string redisConnectionConfiguration,
-        RedisJsonCollectionOptions<TRecord>? options = default,
+        RedisJsonCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -199,7 +199,7 @@ public static class RedisServiceCollectionExtensions
             (sp, obj) =>
             {
                 var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
-                options ??= sp.GetService<RedisJsonCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<RedisJsonCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };

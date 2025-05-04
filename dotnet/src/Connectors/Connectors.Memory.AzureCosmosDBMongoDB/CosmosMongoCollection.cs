@@ -48,7 +48,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
     private readonly IMongoCollection<BsonDocument> _mongoCollection;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly CosmosMongoCollectionOptions<TRecord> _options;
+    private readonly CosmosMongoCollectionOptions _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
     private readonly IMongoMapper<TRecord> _mapper;
@@ -68,7 +68,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
     public CosmosMongoCollection(
         IMongoDatabase mongoDatabase,
         string name,
-        CosmosMongoCollectionOptions<TRecord>? options = default)
+        CosmosMongoCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
@@ -83,7 +83,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
         this.Name = name;
-        this._options = options ?? new CosmosMongoCollectionOptions<TRecord>();
+        this._options = options ?? new CosmosMongoCollectionOptions();
         this._model = new MongoModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? (new MongoDynamicMapper(this._model) as IMongoMapper<TRecord>)!

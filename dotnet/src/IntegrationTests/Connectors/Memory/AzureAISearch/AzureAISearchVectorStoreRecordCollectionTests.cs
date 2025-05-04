@@ -49,7 +49,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         // Arrange
         var hotel = this.CreateTestHotel("Upsert-1");
         var testCollectionName = $"{fixture.TestIndexName}-createtest";
-        var options = new AzureAISearchCollectionOptions<AzureAISearchHotel>
+        var options = new AzureAISearchCollectionOptions
         {
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
@@ -123,7 +123,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     public async Task ItCanUpsertDocumentToVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange
-        var options = new AzureAISearchCollectionOptions<AzureAISearchHotel>
+        var options = new AzureAISearchCollectionOptions
         {
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
@@ -172,7 +172,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     public async Task ItCanGetDocumentFromVectorStoreAsync(bool includeVectors, bool useRecordDefinition)
     {
         // Arrange
-        var options = new AzureAISearchCollectionOptions<AzureAISearchHotel>
+        var options = new AzureAISearchCollectionOptions
         {
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
@@ -233,7 +233,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     public async Task ItCanRemoveDocumentFromVectorStoreAsync(bool useRecordDefinition)
     {
         // Arrange
-        var options = new AzureAISearchCollectionOptions<AzureAISearchHotel>
+        var options = new AzureAISearchCollectionOptions
         {
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
@@ -367,7 +367,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
-        var options = new AzureAISearchCollectionOptions<Dictionary<string, object?>>
+        var options = new AzureAISearchCollectionOptions
         {
             VectorStoreRecordDefinition = fixture.VectorStoreRecordDefinition
         };

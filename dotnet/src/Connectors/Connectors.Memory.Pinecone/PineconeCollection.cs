@@ -34,7 +34,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     private readonly Sdk.PineconeClient _pineconeClient;
-    private readonly PineconeCollectionOptions<TRecord> _options;
+    private readonly PineconeCollectionOptions _options;
     private readonly Extensions.VectorData.ConnectorSupport.CollectionModel _model;
     private readonly PineconeMapper<TRecord> _mapper;
     private IndexClient? _indexClient;
@@ -50,7 +50,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="pineconeClient"/> is null.</exception>
     /// <param name="name">The name of the collection that this <see cref="PineconeCollection{TKey, TRecord}"/> will access.</param>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    public PineconeCollection(Sdk.PineconeClient pineconeClient, string name, PineconeCollectionOptions<TRecord>? options = null)
+    public PineconeCollection(Sdk.PineconeClient pineconeClient, string name, PineconeCollectionOptions? options = null)
     {
         Verify.NotNull(pineconeClient);
         VerifyCollectionName(name);
@@ -62,7 +62,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         this._pineconeClient = pineconeClient;
         this.Name = name;
-        this._options = options ?? new PineconeCollectionOptions<TRecord>();
+        this._options = options ?? new PineconeCollectionOptions();
         this._model = new CollectionModelBuilder(PineconeFieldMapping.ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
         this._mapper = new PineconeMapper<TRecord>(this._model);

@@ -66,7 +66,7 @@ public static class WeaviateServiceCollectionExtensions
         this IServiceCollection services,
         string collectionName,
         HttpClient? httpClient = default,
-        WeaviateCollectionOptions<TRecord>? options = default,
+        WeaviateCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -75,7 +75,7 @@ public static class WeaviateServiceCollectionExtensions
             (sp, obj) =>
             {
                 var selectedHttpClient = HttpClientProvider.GetHttpClient(httpClient, sp);
-                options ??= sp.GetService<WeaviateCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<WeaviateCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };

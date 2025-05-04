@@ -74,7 +74,7 @@ public sealed class PostgresVectorStore : VectorStore
         => new PostgresCollection<TKey, TRecord>(
             this._postgresClient,
             name,
-            new PostgresCollectionOptions<TRecord>()
+            new PostgresCollectionOptions()
             {
                 Schema = this._options.Schema,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,

@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// <summary>
 /// Options when creating a <see cref="CosmosMongoCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class CosmosMongoCollectionOptions<TRecord>
+public sealed class CosmosMongoCollectionOptions
 {
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

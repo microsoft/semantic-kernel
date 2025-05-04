@@ -98,7 +98,7 @@ public static class CosmosMongoServiceCollectionExtensions
     public static IServiceCollection AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
-        CosmosMongoCollectionOptions<TRecord>? options = default,
+        CosmosMongoCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -107,7 +107,7 @@ public static class CosmosMongoServiceCollectionExtensions
             (sp, obj) =>
             {
                 var database = sp.GetRequiredService<IMongoDatabase>();
-                options ??= sp.GetService<CosmosMongoCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<CosmosMongoCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -137,7 +137,7 @@ public static class CosmosMongoServiceCollectionExtensions
         string collectionName,
         string connectionString,
         string databaseName,
-        CosmosMongoCollectionOptions<TRecord>? options = default,
+        CosmosMongoCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -151,7 +151,7 @@ public static class CosmosMongoServiceCollectionExtensions
                 var mongoClient = new MongoClient(settings);
                 var database = mongoClient.GetDatabase(databaseName);
 
-                options ??= sp.GetService<CosmosMongoCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<CosmosMongoCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };

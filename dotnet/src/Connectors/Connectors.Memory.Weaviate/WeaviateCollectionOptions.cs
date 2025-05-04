@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// <summary>
 /// Options when creating a <see cref="WeaviateCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class WeaviateCollectionOptions<TRecord>
+public sealed class WeaviateCollectionOptions
 {
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

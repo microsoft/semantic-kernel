@@ -6,9 +6,9 @@ using Microsoft.Extensions.VectorData;
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
-/// Options when creating a <see cref="RedisHashSetCollectionOptions{TRecord}"/>.
+/// Options when creating a <see cref="RedisHashSetCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class RedisHashSetCollectionOptions<TRecord>
+public sealed class RedisHashSetCollectionOptions
 {
     /// <summary>
     /// Gets or sets a value indicating whether the collection name should be prefixed to the

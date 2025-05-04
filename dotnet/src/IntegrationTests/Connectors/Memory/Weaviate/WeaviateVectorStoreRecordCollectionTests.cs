@@ -60,7 +60,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         // Arrange
         var hotelId = new Guid("55555555-5555-5555-5555-555555555555");
 
-        var options = new WeaviateCollectionOptions<WeaviateHotel>
+        var options = new WeaviateCollectionOptions
         {
             VectorStoreRecordDefinition = useRecordDefinition ? this.GetTestHotelRecordDefinition() : null
         };
@@ -352,7 +352,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     {
         // Arrange
         var hotelId = new Guid("55555555-5555-5555-5555-555555555555");
-        var options = new WeaviateCollectionOptions<Dictionary<string, object?>>
+        var options = new WeaviateCollectionOptions
         {
             VectorStoreRecordDefinition = this.GetTestHotelRecordDefinition()
         };

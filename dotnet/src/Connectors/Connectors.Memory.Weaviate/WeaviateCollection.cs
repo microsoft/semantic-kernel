@@ -55,7 +55,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     private readonly HttpClient _httpClient;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly WeaviateCollectionOptions<TRecord> _options;
+    private readonly WeaviateCollectionOptions _options;
 
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
@@ -78,7 +78,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <param name="httpClient">
     /// <see cref="HttpClient"/> that is used to interact with Weaviate API.
     /// <see cref="HttpClient.BaseAddress"/> should point to remote or local cluster and API key can be configured via <see cref="HttpClient.DefaultRequestHeaders"/>.
-    /// It's also possible to provide these parameters via <see cref="WeaviateCollectionOptions{TRecord}"/>.
+    /// It's also possible to provide these parameters via <see cref="WeaviateCollectionOptions"/>.
     /// </param>
     /// <param name="name">The name of the collection that this <see cref="WeaviateCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
@@ -86,7 +86,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     public WeaviateCollection(
         HttpClient httpClient,
         string name,
-        WeaviateCollectionOptions<TRecord>? options = default)
+        WeaviateCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(httpClient);
@@ -97,7 +97,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
             throw new NotSupportedException($"Only {nameof(Guid)} key is supported (and object for dynamic mapping).");
         }
 
-        var endpoint = (options?.Endpoint ?? httpClient.BaseAddress) ?? throw new ArgumentException($"Weaviate endpoint should be provided via HttpClient.BaseAddress property or {nameof(WeaviateCollectionOptions<TRecord>)} options parameter.");
+        var endpoint = (options?.Endpoint ?? httpClient.BaseAddress) ?? throw new ArgumentException($"Weaviate endpoint should be provided via HttpClient.BaseAddress property or {nameof(WeaviateCollectionOptions)} options parameter.");
 
         // Assign.
         this._httpClient = httpClient;

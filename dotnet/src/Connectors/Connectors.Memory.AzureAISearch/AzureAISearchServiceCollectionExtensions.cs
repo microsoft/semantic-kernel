@@ -124,7 +124,7 @@ public static class AzureAISearchServiceCollectionExtensions
     public static IServiceCollection AddAzureAISearchVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
-        AzureAISearchCollectionOptions<TRecord>? options = default,
+        AzureAISearchCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -135,7 +135,7 @@ public static class AzureAISearchServiceCollectionExtensions
             (sp, obj) =>
             {
                 var searchIndexClient = sp.GetRequiredService<SearchIndexClient>();
-                options ??= sp.GetService<AzureAISearchCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<AzureAISearchCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -165,7 +165,7 @@ public static class AzureAISearchServiceCollectionExtensions
         string collectionName,
         Uri endpoint,
         TokenCredential tokenCredential,
-        AzureAISearchCollectionOptions<TRecord>? options = default,
+        AzureAISearchCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -176,7 +176,7 @@ public static class AzureAISearchServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                options ??= sp.GetService<AzureAISearchCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<AzureAISearchCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -209,7 +209,7 @@ public static class AzureAISearchServiceCollectionExtensions
         string collectionName,
         Uri endpoint,
         AzureKeyCredential credential,
-        AzureAISearchCollectionOptions<TRecord>? options = default,
+        AzureAISearchCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -220,7 +220,7 @@ public static class AzureAISearchServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                options ??= sp.GetService<AzureAISearchCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<AzureAISearchCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };

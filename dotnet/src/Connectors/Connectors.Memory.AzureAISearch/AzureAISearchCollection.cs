@@ -51,7 +51,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     private readonly SearchClient _searchClient;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly AzureAISearchCollectionOptions<TRecord> _options;
+    private readonly AzureAISearchCollectionOptions _options;
 
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
     private readonly AzureAISearchDynamicMapper? _dynamicMapper;
@@ -67,7 +67,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="searchIndexClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when options are misconfigured.</exception>
-    public AzureAISearchCollection(SearchIndexClient searchIndexClient, string name, AzureAISearchCollectionOptions<TRecord>? options = default)
+    public AzureAISearchCollection(SearchIndexClient searchIndexClient, string name, AzureAISearchCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(searchIndexClient);
@@ -81,7 +81,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
         // Assign.
         this._searchIndexClient = searchIndexClient;
         this.Name = name;
-        this._options = options ?? new AzureAISearchCollectionOptions<TRecord>();
+        this._options = options ?? new AzureAISearchCollectionOptions();
         this._searchClient = this._searchIndexClient.GetSearchClient(name);
 
         this._model = typeof(TRecord) == typeof(Dictionary<string, object?>) ?

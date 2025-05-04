@@ -673,7 +673,7 @@ public sealed class MongoCollectionTests
         var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
         var expectedDefinition = Builders<BsonDocument>.Filter.Eq(document => document["_id"], "key");
 
-        MongoCollectionOptions<TDataModel>? options = definition != null ?
+        MongoCollectionOptions? options = definition != null ?
             new() { VectorStoreRecordDefinition = definition } :
             null;
 

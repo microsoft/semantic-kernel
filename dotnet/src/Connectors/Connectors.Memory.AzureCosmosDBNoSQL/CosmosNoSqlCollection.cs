@@ -47,7 +47,7 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
     private readonly Database _database;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly CosmosNoSqlCollectionOptions<TRecord> _options;
+    private readonly CosmosNoSqlCollectionOptions _options;
 
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
@@ -71,7 +71,7 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
     public CosmosNoSqlCollection(
         Database database,
         string name,
-        CosmosNoSqlCollectionOptions<TRecord>? options = default)
+        CosmosNoSqlCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(database);

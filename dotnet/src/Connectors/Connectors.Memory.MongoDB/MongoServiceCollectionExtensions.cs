@@ -98,7 +98,7 @@ public static class MongoServiceCollectionExtensions
     public static IServiceCollection AddMongoDBVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
-        MongoCollectionOptions<TRecord>? options = default,
+        MongoCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -107,7 +107,7 @@ public static class MongoServiceCollectionExtensions
             (sp, obj) =>
             {
                 var database = sp.GetRequiredService<IMongoDatabase>();
-                options ??= sp.GetService<MongoCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<MongoCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -137,7 +137,7 @@ public static class MongoServiceCollectionExtensions
         string collectionName,
         string connectionString,
         string databaseName,
-        MongoCollectionOptions<TRecord>? options = default,
+        MongoCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -151,7 +151,7 @@ public static class MongoServiceCollectionExtensions
                 var mongoClient = new MongoClient(settings);
                 var database = mongoClient.GetDatabase(databaseName);
 
-                options ??= sp.GetService<MongoCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<MongoCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };

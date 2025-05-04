@@ -30,10 +30,10 @@ public sealed class SqlServerCollection<TKey, TRecord>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
-    private static readonly SqlServerCollectionOptions<TRecord> s_defaultOptions = new();
+    private static readonly SqlServerCollectionOptions s_defaultOptions = new();
 
     private readonly string _connectionString;
-    private readonly SqlServerCollectionOptions<TRecord> _options;
+    private readonly SqlServerCollectionOptions _options;
     private readonly CollectionModel _model;
     private readonly SqlServerMapper<TRecord> _mapper;
 
@@ -46,7 +46,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
     public SqlServerCollection(
         string connectionString,
         string name,
-        SqlServerCollectionOptions<TRecord>? options = null)
+        SqlServerCollectionOptions? options = null)
     {
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNull(name);

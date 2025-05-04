@@ -56,7 +56,7 @@ public sealed class AzureAISearchVectorStore : VectorStore
         => new AzureAISearchCollection<TKey, TRecord>(
             this._searchIndexClient,
             name,
-            new AzureAISearchCollectionOptions<TRecord>()
+            new AzureAISearchCollectionOptions()
             {
                 JsonSerializerOptions = this._options.JsonSerializerOptions,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,

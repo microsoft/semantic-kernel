@@ -65,7 +65,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     private readonly IDatabase _database;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly RedisJsonCollectionOptions<TRecord> _options;
+    private readonly RedisJsonCollectionOptions _options;
 
     /// <summary>The model.</summary>
     private readonly CollectionModel _model;
@@ -86,7 +86,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     /// <param name="name">The name of the collection that this <see cref="RedisJsonCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
-    public RedisJsonCollection(IDatabase database, string name, RedisJsonCollectionOptions<TRecord>? options = null)
+    public RedisJsonCollection(IDatabase database, string name, RedisJsonCollectionOptions? options = null)
     {
         // Verify.
         Verify.NotNull(database);
@@ -102,7 +102,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
         // Assign.
         this._database = database;
         this.Name = name;
-        this._options = options ?? new RedisJsonCollectionOptions<TRecord>();
+        this._options = options ?? new RedisJsonCollectionOptions();
         this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
         this._model = isDynamic ?
             new CollectionModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator) :

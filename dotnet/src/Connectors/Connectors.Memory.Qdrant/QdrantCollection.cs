@@ -49,7 +49,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     private readonly MockableQdrantClient _qdrantClient;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly QdrantCollectionOptions<TRecord> _options;
+    private readonly QdrantCollectionOptions _options;
 
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
@@ -65,7 +65,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    public QdrantCollection(QdrantClient qdrantClient, string name, QdrantCollectionOptions<TRecord>? options = null)
+    public QdrantCollection(QdrantClient qdrantClient, string name, QdrantCollectionOptions? options = null)
         : this(new MockableQdrantClient(qdrantClient), name, options)
     {
     }
@@ -78,7 +78,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    internal QdrantCollection(MockableQdrantClient qdrantClient, string name, QdrantCollectionOptions<TRecord>? options = null)
+    internal QdrantCollection(MockableQdrantClient qdrantClient, string name, QdrantCollectionOptions? options = null)
     {
         // Verify.
         Verify.NotNull(qdrantClient);
@@ -92,7 +92,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
         // Assign.
         this._qdrantClient = qdrantClient;
         this.Name = name;
-        this._options = options ?? new QdrantCollectionOptions<TRecord>();
+        this._options = options ?? new QdrantCollectionOptions();
 
         this._model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(this._options.HasNamedVectors))
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, options?.EmbeddingGenerator);

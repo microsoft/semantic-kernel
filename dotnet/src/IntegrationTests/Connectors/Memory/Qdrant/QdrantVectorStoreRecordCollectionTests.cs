@@ -52,7 +52,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var collectionNamePostfix2 = hasNamedVectors ? "HasNamedVectors" : "SingleUnnamedVector";
         var testCollectionName = $"createtest{collectionNamePostfix1}{collectionNamePostfix2}";
 
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
@@ -127,7 +127,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanUpsertDocumentToVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
@@ -160,7 +160,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanUpsertAndRemoveDocumentWithGuidIdToVectorStoreAsync()
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfoWithGuidId> { HasNamedVectors = false };
+        var options = new QdrantCollectionOptions { HasNamedVectors = false };
         VectorStoreCollection<Guid, HotelInfoWithGuidId> sut = new QdrantCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
 
         var record = new HotelInfoWithGuidId
@@ -202,7 +202,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanGetDocumentFromVectorStoreAsync(bool useRecordDefinition, bool withEmbeddings, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
@@ -244,7 +244,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanGetDocumentWithGuidIdFromVectorStoreAsync(bool useRecordDefinition, bool withEmbeddings)
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfoWithGuidId>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = false,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelWithGuidIdVectorStoreRecordDefinition : null
@@ -275,7 +275,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanGetManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
-        var options = new QdrantCollectionOptions<HotelInfo> { HasNamedVectors = true };
+        var options = new QdrantCollectionOptions { HasNamedVectors = true };
         var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", options);
 
         // Act
@@ -302,7 +302,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanRemoveDocumentFromVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
@@ -328,7 +328,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
@@ -349,7 +349,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
     {
         // Arrange
-        var options = new QdrantCollectionOptions<HotelInfo> { HasNamedVectors = false };
+        var options = new QdrantCollectionOptions { HasNamedVectors = false };
         var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "singleVectorHotels", options);
 
         // Act & Assert
@@ -368,7 +368,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanSearchWithFilterAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors, string filterType)
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
@@ -402,7 +402,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
-        var options = new QdrantCollectionOptions<Dictionary<string, object?>>
+        var options = new QdrantCollectionOptions
         {
             VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
         };

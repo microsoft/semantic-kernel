@@ -79,7 +79,7 @@ public static class PineconeServiceCollectionExtensions
     public static IServiceCollection AddPineconeVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
-        PineconeCollectionOptions<TRecord>? options = default,
+        PineconeCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -90,7 +90,7 @@ public static class PineconeServiceCollectionExtensions
             (sp, obj) =>
             {
                 var pineconeClient = sp.GetRequiredService<Sdk.PineconeClient>();
-                options ??= sp.GetService<PineconeCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<PineconeCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -118,7 +118,7 @@ public static class PineconeServiceCollectionExtensions
         this IServiceCollection services,
         string collectionName,
         string apiKey,
-        PineconeCollectionOptions<TRecord>? options = default,
+        PineconeCollectionOptions? options = default,
         string? serviceId = default)
         where TRecord : class
     {
@@ -127,7 +127,7 @@ public static class PineconeServiceCollectionExtensions
             (sp, obj) =>
             {
                 var pineconeClient = new Sdk.PineconeClient(apiKey);
-                options ??= sp.GetService<PineconeCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<PineconeCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };

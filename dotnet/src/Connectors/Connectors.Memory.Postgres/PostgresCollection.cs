@@ -36,7 +36,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     private readonly IPostgresVectorStoreDbClient _client;
 
     // <summary>Optional configuration options for this class.</summary>
-    private readonly PostgresCollectionOptions<TRecord> _options;
+    private readonly PostgresCollectionOptions _options;
 
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
@@ -53,7 +53,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <param name="dataSource">The data source to use for connecting to the database.</param>
     /// <param name="name">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public PostgresCollection(NpgsqlDataSource dataSource, string name, PostgresCollectionOptions<TRecord>? options = default)
+    public PostgresCollection(NpgsqlDataSource dataSource, string name, PostgresCollectionOptions? options = default)
         : this(new PostgresDbClient(dataSource), name, options)
     {
     }
@@ -67,7 +67,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <remarks>
     /// This constructor is internal. It allows internal code to create an instance of this class with a custom client.
     /// </remarks>
-    internal PostgresCollection(IPostgresVectorStoreDbClient client, string name, PostgresCollectionOptions<TRecord>? options = default)
+    internal PostgresCollection(IPostgresVectorStoreDbClient client, string name, PostgresCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(client);
@@ -76,7 +76,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
         // Assign.
         this._client = client;
         this.Name = name;
-        this._options = options ?? new PostgresCollectionOptions<TRecord>();
+        this._options = options ?? new PostgresCollectionOptions();
 
         this._model = new CollectionModelBuilder(PostgresConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);

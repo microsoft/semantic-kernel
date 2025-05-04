@@ -66,7 +66,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         collectionNamePostfix += includeVectors ? "-with-vectors" : "-without-vectors";
         var collectionName = $"collection-{collectionNamePostfix}";
 
-        var options = new MongoCollectionOptions<MongoDBHotel>
+        var options = new MongoCollectionOptions
         {
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
@@ -413,7 +413,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
-        var options = new MongoCollectionOptions<Dictionary<string, object?>>
+        var options = new MongoCollectionOptions
         {
             VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
         };
