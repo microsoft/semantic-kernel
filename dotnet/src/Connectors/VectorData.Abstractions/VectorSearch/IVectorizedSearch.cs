@@ -26,7 +26,7 @@ public interface IVectorizedSearch<TRecord>
     IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
         where TVector : notnull;
 }

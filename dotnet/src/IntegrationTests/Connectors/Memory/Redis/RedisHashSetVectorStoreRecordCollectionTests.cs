@@ -63,7 +63,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         // Act
         await sut.CreateCollectionAsync();
         await sut.UpsertAsync(record);
-        var getResult = await sut.GetAsync("HUpsert-1", new GetRecordOptions { IncludeVectors = true });
+        var getResult = await sut.GetAsync("HUpsert-1", new RecordRetrievalOptions { IncludeVectors = true });
         var searchResults = await sut
             .VectorizedSearchAsync(
                 new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
@@ -137,7 +137,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         await sut.UpsertAsync(record);
 
         // Assert.
-        var getResult = await sut.GetAsync("HUpsert-2", new GetRecordOptions { IncludeVectors = true });
+        var getResult = await sut.GetAsync("HUpsert-2", new RecordRetrievalOptions { IncludeVectors = true });
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -188,7 +188,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
 
         // Act.
-        var getResult = await sut.GetAsync("HBaseSet-1", new GetRecordOptions { IncludeVectors = includeVectors });
+        var getResult = await sut.GetAsync("HBaseSet-1", new RecordRetrievalOptions { IncludeVectors = includeVectors });
 
         // Assert.
         Assert.Equal("HBaseSet-1", getResult?.HotelId);
@@ -219,7 +219,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
-        var hotels = sut.GetAsync(["HBaseSet-1", "HBaseSet-5", "HBaseSet-2"], new GetRecordOptions { IncludeVectors = true });
+        var hotels = sut.GetAsync(["HBaseSet-1", "HBaseSet-5", "HBaseSet-2"], new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(hotels);
@@ -280,9 +280,9 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         await sut.DeleteAsync(["HRemoveMany-1", "HRemoveMany-2", "HRemoveMany-3", "HRemoveMany-4"]);
 
         // Assert
-        Assert.Null(await sut.GetAsync("HRemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
-        Assert.Null(await sut.GetAsync("HRemoveMany-2", new GetRecordOptions { IncludeVectors = true }));
-        Assert.Null(await sut.GetAsync("HRemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("HRemoveMany-1", new RecordRetrievalOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("HRemoveMany-2", new RecordRetrievalOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("HRemoveMany-3", new RecordRetrievalOptions { IncludeVectors = true }));
     }
 
     [Theory(Skip = SkipReason)]
@@ -402,7 +402,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
 
         // Act & Assert
-        Assert.Null(await sut.GetAsync("HBaseSet-5", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("HBaseSet-5", new RecordRetrievalOptions { IncludeVectors = true }));
     }
 
     [Fact(Skip = SkipReason)]
@@ -417,7 +417,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var sut = new RedisHashSetCollection<object, Dictionary<string, object?>>(fixture.Database, TestCollectionName, options);
 
         // Act
-        var baseSetGetResult = await sut.GetAsync("HBaseSet-1", new GetRecordOptions { IncludeVectors = true });
+        var baseSetGetResult = await sut.GetAsync("HBaseSet-1", new RecordRetrievalOptions { IncludeVectors = true });
         await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = "HDynamicMapper-1",
@@ -430,7 +430,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
 
             ["DescriptionEmbedding"] = new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f })
         });
-        var localGetResult = await sut.GetAsync("HDynamicMapper-1", new GetRecordOptions { IncludeVectors = true });
+        var localGetResult = await sut.GetAsync("HDynamicMapper-1", new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(baseSetGetResult);

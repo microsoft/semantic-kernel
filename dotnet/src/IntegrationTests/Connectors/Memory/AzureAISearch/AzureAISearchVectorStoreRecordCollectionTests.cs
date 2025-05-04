@@ -179,7 +179,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var sut = new AzureAISearchCollection<string, AzureAISearchHotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
 
         // Act
-        var getResult = await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = includeVectors });
+        var getResult = await sut.GetAsync("BaseSet-1", new RecordRetrievalOptions { IncludeVectors = includeVectors });
 
         // Assert
         Assert.NotNull(getResult);
@@ -213,7 +213,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
-        var hotels = sut.GetAsync(["BaseSet-1", "BaseSet-2", "BaseSet-3", "BaseSet-5", "BaseSet-4"], new GetRecordOptions { IncludeVectors = true });
+        var hotels = sut.GetAsync(["BaseSet-1", "BaseSet-2", "BaseSet-3", "BaseSet-5", "BaseSet-4"], new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(hotels);
@@ -246,7 +246,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         await sut.DeleteAsync("Remove-2");
 
         // Assert
-        Assert.Null(await sut.GetAsync("Remove-1", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("Remove-1", new RecordRetrievalOptions { IncludeVectors = true }));
     }
 
     [Fact(Skip = SkipReason)]
@@ -263,9 +263,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         await sut.DeleteAsync(["RemoveMany-1", "RemoveMany-2", "RemoveMany-3", "RemoveMany-4"]);
 
         // Assert
-        Assert.Null(await sut.GetAsync("RemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
-        Assert.Null(await sut.GetAsync("RemoveMany-2", new GetRecordOptions { IncludeVectors = true }));
-        Assert.Null(await sut.GetAsync("RemoveMany-3", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("RemoveMany-1", new RecordRetrievalOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("RemoveMany-2", new RecordRetrievalOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("RemoveMany-3", new RecordRetrievalOptions { IncludeVectors = true }));
     }
 
     [Fact(Skip = SkipReason)]
@@ -275,7 +275,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var sut = new AzureAISearchCollection<string, AzureAISearchHotel>(fixture.SearchIndexClient, fixture.TestIndexName);
 
         // Act & Assert
-        Assert.Null(await sut.GetAsync("BaseSet-5", new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync("BaseSet-5", new RecordRetrievalOptions { IncludeVectors = true }));
     }
 
     [Fact(Skip = SkipReason)]
@@ -286,7 +286,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var sut = new AzureAISearchCollection<string, AzureAISearchHotel>(searchIndexClient, fixture.TestIndexName);
 
         // Act & Assert
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
+        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new RecordRetrievalOptions { IncludeVectors = true }));
     }
 
     [Fact(Skip = SkipReason)]
@@ -297,7 +297,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var sut = new AzureAISearchCollection<string, AzureAISearchHotel>(searchIndexClient, fixture.TestIndexName);
 
         // Act & Assert
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
+        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new RecordRetrievalOptions { IncludeVectors = true }));
     }
 
     [Theory(Skip = SkipReason)]
@@ -374,7 +374,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var sut = new AzureAISearchCollection<object, Dictionary<string, object?>>(fixture.SearchIndexClient, fixture.TestIndexName, options);
 
         // Act
-        var baseSetGetResult = await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true });
+        var baseSetGetResult = await sut.GetAsync("BaseSet-1", new RecordRetrievalOptions { IncludeVectors = true });
         var baseSetEmbedding = fixture.Embedding;
         var dynamicMapperEmbedding = fixture.Embedding;
         await sut.UpsertAsync(new Dictionary<string, object?>
@@ -390,7 +390,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
             ["DescriptionEmbedding"] = dynamicMapperEmbedding
         });
-        var localGetResult = await sut.GetAsync("DynamicMapper-1", new GetRecordOptions { IncludeVectors = true });
+        var localGetResult = await sut.GetAsync("DynamicMapper-1", new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(baseSetGetResult);

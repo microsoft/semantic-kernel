@@ -28,7 +28,7 @@ public interface IVectorSearchable<TRecord>
     IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
         where TInput : notnull;
 
@@ -51,7 +51,7 @@ public interface IVectorSearchable<TRecord>
     IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
         where TVector : notnull;
 

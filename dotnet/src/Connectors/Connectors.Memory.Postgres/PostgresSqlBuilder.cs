@@ -363,7 +363,7 @@ FROM ({commandText}) AS subquery
 
     internal static PostgresSqlCommandInfo BuildSelectWhereCommand<TRecord>(
         string schema, string tableName, CollectionModel model,
-        Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options)
+        Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord> options)
     {
         StringBuilder query = new(200);
         query.Append("SELECT ");

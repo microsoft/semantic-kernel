@@ -2,13 +2,14 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Threading;
 
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines options for vector search.
+/// Defines options for vector search via <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}(TInput, int, RecordSearchOptions{TRecord}, CancellationToken)"/>.
 /// </summary>
-public class VectorSearchOptions<TRecord>
+public class RecordSearchOptions<TRecord>
 {
     private int _skip = 0;
 

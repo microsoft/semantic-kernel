@@ -332,7 +332,7 @@ internal static class SqlServerCommandBuilder
         VectorPropertyModel vectorProperty,
         CollectionModel model,
         int top,
-        VectorSearchOptions<TRecord> options,
+        RecordSearchOptions<TRecord> options,
         ReadOnlyMemory<float> vector)
     {
         string distanceFunction = vectorProperty.DistanceFunction ?? DistanceFunction.CosineDistance;
@@ -378,7 +378,7 @@ internal static class SqlServerCommandBuilder
     internal static SqlCommand SelectWhere<TRecord>(
         Expression<Func<TRecord, bool>> filter,
         int top,
-        GetFilteredRecordOptions<TRecord> options,
+        FilteredRecordRetrievalOptions<TRecord> options,
         SqlConnection connection, string? schema, string tableName,
         CollectionModel model)
     {

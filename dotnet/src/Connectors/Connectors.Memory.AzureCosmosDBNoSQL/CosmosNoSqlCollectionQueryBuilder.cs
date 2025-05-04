@@ -128,7 +128,7 @@ internal static class CosmosNoSqlCollectionQueryBuilder
     internal static QueryDefinition BuildSearchQuery<TRecord>(
         CollectionModel model,
         string whereClause, Dictionary<string, object?> filterParameters,
-        GetFilteredRecordOptions<TRecord> filterOptions,
+        FilteredRecordRetrievalOptions<TRecord> filterOptions,
         int top)
     {
         var tableVariableName = CosmosNoSqlConstants.ContainerAlias;

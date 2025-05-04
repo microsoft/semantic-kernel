@@ -67,7 +67,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The record if found, otherwise null.</returns>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    public abstract Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    public abstract Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets a batch of records from the vector store. Does not guarantee that the collection exists.
@@ -89,7 +89,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// </para>
     /// </remarks>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    public virtual async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, RecordRetrievalOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var key in keys)
         {
@@ -180,19 +180,20 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The records matching given predicate.</returns>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    public abstract IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default);
+    /// <exception cref="VectorStoreException">The command fails to execute for any reason.</exception>
+    public abstract IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default);
 
     /// <inheritdoc />
-    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(TInput value, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(TInput value, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         where TInput : notnull;
 
     /// <inheritdoc />
-    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         where TVector : notnull;
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         where TVector : notnull;
 
     /// <inheritdoc />

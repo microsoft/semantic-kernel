@@ -39,7 +39,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
     private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
@@ -201,7 +201,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public override Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public override Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = default, CancellationToken cancellationToken = default)
     {
         // Create Options.
         var innerOptions = this.ConvertGetDocumentOptions(options);
@@ -212,7 +212,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, RecordRetrievalOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -291,7 +291,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        VectorSearchOptions<TRecord>? options = null,
+        RecordSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -348,12 +348,12 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     /// <inheritdoc />
     public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -402,7 +402,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
     {
         var searchText = value switch
@@ -472,7 +472,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
 
     /// <inheritdoc />
     [Obsolete("Use SearchAsync")]
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchAsync(searchText, top, options, cancellationToken);
 
     /// <inheritdoc />
@@ -690,11 +690,11 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     }
 
     /// <summary>
-    /// Convert the public <see cref="GetRecordOptions"/> options model to the Azure AI Search <see cref="GetDocumentOptions"/> options model.
+    /// Convert the public <see cref="RecordRetrievalOptions"/> options model to the Azure AI Search <see cref="GetDocumentOptions"/> options model.
     /// </summary>
     /// <param name="options">The public options model.</param>
     /// <returns>The Azure AI Search options model.</returns>
-    private GetDocumentOptions ConvertGetDocumentOptions(GetRecordOptions? options)
+    private GetDocumentOptions ConvertGetDocumentOptions(RecordRetrievalOptions? options)
     {
         var innerOptions = new GetDocumentOptions();
         if (options?.IncludeVectors is not true)

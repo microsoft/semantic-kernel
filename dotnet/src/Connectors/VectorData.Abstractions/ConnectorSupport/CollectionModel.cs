@@ -98,7 +98,7 @@ public sealed class CollectionModel
     /// </summary>
     /// <param name="searchOptions">The search options.</param>
     /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid vector property name.</exception>
-    public VectorPropertyModel GetVectorPropertyOrSingle<TRecord>(VectorSearchOptions<TRecord> searchOptions)
+    public VectorPropertyModel GetVectorPropertyOrSingle<TRecord>(RecordSearchOptions<TRecord> searchOptions)
     {
 #pragma warning disable CS0618 // Type or member is obsolete
         string? vectorPropertyName = searchOptions.VectorPropertyName;
