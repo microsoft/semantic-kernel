@@ -33,7 +33,7 @@ public abstract class VectorStore
     /// <seealso cref="VectorStoreVectorAttribute"/>
     public abstract VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
-        where TRecord : notnull;
+        where TRecord : class;
 
     /// <summary>
     /// Retrieves the names of all the collections in the vector store.

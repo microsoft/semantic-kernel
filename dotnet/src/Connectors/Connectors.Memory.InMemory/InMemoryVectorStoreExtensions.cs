@@ -32,7 +32,7 @@ public static class InMemoryVectorStoreExtensions
         Stream stream,
         JsonSerializerOptions? jsonSerializerOptions = null)
         where TKey : notnull
-        where TRecord : notnull
+        where TRecord : class
     {
         // Get collection and verify that it exists.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
@@ -60,7 +60,7 @@ public static class InMemoryVectorStoreExtensions
         this InMemoryVectorStore vectorStore,
         Stream stream)
         where TKey : notnull
-        where TRecord : notnull
+        where TRecord : class
     {
         VectorStoreCollection<TKey, TRecord>? collection = null;
 

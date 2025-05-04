@@ -40,7 +40,7 @@ internal static class RedisFieldMapping
         CollectionModel model,
         IEnumerable<TRecord> records,
         CancellationToken cancellationToken)
-        where TRecord : notnull
+        where TRecord : class
     {
         IReadOnlyList<TRecord>? recordsList = null;
 

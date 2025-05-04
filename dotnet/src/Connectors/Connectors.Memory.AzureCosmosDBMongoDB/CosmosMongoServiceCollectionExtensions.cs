@@ -100,7 +100,7 @@ public static class CosmosMongoServiceCollectionExtensions
         string collectionName,
         CosmosMongoCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         services.AddKeyedTransient<VectorStoreCollection<string, TRecord>>(
             serviceId,
@@ -139,7 +139,7 @@ public static class CosmosMongoServiceCollectionExtensions
         string databaseName,
         CosmosMongoCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         services.AddKeyedSingleton<VectorStoreCollection<string, TRecord>>(
             serviceId,
@@ -170,7 +170,7 @@ public static class CosmosMongoServiceCollectionExtensions
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : class
     {
         services.AddKeyedTransient<IVectorSearch<TRecord>>(
             serviceId,

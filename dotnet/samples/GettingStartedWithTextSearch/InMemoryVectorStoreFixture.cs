@@ -113,7 +113,7 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
         string[] entries,
         CreateRecord<TKey, TRecord> createRecord)
         where TKey : notnull
-        where TRecord : notnull
+        where TRecord : class
     {
         // Get and create collection if it doesn't exist.
         var collection = this.InMemoryVectorStore.GetCollection<TKey, TRecord>(this.CollectionName);

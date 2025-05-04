@@ -380,7 +380,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         bool storeGenerator = false,
         bool collectionGenerator = false,
         bool propertyGenerator = false)
-        where TRecord : notnull
+        where TRecord : class
     {
         var properties = fixture.GetRecordDefinition().Properties;
 
@@ -455,7 +455,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
             VectorStore vectorStore,
             string collectionName,
             VectorStoreRecordDefinition? recordDefinition = null)
-            where TRecord : notnull
+            where TRecord : class
             => vectorStore.GetCollection<TKey, TRecord>(collectionName, recordDefinition);
 
         public abstract VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator = null);

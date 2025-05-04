@@ -14,7 +14,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory;
 /// </summary>
 public abstract class BaseVectorStoreTests<TKey, TRecord>(VectorStore vectorStore)
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 {
     protected virtual IEnumerable<string> CollectionNames => ["listcollectionnames1", "listcollectionnames2", "listcollectionnames3"];
 

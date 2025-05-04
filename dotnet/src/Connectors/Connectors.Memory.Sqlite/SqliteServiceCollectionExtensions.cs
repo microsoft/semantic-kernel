@@ -88,7 +88,7 @@ public static class SqliteServiceCollectionExtensions
         SqliteCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : notnull
+        where TRecord : class
     {
         services.AddKeyedSingleton<VectorStoreCollection<TKey, TRecord>>(
             serviceId,
@@ -114,7 +114,7 @@ public static class SqliteServiceCollectionExtensions
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TKey, TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
+    private static void AddVectorizedSearch<TKey, TRecord>(IServiceCollection services, string? serviceId) where TRecord : class
         where TKey : notnull
         => services.AddKeyedSingleton<IVectorSearch<TRecord>>(
             serviceId,

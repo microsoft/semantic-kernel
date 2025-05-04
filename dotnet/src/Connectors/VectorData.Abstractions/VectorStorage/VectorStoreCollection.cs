@@ -23,7 +23,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
 #pragma warning restore CS0618 // IVectorizedSearch is obsolete
 #pragma warning restore CA1711
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 {
     /// <summary>
     /// Gets the name of the collection.

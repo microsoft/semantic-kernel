@@ -25,7 +25,7 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;

@@ -27,7 +27,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>

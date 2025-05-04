@@ -31,7 +31,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearch<TRecord>
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect
 {
     /// <summary>Metadata about vector store record collection.</summary>

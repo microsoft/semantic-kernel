@@ -24,7 +24,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
 #pragma warning restore CA1711
     : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;

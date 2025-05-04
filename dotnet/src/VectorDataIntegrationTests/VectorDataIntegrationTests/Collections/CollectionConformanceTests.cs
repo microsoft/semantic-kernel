@@ -63,7 +63,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
     {
         return useDynamicMapping ? Core<Dictionary<string, object?>>() : Core<SimpleRecord<TKey>>();
 
-        async Task Core<TRecord>() where TRecord : notnull
+        async Task Core<TRecord>() where TRecord : class
         {
             var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 
@@ -77,7 +77,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
     {
         return useDynamicMapping ? Core<Dictionary<string, object?>>() : Core<SimpleRecord<TKey>>();
 
-        async Task Core<TRecord>() where TRecord : notnull
+        async Task Core<TRecord>() where TRecord : class
         {
             var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 
@@ -108,7 +108,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
     {
         return useDynamicMapping ? Core<Dictionary<string, object?>>() : Core<SimpleRecord<TKey>>();
 
-        async Task Core<TRecord>() where TRecord : notnull
+        async Task Core<TRecord>() where TRecord : class
         {
             var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 
@@ -141,7 +141,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
     {
         return useDynamicMapping ? Core<Dictionary<string, object?>>() : Core<SimpleRecord<TKey>>();
 
-        async Task Core<TRecord>() where TRecord : notnull
+        async Task Core<TRecord>() where TRecord : class
         {
             var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 

@@ -31,7 +31,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     IVectorizableTextSearch<TRecord>,
     IKeywordHybridSearch<TRecord>
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 #pragma warning restore CS0618 // IVectorizableTextSearch is obsolete
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {

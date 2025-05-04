@@ -85,7 +85,7 @@ public static class QdrantServiceCollectionExtensions
         QdrantCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : notnull
+        where TRecord : class
     {
         services.AddKeyedTransient<VectorStoreCollection<TKey, TRecord>>(
             serviceId,
@@ -130,7 +130,7 @@ public static class QdrantServiceCollectionExtensions
         QdrantCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
-        where TRecord : notnull
+        where TRecord : class
     {
         services.AddKeyedSingleton<VectorStoreCollection<TKey, TRecord>>(
             serviceId,
@@ -159,7 +159,7 @@ public static class QdrantServiceCollectionExtensions
     /// <param name="serviceId">The service id that the registrations should use.</param>
     private static void AddVectorizedSearch<TKey, TRecord>(IServiceCollection services, string? serviceId)
         where TKey : notnull
-        where TRecord : notnull
+        where TRecord : class
     {
         services.AddKeyedTransient<IVectorSearch<TRecord>>(
             serviceId,
