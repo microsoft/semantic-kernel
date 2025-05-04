@@ -53,9 +53,14 @@ public sealed class WeaviateVectorStore : VectorStore
         };
     }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
     /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
+#if NET8_0_OR_GREATER
+    public override WeaviateCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#endif
         => new WeaviateCollection<TKey, TRecord>(
             this._httpClient,
             name,
@@ -67,6 +72,7 @@ public sealed class WeaviateVectorStore : VectorStore
                 HasNamedVectors = this._options.HasNamedVectors,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
             });
+#pragma warning restore IDE0090
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

@@ -49,8 +49,13 @@ public sealed class SqlServerVectorStore : VectorStore
         };
     }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc/>
+#if NET8_0_OR_GREATER
+    public override SqlServerCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#endif
     {
         Verify.NotNull(name);
 
@@ -64,6 +69,7 @@ public sealed class SqlServerVectorStore : VectorStore
                 EmbeddingGenerator = this._options.EmbeddingGenerator
             });
     }
+#pragma warning restore IDE0090
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
