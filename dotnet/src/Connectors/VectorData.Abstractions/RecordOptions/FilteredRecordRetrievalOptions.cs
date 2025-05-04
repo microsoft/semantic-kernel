@@ -22,7 +22,7 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
     public int Skip
     {
         get => this._skip;
-        init
+        set
         {
             if (value < 0)
             {
@@ -44,7 +44,7 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
     /// <summary>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.
     /// </summary>
-    public bool IncludeVectors { get; init; } = false;
+    public bool IncludeVectors { get; set; }
 
     /// <summary>
     /// A builder for sorting.

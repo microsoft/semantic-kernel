@@ -25,12 +25,6 @@ public class VectorStoreVectorProperty<TInput> : VectorStoreVectorProperty
     {
     }
 
-    /// <inheritdoc />
-    public VectorStoreVectorProperty(VectorStoreVectorProperty<TInput> source)
-        : base(source)
-    {
-    }
-
     internal override VectorPropertyModel CreatePropertyModel()
         => new VectorPropertyModel<TInput>(this.DataModelPropertyName)
         {

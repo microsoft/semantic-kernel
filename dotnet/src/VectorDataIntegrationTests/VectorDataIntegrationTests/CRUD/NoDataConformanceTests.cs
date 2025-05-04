@@ -148,7 +148,7 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
             }
         ];
 
-        public override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition CreateRecordDefinition()
             => new()
             {
                 Properties =

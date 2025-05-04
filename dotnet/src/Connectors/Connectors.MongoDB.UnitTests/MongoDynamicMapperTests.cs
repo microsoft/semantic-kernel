@@ -286,6 +286,6 @@ public sealed class MongoDynamicMapperTests
         Assert.False(dataModel.ContainsKey("FloatVector"));
     }
 
-    private static CollectionModel BuildModel(IReadOnlyList<VectorStoreProperty> properties)
+    private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
         => new MongoModelBuilder().Build(typeof(Dictionary<string, object?>), new() { Properties = properties }, defaultEmbeddingGenerator: null);
 }

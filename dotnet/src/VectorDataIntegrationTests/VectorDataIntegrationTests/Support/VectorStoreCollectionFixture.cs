@@ -16,7 +16,7 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
 {
     private List<TRecord>? _testData;
 
-    public abstract VectorStoreRecordDefinition GetRecordDefinition();
+    public abstract VectorStoreRecordDefinition CreateRecordDefinition();
     protected abstract List<TRecord> BuildTestData();
 
     public virtual string CollectionName => Guid.NewGuid().ToString();
@@ -24,7 +24,7 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
     protected virtual string IndexKind => this.TestStore.DefaultIndexKind;
 
     protected virtual VectorStoreCollection<TKey, TRecord> GetCollection()
-        => this.TestStore.DefaultVectorStore.GetCollection<TKey, TRecord>(this.CollectionName, this.GetRecordDefinition());
+        => this.TestStore.DefaultVectorStore.GetCollection<TKey, TRecord>(this.CollectionName, this.CreateRecordDefinition());
 
     public override async Task InitializeAsync()
     {

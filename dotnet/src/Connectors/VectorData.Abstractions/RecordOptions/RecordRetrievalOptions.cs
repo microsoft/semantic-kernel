@@ -12,23 +12,7 @@ namespace Microsoft.Extensions.VectorData;
 public class RecordRetrievalOptions
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="RecordRetrievalOptions"/> class.
-    /// </summary>
-    public RecordRetrievalOptions()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RecordRetrievalOptions"/> class by cloning the given options.
-    /// </summary>
-    /// <param name="source">The options to clone.</param>
-    public RecordRetrievalOptions(RecordRetrievalOptions source)
-    {
-        this.IncludeVectors = source.IncludeVectors;
-    }
-
-    /// <summary>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.
     /// </summary>
-    public bool IncludeVectors { get; init; } = false;
+    public bool IncludeVectors { get; set; }
 }

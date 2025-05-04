@@ -553,11 +553,11 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
             if (this.TestDynamic)
             {
-                this.DynamicCollection = this.TestStore.DefaultVectorStore.GetCollection<object, Dictionary<string, object?>>(this.CollectionName, this.GetRecordDefinition());
+                this.DynamicCollection = this.TestStore.DefaultVectorStore.GetCollection<object, Dictionary<string, object?>>(this.CollectionName, this.CreateRecordDefinition());
             }
         }
 
-        public override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition CreateRecordDefinition()
             => new()
             {
                 Properties =
@@ -642,7 +642,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         public virtual void AssertEqualFilterRecord(FilterRecord x, FilterRecord y)
         {
-            var definitionProperties = this.GetRecordDefinition().Properties;
+            var definitionProperties = this.CreateRecordDefinition().Properties;
 
             Assert.Equal(x.Key, y.Key);
             Assert.Equal(x.Int, y.Int);
@@ -667,7 +667,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         public virtual void AssertEqualDynamic(FilterRecord x, Dictionary<string, object?> y)
         {
-            var definitionProperties = this.GetRecordDefinition().Properties;
+            var definitionProperties = this.CreateRecordDefinition().Properties;
 
             Assert.Equal(x.Key, y["Key"]);
             Assert.Equal(x.Int, y["Int"]);
