@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Process.Internal;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -303,6 +304,11 @@ public class WorkflowBuilder
 
     #region FromProcess
 
+    /// <summary>
+    /// Builds a workflow from a kernel process.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <returns></returns>
     public static Task<Workflow> BuildWorkflow(KernelProcess process)
     {
         Verify.NotNull(process);
@@ -311,6 +317,25 @@ public class WorkflowBuilder
         workflow.Nodes = [];
 
         var orchestration = new List<OrchestrationStep>();
+        foreach (var edge in process.Edges)
+        {
+            // Get all the input events
+            OrchestrationStep orchestrationStep = new()
+            {
+                ListenFor = new ListenCondition()
+                {
+                    From = "$.inputs.events",
+                    Event = edge.Key
+                },
+                Then = [.. edge.Value.Select(e => new ThenAction()
+                {
+                    Node = e.OutputTarget.StepId
+                })]
+            };
+
+            orchestration.Add(orchestrationStep);
+        }
+
         var steps = process.Steps;
         foreach (var step in steps)
         {
