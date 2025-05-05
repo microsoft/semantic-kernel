@@ -29,4 +29,9 @@ public sealed class PostgresCollectionOptions<TRecord>
     /// Gets or sets the default embedding generator for vector properties in this collection.
     /// </summary>
     public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the data source should be disposed after the collection is disposed.
+    /// </summary>
+    public bool OwnsDataSource { get; set; } = true;
 }

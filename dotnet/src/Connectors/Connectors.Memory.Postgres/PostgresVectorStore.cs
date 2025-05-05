@@ -12,9 +12,9 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <summary>
 /// Represents a vector store implementation using PostgreSQL.
 /// </summary>
-public sealed class PostgresVectorStore : VectorStore
+public sealed class PostgresVectorStore : VectorStore, IDisposable
 {
-    private readonly PostgresDbClient _postgresClient;
+    private readonly PostgresDbClient _client;
     private readonly PostgresVectorStoreOptions _options;
 
     /// <summary>Metadata about vector store.</summary>
@@ -33,21 +33,29 @@ public sealed class PostgresVectorStore : VectorStore
         Verify.NotNull(dataSource);
 
         this._options = options ?? new PostgresVectorStoreOptions();
-        this._postgresClient = new PostgresDbClient(dataSource, this._options.Schema);
+        this._client = new PostgresDbClient(dataSource, this._options.Schema);
 
         this._metadata = new()
         {
             VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
-            VectorStoreName = this._postgresClient.DatabaseName
+            VectorStoreName = this._client.DatabaseName
         };
     }
 
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        if (this._options.OwnsDataSource)
+        {
+            this._client.Dispose();
+        }
+    }
 
     /// <inheritdoc />
     public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
         return PostgresUtils.WrapAsyncEnumerableAsync(
-            this._postgresClient.GetTablesAsync(cancellationToken),
+            this._client.GetTablesAsync(cancellationToken),
             "ListCollectionNames",
             this._metadata
         );
@@ -56,13 +64,14 @@ public sealed class PostgresVectorStore : VectorStore
     /// <inheritdoc />
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         => new PostgresCollection<TKey, TRecord>(
-            this._postgresClient,
+            this._client.IncreaseReferenceCount(),
             name,
             new PostgresCollectionOptions<TRecord>()
             {
                 Schema = this._options.Schema,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator,
+                OwnsDataSource = this._options.OwnsDataSource
             }
         );
 
