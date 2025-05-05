@@ -15,7 +15,6 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 public sealed class PostgresVectorStore : VectorStore
 {
     private readonly IPostgresVectorStoreDbClient _postgresClient;
-    private readonly NpgsqlDataSource? _dataSource;
     private readonly PostgresVectorStoreOptions _options;
 
     /// <summary>Metadata about vector store.</summary>
@@ -31,9 +30,8 @@ public sealed class PostgresVectorStore : VectorStore
     /// <param name="options">Optional configuration options for this class</param>
     public PostgresVectorStore(NpgsqlDataSource dataSource, PostgresVectorStoreOptions? options = default)
     {
-        this._dataSource = dataSource;
         this._options = options ?? new PostgresVectorStoreOptions();
-        this._postgresClient = new PostgresDbClient(this._dataSource, this._options.Schema);
+        this._postgresClient = new PostgresDbClient(dataSource, this._options.Schema);
 
         this._metadata = new()
         {
@@ -104,7 +102,6 @@ public sealed class PostgresVectorStore : VectorStore
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(NpgsqlDataSource) ? this._dataSource :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
