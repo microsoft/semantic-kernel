@@ -4,7 +4,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Sdk = Pinecone;
+using Pinecone;
 
 namespace Microsoft.SemanticKernel;
 
@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 public static class PineconeServiceCollectionExtensions
 {
     /// <summary>
-    /// Register a Pinecone <see cref="VectorStore"/> with the specified service ID and where <see cref="Sdk.PineconeClient"/> is retrieved from the dependency injection container.
+    /// Register a Pinecone <see cref="VectorStore"/> with the specified service ID and where <see cref="PineconeClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStore"/> on.</param>
     /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
@@ -28,7 +28,7 @@ public static class PineconeServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                var pineconeClient = sp.GetRequiredService<Sdk.PineconeClient>();
+                var pineconeClient = sp.GetRequiredService<PineconeClient>();
                 options ??= sp.GetService<PineconeVectorStoreOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
@@ -41,7 +41,7 @@ public static class PineconeServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Pinecone <see cref="VectorStore"/> with the specified service ID and where <see cref="Sdk.PineconeClient"/> is constructed using the provided apikey.
+    /// Register a Pinecone <see cref="VectorStore"/> with the specified service ID and where <see cref="PineconeClient"/> is constructed using the provided apikey.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStore"/> on.</param>
     /// <param name="apiKey">The api key for Pinecone.</param>
@@ -54,7 +54,7 @@ public static class PineconeServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                var pineconeClient = new Sdk.PineconeClient(apiKey);
+                var pineconeClient = new PineconeClient(apiKey);
                 options ??= sp.GetService<PineconeVectorStoreOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
@@ -68,7 +68,7 @@ public static class PineconeServiceCollectionExtensions
 
     /// <summary>
     /// Register a Pinecone <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the
-    /// specified service ID and where <see cref="Sdk.PineconeClient"/> is retrieved from the dependency injection container.
+    /// specified service ID and where <see cref="PineconeClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
@@ -89,7 +89,7 @@ public static class PineconeServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                var pineconeClient = sp.GetRequiredService<Sdk.PineconeClient>();
+                var pineconeClient = sp.GetRequiredService<PineconeClient>();
                 options ??= sp.GetService<PineconeCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
@@ -105,7 +105,7 @@ public static class PineconeServiceCollectionExtensions
 
     /// <summary>
     /// Register a Pinecone <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the
-    /// provided <see cref="Sdk.PineconeClient"/> and the specified service ID.
+    /// provided <see cref="PineconeClient"/> and the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
@@ -126,7 +126,7 @@ public static class PineconeServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                var pineconeClient = new Sdk.PineconeClient(apiKey);
+                var pineconeClient = new PineconeClient(apiKey);
                 options ??= sp.GetService<PineconeCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()

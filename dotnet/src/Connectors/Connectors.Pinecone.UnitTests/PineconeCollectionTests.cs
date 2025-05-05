@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
+using Pinecone;
 using Xunit;
-using Sdk = Pinecone;
 
 namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
@@ -34,7 +34,7 @@ public class PineconeCollectionTests
                 new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>?), 4),
             }
         };
-        var pineconeClient = new Sdk.PineconeClient("fake api key");
+        var pineconeClient = new PineconeClient("fake api key");
 
         // Act.
         var sut = new PineconeCollection<string, SinglePropsModel>(

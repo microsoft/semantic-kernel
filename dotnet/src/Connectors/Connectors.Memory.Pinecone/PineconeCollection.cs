@@ -13,7 +13,6 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.Properties;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Pinecone;
-using Sdk = Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -33,7 +32,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
-    private readonly Sdk.PineconeClient _pineconeClient;
+    private readonly PineconeClient _pineconeClient;
     private readonly PineconeCollectionOptions _options;
     private readonly Extensions.VectorData.ProviderServices.CollectionModel _model;
     private readonly PineconeMapper<TRecord> _mapper;
@@ -50,7 +49,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="pineconeClient"/> is null.</exception>
     /// <param name="name">The name of the collection that this <see cref="PineconeCollection{TKey, TRecord}"/> will access.</param>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    public PineconeCollection(Sdk.PineconeClient pineconeClient, string name, PineconeCollectionOptions? options = null)
+    public PineconeCollection(PineconeClient pineconeClient, string name, PineconeCollectionOptions? options = null)
     {
         Verify.NotNull(pineconeClient);
         VerifyCollectionName(name);
@@ -164,7 +163,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        Sdk.FetchRequest request = new()
+        FetchRequest request = new()
         {
             Namespace = this._options.IndexNamespace,
             Ids = [this.GetStringKey(key)]
@@ -211,7 +210,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             yield break;
         }
 
-        Sdk.FetchRequest request = new()
+        FetchRequest request = new()
         {
             Namespace = this._options.IndexNamespace,
             Ids = keysList
@@ -236,7 +235,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <inheritdoc />
     public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        Sdk.DeleteRequest request = new()
+        DeleteRequest request = new()
         {
             Namespace = this._options.IndexNamespace,
             Ids = [this.GetStringKey(key)]
@@ -264,7 +263,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             return Task.CompletedTask;
         }
 
-        Sdk.DeleteRequest request = new()
+        DeleteRequest request = new()
         {
             Namespace = this._options.IndexNamespace,
             Ids = keysList
@@ -299,7 +298,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         var vector = this._mapper.MapFromDataToStorageModel(record, generatedEmbedding);
 
-        Sdk.UpsertRequest request = new()
+        UpsertRequest request = new()
         {
             Namespace = this._options.IndexNamespace,
             Vectors = [vector],
@@ -349,7 +348,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             return;
         }
 
-        Sdk.UpsertRequest request = new()
+        UpsertRequest request = new()
         {
             Namespace = this._options.IndexNamespace,
             Vectors = vectors,
@@ -441,7 +440,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         };
 #pragma warning restore CS0618
 
-        Sdk.QueryRequest request = new()
+        QueryRequest request = new()
         {
             TopK = (uint)(top + options.Skip),
             Namespace = this._options.IndexNamespace,
@@ -451,7 +450,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             Filter = filter,
         };
 
-        Sdk.QueryResponse response = await this.RunIndexOperationAsync(
+        QueryResponse response = await this.RunIndexOperationAsync(
             "VectorizedSearch",
             indexClient => indexClient.QueryAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
@@ -467,7 +466,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         var records = skippedResults.Select(
             x => new VectorSearchResult<TRecord>(
                 this._mapper.MapFromStorageToDataModel(
-                    new Sdk.Vector()
+                    new Vector()
                     {
                         Id = x.Id,
                         Values = x.Values ?? Array.Empty<float>(),
@@ -503,7 +502,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        Sdk.QueryRequest request = new()
+        QueryRequest request = new()
         {
             TopK = (uint)(top + options.Skip),
             Namespace = this._options.IndexNamespace,
@@ -516,7 +515,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             Filter = new PineconeFilterTranslator().Translate(filter, this._model),
         };
 
-        Sdk.QueryResponse response = await this.RunIndexOperationAsync(
+        QueryResponse response = await this.RunIndexOperationAsync(
             "Get",
             indexClient => indexClient.QueryAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
@@ -530,7 +529,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             .Skip(options.Skip)
             .Select(
                 x => this._mapper.MapFromStorageToDataModel(
-                    new Sdk.Vector()
+                    new Vector()
                     {
                         Id = x.Id,
                         Values = x.Values ?? Array.Empty<float>(),
@@ -553,7 +552,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(Sdk.PineconeClient) ? this._pineconeClient :
+            serviceType == typeof(PineconeClient) ? this._pineconeClient :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
