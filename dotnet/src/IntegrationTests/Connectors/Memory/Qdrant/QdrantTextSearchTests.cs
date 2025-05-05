@@ -25,7 +25,7 @@ public class QdrantTextSearchTests(QdrantVectorStoreFixture fixture) : BaseVecto
             this.VectorStore = new QdrantVectorStore(fixture.QdrantClient);
         }
 
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = true,
             VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition,

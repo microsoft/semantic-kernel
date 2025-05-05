@@ -85,7 +85,7 @@ public class PineconeServiceCollectionExtensionsTests
         Assert.NotNull(collection);
         Assert.IsType<PineconeCollection<string, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearchable<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<PineconeCollection<string, TestRecord>>(vectorizedSearch);
     }

@@ -2,7 +2,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 

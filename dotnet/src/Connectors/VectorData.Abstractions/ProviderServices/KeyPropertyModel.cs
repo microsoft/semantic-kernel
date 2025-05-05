@@ -3,7 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Extensions.VectorData.ConnectorSupport;
+namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a key property on a vector store record.

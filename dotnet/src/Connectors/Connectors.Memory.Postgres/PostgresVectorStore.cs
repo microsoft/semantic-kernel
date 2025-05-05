@@ -69,18 +69,24 @@ public sealed class PostgresVectorStore : VectorStore
         );
     }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    public override PostgresCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#endif
         => new PostgresCollection<TKey, TRecord>(
             this._postgresClient,
             name,
-            new PostgresCollectionOptions<TRecord>()
+            new PostgresCollectionOptions()
             {
                 Schema = this._options.Schema,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator,
             }
         );
+#pragma warning restore IDE0090
 
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)

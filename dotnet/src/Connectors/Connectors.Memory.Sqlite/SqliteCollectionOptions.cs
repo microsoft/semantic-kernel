@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// <summary>
 /// Options when creating a <see cref="SqliteCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class SqliteCollectionOptions<TRecord>
+public sealed class SqliteCollectionOptions
 {
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

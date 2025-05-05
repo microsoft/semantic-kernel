@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using Azure.Search.Documents.Indexes.Models;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Xunit;
 

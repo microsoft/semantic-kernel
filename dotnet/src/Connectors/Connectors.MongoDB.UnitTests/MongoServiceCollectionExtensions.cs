@@ -84,7 +84,7 @@ public sealed class MongoServiceCollectionExtensions
         Assert.NotNull(collection);
         Assert.IsType<MongoCollection<string, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearchable<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<MongoCollection<string, TestRecord>>(vectorizedSearch);
     }

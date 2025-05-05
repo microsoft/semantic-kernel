@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 
-namespace Microsoft.Extensions.VectorData.ConnectorSupport;
+namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a vector property on a vector store record.
@@ -115,7 +115,7 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     /// </para>
     /// </remarks>
     public virtual bool TryGenerateEmbedding<TRecord, TEmbedding, TUnwrappedEmbedding>(TRecord record, CancellationToken cancellationToken, [NotNullWhen(true)] out Task<TEmbedding>? task)
-        where TRecord : notnull
+        where TRecord : class
         where TEmbedding : Embedding
     {
         switch (this.EmbeddingGenerator)
@@ -166,7 +166,7 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     /// </para>
     /// </remarks>
     public virtual bool TryGenerateEmbeddings<TRecord, TEmbedding, TUnwrappedEmbedding>(IEnumerable<TRecord> records, CancellationToken cancellationToken, [NotNullWhen(true)] out Task<GeneratedEmbeddings<TEmbedding>>? task)
-        where TRecord : notnull
+        where TRecord : class
         where TEmbedding : Embedding
     {
         switch (this.EmbeddingGenerator)

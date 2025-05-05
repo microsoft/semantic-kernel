@@ -45,16 +45,22 @@ public sealed class PineconeVectorStore : VectorStore
         };
     }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    public override PineconeCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        => (new PineconeCollection<TKey, TRecord>(
+#endif
+        => new PineconeCollection<TKey, TRecord>(
             this._pineconeClient,
             name,
-            new PineconeCollectionOptions<TRecord>()
+            new PineconeCollectionOptions()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as VectorStoreCollection<TKey, TRecord>)!;
+            });
+#pragma warning restore IDE0090
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

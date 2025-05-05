@@ -63,8 +63,13 @@ public sealed class SqliteVectorStore : VectorStore
         SqliteVectorStoreOptions? options = default)
         => throw new InvalidOperationException("Use the constructor that accepts a connection string instead.");
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    public override SqliteCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#endif
         => new SqliteCollection<TKey, TRecord>(
             this._connectionString,
             name,
@@ -74,7 +79,8 @@ public sealed class SqliteVectorStore : VectorStore
                 VectorSearchExtensionName = this._options.VectorSearchExtensionName,
                 VectorVirtualTableName = this._options.VectorVirtualTableName,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as VectorStoreCollection<TKey, TRecord>;
+            });
+#pragma warning restore IDE0090
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

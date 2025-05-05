@@ -91,7 +91,7 @@ public class PostgresVectorStoreTests
 
         // Assert
         Assert.NotNull(actual);
-        await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await actual.ToListAsync());
+        await Assert.ThrowsAsync<VectorStoreException>(async () => await actual.ToListAsync());
     }
 
     private async IAsyncEnumerable<string> ThrowingAsyncEnumerableAsync()

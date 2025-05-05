@@ -352,7 +352,7 @@ public sealed class WeaviateCollectionTests : IDisposable
         const string CollectionName = "Collection";
 
         var options = initializeOptions ?
-            new WeaviateCollectionOptions<WeaviateHotel>() { Endpoint = new Uri("http://test-endpoint"), ApiKey = "fake-key" } :
+            new WeaviateCollectionOptions() { Endpoint = new Uri("http://test-endpoint"), ApiKey = "fake-key" } :
             null;
 
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName, options);

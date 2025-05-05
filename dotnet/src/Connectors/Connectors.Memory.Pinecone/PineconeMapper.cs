@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// Mapper between a Pinecone record and the consumer data model that uses json as an intermediary to allow supporting a wide range of models.
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
-internal sealed class PineconeMapper<TRecord>(Extensions.VectorData.ConnectorSupport.CollectionModel model)
+internal sealed class PineconeMapper<TRecord>(Extensions.VectorData.ProviderServices.CollectionModel model)
 {
     /// <inheritdoc />
     public Vector MapFromDataToStorageModel(TRecord dataModel, Embedding<float>? generatedEmbedding)

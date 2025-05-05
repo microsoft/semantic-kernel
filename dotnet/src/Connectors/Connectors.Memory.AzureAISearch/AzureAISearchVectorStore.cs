@@ -51,17 +51,23 @@ public sealed class AzureAISearchVectorStore : VectorStore
         };
     }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    public override AzureAISearchCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#endif
         => new AzureAISearchCollection<TKey, TRecord>(
             this._searchIndexClient,
             name,
-            new AzureAISearchCollectionOptions<TRecord>()
+            new AzureAISearchCollectionOptions()
             {
                 JsonSerializerOptions = this._options.JsonSerializerOptions,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
             });
+#pragma warning restore IDE0090
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

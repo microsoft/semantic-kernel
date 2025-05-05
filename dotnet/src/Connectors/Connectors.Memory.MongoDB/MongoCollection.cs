@@ -10,11 +10,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MEVD = Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
@@ -24,9 +23,9 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearch<TRecord>
+public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>
@@ -39,7 +38,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     private const string DocumentPropertyName = "document";
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly MEVD.VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
     private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
@@ -51,7 +50,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     private readonly IMongoCollection<BsonDocument> _mongoCollection;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly MongoCollectionOptions<TRecord> _options;
+    private readonly MongoCollectionOptions _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
     private readonly IMongoMapper<TRecord> _mapper;
@@ -71,7 +70,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     public MongoCollection(
         IMongoDatabase mongoDatabase,
         string name,
-        MongoCollectionOptions<TRecord>? options = default)
+        MongoCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
@@ -86,7 +85,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
         this.Name = name;
-        this._options = options ?? new MongoCollectionOptions<TRecord>();
+        this._options = options ?? new MongoCollectionOptions();
         this._model = new MongoModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? (new MongoDynamicMapper(this._model) as IMongoMapper<TRecord>)!
@@ -111,7 +110,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         // To make sure that all the connectors are consistent, we throw when the collection exists.
         if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            throw new VectorStoreOperationException("Collection already exists.")
+            throw new VectorStoreException("Collection already exists.")
             {
                 VectorStoreSystemName = MongoConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -164,7 +163,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         => this.RunOperationAsync("DropCollection", () => this._mongoDatabase.DropCollectionAsync(this.Name, cancellationToken));
 
     /// <inheritdoc />
-    public override async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         var stringKey = this.GetStringKey(key);
 
@@ -191,7 +190,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     /// <inheritdoc />
     public override async IAsyncEnumerable<TRecord> GetAsync(
         IEnumerable<TKey> keys,
-        GetRecordOptions? options = null,
+        RecordRetrievalOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
@@ -321,7 +320,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
-        MEVD.VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -368,7 +367,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        MEVD.VectorSearchOptions<TRecord>? options = null,
+        RecordSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -382,7 +381,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         int top,
         VectorPropertyModel vectorProperty,
         string operationName,
-        MEVD.VectorSearchOptions<TRecord> options,
+        RecordSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -443,7 +442,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, MEVD.VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
@@ -452,7 +451,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     public override async IAsyncEnumerable<TRecord> GetAsync(
         Expression<Func<TRecord, bool>> filter,
         int top,
-        GetFilteredRecordOptions<TRecord>? options = null,
+        FilteredRecordRetrievalOptions<TRecord>? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);

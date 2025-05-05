@@ -15,8 +15,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -26,9 +26,9 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="Guid"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearch<TRecord>
+public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>
@@ -46,7 +46,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     };
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
     private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
@@ -55,7 +55,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     private readonly HttpClient _httpClient;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly WeaviateCollectionOptions<TRecord> _options;
+    private readonly WeaviateCollectionOptions _options;
 
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
@@ -78,7 +78,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <param name="httpClient">
     /// <see cref="HttpClient"/> that is used to interact with Weaviate API.
     /// <see cref="HttpClient.BaseAddress"/> should point to remote or local cluster and API key can be configured via <see cref="HttpClient.DefaultRequestHeaders"/>.
-    /// It's also possible to provide these parameters via <see cref="WeaviateCollectionOptions{TRecord}"/>.
+    /// It's also possible to provide these parameters via <see cref="WeaviateCollectionOptions"/>.
     /// </param>
     /// <param name="name">The name of the collection that this <see cref="WeaviateCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
@@ -86,7 +86,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     public WeaviateCollection(
         HttpClient httpClient,
         string name,
-        WeaviateCollectionOptions<TRecord>? options = default)
+        WeaviateCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(httpClient);
@@ -97,7 +97,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
             throw new NotSupportedException($"Only {nameof(Guid)} key is supported (and object for dynamic mapping).");
         }
 
-        var endpoint = (options?.Endpoint ?? httpClient.BaseAddress) ?? throw new ArgumentException($"Weaviate endpoint should be provided via HttpClient.BaseAddress property or {nameof(WeaviateCollectionOptions<TRecord>)} options parameter.");
+        var endpoint = (options?.Endpoint ?? httpClient.BaseAddress) ?? throw new ArgumentException($"Weaviate endpoint should be provided via HttpClient.BaseAddress property or {nameof(WeaviateCollectionOptions)} options parameter.");
 
         // Assign.
         this._httpClient = httpClient;
@@ -207,7 +207,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     }
 
     /// <inheritdoc />
-    public override async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         var guid = key as Guid? ?? throw new InvalidCastException("Only Guid keys are supported");
         var includeVectors = options?.IncludeVectors is true;
@@ -303,7 +303,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -350,7 +350,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        VectorSearchOptions<TRecord>? options = null,
+        RecordSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -364,7 +364,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
         int top,
         VectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord> options,
+        RecordSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -393,14 +393,14 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
 
     /// <inheritdoc />
     public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -471,7 +471,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         if (collectionResults is null)
         {
-            throw new VectorStoreOperationException($"Error occurred during vector search. Response: {content}")
+            throw new VectorStoreException($"Error occurred during vector search. Response: {content}")
             {
                 VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,

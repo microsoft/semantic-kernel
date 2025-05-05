@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// <summary>
 /// Options when creating a <see cref="QdrantCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class QdrantCollectionOptions<TRecord>
+public sealed class QdrantCollectionOptions
 {
     /// <summary>
     /// Gets or sets a value indicating whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector per qdrant point.

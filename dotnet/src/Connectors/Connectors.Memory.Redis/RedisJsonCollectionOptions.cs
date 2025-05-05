@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <summary>
 /// Options when creating a <see cref="RedisJsonCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class RedisJsonCollectionOptions<TRecord>
+public sealed class RedisJsonCollectionOptions
 {
     /// <summary>
     /// Gets or sets a value indicating whether the collection name should be prefixed to the

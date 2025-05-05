@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Npgsql;
 using Pgvector;
 
@@ -186,7 +186,7 @@ internal class PostgresDbClient(NpgsqlDataSource dataSource, string schema = Pos
     /// <inheritdoc />
     public async IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync<TRecord>(
         string tableName, CollectionModel model, VectorPropertyModel vectorProperty, Vector vectorValue, int limit,
-        VectorSearchOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        RecordSearchOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         NpgsqlConnection connection = await this.DataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -208,7 +208,7 @@ internal class PostgresDbClient(NpgsqlDataSource dataSource, string schema = Pos
     }
 
     public async IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecordsAsync<TRecord>(string tableName, CollectionModel model,
-        Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         NpgsqlConnection connection = await this.DataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 

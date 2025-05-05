@@ -6,7 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text.Json;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -25,7 +25,7 @@ internal static class WeaviateQueryBuilder
         string vectorPropertyName,
         JsonSerializerOptions jsonSerializerOptions,
         int top,
-        VectorSearchOptions<TRecord> searchOptions,
+        RecordSearchOptions<TRecord> searchOptions,
         CollectionModel model,
         bool hasNamedVectors)
     {
@@ -74,7 +74,7 @@ internal static class WeaviateQueryBuilder
     public static string BuildQuery<TRecord>(
         Expression<Func<TRecord, bool>> filter,
         int top,
-        GetFilteredRecordOptions<TRecord> queryOptions,
+        FilteredRecordRetrievalOptions<TRecord> queryOptions,
         string collectionName,
         CollectionModel model,
         bool hasNamedVectors)

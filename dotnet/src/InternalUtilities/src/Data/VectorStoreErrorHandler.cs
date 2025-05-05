@@ -50,7 +50,7 @@ internal static class VectorStoreErrorHandler
         }
         catch (AggregateException ex) when (ex.InnerException is TException innerEx)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = metadata.VectorStoreSystemName,
                 VectorStoreName = metadata.VectorStoreName,
@@ -60,7 +60,7 @@ internal static class VectorStoreErrorHandler
         }
         catch (TException ex)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = metadata.VectorStoreSystemName,
                 VectorStoreName = metadata.VectorStoreName,
@@ -101,7 +101,7 @@ internal static class VectorStoreErrorHandler
         }
         catch (AggregateException ex) when (ex.InnerException is TException innerEx)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = metadata.VectorStoreSystemName,
                 VectorStoreName = metadata.VectorStoreName,
@@ -111,7 +111,7 @@ internal static class VectorStoreErrorHandler
         }
         catch (TException ex)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = metadata.VectorStoreSystemName,
                 VectorStoreName = metadata.VectorStoreName,
@@ -148,7 +148,7 @@ internal static class VectorStoreErrorHandler
 
                 if (retries >= maxRetries)
                 {
-                    throw new VectorStoreOperationException("Call to vector store failed.", new AggregateException(exceptions))
+                    throw new VectorStoreException("Call to vector store failed.", new AggregateException(exceptions))
                     {
                         VectorStoreSystemName = metadata.VectorStoreSystemName,
                         VectorStoreName = metadata.VectorStoreName,
@@ -166,7 +166,7 @@ internal static class VectorStoreErrorHandler
 
                 if (retries >= maxRetries)
                 {
-                    throw new VectorStoreOperationException("Call to vector store failed.", new AggregateException(exceptions))
+                    throw new VectorStoreException("Call to vector store failed.", new AggregateException(exceptions))
                     {
                         VectorStoreSystemName = metadata.VectorStoreSystemName,
                         VectorStoreName = metadata.VectorStoreName,
@@ -179,7 +179,7 @@ internal static class VectorStoreErrorHandler
             }
         }
 
-        throw new VectorStoreOperationException("Call to vector store failed.", new AggregateException(exceptions))
+        throw new VectorStoreException("Call to vector store failed.", new AggregateException(exceptions))
         {
             VectorStoreSystemName = metadata.VectorStoreSystemName,
             VectorStoreName = metadata.VectorStoreName,
@@ -201,7 +201,7 @@ internal static class VectorStoreErrorHandler
         }
         catch (AggregateException ex) when (ex.InnerException is TException innerEx)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = metadata.VectorStoreSystemName,
                 VectorStoreName = metadata.VectorStoreName,
@@ -211,7 +211,7 @@ internal static class VectorStoreErrorHandler
         }
         catch (TException ex)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = metadata.VectorStoreSystemName,
                 VectorStoreName = metadata.VectorStoreName,
@@ -249,7 +249,7 @@ internal static class VectorStoreErrorHandler
 
                 if (retries >= maxRetries)
                 {
-                    throw new VectorStoreOperationException("Call to vector store failed.", new AggregateException(exceptions))
+                    throw new VectorStoreException("Call to vector store failed.", new AggregateException(exceptions))
                     {
                         VectorStoreSystemName = metadata.VectorStoreSystemName,
                         VectorStoreName = metadata.VectorStoreName,
@@ -267,7 +267,7 @@ internal static class VectorStoreErrorHandler
 
                 if (retries >= maxRetries)
                 {
-                    throw new VectorStoreOperationException("Call to vector store failed.", new AggregateException(exceptions))
+                    throw new VectorStoreException("Call to vector store failed.", new AggregateException(exceptions))
                     {
                         VectorStoreSystemName = metadata.VectorStoreSystemName,
                         VectorStoreName = metadata.VectorStoreName,
@@ -280,7 +280,7 @@ internal static class VectorStoreErrorHandler
             }
         }
 
-        throw new VectorStoreOperationException("Call to vector store failed.", new AggregateException(exceptions))
+        throw new VectorStoreException("Call to vector store failed.", new AggregateException(exceptions))
         {
             VectorStoreSystemName = metadata.VectorStoreSystemName,
             VectorStoreName = metadata.VectorStoreName,
@@ -344,7 +344,7 @@ internal static class VectorStoreErrorHandler
                 }
                 catch (AggregateException ex) when (ex.InnerException is TException innerEx)
                 {
-                    throw new VectorStoreOperationException("Call to vector store failed.", ex)
+                    throw new VectorStoreException("Call to vector store failed.", ex)
                     {
                         VectorStoreSystemName = metadata.VectorStoreSystemName,
                         VectorStoreName = metadata.VectorStoreName,
@@ -354,7 +354,7 @@ internal static class VectorStoreErrorHandler
                 }
                 catch (TException ex)
                 {
-                    throw new VectorStoreOperationException("Call to vector store failed.", ex)
+                    throw new VectorStoreException("Call to vector store failed.", ex)
                     {
                         VectorStoreSystemName = metadata.VectorStoreSystemName,
                         VectorStoreName = metadata.VectorStoreName,
@@ -431,7 +431,7 @@ internal static class VectorStoreErrorHandler
             connection.Dispose();
 #endif
 
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = metadata.VectorStoreSystemName,
                 VectorStoreName = metadata.VectorStoreName,
@@ -447,7 +447,7 @@ internal static class VectorStoreErrorHandler
             connection.Dispose();
 #endif
 
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = metadata.VectorStoreSystemName,
                 VectorStoreName = metadata.VectorStoreName,

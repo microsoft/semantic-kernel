@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// <summary>
 /// Options when creating a <see cref="MongoCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class MongoCollectionOptions<TRecord>
+public sealed class MongoCollectionOptions
 {
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

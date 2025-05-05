@@ -76,7 +76,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
             await using var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
-            var collection = vectorStore.GetCollection<TKey, Record>(fixture.CollectionName, fixture.GetRecordDefinition());
+            var collection = vectorStore.GetCollection<TKey, Record>(fixture.CollectionName, fixture.CreateRecordDefinition());
 
             var result = await collection.SearchAsync("[1, 1, 0]", top: 1).SingleAsync();
 
@@ -109,7 +109,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         var recordDefinition = new VectorStoreRecordDefinition()
         {
-            Properties = fixture.GetRecordDefinition().Properties
+            Properties = fixture.CreateRecordDefinition().Properties
                 .Select(p => p is VectorStoreVectorProperty vectorProperty
                     ? new VectorStoreVectorProperty<Customer>(nameof(Record.Embedding), dimensions: 3)
                     {
@@ -380,21 +380,22 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         bool storeGenerator = false,
         bool collectionGenerator = false,
         bool propertyGenerator = false)
-        where TRecord : notnull
+        where TRecord : class
     {
-        var properties = fixture.GetRecordDefinition().Properties;
+        var recordDefinition = fixture.CreateRecordDefinition();
 
-        properties = properties
-            .Select(p => p is VectorStoreVectorProperty vectorProperty && propertyGenerator
-                ? new VectorStoreVectorProperty(vectorProperty) { EmbeddingGenerator = new FakeEmbeddingGenerator(replaceLast: 3) }
-                : p)
-            .ToList();
-
-        var recordDefinition = new VectorStoreRecordDefinition
+        if (propertyGenerator)
         {
-            EmbeddingGenerator = collectionGenerator ? new FakeEmbeddingGenerator(replaceLast: 2) : null,
-            Properties = properties
-        };
+            foreach (var vectorProperty in recordDefinition.Properties.OfType<VectorStoreVectorProperty>())
+            {
+                vectorProperty.EmbeddingGenerator = new FakeEmbeddingGenerator(replaceLast: 3);
+            }
+        }
+
+        if (collectionGenerator)
+        {
+            recordDefinition.EmbeddingGenerator = new FakeEmbeddingGenerator(replaceLast: 2);
+        }
 
         return fixture.GetCollection<TRecord>(
             fixture.CreateVectorStore(storeGenerator ? new FakeEmbeddingGenerator(replaceLast: 1) : null),
@@ -408,7 +409,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         public override string CollectionName => "EmbeddingGenerationTests";
 
-        public override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition CreateRecordDefinition()
             => new()
             {
                 Properties =
@@ -455,7 +456,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
             VectorStore vectorStore,
             string collectionName,
             VectorStoreRecordDefinition? recordDefinition = null)
-            where TRecord : notnull
+            where TRecord : class
             => vectorStore.GetCollection<TKey, TRecord>(collectionName, recordDefinition);
 
         public abstract VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator = null);

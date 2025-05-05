@@ -10,7 +10,7 @@ using System.Reflection;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.Properties;
 
-namespace Microsoft.Extensions.VectorData.ConnectorSupport;
+namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a builder for a <see cref="CollectionModel"/>.

@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <summary>
 /// Options when creating a <see cref="AzureAISearchCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class AzureAISearchCollectionOptions<TRecord>
+public sealed class AzureAISearchCollectionOptions
 {
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
