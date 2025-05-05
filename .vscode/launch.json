@@ -2,49 +2,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      // Use IntelliSense to find out which attributes exist for C# debugging
-      // Use hover for the description of the existing attributes
-      // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
-      "name": "C#: Concept Samples",
+      "name": "Attach to .NET Functions",
       "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "build (Concepts)",
-      // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/dotnet/samples/Concepts/bin/Debug/net6.0/Concepts.dll",
-      "args": [
-        /*"example0"*/
-      ],
-      "cwd": "${workspaceFolder}/dotnet/samples/Concepts",
-      // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
-      "console": "internalConsole",
-      "stopAtEntry": false
-    },
-    {
-      "name": ".NET Core Attach",
-      "type": "coreclr",
-      "request": "attach"
-    },
-    {
-      "cwd": "${workspaceFolder}/python",
-      "name": "Python: Test Module",
-      "type": "python",
-      "request": "launch",
-      "module": "pytest",
-      "args": ["${file}"]
-    },
-    {
-      "name": "C#: HuggingFaceImageToText Demo",
-      "type": "dotnet",
-      "request": "launch",
-      "projectPath": "${workspaceFolder}\\dotnet\\samples\\Demos\\HuggingFaceImageToText.csproj",
-      "launchConfigurationId": "TargetFramework=;HuggingFaceImageToText"
-    },
-    {
-      "name": "C#: GettingStarted Samples",
-      "type": "dotnet",
-      "request": "launch",
-      "projectPath": "${workspaceFolder}\\dotnet\\samples\\GettingStarted\\GettingStarted.csproj",
-      "launchConfigurationId": "TargetFramework=;GettingStarted"
+      "request": "attach",
+      "processId": "${command:azureFunctions.pickProcess}"
     }
   ]
 }
