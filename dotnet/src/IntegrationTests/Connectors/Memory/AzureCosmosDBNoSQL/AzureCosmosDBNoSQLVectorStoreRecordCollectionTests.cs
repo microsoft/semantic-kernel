@@ -71,7 +71,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         collectionNamePostfix = includeVectors ? $"{collectionNamePostfix}-with-vectors" : $"{collectionNamePostfix}-without-vectors";
         var collectionName = $"collection-{collectionNamePostfix}";
 
-        var options = new CosmosNoSqlCollectionOptions<AzureCosmosDBNoSQLHotel>
+        var options = new CosmosNoSqlCollectionOptions
         {
             VectorStoreRecordDefinition = useRecordDefinition ? this.GetTestHotelRecordDefinition() : null
         };
@@ -347,7 +347,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
-        var options = new CosmosNoSqlCollectionOptions<Dictionary<string, object?>>
+        var options = new CosmosNoSqlCollectionOptions
         {
             VectorStoreRecordDefinition = this.GetTestHotelRecordDefinition()
         };
@@ -371,7 +371,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
             ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])
         });
 
-        var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
+        var localGetResult = await sut.GetAsync(HotelId, new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(localGetResult);

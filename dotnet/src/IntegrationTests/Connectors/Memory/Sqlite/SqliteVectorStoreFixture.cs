@@ -14,9 +14,9 @@ public class SqliteVectorStoreFixture : IDisposable
 
     public SqliteCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
         string collectionName,
-        SqliteCollectionOptions<TRecord>? options = default)
+        SqliteCollectionOptions? options = default)
         where TKey : notnull
-        where TRecord : notnull
+        where TRecord : class
     {
         return new SqliteCollection<TKey, TRecord>(
             this.ConnectionString,

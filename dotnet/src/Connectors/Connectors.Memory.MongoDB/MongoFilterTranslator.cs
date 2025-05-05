@@ -7,8 +7,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
-using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData.ProviderServices.Filter;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;

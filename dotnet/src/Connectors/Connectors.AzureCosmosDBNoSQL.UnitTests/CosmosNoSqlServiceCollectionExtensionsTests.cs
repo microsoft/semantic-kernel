@@ -96,7 +96,7 @@ public sealed class CosmosNoSqlServiceCollectionExtensionsTests
         Assert.NotNull(collection);
         Assert.IsType<CosmosNoSqlCollection<string, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearchable<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<CosmosNoSqlCollection<string, TestRecord>>(vectorizedSearch);
     }

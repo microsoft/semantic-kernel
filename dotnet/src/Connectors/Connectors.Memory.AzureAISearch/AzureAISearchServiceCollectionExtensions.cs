@@ -112,7 +112,7 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
+    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearchable{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
     /// specified service ID and where <see cref="SearchIndexClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -124,9 +124,9 @@ public static class AzureAISearchServiceCollectionExtensions
     public static IServiceCollection AddAzureAISearchVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
-        AzureAISearchCollectionOptions<TRecord>? options = default,
+        AzureAISearchCollectionOptions? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         // If we are not constructing the SearchIndexClient, add the IVectorStore as transient, since we
         // cannot make assumptions about how SearchIndexClient is being managed.
@@ -135,7 +135,7 @@ public static class AzureAISearchServiceCollectionExtensions
             (sp, obj) =>
             {
                 var searchIndexClient = sp.GetRequiredService<SearchIndexClient>();
-                options ??= sp.GetService<AzureAISearchCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<AzureAISearchCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -149,7 +149,7 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
+    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearchable{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
     /// provided <see cref="Uri"/> and <see cref="TokenCredential"/> and the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -165,9 +165,9 @@ public static class AzureAISearchServiceCollectionExtensions
         string collectionName,
         Uri endpoint,
         TokenCredential tokenCredential,
-        AzureAISearchCollectionOptions<TRecord>? options = default,
+        AzureAISearchCollectionOptions? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         Verify.NotNull(endpoint);
         Verify.NotNull(tokenCredential);
@@ -176,7 +176,7 @@ public static class AzureAISearchServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                options ??= sp.GetService<AzureAISearchCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<AzureAISearchCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -193,7 +193,7 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearch{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
+    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearchable{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
     /// provided <see cref="Uri"/> and <see cref="AzureKeyCredential"/> and the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -209,9 +209,9 @@ public static class AzureAISearchServiceCollectionExtensions
         string collectionName,
         Uri endpoint,
         AzureKeyCredential credential,
-        AzureAISearchCollectionOptions<TRecord>? options = default,
+        AzureAISearchCollectionOptions? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         Verify.NotNull(endpoint);
         Verify.NotNull(credential);
@@ -220,7 +220,7 @@ public static class AzureAISearchServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                options ??= sp.GetService<AzureAISearchCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<AzureAISearchCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -237,14 +237,14 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
+    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearchable{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : class
     {
-        services.AddKeyedTransient<IVectorSearch<TRecord>>(
+        services.AddKeyedTransient<IVectorSearchable<TRecord>>(
             serviceId,
             (sp, obj) =>
             {

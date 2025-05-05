@@ -51,7 +51,7 @@ public sealed class PineconeVectorStore : VectorStore
         => (new PineconeCollection<TKey, TRecord>(
             this._pineconeClient,
             name,
-            new PineconeCollectionOptions<TRecord>()
+            new PineconeCollectionOptions()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator

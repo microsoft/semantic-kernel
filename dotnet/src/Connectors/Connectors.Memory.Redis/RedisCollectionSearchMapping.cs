@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using NRedisStack.Search;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -41,7 +41,7 @@ internal static class RedisCollectionSearchMapping
     /// <param name="vectorProperty">The vector property.</param>
     /// <param name="selectFields">The set of fields to limit the results to. Null for all.</param>
     /// <returns>The <see cref="Query"/>.</returns>
-    public static Query BuildQuery<TRecord>(byte[] vectorBytes, int top, VectorSearchOptions<TRecord> options, CollectionModel model, VectorPropertyModel vectorProperty, string[]? selectFields)
+    public static Query BuildQuery<TRecord>(byte[] vectorBytes, int top, RecordSearchOptions<TRecord> options, CollectionModel model, VectorPropertyModel vectorProperty, string[]? selectFields)
     {
         // Build search query.
         var redisLimit = top + options.Skip;
@@ -71,7 +71,7 @@ internal static class RedisCollectionSearchMapping
         return query;
     }
 
-    internal static Query BuildQuery<TRecord>(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options, CollectionModel model)
+    internal static Query BuildQuery<TRecord>(Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord> options, CollectionModel model)
     {
         var translatedFilter = new RedisFilterTranslator().Translate(filter, model);
         Query query = new Query(translatedFilter)

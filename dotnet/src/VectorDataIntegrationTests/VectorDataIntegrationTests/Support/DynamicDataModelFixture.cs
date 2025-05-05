@@ -12,7 +12,7 @@ public abstract class DynamicDataModelFixture<TKey> : VectorStoreCollectionFixtu
     public const string EmbeddingPropertyName = "embedding";
     public const int DimensionCount = 3;
 
-    public override VectorStoreRecordDefinition GetRecordDefinition()
+    public override VectorStoreRecordDefinition CreateRecordDefinition()
         => new()
         {
             Properties =

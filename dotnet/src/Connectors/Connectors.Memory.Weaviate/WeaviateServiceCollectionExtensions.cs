@@ -49,7 +49,7 @@ public static class WeaviateServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Weaviate <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID.
+    /// Register a Weaviate <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
@@ -66,16 +66,16 @@ public static class WeaviateServiceCollectionExtensions
         this IServiceCollection services,
         string collectionName,
         HttpClient? httpClient = default,
-        WeaviateCollectionOptions<TRecord>? options = default,
+        WeaviateCollectionOptions? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         services.AddKeyedTransient<VectorStoreCollection<Guid, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var selectedHttpClient = HttpClientProvider.GetHttpClient(httpClient, sp);
-                options ??= sp.GetService<WeaviateCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<WeaviateCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -89,14 +89,14 @@ public static class WeaviateServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
+    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearchable{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : class
     {
-        services.AddKeyedTransient<IVectorSearch<TRecord>>(
+        services.AddKeyedTransient<IVectorSearchable<TRecord>>(
             serviceId,
             (sp, obj) =>
             {

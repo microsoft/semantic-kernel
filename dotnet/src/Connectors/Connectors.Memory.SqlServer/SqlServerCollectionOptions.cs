@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// <summary>
 /// Options when creating a <see cref="SqlServerCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class SqlServerCollectionOptions<TRecord>
+public sealed class SqlServerCollectionOptions
 {
     /// <summary>
     /// Gets or sets the database schema.

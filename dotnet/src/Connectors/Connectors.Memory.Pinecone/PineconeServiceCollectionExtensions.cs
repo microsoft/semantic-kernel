@@ -67,7 +67,7 @@ public static class PineconeServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Pinecone <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the
+    /// Register a Pinecone <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the
     /// specified service ID and where <see cref="Sdk.PineconeClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -79,9 +79,9 @@ public static class PineconeServiceCollectionExtensions
     public static IServiceCollection AddPineconeVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
-        PineconeCollectionOptions<TRecord>? options = default,
+        PineconeCollectionOptions? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         // If we are not constructing the PineconeClient, add the IVectorStore as transient, since we
         // cannot make assumptions about how PineconeClient is being managed.
@@ -90,7 +90,7 @@ public static class PineconeServiceCollectionExtensions
             (sp, obj) =>
             {
                 var pineconeClient = sp.GetRequiredService<Sdk.PineconeClient>();
-                options ??= sp.GetService<PineconeCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<PineconeCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -104,7 +104,7 @@ public static class PineconeServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Pinecone <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the
+    /// Register a Pinecone <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the
     /// provided <see cref="Sdk.PineconeClient"/> and the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -118,16 +118,16 @@ public static class PineconeServiceCollectionExtensions
         this IServiceCollection services,
         string collectionName,
         string apiKey,
-        PineconeCollectionOptions<TRecord>? options = default,
+        PineconeCollectionOptions? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         services.AddKeyedSingleton<VectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var pineconeClient = new Sdk.PineconeClient(apiKey);
-                options ??= sp.GetService<PineconeCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<PineconeCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -141,14 +141,14 @@ public static class PineconeServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
+    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearchable{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : class
     {
-        services.AddKeyedTransient<IVectorSearch<TRecord>>(
+        services.AddKeyedTransient<IVectorSearchable<TRecord>>(
             serviceId,
             (sp, obj) =>
             {

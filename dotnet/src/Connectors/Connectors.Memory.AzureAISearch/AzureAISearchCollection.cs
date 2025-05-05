@@ -15,7 +15,7 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
@@ -29,9 +29,9 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 public sealed class AzureAISearchCollection<TKey, TRecord> :
     VectorStoreCollection<TKey, TRecord>,
     IVectorizableTextSearch<TRecord>,
-    IKeywordHybridSearch<TRecord>
+    IKeywordHybridSearchable<TRecord>
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 #pragma warning restore CS0618 // IVectorizableTextSearch is obsolete
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
@@ -39,7 +39,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
     private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
@@ -51,7 +51,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     private readonly SearchClient _searchClient;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly AzureAISearchCollectionOptions<TRecord> _options;
+    private readonly AzureAISearchCollectionOptions _options;
 
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
     private readonly AzureAISearchDynamicMapper? _dynamicMapper;
@@ -67,7 +67,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="searchIndexClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when options are misconfigured.</exception>
-    public AzureAISearchCollection(SearchIndexClient searchIndexClient, string name, AzureAISearchCollectionOptions<TRecord>? options = default)
+    public AzureAISearchCollection(SearchIndexClient searchIndexClient, string name, AzureAISearchCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(searchIndexClient);
@@ -81,7 +81,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
         // Assign.
         this._searchIndexClient = searchIndexClient;
         this.Name = name;
-        this._options = options ?? new AzureAISearchCollectionOptions<TRecord>();
+        this._options = options ?? new AzureAISearchCollectionOptions();
         this._searchClient = this._searchIndexClient.GetSearchClient(name);
 
         this._model = typeof(TRecord) == typeof(Dictionary<string, object?>) ?
@@ -121,7 +121,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
         }
         catch (RequestFailedException ex)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -201,7 +201,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public override Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public override Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = default, CancellationToken cancellationToken = default)
     {
         // Create Options.
         var innerOptions = this.ConvertGetDocumentOptions(options);
@@ -212,7 +212,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, RecordRetrievalOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -291,7 +291,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        VectorSearchOptions<TRecord>? options = null,
+        RecordSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -348,12 +348,12 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     /// <inheritdoc />
     public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -402,7 +402,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
     {
         var searchText = value switch
@@ -472,7 +472,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
 
     /// <inheritdoc />
     [Obsolete("Use SearchAsync")]
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchAsync(searchText, top, options, cancellationToken);
 
     /// <inheritdoc />
@@ -690,11 +690,11 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     }
 
     /// <summary>
-    /// Convert the public <see cref="GetRecordOptions"/> options model to the Azure AI Search <see cref="GetDocumentOptions"/> options model.
+    /// Convert the public <see cref="RecordRetrievalOptions"/> options model to the Azure AI Search <see cref="GetDocumentOptions"/> options model.
     /// </summary>
     /// <param name="options">The public options model.</param>
     /// <returns>The Azure AI Search options model.</returns>
-    private GetDocumentOptions ConvertGetDocumentOptions(GetRecordOptions? options)
+    private GetDocumentOptions ConvertGetDocumentOptions(RecordRetrievalOptions? options)
     {
         var innerOptions = new GetDocumentOptions();
         if (options?.IncludeVectors is not true)
@@ -737,7 +737,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
         }
         catch (AggregateException ex) when (ex.InnerException is RequestFailedException innerEx)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -747,7 +747,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
         }
         catch (RequestFailedException ex)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -758,7 +758,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     }
 
     /// <summary>
-    /// Run the given operation and wrap any <see cref="RequestFailedException"/> with <see cref="VectorStoreOperationException"/>."/>
+    /// Run the given operation and wrap any <see cref="RequestFailedException"/> with <see cref="VectorStoreException"/>."/>
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
     /// <param name="operationName">The type of database operation being run.</param>

@@ -52,7 +52,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var collectionNamePostfix2 = hasNamedVectors ? "HasNamedVectors" : "SingleUnnamedVector";
         var testCollectionName = $"createtest{collectionNamePostfix1}{collectionNamePostfix2}";
 
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
@@ -64,7 +64,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         // Act
         await sut.CreateCollectionAsync();
         await sut.UpsertAsync(record);
-        var getResult = await sut.GetAsync(30, new GetRecordOptions { IncludeVectors = true });
+        var getResult = await sut.GetAsync(30, new RecordRetrievalOptions { IncludeVectors = true });
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var searchResults = await sut.VectorizedSearchAsync(
             vector,
@@ -127,7 +127,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanUpsertDocumentToVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
@@ -140,7 +140,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         await sut.UpsertAsync(record);
 
         // Assert.
-        var getResult = await sut.GetAsync(20, new GetRecordOptions { IncludeVectors = true });
+        var getResult = await sut.GetAsync(20, new RecordRetrievalOptions { IncludeVectors = true });
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -160,7 +160,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanUpsertAndRemoveDocumentWithGuidIdToVectorStoreAsync()
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfoWithGuidId> { HasNamedVectors = false };
+        var options = new QdrantCollectionOptions { HasNamedVectors = false };
         VectorStoreCollection<Guid, HotelInfoWithGuidId> sut = new QdrantCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
 
         var record = new HotelInfoWithGuidId
@@ -175,7 +175,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         await sut.UpsertAsync(record);
 
         // Assert.
-        var getResult = await sut.GetAsync(Guid.Parse("55555555-5555-5555-5555-555555555555"), new GetRecordOptions { IncludeVectors = true });
+        var getResult = await sut.GetAsync(Guid.Parse("55555555-5555-5555-5555-555555555555"), new RecordRetrievalOptions { IncludeVectors = true });
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.Description, getResult?.Description);
@@ -202,7 +202,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanGetDocumentFromVectorStoreAsync(bool useRecordDefinition, bool withEmbeddings, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
@@ -210,7 +210,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
 
         // Act.
-        var getResult = await sut.GetAsync(11, new GetRecordOptions { IncludeVectors = withEmbeddings });
+        var getResult = await sut.GetAsync(11, new RecordRetrievalOptions { IncludeVectors = withEmbeddings });
 
         // Assert.
         Assert.Equal(11ul, getResult?.HotelId);
@@ -244,7 +244,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanGetDocumentWithGuidIdFromVectorStoreAsync(bool useRecordDefinition, bool withEmbeddings)
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfoWithGuidId>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = false,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelWithGuidIdVectorStoreRecordDefinition : null
@@ -252,7 +252,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var sut = new QdrantCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
 
         // Act.
-        var getResult = await sut.GetAsync(Guid.Parse("11111111-1111-1111-1111-111111111111"), new GetRecordOptions { IncludeVectors = withEmbeddings });
+        var getResult = await sut.GetAsync(Guid.Parse("11111111-1111-1111-1111-111111111111"), new RecordRetrievalOptions { IncludeVectors = withEmbeddings });
 
         // Assert.
         Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), getResult?.HotelId);
@@ -275,12 +275,12 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanGetManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
-        var options = new QdrantCollectionOptions<HotelInfo> { HasNamedVectors = true };
+        var options = new QdrantCollectionOptions { HasNamedVectors = true };
         var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", options);
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
-        var hotels = sut.GetAsync([11, 15, 12], new GetRecordOptions { IncludeVectors = true });
+        var hotels = sut.GetAsync([11, 15, 12], new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(hotels);
@@ -302,7 +302,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanRemoveDocumentFromVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
@@ -328,7 +328,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
@@ -349,11 +349,11 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
     {
         // Arrange
-        var options = new QdrantCollectionOptions<HotelInfo> { HasNamedVectors = false };
+        var options = new QdrantCollectionOptions { HasNamedVectors = false };
         var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "singleVectorHotels", options);
 
         // Act & Assert
-        Assert.Null(await sut.GetAsync(15, new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync(15, new RecordRetrievalOptions { IncludeVectors = true }));
     }
 
     [Theory]
@@ -368,7 +368,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanSearchWithFilterAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors, string filterType)
     {
         // Arrange.
-        var options = new QdrantCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
@@ -402,14 +402,14 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
-        var options = new QdrantCollectionOptions<Dictionary<string, object?>>
+        var options = new QdrantCollectionOptions
         {
             VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
         };
         var sut = new QdrantCollection<object, Dictionary<string, object?>>(fixture.QdrantClient, "singleVectorHotels", options);
 
         // Act
-        var baseSetGetResult = await sut.GetAsync(11ul, new GetRecordOptions { IncludeVectors = true });
+        var baseSetGetResult = await sut.GetAsync(11ul, new RecordRetrievalOptions { IncludeVectors = true });
         await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = 40ul,
@@ -423,7 +423,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
             ["DescriptionEmbedding"] = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a dynamic mapper hotel")
         });
-        var localGetResult = await sut.GetAsync(40ul, new GetRecordOptions { IncludeVectors = true });
+        var localGetResult = await sut.GetAsync(40ul, new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(baseSetGetResult);

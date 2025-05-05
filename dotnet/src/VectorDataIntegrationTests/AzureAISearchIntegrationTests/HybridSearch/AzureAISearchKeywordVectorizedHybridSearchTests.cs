@@ -10,7 +10,7 @@ using Xunit;
 namespace AzureAISearchIntegrationTests.HybridSearch;
 
 /// <summary>
-/// Inherits common integration tests that should pass for any <see cref="IKeywordHybridSearch{TRecord}"/>.
+/// Inherits common integration tests that should pass for any <see cref="IKeywordHybridSearchable{TRecord}"/>.
 /// </summary>
 public class AzureAISearchKeywordVectorizedHybridSearchTests(
     AzureAISearchKeywordVectorizedHybridSearchTests.VectorAndStringFixture vectorAndStringFixture,

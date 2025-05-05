@@ -2,7 +2,7 @@
 
 using System;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Qdrant.Client.Grpc;
 using Xunit;
 

@@ -24,7 +24,7 @@ public interface IVectorizableTextSearch<TRecord>
     IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(
         string searchText,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default);
 
     /// <summary>Asks the <see cref="IVectorizableTextSearch{TRecord}"/> for an object of the specified type <paramref name="serviceType"/>.</summary>

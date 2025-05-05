@@ -148,7 +148,7 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
             }
         ];
 
-        public override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition CreateRecordDefinition()
             => new()
             {
                 Properties =
@@ -166,7 +166,7 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
         {
             for (var i = 0; i < 20; i++)
             {
-                var getOptions = new GetRecordOptions { IncludeVectors = true };
+                var getOptions = new RecordRetrievalOptions { IncludeVectors = true };
                 var results = await this.Collection.GetAsync([this.TestData[0].Id, this.TestData[1].Id, this.TestData[2].Id, this.TestData[3].Id], getOptions).ToArrayAsync();
                 if (results.Length == 4 && results.All(r => r != null))
                 {

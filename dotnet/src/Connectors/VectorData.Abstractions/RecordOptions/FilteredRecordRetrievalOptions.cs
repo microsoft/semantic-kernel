@@ -3,14 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading;
 
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines options for filter search.
+/// Defines options for calling <see cref="VectorStoreCollection{TKey, TRecord}.GetAsync(Expression{Func{TRecord, bool}}, int, FilteredRecordRetrievalOptions{TRecord}, CancellationToken)"/>.
 /// </summary>
 /// <typeparam name="TRecord">Type of the record.</typeparam>
-public sealed class GetFilteredRecordOptions<TRecord>
+public sealed class FilteredRecordRetrievalOptions<TRecord>
 {
     private int _skip = 0;
 
@@ -21,7 +22,7 @@ public sealed class GetFilteredRecordOptions<TRecord>
     public int Skip
     {
         get => this._skip;
-        init
+        set
         {
             if (value < 0)
             {
@@ -43,7 +44,7 @@ public sealed class GetFilteredRecordOptions<TRecord>
     /// <summary>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.
     /// </summary>
-    public bool IncludeVectors { get; init; } = false;
+    public bool IncludeVectors { get; set; }
 
     /// <summary>
     /// A builder for sorting.

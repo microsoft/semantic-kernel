@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// </summary>
 /// <typeparam name="TRecord">The type of the data model record.</typeparam>
 internal sealed class PostgresMapper<TRecord>(CollectionModel model)
-    where TRecord : notnull
+    where TRecord : class
 {
     public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {

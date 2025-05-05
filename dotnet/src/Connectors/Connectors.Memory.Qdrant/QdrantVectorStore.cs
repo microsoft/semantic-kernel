@@ -61,7 +61,7 @@ public sealed class QdrantVectorStore : VectorStore
 
     /// <inheritdoc />
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        => new QdrantCollection<TKey, TRecord>(this._qdrantClient, name, new QdrantCollectionOptions<TRecord>()
+        => new QdrantCollection<TKey, TRecord>(this._qdrantClient, name, new QdrantCollectionOptions()
         {
             HasNamedVectors = this._options.HasNamedVectors,
             VectorStoreRecordDefinition = vectorStoreRecordDefinition,

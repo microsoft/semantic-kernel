@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -24,16 +24,16 @@ public sealed class SqlServerCollection<TKey, TRecord>
 #pragma warning restore CA1711
     : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
-    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
-    private static readonly SqlServerCollectionOptions<TRecord> s_defaultOptions = new();
+    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly SqlServerCollectionOptions s_defaultOptions = new();
 
     private readonly string _connectionString;
-    private readonly SqlServerCollectionOptions<TRecord> _options;
+    private readonly SqlServerCollectionOptions _options;
     private readonly CollectionModel _model;
     private readonly SqlServerMapper<TRecord> _mapper;
 
@@ -46,7 +46,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
     public SqlServerCollection(
         string connectionString,
         string name,
-        SqlServerCollectionOptions<TRecord>? options = null)
+        SqlServerCollectionOptions? options = null)
     {
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNull(name);
@@ -215,7 +215,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
             transaction.Rollback();
 #endif
 
-            throw new VectorStoreOperationException(ex.Message, ex)
+            throw new VectorStoreException(ex.Message, ex)
             {
                 VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -236,7 +236,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public override async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -273,7 +273,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null,
+    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, RecordRetrievalOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
@@ -484,7 +484,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
             transaction.Rollback();
 #endif
 
-            throw new VectorStoreOperationException(ex.Message, ex)
+            throw new VectorStoreException(ex.Message, ex)
             {
                 VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -509,7 +509,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -542,7 +542,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
     public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        VectorSearchOptions<TRecord>? options = null,
+        RecordSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -556,7 +556,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
         int top,
         VectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord> options,
+        RecordSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -601,7 +601,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
@@ -659,7 +659,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        FilteredRecordRetrievalOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);

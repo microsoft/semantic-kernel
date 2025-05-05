@@ -99,7 +99,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var collectionNamePostfix = useRecordDefinition ? "WithDefinition" : "WithType";
         var collectionName = $"Collection{collectionNamePostfix}";
 
-        var options = new SqliteCollectionOptions<SqliteHotel<ulong>>
+        var options = new SqliteCollectionOptions
         {
             VectorStoreRecordDefinition = useRecordDefinition ? GetVectorStoreRecordDefinition<ulong>() : null
         };
@@ -434,7 +434,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     {
         const long HotelId = 5;
 
-        var options = new SqliteCollectionOptions<Dictionary<string, object?>>
+        var options = new SqliteCollectionOptions
         {
             VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<ulong>()
         };
@@ -458,7 +458,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])
         });
 
-        var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
+        var localGetResult = await sut.GetAsync(HotelId, new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(localGetResult);
@@ -474,7 +474,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     {
         const string HotelId = "key";
 
-        var options = new SqliteCollectionOptions<Dictionary<string, object?>>
+        var options = new SqliteCollectionOptions
         {
             VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<string>()
         };
@@ -499,7 +499,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])
         });
 
-        var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
+        var localGetResult = await sut.GetAsync(HotelId, new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(localGetResult);

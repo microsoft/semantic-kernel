@@ -10,12 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MEVD = Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
@@ -27,7 +26,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>
@@ -40,7 +39,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
     private const string DocumentPropertyName = "document";
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly MEVD.VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
@@ -49,7 +48,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
     private readonly IMongoCollection<BsonDocument> _mongoCollection;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly CosmosMongoCollectionOptions<TRecord> _options;
+    private readonly CosmosMongoCollectionOptions _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
     private readonly IMongoMapper<TRecord> _mapper;
@@ -69,7 +68,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
     public CosmosMongoCollection(
         IMongoDatabase mongoDatabase,
         string name,
-        CosmosMongoCollectionOptions<TRecord>? options = default)
+        CosmosMongoCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
@@ -84,7 +83,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
         this.Name = name;
-        this._options = options ?? new CosmosMongoCollectionOptions<TRecord>();
+        this._options = options ?? new CosmosMongoCollectionOptions();
         this._model = new MongoModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? (new MongoDynamicMapper(this._model) as IMongoMapper<TRecord>)!
@@ -109,7 +108,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
         // To make sure that all the connectors are consistent, we throw when the collection exists.
         if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            throw new VectorStoreOperationException("Collection already exists.")
+            throw new VectorStoreException("Collection already exists.")
             {
                 VectorStoreSystemName = CosmosMongoConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -156,7 +155,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
         => this.RunOperationAsync("DropCollection", () => this._mongoDatabase.DropCollectionAsync(this.Name, cancellationToken));
 
     /// <inheritdoc />
-    public override async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         var stringKey = this.GetStringKey(key);
 
@@ -183,7 +182,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
     /// <inheritdoc />
     public override async IAsyncEnumerable<TRecord> GetAsync(
         IEnumerable<TKey> keys,
-        GetRecordOptions? options = null,
+        RecordRetrievalOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
@@ -313,7 +312,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
-        MEVD.VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -360,7 +359,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
     public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        MEVD.VectorSearchOptions<TRecord>? options = null,
+        RecordSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -374,7 +373,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
         int top,
         VectorPropertyModel vectorProperty,
         string operationName,
-        MEVD.VectorSearchOptions<TRecord> options,
+        RecordSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -451,7 +450,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, MEVD.VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
@@ -474,7 +473,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
     public override async IAsyncEnumerable<TRecord> GetAsync(
         Expression<Func<TRecord, bool>> filter,
         int top,
-        GetFilteredRecordOptions<TRecord>? options = null,
+        FilteredRecordRetrievalOptions<TRecord>? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
@@ -588,7 +587,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
 
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> EnumerateAndMapSearchResultsAsync(
         ErrorHandlingAsyncCursor<BsonDocument> cursor,
-        MEVD.VectorSearchOptions<TRecord> searchOptions,
+        RecordSearchOptions<TRecord> searchOptions,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var skipCounter = 0;

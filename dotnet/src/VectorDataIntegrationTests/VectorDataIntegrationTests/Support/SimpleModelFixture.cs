@@ -40,7 +40,7 @@ public abstract class SimpleModelFixture<TKey> : VectorStoreCollectionFixture<TK
         }
     ];
 
-    public override VectorStoreRecordDefinition GetRecordDefinition()
+    public override VectorStoreRecordDefinition CreateRecordDefinition()
         => new()
         {
             Properties =

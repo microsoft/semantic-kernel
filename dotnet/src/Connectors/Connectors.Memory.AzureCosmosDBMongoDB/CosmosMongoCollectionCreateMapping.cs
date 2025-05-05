@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;

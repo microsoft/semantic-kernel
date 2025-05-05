@@ -68,7 +68,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         var collectionNamePostfix = useRecordDefinition ? "with-definition" : "with-type";
         var collectionName = $"collection-{collectionNamePostfix}";
 
-        var options = new CosmosMongoCollectionOptions<AzureCosmosDBMongoDBHotel>
+        var options = new CosmosMongoCollectionOptions
         {
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
@@ -416,7 +416,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
-        var options = new CosmosMongoCollectionOptions<Dictionary<string, object?>>
+        var options = new CosmosMongoCollectionOptions
         {
             VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
         };
@@ -438,7 +438,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
             ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])
         });
 
-        var localGetResult = await sut.GetAsync("DynamicMapper-1", new GetRecordOptions { IncludeVectors = true });
+        var localGetResult = await sut.GetAsync("DynamicMapper-1", new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(localGetResult);

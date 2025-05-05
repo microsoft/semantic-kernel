@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// <summary>
 /// Options when creating a <see cref="CosmosNoSqlCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class CosmosNoSqlCollectionOptions<TRecord>
+public sealed class CosmosNoSqlCollectionOptions
 {
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
