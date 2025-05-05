@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Xunit;
 using Pinecone;
+using Xunit;
 
 namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
