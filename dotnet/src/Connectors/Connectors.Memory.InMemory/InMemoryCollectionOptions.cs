@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
@@ -33,12 +33,16 @@ public sealed class InMemoryCollectionOptions<TKey, TRecord>
     /// An optional function that can be used to look up vectors from a record.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// If not provided, the default behavior is to look for direct properties of the record
     /// using reflection. This delegate can be used to provide a custom implementation if
     /// the vector properties are located somewhere else on the record.
+    /// </para>
+    /// <para>
+    /// The first <see cref="string"/> argument is the name of the vector to look up.
+    /// </para>
     /// </remarks>
-    [Experimental("MEVD9000")]
-    public InMemoryVectorResolver<TRecord>? VectorResolver { get; init; } = null;
+    public Func<string, TRecord, object?>? VectorResolver { get; init; }
 
     /// <summary>
     /// An optional function that can be used to look up record keys.
@@ -48,6 +52,5 @@ public sealed class InMemoryCollectionOptions<TKey, TRecord>
     /// using reflection. This delegate can be used to provide a custom implementation if
     /// the key property is located somewhere else on the record.
     /// </remarks>
-    [Experimental("MEVD9000")]
-    public InMemoryKeyResolver<TKey, TRecord>? KeyResolver { get; init; } = null;
+    public Func<TRecord, TKey?>? KeyResolver { get; init; }
 }

@@ -46,10 +46,10 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
     private readonly CollectionModel _model;
 
     /// <summary>An function to look up vectors from the records.</summary>
-    private readonly InMemoryVectorResolver<TRecord> _vectorResolver;
+    private readonly Func<string, TRecord, object?> _vectorResolver;
 
     /// <summary>An function to look up keys from the records.</summary>
-    private readonly InMemoryKeyResolver<TKey, TRecord> _keyResolver;
+    private readonly Func<TRecord, TKey?> _keyResolver;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryCollection{TKey,TRecord}"/> class.
