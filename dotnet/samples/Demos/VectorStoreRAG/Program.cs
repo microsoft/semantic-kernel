@@ -74,17 +74,17 @@ switch (appConfig.RagConfig.VectorStoreType)
             new Uri(appConfig.AzureAISearchConfig.Endpoint),
             new AzureKeyCredential(appConfig.AzureAISearchConfig.ApiKey));
         break;
-    case "AzureCosmosDBMongoDB":
-        kernelBuilder.Services.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TextSnippet<string>>(
+    case "CosmosMongoDB":
+        kernelBuilder.Services.AddCosmosMongoVectorStoreRecordCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
-            appConfig.AzureCosmosDBMongoDBConfig.ConnectionString,
-            appConfig.AzureCosmosDBMongoDBConfig.DatabaseName);
+            appConfig.CosmosMongoConfig.ConnectionString,
+            appConfig.CosmosMongoConfig.DatabaseName);
         break;
-    case "AzureCosmosDBNoSQL":
-        kernelBuilder.Services.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TextSnippet<string>>(
+    case "CosmosNoSql":
+        kernelBuilder.Services.AddCosmosNoSqlVectorStoreRecordCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
-            appConfig.AzureCosmosDBNoSQLConfig.ConnectionString,
-            appConfig.AzureCosmosDBNoSQLConfig.DatabaseName);
+            appConfig.CosmosNoSqlConfig.ConnectionString,
+            appConfig.CosmosNoSqlConfig.DatabaseName);
         break;
     case "InMemory":
         kernelBuilder.Services.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(
@@ -118,8 +118,8 @@ switch (appConfig.RagConfig.VectorStoreType)
 switch (appConfig.RagConfig.VectorStoreType)
 {
     case "AzureAISearch":
-    case "AzureCosmosDBMongoDB":
-    case "AzureCosmosDBNoSQL":
+    case "CosmosMongoDB":
+    case "CosmosNoSql":
     case "InMemory":
     case "Redis":
         RegisterServices<string>(builder, kernelBuilder, appConfig);
