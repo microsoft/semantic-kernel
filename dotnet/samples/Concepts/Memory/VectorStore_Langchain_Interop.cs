@@ -6,7 +6,7 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using StackExchange.Redis;
-using Sdk = Pinecone;
+using Pinecone;
 
 namespace Memory;
 
@@ -31,7 +31,7 @@ public class VectorStore_Langchain_Interop(ITestOutputHelper output) : BaseTest(
     [Fact]
     public async Task ReadDataFromLangchainPineconeAsync()
     {
-        var pineconeClient = new Sdk.PineconeClient(TestConfiguration.Pinecone.ApiKey);
+        var pineconeClient = new PineconeClient(TestConfiguration.Pinecone.ApiKey);
         var vectorStore = PineconeFactory.CreatePineconeLangchainInteropVectorStore(pineconeClient);
         await this.ReadDataFromCollectionAsync(vectorStore, "pets");
     }

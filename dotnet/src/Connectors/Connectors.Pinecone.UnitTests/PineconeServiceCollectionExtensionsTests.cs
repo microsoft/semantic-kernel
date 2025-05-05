@@ -6,7 +6,7 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Xunit;
-using Sdk = Pinecone;
+using Pinecone;
 
 namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
@@ -26,8 +26,8 @@ public class PineconeServiceCollectionExtensionsTests
     public void AddVectorStoreRegistersClass()
     {
         // Arrange.
-        var client = new Sdk.PineconeClient("fake api key");
-        this._serviceCollection.AddSingleton<Sdk.PineconeClient>(client);
+        var client = new PineconeClient("fake api key");
+        this._serviceCollection.AddSingleton<PineconeClient>(client);
 
         // Act.
         this._serviceCollection.AddPineconeVectorStore();
@@ -49,8 +49,8 @@ public class PineconeServiceCollectionExtensionsTests
     public void AddVectorStoreRecordCollectionRegistersClass()
     {
         // Arrange.
-        var client = new Sdk.PineconeClient("fake api key");
-        this._serviceCollection.AddSingleton<Sdk.PineconeClient>(client);
+        var client = new PineconeClient("fake api key");
+        this._serviceCollection.AddSingleton<PineconeClient>(client);
 
         // Act.
         this._serviceCollection.AddPineconeVectorStoreRecordCollection<TestRecord>("testcollection");

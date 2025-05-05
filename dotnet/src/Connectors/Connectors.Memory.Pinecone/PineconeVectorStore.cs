@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Pinecone;
-using Sdk = Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -19,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// </remarks>
 public sealed class PineconeVectorStore : VectorStore
 {
-    private readonly Sdk.PineconeClient _pineconeClient;
+    private readonly PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreOptions _options;
 
     /// <summary>Metadata about vector store.</summary>
@@ -33,7 +32,7 @@ public sealed class PineconeVectorStore : VectorStore
     /// </summary>
     /// <param name="pineconeClient">Pinecone client that can be used to manage the collections and points in a Pinecone store.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public PineconeVectorStore(Sdk.PineconeClient pineconeClient, PineconeVectorStoreOptions? options = default)
+    public PineconeVectorStore(PineconeClient pineconeClient, PineconeVectorStoreOptions? options = default)
     {
         Verify.NotNull(pineconeClient);
 
@@ -96,7 +95,7 @@ public sealed class PineconeVectorStore : VectorStore
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(Sdk.PineconeClient) ? this._pineconeClient :
+            serviceType == typeof(PineconeClient) ? this._pineconeClient :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
