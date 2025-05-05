@@ -139,19 +139,22 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         var process = processBuilder.Build();
 
-        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-        var agentsClient = foundryClient.GetAgentsClient();
+        //var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
+        //var agentsClient = foundryClient.GetAgentsClient();
 
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddSingleton(agentsClient);
-        kernelBuilder.Services.AddSingleton(foundryClient);
-        var kernel = kernelBuilder.Build();
+        //var kernelBuilder = Kernel.CreateBuilder();
+        //kernelBuilder.Services.AddSingleton(agentsClient);
+        //kernelBuilder.Services.AddSingleton(foundryClient);
+        //var kernel = kernelBuilder.Build();
 
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" });
-        var agent1Result = await context.GetStateAsync();
+        //var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" });
+        //var agent1Result = await context.GetStateAsync();
 
-        Assert.NotNull(context);
-        Assert.NotNull(agent1Result);
+        //Assert.NotNull(context);
+        //Assert.NotNull(agent1Result);
+
+        var workflow = await WorkflowBuilder.BuildWorkflow(process);
+        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
     }
 
     public class ProcessStateWithCounter

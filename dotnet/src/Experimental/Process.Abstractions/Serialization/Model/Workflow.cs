@@ -399,13 +399,6 @@ public class Node
     public Dictionary<string, string>? AgentInputMapping { get; set; }
 
     /// <summary>
-    /// Gets or sets the on invoke hook of the node.
-    /// </summary>
-    [YamlMember(Alias = "on_invoke")]
-    [JsonPropertyName("on_invoke")]
-    public List<OnEventAction>? OnInvoke { get; set; }
-
-    /// <summary>
     /// Gets or sets the on error hook of the node.
     /// </summary>
     [YamlMember(Alias = "on_error")]

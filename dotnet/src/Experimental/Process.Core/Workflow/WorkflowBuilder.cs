@@ -4,22 +4,33 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Process;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace Microsoft.SemanticKernel;
-internal class WorkflowBuilder
+
+/// <summary>
+/// Builds a workflow from a YAML definition.
+/// </summary>
+public class WorkflowBuilder
 {
     private readonly Dictionary<string, ProcessStepBuilder> _stepBuilders = [];
     private readonly Dictionary<string, CloudEvent> _inputEvents = [];
     private string? _yaml;
 
+    /// <summary>
+    /// Builds a process from a workflow definition.
+    /// </summary>
+    /// <param name="workflow"></param>
+    /// <param name="yaml"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     public async Task<KernelProcess?> BuildProcessAsync(Workflow workflow, string yaml)
     {
         this._yaml = yaml;
@@ -314,6 +325,11 @@ internal class WorkflowBuilder
     {
         Verify.NotNullOrWhiteSpace(step?.State?.Id, nameof(step.State.Id));
 
+        if (step is KernelProcessAgentStep agentStep)
+        {
+            return BuildAgentNode(agentStep, orchestrationSteps);
+        }
+
         var innerStepTypeString = step.InnerStepType.AssemblyQualifiedName;
         if (string.IsNullOrWhiteSpace(innerStepTypeString))
         {
@@ -350,6 +366,105 @@ internal class WorkflowBuilder
         }
 
         return node;
+    }
+
+    private static Node BuildAgentNode(KernelProcessAgentStep agentStep, List<OrchestrationStep> orchestrationSteps)
+    {
+        Verify.NotNull(agentStep);
+
+        if (agentStep.AgentDefinition is null)
+        {
+            throw new InvalidOperationException("Attempt to build a workflow node from step with no Id");
+        }
+
+        var node = new Node()
+        {
+            Id = agentStep.State.Id,
+            Type = agentStep.AgentDefinition.Type,
+            Agent = agentStep.AgentDefinition,
+            OnComplete = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnComplete),
+            OnError = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnError),
+        };
+
+        foreach (var edge in agentStep.Edges)
+        {
+            OrchestrationStep orchestrationStep = new()
+            {
+                ListenFor = new ListenCondition()
+                {
+                    From = agentStep.State.Id,
+                    Event = edge.Key
+                },
+                Then = [.. edge.Value.Select(e => new ThenAction()
+                {
+                    Node = e.OutputTarget.StepId
+                })]
+            };
+
+            orchestrationSteps.Add(orchestrationStep);
+        }
+
+        return node;
+    }
+
+    private static List<OnEventAction> ToEventActions(KernelProcessDeclarativeConditionHandler? handler)
+    {
+        if (handler is null)
+        {
+            return [];
+        }
+
+        List<OnEventAction> actions = [];
+        if (handler.StateConditions is not null && handler.StateConditions.Count > 0)
+        {
+            actions.AddRange(handler.StateConditions.Select(h =>
+            {
+                return new OnEventAction
+                {
+                    OnCondition = new DeclarativeProcessCondition
+                    {
+                        Type = "state",
+                        Expression = h.Expression,
+                        Emits = h.Emits,
+                        Updates = h.Updates
+                    }
+                };
+            }));
+        }
+
+        if (handler.SemanticConditions is not null && handler.SemanticConditions.Count > 0)
+        {
+            actions.AddRange(handler.SemanticConditions.Select(h =>
+            {
+                return new OnEventAction
+                {
+                    OnCondition = new DeclarativeProcessCondition
+                    {
+                        Type = "semantic",
+                        Expression = h.Expression,
+                        Emits = h.Emits,
+                        Updates = h.Updates
+                    }
+                };
+            }));
+        }
+
+        if (handler.Default is not null)
+        {
+            actions.Add(
+                new OnEventAction
+                {
+                    OnCondition = new DeclarativeProcessCondition
+                    {
+                        Type = "default",
+                        Expression = handler.Default.Expression,
+                        Emits = handler.Default.Emits,
+                        Updates = handler.Default.Updates
+                    }
+                });
+        }
+
+        return actions;
     }
 
     /// <summary>
