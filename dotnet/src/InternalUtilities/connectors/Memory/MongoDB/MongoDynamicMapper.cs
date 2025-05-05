@@ -17,9 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// A mapper that maps between the dynamic data model and the model that the data is stored under, within MongoDB.
 /// </summary>
 [ExcludeFromCodeCoverage]
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
 internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<Dictionary<string, object?>>
-#pragma warning restore CS0618
 {
     /// <inheritdoc />
     public BsonDocument MapFromDataToStorageModel(Dictionary<string, object?> dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)

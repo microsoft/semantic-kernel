@@ -4,7 +4,7 @@ using System;
 
 namespace Microsoft.Extensions.VectorData;
 
-/// <summary>Provides a collection of static methods for extending <see cref="IVectorizedSearch{TRecord}"/> instances.</summary>
+/// <summary>Provides a collection of static methods for extending <see cref="IVectorSearchable{TRecord}"/> instances.</summary>
 public static class VectorSearchExtensions
 {
     /// <summary>

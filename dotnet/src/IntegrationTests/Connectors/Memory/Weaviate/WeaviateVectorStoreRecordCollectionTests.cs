@@ -207,7 +207,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task VectorizedSearchReturnsValidResultsByDefaultAsync(bool includeVectors)
+    public async Task SearchReturnsValidResultsByDefaultAsync(bool includeVectors)
     {
         // Arrange
         var hotel1 = this.CreateTestHotel(hotelId: new Guid("11111111-1111-1111-1111-111111111111"), embedding: new[] { 30f, 31f, 32f, 33f });
@@ -222,7 +222,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
+        var searchResults = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
         {
             IncludeVectors = includeVectors
         }).ToListAsync();
@@ -244,7 +244,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task VectorizedSearchReturnsValidResultsWithOffsetAsync()
+    public async Task SearchReturnsValidResultsWithOffsetAsync()
     {
         // Arrange
         var hotel1 = this.CreateTestHotel(hotelId: new Guid("11111111-1111-1111-1111-111111111111"), embedding: new[] { 30f, 31f, 32f, 33f });
@@ -259,7 +259,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
+        var searchResults = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
         {
             Skip = 2
         }).ToListAsync();
@@ -275,8 +275,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     }
 
     [Theory(Skip = SkipReason)]
-    [MemberData(nameof(VectorizedSearchWithFilterData))]
-    public async Task VectorizedSearchReturnsValidResultsWithFilterAsync(VectorSearchFilter filter, List<string> expectedIds)
+    [MemberData(nameof(SearchWithFilterData))]
+    public async Task SearchReturnsValidResultsWithFilterAsync(VectorSearchFilter filter, List<string> expectedIds)
     {
         // Arrange
         var hotel1 = this.CreateTestHotel(hotelId: new Guid("11111111-1111-1111-1111-111111111111"), embedding: new[] { 30f, 31f, 32f, 33f });
@@ -291,7 +291,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 4, new()
+        var searchResults = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 4, new()
         {
             OldFilter = filter,
         }).ToListAsync();
@@ -303,8 +303,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     }
 
     [Theory(Skip = SkipReason)]
-    [MemberData(nameof(VectorizedSearchWithFilterAndDifferentDataTypesData))]
-    public async Task VectorizedSearchReturnsValidResultsWithFilterAndDifferentDataTypesAsync(VectorSearchFilter filter)
+    [MemberData(nameof(SearchWithFilterAndDifferentDataTypesData))]
+    public async Task SearchReturnsValidResultsWithFilterAndDifferentDataTypesAsync(VectorSearchFilter filter)
     {
         // Arrange
         var expectedId = "55555555-5555-5555-5555-555555555555";
@@ -334,7 +334,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel5, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([40f, 40f, 40f, 40f]), top: 4, new()
+        var searchResults = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([40f, 40f, 40f, 40f]), top: 4, new()
         {
             OldFilter = filter,
         }).ToListAsync();
@@ -389,7 +389,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult["DescriptionEmbedding"]!).ToArray());
     }
 
-    public static TheoryData<VectorSearchFilter, List<string>> VectorizedSearchWithFilterData => new()
+    public static TheoryData<VectorSearchFilter, List<string>> SearchWithFilterData => new()
     {
         {
             new VectorSearchFilter().EqualTo(nameof(WeaviateHotel.HotelName), "My Hotel 22222222-2222-2222-2222-222222222222"),
@@ -418,7 +418,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         }
     };
 
-    public static TheoryData<VectorSearchFilter> VectorizedSearchWithFilterAndDifferentDataTypesData => new()
+    public static TheoryData<VectorSearchFilter> SearchWithFilterAndDifferentDataTypesData => new()
     {
         { new VectorSearchFilter().EqualTo(nameof(WeaviateHotel.HotelId), new Guid("55555555-5555-5555-5555-555555555555")) },
         { new VectorSearchFilter().EqualTo(nameof(WeaviateHotel.HotelName), "Test hotel name") },

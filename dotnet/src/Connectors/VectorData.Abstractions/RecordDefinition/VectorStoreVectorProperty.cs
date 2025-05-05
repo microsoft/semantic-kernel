@@ -21,17 +21,6 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// </summary>
     /// <param name="propertyName">The name of the property.</param>
     /// <param name="propertyType">The type of the property.</param>
-    [Obsolete("This constructor is obsolete, since dimensions is now a required parameter.", error: true)]
-    public VectorStoreVectorProperty(string propertyName, Type propertyType)
-        : base(propertyName, propertyType)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class.
-    /// </summary>
-    /// <param name="propertyName">The name of the property.</param>
-    /// <param name="propertyType">The type of the property.</param>
     /// <param name="dimensions">The number of dimensions that the vector has.</param>
     public VectorStoreVectorProperty(string propertyName, Type propertyType, int dimensions)
         : base(propertyName, propertyType)

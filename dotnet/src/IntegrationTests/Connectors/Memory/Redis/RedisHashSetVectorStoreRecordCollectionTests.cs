@@ -65,7 +65,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync("HUpsert-1", new RecordRetrievalOptions { IncludeVectors = true });
         var searchResults = await sut
-            .VectorizedSearchAsync(
+            .SearchEmbeddingAsync(
                 new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
                 top: 3,
                 new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 1), IncludeVectors = true }).ToListAsync();
@@ -298,7 +298,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelCode", 1) : new VectorSearchFilter().EqualTo("HotelName", "My Hotel 1");
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(
+        var searchResults = await sut.SearchEmbeddingAsync(
             vector,
             top: 3,
             new()
@@ -342,7 +342,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var vector = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 1.0f]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(
+        var searchResults = await sut.SearchEmbeddingAsync(
             vector,
             top: 3,
             new()
@@ -371,7 +371,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var vector = new ReadOnlyMemory<double>([2.0d, 2.1d, 2.2d, 2.3d]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(
+        var searchResults = await sut.SearchEmbeddingAsync(
             vector,
             top: 1,
             new()

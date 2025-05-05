@@ -502,7 +502,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             Assert.Fail("The test returns all results, and so is unreliable");
         }
 
-        var actual = await fixture.Collection.VectorizedSearchAsync(
+        var actual = await fixture.Collection.SearchEmbeddingAsync(
                 new ReadOnlyMemory<float>([1, 2, 3]),
                 top: fixture.TestData.Count,
                 new()

@@ -112,7 +112,7 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearchable{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
+    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/> and an <see cref="IVectorSearchable{TRecord}"/> with the
     /// specified service ID and where <see cref="SearchIndexClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -149,7 +149,7 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearchable{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
+    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/> and an <see cref="IVectorSearchable{TRecord}"/> with the
     /// provided <see cref="Uri"/> and <see cref="TokenCredential"/> and the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -193,7 +193,7 @@ public static class AzureAISearchServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/>, <see cref="IVectorSearchable{TRecord}"/> and <see cref="IVectorizableTextSearch{TRecord}"/> with the
+    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/> and an <see cref="IVectorSearchable{TRecord}"/> with the
     /// provided <see cref="Uri"/> and <see cref="AzureKeyCredential"/> and the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>

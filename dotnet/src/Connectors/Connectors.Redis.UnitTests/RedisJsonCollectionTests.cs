@@ -382,7 +382,7 @@ public class RedisJsonCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "data 1");
 
         // Act.
-        var results = await sut.VectorizedSearchAsync(
+        var results = await sut.SearchEmbeddingAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
             top: 5,
             new()
