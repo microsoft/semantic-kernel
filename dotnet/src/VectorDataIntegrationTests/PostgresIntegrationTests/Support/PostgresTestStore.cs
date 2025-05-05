@@ -8,7 +8,9 @@ using VectorDataSpecificationTests.Support;
 
 namespace PostgresIntegrationTests.Support;
 
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable
 internal sealed class PostgresTestStore : TestStore
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable
 {
     public static PostgresTestStore Instance { get; } = new();
 
@@ -61,6 +63,7 @@ internal sealed class PostgresTestStore : TestStore
 
     protected override async Task StopAsync()
     {
+        this._defaultVectorStore!.Dispose();
         await this._dataSource!.DisposeAsync();
         await s_container.StopAsync();
     }
