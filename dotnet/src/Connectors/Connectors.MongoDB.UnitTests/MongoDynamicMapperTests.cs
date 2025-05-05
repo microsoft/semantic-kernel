@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 using Xunit;
@@ -286,6 +286,6 @@ public sealed class MongoDynamicMapperTests
         Assert.False(dataModel.ContainsKey("FloatVector"));
     }
 
-    private static CollectionModel BuildModel(IReadOnlyList<VectorStoreProperty> properties)
+    private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
         => new MongoModelBuilder().Build(typeof(Dictionary<string, object?>), new() { Properties = properties }, defaultEmbeddingGenerator: null);
 }

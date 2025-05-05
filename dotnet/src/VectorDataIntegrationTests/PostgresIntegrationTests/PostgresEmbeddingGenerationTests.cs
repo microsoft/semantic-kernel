@@ -35,7 +35,7 @@ public class PostgresEmbeddingGenerationTests(PostgresEmbeddingGenerationTests.F
                 .AddSingleton(PostgresTestStore.Instance.DataSource)
                 .AddPostgresVectorStoreRecordCollection<int, RecordWithAttributes>(
                     this.CollectionName,
-                    new PostgresCollectionOptions<EmbeddingGenerationTests<int>.RecordWithAttributes>() { OwnsDataSource = false })
+                    new PostgresCollectionOptions() { OwnsDataSource = false })
         ];
     }
 }

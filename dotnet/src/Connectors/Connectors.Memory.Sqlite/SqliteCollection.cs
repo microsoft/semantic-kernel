@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect
 {
     /// <summary>Metadata about vector store record collection.</summary>
@@ -34,13 +34,13 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     private readonly string _connectionString;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly SqliteCollectionOptions<TRecord> _options;
+    private readonly SqliteCollectionOptions _options;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the SQLite record.</summary>
     private readonly SqliteMapper<TRecord> _mapper;
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
@@ -72,7 +72,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     public SqliteCollection(
         string connectionString,
         string name,
-        SqliteCollectionOptions<TRecord>? options = default)
+        SqliteCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(connectionString);
@@ -166,7 +166,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -199,7 +199,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        VectorSearchOptions<TRecord>? options = null,
+        RecordSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -213,7 +213,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
         int top,
         VectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord> options,
+        RecordSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -285,13 +285,13 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -363,7 +363,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     }
 
     /// <inheritdoc />
-    public override async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -380,7 +380,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, RecordRetrievalOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
         var keysList = keys.Cast<object>().ToList();
@@ -567,7 +567,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
         List<SqliteWhereCondition> conditions,
         string? extraWhereFilter,
         Dictionary<string, object>? extraParameters,
-        VectorSearchOptions<TRecord> searchOptions,
+        RecordSearchOptions<TRecord> searchOptions,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string OperationName = "VectorizedSearch";
@@ -668,7 +668,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     private async IAsyncEnumerable<TRecord> InternalGetBatchAsync(
         SqliteConnection connection,
         SqliteWhereCondition condition,
-        GetRecordOptions? options,
+        RecordRetrievalOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string OperationName = "Select";
@@ -889,7 +889,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// </remarks>
     private static string GetVectorTableName(
         string dataTableName,
-        SqliteCollectionOptions<TRecord> options)
+        SqliteCollectionOptions options)
     {
         const string DefaultVirtualTableNamePrefix = "vec_";
 

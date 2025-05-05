@@ -14,7 +14,6 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using Moq;
 using Xunit;
-using MEVD = Microsoft.Extensions.VectorData;
 
 namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
 
@@ -581,7 +580,7 @@ public sealed class CosmosMongoCollectionTests
             this._mockMongoDatabase.Object,
             "collection");
 
-        var options = new MEVD.VectorSearchOptions<CosmosMongoHotelModel> { VectorProperty = r => "non-existent-property" };
+        var options = new RecordSearchOptions<CosmosMongoHotelModel> { VectorProperty = r => "non-existent-property" };
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, options).FirstOrDefaultAsync());
@@ -678,7 +677,7 @@ public sealed class CosmosMongoCollectionTests
         var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
         var expectedDefinition = Builders<BsonDocument>.Filter.Eq(document => document["_id"], "key");
 
-        CosmosMongoCollectionOptions<TDataModel>? options = definition != null ?
+        CosmosMongoCollectionOptions? options = definition != null ?
             new() { VectorStoreRecordDefinition = definition } :
             null;
 

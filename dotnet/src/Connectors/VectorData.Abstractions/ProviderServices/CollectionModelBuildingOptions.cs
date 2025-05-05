@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Extensions.VectorData.ConnectorSupport;
+namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Contains options affecting model building; passed to <see cref="CollectionModelBuilder"/>.

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;

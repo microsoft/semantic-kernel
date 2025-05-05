@@ -263,7 +263,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         }
 
         // Act
-        var getResult = await sut.GetAsync(215, new GetRecordOptions { IncludeVectors = true });
+        var getResult = await sut.GetAsync(215, new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(getResult);
@@ -302,7 +302,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])
         });
 
-        var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
+        var localGetResult = await sut.GetAsync(HotelId, new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(localGetResult);
@@ -327,7 +327,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             ["DescriptionEmbedding"] = null
         });
 
-        var localGetResult2 = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
+        var localGetResult2 = await sut.GetAsync(HotelId, new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(localGetResult2);

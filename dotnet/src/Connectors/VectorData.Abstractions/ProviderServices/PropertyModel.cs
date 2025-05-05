@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace Microsoft.Extensions.VectorData.ConnectorSupport;
+namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a property on a vector store record.

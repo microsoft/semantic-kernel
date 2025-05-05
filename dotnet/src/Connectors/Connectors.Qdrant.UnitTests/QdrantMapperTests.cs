@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client.Grpc;
 using Xunit;

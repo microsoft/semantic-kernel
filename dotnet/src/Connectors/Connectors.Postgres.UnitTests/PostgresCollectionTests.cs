@@ -24,7 +24,7 @@ public class PostgresCollectionTests
                 new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
             ]
         };
-        var options = new PostgresCollectionOptions<Dictionary<string, object?>>()
+        var options = new PostgresCollectionOptions()
         {
             VectorStoreRecordDefinition = recordDefinition
         };

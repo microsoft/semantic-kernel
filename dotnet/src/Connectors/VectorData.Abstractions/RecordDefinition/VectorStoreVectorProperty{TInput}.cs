@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -22,12 +22,6 @@ public class VectorStoreVectorProperty<TInput> : VectorStoreVectorProperty
     /// <inheritdoc />
     public VectorStoreVectorProperty(string propertyName, int dimensions)
         : base(propertyName, typeof(TInput), dimensions)
-    {
-    }
-
-    /// <inheritdoc />
-    public VectorStoreVectorProperty(VectorStoreVectorProperty<TInput> source)
-        : base(source)
     {
     }
 

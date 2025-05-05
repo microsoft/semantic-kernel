@@ -61,12 +61,17 @@ public sealed class PostgresVectorStore : VectorStore, IDisposable
         );
     }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    public override PostgresCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#endif
         => new PostgresCollection<TKey, TRecord>(
             this._client.IncreaseReferenceCount(),
             name,
-            new PostgresCollectionOptions<TRecord>()
+            new PostgresCollectionOptions()
             {
                 Schema = this._options.Schema,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
@@ -74,6 +79,7 @@ public sealed class PostgresVectorStore : VectorStore, IDisposable
                 OwnsDataSource = this._options.OwnsDataSource
             }
         );
+#pragma warning restore IDE0090
 
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)

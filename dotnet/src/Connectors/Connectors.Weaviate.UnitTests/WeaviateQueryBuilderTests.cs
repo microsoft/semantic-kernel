@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Xunit;
 
@@ -79,7 +79,7 @@ public sealed class WeaviateQueryBuilderTests
         }
         """;
 
-        var searchOptions = new VectorSearchOptions<DummyType>
+        var searchOptions = new RecordSearchOptions<DummyType>
         {
             Skip = 2,
         };
@@ -108,7 +108,7 @@ public sealed class WeaviateQueryBuilderTests
     public void BuildSearchQueryWithIncludedVectorsReturnsValidQuery(bool hasNamedVectors)
     {
         // Arrange
-        var searchOptions = new VectorSearchOptions<DummyType>
+        var searchOptions = new RecordSearchOptions<DummyType>
         {
             Skip = 2,
             IncludeVectors = true
@@ -138,7 +138,7 @@ public sealed class WeaviateQueryBuilderTests
         const string ExpectedFirstSubquery = """{ path: ["HotelName"], operator: Equal, valueText: "Test Name" }""";
         const string ExpectedSecondSubquery = """{ path: ["Tags"], operator: ContainsAny, valueText: ["t1"] }""";
 
-        var searchOptions = new VectorSearchOptions<DummyType>
+        var searchOptions = new RecordSearchOptions<DummyType>
         {
             Skip = 2,
             OldFilter = new VectorSearchFilter()
@@ -166,7 +166,7 @@ public sealed class WeaviateQueryBuilderTests
     public void BuildSearchQueryWithInvalidFilterValueThrowsException()
     {
         // Arrange
-        var searchOptions = new VectorSearchOptions<DummyType>
+        var searchOptions = new RecordSearchOptions<DummyType>
         {
             Skip = 2,
             OldFilter = new VectorSearchFilter().EqualTo("HotelName", new TestFilterValue())
@@ -188,7 +188,7 @@ public sealed class WeaviateQueryBuilderTests
     public void BuildSearchQueryWithNonExistentPropertyInFilterThrowsException()
     {
         // Arrange
-        var searchOptions = new VectorSearchOptions<DummyType>
+        var searchOptions = new RecordSearchOptions<DummyType>
         {
             Skip = 2,
             OldFilter = new VectorSearchFilter().EqualTo("NonExistentProperty", "value")

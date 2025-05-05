@@ -81,16 +81,16 @@ public static class RedisServiceCollectionExtensions
     public static IServiceCollection AddRedisHashSetVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
-        RedisHashSetCollectionOptions<TRecord>? options = default,
+        RedisHashSetCollectionOptions? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         services.AddKeyedTransient<VectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var database = sp.GetRequiredService<IDatabase>();
-                options ??= sp.GetService<RedisHashSetCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<RedisHashSetCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -118,16 +118,16 @@ public static class RedisServiceCollectionExtensions
         this IServiceCollection services,
         string collectionName,
         string redisConnectionConfiguration,
-        RedisHashSetCollectionOptions<TRecord>? options = default,
+        RedisHashSetCollectionOptions? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         services.AddKeyedSingleton<VectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
-                options ??= sp.GetService<RedisHashSetCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<RedisHashSetCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -153,16 +153,16 @@ public static class RedisServiceCollectionExtensions
     public static IServiceCollection AddRedisJsonVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
-        RedisJsonCollectionOptions<TRecord>? options = default,
+        RedisJsonCollectionOptions? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         services.AddKeyedTransient<VectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var database = sp.GetRequiredService<IDatabase>();
-                options ??= sp.GetService<RedisJsonCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<RedisJsonCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -190,16 +190,16 @@ public static class RedisServiceCollectionExtensions
         this IServiceCollection services,
         string collectionName,
         string redisConnectionConfiguration,
-        RedisJsonCollectionOptions<TRecord>? options = default,
+        RedisJsonCollectionOptions? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         services.AddKeyedSingleton<VectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
-                options ??= sp.GetService<RedisJsonCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<RedisJsonCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
@@ -213,14 +213,14 @@ public static class RedisServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
+    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearchable{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : class
     {
-        services.AddKeyedTransient<IVectorSearch<TRecord>>(
+        services.AddKeyedTransient<IVectorSearchable<TRecord>>(
             serviceId,
             (sp, obj) =>
             {

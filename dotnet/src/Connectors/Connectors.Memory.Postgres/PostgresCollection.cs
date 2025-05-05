@@ -9,8 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IDisposable
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 {
     /// <inheritdoc />
     public override string Name { get; }
@@ -36,7 +36,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     private readonly PostgresDbClient _client;
 
     // <summary>Optional configuration options for this class.</summary>
-    private readonly PostgresCollectionOptions<TRecord> _options;
+    private readonly PostgresCollectionOptions _options;
 
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
@@ -45,7 +45,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     private readonly PostgresMapper<TRecord> _mapper;
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresCollection{TKey, TRecord}"/> class.
@@ -53,7 +53,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <param name="dataSource">The data source to use for connecting to the database.</param>
     /// <param name="name">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public PostgresCollection(NpgsqlDataSource dataSource, string name, PostgresCollectionOptions<TRecord>? options = default)
+    public PostgresCollection(NpgsqlDataSource dataSource, string name, PostgresCollectionOptions? options = default)
         : this(new PostgresDbClient(dataSource), name, options)
     {
         Verify.NotNull(dataSource);
@@ -68,7 +68,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <remarks>
     /// This constructor is internal. It allows internal code to create an instance of this class with a custom client.
     /// </remarks>
-    internal PostgresCollection(PostgresDbClient client, string name, PostgresCollectionOptions<TRecord>? options = default)
+    internal PostgresCollection(PostgresDbClient client, string name, PostgresCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNull(client);
@@ -77,7 +77,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
         // Assign.
         this._client = client;
         this.Name = name;
-        this._options = options ?? new PostgresCollectionOptions<TRecord>();
+        this._options = options ?? new PostgresCollectionOptions();
 
         this._model = new CollectionModelBuilder(PostgresConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
@@ -246,7 +246,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     }
 
     /// <inheritdoc/>
-    public override Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "Get";
 
@@ -269,7 +269,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     }
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "GetBatch";
 
@@ -319,7 +319,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -354,7 +354,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        VectorSearchOptions<TRecord>? options = null,
+        RecordSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -368,7 +368,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
         int top,
         VectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord> options,
+        RecordSearchOptions<TRecord> options,
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -412,14 +412,14 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
 
     /// <inheritdoc />
     public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);

@@ -24,7 +24,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
 
     protected abstract HashSet<string> GetSupportedDistanceFunctions();
 
-    protected abstract VectorStoreCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TRecord : notnull;
+    protected abstract VectorStoreCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TRecord : class;
 
     protected virtual int DelayAfterIndexCreateInMilliseconds { get; } = 0;
 

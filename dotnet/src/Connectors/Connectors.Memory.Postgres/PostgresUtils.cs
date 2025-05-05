@@ -11,14 +11,14 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 internal static class PostgresUtils
 {
     /// <summary>
-    /// Wraps an <see cref="IAsyncEnumerable{T}"/> in an <see cref="IAsyncEnumerable{T}"/> that will throw a <see cref="VectorStoreOperationException"/>
+    /// Wraps an <see cref="IAsyncEnumerable{T}"/> in an <see cref="IAsyncEnumerable{T}"/> that will throw a <see cref="VectorStoreException"/>
     /// if an exception is thrown while iterating over the original enumerator.
     /// </summary>
     /// <typeparam name="T">The type of the items in the async enumerable.</typeparam>
     /// <param name="asyncEnumerable">The async enumerable to wrap.</param>
     /// <param name="operationName">The name of the operation being performed.</param>
     /// <param name="metadata">The vector store metadata to describe the type of database.</param>
-    /// <returns>An async enumerable that will throw a <see cref="VectorStoreOperationException"/> if an exception is thrown while iterating over the original enumerator.</returns>
+    /// <returns>An async enumerable that will throw a <see cref="VectorStoreException"/> if an exception is thrown while iterating over the original enumerator.</returns>
     public static async IAsyncEnumerable<T> WrapAsyncEnumerableAsync<T>(
         IAsyncEnumerable<T> asyncEnumerable,
         string operationName,
@@ -38,14 +38,14 @@ internal static class PostgresUtils
     }
 
     /// <summary>
-    /// Wraps an <see cref="IAsyncEnumerable{T}"/> in an <see cref="IAsyncEnumerable{T}"/> that will throw a <see cref="VectorStoreOperationException"/>
+    /// Wraps an <see cref="IAsyncEnumerable{T}"/> in an <see cref="IAsyncEnumerable{T}"/> that will throw a <see cref="VectorStoreException"/>
     /// if an exception is thrown while iterating over the original enumerator.
     /// </summary>
     /// <typeparam name="T">The type of the items in the async enumerable.</typeparam>
     /// <param name="asyncEnumerable">The async enumerable to wrap.</param>
     /// <param name="operationName">The name of the operation being performed.</param>
     /// <param name="metadata">The collection metadata to describe the type of database.</param>
-    /// <returns>An async enumerable that will throw a <see cref="VectorStoreOperationException"/> if an exception is thrown while iterating over the original enumerator.</returns>
+    /// <returns>An async enumerable that will throw a <see cref="VectorStoreException"/> if an exception is thrown while iterating over the original enumerator.</returns>
     public static async IAsyncEnumerable<T> WrapAsyncEnumerableAsync<T>(
         IAsyncEnumerable<T> asyncEnumerable,
         string operationName,

@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
 
-namespace Microsoft.Extensions.VectorData.ConnectorSupport;
+namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// A model builder that performs logic specific to connectors which use System.Text.Json for serialization.

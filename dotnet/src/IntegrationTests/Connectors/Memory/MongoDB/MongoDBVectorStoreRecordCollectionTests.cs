@@ -66,7 +66,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         collectionNamePostfix += includeVectors ? "-with-vectors" : "-without-vectors";
         var collectionName = $"collection-{collectionNamePostfix}";
 
-        var options = new MongoCollectionOptions<MongoDBHotel>
+        var options = new MongoCollectionOptions
         {
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
@@ -413,7 +413,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
-        var options = new MongoCollectionOptions<Dictionary<string, object?>>
+        var options = new MongoCollectionOptions
         {
             VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
         };
@@ -435,7 +435,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
             ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])
         });
 
-        var localGetResult = await sut.GetAsync("DynamicMapper-1", new GetRecordOptions { IncludeVectors = true });
+        var localGetResult = await sut.GetAsync("DynamicMapper-1", new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(localGetResult);

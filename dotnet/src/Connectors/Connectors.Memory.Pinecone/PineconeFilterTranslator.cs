@@ -7,8 +7,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
-using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData.ProviderServices.Filter;
 using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -20,10 +20,10 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 // as we sometimes need to extend the collection (with for example another condition).
 internal class PineconeFilterTranslator
 {
-    private Extensions.VectorData.ConnectorSupport.CollectionModel _model = null!;
+    private Extensions.VectorData.ProviderServices.CollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
-    internal Metadata Translate(LambdaExpression lambdaExpression, Extensions.VectorData.ConnectorSupport.CollectionModel model)
+    internal Metadata Translate(LambdaExpression lambdaExpression, Extensions.VectorData.ProviderServices.CollectionModel model)
     {
         this._model = model;
 

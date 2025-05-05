@@ -2,13 +2,14 @@
 
 using System;
 using System.Linq.Expressions;
+using System.Threading;
 
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines options for vector search.
+/// Defines options for vector search via <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}(TInput, int, RecordSearchOptions{TRecord}, CancellationToken)"/>.
 /// </summary>
-public class VectorSearchOptions<TRecord>
+public class RecordSearchOptions<TRecord>
 {
     private int _skip = 0;
 
@@ -16,12 +17,12 @@ public class VectorSearchOptions<TRecord>
     /// Gets or sets a search filter to use before doing the vector search.
     /// </summary>
     [Obsolete("Use Filter instead")]
-    public VectorSearchFilter? OldFilter { get; init; }
+    public VectorSearchFilter? OldFilter { get; set; }
 
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
     /// </summary>
-    public Expression<Func<TRecord, bool>>? Filter { get; init; }
+    public Expression<Func<TRecord, bool>>? Filter { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the vector property to search on.
@@ -32,7 +33,7 @@ public class VectorSearchOptions<TRecord>
     /// will throw if either none or multiple exist.
     /// </value>
     [Obsolete("Use VectorProperty instead")]
-    public string? VectorPropertyName { get; init; }
+    public string? VectorPropertyName { get; set; }
 
     /// <summary>
     /// Gets or sets the vector property to search on.
@@ -42,7 +43,7 @@ public class VectorSearchOptions<TRecord>
     /// If not provided will check if there is a vector property to use by default, and
     /// will throw if either none or multiple exist.
     /// </value>
-    public Expression<Func<TRecord, object?>>? VectorProperty { get; init; }
+    public Expression<Func<TRecord, object?>>? VectorProperty { get; set; }
 
     /// <summary>
     /// Gets or sets the number of results to skip before returning results, that is, the index of the first result to return.
@@ -51,7 +52,7 @@ public class VectorSearchOptions<TRecord>
     public int Skip
     {
         get => this._skip;
-        init
+        set
         {
             if (value < 0)
             {
@@ -65,7 +66,7 @@ public class VectorSearchOptions<TRecord>
     /// <summary>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.
     /// </summary>
-    public bool IncludeVectors { get; init; } = false;
+    public bool IncludeVectors { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the total count should be included in the results.
@@ -78,5 +79,5 @@ public class VectorSearchOptions<TRecord>
     /// count will be null even if requested via this option.
     /// </remarks>
     [Obsolete("Total count is no longer included in the results.", error: true)]
-    public bool IncludeTotalCount { get; init; } = false;
+    public bool IncludeTotalCount { get; set; }
 }

@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// <summary>
 /// Options when creating a <see cref="PineconeCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class PineconeCollectionOptions<TRecord>
+public sealed class PineconeCollectionOptions
 {
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

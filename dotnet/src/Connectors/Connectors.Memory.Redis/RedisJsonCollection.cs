@@ -12,8 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using NRedisStack.Json.DataTypes;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
@@ -30,7 +30,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>
@@ -59,13 +59,13 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     };
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
 
     /// <summary>Optional configuration options for this class.</summary>
-    private readonly RedisJsonCollectionOptions<TRecord> _options;
+    private readonly RedisJsonCollectionOptions _options;
 
     /// <summary>The model.</summary>
     private readonly CollectionModel _model;
@@ -86,7 +86,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     /// <param name="name">The name of the collection that this <see cref="RedisJsonCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
-    public RedisJsonCollection(IDatabase database, string name, RedisJsonCollectionOptions<TRecord>? options = null)
+    public RedisJsonCollection(IDatabase database, string name, RedisJsonCollectionOptions? options = null)
     {
         // Verify.
         Verify.NotNull(database);
@@ -102,7 +102,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
         // Assign.
         this._database = database;
         this.Name = name;
-        this._options = options ?? new RedisJsonCollectionOptions<TRecord>();
+        this._options = options ?? new RedisJsonCollectionOptions();
         this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
         this._model = isDynamic ?
             new CollectionModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator) :
@@ -141,7 +141,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
         }
         catch (RedisConnectionException ex)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -184,7 +184,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
             await this.RunOperationAsync("FT.DROPINDEX",
                 () => this._database.FT().DropIndexAsync(this.Name)).ConfigureAwait(false);
         }
-        catch (VectorStoreOperationException ex) when (ex.InnerException is RedisServerException)
+        catch (VectorStoreException ex) when (ex.InnerException is RedisServerException)
         {
             // The RedisServerException does not expose any reliable way of checking if the index does not exist.
             // It just sets the message to "Unknown index name".
@@ -199,7 +199,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     }
 
     /// <inheritdoc />
-    public override async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         var stringKey = this.GetStringKey(key);
 
@@ -242,7 +242,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, RecordRetrievalOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -373,7 +373,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -420,7 +420,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        VectorSearchOptions<TRecord>? options = null,
+        RecordSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -434,7 +434,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
         int top,
         VectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord> options,
+        RecordSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -486,14 +486,14 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        FilteredRecordRetrievalOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -567,7 +567,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     }
 
     /// <summary>
-    /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreOperationException"/>."/>
+    /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreException"/>."/>
     /// </summary>
     /// <typeparam name="T">The response type of the operation.</typeparam>
     /// <param name="operationName">The type of database operation being run.</param>
@@ -580,7 +580,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
             operation);
 
     /// <summary>
-    /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreOperationException"/>."/>
+    /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreException"/>."/>
     /// </summary>
     /// <param name="operationName">The type of database operation being run.</param>
     /// <param name="operation">The operation to run.</param>

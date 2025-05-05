@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <summary>
 /// Options when creating a <see cref="PostgresCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class PostgresCollectionOptions<TRecord>
+public sealed class PostgresCollectionOptions
 {
     /// <summary>
     /// Gets or sets the database schema.

@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
@@ -142,7 +142,7 @@ internal static class SqliteCommandBuilder
         string tableName,
         CollectionModel model,
         List<SqliteWhereCondition> conditions,
-        GetFilteredRecordOptions<TRecord>? filterOptions = null,
+        FilteredRecordRetrievalOptions<TRecord>? filterOptions = null,
         string? extraWhereFilter = null,
         Dictionary<string, object>? extraParameters = null,
         int top = 0,
@@ -177,7 +177,7 @@ internal static class SqliteCommandBuilder
         CollectionModel model,
         IReadOnlyList<SqliteWhereCondition> conditions,
         bool includeDistance,
-        GetFilteredRecordOptions<TRecord>? filterOptions = null,
+        FilteredRecordRetrievalOptions<TRecord>? filterOptions = null,
         string? extraWhereFilter = null,
         Dictionary<string, object>? extraParameters = null,
         int top = 0,
@@ -263,7 +263,7 @@ internal static class SqliteCommandBuilder
     }
 
     private static StringBuilder AppendOrderBy<TRecord>(this StringBuilder builder, CollectionModel model,
-        GetFilteredRecordOptions<TRecord> options, string? tableName = null)
+        FilteredRecordRetrievalOptions<TRecord> options, string? tableName = null)
     {
         if (options.OrderBy.Values.Count > 0)
         {

@@ -39,7 +39,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<string, Glossary>("skglossary");
         await collection.CreateCollectionIfNotExistsAsync();
-        var hybridSearchCollection = (IKeywordHybridSearch<Glossary>)collection;
+        var hybridSearchCollection = (IKeywordHybridSearchable<Glossary>)collection;
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateGlossaryEntries().ToList();

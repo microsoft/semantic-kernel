@@ -69,7 +69,7 @@ public class RedisServiceCollectionExtensionsTests
         Assert.IsType<RedisVectorStore>(vectorStore);
     }
 
-    private void AssertHashSetVectorStoreRecordCollectionCreated<TRecord>() where TRecord : notnull
+    private void AssertHashSetVectorStoreRecordCollectionCreated<TRecord>() where TRecord : class
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
         var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TRecord>>();
@@ -77,7 +77,7 @@ public class RedisServiceCollectionExtensionsTests
         Assert.IsType<RedisHashSetCollection<string, TRecord>>(collection);
     }
 
-    private void AssertJsonVectorStoreRecordCollectionCreated<TRecord>() where TRecord : notnull
+    private void AssertJsonVectorStoreRecordCollectionCreated<TRecord>() where TRecord : class
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
         var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TRecord>>();

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData;
@@ -13,16 +14,20 @@ namespace Microsoft.Extensions.VectorData;
 /// </remarks>
 public sealed class VectorStoreRecordDefinition
 {
-    /// <summary>Empty static list for initialization purposes.</summary>
-    private static readonly List<VectorStoreProperty> s_emptyFields = new();
+    private IList<VectorStoreProperty>? _properties;
 
     /// <summary>
     /// Gets or sets the list of properties that are stored in the record.
     /// </summary>
-    public IReadOnlyList<VectorStoreProperty> Properties { get; init; } = s_emptyFields;
+    [AllowNull]
+    public IList<VectorStoreProperty> Properties
+    {
+        get => this._properties ??= [];
+        set => this._properties = value;
+    }
 
     /// <summary>
     /// Gets or sets the default embedding generator for vector properties in this collection.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

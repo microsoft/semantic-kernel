@@ -3,7 +3,7 @@
 using System;
 using System.Reflection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;

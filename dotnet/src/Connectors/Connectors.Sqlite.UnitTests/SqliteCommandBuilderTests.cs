@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Xunit;
 
@@ -194,7 +194,7 @@ public sealed class SqliteCommandBuilderTests : IDisposable
             new SqliteWhereEqualsCondition("Name", "NameValue"),
             new SqliteWhereInCondition("Age", [10, 20, 30]),
         };
-        GetFilteredRecordOptions<Dictionary<string, object?>> filterOptions = new();
+        FilteredRecordRetrievalOptions<Dictionary<string, object?>> filterOptions = new();
         if (!string.IsNullOrWhiteSpace(orderByPropertyName))
         {
             filterOptions.OrderBy.Ascending(record => record[orderByPropertyName]);
@@ -249,7 +249,7 @@ public sealed class SqliteCommandBuilderTests : IDisposable
             new SqliteWhereEqualsCondition("Name", "NameValue"),
             new SqliteWhereInCondition("Age", [10, 20, 30]),
         };
-        GetFilteredRecordOptions<Dictionary<string, object?>> filterOptions = new();
+        FilteredRecordRetrievalOptions<Dictionary<string, object?>> filterOptions = new();
         if (!string.IsNullOrWhiteSpace(orderByPropertyName))
         {
             filterOptions.OrderBy.Ascending(record => record[orderByPropertyName]);

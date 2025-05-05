@@ -26,7 +26,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
         var resultMapper = new DataModelTextSearchResultMapper();
 
         // Act
-        services.AddSingleton<IVectorSearch<DataModel>>(collection);
+        services.AddSingleton<IVectorSearchable<DataModel>>(collection);
         services.AddSingleton<ITextSearchStringMapper>(stringMapper);
         services.AddSingleton<ITextSearchResultMapper>(resultMapper);
         services.AddVectorStoreTextSearch<DataModel>();
@@ -48,7 +48,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
         var collection = vectorStore.GetCollection<Guid, DataModel>("records");
 
         // Act
-        services.AddSingleton<IVectorSearch<DataModel>>(collection);
+        services.AddSingleton<IVectorSearchable<DataModel>>(collection);
         services.AddVectorStoreTextSearch<DataModel>();
 
         // Assert
@@ -68,7 +68,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
         var collection = vectorStore.GetCollection<Guid, DataModel>("records");
 
         // Act
-        services.AddKeyedSingleton<IVectorSearch<DataModel>>("vs1", collection);
+        services.AddKeyedSingleton<IVectorSearchable<DataModel>>("vs1", collection);
         services.AddVectorStoreTextSearch<DataModel>("vs1");
 
         // Assert
@@ -88,7 +88,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
         var collection = vectorStore.GetCollection<Guid, DataModel>("records");
 
         // Act
-        services.AddKeyedSingleton<IVectorSearch<DataModel>>("vs1", collection);
+        services.AddKeyedSingleton<IVectorSearchable<DataModel>>("vs1", collection);
         services.AddVectorStoreTextSearch<DataModel>("vs2");
 
         // Assert
@@ -107,7 +107,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
         using var generator = new MockTextEmbeddingGenerator();
 
         // Act
-        services.AddKeyedSingleton<IVectorSearch<DataModelWithRawEmbedding>>("vs1", collection);
+        services.AddKeyedSingleton<IVectorSearchable<DataModelWithRawEmbedding>>("vs1", collection);
         services.AddKeyedSingleton<ITextEmbeddingGenerationService>("tegs1", generator);
 
         services.AddVectorStoreTextSearch<DataModelWithRawEmbedding>("vs1", "tegs1");
@@ -128,7 +128,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
         using var textGeneration = new MockTextEmbeddingGenerator();
 
         // Act
-        services.AddKeyedSingleton<IVectorSearch<DataModelWithRawEmbedding>>("vs1", collection);
+        services.AddKeyedSingleton<IVectorSearchable<DataModelWithRawEmbedding>>("vs1", collection);
         services.AddKeyedSingleton<ITextEmbeddingGenerationService>("tegs1", textGeneration);
 
         services.AddVectorStoreTextSearch<DataModelWithRawEmbedding>("vs2", "tegs1");
@@ -148,7 +148,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
         using var textGeneration = new MockTextEmbeddingGenerator();
 
         // Act
-        services.AddKeyedSingleton<IVectorSearch<DataModelWithRawEmbedding>>("vs1", vectorSearch);
+        services.AddKeyedSingleton<IVectorSearchable<DataModelWithRawEmbedding>>("vs1", vectorSearch);
         services.AddKeyedSingleton<ITextEmbeddingGenerationService>("tegs1", textGeneration);
 
         services.AddVectorStoreTextSearch<DataModelWithRawEmbedding>("vs1", "tegs2");

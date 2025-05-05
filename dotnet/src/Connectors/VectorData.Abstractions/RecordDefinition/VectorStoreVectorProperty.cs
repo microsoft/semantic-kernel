@@ -2,7 +2,7 @@
 
 using System;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -40,27 +40,13 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class by cloning the given source.
-    /// </summary>
-    /// <param name="source">The source to clone.</param>
-    public VectorStoreVectorProperty(VectorStoreVectorProperty source)
-        : base(source)
-    {
-        this.Dimensions = source.Dimensions;
-        this.IndexKind = source.IndexKind;
-        this.DistanceFunction = source.DistanceFunction;
-        this.EmbeddingGenerator = source.EmbeddingGenerator;
-        this.EmbeddingType = source.EmbeddingType;
-    }
-
-    /// <summary>
     /// Gets or sets the default embedding generator to use for this property.
     /// </summary>
     /// <remarks>
     /// If not set, embedding generation will be performed in the database, if supported by your connector.
-    /// If not supported, only pre-generated embeddings can be used, e.g. via <see cref="IVectorSearch{TRecord}.SearchEmbeddingAsync{TVector}"/>.
+    /// If not supported, only pre-generated embeddings can be used, e.g. via <see cref="IVectorSearchable{TRecord}.SearchEmbeddingAsync{TVector}"/>.
     /// </remarks>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 
     /// <summary>
     /// Gets or sets the number of dimensions that the vector has.
@@ -73,7 +59,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     {
         get => this._dimensions;
 
-        init
+        set
         {
             if (value <= 0)
             {
@@ -91,7 +77,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// The default varies by database type. See the documentation of your chosen database connector for more information.
     /// </value>
     /// <seealso cref="Microsoft.Extensions.VectorData.IndexKind"/>
-    public string? IndexKind { get; init; }
+    public string? IndexKind { get; set; }
 
     /// <summary>
     /// Gets or sets the distance function to use when comparing vectors.
@@ -100,12 +86,12 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// The default varies by database type. See the documentation of your chosen database connector for more information.
     /// </value>
     /// <seealso cref="Microsoft.Extensions.VectorData.DistanceFunction"/>
-    public string? DistanceFunction { get; init; }
+    public string? DistanceFunction { get; set; }
 
     /// <summary>
     /// Gets or sets the desired embedding type (e.g. <c>Embedding&lt;Half&gt;</c>, for cases where the default (typically <c>Embedding&lt;float&gt;</c>) isn't suitable.
     /// </summary>
-    public Type? EmbeddingType { get; init; }
+    public Type? EmbeddingType { get; set; }
 
     internal virtual VectorPropertyModel CreatePropertyModel()
         => new(this.DataModelPropertyName, this.PropertyType)

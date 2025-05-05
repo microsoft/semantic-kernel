@@ -125,9 +125,9 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             await collection.UpsertAsync(inserted);
 
             // Let's use a model with different storage names to trigger an SQL exception
-            // which should be mapped to VectorStoreOperationException.
+            // which should be mapped to VectorStoreException.
             var differentNamesCollection = testStore.DefaultVectorStore.GetCollection<string, DifferentStorageNames>(collectionName);
-            VectorStoreOperationException operationEx = await Assert.ThrowsAsync<VectorStoreOperationException>(() => differentNamesCollection.GetAsync(inserted.Id));
+            VectorStoreException operationEx = await Assert.ThrowsAsync<VectorStoreException>(() => differentNamesCollection.GetAsync(inserted.Id));
             Assert.IsType<SqlException>(operationEx.InnerException);
 
             // Let's use a model with the same storage names, but different types

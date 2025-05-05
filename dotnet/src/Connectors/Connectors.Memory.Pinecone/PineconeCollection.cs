@@ -10,8 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Pinecone;
 using Sdk = Pinecone;
 
@@ -25,17 +25,17 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     private readonly Sdk.PineconeClient _pineconeClient;
-    private readonly PineconeCollectionOptions<TRecord> _options;
-    private readonly Extensions.VectorData.ConnectorSupport.CollectionModel _model;
+    private readonly PineconeCollectionOptions _options;
+    private readonly Extensions.VectorData.ProviderServices.CollectionModel _model;
     private readonly PineconeMapper<TRecord> _mapper;
     private IndexClient? _indexClient;
 
@@ -50,7 +50,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="pineconeClient"/> is null.</exception>
     /// <param name="name">The name of the collection that this <see cref="PineconeCollection{TKey, TRecord}"/> will access.</param>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    public PineconeCollection(Sdk.PineconeClient pineconeClient, string name, PineconeCollectionOptions<TRecord>? options = null)
+    public PineconeCollection(Sdk.PineconeClient pineconeClient, string name, PineconeCollectionOptions? options = null)
     {
         Verify.NotNull(pineconeClient);
         VerifyCollectionName(name);
@@ -62,7 +62,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         this._pineconeClient = pineconeClient;
         this.Name = name;
-        this._options = options ?? new PineconeCollectionOptions<TRecord>();
+        this._options = options ?? new PineconeCollectionOptions();
         this._model = new CollectionModelBuilder(PineconeFieldMapping.ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
         this._mapper = new PineconeMapper<TRecord>(this._model);
@@ -125,7 +125,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             {
                 await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (VectorStoreOperationException ex) when (ex.InnerException is PineconeApiException apiEx && apiEx.InnerException is ConflictError)
+            catch (VectorStoreException ex) when (ex.InnerException is PineconeApiException apiEx && apiEx.InnerException is ConflictError)
             {
                 // If the collection got created in the meantime, we should ignore the exception.
             }
@@ -145,7 +145,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         }
         catch (PineconeApiException other)
         {
-            throw new VectorStoreOperationException("Call to vector store failed.", other)
+            throw new VectorStoreException("Call to vector store failed.", other)
             {
                 VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
@@ -156,7 +156,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     }
 
     /// <inheritdoc />
-    public override async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         var includeVectors = options?.IncludeVectors is true;
         if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
@@ -186,7 +186,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <inheritdoc />
     public override async IAsyncEnumerable<TRecord> GetAsync(
         IEnumerable<TKey> keys,
-        GetRecordOptions? options = default,
+        RecordRetrievalOptions? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
@@ -366,7 +366,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -399,7 +399,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        VectorSearchOptions<TRecord>? options = null,
+        RecordSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         options ??= s_defaultVectorSearchOptions;
@@ -413,7 +413,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         int top,
         VectorPropertyModel vectorProperty,
         string operationName,
-        VectorSearchOptions<TRecord> options,
+        RecordSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TVector : notnull
     {
@@ -485,13 +485,13 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);

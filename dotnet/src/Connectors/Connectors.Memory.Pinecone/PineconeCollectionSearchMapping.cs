@@ -20,7 +20,7 @@ internal static class PineconeCollectionSearchMapping
     /// <param name="model">The model.</param>
     /// <returns>The Pinecone <see cref="Metadata"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown for invalid property names, value types or filter clause types.</exception>
-    public static Metadata BuildSearchFilter(IEnumerable<FilterClause>? filterClauses, Extensions.VectorData.ConnectorSupport.CollectionModel model)
+    public static Metadata BuildSearchFilter(IEnumerable<FilterClause>? filterClauses, Extensions.VectorData.ProviderServices.CollectionModel model)
     {
         var metadataMap = new Metadata();
 

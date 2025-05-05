@@ -19,11 +19,11 @@ namespace Microsoft.Extensions.VectorData;
 /// </remarks>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
 #pragma warning disable CS0618 // IVectorizedSearch is obsolete
-public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TRecord>, IVectorizedSearch<TRecord>
+public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<TRecord>, IVectorizedSearch<TRecord>
 #pragma warning restore CS0618 // IVectorizedSearch is obsolete
 #pragma warning restore CA1711
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 {
     /// <summary>
     /// Gets the name of the collection.
@@ -66,8 +66,8 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
     /// <param name="options">Optional options for retrieving the record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The record if found, otherwise null.</returns>
-    /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    public abstract Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    /// <exception cref="VectorStoreException">The command fails to execute for any reason.</exception>
+    public abstract Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets a batch of records from the vector store. Does not guarantee that the collection exists.
@@ -88,8 +88,8 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
     /// This method throws for any issues other than records not being found.
     /// </para>
     /// </remarks>
-    /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    public virtual async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    /// <exception cref="VectorStoreException">The command fails to execute for any reason.</exception>
+    public virtual async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, RecordRetrievalOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var key in keys)
         {
@@ -108,7 +108,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
     /// <param name="key">The unique ID associated with the record to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The unique identifier for the record.</returns>
-    /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason other than that the record does not exist.</exception>
+    /// <exception cref="VectorStoreException">The command fails to execute for any reason other than that the record does not exist.</exception>
     public abstract Task DeleteAsync(TKey key, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -127,7 +127,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
     /// If any record can't be deleted for any other reason, the operation throws. Some records might have already been deleted while others might not have, so the entire operation should be retried.
     /// </para>
     /// </remarks>
-    /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason other than that a record does not exist.</exception>
+    /// <exception cref="VectorStoreException">The command fails to execute for any reason other than that a record does not exist.</exception>
     public virtual async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         foreach (var key in keys)
@@ -143,7 +143,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
     /// </summary>
     /// <param name="record">The record to upsert.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
+    /// <exception cref="VectorStoreException">The command fails to execute for any reason.</exception>
     public abstract Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -168,7 +168,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
     /// generating an embedding for each record separately. This is why a default implementation that calls <see cref="UpsertAsync(TRecord, CancellationToken)"/> is not provided.
     /// </para>
     /// </remarks>
-    /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
+    /// <exception cref="VectorStoreException">The command fails to execute for any reason.</exception>
     public abstract Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -179,20 +179,20 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearch<TReco
     /// <param name="options">Options for retrieving the records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The records matching given predicate.</returns>
-    /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
-    public abstract IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default);
+    /// <exception cref="VectorStoreException">The command fails to execute for any reason.</exception>
+    public abstract IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default);
 
     /// <inheritdoc />
-    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(TInput value, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(TInput value, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         where TInput : notnull;
 
     /// <inheritdoc />
-    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         where TVector : notnull;
 
     /// <inheritdoc />
     [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         where TVector : notnull;
 
     /// <inheritdoc />

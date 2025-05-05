@@ -59,14 +59,20 @@ public sealed class QdrantVectorStore : VectorStore
         };
     }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    public override QdrantCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        => new QdrantCollection<TKey, TRecord>(this._qdrantClient, name, new QdrantCollectionOptions<TRecord>()
+#endif
+        => new QdrantCollection<TKey, TRecord>(this._qdrantClient, name, new QdrantCollectionOptions()
         {
             HasNamedVectors = this._options.HasNamedVectors,
             VectorStoreRecordDefinition = vectorStoreRecordDefinition,
             EmbeddingGenerator = this._options.EmbeddingGenerator
         });
+#pragma warning restore IDE0090
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

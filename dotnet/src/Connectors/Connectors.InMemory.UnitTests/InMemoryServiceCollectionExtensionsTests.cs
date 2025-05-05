@@ -52,7 +52,7 @@ public class InMemoryServiceCollectionExtensionsTests
         Assert.NotNull(collection);
         Assert.IsType<InMemoryCollection<string, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearchable<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
         Assert.IsType<InMemoryCollection<string, TestRecord>>(vectorizedSearch);
     }
