@@ -91,7 +91,7 @@ public static class PostgresServiceCollectionExtensions
     public static IServiceCollection AddPostgresVectorStoreRecordCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
-        PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        PostgresCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
         where TRecord : notnull
@@ -101,12 +101,12 @@ public static class PostgresServiceCollectionExtensions
             (sp, obj) =>
             {
                 var dataSource = sp.GetRequiredService<NpgsqlDataSource>();
-                options ??= sp.GetService<PostgresVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<PostgresCollectionOptions<TRecord>>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return (new PostgresVectorStoreRecordCollection<TKey, TRecord>(dataSource, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                return (new PostgresCollection<TKey, TRecord>(dataSource, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);
@@ -130,7 +130,7 @@ public static class PostgresServiceCollectionExtensions
         this IServiceCollection services,
         string collectionName,
         string connectionString,
-        PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        PostgresCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
         where TRecord : notnull
@@ -152,12 +152,12 @@ public static class PostgresServiceCollectionExtensions
             {
                 var dataSource = sp.GetRequiredKeyedService<NpgsqlDataSource>(npgsqlServiceId);
 
-                options ??= sp.GetService<PostgresVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                options ??= sp.GetService<PostgresCollectionOptions<TRecord>>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return (new PostgresVectorStoreRecordCollection<TKey, TRecord>(dataSource, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                return (new PostgresCollection<TKey, TRecord>(dataSource, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);

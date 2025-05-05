@@ -53,6 +53,6 @@ internal static class SqliteConstants
         SupportedEnumerableDataPropertyElementTypes = [],
         SupportedVectorPropertyTypes = SupportedVectorTypes,
 
-        EscapeIdentifier = SqliteVectorStoreCollectionCommandBuilder.EscapeIdentifier
+        EscapeIdentifier = SqliteCommandBuilder.EscapeIdentifier
     };
 }

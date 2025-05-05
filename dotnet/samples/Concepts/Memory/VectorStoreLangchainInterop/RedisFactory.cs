@@ -54,7 +54,7 @@ public static class RedisFactory
             // Also pass in our custom record definition that matches the schema used by Langchain
             // so that the default mapper can use the storage names in it, to map to the storage
             // scheme.
-            return (new RedisHashSetVectorStoreRecordCollection<TKey, TRecord>(
+            return (new RedisHashSetCollection<TKey, TRecord>(
                 _database,
                 name,
                 new()

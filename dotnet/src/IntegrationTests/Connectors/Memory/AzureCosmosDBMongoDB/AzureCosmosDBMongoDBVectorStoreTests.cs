@@ -10,6 +10,6 @@ namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 [Collection("AzureCosmosDBMongoDBVectorStoreCollection")]
 [DisableVectorStoreTests(Skip = "Azure CosmosDB MongoDB cluster is required")]
 public class AzureCosmosDBMongoDBVectorStoreTests(AzureCosmosDBMongoDBVectorStoreFixture fixture)
-    : BaseVectorStoreTests<string, AzureCosmosDBMongoDBHotel>(new AzureCosmosDBMongoDBVectorStore(fixture.MongoDatabase))
+    : BaseVectorStoreTests<string, AzureCosmosDBMongoDBHotel>(new CosmosMongoVectorStore(fixture.MongoDatabase))
 {
 }

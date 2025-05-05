@@ -21,7 +21,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     public async Task ItCanCreateCollectionAsync()
     {
         // Arrange
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "TestCreateCollection");
+        var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "TestCreateCollection");
 
         // Act
         await sut.CreateCollectionAsync();
@@ -36,7 +36,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     public async Task ItCanCheckIfCollectionExistsAsync(string collectionName, bool collectionExists)
     {
         // Arrange
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(fixture.HttpClient!, collectionName);
+        var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, collectionName);
 
         if (collectionExists)
         {
@@ -60,12 +60,12 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         // Arrange
         var hotelId = new Guid("55555555-5555-5555-5555-555555555555");
 
-        var options = new WeaviateVectorStoreRecordCollectionOptions<WeaviateHotel>
+        var options = new WeaviateCollectionOptions<WeaviateHotel>
         {
             VectorStoreRecordDefinition = useRecordDefinition ? this.GetTestHotelRecordDefinition() : null
         };
 
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(fixture.HttpClient!, collectionName, options);
+        var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, collectionName, options);
 
         var record = this.CreateTestHotel(hotelId);
 
@@ -104,7 +104,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         // Arrange
         const string CollectionName = "TestDeleteCollection";
 
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(fixture.HttpClient!, CollectionName);
+        var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, CollectionName);
 
         await sut.CreateCollectionAsync();
 
@@ -123,7 +123,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         // Arrange
         var hotelId = new Guid("55555555-5555-5555-5555-555555555555");
 
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "TestDeleteRecord");
+        var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "TestDeleteRecord");
 
         await sut.CreateCollectionAsync();
 
@@ -151,7 +151,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         var hotelId2 = new Guid("22222222-2222-2222-2222-222222222222");
         var hotelId3 = new Guid("33333333-3333-3333-3333-333333333333");
 
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "TestBatch");
+        var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "TestBatch");
 
         await sut.CreateCollectionAsync();
 
@@ -180,7 +180,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     {
         // Arrange
         var hotelId = new Guid("55555555-5555-5555-5555-555555555555");
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "TestUpsert");
+        var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "TestUpsert");
 
         await sut.CreateCollectionAsync();
 
@@ -215,7 +215,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         var hotel3 = this.CreateTestHotel(hotelId: new Guid("33333333-3333-3333-3333-333333333333"), embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: new Guid("44444444-4444-4444-4444-444444444444"), embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "VectorSearchDefault");
+        var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "VectorSearchDefault");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
@@ -252,7 +252,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         var hotel3 = this.CreateTestHotel(hotelId: new Guid("33333333-3333-3333-3333-333333333333"), embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: new Guid("44444444-4444-4444-4444-444444444444"), embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "VectorSearchWithOffset");
+        var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "VectorSearchWithOffset");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
@@ -284,7 +284,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         var hotel3 = this.CreateTestHotel(hotelId: new Guid("33333333-3333-3333-3333-333333333333"), embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: new Guid("44444444-4444-4444-4444-444444444444"), embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "VectorSearchWithFilter");
+        var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "VectorSearchWithFilter");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
@@ -327,7 +327,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
             Timestamp = new DateTime(2024, 9, 22, 15, 59, 42)
         };
 
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "VectorSearchWithFilterAndDataTypes");
+        var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "VectorSearchWithFilterAndDataTypes");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
@@ -352,12 +352,12 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     {
         // Arrange
         var hotelId = new Guid("55555555-5555-5555-5555-555555555555");
-        var options = new WeaviateVectorStoreRecordCollectionOptions<Dictionary<string, object?>>
+        var options = new WeaviateCollectionOptions<Dictionary<string, object?>>
         {
             VectorStoreRecordDefinition = this.GetTestHotelRecordDefinition()
         };
 
-        var sut = new WeaviateVectorStoreRecordCollection<object, Dictionary<string, object?>>(fixture.HttpClient!, "TestDynamicMapper", options);
+        var sut = new WeaviateCollection<object, Dictionary<string, object?>>(fixture.HttpClient!, "TestDynamicMapper", options);
 
         await sut.CreateCollectionAsync();
 

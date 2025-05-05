@@ -26,7 +26,7 @@ public class InMemoryVectorStoreTests
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<InMemoryVectorStoreRecordCollection<string, SinglePropsModel<string>>>(actual);
+        Assert.IsType<InMemoryCollection<string, SinglePropsModel<string>>>(actual);
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class InMemoryVectorStoreTests
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<InMemoryVectorStoreRecordCollection<int, SinglePropsModel<int>>>(actual);
+        Assert.IsType<InMemoryCollection<int, SinglePropsModel<int>>>(actual);
     }
 
     [Fact]

@@ -50,11 +50,11 @@ public class InMemoryServiceCollectionExtensionsTests
 
         var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<InMemoryVectorStoreRecordCollection<string, TestRecord>>(collection);
+        Assert.IsType<InMemoryCollection<string, TestRecord>>(collection);
 
         var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<InMemoryVectorStoreRecordCollection<string, TestRecord>>(vectorizedSearch);
+        Assert.IsType<InMemoryCollection<string, TestRecord>>(vectorizedSearch);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes

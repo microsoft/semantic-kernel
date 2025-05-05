@@ -18,7 +18,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
 
 /// <summary>
-/// Integration tests for <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TKey, TRecord}"/> class.
+/// Integration tests for <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> class.
 /// </summary>
 [Collection("AzureCosmosDBNoSQLVectorStoreCollection")]
 [AzureCosmosDBNoSQLConnectionStringSetCondition]
@@ -28,7 +28,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
     public async Task ItCanCreateCollectionAsync()
     {
         // Arrange
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, "test-create-collection");
+        var sut = new CosmosNoSqlCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, "test-create-collection");
 
         // Act
         await sut.CreateCollectionAsync();
@@ -43,7 +43,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, collectionName);
+        var sut = new CosmosNoSqlCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, collectionName);
 
         if (expectedExists)
         {
@@ -71,12 +71,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         collectionNamePostfix = includeVectors ? $"{collectionNamePostfix}-with-vectors" : $"{collectionNamePostfix}-without-vectors";
         var collectionName = $"collection-{collectionNamePostfix}";
 
-        var options = new AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<AzureCosmosDBNoSQLHotel>
+        var options = new CosmosNoSqlCollectionOptions<AzureCosmosDBNoSQLHotel>
         {
             VectorStoreRecordDefinition = useRecordDefinition ? this.GetTestHotelRecordDefinition() : null
         };
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, collectionName);
+        var sut = new CosmosNoSqlCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, collectionName);
 
         var record = this.CreateTestHotel(HotelId);
 
@@ -118,7 +118,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         const string TempCollectionName = "test-delete-collection";
         await fixture.Database!.CreateContainerAsync(new ContainerProperties(TempCollectionName, "/id"));
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, TempCollectionName);
+        var sut = new CosmosNoSqlCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, TempCollectionName);
 
         Assert.True(await sut.CollectionExistsAsync());
 
@@ -137,7 +137,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
+        var sut = new CosmosNoSqlCollection<string, AzureCosmosDBNoSQLHotel>(
             fixture.Database!,
             collectionName,
             new() { IndexingMode = indexingMode, Automatic = indexingMode != IndexingMode.None });
@@ -167,8 +167,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         const string HotelId = "55555555-5555-5555-5555-555555555555";
         const string HotelName = "Test Hotel Name";
 
-        VectorStoreCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel> sut =
-            new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel>(
+        VectorStoreCollection<CosmosNoSqlCompositeKey, AzureCosmosDBNoSQLHotel> sut =
+            new CosmosNoSqlCollection<CosmosNoSqlCompositeKey, AzureCosmosDBNoSQLHotel>(
                 fixture.Database!,
                 "delete-with-partition-key",
                 new() { PartitionKeyPropertyName = "HotelName" });
@@ -179,7 +179,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 
         await sut.UpsertAsync(record);
 
-        var key = new AzureCosmosDBNoSQLCompositeKey(record.HotelId, record.HotelName!);
+        var key = new CosmosNoSqlCompositeKey(record.HotelId, record.HotelName!);
         var getResult = await sut.GetAsync(key);
 
         Assert.NotNull(getResult);
@@ -201,7 +201,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         const string HotelId2 = "22222222-2222-2222-2222-222222222222";
         const string HotelId3 = "33333333-3333-3333-3333-333333333333";
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, "get-and-delete-batch");
+        var sut = new CosmosNoSqlCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, "get-and-delete-batch");
 
         await sut.CreateCollectionAsync();
 
@@ -230,7 +230,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, "upsert-record");
+        var sut = new CosmosNoSqlCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, "upsert-record");
 
         await sut.CreateCollectionAsync();
 
@@ -262,7 +262,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, "vector-search-default");
+        var sut = new CosmosNoSqlCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, "vector-search-default");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
@@ -292,7 +292,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, "vector-search-with-offset");
+        var sut = new CosmosNoSqlCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, "vector-search-with-offset");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
@@ -324,7 +324,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, "vector-search-with-filter");
+        var sut = new CosmosNoSqlCollection<string, AzureCosmosDBNoSQLHotel>(fixture.Database!, "vector-search-with-filter");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
@@ -347,12 +347,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
-        var options = new AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<Dictionary<string, object?>>
+        var options = new CosmosNoSqlCollectionOptions<Dictionary<string, object?>>
         {
             VectorStoreRecordDefinition = this.GetTestHotelRecordDefinition()
         };
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<object, Dictionary<string, object?>>(fixture.Database!, "dynamic-mapper", options);
+        var sut = new CosmosNoSqlCollection<object, Dictionary<string, object?>>(fixture.Database!, "dynamic-mapper", options);
 
         await sut.CreateCollectionAsync();
 

@@ -49,7 +49,7 @@ public sealed class InMemoryVectorStore : VectorStore
             throw new InvalidOperationException($"Collection '{name}' already exists and with data type '{existingCollectionDataType.Name}' so cannot be re-created with data type '{typeof(TRecord).Name}'.");
         }
 
-        var collection = new InMemoryVectorStoreRecordCollection<TKey, TRecord>(
+        var collection = new InMemoryCollection<TKey, TRecord>(
             this._internalCollections,
             this._internalCollectionTypes,
             name,

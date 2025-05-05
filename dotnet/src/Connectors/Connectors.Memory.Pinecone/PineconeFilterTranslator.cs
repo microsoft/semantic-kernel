@@ -280,7 +280,7 @@ internal class PineconeFilterTranslator
     }
 
     private static MetadataValue? ToMetadata(object? value)
-        => value is null ? null : PineconeVectorStoreRecordFieldMapping.ConvertToMetadataValue(value);
+        => value is null ? null : PineconeFieldMapping.ConvertToMetadataValue(value);
 
     private static List<MetadataValue?>? GetListOrNull(Metadata value, string mongoOperator)
         => value.Count == 1 && value.First() is var element && element.Key == mongoOperator ? element.Value?.Value as List<MetadataValue?> : null;

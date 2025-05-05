@@ -25,7 +25,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, collectionName);
+        var sut = new CosmosMongoCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, collectionName);
 
         // Act
         var actual = await sut.CollectionExistsAsync();
@@ -38,7 +38,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     public async Task ItCanCreateCollectionAsync()
     {
         // Arrange
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "sk-test-create-collection");
+        var sut = new CosmosMongoCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "sk-test-create-collection");
 
         try
         {
@@ -68,12 +68,12 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         var collectionNamePostfix = useRecordDefinition ? "with-definition" : "with-type";
         var collectionName = $"collection-{collectionNamePostfix}";
 
-        var options = new AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<AzureCosmosDBMongoDBHotel>
+        var options = new CosmosMongoCollectionOptions<AzureCosmosDBMongoDBHotel>
         {
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, collectionName);
+        var sut = new CosmosMongoCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, collectionName);
 
         var record = this.CreateTestHotel(HotelId);
 
@@ -115,7 +115,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         const string TempCollectionName = "temp-test";
         await fixture.MongoDatabase.CreateCollectionAsync(TempCollectionName);
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, TempCollectionName);
+        var sut = new CosmosMongoCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, TempCollectionName);
 
         Assert.True(await sut.CollectionExistsAsync());
 
@@ -131,7 +131,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+        var sut = new CosmosMongoCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
 
         var record = this.CreateTestHotel(HotelId);
 
@@ -157,7 +157,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         const string HotelId2 = "22222222-2222-2222-2222-222222222222";
         const string HotelId3 = "33333333-3333-3333-3333-333333333333";
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+        var sut = new CosmosMongoCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
 
         var record1 = this.CreateTestHotel(HotelId1);
         var record2 = this.CreateTestHotel(HotelId2);
@@ -184,7 +184,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+        var sut = new CosmosMongoCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
 
         var record = this.CreateTestHotel(HotelId);
 
@@ -221,7 +221,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 
         var model = new TestModel { Id = "key", HotelName = "Test Name" };
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, TestModel>(
+        var sut = new CosmosMongoCollection<string, TestModel>(
             fixture.MongoDatabase,
             fixture.TestCollection,
             new() { VectorStoreRecordDefinition = definition });
@@ -242,7 +242,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         // Arrange
         var model = new VectorStoreTestModel { HotelId = "key", HotelName = "Test Name" };
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, VectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
+        var sut = new CosmosMongoCollection<string, VectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
         await sut.UpsertAsync(model);
@@ -269,7 +269,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
 
         var model = new BsonTestModel { Id = "key", HotelName = "Test Name" };
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, BsonTestModel>(
+        var sut = new CosmosMongoCollection<string, BsonTestModel>(
             fixture.MongoDatabase,
             fixture.TestCollection,
             new() { VectorStoreRecordDefinition = definition });
@@ -290,7 +290,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         // Arrange
         var model = new BsonVectorStoreTestModel { HotelId = "key", HotelName = "Test Name" };
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, BsonVectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
+        var sut = new CosmosMongoCollection<string, BsonVectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
         await sut.UpsertAsync(model);
@@ -308,7 +308,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         // Arrange
         var model = new BsonVectorStoreWithNameTestModel { Id = "key", HotelName = "Test Name" };
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, BsonVectorStoreWithNameTestModel>(fixture.MongoDatabase, fixture.TestCollection);
+        var sut = new CosmosMongoCollection<string, BsonVectorStoreWithNameTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
         await sut.UpsertAsync(model);
@@ -329,7 +329,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearch");
+        var sut = new CosmosMongoCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearch");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
@@ -359,7 +359,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
+        var sut = new CosmosMongoCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
@@ -390,7 +390,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
+        var sut = new CosmosMongoCollection<string, AzureCosmosDBMongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
 
         await sut.CreateCollectionIfNotExistsAsync();
 
@@ -416,12 +416,12 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests(AzureCosmosDBM
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
-        var options = new AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<Dictionary<string, object?>>
+        var options = new CosmosMongoCollectionOptions<Dictionary<string, object?>>
         {
             VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
         };
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<object, Dictionary<string, object?>>(fixture.MongoDatabase, fixture.TestCollection, options);
+        var sut = new CosmosMongoCollection<object, Dictionary<string, object?>>(fixture.MongoDatabase, fixture.TestCollection, options);
 
         // Act
         await sut.UpsertAsync(new Dictionary<string, object?>

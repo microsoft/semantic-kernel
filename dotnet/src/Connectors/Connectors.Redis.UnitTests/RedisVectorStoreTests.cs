@@ -39,7 +39,7 @@ public class RedisVectorStoreTests
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<RedisJsonVectorStoreRecordCollection<string, SinglePropsModel<string>>>(actual);
+        Assert.IsType<RedisJsonCollection<string, SinglePropsModel<string>>>(actual);
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public class RedisVectorStoreTests
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel<string>>>(actual);
+        Assert.IsType<RedisHashSetCollection<string, SinglePropsModel<string>>>(actual);
     }
 
     [Fact]

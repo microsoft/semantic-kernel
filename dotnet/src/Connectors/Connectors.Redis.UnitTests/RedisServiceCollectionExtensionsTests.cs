@@ -74,7 +74,7 @@ public class RedisServiceCollectionExtensionsTests
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
         var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<RedisHashSetVectorStoreRecordCollection<string, TRecord>>(collection);
+        Assert.IsType<RedisHashSetCollection<string, TRecord>>(collection);
     }
 
     private void AssertJsonVectorStoreRecordCollectionCreated<TRecord>() where TRecord : notnull
@@ -82,7 +82,7 @@ public class RedisServiceCollectionExtensionsTests
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
         var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<RedisJsonVectorStoreRecordCollection<string, TRecord>>(collection);
+        Assert.IsType<RedisJsonCollection<string, TRecord>>(collection);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes

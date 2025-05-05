@@ -33,7 +33,7 @@ public sealed class PostgresVectorStore : VectorStore
     {
         this._dataSource = dataSource;
         this._options = options ?? new PostgresVectorStoreOptions();
-        this._postgresClient = new PostgresVectorStoreDbClient(this._dataSource, this._options.Schema);
+        this._postgresClient = new PostgresDbClient(this._dataSource, this._options.Schema);
 
         this._metadata = new()
         {
@@ -62,7 +62,7 @@ public sealed class PostgresVectorStore : VectorStore
     /// <inheritdoc />
     public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
-        return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
+        return PostgresUtils.WrapAsyncEnumerableAsync(
             this._postgresClient.GetTablesAsync(cancellationToken),
             "ListCollectionNames",
             this._metadata
@@ -71,10 +71,10 @@ public sealed class PostgresVectorStore : VectorStore
 
     /// <inheritdoc />
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        => new PostgresVectorStoreRecordCollection<TKey, TRecord>(
+        => new PostgresCollection<TKey, TRecord>(
             this._postgresClient,
             name,
-            new PostgresVectorStoreRecordCollectionOptions<TRecord>()
+            new PostgresCollectionOptions<TRecord>()
             {
                 Schema = this._options.Schema,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,

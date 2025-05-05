@@ -12,8 +12,8 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 
 /// <summary>
 /// Extension methods for <see cref="InMemoryVectorStore"/> which allow:
-/// 1. Serializing an instance of <see cref="InMemoryVectorStoreRecordCollection{TKey, TRecord}"/> to a stream.
-/// 2. Deserializing an instance of <see cref="InMemoryVectorStoreRecordCollection{TKey, TRecord}"/> from a stream.
+/// 1. Serializing an instance of <see cref="InMemoryCollection{TKey, TRecord}"/> to a stream.
+/// 2. Deserializing an instance of <see cref="InMemoryCollection{TKey, TRecord}"/> from a stream.
 /// </summary>
 public static class InMemoryVectorStoreExtensions
 {
@@ -42,7 +42,7 @@ public static class InMemoryVectorStoreExtensions
             throw new InvalidOperationException($"Collection '{collectionName}' does not exist.");
         }
 
-        var inMemoryCollection = collection as InMemoryVectorStoreRecordCollection<TKey, TRecord>;
+        var inMemoryCollection = collection as InMemoryCollection<TKey, TRecord>;
         var records = inMemoryCollection!.GetCollectionDictionary();
         InMemoryRecordCollection<object, object> recordCollection = new(collectionName, records);
 
@@ -89,7 +89,7 @@ public static class InMemoryVectorStoreExtensions
     }
 
     #region private
-    /// <summary>Model class used when storing a <see cref="InMemoryVectorStoreRecordCollection{TKey, TRecord}" />.</summary>
+    /// <summary>Model class used when storing a <see cref="InMemoryCollection{TKey, TRecord}" />.</summary>
     private sealed class InMemoryRecordCollection<TKey, TRecord>(string name, IDictionary<TKey, TRecord> records)
         where TKey : notnull
     {

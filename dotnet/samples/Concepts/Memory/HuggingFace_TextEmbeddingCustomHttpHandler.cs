@@ -32,7 +32,7 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
             })
         );
 
-        var sqliteCollection = new SqliteVectorStoreRecordCollection<string, Record>(
+        var sqliteCollection = new SqliteCollection<string, Record>(
             "Data Source=./../../../Sqlite.sqlite",
             name: "Test",
             new() { EmbeddingGenerator = hf.AsEmbeddingGenerator() });

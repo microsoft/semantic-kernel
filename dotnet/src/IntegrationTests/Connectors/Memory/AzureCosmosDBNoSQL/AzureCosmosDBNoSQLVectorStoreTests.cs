@@ -6,11 +6,11 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 
 /// <summary>
-/// Integration tests for <see cref="AzureCosmosDBNoSQLVectorStore"/>.
+/// Integration tests for <see cref="CosmosNoSqlVectorStore"/>.
 /// </summary>
 [Collection("AzureCosmosDBNoSQLVectorStoreCollection")]
 [AzureCosmosDBNoSQLConnectionStringSetCondition]
 public sealed class AzureCosmosDBNoSQLVectorStoreTests(AzureCosmosDBNoSQLVectorStoreFixture fixture)
-    : BaseVectorStoreTests<string, AzureCosmosDBNoSQLHotel>(new AzureCosmosDBNoSQLVectorStore(fixture.Database!))
+    : BaseVectorStoreTests<string, AzureCosmosDBNoSQLHotel>(new CosmosNoSqlVectorStore(fixture.Database!))
 {
 }
