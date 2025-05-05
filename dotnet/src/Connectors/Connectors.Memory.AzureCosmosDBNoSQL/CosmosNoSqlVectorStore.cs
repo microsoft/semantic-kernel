@@ -49,8 +49,13 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         };
     }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    public override CosmosNoSqlCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#endif
         => new CosmosNoSqlCollection<TKey, TRecord>(
             this._database,
             name,
@@ -59,7 +64,8 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 JsonSerializerOptions = this._options.JsonSerializerOptions,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as VectorStoreCollection<TKey, TRecord>;
+            });
+#pragma warning restore IDE0090
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

@@ -41,8 +41,13 @@ public sealed class InMemoryVectorStore : VectorStore
         };
     }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    public override InMemoryCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#endif
     {
         if (this._internalCollectionTypes.TryGetValue(name, out var existingCollectionDataType) && existingCollectionDataType != typeof(TRecord))
         {
@@ -57,9 +62,10 @@ public sealed class InMemoryVectorStore : VectorStore
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as VectorStoreCollection<TKey, TRecord>;
+            });
         return collection!;
     }
+#pragma warning restore IDE0090
 
     /// <inheritdoc />
     public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)

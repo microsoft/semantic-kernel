@@ -49,8 +49,13 @@ public sealed class MongoVectorStore : VectorStore
         };
     }
 
+#pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    public override MongoCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+#endif
         => new MongoCollection<TKey, TRecord>(
             this._mongoDatabase,
             name,
@@ -58,7 +63,8 @@ public sealed class MongoVectorStore : VectorStore
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as VectorStoreCollection<TKey, TRecord>;
+            });
+#pragma warning restore IDE0090
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
