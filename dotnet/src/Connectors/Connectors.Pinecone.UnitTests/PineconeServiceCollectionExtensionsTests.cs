@@ -5,8 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Xunit;
 using Pinecone;
+using Xunit;
 
 namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
