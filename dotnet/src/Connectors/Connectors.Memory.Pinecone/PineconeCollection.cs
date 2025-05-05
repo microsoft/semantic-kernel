@@ -13,7 +13,6 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.Extensions.VectorData.Properties;
 using Pinecone;
-using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
