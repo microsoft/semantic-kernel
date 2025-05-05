@@ -33,7 +33,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>Postgres client that is used to interact with the database.</summary>
-    private readonly IPostgresVectorStoreDbClient _client;
+    private readonly PostgresDbClient _client;
 
     // <summary>Optional configuration options for this class.</summary>
     private readonly PostgresCollectionOptions<TRecord> _options;
@@ -68,7 +68,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <remarks>
     /// This constructor is internal. It allows internal code to create an instance of this class with a custom client.
     /// </remarks>
-    internal PostgresCollection(IPostgresVectorStoreDbClient client, string name, PostgresCollectionOptions<TRecord>? options = default)
+    internal PostgresCollection(PostgresDbClient client, string name, PostgresCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(client);

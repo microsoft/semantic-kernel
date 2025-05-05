@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// </summary>
 public sealed class PostgresVectorStore : VectorStore
 {
-    private readonly IPostgresVectorStoreDbClient _postgresClient;
+    private readonly PostgresDbClient _postgresClient;
     private readonly PostgresVectorStoreOptions _options;
 
     /// <summary>Metadata about vector store.</summary>
@@ -42,22 +42,6 @@ public sealed class PostgresVectorStore : VectorStore
         };
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
-    /// </summary>
-    /// <param name="postgresDbClient">An instance of <see cref="IPostgresVectorStoreDbClient"/>.</param>
-    /// <param name="options">Optional configuration options for this class</param>
-    internal PostgresVectorStore(IPostgresVectorStoreDbClient postgresDbClient, PostgresVectorStoreOptions? options = default)
-    {
-        this._postgresClient = postgresDbClient;
-        this._options = options ?? new PostgresVectorStoreOptions();
-
-        this._metadata = new()
-        {
-            VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
-            VectorStoreName = this._postgresClient.DatabaseName
-        };
-    }
 
     /// <inheritdoc />
     public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)

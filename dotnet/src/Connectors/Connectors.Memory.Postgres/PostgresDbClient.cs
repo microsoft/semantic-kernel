@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <param name="dataSource">Postgres data source.</param>
 /// <param name="schema">Schema of collection tables.</param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
-internal class PostgresDbClient(NpgsqlDataSource dataSource, string schema = PostgresConstants.DefaultSchema) : IPostgresVectorStoreDbClient
+internal sealed class PostgresDbClient(NpgsqlDataSource dataSource, string schema = PostgresConstants.DefaultSchema)
 {
     private readonly string _schema = schema;
 
