@@ -5,8 +5,8 @@ using Memory.VectorStoreLangchainInterop;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
-using StackExchange.Redis;
 using Pinecone;
+using StackExchange.Redis;
 
 namespace Memory;
 
