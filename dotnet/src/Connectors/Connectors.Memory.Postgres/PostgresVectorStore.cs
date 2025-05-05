@@ -30,6 +30,8 @@ public sealed class PostgresVectorStore : VectorStore
     /// <param name="options">Optional configuration options for this class</param>
     public PostgresVectorStore(NpgsqlDataSource dataSource, PostgresVectorStoreOptions? options = default)
     {
+        Verify.NotNull(dataSource);
+
         this._options = options ?? new PostgresVectorStoreOptions();
         this._postgresClient = new PostgresDbClient(dataSource, this._options.Schema);
 

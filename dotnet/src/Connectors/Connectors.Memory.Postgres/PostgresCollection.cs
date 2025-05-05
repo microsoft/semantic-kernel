@@ -56,6 +56,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     public PostgresCollection(NpgsqlDataSource dataSource, string name, PostgresCollectionOptions<TRecord>? options = default)
         : this(new PostgresDbClient(dataSource), name, options)
     {
+        Verify.NotNull(dataSource);
     }
 
     /// <summary>
