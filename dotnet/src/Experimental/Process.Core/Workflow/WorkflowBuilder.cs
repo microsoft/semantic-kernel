@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
@@ -409,6 +410,7 @@ public class WorkflowBuilder
             Agent = agentStep.AgentDefinition,
             OnComplete = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnComplete),
             OnError = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnError),
+            Inputs = agentStep.Inputs?.ToDictionary(kvp => kvp.Key, kvp => new NodeInput { Type = kvp.Value.ToJsonString() })
         };
 
         foreach (var edge in agentStep.Edges)
@@ -526,7 +528,7 @@ public class WorkflowBuilder
 
     #endregion
 
-    private Dictionary<string, JsonSchema> ExtractNodeInputs(string nodeId)
+    private Dictionary<string, JsonNode> ExtractNodeInputs(string nodeId)
     {
         var input = new StringReader(this._yaml ?? "");
         var yamlStream = new YamlStream();
@@ -554,8 +556,9 @@ public class WorkflowBuilder
 
         // Serialize the object to a JSON string
         var jsonSchema = JsonSerializer.Serialize(yamlObject);
+        var jsonNode = JsonNode.Parse(jsonSchema);
 
-        var inputsDictionary = inputMap.Select(inputMap => new KeyValuePair<string, JsonSchema>(inputMap.Key.ToString(), JsonSchema.FromText(jsonSchema)))
+        var inputsDictionary = inputMap.Select(inputMap => new KeyValuePair<string, JsonNode>(inputMap.Key.ToString(), /*JsonSchema.FromText(jsonSchema)*/ jsonNode))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         return inputsDictionary;

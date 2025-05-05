@@ -3,9 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
+using System.Text.Json;
 using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process.Models;
+using YamlDotNet.Core;
+using System.Text.Json.Schema;
+using Json.Schema.Generation;
+using Json.More;
 
 namespace Microsoft.SemanticKernel;
 
@@ -76,7 +82,7 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// <summary>
     /// The inputs for this agent.
     /// </summary>
-    public Dictionary<string, JsonSchema>? Inputs { get; internal set; }
+    public Dictionary<string, JsonNode>? Inputs { get; internal set; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
@@ -105,9 +111,31 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// </summary>
     /// <param name="inputs"></param>
     /// <returns></returns>
-    public ProcessAgentBuilder WithInputs(Dictionary<string, JsonSchema> inputs)
+    public ProcessAgentBuilder WithInputs(Dictionary<string, JsonNode> inputs)
     {
         this.Inputs = inputs;
+        return this;
+    }
+
+    public ProcessAgentBuilder WithInputs(Dictionary<string, Type> inputs)
+    {
+        var schemaBuilder = new JsonSchemaBuilder();
+        this.Inputs ??= [];
+
+        this.Inputs = inputs.ToDictionary(
+            kvp => kvp.Key,
+            kvp =>
+            {
+                JsonSchema schema = schemaBuilder
+                    .FromType(kvp.Value)
+                    .Build();
+
+                var json = schema.ToJsonDocument().RootElement.ToString();
+                return string.IsNullOrEmpty(json)
+                    ? throw new KernelException($"Failed to convert {kvp.Value} to Json schema.")
+                    : JsonNode.Parse(json) ?? throw new KernelException("Failed to parse provided Json Schema.");
+            });
+
         return this;
     }
 

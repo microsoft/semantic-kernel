@@ -113,6 +113,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
 
         var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, threadName: "shared_thread")
+            .WithInputs(new Dictionary<string, Type>() { { "Counter", typeof(string) } })
             .OnComplete([
             new DeclarativeProcessCondition
             {

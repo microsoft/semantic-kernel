@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Json.Schema;
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Agents;
 
 namespace Microsoft.SemanticKernel;
@@ -43,7 +43,7 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
     /// <summary>
     /// The inputs for this agent.
     /// </summary>
-    public Dictionary<string, JsonSchema>? Inputs { get; init; }
+    public Dictionary<string, JsonNode>? Inputs { get; init; }
 
     /// <summary>
     /// The handler group for code-based actions.

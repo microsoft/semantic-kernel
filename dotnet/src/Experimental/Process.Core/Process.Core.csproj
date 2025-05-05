@@ -31,4 +31,8 @@
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="JsonSchema.Net.Generation" />
+  </ItemGroup>
+
 </Project>

@@ -36,6 +36,7 @@
     <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.70.0" />
     <PackageVersion Include="Grpc.Tools" Version="2.71.0" />
     <PackageVersion Include="JmesPath.Net" Version="1.0.330" />
+    <PackageVersion Include="JsonSchema.Net.Generation" Version="5.0.2" />
     <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.10" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
