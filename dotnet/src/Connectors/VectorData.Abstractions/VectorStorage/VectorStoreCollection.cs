@@ -18,9 +18,7 @@ namespace Microsoft.Extensions.VectorData;
 /// <para>Unless otherwise documented, implementations of this abstract base class can be expected to be thread-safe, and can be used concurrently from multiple threads.</para>
 /// </remarks>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
-#pragma warning disable CS0618 // IVectorizedSearch is obsolete
-public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<TRecord>, IVectorizedSearch<TRecord>
-#pragma warning restore CS0618 // IVectorizedSearch is obsolete
+public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<TRecord>
 #pragma warning restore CA1711
     where TKey : notnull
     where TRecord : class
@@ -188,11 +186,6 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
 
     /// <inheritdoc />
     public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        where TVector : notnull;
-
-    /// <inheritdoc />
-    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         where TVector : notnull;
 
     /// <inheritdoc />

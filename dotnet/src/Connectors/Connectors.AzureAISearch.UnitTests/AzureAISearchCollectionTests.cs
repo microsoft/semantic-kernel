@@ -466,7 +466,7 @@ public class AzureAISearchCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
 
         // Act.
-        var searchResults = await sut.VectorizedSearchAsync(
+        var searchResults = await sut.SearchEmbeddingAsync(
             new ReadOnlyMemory<float>(new float[4]),
             top: 5,
             new()
@@ -508,7 +508,7 @@ public class AzureAISearchCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
 
         // Act.
-        var searchResults = await sut.VectorizableTextSearchAsync(
+        var searchResults = await sut.SearchAsync(
             "search string",
             top: 5,
             new()

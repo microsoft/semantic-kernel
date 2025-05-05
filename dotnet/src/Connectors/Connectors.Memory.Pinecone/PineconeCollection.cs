@@ -483,11 +483,6 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         }
     }
 
-    /// <inheritdoc />
-    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
-
     #endregion Search
 
     /// <inheritdoc/>
