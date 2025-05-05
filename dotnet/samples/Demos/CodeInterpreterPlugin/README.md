@@ -2,6 +2,14 @@
 
 This example demonstrates how to do AI Code Interpretetion using a Plugin with Azure Container Apps to execute python code in a container.
 
+## Create and Configure Azure Container App Session Pool  
+   
+1. Create a new Container App Session Pool using the Azure CLI or Azure Portal.
+2. Specify "Python code interpreter" as the pool type.
+3. Add the following roles to the user that will be used to access the session pool:
+   - The `Azure ContainerApps Session Executor` role to be able to create and manage sessions.
+   - The `Container Apps SessionPools Contributor` role to be able to work with files.
+
 ## Configuring Secrets
 
 The example require credentials to access OpenAI and Azure Container Apps (ACA)
@@ -16,7 +24,7 @@ dotnet user-secrets init
 dotnet user-secrets set "OpenAI:ApiKey" "..."
 dotnet user-secrets set "OpenAI:ChatModelId" "gpt-3.5-turbo" # or any other function callable model.
 
-dotnet user-secrets set "AzureContainerApps:Endpoint" " .. endpoint .. "
+dotnet user-secrets set "AzureContainerAppSessionPool:Endpoint" " .. endpoint .. "
 ```
 
 ### To set your secrets with environment variables
@@ -29,7 +37,7 @@ OpenAI__ApiKey
 OpenAI__ChatModelId
 
 # Azure Container Apps
-AzureContainerApps__Endpoint
+AzureContainerAppSessionPool__Endpoint
 ```
 
 ### Usage Example
