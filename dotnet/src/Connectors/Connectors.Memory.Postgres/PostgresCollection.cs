@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.Properties;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Npgsql;
 
@@ -335,8 +334,8 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
             default:
                 throw new InvalidOperationException(
                     PostgresConstants.SupportedVectorTypes.Contains(typeof(TInput))
-                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
-                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
+                        ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
+                        : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }
     }
 

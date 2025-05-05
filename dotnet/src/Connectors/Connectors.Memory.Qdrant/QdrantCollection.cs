@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.Properties;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
@@ -512,8 +511,8 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
             default:
                 throw new InvalidOperationException(
                     QdrantFieldMapping.s_supportedVectorTypes.Contains(typeof(TInput))
-                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
-                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
+                        ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
+                        : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }
     }
 

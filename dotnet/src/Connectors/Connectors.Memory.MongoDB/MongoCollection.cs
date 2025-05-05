@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.Properties;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -358,8 +357,8 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             default:
                 throw new InvalidOperationException(
                     MongoConstants.SupportedVectorTypes.Contains(typeof(TInput))
-                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
-                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
+                        ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
+                        : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }
     }
 

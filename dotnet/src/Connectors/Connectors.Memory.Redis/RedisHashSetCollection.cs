@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.Properties;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
@@ -345,8 +344,8 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
             default:
                 throw new InvalidOperationException(
                     s_supportedVectorTypes.Contains(typeof(TInput))
-                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
-                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
+                        ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
+                        : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }
     }
 
