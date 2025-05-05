@@ -118,7 +118,8 @@ public class Step06_FoundryAgentProcess : BaseTest
             {
                 Type = "State",
                 Expression = "Counter < `3`",
-                Updates = [new VariableUpdate() { Path = "Counter", Operation = StateUpdateOperations.Increment, Value = 1 }]
+                Updates = [new VariableUpdate() { Path = "Counter", Operation = StateUpdateOperations.Increment, Value = 1 }],
+                Emits = [new EventEmission() { EventType = "Agent1Retry" }]
             },
             new DeclarativeProcessCondition
             {
@@ -132,7 +133,8 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         processBuilder.OnInputEvent("start").SendEventTo(new(agent1));
 
-        processBuilder.ListenFor().Message("Agent1Complete", agent1).SendEventTo(new(agent2, (output) => output));
+        processBuilder.ListenFor().Message("Agent1Retry", agent1).SendEventTo(new(agent1));
+        processBuilder.ListenFor().Message("Agent1Complete", agent1).SendEventTo(new(agent2));
         processBuilder.ListenFor().Message("Agent2Complete", agent2).StopProcess();
 
         var process = processBuilder.Build();

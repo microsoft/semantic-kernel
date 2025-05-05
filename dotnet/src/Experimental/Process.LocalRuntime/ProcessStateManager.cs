@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Process;
 internal class ProcessStateManager
 {
     private readonly Type? _stateType;
-    private readonly object? _instance;
+    private object? _instance;
 
     public ProcessStateManager(Type? stateType, object? initialState = null)
     {
@@ -31,7 +31,7 @@ internal class ProcessStateManager
             throw new KernelException("State type is not defined.");
         }
 
-        await func(this._stateType, this._instance).ConfigureAwait(false);
+        this._instance = await func(this._stateType, this._instance).ConfigureAwait(false);
     }
 }
 

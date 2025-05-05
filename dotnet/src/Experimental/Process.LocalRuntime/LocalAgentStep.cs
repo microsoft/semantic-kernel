@@ -131,16 +131,11 @@ internal class LocalAgentStep : LocalStep
 
     private async Task ProcessConditionsAsync(object? result, DeclarativeProcessCondition declarativeCondition)
     {
-        if (declarativeCondition.Expression is null)
-        {
-            throw new ArgumentException($"State condition expression is null in {this.Name}");
-        }
-
         await this._processStateManager.ReduceAsync((stateType, state) =>
         {
             var stateJson = JsonDocument.Parse(JsonSerializer.Serialize(state));
 
-            if (JMESPathConditionEvaluator.EvaluateCondition(state, declarativeCondition.Expression))
+            if (string.IsNullOrWhiteSpace(declarativeCondition.Expression) || JMESPathConditionEvaluator.EvaluateCondition(state, declarativeCondition.Expression))
             {
                 if (declarativeCondition.Updates is not null)
                 {
