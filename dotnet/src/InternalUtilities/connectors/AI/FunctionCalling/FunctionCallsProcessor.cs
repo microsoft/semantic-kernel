@@ -51,7 +51,7 @@ internal sealed class FunctionCallsProcessor
     /// will be disabled. This is a safeguard against possible runaway execution if the model routinely re-requests
     /// the same function over and over.
     /// </remarks>
-    private const int MaximumAutoInvokeAttempts = 128;
+    internal const int MaximumAutoInvokeAttempts = 128;
 
     /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     /// <remarks>

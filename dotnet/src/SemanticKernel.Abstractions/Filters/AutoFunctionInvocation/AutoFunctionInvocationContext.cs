@@ -13,33 +13,34 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to automatic function invocation.
 /// </summary>
-public class AutoFunctionInvocationContext
+public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInvocationContext
 {
     private ChatHistory? _chatHistory;
     private KernelFunction? _kernelFunction;
-    private readonly Microsoft.Extensions.AI.FunctionInvocationContext _invocationContext = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="Microsoft.Extensions.AI.FunctionInvocationContext"/>.
     /// </summary>
-    internal AutoFunctionInvocationContext(Microsoft.Extensions.AI.FunctionInvocationContext invocationContext)
+    internal AutoFunctionInvocationContext(ChatOptions options)
     {
-        Verify.NotNull(invocationContext);
-        Verify.NotNull(invocationContext.Options);
+        Verify.NotNull(options);
 
         // the ChatOptions must be provided with AdditionalProperties.
-        Verify.NotNull(invocationContext.Options.AdditionalProperties);
+        Verify.NotNull(options.AdditionalProperties);
 
-        invocationContext.Options.AdditionalProperties.TryGetValue<Kernel>(ChatOptionsExtensions.KernelKey, out var kernel);
+        // The ChatOptions must be provided with the kernel.
+        options.AdditionalProperties.TryGetValue<Kernel>(ChatOptionsExtensions.KernelKey, out var kernel);
         Verify.NotNull(kernel);
 
-        invocationContext.Options.AdditionalProperties.TryGetValue<ChatMessageContent>(ChatOptionsExtensions.ChatMessageContentKey, out var chatMessageContent);
+        // The ChatOptions must be provided with the chat message content.
+        options.AdditionalProperties.TryGetValue<ChatMessageContent>(ChatOptionsExtensions.ChatMessageContentKey, out var chatMessageContent);
         Verify.NotNull(chatMessageContent);
 
-        invocationContext.Options.AdditionalProperties.TryGetValue<PromptExecutionSettings>(ChatOptionsExtensions.PromptExecutionSettingsKey, out var executionSettings);
-        this.ExecutionSettings = executionSettings;
-        this._invocationContext = invocationContext;
+        // The ChatOptions can be provided with the execution settings.
+        options.AdditionalProperties.TryGetValue<PromptExecutionSettings>(ChatOptionsExtensions.PromptExecutionSettingsKey, out var executionSettings);
 
+        this.ExecutionSettings = executionSettings;
+        this.Options = options;
         this.Result = new FunctionResult(this.Function) { Culture = kernel.Culture };
     }
 
@@ -64,7 +65,7 @@ public class AutoFunctionInvocationContext
         Verify.NotNull(chatHistory);
         Verify.NotNull(chatMessageContent);
 
-        this._invocationContext.Options = new()
+        this.Options = new()
         {
             AdditionalProperties = new()
             {
@@ -75,9 +76,9 @@ public class AutoFunctionInvocationContext
 
         this._kernelFunction = function;
         this._chatHistory = chatHistory;
-        this._invocationContext.Messages = chatHistory.ToChatMessageList();
-        chatHistory.SetChatMessageHandlers(this._invocationContext.Messages);
-        this._invocationContext.Function = function.AsAIFunction();
+        this.Messages = chatHistory.ToChatMessageList();
+        chatHistory.SetChatMessageHandlers(this.Messages);
+        base.Function = function.AsAIFunction();
         this.Result = result;
     }
 
@@ -88,17 +89,25 @@ public class AutoFunctionInvocationContext
     public CancellationToken CancellationToken { get; init; }
 
     /// <summary>
-    /// Boolean flag which indicates whether a filter is invoked within streaming or non-streaming mode.
+    /// Gets the <see cref="KernelArguments"/> specialized version of <see cref="AIFunctionArguments"/> associated with the operation.
     /// </summary>
-    public bool IsStreaming { get; init; }
-
-    /// <summary>
-    /// Gets the arguments associated with the operation.
-    /// </summary>
-    public KernelArguments? Arguments
+    /// <remarks>
+    /// Due to a clash with the <see cref="Microsoft.Extensions.AI.FunctionInvocationContext.Arguments"/> as a <see cref="AIFunctionArguments"/> type, this property hides
+    /// it to not break existing code that relies on the <see cref="AutoFunctionInvocationContext.Arguments"/> as a <see cref="KernelArguments"/> type.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">Attempting to access the property when the arguments is not a <see cref="KernelArguments"/> class.</exception>
+    public new KernelArguments? Arguments
     {
-        get => this._invocationContext.CallContent.Arguments is KernelArguments kernelArguments ? kernelArguments : null;
-        init => this._invocationContext.CallContent.Arguments = value;
+        get
+        {
+            if (base.Arguments is KernelArguments kernelArguments)
+            {
+                return kernelArguments;
+            }
+
+            throw new InvalidOperationException($"The arguments provided in the initialization must be of type {nameof(KernelArguments)}.");
+        }
+        init => base.Arguments = value ?? new();
     }
 
     /// <summary>
@@ -106,8 +115,8 @@ public class AutoFunctionInvocationContext
     /// </summary>
     public int RequestSequenceIndex
     {
-        get => this._invocationContext.Iteration;
-        init => this._invocationContext.Iteration = value;
+        get => this.Iteration;
+        init => this.Iteration = value;
     }
 
     /// <summary>
@@ -115,19 +124,8 @@ public class AutoFunctionInvocationContext
     /// </summary>
     public int FunctionSequenceIndex
     {
-        get => this._invocationContext.FunctionCallIndex;
-        init => this._invocationContext.FunctionCallIndex = value;
-    }
-
-    /// <summary>Gets or sets the total number of function call requests within the iteration.</summary>
-    /// <remarks>
-    /// The response from the underlying client might include multiple function call requests.
-    /// This count indicates how many there were.
-    /// </remarks>
-    public int FunctionCount
-    {
-        get => this._invocationContext.FunctionCount;
-        init => this._invocationContext.FunctionCount = value;
+        get => this.FunctionCallIndex;
+        init => this.FunctionCallIndex = value;
     }
 
     /// <summary>
@@ -135,13 +133,13 @@ public class AutoFunctionInvocationContext
     /// </summary>
     public string? ToolCallId
     {
-        get => this._invocationContext.CallContent.CallId;
+        get => this.CallContent.CallId;
         init
         {
-            this._invocationContext.CallContent = new Microsoft.Extensions.AI.FunctionCallContent(
+            this.CallContent = new Microsoft.Extensions.AI.FunctionCallContent(
                 callId: value ?? string.Empty,
-                name: this._invocationContext.CallContent.Name,
-                arguments: this._invocationContext.CallContent.Arguments);
+                name: this.CallContent.Name,
+                arguments: this.CallContent.Arguments);
         }
     }
 
@@ -149,40 +147,44 @@ public class AutoFunctionInvocationContext
     /// The chat message content associated with automatic function invocation.
     /// </summary>
     public ChatMessageContent ChatMessageContent
-        => (this._invocationContext.Options?.AdditionalProperties?[ChatOptionsExtensions.ChatMessageContentKey] as ChatMessageContent)!;
+        => (this.Options?.AdditionalProperties?[ChatOptionsExtensions.ChatMessageContentKey] as ChatMessageContent)!;
 
     /// <summary>
     /// The execution settings associated with the operation.
     /// </summary>
     public PromptExecutionSettings? ExecutionSettings
     {
-        get => this._invocationContext.Options?.AdditionalProperties?[ChatOptionsExtensions.PromptExecutionSettingsKey] as PromptExecutionSettings;
+        get => this.Options?.AdditionalProperties?[ChatOptionsExtensions.PromptExecutionSettingsKey] as PromptExecutionSettings;
         init
         {
-            this._invocationContext.Options ??= new();
-            this._invocationContext.Options.AdditionalProperties ??= [];
-            this._invocationContext.Options.AdditionalProperties[ChatOptionsExtensions.PromptExecutionSettingsKey] = value;
+            this.Options ??= new();
+            this.Options.AdditionalProperties ??= [];
+            this.Options.AdditionalProperties[ChatOptionsExtensions.PromptExecutionSettingsKey] = value;
         }
     }
 
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.ChatCompletion.ChatHistory"/> associated with automatic function invocation.
     /// </summary>
-    public ChatHistory ChatHistory => this._chatHistory ??= new ChatMessageHistory(this._invocationContext.Messages);
+    public ChatHistory ChatHistory => this._chatHistory ??= new ChatMessageHistory(this.Messages);
 
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
     /// </summary>
-    public KernelFunction Function
+    /// <para>
+    /// Due to a clash with the <see cref="Microsoft.Extensions.AI.FunctionInvocationContext.Function"/> as a <see cref="AIFunction"/> type, this property hides
+    /// it to not break existing code that relies on the <see cref="AutoFunctionInvocationContext.Function"/> as a <see cref="KernelFunction"/> type.
+    /// </para>
+    public new KernelFunction Function
     {
         get
         {
             if (this._kernelFunction is null
                 // If the schemas are different,
                 // AIFunction reference potentially was modified and the kernel function should be regenerated.
-                || !IsSameSchema(this._kernelFunction, this._invocationContext.Function))
+                || !IsSameSchema(this._kernelFunction, base.Function))
             {
-                this._kernelFunction = this._invocationContext.Function.AsKernelFunction();
+                this._kernelFunction = base.Function.AsKernelFunction();
             }
 
             return this._kernelFunction;
@@ -197,7 +199,7 @@ public class AutoFunctionInvocationContext
         get
         {
             Kernel? kernel = null;
-            this._invocationContext.Options?.AdditionalProperties?.TryGetValue(ChatOptionsExtensions.KernelKey, out kernel);
+            this.Options?.AdditionalProperties?.TryGetValue(ChatOptionsExtensions.KernelKey, out kernel);
 
             // To avoid exception from properties, when attempting to retrieve a kernel from a non-ready context, it will give a null.
             return kernel!;
@@ -209,30 +211,13 @@ public class AutoFunctionInvocationContext
     /// </summary>
     public FunctionResult Result { get; set; }
 
-    /// <summary>Gets or sets a value indicating whether to terminate the request.</summary>
-    /// <remarks>
-    /// In response to a function call request, the function might be invoked, its result added to the chat contents,
-    /// and a new request issued to the wrapped client. If this property is set to <see langword="true"/>, that subsequent request
-    /// will not be issued and instead the loop immediately terminated rather than continuing until there are no
-    /// more function call requests in responses.
-    /// </remarks>
-    public bool Terminate
-    {
-        get => this._invocationContext.Terminate;
-        set => this._invocationContext.Terminate = value;
-    }
-
-    /// <summary>Gets or sets the function call content information associated with this invocation.</summary>
-    internal Microsoft.Extensions.AI.FunctionCallContent CallContent
-    {
-        get => this._invocationContext.CallContent;
-        set => this._invocationContext.CallContent = value;
-    }
-
+    /// <summary>
+    /// Gets or sets the <see cref="Microsoft.Extensions.AI.AIFunction"/> with which this filter is associated.
+    /// </summary>
     internal AIFunction AIFunction
     {
-        get => this._invocationContext.Function;
-        set => this._invocationContext.Function = value;
+        get => base.Function;
+        set => base.Function = value;
     }
 
     private static bool IsSameSchema(KernelFunction kernelFunction, AIFunction aiFunction)
