@@ -99,7 +99,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
     public async Task VerifyRequestIncludesAzureFunctionAsync()
     {
         // Arrange
-        var text =
+        const string Text =
             """
             type: foundry_agent
             name: FoundryAgent
@@ -130,7 +130,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
+        var agent = await factory.CreateAgentFromYamlAsync(Text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -148,7 +148,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
     public async Task VerifyRequestIncludesFunctionAsync()
     {
         // Arrange
-        var text =
+        const string Text =
             """
             type: foundry_agent
             name: FoundryAgent
@@ -170,7 +170,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
+        var agent = await factory.CreateAgentFromYamlAsync(Text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -188,7 +188,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
     public async Task VerifyRequestIncludesBingGroundingAsync()
     {
         // Arrange
-        var text =
+        const string Text =
             """
             type: foundry_agent
             name: FoundryAgent
@@ -206,7 +206,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
+        var agent = await factory.CreateAgentFromYamlAsync(Text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -224,7 +224,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
     public async Task VerifyRequestIncludesMicrosoftFabricAsync()
     {
         // Arrange
-        var text =
+        const string Text =
             """
             type: foundry_agent
             name: FoundryAgent
@@ -242,7 +242,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
+        var agent = await factory.CreateAgentFromYamlAsync(Text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -260,7 +260,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
     public async Task VerifyRequestIncludesOpenAPIAsync()
     {
         // Arrange
-        var text =
+        const string Text =
             """
             type: foundry_agent
             name: FoundryAgent
@@ -293,7 +293,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
+        var agent = await factory.CreateAgentFromYamlAsync(Text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -313,7 +313,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
     public async Task VerifyRequestIncludesSharepointGroundingAsync()
     {
         // Arrange
-        var text =
+        const string Text =
             """
             type: foundry_agent
             name: FoundryAgent
@@ -331,7 +331,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
+        var agent = await factory.CreateAgentFromYamlAsync(Text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -349,7 +349,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
     public async Task VerifyRequestIncludesCodeInterpreterWithResourceAsync()
     {
         // Arrange
-        var text =
+        const string Text =
             """
             type: foundry_agent
             name: FoundryAgent
@@ -373,7 +373,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
+        var agent = await factory.CreateAgentFromYamlAsync(Text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -395,7 +395,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
     public async Task VerifyRequestIncludesAzureAISearchWithResourceAsync()
     {
         // Arrange
-        var text =
+        const string Text =
             """
             type: foundry_agent
             name: FoundryAgent
@@ -416,7 +416,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
+        var agent = await factory.CreateAgentFromYamlAsync(Text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);

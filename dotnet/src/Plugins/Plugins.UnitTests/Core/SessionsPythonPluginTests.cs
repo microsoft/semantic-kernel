@@ -3,12 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 using Moq;
 using Xunit;
@@ -23,6 +25,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
     private const string ListFilesTestDataFilePath = "./TestData/sessions_python_plugin_file_list.json";
     private const string UpdaloadFileTestDataFilePath = "./TestData/sessions_python_plugin_file_upload.json";
     private const string FileTestDataFilePath = "./TestData/sessions_python_plugin_file.txt";
+    private readonly static string s_assemblyVersion = typeof(Kernel).Assembly.GetName().Version!.ToString();
 
     private readonly SessionsPythonSettings _defaultSettings = new(
         sessionId: Guid.NewGuid().ToString(),
@@ -71,7 +74,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         };
         var expectedResult = """
                        Status:
-                       "Success"
+                       "Succeeded"
                        Result:
                        ""
                        Stdout:
@@ -98,7 +101,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         // Arrange
         var tokenProviderCalled = false;
 
-        Task<string> tokenProviderAsync()
+        Task<string> tokenProviderAsync(CancellationToken _)
         {
             tokenProviderCalled = true;
             return Task.FromResult("token");
@@ -168,7 +171,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         await plugin.UploadFileAsync(".test.txt", FileTestDataFilePath);
 
         // Assert
-        Assert.Contains(expectedSessionId, Encoding.UTF8.GetString(multiMessageHandlerStub.RequestContents[0]!), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedSessionId, multiMessageHandlerStub.RequestUris[0]!.Query, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(expectedSessionId, multiMessageHandlerStub.RequestUris[1]!.Query, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(expectedSessionId, multiMessageHandlerStub.RequestUris[2]!.Query, StringComparison.OrdinalIgnoreCase);
 
@@ -191,18 +194,24 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
-        var result = await plugin.ListFilesAsync();
+        var files = await plugin.ListFilesAsync();
 
         // Assert
-        Assert.Contains<SessionsRemoteFileMetadata>(result, (item) =>
-            item.Filename == "test-file.txt" &&
-            item.Size == 516 &&
-            item.LastModifiedTime!.Value.Ticks == 638585580822423944);
+        Assert.Equal(2, files.Count);
 
-        Assert.Contains<SessionsRemoteFileMetadata>(result, (item) =>
-            item.Filename == "test-file2.txt" &&
-            item.Size == 211 &&
-            item.LastModifiedTime!.Value.Ticks == 638585580822423944);
+        var firstFile = files[0];
+        Assert.Equal("test-file.txt", firstFile.Name);
+        Assert.Equal(516, firstFile.SizeInBytes);
+        Assert.Equal("file", firstFile.Type);
+        Assert.Equal("text/plain; charset=utf-8", firstFile.ContentType);
+        Assert.Equal(638585580822423944, firstFile.LastModifiedAt.Ticks);
+
+        var secondFile = files[1];
+        Assert.Equal("test-file2.txt", secondFile.Name);
+        Assert.Equal(211, secondFile.SizeInBytes);
+        Assert.Equal("file", secondFile.Type);
+        Assert.Equal("text/plain; charset=utf-8", secondFile.ContentType);
+        Assert.Equal(638585580822423944, secondFile.LastModifiedAt.Ticks);
     }
 
     [Fact]
@@ -212,9 +221,13 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
         var requestPayload = await File.ReadAllBytesAsync(FileTestDataFilePath);
 
-        var expectedResponse = new SessionsRemoteFileMetadata("test-file.txt", 516)
+        var expectedResponse = new SessionsRemoteFileMetadata()
         {
-            LastModifiedTime = new DateTime(638585526384228269)
+            Name = "test-file.txt",
+            SizeInBytes = 516,
+            Type = "file",
+            LastModifiedAt = new DateTime(638585526384228269),
+            ContentType = "text/plain; charset=utf-8",
         };
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
@@ -228,10 +241,12 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var result = await plugin.UploadFileAsync("test-file.txt", FileTestDataFilePath);
 
         // Assert
-        Assert.Equal(result.Filename, expectedResponse.Filename);
-        Assert.Equal(result.Size, expectedResponse.Size);
-        Assert.Equal(result.LastModifiedTime, expectedResponse.LastModifiedTime);
-        Assert.Equal(requestPayload, this._messageHandlerStub.FirstMultipartContent);
+        Assert.Equal(expectedResponse.Name, result.Name);
+        Assert.Equal(expectedResponse.SizeInBytes, result.SizeInBytes);
+        Assert.Equal(expectedResponse.LastModifiedAt, result.LastModifiedAt);
+        Assert.Equal(expectedResponse.Type, result.Type);
+        Assert.Equal(expectedResponse.ContentType, result.ContentType);
+        Assert.Equal(this._messageHandlerStub.FirstMultipartContent, requestPayload);
     }
 
     [Fact]
@@ -278,6 +293,75 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(responseContent, result);
         Assert.True(File.Exists(downloadDiskPath));
         Assert.Equal(responseContent, await File.ReadAllBytesAsync(downloadDiskPath));
+    }
+
+    /// <summary>
+    /// Test the allowed domains for the endpoint.
+    /// </summary>
+    /// <remarks>
+    /// Considering that the functionality which verifies endpoints against the allowed domains is located in one private method,
+    /// and the method is reused for all operations of the plugin, we test it only for one operation (ListFilesAsync).
+    /// </remarks>
+    [Theory]
+    [InlineData("fake-test-host.io", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
+    [InlineData("prod.fake-test-host.io", "https://prod.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
+    [InlineData("www.fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
+    [InlineData("www.prod.fake-test-host.io", "https://www.prod.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
+    [InlineData("fake-test-host.io", "https://fake-test-host-1.io/subscriptions/123/rg/456/sps/test-pool", false)]
+    [InlineData("fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
+    [InlineData("www.fake-test-host.io", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
+    public async Task ItShouldRespectAllowedDomainsAsync(string allowedDomain, string actualEndpoint, bool isAllowed)
+    {
+        // Arrange
+        this._defaultSettings.AllowedDomains = [allowedDomain];
+        this._defaultSettings.Endpoint = new Uri(actualEndpoint);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText(ListFilesTestDataFilePath)),
+        };
+
+        var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            await sut.ListFilesAsync();
+        }
+        catch when (!isAllowed)
+        {
+            // Ignore exception if the endpoint is not allowed since we expect it
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
+    }
+
+    [Fact]
+    public async Task ItShouldAddHeadersAsync()
+    {
+        // Arrange
+        var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(responseContent),
+        };
+
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory, (_) => Task.FromResult("test-auth-token"));
+
+        // Act
+        var result = await plugin.UploadFileAsync("test-file.txt", FileTestDataFilePath);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
+
+        var userAgentHeaderValues = this._messageHandlerStub.RequestHeaders.GetValues("User-Agent").ToArray();
+        Assert.Equal(2, userAgentHeaderValues.Length);
+        Assert.Equal($"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion}", userAgentHeaderValues[0]);
+        Assert.Equal("(Language=dotnet)", userAgentHeaderValues[1]);
+
+        var authorizationHeaderValues = this._messageHandlerStub.RequestHeaders.GetValues("Authorization");
+        Assert.Single(authorizationHeaderValues, value => value == "Bearer test-auth-token");
     }
 
     public void Dispose()
