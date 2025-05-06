@@ -73,7 +73,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
         this._client = client;
         this.Name = name;
 
-        this._model = new CollectionModelBuilder(PostgresConstants.ModelBuildingOptions)
+        this._model = new PostgresModelBuilder()
             .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
 
         this._mapper = new PostgresMapper<TRecord>(this._model);
@@ -146,6 +146,13 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = [await floatTask.ConfigureAwait(false)];
             }
+#if NET8_0_OR_GREATER
+            else if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<Half>, ReadOnlyMemory<Half>>(record, cancellationToken, out var halfTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = [await halfTask.ConfigureAwait(false)];
+            }
+#endif
             else
             {
                 throw new InvalidOperationException(
@@ -209,6 +216,13 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
             }
+#if NET8_0_OR_GREATER
+            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<Half>, ReadOnlyMemory<Half>>(records, cancellationToken, out var halfTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = (IReadOnlyList<Embedding<Half>>)await halfTask.ConfigureAwait(false);
+            }
+#endif
             else
             {
                 throw new InvalidOperationException(
@@ -313,6 +327,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
         switch (vectorProperty.EmbeddingGenerator)
         {
             case IEmbeddingGenerator<TInput, Embedding<float>> generator:
+            {
                 var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
 
                 await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
@@ -321,15 +336,28 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
                 }
 
                 yield break;
+            }
 
-            // TODO: Implement support for Half, binary, sparse embeddings (#11083)
+#if NET8_0_OR_GREATER
+            case IEmbeddingGenerator<TInput, Embedding<Half>> generator:
+            {
+                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+            }
+#endif
 
             case null:
                 throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
 
             default:
                 throw new InvalidOperationException(
-                    PostgresConstants.SupportedVectorTypes.Contains(typeof(TInput))
+                    PostgresModelBuilder.SupportedVectorTypes.Contains(typeof(TInput))
                         ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                         : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }
@@ -362,11 +390,11 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         var vectorType = vector.GetType();
 
-        if (!PostgresConstants.SupportedVectorTypes.Contains(vectorType))
+        if (!PostgresModelBuilder.SupportedVectorTypes.Contains(vectorType))
         {
             throw new NotSupportedException(
-                $"The provided vector type {vectorType.FullName} is not supported by the PostgreSQL connector. " +
-                $"Supported types are: {string.Join(", ", PostgresConstants.SupportedVectorTypes.Select(l => l.FullName))}");
+                $"The provided vector type {vectorType.Name} is not supported by the PostgreSQL connector. " +
+                $"Supported types are: {string.Join(", ", PostgresModelBuilder.SupportedVectorTypes.Select(l => l.Name))}");
         }
 
         if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))

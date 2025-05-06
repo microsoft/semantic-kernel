@@ -78,20 +78,22 @@ public abstract class TestStore
         VectorStoreCollection<TKey, TRecord> collection,
         int recordCount,
         Expression<Func<TRecord, bool>>? filter = null,
-        int vectorSize = 3)
+        int? vectorSize = null,
+        object? dummyVector = null)
         where TKey : notnull
         where TRecord : class
     {
-        var vector = new float[vectorSize];
-        for (var i = 0; i < vectorSize; i++)
+        if (vectorSize is not null && dummyVector is not null)
         {
-            vector[i] = 1.0f;
+            throw new ArgumentException("vectorSize or dummyVector can't both be set");
         }
+
+        var vector = dummyVector ?? new ReadOnlyMemory<float>(Enumerable.Range(0, vectorSize ?? 3).Select(i => (float)i).ToArray());
 
         for (var i = 0; i < 20; i++)
         {
             var results = collection.SearchEmbeddingAsync(
-                new ReadOnlyMemory<float>(vector),
+                vector,
                 top: recordCount,
                 new() { Filter = filter });
             var count = await results.CountAsync();

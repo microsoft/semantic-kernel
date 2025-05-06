@@ -181,7 +181,7 @@ public sealed class PostgresMapperTests
     }
 
     private static CollectionModel GetModel<TRecord>(VectorStoreRecordDefinition definition)
-        => new CollectionModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(TRecord), definition, defaultEmbeddingGenerator: null);
+        => new CollectionModelBuilder(PostgresModelBuilder.ModelBuildingOptions).Build(typeof(TRecord), definition, defaultEmbeddingGenerator: null);
 
 #pragma warning disable CA1812
     private sealed class TestRecord<TKey>

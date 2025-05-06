@@ -35,8 +35,8 @@ public sealed class PostgresPropertyMappingTests
         var storageModelVector = PostgresPropertyMapping.MapVectorForStorageModel(vector);
 
         // Assert
-        Assert.IsType<Vector>(storageModelVector);
-        Assert.True(storageModelVector.ToArray().Length > 0);
+        var actual = Assert.IsType<Vector>(storageModelVector);
+        Assert.True(actual.ToArray().Length > 0);
     }
 
     [Fact]

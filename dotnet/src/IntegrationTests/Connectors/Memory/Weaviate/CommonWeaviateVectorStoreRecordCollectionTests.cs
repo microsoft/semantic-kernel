@@ -38,6 +38,6 @@ public class CommonWeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreF
 
     protected override HashSet<string> GetSupportedDistanceFunctions()
     {
-        return [DistanceFunction.CosineDistance, DistanceFunction.NegativeDotProductSimilarity, DistanceFunction.EuclideanSquaredDistance, DistanceFunction.Hamming, DistanceFunction.ManhattanDistance];
+        return [DistanceFunction.CosineDistance, DistanceFunction.NegativeDotProductSimilarity, DistanceFunction.EuclideanSquaredDistance, DistanceFunction.HammingDistance, DistanceFunction.ManhattanDistance];
     }
 }

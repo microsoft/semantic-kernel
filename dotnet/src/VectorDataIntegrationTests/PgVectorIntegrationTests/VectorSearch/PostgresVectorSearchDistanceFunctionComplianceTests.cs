@@ -10,7 +10,7 @@ public class PostgresVectorSearchDistanceFunctionComplianceTests(PostgresFixture
 {
     public override Task EuclideanSquaredDistance() => Assert.ThrowsAsync<NotSupportedException>(base.EuclideanSquaredDistance);
 
-    public override Task Hamming() => Assert.ThrowsAsync<NotSupportedException>(base.Hamming);
+    public override Task HammingDistance() => Assert.ThrowsAsync<NotSupportedException>(base.HammingDistance);
 
     public override Task NegativeDotProductSimilarity() => Assert.ThrowsAsync<NotSupportedException>(base.NegativeDotProductSimilarity);
 }

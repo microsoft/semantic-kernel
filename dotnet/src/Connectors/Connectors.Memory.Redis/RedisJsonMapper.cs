@@ -74,7 +74,7 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
         {
             JsonObject topLevelJsonObject => topLevelJsonObject,
             JsonArray and [JsonObject arrayEntryJsonObject] => arrayEntryJsonObject,
-            JsonValue when model.DataProperties.Count + model.VectorProperties.Count == 1 => new JsonObject
+            JsonValue when model.DataProperties.Count + (includeVectors ? model.VectorProperties.Count : 0) == 1 => new JsonObject
             {
                 [model.DataProperties.Concat<PropertyModel>(model.VectorProperties).First().StorageName] = storageModel.Node
             },
