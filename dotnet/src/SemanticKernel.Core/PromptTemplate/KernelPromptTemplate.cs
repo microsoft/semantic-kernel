@@ -193,7 +193,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         if (value is null) { return null; }
 
         return value is List<string> stringList
-            ? string.Join(" ", stringList)
+            ? string.Join("\n", stringList)
             : InternalTypeConverter.ConvertToString(value, culture);
     }
     #endregion
