@@ -51,11 +51,11 @@ internal static class ModelDiagnostics
             return null;
         }
 
-        string operationName = "text.completions";
+        const string OperationName = "text.completions";
         var activity = s_activitySource.StartActivityWithTags(
-            $"{operationName} {modelName}",
+            $"{OperationName} {modelName}",
             [
-                new(ModelDiagnosticsTags.Operation, operationName),
+                new(ModelDiagnosticsTags.Operation, OperationName),
                 new(ModelDiagnosticsTags.System, modelProvider),
                 new(ModelDiagnosticsTags.Model, modelName),
             ],
@@ -101,11 +101,11 @@ internal static class ModelDiagnostics
             return null;
         }
 
-        string operationName = "chat.completions";
+        const string OperationName = "chat.completions";
         var activity = s_activitySource.StartActivityWithTags(
-            $"{operationName} {modelName}",
+            $"{OperationName} {modelName}",
             [
-                new(ModelDiagnosticsTags.Operation, operationName),
+                new(ModelDiagnosticsTags.Operation, OperationName),
                 new(ModelDiagnosticsTags.System, modelProvider),
                 new(ModelDiagnosticsTags.Model, modelName),
             ],
