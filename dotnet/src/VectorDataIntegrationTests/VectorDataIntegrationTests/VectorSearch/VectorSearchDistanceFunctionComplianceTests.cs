@@ -175,7 +175,7 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
             ]
         };
 
-    private class SearchRecord
+    private sealed class SearchRecord
     {
         public TKey Key { get; set; } = default!;
         public ReadOnlyMemory<float> Vector { get; set; }

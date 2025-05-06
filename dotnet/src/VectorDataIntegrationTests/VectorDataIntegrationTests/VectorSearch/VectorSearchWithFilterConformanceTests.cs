@@ -56,7 +56,7 @@ public abstract class VectorSearchWithFilterConformanceTests<TKey>(VectorStoreFi
         Assert.Equal("apples", results[0].Text);
     }
 
-    private class SearchRecord
+    private sealed class SearchRecord
     {
         [VectorStoreKey]
         public TKey Key { get; set; } = default!;
