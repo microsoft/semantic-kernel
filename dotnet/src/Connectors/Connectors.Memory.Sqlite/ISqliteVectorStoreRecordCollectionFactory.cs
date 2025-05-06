@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Data.Common;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
@@ -17,13 +16,14 @@ public interface ISqliteVectorStoreRecordCollectionFactory
     /// </summary>
     /// <typeparam name="TKey">The data type of the record key.</typeparam>
     /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
-    /// <param name="connection"><see cref="DbConnection"/> that will be used to manage the data in SQLite.</param>
+    /// <param name="connectionString">The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</param>
     /// <param name="name">The name of the collection to connect to.</param>
     /// <param name="vectorStoreRecordDefinition">An optional record definition that defines the schema of the record type. If not present, attributes on <typeparamref name="TRecord"/> will be used.</param>
     /// <returns>The new instance of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</returns>
     IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(
-        DbConnection connection,
+        string connectionString,
         string name,
         VectorStoreRecordDefinition? vectorStoreRecordDefinition)
-        where TKey : notnull;
+        where TKey : notnull
+        where TRecord : notnull;
 }

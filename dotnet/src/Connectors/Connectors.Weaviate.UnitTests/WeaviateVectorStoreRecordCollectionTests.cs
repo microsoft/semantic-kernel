@@ -10,13 +10,12 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Weaviate.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="WeaviateVectorStoreRecordCollection{TRecord}"/> class.
+/// Unit tests for <see cref="WeaviateVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 {
@@ -32,7 +31,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     public void ConstructorForModelWithoutKeyThrowsException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new WeaviateVectorStoreRecordCollection<object>(this._mockHttpClient, "Collection"));
+        var exception = Assert.Throws<NotSupportedException>(() => new WeaviateVectorStoreRecordCollection<Guid, object>(this._mockHttpClient, "Collection"));
         Assert.Contains("No key property found", exception.Message);
     }
 
@@ -43,7 +42,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         using var httpClient = new HttpClient();
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new WeaviateVectorStoreRecordCollection<WeaviateHotel>(httpClient, "Collection"));
+        var exception = Assert.Throws<ArgumentException>(() => new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(httpClient, "Collection"));
         Assert.Contains("Weaviate endpoint should be provided", exception.Message);
     }
 
@@ -51,7 +50,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     public void ConstructorWithDeclarativeModelInitializesCollection()
     {
         // Act & Assert
-        var collection = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(
+        var collection = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(
             this._mockHttpClient,
             "Collection");
 
@@ -68,7 +67,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         };
 
         // Act
-        var collection = new WeaviateVectorStoreRecordCollection<TestModel>(
+        var collection = new WeaviateVectorStoreRecordCollection<Guid, TestModel>(
             this._mockHttpClient,
             "Collection",
             new() { VectorStoreRecordDefinition = definition });
@@ -84,7 +83,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         // Arrange
         this._messageHandlerStub.ResponseToReturn = responseMessage;
 
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, "Collection");
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act
         var actualResult = await sut.CollectionExistsAsync();
@@ -113,7 +112,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     [InlineData("containsNonAsciią")]
     public void CollectionCtorRejectsInvalidNames(string collectionName)
     {
-        ArgumentException argumentException = Assert.Throws<ArgumentException>(() => new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, collectionName));
+        ArgumentException argumentException = Assert.Throws<ArgumentException>(() => new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, collectionName));
         Assert.Equal("collectionName", argumentException.ParamName);
     }
 
@@ -122,7 +121,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     {
         // Arrange
         const string CollectionName = "Collection";
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, CollectionName);
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
         await sut.CreateCollectionAsync();
@@ -158,7 +157,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     {
         // Arrange
         const string CollectionName = "Collection";
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, CollectionName);
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
         await sut.DeleteCollectionAsync();
@@ -175,7 +174,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         const string CollectionName = "Collection";
         var id = new Guid("55555555-5555-5555-5555-555555555555");
 
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, CollectionName);
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
         await sut.DeleteAsync(id);
@@ -192,10 +191,10 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         const string CollectionName = "Collection";
         List<Guid> ids = [new Guid("11111111-1111-1111-1111-111111111111"), new Guid("22222222-2222-2222-2222-222222222222")];
 
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, CollectionName);
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
-        await sut.DeleteBatchAsync(ids);
+        await sut.DeleteAsync(ids);
 
         // Assert
         var request = JsonSerializer.Deserialize<WeaviateDeleteObjectBatchRequest>(this._messageHandlerStub.RequestContent);
@@ -228,7 +227,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
             Content = new StringContent(JsonSerializer.Serialize(jsonObject))
         };
 
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, "Collection");
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act
         var result = await sut.GetAsync(id);
@@ -258,10 +257,10 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         this._messageHandlerStub.ResponseQueue.Enqueue(response1);
         this._messageHandlerStub.ResponseQueue.Enqueue(response2);
 
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, "Collection");
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act
-        var results = await sut.GetBatchAsync([id1, id2]).ToListAsync();
+        var results = await sut.GetAsync([id1, id2]).ToListAsync();
 
         // Assert
         Assert.NotNull(results[0]);
@@ -287,7 +286,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
             Content = new StringContent(JsonSerializer.Serialize(batchResponse)),
         };
 
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, "Collection");
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act
         var result = await sut.UpsertAsync(hotel);
@@ -326,10 +325,10 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
             Content = new StringContent(JsonSerializer.Serialize(batchResponse)),
         };
 
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, "Collection");
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act
-        var results = await sut.UpsertBatchAsync([hotel1, hotel2]).ToListAsync();
+        var results = await sut.UpsertAsync([hotel1, hotel2]);
 
         // Assert
         Assert.Contains(id1, results);
@@ -349,85 +348,6 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         Assert.Equal("Test Name 2", jsonObject2["properties"]?["hotelName"]?.GetValue<string>());
     }
 
-    [Fact]
-    public async Task UpsertWithCustomMapperWorksCorrectlyAsync()
-    {
-        // Arrange
-        var id = new Guid("11111111-1111-1111-1111-111111111111");
-        var hotel = new WeaviateHotel { HotelId = id, HotelName = "Test Name" };
-
-        var jsonObject = new JsonObject { ["id"] = id.ToString(), ["properties"] = new JsonObject() };
-
-        jsonObject["properties"]!["hotel_name"] = "Test Name from Mapper";
-
-        var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonObject>>();
-
-        mockMapper
-            .Setup(l => l.MapFromDataToStorageModel(It.IsAny<WeaviateHotel>()))
-            .Returns(jsonObject);
-
-        var batchResponse = new List<WeaviateUpsertCollectionObjectBatchResponse> { new() { Id = id, Result = new() { Status = "Success" } } };
-
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(JsonSerializer.Serialize(batchResponse)),
-        };
-
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(
-            this._mockHttpClient,
-            "Collection",
-            new() { JsonObjectCustomMapper = mockMapper.Object });
-
-        // Act
-        var result = await sut.UpsertAsync(hotel);
-
-        // Assert
-        Assert.Equal(id, result);
-
-        var request = JsonSerializer.Deserialize<WeaviateUpsertCollectionObjectBatchRequest>(this._messageHandlerStub.RequestContent);
-
-        Assert.NotNull(request?.CollectionObjects);
-
-        var requestObject = request.CollectionObjects[0];
-
-        Assert.Equal("11111111-1111-1111-1111-111111111111", requestObject["id"]?.GetValue<string>());
-        Assert.Equal("Test Name from Mapper", requestObject["properties"]?["hotel_name"]?.GetValue<string>());
-    }
-
-    [Fact]
-    public async Task GetWithCustomMapperWorksCorrectlyAsync()
-    {
-        // Arrange
-        var id = new Guid("11111111-1111-1111-1111-111111111111");
-        var jsonObject = new JsonObject { ["id"] = id.ToString(), ["properties"] = new JsonObject() };
-
-        jsonObject["properties"]!["hotelName"] = "Test Name";
-
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(JsonSerializer.Serialize(jsonObject))
-        };
-
-        var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonObject>>();
-
-        mockMapper
-            .Setup(l => l.MapFromStorageToDataModel(It.IsAny<JsonObject>(), It.IsAny<StorageToDataModelMapperOptions>()))
-            .Returns(new WeaviateHotel { HotelId = id, HotelName = "Test Name from mapper" });
-
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(
-            this._mockHttpClient,
-            "Collection",
-            new() { JsonObjectCustomMapper = mockMapper.Object });
-
-        // Act
-        var result = await sut.GetAsync(id);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(id, result.HotelId);
-        Assert.Equal("Test Name from mapper", result.HotelName);
-    }
-
     [Theory]
     [InlineData(true, "http://test-endpoint/schema", "Bearer fake-key")]
     [InlineData(false, "http://default-endpoint/schema", null)]
@@ -440,7 +360,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
             new WeaviateVectorStoreRecordCollectionOptions<WeaviateHotel>() { Endpoint = new Uri("http://test-endpoint"), ApiKey = "fake-key" } :
             null;
 
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, CollectionName, options);
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName, options);
 
         // Act
         await sut.CreateCollectionAsync();
@@ -456,10 +376,10 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task VectorizedSearchReturnsValidRecordAsync(bool includeVectors)
+    public async Task SearchEmbeddingReturnsValidRecordAsync(bool includeVectors)
     {
         // Arrange
-        const string CollectionName = "VectorizedSearchCollection";
+        const string CollectionName = "SearchEmbeddingCollection";
         var id = new Guid("55555555-5555-5555-5555-555555555555");
         var vector = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]);
 
@@ -500,16 +420,15 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
             Content = new StringContent(JsonSerializer.Serialize(jsonObject))
         };
 
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, CollectionName);
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(vector, new()
+        var results = await sut.SearchEmbeddingAsync(vector, top: 3, new()
         {
             IncludeVectors = includeVectors
-        });
+        }).ToListAsync();
 
         // Assert
-        var results = await actual.Results.ToListAsync();
         Assert.Single(results);
 
         var score = results[0].Score;
@@ -538,28 +457,29 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     }
 
     [Fact]
-    public async Task VectorizedSearchWithUnsupportedVectorTypeThrowsExceptionAsync()
+    public async Task SearchEmbeddingWithUnsupportedVectorTypeThrowsExceptionAsync()
     {
         // Arrange
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, "Collection");
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
-            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]))).Results.ToListAsync());
+            await sut.SearchEmbeddingAsync(new List<double>([1, 2, 3]), top: 3).ToListAsync());
     }
 
     [Fact]
-    public async Task VectorizedSearchWithNonExistentVectorPropertyNameThrowsExceptionAsync()
+    public async Task SearchEmbeddingWithNonExistentVectorPropertyNameThrowsExceptionAsync()
     {
         // Arrange
-        var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, "Collection");
+        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await (await sut.VectorizedSearchAsync(
+            await sut.SearchEmbeddingAsync(
                 new ReadOnlyMemory<float>([1f, 2f, 3f]),
-                new() { VectorProperty = r => "non-existent-property" }))
-                .Results.ToListAsync());
+                top: 3,
+                new() { VectorProperty = r => "non-existent-property" })
+                .ToListAsync());
     }
 
     public void Dispose()

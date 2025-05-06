@@ -84,11 +84,11 @@ public class PineconeKernelBuilderExtensionsTests
 
         var collection = kernel.Services.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<PineconeVectorStoreRecordCollection<TestRecord>>(collection);
+        Assert.IsType<PineconeVectorStoreRecordCollection<string, TestRecord>>(collection);
 
-        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorizedSearch<TestRecord>>();
+        var vectorizedSearch = kernel.Services.GetRequiredService<IVectorSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<PineconeVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
+        Assert.IsType<PineconeVectorStoreRecordCollection<string, TestRecord>>(vectorizedSearch);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes

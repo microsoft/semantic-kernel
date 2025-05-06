@@ -6,11 +6,12 @@
     "configurations": [
         {
             "name": "Python: Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "justMyCode": false
+            "justMyCode": false,
+            "purpose": ["debug-in-terminal"]
         },
         {
             "name": "Python FastAPI app with Dapr",

@@ -12,6 +12,6 @@ public class CosmosNoSQLBasicFilterTests(CosmosNoSQLBasicFilterTests.Fixture fix
 {
     public new class Fixture : BasicFilterTests<string>.Fixture
     {
-        public override TestStore TestStore => CosmosNoSqlTestStore.Instance;
+        public override TestStore TestStore => CosmosNoSQLTestStore.Instance;
     }
 }

@@ -72,17 +72,17 @@ public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterT
     {
         public override TestStore TestStore => RedisTestStore.JsonInstance;
 
-        protected override string CollectionName => "JsonCollectionFilterTests";
+        public override string CollectionName => "JsonCollectionFilterTests";
 
         // Override to remove the bool property, which isn't (currently) supported on Redis/JSON
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties = base.GetRecordDefinition().Properties.Where(p => p.PropertyType != typeof(bool)).ToList()
             };
 
-        protected override IVectorStoreRecordCollection<string, FilterRecord> CreateCollection()
-            => new RedisJsonVectorStoreRecordCollection<FilterRecord>(
+        protected override IVectorStoreRecordCollection<string, FilterRecord> GetCollection()
+            => new RedisJsonVectorStoreRecordCollection<string, FilterRecord>(
                 RedisTestStore.JsonInstance.Database,
                 this.CollectionName,
                 new() { VectorStoreRecordDefinition = this.GetRecordDefinition() });
@@ -124,10 +124,10 @@ public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicF
     {
         public override TestStore TestStore => RedisTestStore.HashSetInstance;
 
-        protected override string CollectionName => "HashSetCollectionFilterTests";
+        public override string CollectionName => "HashSetCollectionFilterTests";
 
         // Override to remove the bool property, which isn't (currently) supported on Redis
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties = base.GetRecordDefinition().Properties.Where(p =>
@@ -136,8 +136,8 @@ public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicF
                     p.PropertyType != typeof(List<string>)).ToList()
             };
 
-        protected override IVectorStoreRecordCollection<string, FilterRecord> CreateCollection()
-            => new RedisHashSetVectorStoreRecordCollection<FilterRecord>(
+        protected override IVectorStoreRecordCollection<string, FilterRecord> GetCollection()
+            => new RedisHashSetVectorStoreRecordCollection<string, FilterRecord>(
                 RedisTestStore.HashSetInstance.Database,
                 this.CollectionName,
                 new() { VectorStoreRecordDefinition = this.GetRecordDefinition() });

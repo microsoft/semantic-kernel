@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Azure CosmosDB NoSQL <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("The IKernelBuilder extensions are being obsoleted, call the appropriate function on the Services property of your IKernelBuilder")]
 public static class AzureCosmosDBNoSQLKernelBuilderExtensions
 {
     /// <summary>
@@ -55,7 +57,7 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Register an Azure CosmosDB NoSQL <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
+    /// Register an Azure CosmosDB NoSQL <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID
     /// and where the Azure CosmosDB NoSQL <see cref="Database"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
@@ -69,13 +71,14 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
         string collectionName,
         AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(collectionName, options, serviceId);
         return builder;
     }
 
     /// <summary>
-    /// Register an Azure CosmosDB NoSQL <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
+    /// Register an Azure CosmosDB NoSQL <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID
     /// and where the Azure CosmosDB NoSQL <see cref="Database"/> is constructed using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
@@ -93,6 +96,7 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
         string databaseName,
         AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(collectionName, connectionString, databaseName, options, serviceId);
         return builder;

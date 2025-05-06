@@ -568,6 +568,7 @@ class OpenAIResponsesAgent(Agent):
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
+        polling_options: RunPollingOptions | None = None,
         reasoning: Literal["low", "medium", "high"] | None = None,
         text: "ResponseTextConfigParam | None" = None,
         tools: "list[ToolParam] | None" = None,
@@ -594,6 +595,7 @@ class OpenAIResponsesAgent(Agent):
             metadata: The metadata.
             model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
+            polling_options: The polling options at the run-level.
             reasoning: The reasoning effort.
             text: The response format.
             tools: The tools.
@@ -630,6 +632,7 @@ class OpenAIResponsesAgent(Agent):
             "metadata": metadata,
             "model": model,
             "parallel_tool_calls": parallel_tool_calls,
+            "polling_options": polling_options,
             "reasoning_effort": reasoning,
             "text": text,
             "temperature": temperature,
@@ -685,6 +688,7 @@ class OpenAIResponsesAgent(Agent):
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
+        polling_options: RunPollingOptions | None = None,
         reasoning: Literal["low", "medium", "high"] | None = None,
         temperature: float | None = None,
         text: "ResponseTextConfigParam | None" = None,
@@ -711,6 +715,7 @@ class OpenAIResponsesAgent(Agent):
             metadata: The metadata.
             model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
+            polling_options: The polling options at the run-level.
             reasoning: The reasoning effort.
             text: The response format.
             tools: The tools.
@@ -746,6 +751,7 @@ class OpenAIResponsesAgent(Agent):
             "metadata": metadata,
             "model": model,
             "parallel_tool_calls": parallel_tool_calls,
+            "polling_options": polling_options,
             "reasoning": reasoning,
             "text": text,
             "temperature": temperature,
