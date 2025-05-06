@@ -234,8 +234,8 @@ public class AutoFunctionInvocationContextTests
 
         // Act
         // Create AIFunctions with different kernels
-        var aiFunction1 = function.AsAIFunction(originalKernel);
-        var aiFunction2 = function.AsAIFunction(newKernel);
+        var aiFunction1 = function.Clone(originalKernel);
+        var aiFunction2 = function.Clone(newKernel);
 
         // Invoke both functions
         var args = new AIFunctionArguments();
