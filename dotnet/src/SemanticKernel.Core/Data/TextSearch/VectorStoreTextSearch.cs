@@ -74,20 +74,20 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
-    /// provided <see cref="IVectorizableTextSearch{TRecord}"/> for performing searches and
+    /// provided <see cref="IVectorSearchable{TRecord}"/> for performing searches and
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
-    /// <param name="vectorSearch"><see cref="IVectorSearchable{TRecord}"/> instance used to perform the text search.</param>
+    /// <param name="vectorSearchable"><see cref="IVectorSearchable{TRecord}"/> instance used to perform the text search.</param>
     /// <param name="stringMapper"><see cref="MapFromResultToString" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="MapFromResultToTextSearchResult" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     public VectorStoreTextSearch(
-        IVectorSearchable<TRecord> vectorSearch,
+        IVectorSearchable<TRecord> vectorSearchable,
         MapFromResultToString stringMapper,
         MapFromResultToTextSearchResult resultMapper,
         VectorStoreTextSearchOptions? options = null) :
         this(
-            vectorSearch,
+            vectorSearchable,
             new TextSearchStringMapper(stringMapper),
             new TextSearchResultMapper(resultMapper),
             options)
@@ -96,22 +96,22 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
-    /// provided <see cref="IVectorizableTextSearch{TRecord}"/> for performing searches and
+    /// provided <see cref="IVectorSearchable{TRecord}"/> for performing searches and
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
-    /// <param name="vectorSearch"><see cref="IVectorSearchable{TRecord}"/> instance used to perform the text search.</param>
+    /// <param name="vectorSearchable"><see cref="IVectorSearchable{TRecord}"/> instance used to perform the text search.</param>
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     public VectorStoreTextSearch(
-        IVectorSearchable<TRecord> vectorSearch,
+        IVectorSearchable<TRecord> vectorSearchable,
         ITextSearchStringMapper? stringMapper = null,
         ITextSearchResultMapper? resultMapper = null,
         VectorStoreTextSearchOptions? options = null)
     {
-        Verify.NotNull(vectorSearch);
+        Verify.NotNull(vectorSearchable);
 
-        this._vectorSearch = vectorSearch;
+        this._vectorSearch = vectorSearchable;
         this._propertyReader = new Lazy<TextSearchResultPropertyReader>(() => new TextSearchResultPropertyReader(typeof(TRecord)));
         this._stringMapper = stringMapper ?? this.CreateTextSearchStringMapper();
         this._resultMapper = resultMapper ?? this.CreateTextSearchResultMapper();

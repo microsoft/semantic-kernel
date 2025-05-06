@@ -25,17 +25,6 @@ public class RecordSearchOptions<TRecord>
     public Expression<Func<TRecord, bool>>? Filter { get; set; }
 
     /// <summary>
-    /// Gets or sets the name of the vector property to search on.
-    /// Use the name of the vector property from your data model or as provided in the record definition.
-    /// </summary>
-    /// <value>
-    /// If not provided will check if there is a vector property to use by default, and
-    /// will throw if either none or multiple exist.
-    /// </value>
-    [Obsolete("Use VectorProperty instead")]
-    public string? VectorPropertyName { get; set; }
-
-    /// <summary>
     /// Gets or sets the vector property to search on.
     /// Only needs to be set when the collection has multiple vector properties.
     /// </summary>
@@ -67,17 +56,4 @@ public class RecordSearchOptions<TRecord>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.
     /// </summary>
     public bool IncludeVectors { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the total count should be included in the results.
-    /// </summary>
-    /// <value>
-    /// The default value is false.
-    /// </value>
-    /// <remarks>
-    /// Not all vector search implementations support this option, in which case the total
-    /// count will be null even if requested via this option.
-    /// </remarks>
-    [Obsolete("Total count is no longer included in the results.", error: true)]
-    public bool IncludeTotalCount { get; set; }
 }

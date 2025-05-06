@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,17 +50,6 @@ public sealed class SqliteVectorStore : VectorStore
             VectorStoreName = connectionStringBuilder.DataSource
         };
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SqliteVectorStore"/> class.
-    /// </summary>
-    /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
-    /// <param name="options">Optional configuration options for this class.</param>
-    [Obsolete("Use the constructor that accepts a connection string instead.", error: true)]
-    public SqliteVectorStore(
-        DbConnection connection,
-        SqliteVectorStoreOptions? options = default)
-        => throw new InvalidOperationException("Use the constructor that accepts a connection string instead.");
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />

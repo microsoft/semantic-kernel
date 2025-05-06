@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.Properties;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
@@ -350,8 +349,8 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
             default:
                 throw new InvalidOperationException(
                     MongoConstants.SupportedVectorTypes.Contains(typeof(TInput))
-                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
-                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
+                        ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
+                        : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }
     }
 
@@ -447,11 +446,6 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
             yield return result;
         }
     }
-
-    /// <inheritdoc />
-    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
     #endregion Search
 

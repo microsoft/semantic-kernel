@@ -254,7 +254,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
     }
 
     [VectorStoreFact]
-    public async Task VectorizedSearchReturnsValidResultsByDefaultAsync()
+    public async Task SearchReturnsValidResultsByDefaultAsync()
     {
         // Arrange
         var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
@@ -269,7 +269,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3).ToListAsync();
+        var searchResults = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3).ToListAsync();
 
         // Assert
         var ids = searchResults.Select(l => l.Record.HotelId).ToList();
@@ -284,7 +284,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
     }
 
     [VectorStoreFact]
-    public async Task VectorizedSearchReturnsValidResultsWithOffsetAsync()
+    public async Task SearchReturnsValidResultsWithOffsetAsync()
     {
         // Arrange
         var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
@@ -299,7 +299,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
+        var searchResults = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
         {
             Skip = 2
         }).ToListAsync();
@@ -315,8 +315,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
     }
 
     [VectorStoreTheory]
-    [MemberData(nameof(VectorizedSearchWithFilterData))]
-    public async Task VectorizedSearchReturnsValidResultsWithFilterAsync(VectorSearchFilter filter, List<string> expectedIds)
+    [MemberData(nameof(SearchWithFilterData))]
+    public async Task SearchReturnsValidResultsWithFilterAsync(VectorSearchFilter filter, List<string> expectedIds)
     {
         // Arrange
         var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
@@ -331,7 +331,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 4, new()
+        var searchResults = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 4, new()
         {
             OldFilter = filter,
         }).ToListAsync();
@@ -384,7 +384,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult["DescriptionEmbedding"]!).ToArray());
     }
 
-    public static TheoryData<VectorSearchFilter, List<string>> VectorizedSearchWithFilterData => new()
+    public static TheoryData<VectorSearchFilter, List<string>> SearchWithFilterData => new()
     {
         {
             new VectorSearchFilter()

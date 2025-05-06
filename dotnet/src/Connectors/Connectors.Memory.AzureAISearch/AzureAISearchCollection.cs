@@ -25,14 +25,9 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-#pragma warning disable CS0618 // IVectorizableTextSearch is obsolete
-public sealed class AzureAISearchCollection<TKey, TRecord> :
-    VectorStoreCollection<TKey, TRecord>,
-    IVectorizableTextSearch<TRecord>,
-    IKeywordHybridSearchable<TRecord>
+public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
     where TKey : notnull
     where TRecord : class
-#pragma warning restore CS0618 // IVectorizableTextSearch is obsolete
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>
@@ -347,11 +342,6 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
-
-    /// <inheritdoc />
     public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
         FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
@@ -471,11 +461,6 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    [Obsolete("Use SearchAsync")]
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        => this.SearchAsync(searchText, top, options, cancellationToken);
-
-    /// <inheritdoc />
     public IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keywords);
@@ -510,8 +495,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> :
             VectorSearch = new(),
             Size = top,
             Skip = options.Skip,
-            Filter = filter,
-            IncludeTotalCount = options.IncludeTotalCount,
+            Filter = filter
         };
         searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
         searchOptions.SearchFields.Add(textDataProperty.StorageName);

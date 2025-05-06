@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,22 +13,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class SqliteServiceCollectionExtensions
 {
-    /// <summary>
-    /// Register a SQLite <see cref="VectorStore"/> with the specified service ID
-    /// and where the SQLite <see cref="SqliteConnection"/> is retrieved from the dependency injection container.
-    /// In this case vector search extension loading should be handled manually.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStore"/> on.</param>
-    /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>Service collection.</returns>
-    [Obsolete("Use AddSqliteVectorStore with connectionString instead.", error: true)]
-    public static IServiceCollection AddSqliteVectorStore(
-        this IServiceCollection services,
-        SqliteVectorStoreOptions? options = default,
-        string? serviceId = default)
-        => throw new InvalidOperationException("Use AddSqliteVectorStore with connectionString instead.");
-
     /// <summary>
     /// Register a SQLite <see cref="VectorStore"/> with the specified service ID.
     /// <see cref="SqliteConnection"/> instance will be initialized, connection will be opened and vector search extension with be loaded.
@@ -47,27 +30,6 @@ public static class SqliteServiceCollectionExtensions
         => services.AddKeyedSingleton<VectorStore>(
             serviceId,
             (sp, _) => new SqliteVectorStore(connectionString, options ?? sp.GetService<SqliteVectorStoreOptions>() ?? new() { EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>() }));
-
-    /// <summary>
-    /// Register a SQLite <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the specified service ID
-    /// and where the SQLite <see cref="SqliteConnection"/> is retrieved from the dependency injection container.
-    /// In this case vector search extension loading should be handled manually.
-    /// </summary>
-    /// <typeparam name="TKey">The type of the key.</typeparam>
-    /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>Service collection.</returns>
-    [Obsolete("Use AddSqliteVectorStoreRecordCollection with connectionString instead.", error: true)]
-    public static IServiceCollection AddSqliteVectorStoreRecordCollection<TKey, TRecord>(
-        this IServiceCollection services,
-        string collectionName,
-        SqliteCollectionOptions? options = default,
-        string? serviceId = default)
-        where TKey : notnull
-        => throw new InvalidOperationException("Use AddSqliteVectorStore with connectionString instead.");
 
     /// <summary>
     /// Register a SQLite <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the specified service ID.

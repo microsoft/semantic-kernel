@@ -65,14 +65,4 @@ public class HybridSearchOptions<TRecord>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.
     /// </summary>
     public bool IncludeVectors { get; init; } = false;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the total count should be included in the results.
-    /// </summary>
-    /// <remarks>
-    /// Default value is false.
-    /// Not all vector search implementations will support this option in which case the total
-    /// count will be null even if requested via this option.
-    /// </remarks>
-    public bool IncludeTotalCount { get; init; } = false;
 }

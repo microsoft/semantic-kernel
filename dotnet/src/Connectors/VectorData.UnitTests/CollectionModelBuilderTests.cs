@@ -3,12 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.Properties;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Xunit;
 
@@ -193,7 +191,7 @@ public class CollectionModelBuilderTests
         var exception = Assert.Throws<InvalidOperationException>(() =>
             new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), vectorStoreRecordDefinition: null, embeddingGenerator));
 
-        Assert.Equal($"Embedding generator '{typeof(FakeEmbeddingGenerator<,>).Name}' is incompatible with the required input and output types. The property input type must be 'String, DataContent', and the output type must be 'ReadOnlyMemory<float>, ReadOnlyMemory<Half>'.", exception.Message);
+        Assert.Equal($"Embedding generator '{typeof(FakeEmbeddingGenerator<,>).Name}' is incompatible with the required input and output types. The property input type must be 'String, DataContent', and the output type must be 'ReadOnlyMemory<Single>, ReadOnlyMemory<Half>'.", exception.Message);
     }
 
     [Fact]
@@ -205,7 +203,7 @@ public class CollectionModelBuilderTests
         var exception = Assert.Throws<InvalidOperationException>(() =>
             new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), vectorStoreRecordDefinition: null, embeddingGenerator));
 
-        Assert.Equal($"Embedding generator '{typeof(FakeEmbeddingGenerator<,>).Name}' is incompatible with the required input and output types. The property input type must be 'String, DataContent', and the output type must be 'ReadOnlyMemory<float>, ReadOnlyMemory<Half>'.", exception.Message);
+        Assert.Equal($"Embedding generator '{typeof(FakeEmbeddingGenerator<,>).Name}' is incompatible with the required input and output types. The property input type must be 'String, DataContent', and the output type must be 'ReadOnlyMemory<Single>, ReadOnlyMemory<Half>'.", exception.Message);
     }
 
     [Fact]
@@ -239,7 +237,7 @@ public class CollectionModelBuilderTests
             new CustomModelBuilder().Build(typeof(RecordWithEmbeddingVectorProperty), recordDefinition, embeddingGenerator));
 
         Assert.Equal(
-            $"Property '{nameof(RecordWithEmbeddingVectorProperty.Embedding)}' has embedding type 'ReadOnlyMemory`1', but an embedding generator is configured on the property. Remove the embedding generator or change the property's .NET type to a non-embedding input type to the generator (e.g. string).",
+            $"Property '{nameof(RecordWithEmbeddingVectorProperty.Embedding)}' has embedding type 'ReadOnlyMemory<Single>', but an embedding generator is configured on the property. Remove the embedding generator or change the property's .NET type to a non-embedding input type to the generator (e.g. string).",
             exception.Message);
     }
 
@@ -309,11 +307,10 @@ public class CollectionModelBuilderTests
                 && !vectorProperty.TrySetupEmbeddingGeneration<Embedding<Half>, ReadOnlyMemory<Half>>(embeddingGenerator, embeddingType))
             {
                 throw new InvalidOperationException(
-                    string.Format(
-                        VectorDataStrings.IncompatibleEmbeddingGenerator,
-                        embeddingGenerator.GetType().Name,
-                        string.Join(", ", vectorProperty.GetSupportedInputTypes().Select(t => t.Name)),
-                        "ReadOnlyMemory<float>, ReadOnlyMemory<Half>"));
+                    VectorDataStrings.IncompatibleEmbeddingGenerator(
+                        embeddingGenerator.GetType(),
+                        vectorProperty.GetSupportedInputTypes(),
+                        [typeof(ReadOnlyMemory<float>), typeof(ReadOnlyMemory<Half>)]));
             }
         }
     }

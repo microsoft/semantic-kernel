@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Sdk = Pinecone;
+using Pinecone;
 
 namespace Memory.VectorStoreLangchainInterop;
 
@@ -33,15 +33,15 @@ public static class PineconeFactory
     /// </summary>
     /// <param name="pineconeClient">Pinecone client that can be used to manage the collections and points in a Pinecone store.</param>
     /// <returns>The <see cref="VectorStore"/>.</returns>
-    public static VectorStore CreatePineconeLangchainInteropVectorStore(Sdk.PineconeClient pineconeClient)
+    public static VectorStore CreatePineconeLangchainInteropVectorStore(PineconeClient pineconeClient)
         => new PineconeLangchainInteropVectorStore(new PineconeVectorStore(pineconeClient), pineconeClient);
 
     private sealed class PineconeLangchainInteropVectorStore(
         VectorStore innerStore,
-        Sdk.PineconeClient pineconeClient)
+        PineconeClient pineconeClient)
         : VectorStore
     {
-        private readonly Sdk.PineconeClient _pineconeClient = pineconeClient;
+        private readonly PineconeClient _pineconeClient = pineconeClient;
 
         public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         {

@@ -3,7 +3,7 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.Properties;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel;
 using PineconeIntegrationTests.Support;
 using VectorDataSpecificationTests;

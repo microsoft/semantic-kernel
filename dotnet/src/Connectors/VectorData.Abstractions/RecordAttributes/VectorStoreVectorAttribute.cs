@@ -16,14 +16,6 @@ public sealed class VectorStoreVectorAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreVectorAttribute"/> class.
     /// </summary>
-    [Obsolete("This constructor is obsolete, since Dimensions is now a required parameter.", error: true)]
-    public VectorStoreVectorAttribute()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreVectorAttribute"/> class.
-    /// </summary>
     /// <param name="Dimensions">The number of dimensions that the vector has.</param>
     public VectorStoreVectorAttribute(int Dimensions)
     {
@@ -33,32 +25,6 @@ public sealed class VectorStoreVectorAttribute : Attribute
         }
 
         this.Dimensions = Dimensions;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreVectorAttribute"/> class.
-    /// </summary>
-    /// <param name="Dimensions">The number of dimensions that the vector has.</param>
-    /// <param name="DistanceFunction">The distance function to use when comparing vectors.</param>
-    [Obsolete("This constructor is obsolete. Use the constructor that takes Dimensions as a parameter and set the DistanceFunction property directly, e.g. [[VectorStoreRecordVector(Dimensions: 1536, DistanceFunction = DistanceFunction.CosineSimilarity)]]", error: true)]
-    public VectorStoreVectorAttribute(int Dimensions, string? DistanceFunction)
-    {
-        this.Dimensions = Dimensions;
-        this.DistanceFunction = DistanceFunction;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreVectorAttribute"/> class.
-    /// </summary>
-    /// <param name="Dimensions">The number of dimensions that the vector has.</param>
-    /// <param name="DistanceFunction">The distance function to use when comparing vectors.</param>
-    /// <param name="IndexKind">The kind of index to use.</param>
-    [Obsolete("This constructor is obsolete. Use the constructor that takes Dimensions as a parameter and set the DistanceFunction and IndexKind properties directly, e.g. [[VectorStoreRecordVector(Dimensions: 1536, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]]", error: true)]
-    public VectorStoreVectorAttribute(int Dimensions, string? DistanceFunction, string? IndexKind)
-    {
-        this.Dimensions = Dimensions;
-        this.DistanceFunction = DistanceFunction;
-        this.IndexKind = IndexKind;
     }
 
     /// <summary>

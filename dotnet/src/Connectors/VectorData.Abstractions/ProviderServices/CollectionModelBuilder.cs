@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.Properties;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -308,13 +307,9 @@ public class CollectionModelBuilder
                     if (definitionVectorProperty.EmbeddingGenerator is not null)
                     {
                         // If we have a property CLR type (POCO, not dynamic mapping) and it's an embedding type, throw as that's incompatible.
-                        if (this.Options.SupportedVectorPropertyTypes.Contains(property.Type))
+                        if (this.Options.SupportedVectorPropertyTypes.Contains(vectorProperty.Type))
                         {
-                            throw new InvalidOperationException(
-                                string.Format(
-                                    VectorDataStrings.EmbeddingPropertyTypeIncompatibleWithEmbeddingGenerator,
-                                    property.ModelName,
-                                    property.Type.Name));
+                            throw new InvalidOperationException(VectorDataStrings.EmbeddingPropertyTypeIncompatibleWithEmbeddingGenerator(vectorProperty));
                         }
 
                         embeddingGenerator = definitionVectorProperty.EmbeddingGenerator;
@@ -322,7 +317,7 @@ public class CollectionModelBuilder
                     // If a default embedding generator is defined (at the collection or store level), configure that on the property, but only if the property type is not an embedding type.
                     // If the property type is an embedding type, just ignore the default embedding generator.
                     else if ((vectorStoreRecordDefinition.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator) is IEmbeddingGenerator defaultEmbeddingGenerator
-                        && !this.Options.SupportedVectorPropertyTypes.Contains(property.Type))
+                        && !this.Options.SupportedVectorPropertyTypes.Contains(vectorProperty.Type))
                     {
                         embeddingGenerator = vectorStoreRecordDefinition.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator;
                     }
@@ -330,7 +325,7 @@ public class CollectionModelBuilder
                     if (embeddingGenerator is null)
                     {
                         // No embedding generation - the embedding type and the property (model) type are the same.
-                        vectorProperty.EmbeddingType = property.Type;
+                        vectorProperty.EmbeddingType = vectorProperty.Type;
                     }
                     else
                     {
@@ -384,11 +379,10 @@ public class CollectionModelBuilder
         if (!vectorProperty.TrySetupEmbeddingGeneration<Embedding<float>, ReadOnlyMemory<float>>(embeddingGenerator, embeddingType))
         {
             throw new InvalidOperationException(
-                string.Format(
-                    VectorDataStrings.IncompatibleEmbeddingGenerator,
-                    embeddingGenerator.GetType().Name,
-                    string.Join(", ", vectorProperty.GetSupportedInputTypes().Select(t => t.Name)),
-                    "ReadOnlyMemory<float>"));
+                VectorDataStrings.IncompatibleEmbeddingGenerator(
+                    embeddingGeneratorType: embeddingGenerator.GetType(),
+                    supportedInputTypes: vectorProperty.GetSupportedInputTypes(),
+                    supportedOutputTypes: [typeof(ReadOnlyMemory<float>)]));
         }
     }
 
@@ -481,8 +475,8 @@ public class CollectionModelBuilder
                 {
                     throw new InvalidOperationException(
                         vectorProperty.EmbeddingGenerator is null
-                            ? string.Format(VectorDataStrings.NonEmbeddingVectorPropertyWithoutEmbeddingGenerator, vectorProperty.ModelName, vectorProperty.EmbeddingType.Name)
-                            : string.Format(VectorDataStrings.EmbeddingGeneratorWithInvalidEmbeddingType, vectorProperty.ModelName, vectorProperty.EmbeddingType.Name));
+                            ? VectorDataStrings.NonEmbeddingVectorPropertyWithoutEmbeddingGenerator(vectorProperty)
+                            : VectorDataStrings.EmbeddingPropertyTypeIncompatibleWithEmbeddingGenerator(vectorProperty));
                 }
 
                 if (vectorProperty.Dimensions <= 0)
