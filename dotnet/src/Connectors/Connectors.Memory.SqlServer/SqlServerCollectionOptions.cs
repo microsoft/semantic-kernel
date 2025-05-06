@@ -10,6 +10,8 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// </summary>
 public sealed class SqlServerCollectionOptions
 {
+    internal static readonly SqlServerCollectionOptions Default = new();
+
     /// <summary>
     /// Gets or sets the database schema.
     /// </summary>

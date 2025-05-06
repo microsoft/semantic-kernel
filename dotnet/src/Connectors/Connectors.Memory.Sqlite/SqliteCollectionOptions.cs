@@ -10,6 +10,8 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </summary>
 public sealed class SqliteCollectionOptions
 {
+    internal static readonly SqliteCollectionOptions Default = new();
+
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>

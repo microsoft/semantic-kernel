@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Driver;
 
@@ -24,11 +25,10 @@ public sealed class CosmosMongoVectorStore : VectorStore
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly CosmosMongoVectorStoreOptions _options;
-
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CosmosMongoVectorStore"/> class.
@@ -40,7 +40,7 @@ public sealed class CosmosMongoVectorStore : VectorStore
         Verify.NotNull(mongoDatabase);
 
         this._mongoDatabase = mongoDatabase;
-        this._options = options ?? new();
+        this._embeddingGenerator = options?.EmbeddingGenerator;
 
         this._metadata = new()
         {
@@ -62,7 +62,7 @@ public sealed class CosmosMongoVectorStore : VectorStore
             new()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
+                EmbeddingGenerator = this._embeddingGenerator
             });
 #pragma warning restore IDE0090
 

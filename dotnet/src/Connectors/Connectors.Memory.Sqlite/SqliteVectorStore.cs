@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
@@ -24,11 +25,16 @@ public sealed class SqliteVectorStore : VectorStore
     /// <summary>The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</summary>
     private readonly string _connectionString;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly SqliteVectorStoreOptions _options;
-
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+
+    /// <summary>SQLite extension name for vector search operations.</summary>
+    private readonly string? _vectorSearchExtensionName;
+
+    /// <summary>Custom virtual table name to store vectors.</summary>
+    private readonly string? _vectorVirtualTableName;
+
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteVectorStore"/> class.
@@ -40,7 +46,11 @@ public sealed class SqliteVectorStore : VectorStore
         Verify.NotNull(connectionString);
 
         this._connectionString = connectionString;
-        this._options = options ?? new();
+
+        options ??= SqliteVectorStoreOptions.Default;
+        this._vectorSearchExtensionName = options.VectorSearchExtensionName;
+        this._vectorVirtualTableName = options.VectorVirtualTableName;
+        this._embeddingGenerator = options.EmbeddingGenerator;
 
         var connectionStringBuilder = new SqliteConnectionStringBuilder(connectionString);
 
@@ -64,9 +74,9 @@ public sealed class SqliteVectorStore : VectorStore
             new()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                VectorSearchExtensionName = this._options.VectorSearchExtensionName,
-                VectorVirtualTableName = this._options.VectorVirtualTableName,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
+                VectorSearchExtensionName = this._vectorSearchExtensionName,
+                VectorVirtualTableName = this._vectorVirtualTableName,
+                EmbeddingGenerator = this._embeddingGenerator
             });
 #pragma warning restore IDE0090
 

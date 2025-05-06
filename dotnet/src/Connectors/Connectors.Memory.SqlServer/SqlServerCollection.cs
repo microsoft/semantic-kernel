@@ -29,12 +29,13 @@ public sealed class SqlServerCollection<TKey, TRecord>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
-    private static readonly SqlServerCollectionOptions s_defaultOptions = new();
 
     private readonly string _connectionString;
-    private readonly SqlServerCollectionOptions _options;
     private readonly CollectionModel _model;
     private readonly SqlServerMapper<TRecord> _mapper;
+
+    /// <summary>The database schema.</summary>
+    private readonly string? _schema;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerCollection{TKey, TRecord}"/> class.
@@ -50,20 +51,15 @@ public sealed class SqlServerCollection<TKey, TRecord>
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNull(name);
 
+        options ??= SqlServerCollectionOptions.Default;
+        this._schema = options.Schema;
+
         this._model = new CollectionModelBuilder(SqlServerConstants.ModelBuildingOptions)
-            .Build(typeof(TRecord), options?.RecordDefinition, options?.EmbeddingGenerator);
+            .Build(typeof(TRecord), options.RecordDefinition, options.EmbeddingGenerator);
 
         this._connectionString = connectionString;
         this.Name = name;
-        // We need to create a copy, so any changes made to the option bag after
-        // the ctor call do not affect this instance.
-        this._options = options is null
-            ? s_defaultOptions
-            : new()
-            {
-                Schema = options.Schema,
-                RecordDefinition = options.RecordDefinition,
-            };
+
         this._mapper = new SqlServerMapper<TRecord>(this._model);
 
         var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
@@ -84,7 +80,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
     {
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.SelectTableName(
-            connection, this._options.Schema, this.Name);
+            connection, this._schema, this.Name);
 
         return await connection.ExecuteWithErrorHandlingAsync(
             this._collectionMetadata,
@@ -110,7 +106,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.CreateTable(
             connection,
-            this._options.Schema,
+            this._schema,
             this.Name,
             ifNotExists,
             this._model);
@@ -127,7 +123,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
     {
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.DropTableIfExists(
-            connection, this._options.Schema, this.Name);
+            connection, this._schema, this.Name);
 
         await connection.ExecuteWithErrorHandlingAsync(
             this._collectionMetadata,
@@ -144,7 +140,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.DeleteSingle(
             connection,
-            this._options.Schema,
+            this._schema,
             this.Name,
             this._model.KeyProperty,
             key);
@@ -180,7 +176,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
                 {
                     if (!SqlServerCommandBuilder.DeleteMany(
                         command,
-                        this._options.Schema,
+                        this._schema,
                         this.Name,
                         this._model.KeyProperty,
                         keys.Skip(taken).Take(SqlServerConstants.MaxParameterCount)))
@@ -249,7 +245,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.SelectSingle(
             connection,
-            this._options.Schema,
+            this._schema,
             this.Name,
             this._model,
             key,
@@ -297,7 +293,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
 
             if (!SqlServerCommandBuilder.SelectMany(
                 command,
-                this._options.Schema,
+                this._schema,
                 this.Name,
                 this._model,
                 keys.Skip(taken).Take(SqlServerConstants.MaxParameterCount),
@@ -361,7 +357,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.MergeIntoSingle(
             connection,
-            this._options.Schema,
+            this._schema,
             this.Name,
             this._model,
             this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings));
@@ -447,7 +443,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
                 {
                     if (!SqlServerCommandBuilder.MergeIntoMany(
                         command,
-                        this._options.Schema,
+                        this._schema,
                         this.Name,
                         this._model,
                         records.Skip(taken)
@@ -586,7 +582,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
         SqlConnection connection = new(this._connectionString);
         SqlCommand command = SqlServerCommandBuilder.SelectVector(
             connection,
-            this._options.Schema,
+            this._schema,
             this.Name,
             vectorProperty,
             this._model,
@@ -666,7 +662,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
             top,
             options,
             connection,
-            this._options.Schema,
+            this._schema,
             this.Name,
             this._model);
 

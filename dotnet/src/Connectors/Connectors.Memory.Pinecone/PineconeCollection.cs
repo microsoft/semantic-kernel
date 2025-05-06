@@ -32,13 +32,21 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     private readonly PineconeClient _pineconeClient;
-    private readonly PineconeCollectionOptions _options;
     private readonly Extensions.VectorData.ProviderServices.CollectionModel _model;
     private readonly PineconeMapper<TRecord> _mapper;
     private IndexClient? _indexClient;
 
     /// <inheritdoc />
     public override string Name { get; }
+
+    /// <summary>The namespace within the Pinecone index that will be used for operations involving records (Get, Upsert, Delete).</summary>
+    private readonly string? _indexNamespace;
+
+    /// <summary>The public cloud where the serverless index is hosted.</summary>
+    private readonly string _serverlessIndexCloud;
+
+    /// <summary>The region where the serverless index is created.</summary>
+    private readonly string _serverlessIndexRegion;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeCollection{TKey, TRecord}"/> class.
@@ -60,9 +68,14 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         this._pineconeClient = pineconeClient;
         this.Name = name;
-        this._options = options ?? new PineconeCollectionOptions();
+
+        options ??= PineconeCollectionOptions.Default;
+        this._indexNamespace = options.IndexNamespace;
+        this._serverlessIndexCloud = options.ServerlessIndexCloud;
+        this._serverlessIndexRegion = options.ServerlessIndexRegion;
+
         this._model = new CollectionModelBuilder(PineconeFieldMapping.ModelBuildingOptions)
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
+            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
         this._mapper = new PineconeMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
@@ -104,8 +117,8 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             {
                 Serverless = new ServerlessSpec
                 {
-                    Cloud = MapCloud(this._options.ServerlessIndexCloud),
-                    Region = this._options.ServerlessIndexRegion,
+                    Cloud = MapCloud(this._serverlessIndexCloud),
+                    Region = this._serverlessIndexRegion,
                 }
             },
         };
@@ -164,7 +177,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         FetchRequest request = new()
         {
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             Ids = [this.GetStringKey(key)]
         };
 
@@ -211,7 +224,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         FetchRequest request = new()
         {
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             Ids = keysList
         };
 
@@ -236,7 +249,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     {
         DeleteRequest request = new()
         {
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             Ids = [this.GetStringKey(key)]
         };
 
@@ -264,7 +277,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         DeleteRequest request = new()
         {
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             Ids = keysList
         };
 
@@ -299,7 +312,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         UpsertRequest request = new()
         {
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             Vectors = [vector],
         };
 
@@ -349,7 +362,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         UpsertRequest request = new()
         {
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             Vectors = vectors,
         };
 
@@ -442,7 +455,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         QueryRequest request = new()
         {
             TopK = (uint)(top + options.Skip),
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             IncludeValues = options.IncludeVectors,
             IncludeMetadata = true,
             Vector = floatVector,
@@ -504,7 +517,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         QueryRequest request = new()
         {
             TopK = (uint)(top + options.Skip),
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             IncludeValues = options.IncludeVectors,
             IncludeMetadata = true,
             // "Either 'vector' or 'ID' must be provided"

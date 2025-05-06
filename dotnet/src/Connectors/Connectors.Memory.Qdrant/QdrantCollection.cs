@@ -47,14 +47,14 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <summary>Qdrant client that can be used to manage the collections and points in a Qdrant store.</summary>
     private readonly MockableQdrantClient _qdrantClient;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly QdrantCollectionOptions _options;
-
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
 
     /// <summary>A mapper to use for converting between qdrant point and consumer models.</summary>
     private readonly QdrantMapper<TRecord> _mapper;
+
+    /// <summary>Whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector per qdrant point.</summary>
+    private readonly bool _hasNamedVectors;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantCollection{TKey, TRecord}"/> class.
@@ -91,12 +91,14 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
         // Assign.
         this._qdrantClient = qdrantClient;
         this.Name = name;
-        this._options = options ?? new QdrantCollectionOptions();
 
-        this._model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(this._options.HasNamedVectors))
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
+        options ??= QdrantCollectionOptions.Default;
+        this._hasNamedVectors = options.HasNamedVectors;
 
-        this._mapper = new QdrantMapper<TRecord>(this._model, this._options.HasNamedVectors);
+        this._model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(options.HasNamedVectors))
+            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
+
+        this._mapper = new QdrantMapper<TRecord>(this._model, options.HasNamedVectors);
 
         this._collectionMetadata = new()
         {
@@ -119,7 +121,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <inheritdoc />
     public override async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        if (!this._options.HasNamedVectors)
+        if (!this._hasNamedVectors)
         {
             // If we are not using named vectors, we can only have one vector property. We can assume we have exactly one, since this is already verified in the constructor.
             var singleVectorProperty = this._model.VectorProperty;
@@ -572,7 +574,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
             () => this._qdrantClient.QueryAsync(
                 this.Name,
                 query: query,
-                usingVector: this._options.HasNamedVectors ? vectorProperty.StorageName : null,
+                usingVector: this._hasNamedVectors ? vectorProperty.StorageName : null,
                 filter: filter,
                 limit: (ulong)top,
                 offset: (ulong)options.Skip,
@@ -690,9 +692,9 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
             },
         };
 
-        if (this._options.HasNamedVectors)
+        if (this._hasNamedVectors)
         {
-            vectorQuery.Using = this._options.HasNamedVectors ? vectorProperty.StorageName : null;
+            vectorQuery.Using = this._hasNamedVectors ? vectorProperty.StorageName : null;
         }
 
         // Build the keyword query.

@@ -10,6 +10,8 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </summary>
 public sealed class WeaviateVectorStoreOptions
 {
+    internal static readonly WeaviateVectorStoreOptions Default = new();
+
     /// <summary>
     /// Weaviate endpoint for remote or local cluster.
     /// </summary>

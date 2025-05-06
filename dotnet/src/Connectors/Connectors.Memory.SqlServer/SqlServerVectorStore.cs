@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
@@ -16,13 +17,17 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 public sealed class SqlServerVectorStore : VectorStore
 {
     private readonly string _connectionString;
-    private readonly SqlServerVectorStoreOptions _options;
 
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+
+    /// <summary>The database schema.</summary>
+    private readonly string? _schema;
+
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStore"/> class.
@@ -34,11 +39,10 @@ public sealed class SqlServerVectorStore : VectorStore
         Verify.NotNullOrWhiteSpace(connectionString);
 
         this._connectionString = connectionString;
-        // We need to create a copy, so any changes made to the option bag after
-        // the ctor call do not affect this instance.
-        this._options = options is not null
-            ? new() { Schema = options.Schema, EmbeddingGenerator = options.EmbeddingGenerator }
-            : SqlServerVectorStoreOptions.Defaults;
+
+        options ??= SqlServerVectorStoreOptions.Defaults;
+        this._schema = options.Schema;
+        this._embeddingGenerator = options.EmbeddingGenerator;
 
         var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
 
@@ -64,9 +68,9 @@ public sealed class SqlServerVectorStore : VectorStore
             name,
             new()
             {
-                Schema = this._options.Schema,
+                Schema = this._schema,
                 RecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
+                EmbeddingGenerator = this._embeddingGenerator
             });
     }
 #pragma warning restore IDE0090
@@ -75,7 +79,7 @@ public sealed class SqlServerVectorStore : VectorStore
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using SqlConnection connection = new(this._connectionString);
-        using SqlCommand command = SqlServerCommandBuilder.SelectTableNames(connection, this._options.Schema);
+        using SqlCommand command = SqlServerCommandBuilder.SelectTableNames(connection, this._schema);
 
         using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
             this._metadata,

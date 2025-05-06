@@ -12,6 +12,8 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// </summary>
 public sealed class CosmosNoSqlCollectionOptions
 {
+    internal static readonly CosmosNoSqlCollectionOptions Default = new();
+
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>

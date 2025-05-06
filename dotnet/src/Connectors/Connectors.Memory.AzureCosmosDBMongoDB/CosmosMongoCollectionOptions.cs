@@ -10,6 +10,8 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// </summary>
 public sealed class CosmosMongoCollectionOptions
 {
+    internal static readonly CosmosMongoCollectionOptions Default = new();
+
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>

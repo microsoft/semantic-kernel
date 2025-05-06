@@ -12,6 +12,8 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// </summary>
 public sealed class AzureAISearchCollectionOptions
 {
+    internal static readonly AzureAISearchCollectionOptions Default = new();
+
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>

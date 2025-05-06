@@ -9,6 +9,8 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </summary>
 public sealed class SqliteVectorStoreOptions
 {
+    internal static readonly SqliteVectorStoreOptions Default = new();
+
     /// <summary>
     /// SQLite extension name for vector search operations.
     /// If not specified, the default "vec0" extension name will be used.

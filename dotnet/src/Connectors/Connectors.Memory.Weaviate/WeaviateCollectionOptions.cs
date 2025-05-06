@@ -11,6 +11,8 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </summary>
 public sealed class WeaviateCollectionOptions
 {
+    internal static readonly WeaviateCollectionOptions Default = new();
+
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>
