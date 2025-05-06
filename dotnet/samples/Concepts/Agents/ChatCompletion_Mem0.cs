@@ -31,7 +31,7 @@ public class ChatCompletion_Mem0(ITestOutputHelper output) : BaseTest(output)
         };
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", TestConfiguration.Mem0.ApiKey);
 
-        // Create a mem0 component with the curent user's id, so that it stores memories for that user.
+        // Create a mem0 component with the current user's id, so that it stores memories for that user.
         var mem0Component = new Mem0MemoryComponent(httpClient, new()
         {
             UserId = "U1"
