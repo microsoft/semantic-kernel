@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
     <PackageVersion Include="Aspire.Azure.Search.Documents" Version="9.1.0" />
-    <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="9.1.0" />
+    <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="9.2.1" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.1.0" />
     <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.0-preview.13" />
@@ -29,7 +29,7 @@
     <PackageVersion Include="EntityFramework" Version="6.5.1" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="Google.Apis.Auth" Version="1.69.0" />
-    <PackageVersion Include="Google.Protobuf" Version="3.27.0" />
+    <PackageVersion Include="Google.Protobuf" Version="3.30.1" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.70.0" />
     <PackageVersion Include="Grpc.AspNetCore.Server" Version="2.70.0" />
     <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.70.0" />
@@ -39,7 +39,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.3.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.10" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
@@ -80,7 +80,7 @@
     <PackageVersion Include="PuppeteerSharp" Version="20.0.5" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
     <PackageVersion Include="System.Formats.Asn1" Version="8.0.2" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="7.5.1" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
     <PackageVersion Include="System.IO.Packaging" Version="8.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Memory.Data" Version="8.0.1" />
@@ -102,7 +102,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
@@ -149,7 +149,7 @@
     <PackageVersion Include="Grpc.Net.Client" Version="2.70.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.45" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
-    <PackageVersion Include="YamlDotNet" Version="15.3.0" />
+    <PackageVersion Include="YamlDotNet" Version="16.3.0" />
     <PackageVersion Include="Fluid.Core" Version="2.11.1" />
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.48.0-preview.0" />
