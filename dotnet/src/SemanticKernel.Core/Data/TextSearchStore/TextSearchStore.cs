@@ -8,7 +8,6 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -26,13 +25,12 @@ namespace Microsoft.SemanticKernel.Data;
 /// This class can also be used with the <see cref="TextSearchBehavior"/> to easily add RAG capabilities to an Agent.
 /// </para>
 /// </remarks>
-/// <typeparam name="TKey">The key type to use with the vector store.</typeparam>
+/// <typeparam name="TKey">The key type to use with the vector store. Choose a key type supported by your chosen vector store type. Currently this class only supports string or Guid.</typeparam>
 [Experimental("SKEXP0130")]
 public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
     where TKey : notnull
 {
     private readonly IVectorStore _vectorStore;
-    private readonly ITextEmbeddingGenerationService _textEmbeddingGenerationService;
     private readonly int _vectorDimensions;
     private readonly TextSearchStoreOptions _options;
 
@@ -45,21 +43,18 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// Initializes a new instance of the <see cref="TextSearchStore{TKey}"/> class.
     /// </summary>
     /// <param name="vectorStore">The vector store to store and read the memories from.</param>
-    /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings for the memories.</param>
     /// <param name="collectionName">The name of the collection in the vector store to store and read the memories from.</param>
     /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="options">Options to configure the behavior of this class.</param>
     /// <exception cref="NotSupportedException">Thrown if the key type provided is not supported.</exception>
     public TextSearchStore(
         IVectorStore vectorStore,
-        ITextEmbeddingGenerationService textEmbeddingGenerationService,
         string collectionName,
         int vectorDimensions,
         TextSearchStoreOptions? options = default)
     {
         // Verify
         Verify.NotNull(vectorStore);
-        Verify.NotNull(textEmbeddingGenerationService);
         Verify.NotNullOrWhiteSpace(collectionName);
         Verify.True(vectorDimensions > 0, "Vector dimensions must be greater than 0");
 
@@ -75,7 +70,6 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
 
         // Assign
         this._vectorStore = vectorStore;
-        this._textEmbeddingGenerationService = textEmbeddingGenerationService;
         this._vectorDimensions = vectorDimensions;
         this._options = options ?? new TextSearchStoreOptions();
 
@@ -90,7 +84,7 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
                 new VectorStoreRecordDataProperty("Text", typeof(string)),
                 new VectorStoreRecordDataProperty("SourceName", typeof(string)),
                 new VectorStoreRecordDataProperty("SourceLink", typeof(string)),
-                new VectorStoreRecordVectorProperty("TextEmbedding", typeof(ReadOnlyMemory<float>), vectorDimensions),
+                new VectorStoreRecordVectorProperty("TextEmbedding", typeof(string), vectorDimensions),
             }
         };
 
@@ -110,7 +104,7 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
 
         var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
-        var storageDocumentsTasks = textChunks.Select(async textChunk =>
+        var storageDocuments = textChunks.Select(textChunk =>
         {
             // Without text we cannot generate a vector.
             if (string.IsNullOrWhiteSpace(textChunk))
@@ -119,17 +113,15 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
             }
 
             var key = GenerateUniqueKey<TKey>(null);
-            var textEmbeddings = await this._textEmbeddingGenerationService.GenerateEmbeddingsAsync([textChunk]).ConfigureAwait(false);
 
             return new TextRagStorageDocument<TKey>
             {
                 Key = key,
                 Text = textChunk,
-                TextEmbedding = textEmbeddings.Single()
+                TextEmbedding = textChunk,
             };
         });
 
-        var storageDocuments = await Task.WhenAll(storageDocumentsTasks).ConfigureAwait(false);
         await vectorStoreRecordCollection.UpsertAsync(storageDocuments, cancellationToken).ConfigureAwait(false);
     }
 
@@ -146,7 +138,7 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
 
         var vectorStoreRecordCollection = await this.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
-        var storageDocumentsTasks = documents.Select(async document =>
+        var storageDocuments = documents.Select(document =>
         {
             if (document is null)
             {
@@ -166,7 +158,6 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
             }
 
             var key = GenerateUniqueKey<TKey>(this._options.UseSourceIdAsPrimaryKey ?? false ? document.SourceId : null);
-            var textEmbeddings = await this._textEmbeddingGenerationService.GenerateEmbeddingsAsync([document.Text!]).ConfigureAwait(false);
 
             return new TextRagStorageDocument<TKey>
             {
@@ -176,11 +167,10 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
                 Text = options?.PersistSourceText is false ? null : document.Text,
                 SourceName = document.SourceName,
                 SourceLink = document.SourceLink,
-                TextEmbedding = textEmbeddings.Single()
+                TextEmbedding = document.Text,
             };
         });
 
-        var storageDocuments = await Task.WhenAll(storageDocumentsTasks).ConfigureAwait(false);
         await vectorStoreRecordCollection.UpsertAsync(storageDocuments, cancellationToken).ConfigureAwait(false);
     }
 
@@ -228,9 +218,8 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
         Expression<Func<TextRagStorageDocument<TKey>, bool>>? filter = string.IsNullOrWhiteSpace(this._options.SearchNamespace) ? null : x => x.Namespaces.Contains(this._options.SearchNamespace);
 
         // Generate the vector for the query and search.
-        var vector = await this._textEmbeddingGenerationService.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
-        var searchResult = vectorStoreRecordCollection.SearchEmbeddingAsync(
-            vector,
+        var searchResult = vectorStoreRecordCollection.SearchAsync(
+            query,
             searchOptions?.Top ?? 3,
             options: new()
             {
@@ -416,8 +405,8 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
         public string? SourceLink { get; set; }
 
         /// <summary>
-        /// Gets or sets the embedding for the text content.
+        /// Gets or sets the text that will be used to generate the embedding for the document.
         /// </summary>
-        public ReadOnlyMemory<float> TextEmbedding { get; set; }
+        public string? TextEmbedding { get; set; }
     }
 }
