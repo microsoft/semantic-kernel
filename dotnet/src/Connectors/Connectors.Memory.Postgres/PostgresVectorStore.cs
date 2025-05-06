@@ -117,6 +117,7 @@ public sealed class PostgresVectorStore : VectorStore, IDisposable
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(NpgsqlDataSource) ? this._client.DataSource :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
