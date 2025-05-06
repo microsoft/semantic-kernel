@@ -188,7 +188,7 @@ async def main(collection: str, use_azure_openai: bool):
         print_with_color("Now we can start searching.", Colors.CBLUE)
         print_with_color("  For each type of search, enter a search term, for instance `python`.", Colors.CBLUE)
         print_with_color("  Enter exit to exit, and skip or nothing to skip this search.", Colors.CBLUE)
-        assert isinstance(record_collection, VectorSearch)
+        assert isinstance(record_collection, VectorSearch)  # nosec
         print("-" * 30)
         print_with_color(
             "This collection supports the following search types: "

@@ -9,7 +9,7 @@ from semantic_kernel.data.vector_search import VectorSearchOptions
 
 @fixture
 def collection(data_model_definition):
-    return InMemoryCollection("test", dict, data_model_definition)
+    return InMemoryCollection(collection_name="test", data_model_type=dict, data_model_definition=data_model_definition)
 
 
 def test_store_init():
@@ -19,7 +19,9 @@ def test_store_init():
 
 def test_store_get_collection(data_model_definition):
     store = InMemoryStore()
-    collection = store.get_collection("test", dict, data_model_definition)
+    collection = store.get_collection(
+        collection_name="test", data_model_type=dict, data_model_definition=data_model_definition
+    )
     assert collection.collection_name == "test"
     assert collection.data_model_type is dict
     assert collection.data_model_definition == data_model_definition
@@ -67,13 +69,6 @@ async def test_create_collection(collection):
     await collection.create_collection()
 
 
-async def test_text_search(collection):
-    record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
-    await collection.upsert(record)
-    results = await collection.text_search(search_text="content")
-    assert len([res async for res in results.results]) == 1
-
-
 @mark.parametrize(
     "distance_function",
     [
@@ -91,7 +86,7 @@ async def test_vectorized_search_similar(collection, distance_function):
     record1 = {"id": "testid1", "content": "test content", "vector": [1.0, 1.0, 1.0, 1.0, 1.0]}
     record2 = {"id": "testid2", "content": "test content", "vector": [-1.0, -1.0, -1.0, -1.0, -1.0]}
     await collection.upsert_batch([record1, record2])
-    results = await collection.vectorized_search(
+    results = await collection.search(
         vector=[0.9, 0.9, 0.9, 0.9, 0.9],
         options=VectorSearchOptions(vector_field_name="vector", include_total_count=True, include_vectors=True),
     )
