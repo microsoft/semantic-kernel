@@ -120,9 +120,18 @@ class AzureAISearchSettings(KernelBaseSettings):
     index_name: str | None = None
 
 
-def _get_search_client(search_index_client: SearchIndexClient, collection_name: str, **kwargs: Any) -> SearchClient:
+def _get_search_client(
+    search_index_client: SearchIndexClient, collection_name: str | None, **kwargs: Any
+) -> SearchClient:
     """Create a search client for a collection."""
-    return SearchClient(search_index_client._endpoint, collection_name, search_index_client._credential, **kwargs)
+    if not collection_name:
+        raise VectorStoreInitializationException("Collection name is required to create a search client.")
+    try:
+        return SearchClient(search_index_client._endpoint, collection_name, search_index_client._credential, **kwargs)
+    except ValueError as exc:
+        raise VectorStoreInitializationException(
+            f"Failed to create Azure Cognitive Search client for collection {collection_name}."
+        ) from exc
 
 
 def _get_search_index_client(
@@ -289,7 +298,6 @@ class AzureAISearchCollection(
             collection_name = _get_collection_name_from_model(data_model_type, data_model_definition)
         if not collection_name and search_client:
             collection_name = search_client._index_name
-        assert collection_name  # nosec
         if search_client and search_index_client:
             if collection_name and search_client._index_name != collection_name:
                 search_client._index_name = collection_name
@@ -306,12 +314,22 @@ class AzureAISearchCollection(
             return
 
         if search_index_client:
+            try:
+                azure_ai_search_settings = AzureAISearchSettings(
+                    env_file_path=kwargs.get("env_file_path"),
+                    endpoint=kwargs.get("search_endpoint"),
+                    api_key=kwargs.get("api_key"),
+                    env_file_encoding=kwargs.get("env_file_encoding"),
+                    index_name=collection_name,
+                )
+            except ValidationError as exc:
+                raise VectorStoreInitializationException("Failed to create Azure Cognitive Search settings.") from exc
             super().__init__(
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
-                collection_name=collection_name,
+                collection_name=azure_ai_search_settings.index_name,
                 search_client=_get_search_client(
-                    search_index_client=search_index_client, collection_name=collection_name
+                    search_index_client=search_index_client, collection_name=azure_ai_search_settings.index_name
                 ),
                 search_index_client=search_index_client,
                 managed_search_index_client=False,
@@ -382,7 +400,7 @@ class AzureAISearchCollection(
             if options.order_by:
                 order_by = options.order_by if isinstance(options.order_by, Sequence) else [options.order_by]
                 for order in order_by:
-                    if order.field not in self.data_model_definition.fields:
+                    if order.field not in self.data_model_definition.storage_property_names:
                         logger.warning(f"Field {order.field} not in data model, skipping.")
                         continue
                     ordering.append(order.field if order.ascending else f"{order.field} desc")

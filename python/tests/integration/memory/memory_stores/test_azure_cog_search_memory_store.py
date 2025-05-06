@@ -6,7 +6,7 @@ from random import randint
 import numpy as np
 import pytest
 
-from semantic_kernel.connectors.memory.azure_cognitive_search.azure_cognitive_search_memory_store import (
+from semantic_kernel.connectors.memory_stores.azure_cognitive_search.azure_cognitive_search_memory_store import (
     AzureCognitiveSearchMemoryStore,
 )
 from semantic_kernel.exceptions import MemoryConnectorResourceNotFound

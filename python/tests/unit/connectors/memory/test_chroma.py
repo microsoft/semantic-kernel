@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from chromadb.api import ClientAPI
+from chromadb.api.models.Collection import Collection
 
 from semantic_kernel.connectors.memory.chroma import ChromaCollection, ChromaStore
 from semantic_kernel.data.vector_search import VectorSearchOptions
@@ -59,14 +60,18 @@ async def test_chroma_collection_does_collection_exist(chroma_collection, mock_c
 
 
 async def test_chroma_store_list_collection_names(chroma_store, mock_client):
-    mock_client.list_collections.return_value = ["collection1", "collection2"]
+    mock_collection = MagicMock(spec=Collection)
+    mock_collection.name = "test_collection"
+    mock_client.list_collections.return_value = [mock_collection]
     collections = await chroma_store.list_collection_names()
-    assert collections == ["collection1", "collection2"]
+    assert collections == ["test_collection"]
 
 
 async def test_chroma_collection_create_collection(chroma_collection, mock_client):
     await chroma_collection.create_collection()
-    mock_client.create_collection.assert_called_once_with(name="test_collection", metadata={"hnsw:space": "cosine"})
+    mock_client.create_collection.assert_called_once_with(
+        name="test_collection", embedding_function=None, configuration={"hnsw": {"space": "cosine"}}, get_or_create=True
+    )
 
 
 async def test_chroma_collection_delete_collection(chroma_collection, mock_client):
@@ -107,7 +112,7 @@ async def test_chroma_collection_search(chroma_collection, mock_client):
         "metadatas": [[{}]],
         "distances": [[0.1]],
     }
-    results = await chroma_collection.vectorized_search(options=options, vector=[0.1, 0.2, 0.3, 0.4, 0.5])
+    results = await chroma_collection.search(options=options, vector=[0.1, 0.2, 0.3, 0.4, 0.5])
     async for res in results.results:
         assert res.record["id"] == "1"
         assert res.score == 0.1

@@ -179,7 +179,7 @@ def _create_default_vector_embedding_policy(data_model_definition: VectorStoreRe
                 raise VectorStoreModelException(
                     f"Distance function '{field.distance_function}' is not supported by Azure Cosmos DB NoSQL."
                 )
-            if field.property_type and field.property_type in VECTOR_DATATYPES_MAP:
+            if field.property_type and field.property_type not in VECTOR_DATATYPES_MAP:
                 raise VectorStoreModelException(
                     f"Vector property type '{field.property_type}' is not supported by Azure Cosmos DB NoSQL."
                 )

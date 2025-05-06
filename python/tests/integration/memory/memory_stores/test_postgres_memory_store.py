@@ -6,7 +6,10 @@ import pytest
 from psycopg_pool import PoolTimeout
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.postgres import PostgresMemoryStore, PostgresSettings
+from semantic_kernel.connectors.memory_stores.postgres.postgres_memory_store import (
+    PostgresMemoryStore,
+    PostgresSettings,
+)
 from semantic_kernel.exceptions import ServiceResourceNotFoundError
 
 try:

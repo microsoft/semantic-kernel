@@ -5,7 +5,7 @@ from datetime import datetime
 import numpy as np
 import pytest
 
-from semantic_kernel.connectors.memory.azure_cosmosdb.utils import (
+from semantic_kernel.connectors.memory_stores.azure_cosmosdb.utils import (
     CosmosDBSimilarityType,
     CosmosDBVectorSearchType,
 )
@@ -13,7 +13,7 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 try:
-    from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_memory_store import (
+    from semantic_kernel.connectors.memory_stores.azure_cosmosdb.azure_cosmos_db_memory_store import (
         AzureCosmosDBMemoryStore,
     )
 

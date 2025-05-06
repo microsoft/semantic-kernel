@@ -5,7 +5,7 @@ from datetime import datetime
 import numpy as np
 import pytest
 
-from semantic_kernel.connectors.memory.usearch import USearchMemoryStore
+from semantic_kernel.connectors.memory_stores.usearch.usearch_memory_store import USearchMemoryStore
 from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 

@@ -400,9 +400,21 @@ def _parse_vector_store_record_field_instance(
         record_field.name = field.name
     if not record_field.property_type and hasattr(field.annotation, "__origin__"):
         property_type = field.annotation.__origin__
-        if (args := getattr(property_type, "__args__", None)) and NoneType in args and len(args) == 2:
-            property_type = args[0]
+        if (args := getattr(property_type, "__args__", None)) and NoneType in args and len(args) > 1:
+            for arg in args:
+                if arg is NoneType:
+                    continue
+                if (
+                    (inner_args := getattr(arg, "__args__", None))
+                    and len(inner_args) == 1
+                    and inner_args[0] is not NoneType
+                ):
+                    property_type = inner_args[0]
+                    break
+                property_type = arg
+                break
         record_field.property_type = property_type.__name__
+
     return record_field
 
 
@@ -465,6 +477,9 @@ def vectorstoremodel(
     - The class must have at least one field with a annotation,
         of type VectorStoreRecordKeyField, VectorStoreRecordDataField or VectorStoreRecordVectorField.
     - The class must have exactly one field with the VectorStoreRecordKeyField annotation.
+    - When creating a Vector Field, either supply the property type directly,
+    or make sure to set the property that you want the index to use first.
+
 
     Args:
         cls: The class to be decorated.

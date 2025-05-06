@@ -155,18 +155,24 @@ async def test_crud_batch_operations(vector_store_record_collection):
     if vector_store_record_collection.data_model_type is not dict:
         model = vector_store_record_collection.data_model_type
         batch = [model(**record) for record in batch]
-    no_records = await vector_store_record_collection.get_batch(ids)
+    no_records = await vector_store_record_collection.get(ids)
     assert no_records is None
-    await vector_store_record_collection.upsert_batch(batch)
+    await vector_store_record_collection.upsert(batch)
     assert len(vector_store_record_collection.inner_storage) == 2
     if vector_store_record_collection.data_model_type is dict:
         assert vector_store_record_collection.inner_storage[ids[0]] == batch[0]
     else:
         assert not isinstance(batch[0], dict)
         assert vector_store_record_collection.inner_storage[ids[0]]["content"] == batch[0].content
-    records = await vector_store_record_collection.get_batch(ids)
-    assert records == batch
-    await vector_store_record_collection.delete_batch(ids)
+    records = await vector_store_record_collection.get(ids, include_vector=True)
+    for idx, rec in enumerate(records):
+        if vector_store_record_collection.data_model_type is dict:
+            assert rec["id"] == batch[idx]["id"]
+            assert rec["content"] == batch[idx]["content"]
+        else:
+            assert rec.id == batch[idx].id
+            assert rec.content == batch[idx].content
+    await vector_store_record_collection.delete(ids)
     assert len(vector_store_record_collection.inner_storage) == 0
 
 
@@ -201,15 +207,15 @@ async def test_crud_batch_operations_container(vector_store_record_collection):
         ids[0]: {"content": "test_content", "vector": [1.0, 2.0, 3.0]},
         ids[1]: {"content": "test_content", "vector": [1.0, 2.0, 3.0]},
     }
-    no_records = await vector_store_record_collection.get_batch(ids)
+    no_records = await vector_store_record_collection.get(ids)
     assert no_records is None
-    await vector_store_record_collection.upsert_batch(batch)
+    await vector_store_record_collection.upsert(batch)
     assert len(vector_store_record_collection.inner_storage) == 2
     assert vector_store_record_collection.inner_storage[ids[0]]["content"] == batch[ids[0]]["content"]
     assert vector_store_record_collection.inner_storage[ids[0]]["vector"] == batch[ids[0]]["vector"]
-    records = await vector_store_record_collection.get_batch(ids)
+    records = await vector_store_record_collection.get(ids)
     assert records == batch
-    await vector_store_record_collection.delete_batch(ids)
+    await vector_store_record_collection.delete(ids)
     assert len(vector_store_record_collection.inner_storage) == 0
 
 
@@ -243,15 +249,15 @@ async def test_crud_batch_operations_pandas(vector_store_record_collection):
     ids = ["test_id_1", "test_id_2"]
 
     batch = DataFrame([{"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]} for id in ids])
-    no_records = await vector_store_record_collection.get_batch(ids)
+    no_records = await vector_store_record_collection.get(ids)
     assert no_records is None
-    await vector_store_record_collection.upsert_batch(batch)
+    await vector_store_record_collection.upsert(batch)
     assert len(vector_store_record_collection.inner_storage) == 2
     assert vector_store_record_collection.inner_storage[ids[0]]["content"] == batch["content"].values[0]
     assert vector_store_record_collection.inner_storage[ids[0]]["vector"] == batch["vector"].values[0]
-    records = await vector_store_record_collection.get_batch(ids)
+    records = await vector_store_record_collection.get(ids)
     assert records.equals(batch)
-    await vector_store_record_collection.delete_batch(ids)
+    await vector_store_record_collection.delete(ids)
     assert len(vector_store_record_collection.inner_storage) == 0
 
 
@@ -271,7 +277,7 @@ async def test_upsert_with_vectorizing(vector_store_record_collection):
     assert vector_store_record_collection.inner_storage["test_id"]["vector"] == [1.0, 2.0, 3.0]
     await vector_store_record_collection.delete("test_id")
     assert len(vector_store_record_collection.inner_storage) == 0
-    await vector_store_record_collection.upsert_batch([record2], embedding_generation_function=embedding_func)
+    await vector_store_record_collection.upsert([record2], embedding_generation_function=embedding_func)
     assert vector_store_record_collection.inner_storage["test_id"]["vector"] == [1.0, 2.0, 3.0]
 
 
@@ -289,7 +295,7 @@ async def test_upsert_fail(DictVectorStoreRecordCollection, data_model_definitio
     with raises(VectorStoreOperationException, match="Error upserting record"):
         await vector_store_record_collection.upsert([record])
     with raises(VectorStoreOperationException, match="Error upserting record"):
-        await vector_store_record_collection.upsert_batch([record])
+        await vector_store_record_collection.upsert([record])
     assert len(vector_store_record_collection.inner_storage) == 0
 
 
@@ -308,7 +314,7 @@ async def test_get_fail(DictVectorStoreRecordCollection, data_model_definition):
     with raises(VectorStoreOperationException, match="Error getting record"):
         await vector_store_record_collection.get(["test_id"])
     with raises(VectorStoreOperationException, match="Error getting record"):
-        await vector_store_record_collection.get_batch(["test_id"])
+        await vector_store_record_collection.get(["test_id"])
 
 
 async def test_deserialize_in_get_fail(DictVectorStoreRecordCollection, data_model_definition):
@@ -324,7 +330,7 @@ async def test_deserialize_in_get_fail(DictVectorStoreRecordCollection, data_mod
     with raises(VectorStoreModelDeserializationException, match="Error deserializing records:"):
         await vector_store_record_collection.get("test_id")
     with raises(VectorStoreModelDeserializationException, match="Error deserializing records:"):
-        await vector_store_record_collection.get_batch(["test_id"])
+        await vector_store_record_collection.get(["test_id"])
 
 
 async def test_get_fail_multiple(DictVectorStoreRecordCollection, data_model_definition):
@@ -364,7 +370,7 @@ async def test_delete_fail(DictVectorStoreRecordCollection, data_model_definitio
     with raises(VectorStoreOperationException, match="Error deleting record"):
         await vector_store_record_collection.delete(["test_id"])
     with raises(VectorStoreOperationException, match="Error deleting record"):
-        await vector_store_record_collection.delete_batch(["test_id"])
+        await vector_store_record_collection.delete(["test_id"])
     assert len(vector_store_record_collection.inner_storage) == 1
 
 
@@ -380,7 +386,7 @@ async def test_serialize_in_upsert_fail(DictVectorStoreRecordCollection, data_mo
     with raises(VectorStoreModelSerializationException):
         await vector_store_record_collection.upsert(record)
     with raises(VectorStoreModelSerializationException):
-        await vector_store_record_collection.upsert_batch([record])
+        await vector_store_record_collection.upsert([record])
 
 
 def test_serialize_data_model_type_serialize_fail(DictVectorStoreRecordCollection, data_model_type_vanilla_serialize):
@@ -450,7 +456,7 @@ async def test_deserialize_definition_fail(DictVectorStoreRecordCollection, data
     with raises(VectorStoreModelDeserializationException, match="Error deserializing record"):
         await vector_store_record_collection.get("test_id")
     with raises(VectorStoreModelDeserializationException, match="Error deserializing record"):
-        await vector_store_record_collection.get_batch(["test_id"])
+        await vector_store_record_collection.get(["test_id"])
 
 
 async def test_deserialize_definition_none(DictVectorStoreRecordCollection, data_model_definition):
