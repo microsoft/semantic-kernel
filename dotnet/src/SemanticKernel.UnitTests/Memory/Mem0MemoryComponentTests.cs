@@ -3,7 +3,6 @@
 #pragma warning disable CA1054 // URI-like parameters should not be strings
 
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
