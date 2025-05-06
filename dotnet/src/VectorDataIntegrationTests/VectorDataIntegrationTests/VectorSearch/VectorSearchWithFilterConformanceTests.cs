@@ -23,7 +23,7 @@ public abstract class VectorSearchWithFilterConformanceTests<TKey>(VectorStoreFi
         {
             await collection.CreateCollectionIfNotExistsAsync();
 
-            await collection.UpsertAsync(
+            List<VectorSearchWithFilterRecord> records =
             [
                 new VectorSearchWithFilterRecord
                 {
@@ -37,7 +37,11 @@ public abstract class VectorSearchWithFilterConformanceTests<TKey>(VectorStoreFi
                     Text = "oranges",
                     Vector = new ReadOnlyMemory<float>([10f, 20f, 35f])
                 }
-            ]);
+            ];
+
+            await collection.UpsertAsync(records);
+
+            await fixture.TestStore.WaitForDataAsync(collection, records.Count);
 
             var vectorSearchResults = await collection.SearchEmbeddingAsync(new ReadOnlyMemory<float>([10f, 20f, 35f]), 1, new()
             {
