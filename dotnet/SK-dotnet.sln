@@ -56,7 +56,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Qdrant", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Sqlite", "src\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Postgres", "src\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj", "{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.PgVector", "src\Connectors\Connectors.Memory.PgVector\Connectors.Memory.PgVector.csproj", "{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Redis", "src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj", "{3720F5ED-FB4D-485E-8A93-CDE60DEF0805}"
 EndProject
@@ -445,7 +445,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorDataIntegrationTests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedisIntegrationTests", "src\VectorDataIntegrationTests\RedisIntegrationTests\RedisIntegrationTests.csproj", "{F7EA82A4-A626-4316-AA47-EAC3A0E85870}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostgresIntegrationTests", "src\VectorDataIntegrationTests\PostgresIntegrationTests\PostgresIntegrationTests.csproj", "{3148FF01-38C7-4BEB-8CEC-9323EC7C593B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PgVectorIntegrationTests", "src\VectorDataIntegrationTests\PgVectorIntegrationTests\PgVectorIntegrationTests.csproj", "{3148FF01-38C7-4BEB-8CEC-9323EC7C593B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMemoryIntegrationTests", "src\VectorDataIntegrationTests\InMemoryIntegrationTests\InMemoryIntegrationTests.csproj", "{F5126690-0FD1-4777-9EDF-B3F5B7B3730B}"
 EndProject
@@ -467,7 +467,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.AI", "src\Plugins\P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.AI.UnitTests", "src\Plugins\Plugins.AI.UnitTests\Plugins.AI.UnitTests.csproj", "{03ACF9DD-00C9-4F2B-80F1-537E2151AF5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Postgres.UnitTests", "src\Connectors\Connectors.Postgres.UnitTests\Connectors.Postgres.UnitTests.csproj", "{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.PgVector.UnitTests", "src\Connectors\Connectors.PgVector.UnitTests\Connectors.PgVector.UnitTests.csproj", "{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.Yaml", "src\Agents\Yaml\Agents.Yaml.csproj", "{29DF6278-06FC-4F1D-8555-D3E880AF3204}"
 EndProject
