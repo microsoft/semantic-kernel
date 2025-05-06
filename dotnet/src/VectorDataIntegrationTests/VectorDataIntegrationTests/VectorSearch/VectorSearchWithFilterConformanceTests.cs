@@ -14,9 +14,9 @@ public abstract class VectorSearchWithFilterConformanceTests<TKey>(VectorStoreFi
     {
         // Arrange
         var collectionName = fixture.GetUniqueCollectionName();
-        var collection = fixture.TestStore.DefaultVectorStore.GetCollection<TKey, SearchRecord>(collectionName);
+        var collection = fixture.TestStore.DefaultVectorStore.GetCollection<TKey, VectorSearchWithFilterRecord>(collectionName);
 
-        List<SearchRecord>? results = null;
+        List<VectorSearchWithFilterRecord>? results = null;
 
         // Act
         try
@@ -25,13 +25,13 @@ public abstract class VectorSearchWithFilterConformanceTests<TKey>(VectorStoreFi
 
             await collection.UpsertAsync(
             [
-                new SearchRecord
+                new VectorSearchWithFilterRecord
                 {
                     Key = fixture.GenerateNextKey<TKey>(),
                     Text = "apples",
                     Vector = new ReadOnlyMemory<float>([1f, 1f, 1f])
                 },
-                new SearchRecord
+                new VectorSearchWithFilterRecord
                 {
                     Key = fixture.GenerateNextKey<TKey>(),
                     Text = "oranges",
@@ -56,7 +56,7 @@ public abstract class VectorSearchWithFilterConformanceTests<TKey>(VectorStoreFi
         Assert.Equal("apples", results[0].Text);
     }
 
-    private sealed class SearchRecord
+    public class VectorSearchWithFilterRecord
     {
         [VectorStoreKey]
         public TKey Key { get; set; } = default!;
