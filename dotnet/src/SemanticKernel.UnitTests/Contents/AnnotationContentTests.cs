@@ -20,9 +20,9 @@ public class AnnotationContentTests
         AnnotationContent definition = new();
 
         Assert.Empty(definition.Label);
-        Assert.Equal(0, definition.StartIndex);
-        Assert.Equal(0, definition.EndIndex);
-        Assert.Null(definition.ReferenceId);
+        Assert.Null(definition.StartIndex);
+        Assert.Null(definition.EndIndex);
+        Assert.Empty(definition.ReferenceId);
     }
     /// <summary>
     /// Verify usage.

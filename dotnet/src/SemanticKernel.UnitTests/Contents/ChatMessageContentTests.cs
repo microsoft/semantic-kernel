@@ -318,7 +318,7 @@ public class ChatMessageContentTests
 
         var annotationContent = deserializedMessage.Items[10] as AnnotationContent;
         Assert.NotNull(annotationContent);
-        Assert.Equal("file-id-2", annotationContent.ReferenceId);
+        Assert.Equal("file-id-3", annotationContent.ReferenceId);
         Assert.Equal("quote-8", annotationContent.Label);
         Assert.Equal(AnnotationKind.TextCitation, annotationContent.Kind);
         Assert.Equal("quote-8", annotationContent.Label);

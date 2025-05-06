@@ -54,7 +54,15 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// <summary>
     /// The citation.
     /// </summary>
-    public string Label { get; internal init; } = string.Empty;
+    public string Label { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Describes the annotation kind.
+    /// </summary>
+    /// <remarks>
+    /// Provides context for using <see cref="ReferenceId"/>.
+    /// </remarks>
+    public AnnotationKind Kind { get; init; }
 
     /// <summary>
     /// Start index of the citation.
@@ -92,6 +100,8 @@ public class StreamingAnnotationContent : StreamingKernelContent
         : base(innerContent, choiceIndex: 0, modelId, metadata)
     {
         this.Label = label;
+        this.ReferenceId = referenceId;
+        this.Kind = kind;
     }
 
     /// <inheritdoc/>

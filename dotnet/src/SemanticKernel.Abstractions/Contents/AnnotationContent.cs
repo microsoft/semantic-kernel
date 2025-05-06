@@ -34,7 +34,7 @@ public class AnnotationContent : KernelContent
     /// Identifies the referenced resource according to its <see cref="Kind"/>.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string ReferenceId { get; internal init; } = string.Empty;
+    public string ReferenceId { get; init; } = string.Empty;
 
     /// <summary>
     /// The citation label in the associated response.
@@ -42,7 +42,7 @@ public class AnnotationContent : KernelContent
     /// <remarks>
     /// This is the citation referebce that will be displayed in the response.
     /// </remarks>
-    public string Label { get; internal init; } = string.Empty;
+    public string Label { get; init; } = string.Empty;
 
     /// <summary>
     /// Describes the annotation kind.
@@ -50,7 +50,7 @@ public class AnnotationContent : KernelContent
     /// <remarks>
     /// Provides context for using <see cref="ReferenceId"/>.
     /// </remarks>
-    public AnnotationKind Kind { get; internal init; }
+    public AnnotationKind Kind { get; init; }
 
     /// <summary>
     /// The title of the annotation reference.
