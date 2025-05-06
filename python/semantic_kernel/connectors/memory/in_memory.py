@@ -51,7 +51,7 @@ TAKey = TypeVar("TAKey", bound=str | int | float)
 TAValue = TypeVar("TAValue", bound=str | int | float | list[float] | None)
 
 
-class AttributeDict(dict, Generic[TAKey, TAValue]):
+class AttributeDict(dict[TAKey, TAValue], Generic[TAKey, TAValue]):
     """A dict subclass that allows attribute access to keys.
 
     This is used to allow the filters to work either way, using:
@@ -84,7 +84,7 @@ class InMemoryCollection(
 ):
     """In Memory Collection."""
 
-    inner_storage: dict[TKey, AttributeDict] = Field(default_factory=dict)
+    inner_storage: dict[TKey, AttributeDict[TAKey, TAValue]] = Field(default_factory=dict)
     supported_key_types: ClassVar[set[str] | None] = {"str", "int", "float"}
     supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR}
 
@@ -231,14 +231,14 @@ class InMemoryCollection(
             ]
         except Exception as e:
             raise VectorStoreOperationException(f"Error evaluating filter: {e}") from e
-        filtered_records = {}
+        filtered_records: dict[TKey, AttributeDict] = {}
         for key, record in self.inner_storage.items():
             for filter in callable_filters:
                 if self._run_filter(filter, record):
                     filtered_records[key] = record
         return filtered_records
 
-    def _run_filter(self, filter: Callable, record: AttributeDict[str, Any]) -> bool:
+    def _run_filter(self, filter: Callable, record: AttributeDict[TAKey, TAValue]) -> bool:
         """Run the filter on the record, supporting attribute access."""
         try:
             return filter(record)
