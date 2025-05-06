@@ -229,7 +229,7 @@ public sealed class SqliteCommandBuilderTests : IDisposable
     [InlineData(null)]
     [InlineData("")]
     [InlineData("Age")]
-    public void ItBuildsSelectLeftJoinCommand(string? orderByPropertyName)
+    public void ItBuildsSelectInnerJoinCommand(string? orderByPropertyName)
     {
         // Arrange
         const string DataTable = "DataTable";
@@ -270,7 +270,7 @@ public sealed class SqliteCommandBuilderTests : IDisposable
         Assert.Contains("SELECT \"DataTable\".\"Id\",\"DataTable\".\"Name\",\"VectorTable\".\"Age\",\"VectorTable\".\"Address\"", command.CommandText);
         Assert.Contains("FROM \"VectorTable\"", command.CommandText);
 
-        Assert.Contains("LEFT JOIN \"DataTable\" ON \"VectorTable\".\"Id\" = \"DataTable\".\"Id\"", command.CommandText);
+        Assert.Contains("INNER JOIN \"DataTable\" ON \"VectorTable\".\"Id\" = \"DataTable\".\"Id\"", command.CommandText);
 
         Assert.Contains("\"Name\" = @Name0", command.CommandText);
         Assert.Contains("\"Age\" IN (@Age0, @Age1, @Age2)", command.CommandText);
