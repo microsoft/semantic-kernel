@@ -305,7 +305,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
         if (options.IncludeVectors)
         {
-            command = SqliteCommandBuilder.BuildSelectLeftJoinCommand(
+            command = SqliteCommandBuilder.BuildSelectInnerJoinCommand(
                 connection,
                 this._vectorTableName,
                 this._dataTableName,
@@ -567,7 +567,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
         const string OperationName = "VectorizedSearch";
 
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        using var command = SqliteCommandBuilder.BuildSelectLeftJoinCommand<TRecord>(
+        using var command = SqliteCommandBuilder.BuildSelectInnerJoinCommand<TRecord>(
             connection,
             this._vectorTableName,
             this._dataTableName,
@@ -678,7 +678,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
                 throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
             }
 
-            command = SqliteCommandBuilder.BuildSelectLeftJoinCommand<TRecord>(
+            command = SqliteCommandBuilder.BuildSelectInnerJoinCommand<TRecord>(
                 connection,
                 this._vectorTableName,
                 this._dataTableName,

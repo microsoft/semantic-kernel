@@ -92,7 +92,7 @@ public abstract class TestStore
         {
             var results = collection.SearchEmbeddingAsync(
                 new ReadOnlyMemory<float>(vector),
-                top: 1000, // TODO: this should be recordCount, but see #11655
+                top: recordCount,
                 new() { Filter = filter });
             var count = await results.CountAsync();
             if (count == recordCount)
