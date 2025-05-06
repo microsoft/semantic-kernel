@@ -76,7 +76,7 @@ public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProces
             //    this._agentStep.AgentDefinition.Id = this._state.AgentId;
             //}
 
-            AgentFactory agentFactory = ProcesAgentFactory.CreateAgentFactoryAsync(this._agentStep.AgentDefinition);
+            AgentFactory agentFactory = ProcessAgentFactory.CreateAgentFactoryAsync(this._agentStep.AgentDefinition);
             Agent agent = await agentFactory.CreateAsync(kernel, this._agentStep.AgentDefinition).ConfigureAwait(false);
             this._state!.AgentId = agent.Id;
 

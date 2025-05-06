@@ -217,12 +217,7 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
 
     internal ProcessFunctionTargetBuilder GetInvokeAgentFunctionTargetBuilder()
     {
-        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.Functions.InvokeAgent, parameterName: "message");
-    }
-
-    internal ProcessFunctionTargetBuilder GetResetAgentThreadIdFunctionTargetBuilder()
-    {
-        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.Functions.ResetThreadId);
+        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.ProcessFunctions.Invoke, parameterName: "message");
     }
 }
 

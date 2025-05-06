@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Process.Internal;
 /// <summary>
 /// A factory for creating agent threads.
 /// </summary>
-public static class ProcesAgentFactory
+public static class ProcessAgentFactory
 {
     /// <summary>
     /// Processes the agent definition and creates the correct derived type of <see cref="AgentFactory"/>."/>
