@@ -51,11 +51,27 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// </summary>
     /// <param name="dataSource">The data source to use for connecting to the database.</param>
     /// <param name="name">The name of the collection.</param>
+    /// <param name="ownsDataSource">A value indicating whether the data source should be disposed after the collection is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public PostgresCollection(NpgsqlDataSource dataSource, string name, PostgresCollectionOptions? options = default)
+    public PostgresCollection(NpgsqlDataSource dataSource, string name, bool ownsDataSource, PostgresCollectionOptions? options = default)
         : this(new PostgresDbClient(dataSource), name, options)
     {
         Verify.NotNull(dataSource);
+
+        this._options.OwnsDataSource = ownsDataSource;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresCollection{TKey, TRecord}"/> class.
+    /// </summary>
+    /// <param name="connectionString">Postgres database connection string.</param>
+    /// <param name="name">The name of the collection.</param>
+    /// <param name="options">Optional configuration options for this class.</param>
+    public PostgresCollection(string connectionString, string name, PostgresCollectionOptions? options = default)
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        : this(PostgresUtils.CreateDataSource(connectionString), name, ownsDataSource: true, options)
+#pragma warning restore CA2000 // Dispose objects before losing scope
+    {
     }
 
     /// <summary>

@@ -27,12 +27,14 @@ public sealed class PostgresVectorStore : VectorStore, IDisposable
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
     /// </summary>
     /// <param name="dataSource">Postgres data source.</param>
+    /// <param name="ownsDataSource">A value indicating whether the data source should be disposed after the vector store is disposed.</param>
     /// <param name="options">Optional configuration options for this class</param>
-    public PostgresVectorStore(NpgsqlDataSource dataSource, PostgresVectorStoreOptions? options = default)
+    public PostgresVectorStore(NpgsqlDataSource dataSource, bool ownsDataSource, PostgresVectorStoreOptions? options = default)
     {
         Verify.NotNull(dataSource);
 
         this._options = options ?? new PostgresVectorStoreOptions();
+        this._options.OwnsDataSource = ownsDataSource;
         this._client = new PostgresDbClient(dataSource, this._options.Schema);
 
         this._metadata = new()
@@ -40,6 +42,18 @@ public sealed class PostgresVectorStore : VectorStore, IDisposable
             VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
             VectorStoreName = this._client.DatabaseName
         };
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
+    /// </summary>
+    /// <param name="connectionString">Postgres database connection string.</param>
+    /// <param name="options">Optional configuration options for this class.</param>
+    public PostgresVectorStore(string connectionString, PostgresVectorStoreOptions? options = default)
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        : this(PostgresUtils.CreateDataSource(connectionString), ownsDataSource: true, options)
+#pragma warning restore CA2000 // Dispose objects before losing scope
+    {
     }
 
     /// <inheritdoc/>

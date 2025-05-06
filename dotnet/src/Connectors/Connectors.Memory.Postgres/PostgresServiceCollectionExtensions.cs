@@ -34,7 +34,9 @@ public static class PostgresServiceCollectionExtensions
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return new PostgresVectorStore(dataSource, options);
+                // The data source has been solved from the DI container, so we do not own it.
+                bool ownsDataSource = false;
+                return new PostgresVectorStore(dataSource, ownsDataSource, options);
             });
 
         return services;
@@ -50,28 +52,16 @@ public static class PostgresServiceCollectionExtensions
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddPostgresVectorStore(this IServiceCollection services, string connectionString, PostgresVectorStoreOptions? options = default, string? serviceId = default)
     {
-        string? npgsqlServiceId = serviceId == null ? default : $"{serviceId}_NpgsqlDataSource";
-        // Register NpgsqlDataSource to ensure proper disposal.
-        services.AddKeyedSingleton<NpgsqlDataSource>(
-            npgsqlServiceId,
-            (sp, obj) =>
-            {
-                NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionString);
-                dataSourceBuilder.UseVector();
-                return dataSourceBuilder.Build();
-            });
-
         services.AddKeyedSingleton<VectorStore>(
             serviceId,
             (sp, obj) =>
             {
-                var dataSource = sp.GetRequiredKeyedService<NpgsqlDataSource>(npgsqlServiceId);
                 options ??= sp.GetService<PostgresVectorStoreOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return new PostgresVectorStore(dataSource, options);
+                return new PostgresVectorStore(connectionString, options);
             });
 
         return services;
@@ -106,7 +96,9 @@ public static class PostgresServiceCollectionExtensions
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return (new PostgresCollection<TKey, TRecord>(dataSource, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                // The data source has been solved from the DI container, so we do not own it.
+                bool ownsDataSource = false;
+                return (new PostgresCollection<TKey, TRecord>(dataSource, collectionName, ownsDataSource, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);
@@ -135,29 +127,16 @@ public static class PostgresServiceCollectionExtensions
         where TKey : notnull
         where TRecord : class
     {
-        string? npgsqlServiceId = serviceId == null ? default : $"{serviceId}_NpgsqlDataSource";
-        // Register NpgsqlDataSource to ensure proper disposal.
-        services.AddKeyedSingleton<NpgsqlDataSource>(
-            npgsqlServiceId,
-            (sp, obj) =>
-            {
-                NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionString);
-                dataSourceBuilder.UseVector();
-                return dataSourceBuilder.Build();
-            });
-
         services.AddKeyedSingleton<VectorStoreCollection<TKey, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
-                var dataSource = sp.GetRequiredKeyedService<NpgsqlDataSource>(npgsqlServiceId);
-
                 options ??= sp.GetService<PostgresCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return (new PostgresCollection<TKey, TRecord>(dataSource, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                return (new PostgresCollection<TKey, TRecord>(connectionString, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);

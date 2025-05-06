@@ -22,5 +22,5 @@ public sealed class PostgresVectorStoreOptions
     /// <summary>
     /// Gets or sets a value indicating whether the data source should be disposed after the vector store is disposed.
     /// </summary>
-    public bool OwnsDataSource { get; set; } = true;
+    internal bool OwnsDataSource { get; set; }
 }

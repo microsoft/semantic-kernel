@@ -33,5 +33,5 @@ public sealed class PostgresCollectionOptions
     /// <summary>
     /// Gets or sets a value indicating whether the data source should be disposed after the collection is disposed.
     /// </summary>
-    public bool OwnsDataSource { get; set; } = true;
+    internal bool OwnsDataSource { get; set; }
 }

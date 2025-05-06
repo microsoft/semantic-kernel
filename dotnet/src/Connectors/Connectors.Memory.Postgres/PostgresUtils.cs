@@ -63,4 +63,13 @@ internal static class PostgresUtils
             yield return item;
         }
     }
+
+    internal static NpgsqlDataSource CreateDataSource(string connectionString)
+    {
+        Verify.NotNullOrWhiteSpace(connectionString);
+
+        NpgsqlDataSourceBuilder sourceBuilder = new(connectionString);
+        sourceBuilder.UseVector();
+        return sourceBuilder.Build();
+    }
 }

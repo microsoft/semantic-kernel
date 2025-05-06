@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Postgres;
-using Npgsql;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Postgres.UnitTests;
@@ -28,11 +27,8 @@ public class PostgresCollectionTests
         {
             VectorStoreRecordDefinition = recordDefinition
         };
-        NpgsqlDataSourceBuilder dataSourceBuilder = new("Host=localhost;Database=test;");
-        dataSourceBuilder.UseVector();
-        using var source = dataSourceBuilder.Build();
 
         // Act & Assert
-        Assert.Throws<NotSupportedException>(() => new PostgresCollection<object, Dictionary<string, object?>>(source, TestCollectionName, options));
+        Assert.Throws<NotSupportedException>(() => new PostgresCollection<object, Dictionary<string, object?>>("Host=localhost;Database=test;", TestCollectionName, options));
     }
 }
