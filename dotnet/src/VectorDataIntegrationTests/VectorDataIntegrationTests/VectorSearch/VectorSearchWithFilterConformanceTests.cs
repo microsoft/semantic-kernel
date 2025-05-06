@@ -53,6 +53,7 @@ public abstract class VectorSearchWithFilterConformanceTests<TKey>(VectorStoreFi
 
         // Assert
         Assert.Single(results);
+        Assert.Equal("apples", results[0].Text);
     }
 
     private class SearchRecord

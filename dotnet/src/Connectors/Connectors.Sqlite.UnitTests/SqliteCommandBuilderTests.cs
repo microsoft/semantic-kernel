@@ -256,7 +256,7 @@ public sealed class SqliteCommandBuilderTests : IDisposable
         }
 
         // Act
-        var command = SqliteCommandBuilder.BuildSelectLeftJoinCommand(
+        var command = SqliteCommandBuilder.BuildSelectInnerJoinCommand(
             this._connection,
             VectorTable,
             DataTable,

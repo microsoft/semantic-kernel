@@ -169,11 +169,11 @@ internal static class SqliteCommandBuilder
         return command;
     }
 
-    public static DbCommand BuildSelectLeftJoinCommand<TRecord>(
+    public static DbCommand BuildSelectInnerJoinCommand<TRecord>(
         SqliteConnection connection,
         string vectorTableName,
         string dataTableName,
-        string joinColumnName,
+        string keyColumnName,
         CollectionModel model,
         IReadOnlyList<SqliteWhereCondition> conditions,
         bool includeDistance,
@@ -183,9 +183,30 @@ internal static class SqliteCommandBuilder
         int top = 0,
         int skip = 0)
     {
+        const string SubqueryName = "subquery";
+
         var builder = new StringBuilder();
 
-        var (command, whereClause) = GetCommandWithWhereClause(connection, conditions, extraWhereFilter, extraParameters);
+        var subqueryCommand = BuildSelectDataCommand(
+                connection,
+                dataTableName,
+                model,
+                [],
+                filterOptions,
+                extraWhereFilter,
+                extraParameters,
+                top,
+                skip);
+
+        var queryExtraFilter = $"\"{vectorTableName}\".\"{keyColumnName}\" IN (SELECT \"{keyColumnName}\" FROM {SubqueryName})";
+        var (command, whereClause) = GetCommandWithWhereClause(connection, conditions, queryExtraFilter, []);
+
+        foreach (var parameter in subqueryCommand.Parameters)
+        {
+            command.Parameters.Add(parameter);
+        }
+
+        builder.AppendLine($"WITH {SubqueryName} AS ({subqueryCommand.CommandText}) ");
 
         builder.Append("SELECT ");
         builder.AppendColumnNames(includeVectors: true, model.Properties, vectorTableName, dataTableName);
@@ -194,7 +215,7 @@ internal static class SqliteCommandBuilder
             builder.AppendLine($", \"{vectorTableName}\".\"{DistancePropertyName}\"");
         }
         builder.AppendLine($"FROM \"{vectorTableName}\"");
-        builder.AppendLine($"LEFT JOIN \"{dataTableName}\" ON \"{vectorTableName}\".\"{joinColumnName}\" = \"{dataTableName}\".\"{joinColumnName}\"");
+        builder.AppendLine($"INNER JOIN \"{dataTableName}\" ON \"{vectorTableName}\".\"{keyColumnName}\" = \"{dataTableName}\".\"{keyColumnName}\"");
         builder.AppendWhereClause(whereClause);
 
         if (filterOptions is not null)
