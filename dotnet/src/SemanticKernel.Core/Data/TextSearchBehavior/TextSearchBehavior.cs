@@ -22,7 +22,7 @@ public sealed class TextSearchBehavior : ConversationStatePart
     private const string DefaultPluginSearchFunctionName = "Search";
     private const string DefaultPluginSearchFunctionDescription = "Allows searching for additional information to help answer the user question.";
     private const string DefaultContextPrompt = "Consider the following information from source documents when responding to the user:";
-    private const string DefaultIncludeCitationsPrompt = "Include citations to the source document including name and link.";
+    private const string DefaultIncludeCitationsPrompt = "Include citations to the source document with document name and link if document name and link is available.";
 
     private readonly ITextSearch _textSearch;
 
@@ -129,8 +129,17 @@ public sealed class TextSearchBehavior : ConversationStatePart
         for (int i = 0; i < results.Count; i++)
         {
             var result = results[i];
-            sb.AppendLine($"SourceDocName: {result.Name}");
-            sb.AppendLine($"SourceDocLink: {result.Link}");
+
+            // Only output the doc name and link lines
+            // if they are not empty to save tokens.
+            if (!string.IsNullOrWhiteSpace(result.Name))
+            {
+                sb.AppendLine($"SourceDocName: {result.Name}");
+            }
+            if (!string.IsNullOrWhiteSpace(result.Link))
+            {
+                sb.AppendLine($"SourceDocLink: {result.Link}");
+            }
             sb.AppendLine($"Contents: {result.Value}");
             sb.AppendLine("----");
         }
