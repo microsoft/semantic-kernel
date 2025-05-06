@@ -54,7 +54,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.UnitTests", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Qdrant", "src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj", "{5DEBAA62-F117-496A-8778-FED3604B70E2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Sqlite", "src\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.SqliteVec", "src\Connectors\Connectors.Memory.SqliteVec\Connectors.Memory.SqliteVec.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.PgVector", "src\Connectors\Connectors.Memory.PgVector\Connectors.Memory.PgVector.csproj", "{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87}"
 EndProject
@@ -380,7 +380,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.UnitTests", "src\Ex
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GettingStartedWithProcesses", "samples\GettingStartedWithProcesses\GettingStartedWithProcesses.csproj", "{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Sqlite.UnitTests", "src\Connectors\Connectors.Sqlite.UnitTests\Connectors.Sqlite.UnitTests.csproj", "{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.SqliteVec.UnitTests", "src\Connectors\Connectors.SqliteVec.UnitTests\Connectors.SqliteVec.UnitTests.csproj", "{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VectorData.Abstractions", "src\Connectors\VectorData.Abstractions\VectorData.Abstractions.csproj", "{CF09AE39-67BA-4FE0-A0CD-A49BED956311}"
 EndProject
@@ -451,7 +451,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMemoryIntegrationTests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosNoSQLIntegrationTests", "src\VectorDataIntegrationTests\CosmosNoSQLIntegrationTests\CosmosNoSQLIntegrationTests.csproj", "{E200425C-E501-430C-8A8B-BC0088BD94DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteIntegrationTests", "src\VectorDataIntegrationTests\SqliteIntegrationTests\SqliteIntegrationTests.csproj", "{709B3933-5286-4139-8D83-8C7AA5746FAE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteVecIntegrationTests", "src\VectorDataIntegrationTests\SqliteVecIntegrationTests\SqliteVecIntegrationTests.csproj", "{709B3933-5286-4139-8D83-8C7AA5746FAE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeaviateIntegrationTests", "src\VectorDataIntegrationTests\WeaviateIntegrationTests\WeaviateIntegrationTests.csproj", "{E3CECC65-1B00-4E3A-90B6-FC7A2C64E41F}"
 EndProject

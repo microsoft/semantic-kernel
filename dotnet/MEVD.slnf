@@ -16,7 +16,7 @@
       "src/Connectors/Connectors.Memory.PgVector/Connectors.Memory.PgVector.csproj",
       "src/Connectors/Connectors.Memory.Qdrant/Connectors.Memory.Qdrant.csproj",
       "src/Connectors/Connectors.Memory.Redis/Connectors.Memory.Redis.csproj",
-      "src/Connectors/Connectors.Memory.Sqlite/Connectors.Memory.Sqlite.csproj",
+      "src/Connectors/Connectors.Memory.SqliteVec/Connectors.Memory.SqliteVec.csproj",
       "src/Connectors/Connectors.Memory.SqlServer/Connectors.Memory.SqlServer.csproj",
       "src/Connectors/Connectors.Memory.Weaviate/Connectors.Memory.Weaviate.csproj",
 
@@ -29,7 +29,7 @@
       "src/Connectors/Connectors.PgVector.UnitTests/Connectors.PgVector.UnitTests.csproj",
       "src/Connectors/Connectors.Qdrant.UnitTests/Connectors.Qdrant.UnitTests.csproj",
       "src/Connectors/Connectors.Redis.UnitTests/Connectors.Redis.UnitTests.csproj",
-      "src/Connectors/Connectors.Sqlite.UnitTests/Connectors.Sqlite.UnitTests.csproj",
+      "src/Connectors/Connectors.SqliteVec.UnitTests/Connectors.SqliteVec.UnitTests.csproj",
       "src/Connectors/Connectors.Weaviate.UnitTests/Connectors.Weaviate.UnitTests.csproj",
 
       "src/VectorDataIntegrationTests/AzureAISearchIntegrationTests/AzureAISearchIntegrationTests.csproj",
@@ -41,7 +41,7 @@
       "src/VectorDataIntegrationTests/PgVectorIntegrationTests/PgVectorIntegrationTests.csproj",
       "src/VectorDataIntegrationTests/QdrantIntegrationTests/QdrantIntegrationTests.csproj",
       "src/VectorDataIntegrationTests/RedisIntegrationTests/RedisIntegrationTests.csproj",
-      "src/VectorDataIntegrationTests/SqliteIntegrationTests/SqliteIntegrationTests.csproj",
+      "src/VectorDataIntegrationTests/SqliteVecIntegrationTests/SqliteVecIntegrationTests.csproj",
       "src/VectorDataIntegrationTests/SqlServerIntegrationTests/SqlServerIntegrationTests.csproj",
       "src/VectorDataIntegrationTests/WeaviateIntegrationTests/WeaviateIntegrationTests.csproj",
 

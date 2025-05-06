@@ -74,7 +74,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.PgVector\Connectors.Memory.PgVector.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
-    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.SqliteVec\Connectors.Memory.SqliteVec.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Ollama\Connectors.Ollama.csproj" />
