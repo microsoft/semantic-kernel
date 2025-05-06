@@ -18,7 +18,8 @@ internal static class KernelProcessEventSerializer
     /// </summary>
     public static string ToJson(this KernelProcessEvent processEvent)
     {
-        EventContainer<KernelProcessEvent> containedEvents = new(TypeInfo.GetAssemblyQualifiedType(processEvent.Data), processEvent);
+        var wrappedEvent = processEvent with { Data = KernelProcessEventData.FromObject(processEvent.Data) };
+        EventContainer<KernelProcessEvent> containedEvents = new(TypeInfo.GetAssemblyQualifiedType(wrappedEvent.Data), wrappedEvent);
         return JsonSerializer.Serialize(containedEvents);
     }
 

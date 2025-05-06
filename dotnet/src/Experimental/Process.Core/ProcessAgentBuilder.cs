@@ -89,22 +89,22 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
     /// </summary>
     /// <returns></returns>
-    public ProcessAgentBuilder OnComplete(List<DeclarativeProcessCondition> conditions)
+    public DeclarativeEventHandlerGroupBuilder OnComplete(List<DeclarativeProcessCondition> conditions)
     {
         var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
         this.OnCompleteBuilder = builder;
-        return this;
+        return builder;
     }
 
     /// <summary>
     /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
     /// </summary>
     /// <returns></returns>
-    public ProcessAgentBuilder OnError(List<DeclarativeProcessCondition> conditions)
+    public DeclarativeEventHandlerGroupBuilder OnError(List<DeclarativeProcessCondition> conditions)
     {
         var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
         this.OnErrorBuilder = builder;
-        return this;
+        return builder;
     }
 
     /// <summary>
@@ -213,6 +213,16 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
         var state = new KernelProcessStepState(this.Name, "1.0", this.Id);
 
         return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.ThreadName, this.Inputs);
+    }
+
+    internal ProcessFunctionTargetBuilder GetInvokeAgentFunctionTargetBuilder()
+    {
+        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.Functions.InvokeAgent, parameterName: "message");
+    }
+
+    internal ProcessFunctionTargetBuilder GetResetAgentThreadIdFunctionTargetBuilder()
+    {
+        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.Functions.ResetThreadId);
     }
 }
 

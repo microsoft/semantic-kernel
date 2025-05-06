@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Protobuf Include="Protos\documentationGenerator.proto" GrpcServices="Both" />
+    <Protobuf Include="Protos\teacherStudentInteraction.proto" GrpcServices="Both" />
   </ItemGroup>
 
   <ItemGroup>

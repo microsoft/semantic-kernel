@@ -44,9 +44,9 @@ internal class LocalAgentStep : LocalStep
         // Lazy one-time initialization of the step before processing a message
         await this._initializeTask.Value.ConfigureAwait(false);
 
-        string targetFunction = "Invoke";
+        string targetFunction = KernelProcessAgentExecutor.Functions.InvokeAgent;
         KernelArguments arguments = new() { { "message", message.TargetEventData } };
-        if (!this._functions.TryGetValue("Invoke", out KernelFunction? function) || function == null)
+        if (!this._functions.TryGetValue(targetFunction, out KernelFunction? function) || function == null)
         {
             throw new ArgumentException($"Function Invoke not found in plugin {this.Name}");
         }

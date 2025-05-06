@@ -25,13 +25,13 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
     private DaprStepInfo? _stepInfo;
     private ILogger? _logger;
-    private Type? _innerStepType;
 
     private bool _isInitialized;
 
     protected readonly Kernel _kernel;
     protected string? _eventNamespace;
 
+    internal Type? _innerStepType;
     internal Queue<ProcessMessage> _incomingMessages = new();
     internal KernelProcessStepState? _stepState;
     internal Type? _stepStateType;
@@ -379,6 +379,11 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         return this.FindInputChannels(this._functions, this._logger);
     }
 
+    internal virtual KernelProcessStep GetStepInstance()
+    {
+        return (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._innerStepType!);
+    }
+
     /// <summary>
     /// Initializes the step with the provided step information.
     /// </summary>
@@ -392,8 +397,9 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         }
 
         // Instantiate an instance of the inner step object
-        KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._innerStepType!);
-        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance, pluginName: this._stepInfo.State.Name);
+        KernelProcessStep stepInstance = this.GetStepInstance();
+
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance!, pluginName: this._stepInfo.State.Name);
 
         // Load the kernel functions
         foreach (KernelFunction f in kernelPlugin)

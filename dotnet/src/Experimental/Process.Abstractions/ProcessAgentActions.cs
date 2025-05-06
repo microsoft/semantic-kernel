@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents the actions that can be performed by a process agent.
 /// </summary>
+[DataContract]
 public sealed class ProcessAgentActions
 {
     /// <summary>

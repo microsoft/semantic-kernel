@@ -333,7 +333,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <param name="kernel">The kernel to use for invocation.</param>
     /// <param name="arguments">The arguments to invoke with.</param>
     /// <returns>A <see cref="Task"/> containing the result of the function invocation.</returns>
-    protected Task<FunctionResult> InvokeFunction(KernelFunction function, Kernel kernel, KernelArguments arguments)
+    internal Task<FunctionResult> InvokeFunction(KernelFunction function, Kernel kernel, KernelArguments arguments)
     {
         return kernel.InvokeAsync(function, arguments: arguments);
     }
