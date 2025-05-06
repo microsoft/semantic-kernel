@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using DotNet.Testcontainers.Containers;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Driver;
 using Testcontainers.MongoDb;
@@ -31,7 +33,9 @@ public class MongoDBVectorStoreFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await this._container.StartAsync();
+        using CancellationTokenSource cts = new();
+        cts.CancelAfter(TimeSpan.FromSeconds(60));
+        await this._container.StartAsync(cts.Token);
 
         var mongoClient = new MongoClient(new MongoClientSettings
         {
@@ -65,16 +69,22 @@ public class MongoDBVectorStoreFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        var cursor = await this.MongoDatabase.ListCollectionNamesAsync();
-
-        while (await cursor.MoveNextAsync().ConfigureAwait(false))
+        if (this.MongoDatabase is not null)
         {
-            foreach (var collection in cursor.Current)
+            var cursor = await this.MongoDatabase.ListCollectionNamesAsync();
+
+            while (await cursor.MoveNextAsync().ConfigureAwait(false))
             {
-                await this.MongoDatabase.DropCollectionAsync(collection);
+                foreach (var collection in cursor.Current)
+                {
+                    await this.MongoDatabase.DropCollectionAsync(collection);
+                }
             }
         }
 
-        await this._container.StopAsync();
+        if (this._container is not null && this._container.State == TestcontainersStates.Running)
+        {
+            await this._container.StopAsync();
+        }
     }
 }

@@ -736,7 +736,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
     private static object? GetLastFunctionResultFromChatResponse(ChatResponse chatResponse)
     {
         Assert.NotEmpty(chatResponse.Messages);
-        var chatMessage = chatResponse.Messages[^1];
+        var chatMessage = chatResponse.Messages.Where(m => m.Role == ChatRole.Tool).Last();
 
         Assert.NotEmpty(chatMessage.Contents);
         Assert.Contains(chatMessage.Contents, c => c is Microsoft.Extensions.AI.FunctionResultContent);

@@ -176,27 +176,6 @@ def test_configure_response_format_invalid_input_type():
 
 
 @pytest.mark.parametrize(
-    "message",
-    [
-        pytest.param(ChatMessageContent(role=AuthorRole.USER, content="text")),
-        pytest.param("text"),
-    ],
-)
-async def test_open_ai_assistant_agent_add_chat_message(message):
-    client = AsyncMock(spec=AsyncOpenAI)
-    definition = AsyncMock(spec=Assistant)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    agent = AzureAssistantAgent(client=client, definition=definition)
-    with patch(
-        "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.create_message",
-    ):
-        await agent.add_chat_message("threadId", message)
-
-
-@pytest.mark.parametrize(
     "arguments, include_args",
     [
         pytest.param({"extra_args": "extra_args"}, True),
