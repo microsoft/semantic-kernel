@@ -66,7 +66,14 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         {
             if (item is AnnotationContent annotation)
             {
-                Console.WriteLine($"  [{item.GetType().Name}] {annotation.Quote}: File #{annotation.FileId}");
+                if (annotation.FileId is not null)
+                {
+                    Console.WriteLine($"  [{item.GetType().Name}] {annotation.Quote}: File #{annotation.FileId}");
+                }
+                else if (annotation.Url is not null)
+                {
+                    Console.WriteLine($"  [{item.GetType().Name}] {annotation.Quote}: {annotation.Url} - {annotation.Title}");
+                }
             }
             else if (item is FileReferenceContent fileReference)
             {

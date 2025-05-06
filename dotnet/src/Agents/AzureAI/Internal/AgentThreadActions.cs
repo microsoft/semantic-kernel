@@ -668,10 +668,17 @@ internal static class AgentThreadActions
     private static AnnotationContent GenerateAnnotationContent(MessageTextAnnotation annotation)
     {
         string? fileId = null;
+        string? title = null;
+        Uri? url = null;
 
         if (annotation is MessageTextFileCitationAnnotation fileCitationAnnotation)
         {
             fileId = fileCitationAnnotation.FileId;
+        }
+        if (annotation is MessageTextUrlCitationAnnotation urlCitationAnnotation)
+        {
+            url = new Uri(urlCitationAnnotation.UrlCitation.Url);
+            title = urlCitationAnnotation.UrlCitation.Title;
         }
         else if (annotation is MessageTextFilePathAnnotation filePathAnnotation)
         {
@@ -681,14 +688,16 @@ internal static class AgentThreadActions
         return
             new(annotation.Text)
             {
-                Quote = annotation.Text,
                 FileId = fileId,
+                Title = title,
+                Url = url,
             };
     }
 
     private static StreamingAnnotationContent GenerateStreamingAnnotationContent(TextAnnotationUpdate annotation)
     {
         string? fileId = null;
+        Uri? url = null;
 
         if (!string.IsNullOrEmpty(annotation.OutputFileId))
         {
@@ -698,6 +707,10 @@ internal static class AgentThreadActions
         {
             fileId = annotation.InputFileId;
         }
+        else if (!string.IsNullOrEmpty(annotation.Url))
+        {
+            url = new Uri(annotation.Url);
+        }
 
         return
             new(annotation.TextToReplace)
@@ -705,6 +718,8 @@ internal static class AgentThreadActions
                 StartIndex = annotation.StartIndex ?? 0,
                 EndIndex = annotation.EndIndex ?? 0,
                 FileId = fileId,
+                Title = annotation.Title,
+                Url = url,
             };
     }
 

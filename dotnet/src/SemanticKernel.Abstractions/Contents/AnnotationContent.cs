@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
@@ -12,10 +13,28 @@ namespace Microsoft.SemanticKernel.Agents;
 public class AnnotationContent : KernelContent
 {
     /// <summary>
-    /// The file identifier.
+    /// The referenced file identifier.
     /// </summary>
+    /// <remarks>
+    /// A file is referenced for certain tools, such as file search, and also when
+    /// and image or document is produced as part of the agent response.
+    /// </remarks>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? FileId { get; init; }
+
+    /// <summary>
+    /// The title of the annotation reference.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Title { get; init; }
+
+    /// <summary>
+    /// The referenced url.
+    /// </summary>
+    /// <remarks>
+    /// A url may be referenced for certain tools, such as bing grounding.
+    /// </remarks>    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Uri? Url { get; init; }
 
     /// <summary>
     /// The citation.
