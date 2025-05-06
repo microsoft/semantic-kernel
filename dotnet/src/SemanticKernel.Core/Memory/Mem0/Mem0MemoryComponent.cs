@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
@@ -83,7 +82,7 @@ public sealed class Mem0MemoryComponent : ConversationStatePart
         this._scopeToPerOperationThreadId = options?.ScopeToPerOperationThreadId ?? false;
         this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
 
-        this._aIFunctions = [AIFunctionFactory.Create(this.ClearStoredUserFactsAsync)];
+        this._aIFunctions = [];
 
         this._mem0Client = new(httpClient);
     }
@@ -105,6 +104,16 @@ public sealed class Mem0MemoryComponent : ConversationStatePart
     {
         Verify.NotNull(newMessage);
         this.ValidatePerOperationThreadId(threadId);
+
+        switch (newMessage.Role)
+        {
+            case ChatRole u when u == ChatRole.User:
+            case ChatRole a when a == ChatRole.Assistant:
+            case ChatRole s when s == ChatRole.System:
+                break;
+            default:
+                return;
+        }
 
         this._perOperationThreadId ??= threadId;
 
@@ -138,16 +147,15 @@ public sealed class Mem0MemoryComponent : ConversationStatePart
                 this._userId,
                 inputText).ConfigureAwait(false);
 
-        var userInformation = string.Join(Environment.NewLine, memories);
-        return string.Join(Environment.NewLine, this._contextPrompt, userInformation);
+        var lineSeparatedMemories = string.Join(Environment.NewLine, memories);
+        return string.Join(Environment.NewLine, this._contextPrompt, lineSeparatedMemories);
     }
 
     /// <summary>
-    /// Plugin method to clear user preferences stored in memory for the current agent/thread/user.
+    /// Plugin method to clear memories for the current agent/thread/user.
     /// </summary>
     /// <returns>A task that completes when the memory is cleared.</returns>
-    [Description("Deletes any user facts that are stored across multiple conversations.")]
-    public async Task ClearStoredUserFactsAsync()
+    public async Task ClearStoredMemoriesAsync()
     {
         await this._mem0Client.ClearMemoryAsync(
             this._applicationId,
