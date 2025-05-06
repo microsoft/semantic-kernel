@@ -12,5 +12,5 @@ public sealed class PineconeVectorStoreOptions
     /// <summary>
     /// Gets or sets the default embedding generator for vector properties in this collection.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

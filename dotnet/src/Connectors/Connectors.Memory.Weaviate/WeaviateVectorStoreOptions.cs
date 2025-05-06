@@ -13,7 +13,7 @@ public sealed class WeaviateVectorStoreOptions
     /// <summary>
     /// Weaviate endpoint for remote or local cluster.
     /// </summary>
-    public Uri? Endpoint { get; set; } = null;
+    public Uri? Endpoint { get; set; }
 
     /// <summary>
     /// Weaviate API key.
@@ -21,7 +21,7 @@ public sealed class WeaviateVectorStoreOptions
     /// <remarks>
     /// This parameter is optional because authentication may be disabled in local clusters for testing purposes.
     /// </remarks>
-    public string? ApiKey { get; set; } = null;
+    public string? ApiKey { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector in Weaviate collection.
@@ -33,5 +33,5 @@ public sealed class WeaviateVectorStoreOptions
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

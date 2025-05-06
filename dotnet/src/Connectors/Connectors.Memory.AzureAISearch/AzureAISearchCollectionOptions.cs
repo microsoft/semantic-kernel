@@ -20,17 +20,17 @@ public sealed class AzureAISearchCollectionOptions
     /// In this case, the record model properties must be annotated with the appropriate attributes to indicate their usage.
     /// See <see cref="VectorStoreKeyAttribute"/>, <see cref="VectorStoreDataAttribute"/> and <see cref="VectorStoreVectorAttribute"/>.
     /// </remarks>
-    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; set; }
 
     /// <summary>
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure AI Search record.
     /// Note that when using the default mapper and you are constructing your own <see cref="SearchIndexClient"/>, you will need
     /// to provide the same set of <see cref="System.Text.Json.JsonSerializerOptions"/> both here and when constructing the <see cref="SearchIndexClient"/>.
     /// </summary>
-    public JsonSerializerOptions? JsonSerializerOptions { get; init; } = null;
+    public JsonSerializerOptions? JsonSerializerOptions { get; set; }
 
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

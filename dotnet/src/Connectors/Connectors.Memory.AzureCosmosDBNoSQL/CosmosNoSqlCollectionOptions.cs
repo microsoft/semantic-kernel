@@ -20,17 +20,17 @@ public sealed class CosmosNoSqlCollectionOptions
     /// In this case, the record model properties must be annotated with the appropriate attributes to indicate their usage.
     /// See <see cref="VectorStoreKeyAttribute"/>, <see cref="VectorStoreDataAttribute"/> and <see cref="VectorStoreVectorAttribute"/>.
     /// </remarks>
-    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; set; }
 
     /// <summary>
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure CosmosDB NoSQL record.
     /// </summary>
-    public JsonSerializerOptions? JsonSerializerOptions { get; init; } = null;
+    public JsonSerializerOptions? JsonSerializerOptions { get; set; }
 
     /// <summary>
     /// The property name to use as partition key.
     /// </summary>
-    public string? PartitionKeyPropertyName { get; init; } = null;
+    public string? PartitionKeyPropertyName { get; set; }
 
     /// <summary>
     /// Specifies the indexing mode in the Azure Cosmos DB service.
@@ -39,7 +39,7 @@ public sealed class CosmosNoSqlCollectionOptions
     /// <remarks>
     /// Default is <see cref="IndexingMode.Consistent" />.
     /// </remarks>
-    public IndexingMode IndexingMode { get; init; } = IndexingMode.Consistent;
+    public IndexingMode IndexingMode { get; set; } = IndexingMode.Consistent;
 
     /// <summary>
     /// Gets or sets a value that indicates whether automatic indexing is enabled for a collection in the Azure Cosmos DB service.
@@ -47,10 +47,10 @@ public sealed class CosmosNoSqlCollectionOptions
     /// <remarks>
     /// Default is <see langword="true" />.
     /// </remarks>
-    public bool Automatic { get; init; } = true;
+    public bool Automatic { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }
