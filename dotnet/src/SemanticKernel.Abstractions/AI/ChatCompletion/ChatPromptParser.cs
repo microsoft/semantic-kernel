@@ -14,13 +14,38 @@ internal static class ChatPromptParser
 {
     private const string MessageTagName = "message";
     private const string RoleAttributeName = "role";
-    private const string ImageTagName = "image";
-    private const string TextTagName = "text";
-    private const string AudioTagName = "audio";
-    private const string PdfTagName = "pdf";
-    private const string DocxTagName = "docx";
-    private const string DocTagName = "doc";
-    private const string BinaryTagName = "file";
+    private const string ImageTagName = "IMAGE";
+    private const string TextTagName = "TEXT";
+    private const string AudioTagName = "AUDIO";
+    private const string PdfTagName = "PDF";
+    private const string DocxTagName = "DOCX";
+    private const string DocTagName = "DOC";
+    private const string BinaryTagName = "FILE";
+
+    /// <summary>
+    /// Creates a new instance of <typeparamref name="T"/> from a data URI.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="content"></param>
+    /// <returns>A new instance of <typeparamref name="T"/> with <paramref name="content"/></returns>
+    private static T s_NewBinaryContent<T>(string content) where T : BinaryContent, new()
+    {
+        return (content.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) ? new T { DataUri = content } : new T { Uri = new Uri(content) };
+    }
+
+    /// <summary>
+    /// Factory for creating a <see cref="KernelContent"/> instance based on the tag name.
+    /// </summary>
+    private static readonly Dictionary<string, Func<string, KernelContent>> s_contentFactory = new()
+    {
+        { TextTagName, content => new TextContent(content) },
+        { ImageTagName, content => s_NewBinaryContent<ImageContent>(content) },
+        { AudioTagName, content => s_NewBinaryContent<AudioContent>(content) },
+        { PdfTagName, content => s_NewBinaryContent<PdfContent>(content) },
+        { DocxTagName, content => s_NewBinaryContent<DocxContent>(content) },
+        { DocTagName, content => s_NewBinaryContent<DocContent>(content) },
+        { BinaryTagName, content => s_NewBinaryContent<BinaryContent>(content) }
+    };
 
     /// <summary>
     /// Parses a prompt for an XML representation of a <see cref="ChatHistory"/>.
@@ -78,80 +103,11 @@ internal static class ChatPromptParser
         ChatMessageContentItemCollection items = [];
         foreach (var childNode in node.ChildNodes.Where(childNode => childNode.Content is not null))
         {
-            if (childNode.TagName.Equals(ImageTagName, StringComparison.OrdinalIgnoreCase))
-            {
-                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                {
-                    items.Add(new ImageContent(childNode.Content));
-                }
-                else
-                {
-                    items.Add(new ImageContent(new Uri(childNode.Content!)));
-                }
-            }
-            else if (childNode.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase))
-            {
-                items.Add(new TextContent(childNode.Content));
-            }
-            else if (childNode.TagName.Equals(AudioTagName, StringComparison.OrdinalIgnoreCase))
-            {
-                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                {
-                    items.Add(new AudioContent(childNode.Content));
-                }
-                else
-                {
-                    items.Add(new AudioContent(new Uri(childNode.Content!)));
-                }
-            }
-            else if (childNode.TagName.Equals(PdfTagName, StringComparison.OrdinalIgnoreCase))
-            {
-                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                {
-                    items.Add(new PdfContent(childNode.Content));
-                }
-                else
-                {
-                    items.Add(new PdfContent(new Uri(childNode.Content!)));
-                }
-            }
-            else if (childNode.TagName.Equals(DocxTagName, StringComparison.OrdinalIgnoreCase))
-            {
-                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                {
-                    items.Add(new DocxContent(childNode.Content));
-                }
-                else
-                {
-                    items.Add(new DocxContent(new Uri(childNode.Content!)));
-                }
-            }
-            else if (childNode.TagName.Equals(DocTagName, StringComparison.OrdinalIgnoreCase))
-            {
-                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                {
-                    items.Add(new DocContent(childNode.Content));
-                }
-                else
-                {
-                    items.Add(new DocContent(new Uri(childNode.Content!)));
-                }
-            }
-            else if (childNode.TagName.Equals(BinaryTagName, StringComparison.OrdinalIgnoreCase))
-            {
-                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                {
-                    items.Add(new BinaryContent(childNode.Content));
-                }
-                else
-                {
-                    items.Add(new BinaryContent(new Uri(childNode.Content!)));
-                }
-            }
-            else
+            if (!s_contentFactory.TryGetValue(childNode.TagName.ToUpperInvariant(), out var create))
             {
                 throw new NotSupportedException($"Unsupported node type: {childNode.TagName}");
             }
+            items.Add(create(childNode.Content!));
         }
 
         if (items.Count == 1 && items[0] is TextContent textContent)
