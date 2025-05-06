@@ -11,12 +11,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FastBertTokenizer;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Connectors.Onnx;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
@@ -24,7 +26,7 @@ namespace Microsoft.SemanticKernel.Connectors.Onnx;
 /// <summary>
 /// Provides a text embedding generation service using a BERT ONNX model.
 /// </summary>
-public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGenerationService, IDisposable
+public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGenerationService, IEmbeddingGenerator<string, Embedding<float>>, IDisposable
 {
     /// <summary>Reusable options instance passed to OnnxSession.Run.</summary>
     private static readonly RunOptions s_runOptions = new();
@@ -280,5 +282,23 @@ public sealed class BertOnnxTextEmbeddingGenerationService : ITextEmbeddingGener
 
         // Return the computed embedding vector.
         return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var result = await this.GenerateEmbeddingsAsync(values.ToList(), kernel: null, cancellationToken).ConfigureAwait(false);
+        return new(result.Select(e => new Embedding<float>(e)));
+    }
+
+    /// <inheritdoc/>
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is null ? null :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

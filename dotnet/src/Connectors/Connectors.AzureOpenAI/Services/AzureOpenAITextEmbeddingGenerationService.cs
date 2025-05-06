@@ -3,14 +3,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
+
+#pragma warning disable CS0618 // Type or member is obsolete
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
@@ -18,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 /// Azure OpenAI text embedding service.
 /// </summary>
 [Experimental("SKEXP0010")]
-public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
+public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService, IEmbeddingGenerator<string, Embedding<float>>
 {
     private readonly AzureClientCore _client;
     private readonly int? _dimensions;
@@ -111,5 +115,28 @@ public sealed class AzureOpenAITextEmbeddingGenerationService : ITextEmbeddingGe
         CancellationToken cancellationToken = default)
     {
         return this._client.GetEmbeddingsAsync(this._client.DeploymentName, data, kernel, this._dimensions, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var result = await this._client.GetEmbeddingsAsync(this._client.ModelId, values.ToList(), kernel: null, this._dimensions, cancellationToken).ConfigureAwait(false);
+        return new(result.Select(e => new Embedding<float>(e)));
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is null ? null :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

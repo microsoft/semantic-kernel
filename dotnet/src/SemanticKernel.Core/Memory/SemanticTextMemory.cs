@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Embeddings;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>

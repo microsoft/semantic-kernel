@@ -96,8 +96,8 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
-    /// provided <see cref="IVectorizableTextSearch{TRecord}"/> for performing searches and
-    /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
+    /// provided <see cref="IVectorSearch{TRecord}"/> for performing searches and
+    /// <see cref="ITextSearchStringMapper"/> and <see cref="ITextSearchResultMapper" /> for mapping results.
     /// </summary>
     /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the text search.</param>
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
@@ -142,6 +142,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     #region private
+    [Obsolete]
     private readonly ITextEmbeddingGenerationService? _textEmbeddingGeneration;
     private readonly IVectorSearch<TRecord>? _vectorSearch;
     private readonly ITextSearchStringMapper _stringMapper;
@@ -206,6 +207,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             Skip = searchOptions.Skip,
         };
 
+#pragma warning disable CS0618, CS0612 // Type or member is obsolete
         if (this._textEmbeddingGeneration is not null)
         {
             var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -217,6 +219,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
             yield break;
         }
+#pragma warning restore CS0612, CS0618 // Type or member is obsolete
 
         await foreach (var result in this._vectorSearch!.SearchAsync(query, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
         {

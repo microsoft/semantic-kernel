@@ -18,17 +18,24 @@ namespace SemanticKernel.UnitTests.AI;
 
 public class ServiceConversionExtensionsTests
 {
+    private const string ObsoleteMessage = "Keeping unit test until removed completely";
     [Fact]
-    public void InvalidArgumentsThrow()
+    [Obsolete(ObsoleteMessage)]
+    public void ObsoletedInvalidArgumentsThrow()
     {
         Assert.Throws<ArgumentNullException>("service", () => EmbeddingGenerationExtensions.AsEmbeddingGenerator<string, float>(null!));
         Assert.Throws<ArgumentNullException>("generator", () => EmbeddingGenerationExtensions.AsEmbeddingGenerationService<string, float>(null!));
+    }
 
+    [Fact]
+    public void InvalidArgumentsThrow()
+    {
         Assert.Throws<ArgumentNullException>("service", () => ChatCompletionServiceExtensions.AsChatClient(null!));
         Assert.Throws<ArgumentNullException>("client", () => ChatCompletionServiceExtensions.AsChatCompletionService(null!));
     }
 
     [Fact]
+    [Obsolete(ObsoleteMessage)]
     public void AsEmbeddingGeneratorMetadataReturnsExpectedData()
     {
         IEmbeddingGenerator<string, Embedding<float>> generator = new TestEmbeddingGenerationService()
@@ -48,6 +55,7 @@ public class ServiceConversionExtensionsTests
     }
 
     [Fact]
+    [Obsolete(ObsoleteMessage)]
     public void AsEmbeddingGenerationServiceReturnsExpectedAttributes()
     {
         using var generator = new TestEmbeddingGenerator()
@@ -97,6 +105,7 @@ public class ServiceConversionExtensionsTests
     }
 
     [Fact]
+    [Obsolete(ObsoleteMessage)]
     public async Task AsEmbeddingGeneratorConvertedAsExpected()
     {
         IEmbeddingGenerator<string, Embedding<float>> generator = new TestEmbeddingGenerationService()
@@ -115,6 +124,7 @@ public class ServiceConversionExtensionsTests
     }
 
     [Fact]
+    [Obsolete(ObsoleteMessage)]
     public async Task AsEmbeddingGenerationServiceConvertedAsExpected()
     {
         using IEmbeddingGenerator<string, Embedding<float>> generator = new TestEmbeddingGenerator()
@@ -688,6 +698,7 @@ public class ServiceConversionExtensionsTests
         }
     }
 
+    [Obsolete(ObsoleteMessage)]
     private sealed class TestEmbeddingGenerationService : IEmbeddingGenerationService<string, float>
     {
         public IReadOnlyDictionary<string, object?> Attributes { get; set; } = new Dictionary<string, object?>();

@@ -39,6 +39,7 @@ public class VectorStoreTextSearchTestBase
     /// <summary>
     /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorizedSearch{TRecord}"/>.
     /// </summary>
+    [Obsolete("VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete")]
     public static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchAsync()
     {
         using var embeddingGenerator = new MockTextEmbeddingGenerator();
@@ -77,7 +78,7 @@ public class VectorStoreTextSearchTestBase
     /// </summary>
     public static async Task AddRecordsAsync(
         IVectorStoreRecordCollection<Guid, DataModelWithRawEmbedding> recordCollection,
-        ITextEmbeddingGenerationService embeddingService,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingService,
         int? count = 10)
     {
         await recordCollection.CreateCollectionIfNotExistsAsync();
@@ -88,7 +89,7 @@ public class VectorStoreTextSearchTestBase
                 Key = Guid.NewGuid(),
                 Text = $"Record {i}",
                 Tag = i % 2 == 0 ? "Even" : "Odd",
-                Embedding = await embeddingService.GenerateEmbeddingAsync($"Record {i}")
+                Embedding = (await embeddingService.GenerateAsync($"Record {i}")).Vector
             };
             await recordCollection.UpsertAsync(dataModel);
         }
@@ -127,6 +128,7 @@ public class VectorStoreTextSearchTestBase
     /// <summary>
     /// Mock implementation of <see cref="ITextEmbeddingGenerationService"/>.
     /// </summary>
+    [Obsolete("ITextEmbeddingGenerationService is obsolete")]
     public sealed class MockTextEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>, ITextEmbeddingGenerationService
     {
         public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)

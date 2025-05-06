@@ -3,12 +3,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Embeddings;
 using OpenAI;
+
+#pragma warning disable CS0618 // Type or member is obsolete
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -16,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// OpenAI implementation of <see cref="ITextEmbeddingGenerationService"/>
 /// </summary>
 [Experimental("SKEXP0010")]
-public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
+public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService, IEmbeddingGenerator<string, Embedding<float>>
 {
     private readonly ClientCore _client;
     private readonly int? _dimensions;
@@ -79,5 +83,28 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
     {
         this._client.LogActionDetails();
         return this._client.GetEmbeddingsAsync(this._client.ModelId, data, kernel, this._dimensions, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var result = await this._client.GetEmbeddingsAsync(this._client.ModelId, values.ToList(), kernel: null, this._dimensions, cancellationToken).ConfigureAwait(false);
+        return new(result.Select(e => new Embedding<float>(e)));
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is null ? null :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }
