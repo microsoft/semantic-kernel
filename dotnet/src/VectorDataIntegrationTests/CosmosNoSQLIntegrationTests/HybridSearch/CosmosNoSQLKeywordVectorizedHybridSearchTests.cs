@@ -16,11 +16,11 @@ public class CosmosNoSQLKeywordVectorizedHybridSearchTests(
 {
     public new class VectorAndStringFixture : KeywordVectorizedHybridSearchComplianceTests<string>.VectorAndStringFixture
     {
-        public override TestStore TestStore => CosmosNoSqlTestStore.Instance;
+        public override TestStore TestStore => CosmosNoSQLTestStore.Instance;
     }
 
     public new class MultiTextFixture : KeywordVectorizedHybridSearchComplianceTests<string>.MultiTextFixture
     {
-        public override TestStore TestStore => CosmosNoSqlTestStore.Instance;
+        public override TestStore TestStore => CosmosNoSQLTestStore.Instance;
     }
 }

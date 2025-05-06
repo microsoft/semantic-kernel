@@ -19,6 +19,6 @@ public class AzureAISearchBasicFilterTests(AzureAISearchBasicFilterTests.Fixture
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
 
         // Azure AI search only supports lowercase letters, digits or dashes.
-        protected override string CollectionName => "filter-tests";
+        public override string CollectionName => "filter-tests";
     }
 }

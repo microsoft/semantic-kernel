@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED
+
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -122,6 +125,7 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecord<TKey, TRecord> createRecord)
         where TKey : notnull
+        where TRecord : notnull
     {
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
@@ -139,16 +143,29 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>
-    /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
+    /// Decorator for a <see cref="IVectorSearch{TRecord}"/> that generates embeddings for text search queries.
     /// </summary>
-    private sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
+    private sealed class VectorizedSearchWrapper<TRecord>(IVectorSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
     {
         /// <inheritdoc/>
-        public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var vectorizedQuery = await textEmbeddingGeneration!.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            return await vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, options, cancellationToken);
+            await foreach (var result in vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, top, options, cancellationToken))
+            {
+                yield return result;
+            }
+        }
+
+        /// <inheritdoc />
+        public object? GetService(Type serviceType, object? serviceKey = null)
+        {
+            ArgumentNullException.ThrowIfNull(serviceType);
+
+            return
+                serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+                vectorizedSearch.GetService(serviceType, serviceKey);
         }
     }
 
@@ -173,3 +190,5 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
 }
+
+#endif

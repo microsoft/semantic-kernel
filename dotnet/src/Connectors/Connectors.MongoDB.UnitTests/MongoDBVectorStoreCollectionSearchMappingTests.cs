@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 using Xunit;
@@ -16,11 +17,18 @@ namespace SemanticKernel.Connectors.MongoDB.UnitTests;
 /// </summary>
 public sealed class MongoDBVectorStoreCollectionSearchMappingTests
 {
-    private readonly Dictionary<string, string> _storagePropertyNames = new()
-    {
-        ["Property1"] = "property_1",
-        ["Property2"] = "property_2",
-    };
+    private readonly VectorStoreRecordModel _model = new MongoDBModelBuilder()
+        .Build(
+            typeof(Dictionary<string, object?>),
+            new()
+            {
+                Properties =
+                [
+                    new VectorStoreRecordKeyProperty("Property1", typeof(string)) { StoragePropertyName = "property_1" },
+                    new VectorStoreRecordDataProperty("Property2", typeof(string)) { StoragePropertyName = "property_2" },
+                ]
+            },
+            defaultEmbeddingGenerator: null);
 
     [Fact]
     public void BuildFilterThrowsExceptionWithUnsupportedFilterClause()
@@ -29,7 +37,7 @@ public sealed class MongoDBVectorStoreCollectionSearchMappingTests
         var vectorSearchFilter = new VectorSearchFilter().AnyTagEqualTo("NonExistentProperty", "TestValue");
 
         // Act & Assert
-        Assert.Throws<NotSupportedException>(() => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(vectorSearchFilter, this._storagePropertyNames));
+        Assert.Throws<NotSupportedException>(() => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(vectorSearchFilter, this._model));
     }
 
     [Fact]
@@ -39,7 +47,7 @@ public sealed class MongoDBVectorStoreCollectionSearchMappingTests
         var vectorSearchFilter = new VectorSearchFilter().EqualTo("NonExistentProperty", "TestValue");
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(vectorSearchFilter, this._storagePropertyNames));
+        Assert.Throws<InvalidOperationException>(() => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(vectorSearchFilter, this._model));
     }
 
     [Fact]
@@ -51,7 +59,7 @@ public sealed class MongoDBVectorStoreCollectionSearchMappingTests
             .EqualTo("Property1", "TestValue2");
 
         // Act & Assert
-        Assert.Throws<NotSupportedException>(() => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(vectorSearchFilter, this._storagePropertyNames));
+        Assert.Throws<NotSupportedException>(() => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(vectorSearchFilter, this._model));
     }
 
     [Fact]
@@ -62,8 +70,8 @@ public sealed class MongoDBVectorStoreCollectionSearchMappingTests
         var vectorSearchFilter = new VectorSearchFilter().EqualTo("Property1", "TestValue1");
 
         // Act
-        var filter = MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(vectorSearchFilter, this._storagePropertyNames);
+        var filter = MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(vectorSearchFilter, this._model);
 
-        Assert.Equal(filter.ToJson(), expectedFilter.ToJson());
+        Assert.Equal(expectedFilter.ToJson(), filter.ToJson());
     }
 }

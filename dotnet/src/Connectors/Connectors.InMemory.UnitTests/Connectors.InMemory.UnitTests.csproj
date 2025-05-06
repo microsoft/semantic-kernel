@@ -8,7 +8,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);CA2007,CA1806,CA1869,CA1861,IDE0300,VSTHRD111,SKEXP0001,SKEXP0020</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1806,CA1869,CA1861,IDE0300,VSTHRD111,SKEXP0001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

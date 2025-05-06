@@ -298,8 +298,8 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
 
             // Find best functions to call for original request.
-            var searchResults = await collection.VectorizedSearchAsync(requestEmbedding, new() { Top = numberOfBestFunctions }, cancellationToken);
-            var recordKeys = (await searchResults.Results.ToListAsync(cancellationToken)).Select(l => l.Record.Id);
+            var recordKeys = (await collection.SearchEmbeddingAsync(requestEmbedding, top: numberOfBestFunctions, cancellationToken: cancellationToken)
+                .ToListAsync(cancellationToken)).Select(l => l.Record.Id);
 
             return plugins
                 .SelectMany(plugin => plugin)
@@ -341,7 +341,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             var collection = vectorStore.GetCollection<string, FunctionRecord>(collectionName);
             await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
 
-            await collection.UpsertBatchAsync(functionRecords, cancellationToken: cancellationToken).ToListAsync(cancellationToken);
+            await collection.UpsertAsync(functionRecords, cancellationToken: cancellationToken);
         }
 
         private static List<(KernelFunction Function, string TextToVectorize)> GetFunctionsData(KernelPluginCollection plugins)
@@ -422,7 +422,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         [VectorStoreRecordData]
         public string FunctionInfo { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(1536)]
         public ReadOnlyMemory<float> FunctionInfoEmbedding { get; set; }
     }
 

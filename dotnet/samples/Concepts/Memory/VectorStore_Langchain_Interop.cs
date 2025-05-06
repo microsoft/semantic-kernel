@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure;
 using Azure.Identity;
-using Azure.Search.Documents.Indexes;
 using Memory.VectorStoreLangchainInterop;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
-using Qdrant.Client;
 using StackExchange.Redis;
 using Sdk = Pinecone;
 
@@ -28,32 +25,6 @@ namespace Memory;
 /// </remarks>
 public class VectorStore_Langchain_Interop(ITestOutputHelper output) : BaseTest(output)
 {
-    /// <summary>
-    /// Shows how to read data from an Azure AI Search collection that was created and ingested using Langchain.
-    /// </summary>
-    [Fact]
-    public async Task ReadDataFromLangchainAzureAISearchAsync()
-    {
-        var searchIndexClient = new SearchIndexClient(
-            new Uri(TestConfiguration.AzureAISearch.Endpoint),
-            new AzureKeyCredential(TestConfiguration.AzureAISearch.ApiKey));
-        var vectorStore = AzureAISearchFactory.CreateQdrantLangchainInteropVectorStore(searchIndexClient);
-        await this.ReadDataFromCollectionAsync(vectorStore, "pets");
-    }
-
-    /// <summary>
-    /// Shows how to read data from a Qdrant collection that was created and ingested using Langchain.
-    /// Also adds a converter to expose keys as strings containing GUIDs instead of <see cref="Guid"/> objects,
-    /// to match the document schema of the other vector stores.
-    /// </summary>
-    [Fact]
-    public async Task ReadDataFromLangchainQdrantAsync()
-    {
-        var qdrantClient = new QdrantClient("localhost");
-        var vectorStore = QdrantFactory.CreateQdrantLangchainInteropVectorStore(qdrantClient);
-        await this.ReadDataFromCollectionAsync(vectorStore, "pets");
-    }
-
     /// <summary>
     /// Shows how to read data from a Pinecone collection that was created and ingested using Langchain.
     /// </summary>
@@ -96,8 +67,7 @@ public class VectorStore_Langchain_Interop(ITestOutputHelper output) : BaseTest(
         // Search the data set.
         var searchString = "I'm looking for an animal that is loyal and will make a great companion";
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 1 });
-        var resultRecords = await searchResult.Results.ToListAsync();
+        var resultRecords = await collection.SearchEmbeddingAsync(searchVector, top: 1).ToListAsync();
 
         this.Output.WriteLine("Search string: " + searchString);
         this.Output.WriteLine("Source: " + resultRecords.First().Record.Source);

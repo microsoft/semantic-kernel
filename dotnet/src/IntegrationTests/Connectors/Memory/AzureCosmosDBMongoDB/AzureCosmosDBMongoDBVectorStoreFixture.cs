@@ -32,10 +32,11 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(
                 path: "testsettings.development.json",
-                optional: false,
+                optional: true,
                 reloadOnChange: true
             )
             .AddEnvironmentVariables()
+            .AddUserSecrets<AzureCosmosDBMongoDBVectorStoreFixture>()
             .Build();
 
         var connectionString = GetConnectionString(configuration);
@@ -55,7 +56,7 @@ public class AzureCosmosDBMongoDBVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTime)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
             ]
         };
     }

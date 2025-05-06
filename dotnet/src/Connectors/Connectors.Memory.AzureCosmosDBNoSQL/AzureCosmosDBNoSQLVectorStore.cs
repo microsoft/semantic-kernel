@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.VectorData;
 
@@ -15,13 +16,19 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public class AzureCosmosDBNoSQLVectorStore : IVectorStore
+public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
 {
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
+
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     private readonly Database _database;
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly AzureCosmosDBNoSQLVectorStoreOptions _options;
+
+    /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(string))] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCosmosDBNoSQLVectorStore"/> class.
@@ -34,11 +41,18 @@ public class AzureCosmosDBNoSQLVectorStore : IVectorStore
 
         this._database = database;
         this._options = options ?? new();
+
+        this._metadata = new()
+        {
+            VectorStoreSystemName = AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
+            VectorStoreName = database.Id
+        };
     }
 
     /// <inheritdoc />
-    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
+        where TRecord : notnull
     {
 #pragma warning disable CS0618 // IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)
@@ -50,25 +64,21 @@ public class AzureCosmosDBNoSQLVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(AzureCosmosDBNoSQLCompositeKey))
-        {
-            throw new NotSupportedException($"Only {nameof(String)} and {nameof(AzureCosmosDBNoSQLCompositeKey)} keys are supported.");
-        }
-
-        var recordCollection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>(
             this._database,
             name,
             new()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                JsonSerializerOptions = this._options.JsonSerializerOptions
+                JsonSerializerOptions = this._options.JsonSerializerOptions,
+                EmbeddingGenerator = this._options.EmbeddingGenerator
             }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
         return recordCollection!;
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string Query = "SELECT VALUE(c.id) FROM c";
 
@@ -83,5 +93,32 @@ public class AzureCosmosDBNoSQLVectorStore : IVectorStore
                 yield return containerName;
             }
         }
+    }
+
+    /// <inheritdoc />
+    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        return collection.CollectionExistsAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        return collection.DeleteCollectionAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(Database) ? this._database :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

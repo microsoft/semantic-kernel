@@ -1,16 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
+#pragma warning disable SKEXP0001 // IMemoryStore is experimental (but we're obsoleting)
+
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure Pinecone connector.
 /// </summary>
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and PineconeVectorStore")]
 public static class PineconeMemoryBuilderExtensions
 {
     /// <summary>

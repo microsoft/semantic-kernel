@@ -192,8 +192,8 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         var record2 = new PostgresHotel<int> { HotelId = HotelId2, HotelName = "Hotel 2", HotelCode = 1, ParkingIncluded = false, HotelRating = 3.5f, Tags = ["tag1", "tag3"] };
         var record3 = new PostgresHotel<int> { HotelId = HotelId3, HotelName = "Hotel 3", HotelCode = 1, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag4"] };
 
-        var upsertResults = await sut.UpsertBatchAsync([record1, record2, record3]).ToListAsync();
-        var getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
+        var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
 
@@ -202,9 +202,9 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId3));
 
         // Act
-        await sut.DeleteBatchAsync([HotelId1, HotelId2, HotelId3]);
+        await sut.DeleteAsync([HotelId1, HotelId2, HotelId3]);
 
-        getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+        getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         // Assert
         Assert.Empty(getResults);
@@ -281,31 +281,28 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     }
 
     [Fact]
-    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
+    public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         const int HotelId = 5;
 
-        var sut = fixture.GetCollection<int, VectorStoreGenericDataModel<int>>("GenericMapperWithNumericKey", GetVectorStoreRecordDefinition<int>());
+        var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithNumericKey", GetVectorStoreRecordDefinition<int>());
 
         await sut.CreateCollectionAsync();
 
         var record = new PostgresHotel<int> { HotelId = (int)HotelId, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
 
         // Act
-        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<int>(HotelId)
+        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
         {
-            Data =
-            {
-                { "HotelName", "Generic Mapper Hotel" },
-                { "Description", "This is a generic mapper hotel" },
-                { "HotelCode", 1 },
-                { "ParkingIncluded", true },
-                { "HotelRating", 3.6f }
-            },
-            Vectors =
-            {
-                { "DescriptionEmbedding", new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]) }
-            }
+            ["HotelId"] = HotelId,
+
+            ["HotelName"] = "Dynamic Mapper Hotel",
+            ["Description"] = "This is a dynamic mapper hotel",
+            ["HotelCode"] = 1,
+            ["ParkingIncluded"] = true,
+            ["HotelRating"] = 3.6f,
+
+            ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])
         });
 
         var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
@@ -314,35 +311,32 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         Assert.Equal(HotelId, upsertResult);
 
         Assert.NotNull(localGetResult);
-        Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
-        Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
-        Assert.True((bool?)localGetResult.Data["ParkingIncluded"]);
-        Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
-        Assert.Equal([30f, 31f, 32f, 33f], ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+        Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
+        Assert.Equal("This is a dynamic mapper hotel", localGetResult["Description"]);
+        Assert.True((bool?)localGetResult["ParkingIncluded"]);
+        Assert.Equal(3.6f, localGetResult["HotelRating"]);
+        Assert.Equal([30f, 31f, 32f, 33f], ((ReadOnlyMemory<float>)localGetResult["DescriptionEmbedding"]!).ToArray());
 
         // Act - update with null embeddings
         // Act
-        var upsertResult2 = await sut.UpsertAsync(new VectorStoreGenericDataModel<int>(HotelId)
+        var upsertResult2 = await sut.UpsertAsync(new Dictionary<string, object?>
         {
-            Data =
-            {
-                { "HotelName", "Generic Mapper Hotel" },
-                { "Description", "This is a generic mapper hotel" },
-                { "HotelCode", 1 },
-                { "ParkingIncluded", true },
-                { "HotelRating", 3.6f }
-            },
-            Vectors =
-            {
-                { "DescriptionEmbedding", null }
-            }
+            ["HotelId"] = HotelId,
+
+            ["HotelName"] = "Dynamic Mapper Hotel",
+            ["Description"] = "This is a dynamic mapper hotel",
+            ["HotelCode"] = 1,
+            ["ParkingIncluded"] = true,
+            ["HotelRating"] = 3.6f,
+
+            ["DescriptionEmbedding"] = null
         });
 
         var localGetResult2 = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(localGetResult2);
-        Assert.Null(localGetResult2.Vectors["DescriptionEmbedding"]);
+        Assert.Null(localGetResult2["DescriptionEmbedding"]);
     }
 
     [Theory]
@@ -364,15 +358,13 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         await sut.CreateCollectionAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([0.9f, 0.1f, 0.5f, 0.8f]), new()
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([0.9f, 0.1f, 0.5f, 0.8f]), top: 3, new()
         {
             IncludeVectors = includeVectors
-        });
-
-        var results = await searchResults.Results.ToListAsync();
+        }).ToListAsync();
 
         // Assert
         var ids = results.Select(l => l.Record.HotelId).ToList();
@@ -402,19 +394,16 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         await sut.CreateCollectionAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), new()
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
         {
             IncludeVectors = false,
-            Top = 5,
             OldFilter = new([
                 new EqualToFilterClause("HotelRating", 2.5f)
             ])
-        });
-
-        var results = await searchResults.Results.ToListAsync();
+        }).ToListAsync();
 
         // Assert
         var ids = results.Select(l => l.Record.HotelId).ToList();
@@ -435,19 +424,16 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         await sut.CreateCollectionAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), new()
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
         {
             IncludeVectors = false,
-            Top = 5,
             OldFilter = new([
                 new AnyTagEqualToFilterClause("Tags", "tag2")
             ])
-        });
-
-        var results = await searchResults.Results.ToListAsync();
+        }).ToListAsync();
 
         // Assert
         var ids = results.Select(l => l.Record.HotelId).ToList();
@@ -523,7 +509,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
             new VectorStoreRecordDataProperty("ListInts", typeof(List<int>)),
             new VectorStoreRecordDataProperty("Description", typeof(string)),
-            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Hnsw, DistanceFunction = distanceFunction }
+            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.Hnsw, DistanceFunction = distanceFunction }
         ]
     };
 
@@ -561,7 +547,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         [VectorStoreRecordKey]
         public int Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Embedding { get; set; }
 
         [VectorStoreRecordData]

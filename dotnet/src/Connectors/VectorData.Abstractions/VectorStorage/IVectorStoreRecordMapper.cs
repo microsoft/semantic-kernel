@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
@@ -7,6 +9,7 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 /// <typeparam name="TRecordDataModel">The consumer record data model to map to or from.</typeparam>
 /// <typeparam name="TStorageModel">The storage model to map to or from.</typeparam>
+[Obsolete("Custom mappers are no longer supported.", error: true)]
 public interface IVectorStoreRecordMapper<TRecordDataModel, TStorageModel>
 {
     /// <summary>

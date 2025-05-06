@@ -25,50 +25,54 @@ public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
     private async Task CanSplitBatchToAccountForMaxParameterLimit(bool includeVectors)
     {
         var collection = fixture.Collection;
-        SimpleModel<string>[] inserted = Enumerable.Range(0, SqlServerMaxParameters + 1).Select(i => new SimpleModel<string>()
+        SimpleRecord<string>[] inserted = Enumerable.Range(0, SqlServerMaxParameters + 1).Select(i => new SimpleRecord<string>()
         {
             Id = fixture.GenerateNextKey<string>(),
             Number = 100 + i,
             Text = i.ToString(),
-            Floats = Enumerable.Range(0, SimpleModel<string>.DimensionCount).Select(j => (float)(i + j)).ToArray()
+            Floats = Enumerable.Range(0, SimpleRecord<string>.DimensionCount).Select(j => (float)(i + j)).ToArray()
         }).ToArray();
         var keys = inserted.Select(record => record.Id).ToArray();
 
-        Assert.Empty(await collection.GetBatchAsync(keys).ToArrayAsync());
-        var receivedKeys = await collection.UpsertBatchAsync(inserted).ToArrayAsync();
+        Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
+        var receivedKeys = await collection.UpsertAsync(inserted);
         Assert.Equal(keys.ToHashSet(), receivedKeys.ToHashSet()); // .ToHashSet() to ignore order
 
-        var received = await collection.GetBatchAsync(keys, new() { IncludeVectors = includeVectors }).ToArrayAsync();
+        var received = await collection.GetAsync(keys, new() { IncludeVectors = includeVectors }).ToArrayAsync();
         foreach (var record in inserted)
         {
-            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors);
+            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors, fixture.TestStore.VectorsComparable);
         }
 
-        await collection.DeleteBatchAsync(keys);
-        Assert.Empty(await collection.GetBatchAsync(keys).ToArrayAsync());
+        await collection.DeleteAsync(keys);
+        Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
     }
 
     [ConditionalFact]
     public async Task UpsertBatchIsAtomic()
     {
         var collection = fixture.Collection;
-        SimpleModel<string>[] inserted = Enumerable.Range(0, SqlServerMaxParameters + 1).Select(i => new SimpleModel<string>()
+        SimpleRecord<string>[] inserted = Enumerable.Range(0, SqlServerMaxParameters + 1).Select(i => new SimpleRecord<string>()
         {
             // The last Id is set to NULL, so it must not be inserted and the whole batch should fail
             Id = i < SqlServerMaxParameters ? fixture.GenerateNextKey<string>() : null!,
             Number = 100 + i,
             Text = i.ToString(),
-            Floats = Enumerable.Range(0, SimpleModel<string>.DimensionCount).Select(j => (float)(i + j)).ToArray()
+            Floats = Enumerable.Range(0, SimpleRecord<string>.DimensionCount).Select(j => (float)(i + j)).ToArray()
         }).ToArray();
 
         var keys = inserted.Select(record => record.Id).Where(key => key is not null).ToArray();
-        Assert.Empty(await collection.GetBatchAsync(keys).ToArrayAsync());
+        Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
 
-        VectorStoreOperationException ex = await Assert.ThrowsAsync<VectorStoreOperationException>(() => collection.UpsertBatchAsync(inserted).ToArrayAsync().AsTask());
+        VectorStoreOperationException ex = await Assert.ThrowsAsync<VectorStoreOperationException>(() => collection.UpsertAsync(inserted));
         Assert.Equal("UpsertBatch", ex.OperationName);
-        Assert.Equal(collection.CollectionName, ex.CollectionName);
+
+        var metadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
+
+        Assert.NotNull(metadata?.CollectionName);
+        Assert.Equal(metadata.CollectionName, ex.CollectionName);
 
         // Make sure that no records were inserted!
-        Assert.Empty(await collection.GetBatchAsync(keys).ToArrayAsync());
+        Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
     }
 }

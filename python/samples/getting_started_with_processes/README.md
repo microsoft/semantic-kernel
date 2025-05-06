@@ -221,6 +221,25 @@ Similar to the Semantic Kernel Python concept samples, it is necessary to config
 and keys used by the kernel. See the follow "Configuring the Kernel" [guide](../concepts/README.md#configuring-the-kernel) for
 more information.
 
+## Configuring Max Supersteps
+
+Process execution is run with a configuration of `max_supersteps`. By default, the `max_supersteps` is configured at `100`. 
+
+To adjust the value, pass the `max_supersteps` keyword argument to the `start` method for the given runtime:
+
+```python
+from semantic_kernel.processes.local_runtime.local_kernel_process import start
+
+async with await start(
+    process=kernel_process,
+    kernel=kernel,
+    initial_event=KernelProcessEvent(id=CommonEvents.StartProcess),
+    max_supersteps=50,  # Configure the max number of supersteps for process run
+) as process_context:
+    process_state = await process_context.get_state()
+    # Handle process state...
+```
+
 ## Running Concept Samples
 
 Concept samples can be run in an IDE or via the command line. After setting up the required api key
