@@ -6,7 +6,7 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-from semantic_kernel.connectors.memory.weaviate.weaviate_memory_store import WeaviateMemoryStore
+from semantic_kernel.connectors.memory_stores.weaviate.weaviate_memory_store import WeaviateMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 # if not sys.platform.startswith("linux"):

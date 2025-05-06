@@ -227,7 +227,7 @@ def data_model_type_vanilla():
             self,
             content: Annotated[str, VectorStoreRecordDataField()],
             id: Annotated[str, VectorStoreRecordKeyField()],
-            vector: Annotated[str | list[float] | None, VectorStoreRecordVectorField(dimensions=5)] = None,
+            vector: Annotated[list[float] | str | None, VectorStoreRecordVectorField(dimensions=5)] = None,
         ):
             self.content = content
             self.vector = vector
@@ -248,7 +248,7 @@ def data_model_type_vector_array():
             id: Annotated[str, VectorStoreRecordKeyField()],
             content: Annotated[str, VectorStoreRecordDataField()],
             vector: Annotated[
-                str | list[float] | None,
+                list[float] | str | None,
                 VectorStoreRecordVectorField(
                     dimensions=5,
                 ),
@@ -272,7 +272,7 @@ def data_model_type_vanilla_serialize():
             self,
             id: Annotated[str, VectorStoreRecordKeyField()],
             content: Annotated[str, VectorStoreRecordDataField()],
-            vector: Annotated[str | list[float] | None, VectorStoreRecordVectorField(dimensions=5)] = None,
+            vector: Annotated[list[float] | str | None, VectorStoreRecordVectorField(dimensions=5)] = None,
         ):
             self.content = content
             self.vector = vector
@@ -339,8 +339,8 @@ def data_model_type_dataclass():
     @dataclass
     class DataModelClass:
         content: Annotated[str, VectorStoreRecordDataField()]
-        vector: Annotated[list[float], VectorStoreRecordVectorField(dimensions=5)]
         id: Annotated[str, VectorStoreRecordKeyField()]
+        vector: Annotated[list[float] | str | None, VectorStoreRecordVectorField(dimensions=5)] = None
 
     return DataModelClass
 

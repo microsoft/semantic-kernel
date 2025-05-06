@@ -251,14 +251,14 @@ def filter_lambda_list(store: str) -> list[ParameterSet]:
         (
             lambda x: "value" in x.content,
             {
-                "ai_search": "search.ismatch('value', content)",
+                "ai_search": "search.ismatch('value', 'content')",
             },
             "contains",
         ),
         (
             lambda x: "value" not in x.content,
             {
-                "ai_search": "not search.ismatch('value', content)",
+                "ai_search": "not search.ismatch('value', 'content')",
             },
             "not contains",
         ),

@@ -2,7 +2,7 @@
 
 import ast
 import sys
-from collections.abc import AsyncIterable, Callable, Mapping, Sequence
+from collections.abc import AsyncIterable, Callable, Sequence
 from typing import Any, ClassVar, Final, Generic, TypeVar
 
 from numpy import dot
@@ -22,7 +22,7 @@ from semantic_kernel.data.vector_storage import (
     VectorStoreRecordCollection,
 )
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
-from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException
+from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException, VectorStoreOperationException
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.list_handler import empty_generator
@@ -47,6 +47,36 @@ DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction | str, Callable[..., Any]]] =
 }
 
 
+TAKey = TypeVar("TAKey", bound=str | int | float)
+TAValue = TypeVar("TAValue", bound=str | int | float | list[float] | None)
+
+
+class AttributeDict(dict, Generic[TAKey, TAValue]):
+    """A dict subclass that allows attribute access to keys.
+
+    This is used to allow the filters to work either way, using:
+    - `lambda x: x.key == 'id'` or `lambda x: x['key'] == 'id'`
+    """
+
+    def __getattr__(self, item: TAKey) -> TAValue:
+        """Allow attribute-style access to dict keys."""
+        try:
+            return self[item]
+        except KeyError:
+            raise AttributeError(item)
+
+    def __setattr__(self, key: TAKey, value: TAValue) -> None:
+        """Allow setting dict keys via attribute access."""
+        self[key] = value
+
+    def __delattr__(self, item: TAKey) -> None:
+        """Allow deleting dict keys via attribute access."""
+        try:
+            del self[item]
+        except KeyError:
+            raise AttributeError(item)
+
+
 class InMemoryCollection(
     VectorStoreRecordCollection[TKey, TModel],
     VectorSearch[TKey, TModel],
@@ -54,7 +84,7 @@ class InMemoryCollection(
 ):
     """In Memory Collection."""
 
-    inner_storage: dict[TKey, dict] = Field(default_factory=dict)
+    inner_storage: dict[TKey, AttributeDict] = Field(default_factory=dict)
     supported_key_types: ClassVar[set[str] | None] = {"str", "int", "float"}
     supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR}
 
@@ -100,9 +130,9 @@ class InMemoryCollection(
     async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         updated_keys = []
         for record in records:
-            key = record[self._key_field_name] if isinstance(record, Mapping) else getattr(record, self._key_field_name)
-            self.inner_storage[key] = record
-            updated_keys.append(key)
+            record = AttributeDict(record)
+            self.inner_storage[record[self._key_field_name]] = record
+            updated_keys.append(record[self._key_field_name])
         return updated_keys
 
     def _deserialize_store_models_to_dicts(self, records: Sequence[Any], **kwargs: Any) -> Sequence[dict[str, Any]]:
@@ -156,11 +186,15 @@ class InMemoryCollection(
                     distance_func,
                     invert_score=field.distance_function == DistanceFunction.COSINE_SIMILARITY,
                 )
+        if field.distance_function == DistanceFunction.DEFAULT:
+            reverse_func = DISTANCE_FUNCTION_DIRECTION_HELPER[DistanceFunction.COSINE_DISTANCE]
+        else:
+            reverse_func = DISTANCE_FUNCTION_DIRECTION_HELPER[field.distance_function]
         sorted_records = dict(
             sorted(
                 return_records.items(),
                 key=lambda item: item[1],
-                reverse=DISTANCE_FUNCTION_DIRECTION_HELPER[field.distance_function](1, 0),
+                reverse=reverse_func(1, 0),
             )
         )
         if sorted_records:
@@ -187,38 +221,34 @@ class InMemoryCollection(
                 if returned >= top:
                     break
 
-    def _get_filtered_records(self, options: VectorSearchOptions) -> dict[TKey, dict]:
-        if filters := self._build_filter(options.filter):
-            if not isinstance(filters, list):
-                filters = [filters]
-            filtered_records = {}
-            for key, record in self.inner_storage.items():
-                for filter in filters:
-                    if filter(record):
-                        filtered_records[key] = record
-            return filtered_records
-        return self.inner_storage
+    def _get_filtered_records(self, options: VectorSearchOptions) -> dict[TKey, AttributeDict]:
+        if not options.filter:
+            return self.inner_storage
+        try:
+            callable_filters = [
+                eval(filter) if isinstance(filter, str) else filter  # nosec
+                for filter in ([options.filter] if not isinstance(options.filter, list) else options.filter)
+            ]
+        except Exception as e:
+            raise VectorStoreOperationException(f"Error evaluating filter: {e}") from e
+        filtered_records = {}
+        for key, record in self.inner_storage.items():
+            for filter in callable_filters:
+                if self._run_filter(filter, record):
+                    filtered_records[key] = record
+        return filtered_records
+
+    def _run_filter(self, filter: Callable, record: AttributeDict[str, Any]) -> bool:
+        """Run the filter on the record, supporting attribute access."""
+        try:
+            return filter(record)
+        except Exception as e:
+            raise VectorStoreOperationException(f"Error running filter: {e}") from e
 
     @override
     def _lambda_parser(self, node: ast.AST) -> Any:
-        """Rewrite lambda AST to use dict-style access instead of attribute access."""
-
-        class AttributeToSubscriptTransformer(ast.NodeTransformer):
-            def visit_Attribute(self, node):
-                # Only transform if the value is a Name (e.g., x.content)
-                if isinstance(node.value, ast.Name):
-                    return ast.Subscript(
-                        value=node.value,
-                        slice=ast.Constant(value=node.attr),
-                        ctx=ast.Load(),
-                    )
-                return self.generic_visit(node)
-
-        # Transform the AST
-        transformer = AttributeToSubscriptTransformer()
-        new_node = transformer.visit(node)
-        ast.fix_missing_locations(new_node)
-        return new_node
+        """Not used by InMemoryCollection, but required by the interface."""
+        pass
 
     def _calculate_vector_similarity(
         self,

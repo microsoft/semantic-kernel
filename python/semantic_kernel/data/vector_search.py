@@ -3,7 +3,7 @@
 import json
 import logging
 from abc import abstractmethod
-from ast import AST, Lambda, parse, walk
+from ast import AST, Lambda, NodeVisitor, expr, parse
 from collections.abc import AsyncIterable, Callable, Sequence
 from enum import Enum
 from inspect import getsource
@@ -36,6 +36,22 @@ from semantic_kernel.utils.list_handler import desync_list
 
 TSearchOptions = TypeVar("TSearchOptions", bound=SearchOptions)
 logger = logging.getLogger(__name__)
+
+
+TFilters = TypeVar("TFilters")
+
+
+class LambdaVisitor(NodeVisitor, Generic[TFilters]):
+    """Visitor class to visit the AST nodes."""
+
+    def __init__(self, lambda_parser: Callable[[expr], TFilters], output_filters: list[TFilters] | None = None) -> None:
+        """Initialize the visitor with a lambda parser and output filters."""
+        self.lambda_parser = lambda_parser
+        self.output_filters = output_filters if output_filters is not None else []
+
+    def visit_Lambda(self, node: Lambda) -> None:
+        """This method is called when a lambda expression is found."""
+        self.output_filters.append(self.lambda_parser(node.body))
 
 
 # region: Search Type
@@ -279,7 +295,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         try:
             return await self._inner_search(
                 search_type=SearchType.VECTOR,
-                keywords=values,
+                values=values,
                 options=options,
                 vector=vector,
                 **kwargs,
@@ -419,15 +435,13 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         filters = search_filter if isinstance(search_filter, list) else [search_filter]
 
         created_filters: list[Any] = []
+
+        visitor = LambdaVisitor(self._lambda_parser)
         for filter_ in filters:
             # parse lambda expression with AST
             tree = parse(filter_ if isinstance(filter_, str) else getsource(filter_).strip())
-            for node in walk(tree):
-                if isinstance(node, Lambda):
-                    created_filters.append(self._lambda_parser(node.body))
-                    break
-            else:
-                raise VectorStoreOperationException("No lambda expression found in the filter.")
+            visitor.visit(tree)
+        created_filters = visitor.output_filters
         if len(created_filters) == 0:
             raise VectorStoreOperationException("No filter strings found.")
         if len(created_filters) == 1:

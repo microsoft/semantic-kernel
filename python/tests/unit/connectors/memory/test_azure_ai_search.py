@@ -2,12 +2,14 @@
 
 
 import asyncio
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
+import numpy as np
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from pytest import fixture, mark, param, raises
 
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.memory.azure_ai_search import (
     AzureAISearchCollection,
     AzureAISearchSettings,
@@ -153,7 +155,7 @@ def test_init_with_clients(azure_ai_search_unit_test_env, data_model_definition)
 
 def test_init_with_search_index_client(azure_ai_search_unit_test_env, data_model_definition):
     search_index_client = MagicMock(spec=SearchIndexClient)
-    with patch("semantic_kernel.connectors.memory.azure_ai_search.get_search_client") as get_search_client:
+    with patch("semantic_kernel.connectors.memory.azure_ai_search._get_search_client") as get_search_client:
         search_client = MagicMock(spec=SearchClient)
         get_search_client.return_value = search_client
 
@@ -171,30 +173,17 @@ def test_init_with_search_index_client(azure_ai_search_unit_test_env, data_model
         assert collection.search_client == search_client
 
 
+@mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_INDEX_NAME"]], indirect=True)
 def test_init_with_search_index_client_fail(azure_ai_search_unit_test_env, data_model_definition):
     search_index_client = MagicMock(spec=SearchIndexClient)
-    with raises(VectorStoreInitializationException, match="Collection name is required."):
+    search_index_client._endpoint = "test-endpoint"
+    search_index_client._credential = "test-credential"
+    with raises(VectorStoreInitializationException):
         AzureAISearchCollection(
             data_model_type=dict,
             data_model_definition=data_model_definition,
             search_index_client=search_index_client,
-        )
-
-
-def test_init_with_clients_fail(azure_ai_search_unit_test_env, data_model_definition):
-    search_index_client = MagicMock(spec=SearchIndexClient)
-    search_client = MagicMock(spec=SearchClient)
-    search_client._index_name = "test-index-name"
-
-    with raises(
-        VectorStoreInitializationException, match="Search client and search index client have different index names."
-    ):
-        AzureAISearchCollection(
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
-            collection_name="test",
-            search_index_client=search_index_client,
-            search_client=search_client,
+            env_file_path="test.env",
         )
 
 
@@ -202,7 +191,7 @@ async def test_upsert(collection, mock_upsert):
     ids = await collection._inner_upsert({"id": "id1", "name": "test"})
     assert ids[0] == "id1"
 
-    ids = await collection.upsert(record={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]})
+    ids = await collection.upsert(records={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]})
     assert ids == "id1"
 
 
@@ -259,7 +248,7 @@ async def test_create_index_from_definition(collection, mock_create_collection):
     from azure.search.documents.indexes.models import SearchIndex
 
     with patch(
-        "semantic_kernel.connectors.memory.azure_ai_search.data_model_definition_to_azure_ai_search_index",
+        "semantic_kernel.connectors.memory.azure_ai_search._data_model_definition_to_azure_ai_search_index",
         return_value=MagicMock(spec=SearchIndex),
     ):
         await collection.create_collection()
@@ -297,18 +286,12 @@ async def test_vector_store_does_collection_exists(vector_store, mock_list_colle
     exists = await vector_store.does_collection_exist("test")
     assert exists
     mock_list_collection_names.assert_called_once()
-    assert vector_store.vector_record_collections == {}
-    mock_list_collection_names.reset_mock()
-    exists = await vector_store.does_collection_exist("test_not_exist")
-    assert not exists
-    mock_list_collection_names.assert_called_once()
 
 
 async def test_vector_store_delete_collection(vector_store, mock_delete_collection):
     assert vector_store.search_index_client is not None
     await vector_store.delete_collection("test")
     mock_delete_collection.assert_called_once()
-    assert vector_store.vector_record_collections == {}
 
 
 def test_get_collection(vector_store, data_model_definition):
@@ -322,7 +305,6 @@ def test_get_collection(vector_store, data_model_definition):
     assert collection.search_index_client == vector_store.search_index_client
     assert collection.search_client is not None
     assert collection.search_client._endpoint == vector_store.search_index_client._endpoint
-    assert vector_store.vector_record_collections["test"] == collection
 
 
 @mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_API_KEY"]], indirect=True)
@@ -349,30 +331,9 @@ def test_get_search_index_client(azure_ai_search_unit_test_env):
 
 
 @mark.parametrize("include_vectors", [True, False])
-async def test_search_text_search(collection, mock_search, include_vectors):
-    options = VectorSearchOptions(include_vectors=include_vectors)
-    results = await collection.text_search("test", options=options)
-    assert results is not None
-    async for result in results.results:
-        assert result is not None
-        assert result.record is not None
-        assert result.record["id"] == "id1"
-        assert result.record["content"] == "content"
-        if include_vectors:
-            assert result.record["vector"] == [1.0, 2.0, 3.0]
-    mock_search.assert_awaited_once_with(
-        top=3,
-        skip=0,
-        include_total_count=False,
-        search_text="test",
-        select=["*"] if include_vectors else ["id", "content"],
-    )
-
-
-@mark.parametrize("include_vectors", [True, False])
 async def test_search_vectorized_search(collection, mock_search, include_vectors):
     options = VectorSearchOptions(include_vectors=include_vectors)
-    results = await collection.vectorized_search([0.1, 0.2, 0.3], options=options)
+    results = await collection.search(vector=[0.1, 0.2, 0.3], options=options)
     assert results is not None
     async for result in results.results:
         assert result is not None
@@ -388,13 +349,14 @@ async def test_search_vectorized_search(collection, mock_search, include_vectors
         assert call[1]["select"] == ["*"] if include_vectors else ["id", "content"]
         assert call[1]["vector_queries"][0].vector == [0.1, 0.2, 0.3]
         assert call[1]["vector_queries"][0].fields == "vector"
-        assert call[1]["vector_queries"][0].k_nearest_neighbors == 3
 
 
 @mark.parametrize("include_vectors", [True, False])
 async def test_search_vectorizable_search(collection, mock_search, include_vectors):
     options = VectorSearchOptions(include_vectors=include_vectors)
-    results = await collection.vectorizable_text_search("test", options=options)
+    collection.embedding_generator = AsyncMock(spec=EmbeddingGeneratorBase)
+    collection.embedding_generator.generate_embeddings.return_value = np.array([[0.1, 0.2, 0.3]])
+    results = await collection.search("test", options=options)
     assert results is not None
     async for result in results.results:
         assert result is not None
@@ -408,16 +370,15 @@ async def test_search_vectorizable_search(collection, mock_search, include_vecto
         assert call[1]["skip"] == 0
         assert call[1]["include_total_count"] is False
         assert call[1]["select"] == ["*"] if include_vectors else ["id", "content"]
-        assert call[1]["vector_queries"][0].text == "test"
+        assert call[1]["vector_queries"][0].vector == [0.1, 0.2, 0.3]
         assert call[1]["vector_queries"][0].fields == "vector"
-        assert call[1]["vector_queries"][0].k_nearest_neighbors == 3
 
 
 @mark.parametrize("include_vectors", [True, False])
 @mark.parametrize("keywords", ["test", ["test1", "test2"]], ids=["single", "multiple"])
 async def test_search_keyword_hybrid_search(collection, mock_search, include_vectors, keywords):
     options = VectorSearchOptions(include_vectors=include_vectors, keyword_field_name="content")
-    results = await collection.hybrid_search(keywords=keywords, vector=[0.1, 0.2, 0.3], options=options)
+    results = await collection.hybrid_search(values=keywords, vector=[0.1, 0.2, 0.3], options=options)
     assert results is not None
     async for result in results.results:
         assert result is not None
@@ -435,7 +396,6 @@ async def test_search_keyword_hybrid_search(collection, mock_search, include_vec
         assert call[1]["search_text"] == "test" if keywords == "test" else "test1, test2"
         assert call[1]["vector_queries"][0].vector == [0.1, 0.2, 0.3]
         assert call[1]["vector_queries"][0].fields == "vector"
-        assert call[1]["vector_queries"][0].k_nearest_neighbors == 3
 
 
 @mark.parametrize("filter, result", filter_lambda_list("ai_search"))
@@ -443,7 +403,7 @@ def test_lambda_filter(collection, filter, result):
     options = VectorSearchOptions(filter=filter)
     if isinstance(result, type) and issubclass(result, Exception):
         with raises(result):
-            collection._build_filter_string(options.filter)
+            collection._build_filter(options.filter)
     else:
-        filter_string = collection._build_filter_string(options.filter)
+        filter_string = collection._build_filter(options.filter)
         assert filter_string == result

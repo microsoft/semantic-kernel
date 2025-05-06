@@ -346,9 +346,7 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
         for field in self.data_model_definition.vector_fields:
             embedding_generator = field.embedding_generator or self.embedding_generator
             if not embedding_generator:
-                raise VectorStoreModelException(
-                    "Embedding generator must be set, either on the field or the collection."
-                )
+                continue
             embeddings_to_make.append((
                 field.storage_property_name or field.name,
                 field.dimensions,
@@ -628,7 +626,7 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
                 "Exception occurred while trying to add the vectors to the records."
             ) from exc
         try:
-            results = await self._inner_upsert(data, **kwargs)  # type: ignore
+            results = await self._inner_upsert(data if isinstance(data, list) else [data], **kwargs)  # type: ignore
         except Exception as exc:
             raise VectorStoreOperationException(f"Error upserting record(s): {exc}") from exc
         if batch or self._container_mode:

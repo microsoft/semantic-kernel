@@ -5,7 +5,7 @@ import platform
 
 import pytest
 
-from semantic_kernel.connectors.memory.redis import RedisMemoryStore, RedisSettings
+from semantic_kernel.connectors.memory_stores.redis.redis_memory_store import RedisMemoryStore, RedisSettings
 
 try:
     import redis  # noqa: F401

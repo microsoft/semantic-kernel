@@ -6,8 +6,8 @@ import time
 import pytest
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.memory.astradb import AstraDBMemoryStore
-from semantic_kernel.connectors.memory.astradb.astradb_settings import AstraDBSettings
+from semantic_kernel.connectors.memory_stores.astradb.astradb_memory_store import AstraDBMemoryStore
+from semantic_kernel.connectors.memory_stores.astradb.astradb_settings import AstraDBSettings
 from tests.utils import retry
 
 astradb_installed: bool
