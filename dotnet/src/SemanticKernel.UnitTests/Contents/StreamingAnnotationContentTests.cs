@@ -20,10 +20,10 @@ public class StreamingAnnotationContentTests
     {
         StreamingAnnotationContent definition = new();
 
-        Assert.Empty(definition.Quote);
+        Assert.Empty(definition.Label);
         Assert.Equal(0, definition.StartIndex);
         Assert.Equal(0, definition.EndIndex);
-        Assert.Null(definition.FileId);
+        Assert.Null(definition.ReferenceId);
     }
 
     /// <summary>
@@ -33,39 +33,17 @@ public class StreamingAnnotationContentTests
     public void VerifyStreamingAnnotationContentWithFileId()
     {
         StreamingAnnotationContent definition =
-            new("test quote")
+            new("test quote", "#id", AnnotationKind.FileCitation)
             {
                 StartIndex = 33,
                 EndIndex = 49,
-                FileId = "#id",
             };
 
-        Assert.Equal("test quote", definition.Quote);
+        Assert.Equal("test quote", definition.Label);
         Assert.Equal(33, definition.StartIndex);
         Assert.Equal(49, definition.EndIndex);
-        Assert.Equal("#id", definition.FileId);
+        Assert.Equal("#id", definition.ReferenceId);
         Assert.Equal("test quote: #id", definition.ToString());
         Assert.Equal("test quote: #id", Encoding.UTF8.GetString(definition.ToByteArray()));
-    }
-
-    /// <summary>
-    /// Verify usage.
-    /// </summary>
-    [Fact]
-    public void VerifyStreamingAnnotationContentWithoutFileId()
-    {
-        StreamingAnnotationContent definition =
-            new("test quote")
-            {
-                StartIndex = 33,
-                EndIndex = 49,
-            };
-
-        Assert.Equal("test quote", definition.Quote);
-        Assert.Equal(33, definition.StartIndex);
-        Assert.Equal(49, definition.EndIndex);
-        Assert.Null(definition.FileId);
-        Assert.Equal("test quote", definition.ToString());
-        Assert.Equal("test quote", Encoding.UTF8.GetString(definition.ToByteArray()));
     }
 }

@@ -66,13 +66,13 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         {
             if (item is AnnotationContent annotation)
             {
-                if (annotation.FileId is not null)
+                if (annotation.Kind == AnnotationKind.UrlCitation)
                 {
-                    Console.WriteLine($"  [{item.GetType().Name}] {annotation.Quote}: File #{annotation.FileId}");
+                    Console.WriteLine($"  [{item.GetType().Name}] {annotation.Label}: {annotation.ReferenceId} - {annotation.Title}");
                 }
-                else if (annotation.Url is not null)
+                else
                 {
-                    Console.WriteLine($"  [{item.GetType().Name}] {annotation.Quote}: {annotation.Url} - {annotation.Title}");
+                    Console.WriteLine($"  [{item.GetType().Name}] {annotation.Label}: File #{annotation.ReferenceId}");
                 }
             }
             else if (item is FileReferenceContent fileReference)
@@ -121,7 +121,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         {
             if (item is AnnotationContent annotation)
             {
-                await this.DownloadFileContentAsync(client, annotation.FileId!);
+                await this.DownloadFileContentAsync(client, annotation.ReferenceId!);
             }
         }
     }

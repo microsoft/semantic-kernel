@@ -19,10 +19,10 @@ public class AnnotationContentTests
     {
         AnnotationContent definition = new();
 
-        Assert.Empty(definition.Quote);
+        Assert.Empty(definition.Label);
         Assert.Equal(0, definition.StartIndex);
         Assert.Equal(0, definition.EndIndex);
-        Assert.Null(definition.FileId);
+        Assert.Null(definition.ReferenceId);
     }
     /// <summary>
     /// Verify usage.
@@ -33,15 +33,15 @@ public class AnnotationContentTests
         AnnotationContent definition =
             new()
             {
-                Quote = "test quote",
+                Label = "test quote",
                 StartIndex = 33,
                 EndIndex = 49,
-                FileId = "#id",
+                ReferenceId = "#id",
             };
 
-        Assert.Equal("test quote", definition.Quote);
+        Assert.Equal("test quote", definition.Label);
         Assert.Equal(33, definition.StartIndex);
         Assert.Equal(49, definition.EndIndex);
-        Assert.Equal("#id", definition.FileId);
+        Assert.Equal("#id", definition.ReferenceId);
     }
 }

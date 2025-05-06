@@ -121,7 +121,7 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
 
                 foreach (StreamingAnnotationContent? annotation in response.Items.OfType<StreamingAnnotationContent>())
                 {
-                    Console.WriteLine($"\t            {annotation.Url} - {annotation.Title}");
+                    Console.WriteLine($"\t            {annotation.ReferenceId} - {annotation.Title}");
                 }
             }
         }
