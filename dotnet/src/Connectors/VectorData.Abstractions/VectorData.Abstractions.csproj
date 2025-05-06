@@ -62,20 +62,4 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnconditionalSuppressMessageAttribute.cs" Link="Shared/Diagnostics/UnconditionalSuppressMessageAttribute.cs" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnreachableException.cs" Link="Shared/Diagnostics/UnreachableException.cs" />
   </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\VectorDataStrings.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>VectorDataStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Properties\VectorDataStrings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>VectorDataStrings.resx</DependentUpon>
-      <NoWarn>$(NoWarn);1591</NoWarn>
-    </Compile>
-  </ItemGroup>
 </Project>
