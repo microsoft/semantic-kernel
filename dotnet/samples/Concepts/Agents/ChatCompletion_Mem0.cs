@@ -92,7 +92,7 @@ public class ChatCompletion_Mem0(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine($"Assistant:\n{message.Content}");
     }
 
-    private class FinancePlugin
+    private sealed class FinancePlugin
     {
         [KernelFunction]
         public string RetrieveCompanyReport(string companyCode, ReportFormat reportFormat)
