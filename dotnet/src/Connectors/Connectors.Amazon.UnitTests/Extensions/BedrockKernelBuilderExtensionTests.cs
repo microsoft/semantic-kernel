@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Amazon.BedrockRuntime;
 using Amazon.Runtime;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 using Microsoft.SemanticKernel.Embeddings;
@@ -25,7 +27,7 @@ public class BedrockKernelBuilderExtensionTests
     public void AddBedrockTextGenerationCreatesServiceWithNonNullBedrockRuntime(string modelId)
     {
         // Arrange
-        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict).Object;
         var builder = Kernel.CreateBuilder();
         builder.AddBedrockTextGenerationService(modelId, bedrockRuntime);
 
@@ -46,7 +48,7 @@ public class BedrockKernelBuilderExtensionTests
     public void AddBedrockChatCompletionCreatesServiceWithNonNullBedrockRuntime(string modelId)
     {
         // Arrange
-        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict).Object;
         var builder = Kernel.CreateBuilder();
         builder.AddBedrockChatCompletionService(modelId, bedrockRuntime);
 
@@ -59,13 +61,33 @@ public class BedrockKernelBuilderExtensionTests
     }
 
     /// <summary>
+    /// Checks that AddBedrockEmbeddingGenerator builds a proper kernel with a non-null bedrockRuntime.
+    /// </summary>
+    [Fact]
+    public void AddBedrockEmbeddingGeneratorCreatesServiceWithNonNullBedrockRuntime()
+    {
+        // Arrange
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict).Object;
+        var builder = Kernel.CreateBuilder();
+        builder.AddBedrockEmbeddingGenerator("amazon.titan-embed-text-v2:0", bedrockRuntime);
+
+        // Act
+        var kernel = builder.Build();
+        var service = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+
+        // Assert
+        Assert.IsType<BedrockEmbeddingGenerator>(service);
+    }
+
+    /// <summary>
     /// Checks that AddBedrockTextEmbeddingGenerationService builds a proper kernel with a non-null bedrockRuntime.
     /// </summary>
     [Fact]
+    [Obsolete("This test uses obsolete APIs")]
     public void AddBedrockTextEmbeddingGenerationCreatesServiceWithNonNullBedrockRuntime()
     {
         // Arrange
-        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict).Object;
         var builder = Kernel.CreateBuilder();
         builder.AddBedrockTextEmbeddingGenerationService("amazon.titan-embed-text-v2:0", bedrockRuntime);
 
@@ -81,7 +103,7 @@ public class BedrockKernelBuilderExtensionTests
     public void AwsServiceClientBeforeServiceRequestDoesNothingForNonWebServiceRequestEventArgs()
     {
         // Arrange
-        var requestEventArgs = new Mock<RequestEventArgs>();
+        var requestEventArgs = new Mock<RequestEventArgs>(MockBehavior.Strict);
 
         // Act
         BedrockClientUtilities.BedrockServiceClientRequestHandler(null!, requestEventArgs.Object);
@@ -96,7 +118,7 @@ public class BedrockKernelBuilderExtensionTests
     public void AwsUnknownBedrockTextCompletionModelShouldThrowException(string modelId)
     {
         // Arrange
-        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict).Object;
         var builder = Kernel.CreateBuilder();
         builder.AddBedrockTextGenerationService(modelId, bedrockRuntime);
 
@@ -105,6 +127,24 @@ public class BedrockKernelBuilderExtensionTests
         {
             var kernel = builder.Build();
             kernel.GetRequiredService<ITextGenerationService>();
+        });
+    }
+
+    [Theory]
+    [InlineData("unknown.titan-embed-text-v2:0")]
+    [InlineData("us.unknown.titan-embed-text-v2:0")]
+    public void AwsUnknownBedrockEmbeddingModelShouldThrowException(string modelId)
+    {
+        // Arrange
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict).Object;
+        var builder = Kernel.CreateBuilder();
+        builder.AddBedrockEmbeddingGenerator(modelId, bedrockRuntime);
+
+        // Act & Assert
+        Assert.Throws<KernelException>(() =>
+        {
+            var kernel = builder.Build();
+            kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
         });
     }
 }

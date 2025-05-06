@@ -1,12 +1,12 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
 using Amazon.Runtime;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
@@ -14,10 +14,9 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Connectors.Amazon.UnitTests;
 
 /// <summary>
-/// Unit tests for Bedrock Text Embedding Generation Service.
+/// Unit tests for Bedrock Embedding Generator.
 /// </summary>
-[Obsolete("This test class uses obsolete APIs. Use BedrockEmbeddingGeneratorTests instead.")]
-public sealed class BedrockTextEmbeddingGenerationServiceTests
+public sealed class BedrockEmbeddingGeneratorTests
 {
     /// <summary>
     /// Checks that modelID is added to the list of service attributes when service is registered.
@@ -27,12 +26,13 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
     {
         // Arrange & Act
         string modelId = "amazon.titan-embed-text-v2:0";
-        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict);
-        var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(modelId, mockBedrockApi.Object).Build();
-        var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        var kernel = Kernel.CreateBuilder().AddBedrockEmbeddingGenerator(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
         // Assert
-        Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
+        Assert.IsType<BedrockEmbeddingGenerator>(service);
+        Assert.Equal(modelId, ((BedrockEmbeddingGenerator)service).GetService(typeof(EmbeddingGeneratorMetadata), "metadata") is EmbeddingGeneratorMetadata metadata ? metadata.DefaultModelId : null);
     }
 
     /// <summary>
@@ -43,14 +43,14 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
     {
         // Arrange
         string invalidModelId = "invalid.invalid";
-        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict);
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
 
         // Act
-        var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(invalidModelId, mockBedrockApi.Object).Build();
+        var kernel = Kernel.CreateBuilder().AddBedrockEmbeddingGenerator(invalidModelId, mockBedrockApi.Object).Build();
 
         // Assert
         Assert.Throws<KernelException>(() =>
-            kernel.GetRequiredService<ITextEmbeddingGenerationService>());
+            kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>());
     }
 
     /// <summary>
@@ -61,14 +61,14 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
     {
         // Arrange
         string emptyModelId = string.Empty;
-        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict);
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
 
         // Act
-        var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(emptyModelId, mockBedrockApi.Object).Build();
+        var kernel = Kernel.CreateBuilder().AddBedrockEmbeddingGenerator(emptyModelId, mockBedrockApi.Object).Build();
 
         // Assert
         Assert.Throws<KernelException>(() =>
-            kernel.GetRequiredService<ITextEmbeddingGenerationService>());
+            kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>());
     }
 
     /// <summary>
@@ -102,9 +102,9 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
             // If No RegionEndpoint or ServiceURL is configured, the runtime will throw an exception
             await Assert.ThrowsAnyAsync<Exception>(async () =>
             {
-                var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(modelId, nullBedrockRuntime).Build();
-                var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
-                await service.GenerateEmbeddingsAsync(prompts).ConfigureAwait(true);
+                var kernel = Kernel.CreateBuilder().AddBedrockEmbeddingGenerator(modelId, nullBedrockRuntime).Build();
+                var service = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+                await service.GenerateAsync(prompts).ConfigureAwait(true);
             }).ConfigureAwait(true);
         }
     }

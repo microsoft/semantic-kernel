@@ -15,6 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon;
 /// <summary>
 /// Represents a text embeddings generation service using Amazon Bedrock API.
 /// </summary>
+[Obsolete("Use BedrockEmbeddingGenerator instead.")]
 public class BedrockTextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     private readonly Dictionary<string, object?> _attributesInternal = [];

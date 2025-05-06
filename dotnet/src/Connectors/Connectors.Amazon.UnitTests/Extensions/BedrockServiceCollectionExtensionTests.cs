@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Amazon.BedrockRuntime;
 using Amazon.Runtime;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Core;
@@ -26,7 +28,7 @@ public class BedrockServiceCollectionExtensionTests
         // Arrange
         var services = new ServiceCollection();
         var modelId = "amazon.titan-text-premier-v1:0";
-        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict).Object;
 
         // Act
         services.AddBedrockChatCompletionService(modelId, bedrockRuntime);
@@ -47,7 +49,7 @@ public class BedrockServiceCollectionExtensionTests
         // Arrange
         var services = new ServiceCollection();
         var modelId = "amazon.titan-text-premier-v1:0";
-        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict).Object;
 
         // Act
         services.AddBedrockTextGenerationService(modelId, bedrockRuntime);
@@ -60,15 +62,37 @@ public class BedrockServiceCollectionExtensionTests
     }
 
     /// <summary>
+    /// Ensures that IServiceCollection.AddBedrockEmbeddingGenerator registers the <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> with the correct implementation.
+    /// </summary>
+    [Fact]
+    public void AddBedrockEmbeddingGeneratorRegistersCorrectService()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var modelId = "amazon.titan-embed-text-v2:0";
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict).Object;
+
+        // Act
+        services.AddBedrockEmbeddingGenerator(modelId, bedrockRuntime);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var embeddingGenerator = serviceProvider.GetService<IEmbeddingGenerator<string, Embedding<float>>>();
+        Assert.NotNull(embeddingGenerator);
+        Assert.IsType<BedrockEmbeddingGenerator>(embeddingGenerator);
+    }
+
+    /// <summary>
     /// Ensures that IServiceCollection.AddBedrockTextEmbeddingGenerationService registers the <see cref="ITextEmbeddingGenerationService"/> with the correct implementation.
     /// </summary>
     [Fact]
+    [Obsolete("This test uses obsolete APIs. Use AddBedrockEmbeddingGeneratorRegistersCorrectService instead.")]
     public void AddBedrockTextEmbeddingServiceRegistersCorrectService()
     {
         // Arrange
         var services = new ServiceCollection();
         var modelId = "amazon.titan-embed-text-v2:0";
-        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>(MockBehavior.Strict).Object;
 
         // Act
         services.AddBedrockTextEmbeddingGenerationService(modelId, bedrockRuntime);
@@ -84,7 +108,7 @@ public class BedrockServiceCollectionExtensionTests
     public void AwsServiceClientBeforeServiceRequestDoesNothingForNonWebServiceRequestEventArgs()
     {
         // Arrange
-        var requestEventArgs = new Mock<RequestEventArgs>();
+        var requestEventArgs = new Mock<RequestEventArgs>(MockBehavior.Strict);
 
         // Act
         BedrockClientUtilities.BedrockServiceClientRequestHandler(null!, requestEventArgs.Object);
