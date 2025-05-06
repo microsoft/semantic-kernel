@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Process;
 
@@ -54,13 +50,7 @@ public sealed class ProcessExporter
                 Id = agentStep.State.Id ?? throw new KernelException("All steps must have an Id."),
                 Description = agentStep.Description,
                 Type = "agent",
-                Inputs = agentStep.AgentDefinition?.Inputs?.ToDictionary(
-                    input => input.Key,
-                    input => new NodeInput
-                    {
-                        Type = input.Value.Type,
-                        // TODO: Handle input schema
-                    }),
+                Inputs = agentStep.Inputs,
                 OnComplete = null, // TODO: OnComplete,
                 OnError = null // TODO: OnError
             };

@@ -37,9 +37,15 @@ internal class ProcessStateManager
 
 internal static class JMESPathConditionEvaluator
 {
-    public static bool EvaluateCondition(object data, string jmesPathExpression)
+    public static bool EvaluateCondition(object? data, string jmesPathExpression)
     {
+        if (data == null || string.IsNullOrEmpty(jmesPathExpression))
+        {
+            return false;
+        }
+
         JmesPath _jmesPath = new();
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             // Convert your state object to a JSON string
@@ -97,6 +103,7 @@ internal static class JMESPathConditionEvaluator
             Console.WriteLine($"Error evaluating JMESPath expression: {ex.Message}");
             return false;
         }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
 }
 
@@ -125,11 +132,11 @@ internal static class ConditionEvaluator
         return EvaluateWithOperator(propertyValue, expression.Operator, typedValue);
     }
 
-    private static object GetPropertyValue(object data, string path)
+    private static object? GetPropertyValue(object data, string path)
     {
         // Handle nested properties with dot notation (e.g., "User.Address.City")
         var properties = path.Split('.');
-        object current = data;
+        object? current = data;
 
         foreach (var property in properties)
         {
@@ -152,7 +159,7 @@ internal static class ConditionEvaluator
         return current;
     }
 
-    private static object ConvertValue(object value, Type targetType)
+    private static object? ConvertValue(object value, Type targetType)
     {
         if (value == null)
         {
@@ -168,7 +175,7 @@ internal static class ConditionEvaluator
         return value;
     }
 
-    private static bool EvaluateWithOperator(object left, ConditionOperator op, object right)
+    private static bool EvaluateWithOperator(object left, ConditionOperator op, object? right)
     {
         // Special case for null values
         if (left == null && right == null)

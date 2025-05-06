@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Agents;
 
 namespace Microsoft.SemanticKernel;
@@ -19,8 +18,9 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
     /// <param name="state"></param>
     /// <param name="edges"></param>
     /// <param name="threadName"></param>
+    /// <param name="inputs"></param>
     /// <param name="incomingEdgeGroups"></param>
-    public KernelProcessAgentStep(AgentDefinition agentDefinition, ProcessAgentActions agentActions, KernelProcessStepState state, Dictionary<string, List<KernelProcessEdge>> edges, string threadName, Dictionary<string, KernelProcessEdgeGroup>? incomingEdgeGroups = null) : base(typeof(KernelProcessAgentExecutor), state, edges, incomingEdgeGroups)
+    public KernelProcessAgentStep(AgentDefinition agentDefinition, ProcessAgentActions agentActions, KernelProcessStepState state, Dictionary<string, List<KernelProcessEdge>> edges, string threadName, NodeInputs inputs, Dictionary<string, KernelProcessEdgeGroup>? incomingEdgeGroups = null) : base(typeof(KernelProcessAgentExecutor), state, edges, incomingEdgeGroups)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentActions);
@@ -28,6 +28,7 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
         this.AgentDefinition = agentDefinition;
         this.Actions = agentActions;
         this.ThreadName = threadName;
+        this.Inputs = inputs;
     }
 
     /// <summary>
@@ -43,7 +44,7 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
     /// <summary>
     /// The inputs for this agent.
     /// </summary>
-    public Dictionary<string, JsonNode>? Inputs { get; init; }
+    public NodeInputs Inputs { get; init; }
 
     /// <summary>
     /// The handler group for code-based actions.

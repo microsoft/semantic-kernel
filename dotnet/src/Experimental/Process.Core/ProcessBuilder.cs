@@ -242,7 +242,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName);
+        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName, new NodeInputs()); // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 

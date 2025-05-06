@@ -109,11 +109,11 @@ public class Step06_FoundryAgentProcess : BaseTest
         var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
-        var processBuilder = new FoundryProcessBuilder("foundry_agents", typeof(ProcessStateWithCounter));
+        var processBuilder = new FoundryProcessBuilder("foundry_agents", stateType: typeof(ProcessStateWithCounter));
         processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
 
         var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, threadName: "shared_thread")
-            .WithInputs(new Dictionary<string, Type>() { { "Counter", typeof(string) } })
+            .WithMessageInput()
             .OnComplete([
             new DeclarativeProcessCondition
             {
@@ -162,4 +162,70 @@ public class Step06_FoundryAgentProcess : BaseTest
     {
         public int Counter { get; set; }
     }
+
+    //[Fact]
+    //public async Task ProcessWithDeepResearch()
+    //{
+    //    string ledgerFactsAgentId = "";
+    //    string ledgerFactsUpdateAgentId = "";
+    //    string ledgerPlannerAgentId = "";
+    //    string ledegerPlannerUpdateAgentId = "";
+    //    string progressManagerAgentId = "";
+    //    string actionRouterAgentId = "";
+    //    string summarizerAgentId = "";
+    //    string userAgentId = "";
+
+    //    var processBuilder = new FoundryProcessBuilder("foundry_agents", stateType: typeof(DeepResearchState));
+
+    //    //Define Threads
+    //    var planThread = processBuilder.AddThread("plan");
+    //    var runThread = processBuilder.AddThread("run");
+
+    //    // Define the steps
+    //    var gatherFactsStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = ledgerFactsAgentId, Name = "LedgerFacts", Type = AzureAIAgentFactory.AzureAIAgentType }, threadName: "plan")
+    //        .WithUserStateInput("Instructions")
+    //        .OnComplete([
+    //            new DeclarativeProcessCondition {
+    //                Type = "Default",
+    //                Updates = [
+    //                    new() { Operation = StateUpdateOperations.Set, Path = "tasks", Value = "$output.Tasks" },
+    //                    new() { Operation = StateUpdateOperations.Set, Path = "facts", Value = "$output.Facts" }
+    //                ],
+    //                Emits = [new EventEmission() { EventType = "LedgerFactsComplete" }]
+    //            }
+    //        ]);
+
+    //    var plannerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = ledgerPlannerAgentId, Name = "LedgerPlanner", Type = AzureAIAgentFactory.AzureAIAgentType }, threadName: "plan")
+    //        .OnComplete([
+    //            new DeclarativeProcessCondition {
+    //                Type = "Default",
+    //                Updates = [
+    //                    new() { Operation = StateUpdateOperations.Set, Path = "plan", Value = "$output.Plan" },
+    //                    new() { Operation = StateUpdateOperations.Set, Path = "nextStep", Value = "$output.NextStep" }
+    //                ],
+    //                Emits = [new EventEmission() { EventType = "LedgerPlannerComplete" }]
+    //            }
+    //        ]);
+    //}
+
+    //public class DeepResearchState
+    //{
+    //    public string Instructions { get; set; }
+
+    //    public string Summary { get; set; }
+
+    //    public string Team { get; set; }
+
+    //    public ChatMessageContent Plan { get; set; }
+
+    //    public ChatMessageContent NextStep { get; set; }
+
+    //    public object Tasks { get; set; }
+
+    //    public object Facts { get; set; }
+
+    //    public List<string> SystemAgents { get; set; } = ["FinalStepAgent", "UserAgent", "LedgerFactsUpdate"];
+
+    //    public string NextAgentId { get; set; }
+    //}
 }

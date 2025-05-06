@@ -31,7 +31,7 @@ public class FoundryProcessBuilder
     /// <param name="threadName">The name of the thread.</param>
     /// <param name="threadPolicy">The policy that determines the lifetime of the <see cref="AzureAIAgentThread"/></param>
     /// <returns></returns>
-    public ProcessBuilder AddThread(string threadName, KernelProcessThreadLifetime threadPolicy)
+    public ProcessBuilder AddThread(string threadName, KernelProcessThreadLifetime threadPolicy = KernelProcessThreadLifetime.Scoped)
     {
         return this._processBuilder.AddThread<AzureAIAgentThread>(threadName, threadPolicy);
     }

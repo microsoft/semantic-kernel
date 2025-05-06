@@ -202,7 +202,7 @@ internal class LocalAgentStep : LocalStep
         }
     }
 
-    private void UpdateJsonElement(JsonElement element, Utf8JsonWriter writer, string[] pathParts, int depth, StateUpdateOperations operation, object value)
+    private void UpdateJsonElement(JsonElement element, Utf8JsonWriter writer, string[] pathParts, int depth, StateUpdateOperations operation, object? value)
     {
         // If we're at the target element
         if (depth == pathParts.Length)
@@ -273,7 +273,7 @@ internal class LocalAgentStep : LocalStep
         }
     }
 
-    private void PerformOperation(JsonElement element, Utf8JsonWriter writer, StateUpdateOperations operation, object value)
+    private void PerformOperation(JsonElement element, Utf8JsonWriter writer, StateUpdateOperations operation, object? value)
     {
         try
         {
@@ -286,7 +286,7 @@ internal class LocalAgentStep : LocalStep
                 case StateUpdateOperations.Increment:
                     if (element.ValueKind != JsonValueKind.Number)
                     {
-                        throw new InvalidOperationException($"Cannot increment non-numeric value at the specified path");
+                        throw new InvalidOperationException("Cannot increment non-numeric value at the specified path");
                     }
 
                     if (element.TryGetInt32(out int intValue))
@@ -304,7 +304,7 @@ internal class LocalAgentStep : LocalStep
                 case StateUpdateOperations.Decrement:
                     if (element.ValueKind != JsonValueKind.Number)
                     {
-                        throw new InvalidOperationException($"Cannot decrement non-numeric value at the specified path");
+                        throw new InvalidOperationException("Cannot decrement non-numeric value at the specified path");
                     }
 
                     if (element.TryGetInt32(out int intVal))
@@ -333,7 +333,7 @@ internal class LocalAgentStep : LocalStep
         }
     }
 
-    private void WriteValue(Utf8JsonWriter writer, object value)
+    private void WriteValue(Utf8JsonWriter writer, object? value)
     {
         if (value == null)
         {

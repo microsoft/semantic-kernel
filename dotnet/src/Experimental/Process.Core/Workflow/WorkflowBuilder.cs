@@ -4,11 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process.Internal;
 using YamlDotNet.RepresentationModel;
@@ -171,7 +169,7 @@ public class WorkflowBuilder
         if (node.Inputs != null)
         {
             var inputMapping = this.ExtractNodeInputs(node.Id);
-            agentBuilder.WithInputs(inputMapping);
+            agentBuilder.WithNodeInputs(node.Inputs);
         }
 
         this._stepBuilders[node.Id] = stepBuilder;
@@ -314,9 +312,30 @@ public class WorkflowBuilder
     {
         Verify.NotNull(process);
 
-        Workflow workflow = new();
-        workflow.Nodes = [];
+        Workflow workflow = new()
+        {
+            Nodes = [],
+            Variables = [],
+        };
 
+        // Add variables
+        foreach (var thread in process.Threads)
+        {
+            workflow.Variables.Add(thread.Key, new Variable()
+            {
+                Type = "messages"
+            });
+        }
+
+        if (process.UserStateype != null)
+        {
+            workflow.Variables.Add("user_state", new Variable()
+            {
+                Type = "object"
+            });
+        }
+
+        // Add edges
         var orchestration = new List<OrchestrationStep>();
         foreach (var edge in process.Edges)
         {
@@ -384,7 +403,11 @@ public class WorkflowBuilder
                 },
                 Then = [.. edge.Value.Select(e => new ThenAction()
                 {
-                    Node = e.OutputTarget.StepId
+                    Node = e.OutputTarget.StepId switch
+                    {
+                        ProcessConstants.EndStepName => "End",
+                        string s => s
+                    }
                 })]
             };
 
@@ -398,19 +421,19 @@ public class WorkflowBuilder
     {
         Verify.NotNull(agentStep);
 
-        if (agentStep.AgentDefinition is null)
+        if (agentStep.AgentDefinition is null || string.IsNullOrWhiteSpace(agentStep.State?.Id) || string.IsNullOrWhiteSpace(agentStep.AgentDefinition.Type))
         {
             throw new InvalidOperationException("Attempt to build a workflow node from step with no Id");
         }
 
         var node = new Node()
         {
-            Id = agentStep.State.Id,
-            Type = agentStep.AgentDefinition.Type,
+            Id = agentStep.State.Id!,
+            Type = agentStep.AgentDefinition.Type!,
             Agent = agentStep.AgentDefinition,
             OnComplete = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnComplete),
             OnError = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnError),
-            Inputs = agentStep.Inputs?.ToDictionary(kvp => kvp.Key, kvp => new NodeInput { Type = kvp.Value.ToJsonString() })
+            Inputs = agentStep.Inputs
         };
 
         foreach (var edge in agentStep.Edges)
@@ -556,9 +579,9 @@ public class WorkflowBuilder
 
         // Serialize the object to a JSON string
         var jsonSchema = JsonSerializer.Serialize(yamlObject);
-        var jsonNode = JsonNode.Parse(jsonSchema);
+        var jsonNode = JsonNode.Parse(jsonSchema) ?? throw new KernelException("Failed to parse schema.");
 
-        var inputsDictionary = inputMap.Select(inputMap => new KeyValuePair<string, JsonNode>(inputMap.Key.ToString(), /*JsonSchema.FromText(jsonSchema)*/ jsonNode))
+        var inputsDictionary = inputMap.Select(inputMap => new KeyValuePair<string, JsonNode>(inputMap.Key.ToString(), jsonNode))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         return inputsDictionary;

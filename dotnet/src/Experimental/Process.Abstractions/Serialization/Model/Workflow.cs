@@ -389,7 +389,7 @@ public class Node
     /// </summary>
     [YamlMember(Alias = "inputs")]
     [JsonPropertyName("inputs")]
-    public Dictionary<string, NodeInput>? Inputs { get; set; }
+    public NodeInputs? Inputs { get; set; }
 
     /// <summary>
     /// Gets or sets the agent input mapping of the node.
@@ -434,23 +434,46 @@ public class WorkflowAgent
 }
 
 /// <summary>
+/// Type of the agent input.
+/// </summary>
+public enum AgentInputType
+{
+    /// <summary>
+    /// Inputs are assumed to be in the thread and are not injected separately.
+    /// </summary>
+    Thread,
+
+    /// <summary>
+    /// The agent is expected structured inputs.
+    /// </summary>
+    Structured
+}
+
+/// <summary>
 /// Input of the node.
 /// </summary>
-public class NodeInput
+public class NodeInputs
 {
     /// <summary>
     /// Gets or sets the type of the node input.
     /// </summary>
     [YamlMember(Alias = "type")]
     [JsonPropertyName("type")]
-    public string? Type { get; set; }
+    public AgentInputType Type { get; set; }
+
+    /// <summary>
+    /// Gets or sets the inputs of the node.
+    /// </summary>
+    [YamlMember(Alias = "structured_input_schema")]
+    [JsonPropertyName("structured_input_schema")]
+    public string? StructuredInputSchema { get; set; }
 
     /// <summary>
     /// Gets or sets the schema of the node input.
     /// </summary>
-    [YamlMember(Alias = "schema")]
-    [JsonPropertyName("schema")]
-    public SchemaReference? Schema { get; set; }
+    [YamlMember(Alias = "default")]
+    [JsonPropertyName("default")]
+    public object? Default { get; set; }
 }
 
 /// <summary>
