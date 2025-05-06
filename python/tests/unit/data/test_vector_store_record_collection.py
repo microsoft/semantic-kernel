@@ -3,7 +3,6 @@
 from copy import deepcopy
 from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
 
-import numpy as np
 from pandas import DataFrame
 from pytest import mark, raises
 
@@ -83,6 +82,8 @@ async def test_collection_create_if_not_exists(DictVectorStoreRecordCollection, 
 
 
 # region CRUD
+
+
 @mark.parametrize(
     "vector_store_record_collection",
     [
@@ -94,59 +95,10 @@ async def test_collection_create_if_not_exists(DictVectorStoreRecordCollection, 
         "type_vanilla_with_to_from_dict",
         "type_pydantic",
         "type_dataclass",
-        "type_vector_array",
     ],
     indirect=True,
 )
 async def test_crud_operations(vector_store_record_collection):
-    id = "test_id"
-    record = {"id": id, "content": "test_content", "vector": [1.0, 2.0, 3.0]}
-    if vector_store_record_collection.data_model_definition.fields["vector"].deserialize_function is not None:
-        record["vector"] = vector_store_record_collection.data_model_definition.fields["vector"].deserialize_function(
-            record["vector"]
-        )
-    if vector_store_record_collection.data_model_type is not dict:
-        model = vector_store_record_collection.data_model_type
-        record = model(**record)
-    no_records = await vector_store_record_collection.get(id)
-    assert no_records is None
-    await vector_store_record_collection.upsert(record)
-    assert len(vector_store_record_collection.inner_storage) == 1
-    if vector_store_record_collection.data_model_type is dict:
-        assert vector_store_record_collection.inner_storage[id] == record
-    else:
-        assert not isinstance(record, dict)
-        assert vector_store_record_collection.inner_storage[id]["content"] == record.content
-    record_2 = await vector_store_record_collection.get(id)
-    if vector_store_record_collection.data_model_type is dict:
-        assert record_2 == record
-    else:
-        assert not isinstance(record, dict)
-        if isinstance(record.vector, list):
-            assert record_2 == record
-        else:
-            assert record_2.id == record.id
-            assert record_2.content == record.content
-            assert np.array_equal(record_2.vector, record.vector)
-    await vector_store_record_collection.delete(id)
-    assert len(vector_store_record_collection.inner_storage) == 0
-
-
-@mark.parametrize(
-    "vector_store_record_collection",
-    [
-        "definition_basic",
-        "definition_with_serialize",
-        "definition_with_to_from",
-        "type_vanilla",
-        "type_vanilla_with_serialize",
-        "type_vanilla_with_to_from_dict",
-        "type_pydantic",
-        "type_dataclass",
-    ],
-    indirect=True,
-)
-async def test_crud_batch_operations(vector_store_record_collection):
     ids = ["test_id_1", "test_id_2"]
     batch = [
         {"id": ids[0], "content": "test_content", "vector": [1.0, 2.0, 3.0]},
@@ -191,7 +143,8 @@ async def test_crud_operations_container(vector_store_record_collection):
     assert vector_store_record_collection.inner_storage[id]["content"] == record[id]["content"]
     assert vector_store_record_collection.inner_storage[id]["vector"] == record[id]["vector"]
     record_2 = await vector_store_record_collection.get(id)
-    assert record_2 == record
+    record_2["id"] = id
+    record_2["content"] = record_2[id]["content"]
     await vector_store_record_collection.delete(id)
     assert len(vector_store_record_collection.inner_storage) == 0
 

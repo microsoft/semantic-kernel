@@ -807,7 +807,7 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
         Exceptions:
             VectorStoreOperationException: If an error occurs during deletion or a record does not exist.
         """
-        if isinstance(keys, list):
+        if not isinstance(keys, list):
             keys = [keys]  # type: ignore
         try:
             await self._inner_delete(keys, **kwargs)  # type: ignore
