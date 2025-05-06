@@ -18,32 +18,32 @@ public sealed class MongoCollectionOptions
     /// In this case, the record model properties must be annotated with the appropriate attributes to indicate their usage.
     /// See <see cref="VectorStoreKeyAttribute"/>, <see cref="VectorStoreDataAttribute"/> and <see cref="VectorStoreVectorAttribute"/>.
     /// </remarks>
-    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; set; }
 
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 
     /// <summary>
     /// Vector index name to use. If null, the default "vector_index" name will be used.
     /// </summary>
-    public string VectorIndexName { get; init; } = MongoConstants.DefaultVectorIndexName;
+    public string VectorIndexName { get; set; } = MongoConstants.DefaultVectorIndexName;
 
     /// <summary>
     /// Full text search index name to use. If null, the default "full_text_search_index" name will be used.
     /// </summary>
-    public string FullTextSearchIndexName { get; init; } = MongoConstants.DefaultFullTextSearchIndexName;
+    public string FullTextSearchIndexName { get; set; } = MongoConstants.DefaultFullTextSearchIndexName;
 
     /// <summary>
     /// Number of max retries for vector collection operation.
     /// </summary>
-    public int MaxRetries { get; init; } = 5;
+    public int MaxRetries { get; set; } = 5;
 
     /// <summary>
     /// Delay in milliseconds between retries for vector collection operation.
     /// </summary>
-    public int DelayInMilliseconds { get; init; } = 1_000;
+    public int DelayInMilliseconds { get; set; } = 1_000;
 
     /// <summary>
     /// Number of nearest neighbors to use during the vector search.
@@ -51,5 +51,5 @@ public sealed class MongoCollectionOptions
     /// Recommended value should be higher than number of documents to return.
     /// If not provided, "number of documents * 10" value will be used.
     /// </summary>
-    public int? NumCandidates { get; init; } = null;
+    public int? NumCandidates { get; set; }
 }

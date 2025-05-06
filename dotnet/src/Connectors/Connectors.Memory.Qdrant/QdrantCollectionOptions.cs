@@ -14,7 +14,7 @@ public sealed class QdrantCollectionOptions
     /// Gets or sets a value indicating whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector per qdrant point.
     /// Defaults to single vector per point.
     /// </summary>
-    public bool HasNamedVectors { get; set; } = false;
+    public bool HasNamedVectors { get; set; }
 
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
@@ -24,10 +24,10 @@ public sealed class QdrantCollectionOptions
     /// In this case, the record model properties must be annotated with the appropriate attributes to indicate their usage.
     /// See <see cref="VectorStoreKeyAttribute"/>, <see cref="VectorStoreDataAttribute"/> and <see cref="VectorStoreVectorAttribute"/>.
     /// </remarks>
-    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; set; }
 
     /// <summary>
     /// Gets or sets the default embedding generator for vector properties in this collection.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

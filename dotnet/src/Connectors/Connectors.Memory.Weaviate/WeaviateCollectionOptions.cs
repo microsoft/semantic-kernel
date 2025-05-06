@@ -19,12 +19,12 @@ public sealed class WeaviateCollectionOptions
     /// In this case, the record model properties must be annotated with the appropriate attributes to indicate their usage.
     /// See <see cref="VectorStoreKeyAttribute"/>, <see cref="VectorStoreDataAttribute"/> and <see cref="VectorStoreVectorAttribute"/>.
     /// </remarks>
-    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; set; }
 
     /// <summary>
     /// Weaviate endpoint for remote or local cluster.
     /// </summary>
-    public Uri? Endpoint { get; set; } = null;
+    public Uri? Endpoint { get; set; }
 
     /// <summary>
     /// Weaviate API key.
@@ -32,7 +32,7 @@ public sealed class WeaviateCollectionOptions
     /// <remarks>
     /// This parameter is optional because authentication may be disabled in local clusters for testing purposes.
     /// </remarks>
-    public string? ApiKey { get; set; } = null;
+    public string? ApiKey { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector in Weaviate collection.
@@ -44,5 +44,5 @@ public sealed class WeaviateCollectionOptions
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

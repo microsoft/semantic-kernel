@@ -17,13 +17,13 @@ public class HybridSearchOptions<TRecord>
     /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
     [Obsolete("Use Filter instead")]
-    public VectorSearchFilter? OldFilter { get; init; }
+    public VectorSearchFilter? OldFilter { get; set; }
 #pragma warning restore CS0618 // Type or member is obsolete
 
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
     /// </summary>
-    public Expression<Func<TRecord, bool>>? Filter { get; init; }
+    public Expression<Func<TRecord, bool>>? Filter { get; set; }
 
     /// <summary>
     /// Gets or sets the target dense vector property to search on.
@@ -33,7 +33,7 @@ public class HybridSearchOptions<TRecord>
     /// If not provided will check if there is a vector property to use by default, and
     /// will throw if either none or multiple exist.
     /// </value>
-    public Expression<Func<TRecord, object?>>? VectorProperty { get; init; }
+    public Expression<Func<TRecord, object?>>? VectorProperty { get; set; }
 
     /// <summary>
     /// Gets or sets the additional target property to do the text/keyword search on.
@@ -41,7 +41,7 @@ public class HybridSearchOptions<TRecord>
     /// If not provided will look if there is a text property with full text indexing enabled, and
     /// will throw if either none or multiple exist.
     /// </summary>
-    public Expression<Func<TRecord, object?>>? AdditionalProperty { get; init; }
+    public Expression<Func<TRecord, object?>>? AdditionalProperty { get; set; }
 
     /// <summary>
     /// Gets or sets the number of results to skip before returning results, that is, the index of the first result to return.
@@ -50,7 +50,7 @@ public class HybridSearchOptions<TRecord>
     public int Skip
     {
         get => this._skip;
-        init
+        set
         {
             if (value < 0)
             {
@@ -64,5 +64,5 @@ public class HybridSearchOptions<TRecord>
     /// <summary>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.
     /// </summary>
-    public bool IncludeVectors { get; init; } = false;
+    public bool IncludeVectors { get; set; }
 }

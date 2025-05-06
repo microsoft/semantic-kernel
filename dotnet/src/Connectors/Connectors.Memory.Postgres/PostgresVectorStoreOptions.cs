@@ -12,10 +12,10 @@ public sealed class PostgresVectorStoreOptions
     /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
-    public string Schema { get; init; } = "public";
+    public string Schema { get; set; } = "public";
 
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

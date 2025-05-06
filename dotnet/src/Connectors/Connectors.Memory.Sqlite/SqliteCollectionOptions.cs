@@ -18,12 +18,12 @@ public sealed class SqliteCollectionOptions
     /// In this case, the record model properties must be annotated with the appropriate attributes to indicate their usage.
     /// See <see cref="VectorStoreKeyAttribute"/>, <see cref="VectorStoreDataAttribute"/> and <see cref="VectorStoreVectorAttribute"/>.
     /// </remarks>
-    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; set; }
 
     /// <summary>
     /// SQLite extension name for vector search operations.
     /// </summary>
-    public string? VectorSearchExtensionName { get; set; } = null;
+    public string? VectorSearchExtensionName { get; set; }
 
     /// <summary>
     /// Custom virtual table name to store vectors.
@@ -31,10 +31,10 @@ public sealed class SqliteCollectionOptions
     /// <remarks>
     /// If not provided, collection name with prefix will be used as virtual table name.
     /// </remarks>
-    public string? VectorVirtualTableName { get; set; } = null;
+    public string? VectorVirtualTableName { get; set; }
 
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }
