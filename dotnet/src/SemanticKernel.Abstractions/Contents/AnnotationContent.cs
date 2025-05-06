@@ -80,7 +80,7 @@ public class AnnotationContent : KernelContent
     /// </summary>
     /// <param name="label">The citation label.</param>
     /// <param name="referenceId">Identifies the referenced resource.</param>
-    /// <param name="kind">Descibes the kind of annotation</param>
+    /// <param name="kind">Describes the kind of annotation</param>
     /// <param name="modelId">The model ID used to generate the content.</param>
     /// <param name="innerContent">Inner content</param>
     /// <param name="metadata">Additional metadata</param>
