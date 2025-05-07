@@ -167,7 +167,7 @@ public static class SqlServerServiceCollectionExtensions
         services.Add(new ServiceDescriptor(typeof(SqlServerCollection<TKey, TRecord>),
             sp =>
             {
-                options ??= GetCollectionOptions(sp, optionsProvider: null);
+                options = GetCollectionOptions(sp, _ => options);
                 return new SqlServerCollection<TKey, TRecord>(connectionString, collectionName, options);
             }, lifetime));
 
@@ -203,7 +203,7 @@ public static class SqlServerServiceCollectionExtensions
         services.Add(new ServiceDescriptor(typeof(SqlServerCollection<TKey, TRecord>), serviceKey,
             (sp, _) =>
             {
-                options ??= GetCollectionOptions(sp, optionsProvider: null);
+                options = GetCollectionOptions(sp, _ => options);
                 return new SqlServerCollection<TKey, TRecord>(connectionString, collectionName, options);
             }, lifetime));
 
@@ -226,15 +226,23 @@ public static class SqlServerServiceCollectionExtensions
             static (sp, key) => sp.GetRequiredKeyedService<SqlServerCollection<TKey, TRecord>>(key), lifetime));
     }
 
-    private static SqlServerVectorStoreOptions GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, SqlServerVectorStoreOptions>? optionsProvider)
-        => optionsProvider?.Invoke(sp) ?? new()
-        {
-            EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
-        };
+    private static SqlServerVectorStoreOptions GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, SqlServerVectorStoreOptions?>? optionsProvider)
+    {
+        var options = optionsProvider?.Invoke(sp) ?? new();
 
-    private static SqlServerCollectionOptions GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, SqlServerCollectionOptions>? optionsProvider)
-        => optionsProvider?.Invoke(sp) ?? new()
-        {
-            EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
-        };
+        // We resolve the embedding generator only in case the user didn't provide one.
+        options.EmbeddingGenerator ??= sp.GetService<IEmbeddingGenerator>();
+
+        return options;
+    }
+
+    private static SqlServerCollectionOptions GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, SqlServerCollectionOptions?>? optionsProvider)
+    {
+        var options = optionsProvider?.Invoke(sp) ?? new();
+
+        // We resolve the embedding generator only in case the user didn't provide one.
+        options.EmbeddingGenerator ??= sp.GetService<IEmbeddingGenerator>();
+
+        return options;
+    }
 }

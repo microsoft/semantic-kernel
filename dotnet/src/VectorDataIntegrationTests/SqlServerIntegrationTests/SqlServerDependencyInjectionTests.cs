@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
@@ -80,6 +81,34 @@ public class SqlServerDependencyInjectionTests
             serviceKey: "notNull", collectionName: "notNull", connectionString: null!));
         Assert.Throws<ArgumentException>(() => services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
             serviceKey: "notNull", collectionName: "notNull", connectionString: ""));
+    }
+
+    [Fact]
+    public void WhenUserProvidesOptionBagWithoutEmbeddingGeneratorItsBeingResolved()
+    {
+        IServiceCollection services = new ServiceCollection();
+
+        bool wasResolved = false;
+        services.AddSingleton<IEmbeddingGenerator>(sp =>
+        {
+            wasResolved = true;
+            return null!;
+        });
+
+        services.AddSqlServerCollection<string, SimpleRecord<string>>(
+            collectionName: "notNull",
+            connectionString: ConnectionString,
+            options: new SqlServerCollectionOptions()
+            {
+                Schema = "customized"
+            });
+
+        Assert.False(wasResolved);
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        var collection = serviceProvider.GetRequiredService<SqlServerCollection<string, SimpleRecord<string>>>();
+
+        Assert.True(wasResolved);
     }
 }
 
