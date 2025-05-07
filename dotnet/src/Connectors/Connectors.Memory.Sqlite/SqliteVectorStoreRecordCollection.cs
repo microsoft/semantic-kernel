@@ -174,7 +174,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         switch (vectorProperty.EmbeddingGenerator)
         {
             case IEmbeddingGenerator<TInput, Embedding<float>> generator:
-                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+                var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
 
                 await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
                 {

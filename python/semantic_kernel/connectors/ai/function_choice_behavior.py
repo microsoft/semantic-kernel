@@ -78,7 +78,7 @@ class FunctionChoiceBehavior(KernelBaseModel):
         filters: dict[
             Literal["excluded_plugins", "included_plugins", "excluded_functions", "included_functions"], list[str]
         ]
-        | None = {},
+        | None = None,
     ) -> "FunctionCallChoiceConfiguration":
         """Check for missing functions and get the function call choice configuration."""
         from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
