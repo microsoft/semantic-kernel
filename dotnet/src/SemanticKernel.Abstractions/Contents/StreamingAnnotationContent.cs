@@ -32,7 +32,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// The citation label in the associated response.
     /// </summary>
     [JsonIgnore]
-    [Obsolete("Use `Label` property instead.  This method will be removed after June 1st 2025.")]
+    [Obsolete("Use `Label` property instead.")]
     public string Quote => this.Label;
 
     /// <summary>
