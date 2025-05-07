@@ -151,9 +151,9 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
 
         using var errorHandlingFeedIterator = new ErrorHandlingFeedIterator<string>(feedIterator, this._collectionMetadata, OperationName);
 
-        while (feedIterator.HasMoreResults)
+        while (errorHandlingFeedIterator.HasMoreResults)
         {
-            var next = await feedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
+            var next = await errorHandlingFeedIterator.ReadNextAsync(cancellationToken).ConfigureAwait(false);
 
             foreach (var containerName in next.Resource)
             {

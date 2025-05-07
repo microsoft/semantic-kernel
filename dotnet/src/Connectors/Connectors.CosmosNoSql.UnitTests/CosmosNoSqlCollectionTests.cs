@@ -137,6 +137,28 @@ public sealed class CosmosNoSqlCollectionTests
         // Arrange
         const string CollectionName = "collection";
 
+        var mockFeedResponse = new Mock<FeedResponse<string>>();
+        mockFeedResponse
+            .Setup(l => l.Resource)
+            .Returns([]);
+
+        var mockFeedIterator = new Mock<FeedIterator<string>>();
+        mockFeedIterator
+            .SetupSequence(l => l.HasMoreResults)
+            .Returns(true)
+            .Returns(false);
+
+        mockFeedIterator
+            .Setup(l => l.ReadNextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockFeedResponse.Object);
+
+        this._mockDatabase
+            .Setup(l => l.GetContainerQueryIterator<string>(
+                It.IsAny<QueryDefinition>(),
+                It.IsAny<string>(),
+                It.IsAny<QueryRequestOptions>()))
+            .Returns(mockFeedIterator.Object);
+
         var sut = new CosmosNoSqlCollection<string, TestIndexingModel>(
             this._mockDatabase.Object,
             CollectionName,
