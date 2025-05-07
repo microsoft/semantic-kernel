@@ -68,6 +68,7 @@ internal sealed class Mem0Client
             throw new InvalidOperationException("At least one of applicationId, agentId, threadId, or userId must be provided.");
         }
 
+#pragma warning disable CA1308 // Normalize strings to uppercase: mem0 requires lowercase values
         var createMemoryRequest = new CreateMemoryRequest()
         {
             AppId = applicationId,
@@ -79,10 +80,11 @@ internal sealed class Mem0Client
                 new CreateMemoryMessage
                 {
                     Content = messageContent,
-                    Role = messageRole
+                    Role = messageRole.ToLowerInvariant()
                 }
             }
         };
+#pragma warning restore CA1308 // Normalize strings to uppercase
 
         using var content = new StringContent(JsonSerializer.Serialize(createMemoryRequest, Mem0SourceGenerationContext.Default.CreateMemoryRequest), Encoding.UTF8, "application/json");
         var responseMessage = await this._httpClient.PostAsync(s_createMemoryUri, content).ConfigureAwait(false);

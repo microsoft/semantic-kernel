@@ -3,7 +3,6 @@
 #pragma warning disable CA1054 // URI-like parameters should not be strings
 
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -59,8 +58,7 @@ public class Mem0MemoryComponentTests : IDisposable
 
         // Assert
         Assert.NotNull(aiFunctions);
-        Assert.Single(aiFunctions);
-        Assert.Equal("ClearStoredUserFacts", aiFunctions.First().Name);
+        Assert.Empty(aiFunctions);
     }
 
     [Theory]
@@ -143,7 +141,7 @@ public class Mem0MemoryComponentTests : IDisposable
         await sut.OnThreadCreatedAsync("test-thread-id-1");
 
         // Act
-        await sut.ClearStoredUserFactsAsync();
+        await sut.ClearStoredMemoriesAsync();
 
         // Assert
         var expectedUrl = $"https://localhost/v1/memories/?app_id=test-app-id&agent_id=test-agent-id&run_id={expectedThreadId}&user_id=test-user-id";

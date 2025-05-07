@@ -48,7 +48,7 @@ public class Mem0MemoryComponentTests : IDisposable
 
         var sut = new Mem0MemoryComponent(this._httpClient, new() { ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = true });
 
-        await sut.ClearStoredUserFactsAsync();
+        await sut.ClearStoredMemoriesAsync();
         var answerBeforeAdding = await sut.OnModelInvokeAsync([question]);
         Assert.DoesNotContain("Caoimhe", answerBeforeAdding);
 
@@ -58,7 +58,34 @@ public class Mem0MemoryComponentTests : IDisposable
         await sut.OnNewMessageAsync("test-thread-id", question);
         var answerAfterAdding = await sut.OnModelInvokeAsync([question]);
 
-        await sut.ClearStoredUserFactsAsync();
+        await sut.ClearStoredMemoriesAsync();
+        var answerAfterClearing = await sut.OnModelInvokeAsync([question]);
+
+        // Assert
+        Assert.Contains("Caoimhe", answerAfterAdding);
+        Assert.DoesNotContain("Caoimhe", answerAfterClearing);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task Mem0ComponentCanAddAndRetrieveAgentMemoriesAsync()
+    {
+        // Arrange
+        var question = new ChatMessage(ChatRole.User, "What is your name?");
+        var input = new ChatMessage(ChatRole.Assistant, "Hello, I'm a friendly assistant and my name is Caoimhe.");
+
+        var sut = new Mem0MemoryComponent(this._httpClient, new() { AgentId = "test-agent-id" });
+
+        await sut.ClearStoredMemoriesAsync();
+        var answerBeforeAdding = await sut.OnModelInvokeAsync([question]);
+        Assert.DoesNotContain("Caoimhe", answerBeforeAdding);
+
+        // Act
+        await sut.OnNewMessageAsync("test-thread-id", input);
+
+        await sut.OnNewMessageAsync("test-thread-id", question);
+        var answerAfterAdding = await sut.OnModelInvokeAsync([question]);
+
+        await sut.ClearStoredMemoriesAsync();
         var answerAfterClearing = await sut.OnModelInvokeAsync([question]);
 
         // Assert
@@ -76,8 +103,8 @@ public class Mem0MemoryComponentTests : IDisposable
         var sut1 = new Mem0MemoryComponent(this._httpClient, new() { AgentId = "test-agent-id-1" });
         var sut2 = new Mem0MemoryComponent(this._httpClient, new() { AgentId = "test-agent-id-2" });
 
-        await sut1.ClearStoredUserFactsAsync();
-        await sut2.ClearStoredUserFactsAsync();
+        await sut1.ClearStoredMemoriesAsync();
+        await sut2.ClearStoredMemoriesAsync();
 
         var answerBeforeAdding1 = await sut1.OnModelInvokeAsync([question]);
         var answerBeforeAdding2 = await sut2.OnModelInvokeAsync([question]);
@@ -96,8 +123,8 @@ public class Mem0MemoryComponentTests : IDisposable
         Assert.DoesNotContain("Caoimhe", answerAfterAddingOnOtherScope);
 
         // Cleanup.
-        await sut1.ClearStoredUserFactsAsync();
-        await sut2.ClearStoredUserFactsAsync();
+        await sut1.ClearStoredMemoriesAsync();
+        await sut2.ClearStoredMemoriesAsync();
     }
 
     [Fact(Skip = SkipReason)]
@@ -108,7 +135,7 @@ public class Mem0MemoryComponentTests : IDisposable
 
         var sut = new Mem0MemoryComponent(this._httpClient, new() { UserId = "test-user-id", ScopeToPerOperationThreadId = true });
 
-        await sut.ClearStoredUserFactsAsync();
+        await sut.ClearStoredMemoriesAsync();
 
         // Act & Assert
         await sut.OnThreadCreatedAsync("test-thread-id-1");
@@ -118,7 +145,7 @@ public class Mem0MemoryComponentTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(() => sut.OnNewMessageAsync("test-thread-id-2", input));
 
         // Cleanup
-        await sut.ClearStoredUserFactsAsync();
+        await sut.ClearStoredMemoriesAsync();
     }
 
     protected virtual void Dispose(bool disposing)
