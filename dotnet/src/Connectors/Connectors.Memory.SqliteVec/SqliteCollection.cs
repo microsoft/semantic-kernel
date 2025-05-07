@@ -770,12 +770,9 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            var key = reader.GetFieldValue<TKey?>(0);
+            var key = reader.GetFieldValue<TKey>(0);
 
-            if (key is not null)
-            {
-                keys.Add(key);
-            }
+            keys.Add(key);
 
             await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
         }
