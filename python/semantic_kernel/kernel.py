@@ -106,7 +106,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         return_function_results: bool = False,
         **kwargs: Any,
     ) -> AsyncGenerator[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult], Any]:
@@ -169,7 +169,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> FunctionResult | None:
         """Execute a function and return the FunctionResult.

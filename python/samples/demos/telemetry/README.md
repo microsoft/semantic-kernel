@@ -35,7 +35,7 @@ uv pip install opentelemetry-exporter-otlp-proto-grpc
 
 ## Running the sample
 
-1. Open a terminal and navigate to this folder: `python/samples/demos/telemetry_with_application_insights/`. This is necessary for the `.env` file to be read correctly.
+1. Open a terminal and navigate to this folder: `python/samples/demos/telemetry/`. This is necessary for the `.env` file to be read correctly.
 2. Create a `.env` file if one doesn't already exist in this folder. Please refer to the [example file](./.env.example).
     > Note that `TELEMETRY_SAMPLE_CONNECTION_STRING` and `OTLP_ENDPOINT` are optional. If you don't configure them, everything will get outputted to the console.
 3. Activate your python virtual environment, and then run `python main.py`.
