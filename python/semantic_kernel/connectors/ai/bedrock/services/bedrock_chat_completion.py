@@ -360,6 +360,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                     name=format_bedrock_function_name_to_kernel_function_fully_qualified_name(
                         event["contentBlockStart"]["start"]["toolUse"]["name"]
                     ),
+                    index=event["contentBlockStart"]["contentBlockIndex"],
                 )
             )
 
@@ -389,6 +390,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             else FunctionCallContent(
                 arguments=event["contentBlockDelta"]["delta"]["toolUse"]["input"],
                 inner_content=event,
+                index=event["contentBlockDelta"]["contentBlockIndex"],
             )
         ]
 
