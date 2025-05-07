@@ -61,6 +61,12 @@ public class QdrantCollectionTests
         var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
 
         this._qdrantClientMock
+            .Setup(x => x.CollectionExistsAsync(
+                It.IsAny<string>(),
+                this._testCancellationToken))
+            .ReturnsAsync(false);
+
+        this._qdrantClientMock
             .Setup(x => x.CreateCollectionAsync(
                 It.IsAny<string>(),
                 It.IsAny<VectorParams>(),

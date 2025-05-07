@@ -123,6 +123,12 @@ public sealed class WeaviateCollectionTests : IDisposable
         const string CollectionName = "Collection";
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName);
 
+        using var collectionExistsResponse = new HttpResponseMessage(HttpStatusCode.NotFound);
+        this._messageHandlerStub.ResponseQueue.Enqueue(collectionExistsResponse);
+
+        using var createCollectionResponse = new HttpResponseMessage(HttpStatusCode.OK);
+        this._messageHandlerStub.ResponseQueue.Enqueue(createCollectionResponse);
+
         // Act
         await sut.EnsureCollectionExistsAsync();
 
@@ -354,6 +360,12 @@ public sealed class WeaviateCollectionTests : IDisposable
         var options = initializeOptions ?
             new WeaviateCollectionOptions() { Endpoint = new Uri("http://test-endpoint"), ApiKey = "fake-key" } :
             null;
+
+        using var collectionExistsResponse = new HttpResponseMessage(HttpStatusCode.NotFound);
+        this._messageHandlerStub.ResponseQueue.Enqueue(collectionExistsResponse);
+
+        using var createCollectionResponse = new HttpResponseMessage(HttpStatusCode.OK);
+        this._messageHandlerStub.ResponseQueue.Enqueue(createCollectionResponse);
 
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName, options);
 
