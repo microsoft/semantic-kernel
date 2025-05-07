@@ -156,23 +156,22 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
         }
         catch (VectorStoreException)
         {
-            // Since weaviate error info is ambuguous, we can check here if the index already exists.
+            // Since weaviate error info is ambiguous, we can check here if the index already exists.
             // If it does, we can ignore the error.
-            bool collectionExists = false;
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                collectionExists = await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+                if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    return;
+                }
             }
             catch
             {
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 
-            if (!collectionExists)
-            {
-                throw;
-            }
+            throw;
         }
     }
 

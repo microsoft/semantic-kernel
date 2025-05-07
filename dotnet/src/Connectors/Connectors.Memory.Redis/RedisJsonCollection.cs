@@ -182,27 +182,26 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
         {
             // Since redis only returns textual error messages, we can check here if the index already exists.
             // If it does, we can ignore the error.
-            bool collectionExists = false;
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                collectionExists = await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+                if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    return;
+                }
             }
             catch
             {
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 
-            if (!collectionExists)
+            throw new VectorStoreException("Call to vector store failed.", ex)
             {
-                throw new VectorStoreException("Call to vector store failed.", ex)
-                {
-                    VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
-                    VectorStoreName = this._collectionMetadata.VectorStoreName,
-                    CollectionName = this.Name,
-                    OperationName = OperationName
-                };
-            }
+                VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
+                OperationName = OperationName
+            };
         }
     }
 

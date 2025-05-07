@@ -46,15 +46,15 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
             "Semantic Kernel is a new AI SDK, and a simple and yet powerful programming model that lets you add large language capabilities to your app in just a matter of minutes. It uses natural language prompting to create and execute semantic kernel AI tasks across multiple languages and platforms.",
             "In this guide, you learned how to quickly get started with Semantic Kernel by building a simple AI agent that can interact with an AI service and run your code. To see more examples and learn how to build more complex AI agents, check out our in-depth samples."
         ];
-        var vectorSearchable = await CreateCollectionFromListAsync<Guid, DataModel>(
+        var collection = await CreateCollectionFromListAsync<Guid, DataModel>(
             vectorStore, collectionName, lines, CreateRecord);
 
         // Create a text search instance using the InMemory vector store.
-        var textSearch = new VectorStoreTextSearch<DataModel>(vectorSearchable);
+        var textSearch = new VectorStoreTextSearch<DataModel>(collection);
         await ExecuteSearchesAsync(textSearch);
 
         // Create a text search instance using a vectorized search wrapper around the InMemory vector store.
-        textSearch = new VectorStoreTextSearch<DataModel>(vectorSearchable);
+        textSearch = new VectorStoreTextSearch<DataModel>(collection);
         await ExecuteSearchesAsync(textSearch);
     }
 

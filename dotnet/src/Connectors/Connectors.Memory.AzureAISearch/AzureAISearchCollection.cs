@@ -135,42 +135,42 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
             return;
         }
 
+        var vectorSearchConfig = new VectorSearch();
+        var searchFields = new List<SearchField>();
+
+        // Loop through all properties and create the search fields.
+        foreach (var property in this._model.Properties)
+        {
+            switch (property)
+            {
+                case KeyPropertyModel p:
+                    searchFields.Add(AzureAISearchCollectionCreateMapping.MapKeyField(p));
+                    break;
+
+                case DataPropertyModel p:
+                    searchFields.Add(AzureAISearchCollectionCreateMapping.MapDataField(p));
+                    break;
+
+                case VectorPropertyModel p:
+                    (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) = AzureAISearchCollectionCreateMapping.MapVectorField(p);
+
+                    // Add the search field, plus its profile and algorithm configuration to the search config.
+                    searchFields.Add(vectorSearchField);
+                    vectorSearchConfig.Algorithms.Add(algorithmConfiguration);
+                    vectorSearchConfig.Profiles.Add(vectorSearchProfile);
+                    break;
+
+                default:
+                    throw new UnreachableException();
+            }
+        }
+
+        // Create the index definition.
+        var searchIndex = new SearchIndex(this.Name, searchFields);
+        searchIndex.VectorSearch = vectorSearchConfig;
+
         try
         {
-            var vectorSearchConfig = new VectorSearch();
-            var searchFields = new List<SearchField>();
-
-            // Loop through all properties and create the search fields.
-            foreach (var property in this._model.Properties)
-            {
-                switch (property)
-                {
-                    case KeyPropertyModel p:
-                        searchFields.Add(AzureAISearchCollectionCreateMapping.MapKeyField(p));
-                        break;
-
-                    case DataPropertyModel p:
-                        searchFields.Add(AzureAISearchCollectionCreateMapping.MapDataField(p));
-                        break;
-
-                    case VectorPropertyModel p:
-                        (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) = AzureAISearchCollectionCreateMapping.MapVectorField(p);
-
-                        // Add the search field, plus its profile and algorithm configuration to the search config.
-                        searchFields.Add(vectorSearchField);
-                        vectorSearchConfig.Algorithms.Add(algorithmConfiguration);
-                        vectorSearchConfig.Profiles.Add(vectorSearchProfile);
-                        break;
-
-                    default:
-                        throw new UnreachableException();
-                }
-            }
-
-            // Create the index.
-            var searchIndex = new SearchIndex(this.Name, searchFields);
-            searchIndex.VectorSearch = vectorSearchConfig;
-
             await this._searchIndexClient.CreateIndexAsync(searchIndex, cancellationToken).ConfigureAwait(false);
         }
         catch (RequestFailedException ex) when (ex.ErrorCode == "ResourceNameAlreadyInUse")

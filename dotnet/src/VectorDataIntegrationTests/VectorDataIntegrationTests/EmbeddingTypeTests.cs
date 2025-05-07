@@ -29,7 +29,7 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
         var collection = fixture.VectorStore.GetCollection<TKey, Record<TVector>>(fixture.CollectionName, fixture.CreateRecordDefinition<TVector>(embeddingGenerator: null, distanceFunction, dimensions));
 
         await collection.DeleteCollectionAsync();
-        await collection.CreateCollectionAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         var key = fixture.GenerateNextKey<TKey>();
         var record = new Record<TVector>
@@ -65,7 +65,7 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
 
             if (fixture.RecreateCollection)
             {
-                await collection2.CreateCollectionAsync();
+                await collection2.EnsureCollectionExistsAsync();
             }
 
             var key2 = fixture.GenerateNextKey<TKey>();
