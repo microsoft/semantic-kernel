@@ -36,7 +36,7 @@ public static class SqlServerServiceCollectionExtensions
             return new SqlServerVectorStore(connectionString, options);
         }, lifetime));
 
-        // We try to add the SqlServerVectorStore as an IVectorStore,
+        // We try to add the SqlServerVectorStore as a VectorStore,
         // but if it already exists, we don't override it.
         // Sample scenario: one app using two different vector stores.
         services.TryAdd(new ServiceDescriptor(typeof(VectorStore),
