@@ -38,14 +38,14 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     }
 
     [RetryFact(typeof(MongoCommandException), Skip = SkipReason)]
-    public async Task ItCanCreateCollectionAsync()
+    public async Task ItCanEnsureCollectionExistsAsync()
     {
         // Arrange
         var newCollection = Guid.NewGuid().ToString();
         var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, newCollection);
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
@@ -76,7 +76,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         var record = this.CreateTestHotel(HotelId);
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
         await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = includeVectors });
 
@@ -328,7 +328,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
 
         var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearch");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -358,7 +358,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
 
         var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -389,7 +389,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
 
         var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 

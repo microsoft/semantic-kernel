@@ -25,13 +25,13 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.CosmosNoSql;
 public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fixture)
 {
     [VectorStoreFact]
-    public async Task ItCanCreateCollectionAsync()
+    public async Task ItCanEnsureCollectionExistsAsync()
     {
         // Arrange
         var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "test-create-collection");
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
@@ -81,7 +81,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         var record = this.CreateTestHotel(HotelId);
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
         await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = includeVectors });
 
@@ -142,7 +142,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
             collectionName,
             new() { IndexingMode = indexingMode, Automatic = indexingMode != IndexingMode.None });
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var record = this.CreateTestHotel(HotelId);
 
@@ -173,7 +173,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
                 "delete-with-partition-key",
                 new() { PartitionKeyPropertyName = "HotelName" });
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var record = this.CreateTestHotel(HotelId, HotelName);
 
@@ -203,7 +203,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
 
         var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "get-and-delete-batch");
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var record1 = this.CreateTestHotel(HotelId1);
         var record2 = this.CreateTestHotel(HotelId2);
@@ -232,7 +232,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         const string HotelId = "55555555-5555-5555-5555-555555555555";
         var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "upsert-record");
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var record = this.CreateTestHotel(HotelId);
 
@@ -264,7 +264,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
 
         var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "vector-search-default");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -294,7 +294,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
 
         var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "vector-search-with-offset");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -326,7 +326,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
 
         var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "vector-search-with-filter");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -354,7 +354,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
 
         var sut = new CosmosNoSqlCollection<object, Dictionary<string, object?>>(fixture.Database!, "dynamic-mapper", options);
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Act
         await sut.UpsertAsync(new Dictionary<string, object?>

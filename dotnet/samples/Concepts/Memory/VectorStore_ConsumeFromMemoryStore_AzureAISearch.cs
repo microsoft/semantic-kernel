@@ -42,7 +42,7 @@ public class VectorStore_ConsumeFromMemoryStore_AzureAISearch(ITestOutputHelper 
 
         // Use the VectorStore abstraction to connect to an existing collection which was previously created via the IMemoryStore abstraction
         var collection = vectorStore.GetCollection<string, VectorStoreRecord>("memorystorecollection");
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Show that the data can be read using the VectorStore abstraction.
         // Note that AzureAISearchMemoryStore converts all keys to base64

@@ -29,7 +29,7 @@ internal sealed class DataLoader<TKey>(
     public async Task LoadPdf(string pdfPath, int batchSize, int betweenBatchDelayInMs, CancellationToken cancellationToken)
     {
         // Create the collection if it doesn't exist.
-        await vectorStoreRecordCollection.CreateCollectionIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
+        await vectorStoreRecordCollection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         // Load the text and images from the PDF file and split them into batches.
         var sections = LoadTextAndImages(pdfPath, cancellationToken);

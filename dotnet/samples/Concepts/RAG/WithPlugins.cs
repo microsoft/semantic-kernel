@@ -46,7 +46,7 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
         // Create the collection and add data
         var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = textEmbeddingGenerator });
         var collection = vectorStore.GetCollection<string, FinanceInfo>("finances");
-        await collection.CreateCollectionAsync();
+        await collection.EnsureCollectionExistsAsync();
         string[] budgetInfo =
         {
             "The budget for 2020 is EUR 100 000",

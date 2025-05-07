@@ -28,7 +28,7 @@ public abstract class BaseVectorStoreTests<TKey, TRecord>(VectorStore vectorStor
         {
             var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
 
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
         }
 
         // Act

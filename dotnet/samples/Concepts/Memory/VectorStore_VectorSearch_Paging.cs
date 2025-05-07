@@ -23,7 +23,7 @@ public class VectorStore_VectorSearch_Paging(ITestOutputHelper output) : BaseTes
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<int, TextSnippet>("skglossary");
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create some test data entries.
         // We are not generating real embeddings here, just some random numbers

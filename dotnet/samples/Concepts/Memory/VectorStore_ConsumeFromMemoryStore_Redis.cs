@@ -39,7 +39,7 @@ public class VectorStore_ConsumeFromMemoryStore_Redis(ITestOutputHelper output, 
 
         // Connect to the same collection using the VectorStore abstraction.
         var collection = vectorStore.GetCollection<string, VectorStoreRecord>(MemoryStoreCollectionName);
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Show that the data can be read using the VectorStore abstraction.
         var record1 = await collection.GetAsync("11111111-1111-1111-1111-111111111111");

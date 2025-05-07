@@ -129,15 +129,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     }
 
     /// <inheritdoc />
-    public override async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
-    {
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await this.InternalCreateCollectionAsync(connection, ifNotExists: false, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
         await this.InternalCreateCollectionAsync(connection, ifNotExists: true, cancellationToken)

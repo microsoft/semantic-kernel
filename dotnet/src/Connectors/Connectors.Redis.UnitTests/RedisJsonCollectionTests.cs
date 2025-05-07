@@ -74,14 +74,15 @@ public class RedisJsonCollectionTests
     [InlineData(true, false, "Data2", "Vector2")]
     [InlineData(false, true, "data2", "vector2")]
     [InlineData(false, false, "Data2", "Vector2")]
-    public async Task CanCreateCollectionAsync(bool useDefinition, bool useCustomJsonSerializerOptions, string expectedData2Name, string expectedVector2Name)
+    public async Task CanEnsureCollectionExistsAsync(bool useDefinition, bool useCustomJsonSerializerOptions, string expectedData2Name, string expectedVector2Name)
     {
         // Arrange.
-        SetupExecuteMock(this._redisDatabaseMock, string.Empty);
+        SetupExecuteMock(this._redisDatabaseMock, "FT.INFO", new RedisServerException("Unknown index name"));
+        SetupExecuteMock(this._redisDatabaseMock, "FT.CREATE", string.Empty);
         var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
 
         // Act.
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert.
         var expectedArgs = new object[] {
@@ -450,6 +451,16 @@ public class RedisJsonCollectionTests
             .ThrowsAsync(exception);
     }
 
+    private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, string command, Exception exception)
+    {
+        redisDatabaseMock
+            .Setup(
+                x => x.ExecuteAsync(
+                    command,
+                    It.IsAny<object[]>()))
+            .ThrowsAsync(exception);
+    }
+
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, IEnumerable<string> redisResultStrings)
     {
         var results = redisResultStrings
@@ -482,6 +493,20 @@ public class RedisJsonCollectionTests
             .Setup(
                 x => x.ExecuteAsync(
                     It.IsAny<string>(),
+                    It.IsAny<object[]>()))
+            .Callback((string command, object[] args) =>
+            {
+                Console.WriteLine(args);
+            })
+            .ReturnsAsync(RedisResult.Create(new RedisValue(redisResultString)));
+    }
+
+    private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, string command, string redisResultString)
+    {
+        redisDatabaseMock
+            .Setup(
+                x => x.ExecuteAsync(
+                    command,
                     It.IsAny<object[]>()))
             .Callback((string command, object[] args) =>
             {

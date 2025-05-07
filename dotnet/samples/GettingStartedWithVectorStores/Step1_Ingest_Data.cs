@@ -40,7 +40,7 @@ public class Step1_Ingest_Data(ITestOutputHelper output, VectorStoresFixture fix
         ITextEmbeddingGenerationService textEmbeddingGenerationService)
     {
         // Create the collection if it doesn't exist.
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateGlossaryEntries().ToList();

@@ -13,7 +13,7 @@ public class PineconeAllSupportedTypesTests(PineconeFixture fixture) : IClassFix
     public async Task AllTypesBatchGetAsync()
     {
         var collection = fixture.TestStore.DefaultVectorStore.GetCollection<string, PineconeAllTypes>("all-types", PineconeAllTypes.GetRecordDefinition());
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         List<PineconeAllTypes> records =
         [

@@ -188,8 +188,7 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
     {
         public override string Name => throw new NotImplementedException();
         public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
-        public override Task CreateCollectionAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
-        public override Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public override Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override Task DeleteCollectionAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();

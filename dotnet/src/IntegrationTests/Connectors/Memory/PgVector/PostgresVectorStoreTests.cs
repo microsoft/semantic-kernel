@@ -17,7 +17,7 @@ public class PostgresVectorStoreTests(PostgresVectorStoreFixture fixture)
 
         // Setup
         var collection = sut.GetCollection<long, PostgresHotel<long>>("VS_TEST_HOTELS");
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Act
         var collectionNames = await sut.ListCollectionNamesAsync().ToListAsync();

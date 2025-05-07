@@ -34,7 +34,7 @@ public class VectorStore_VectorSearch_MultiStore_Common(VectorStore vectorStore,
     {
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<TKey, Glossary<TKey>>(collectionName);
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateGlossaryEntries(uniqueKeyGenerator).ToList();

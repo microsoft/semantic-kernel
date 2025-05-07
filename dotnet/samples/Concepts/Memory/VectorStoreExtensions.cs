@@ -49,7 +49,7 @@ internal static class VectorStoreExtensions
     {
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
-        await collection.CreateCollectionIfNotExistsAsync().ConfigureAwait(false);
+        await collection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
         // Create records and generate embeddings for them.
         var tasks = entries.Select(entry => Task.Run(async () =>
@@ -85,7 +85,7 @@ internal static class VectorStoreExtensions
     {
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
-        await collection.CreateCollectionIfNotExistsAsync().ConfigureAwait(false);
+        await collection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
         // Create records and generate embeddings for them.
         var tasks = searchResults.Select(searchResult => Task.Run(async () =>

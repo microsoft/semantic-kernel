@@ -96,18 +96,9 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     }
 
     /// <inheritdoc/>
-    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        const string OperationName = "CreateCollection";
-        return this.RunOperationAsync(OperationName, () =>
-            this.InternalCreateCollectionAsync(false, cancellationToken)
-        );
-    }
-
-    /// <inheritdoc/>
-    public override Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        const string OperationName = "CreateCollectionIfNotExists";
+        const string OperationName = "EnsureCollectionExists";
         return this.RunOperationAsync(OperationName, () =>
             this.InternalCreateCollectionAsync(true, cancellationToken)
         );

@@ -35,7 +35,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItCanCreateCollectionAsync()
+    public async Task ItCanEnsureCollectionExistsAsync()
     {
         // Arrange
         var sut = new CosmosMongoCollection<string, CosmosMongoHotel>(fixture.MongoDatabase, "sk-test-create-collection");
@@ -43,7 +43,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
         try
         {
             // Act
-            await sut.CreateCollectionAsync();
+            await sut.EnsureCollectionExistsAsync();
 
             // Assert
             Assert.True(await sut.CollectionExistsAsync());
@@ -78,7 +78,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
         var record = this.CreateTestHotel(HotelId);
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
         await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = includeVectors });
 
@@ -331,7 +331,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
 
         var sut = new CosmosMongoCollection<string, CosmosMongoHotel>(fixture.MongoDatabase, "TestVectorizedSearch");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -361,7 +361,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
 
         var sut = new CosmosMongoCollection<string, CosmosMongoHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -392,7 +392,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
 
         var sut = new CosmosMongoCollection<string, CosmosMongoHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 

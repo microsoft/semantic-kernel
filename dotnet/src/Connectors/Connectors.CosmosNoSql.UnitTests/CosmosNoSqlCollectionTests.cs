@@ -132,10 +132,32 @@ public sealed class CosmosNoSqlCollectionTests
     [InlineData(IndexingMode.Consistent)]
     [InlineData(IndexingMode.Lazy)]
     [InlineData(IndexingMode.None)]
-    public async Task CreateCollectionUsesValidContainerPropertiesAsync(IndexingMode indexingMode)
+    public async Task EnsureCollectionExistsUsesValidContainerPropertiesAsync(IndexingMode indexingMode)
     {
         // Arrange
         const string CollectionName = "collection";
+
+        var mockFeedResponse = new Mock<FeedResponse<string>>();
+        mockFeedResponse
+            .Setup(l => l.Resource)
+            .Returns([]);
+
+        var mockFeedIterator = new Mock<FeedIterator<string>>();
+        mockFeedIterator
+            .SetupSequence(l => l.HasMoreResults)
+            .Returns(true)
+            .Returns(false);
+
+        mockFeedIterator
+            .Setup(l => l.ReadNextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockFeedResponse.Object);
+
+        this._mockDatabase
+            .Setup(l => l.GetContainerQueryIterator<string>(
+                It.IsAny<QueryDefinition>(),
+                It.IsAny<string>(),
+                It.IsAny<QueryRequestOptions>()))
+            .Returns(mockFeedIterator.Object);
 
         var sut = new CosmosNoSqlCollection<string, TestIndexingModel>(
             this._mockDatabase.Object,
@@ -197,7 +219,7 @@ public sealed class CosmosNoSqlCollectionTests
         };
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert
         this._mockDatabase.Verify(l => l.CreateContainerAsync(
@@ -209,8 +231,8 @@ public sealed class CosmosNoSqlCollectionTests
     }
 
     [Theory]
-    [MemberData(nameof(CreateCollectionIfNotExistsData))]
-    public async Task CreateCollectionIfNotExistsInvokesValidMethodsAsync(List<string> collections, int actualCollectionCreations)
+    [MemberData(nameof(EnsureCollectionExistsData))]
+    public async Task EnsureCollectionExistsInvokesValidMethodsAsync(List<string> collections, int actualCollectionCreations)
     {
         // Arrange
         const string CollectionName = "collection";
@@ -242,7 +264,7 @@ public sealed class CosmosNoSqlCollectionTests
             CollectionName);
 
         // Act
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert
         this._mockDatabase.Verify(l => l.CreateContainerAsync(
@@ -555,7 +577,7 @@ public sealed class CosmosNoSqlCollectionTests
         { [], "non-existent-collection", false }
     };
 
-    public static TheoryData<List<string>, int> CreateCollectionIfNotExistsData => new()
+    public static TheoryData<List<string>, int> EnsureCollectionExistsData => new()
     {
         { ["collection"], 0 },
         { [], 1 }

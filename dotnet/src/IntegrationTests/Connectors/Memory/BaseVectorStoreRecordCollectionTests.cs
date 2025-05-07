@@ -66,7 +66,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
             $"scorebydf{distanceFunction}",
             definition);
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
         await Task.Delay(this.DelayAfterIndexCreateInMilliseconds);
 
         // Create two vectors that are opposite to each other and records that use these
