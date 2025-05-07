@@ -21,7 +21,7 @@ excludedDirs:
   - ./dotnet/samples/Demos/CopilotAgentPlugins
   # Exclude folders that contains documents with links prone to becoming broken and temporarily unavailable. This should be removed when the link checker is implemented as a background job that does not block PRs.
   - ./docs/decisions/
-  - ./dotnet/samples
+  - ./dotnet/samples/
   - ./python/samples/
 baseUrl: https://github.com/microsoft/semantic-kernel/
 aliveStatusCodes: 
