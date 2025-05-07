@@ -64,7 +64,7 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
                     GetVector(
                         property,
                         generatedEmbeddings?[i] is GeneratedEmbeddings<Embedding<float>> e
-                            ? e[recordIndex]
+                            ? e[recordIndex].Vector
                             : property.GetValueAsObject(dataModel!)));
             }
 
