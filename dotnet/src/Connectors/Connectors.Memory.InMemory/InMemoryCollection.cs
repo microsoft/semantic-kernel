@@ -38,9 +38,6 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <summary>The data type of each collection, to enforce a single type per collection.</summary>
     private readonly ConcurrentDictionary<string, Type> _internalCollectionTypes;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly InMemoryCollectionOptions<TKey, TRecord> _options;
-
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
 
@@ -64,20 +61,20 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
         this.Name = name;
         this._internalCollections = new();
         this._internalCollectionTypes = new();
-        this._options = options ?? new InMemoryCollectionOptions<TKey, TRecord>();
+        options ??= new InMemoryCollectionOptions<TKey, TRecord>();
 
         this._model = new InMemoryModelBuilder()
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
+            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
 
         // Assign resolvers.
         // TODO: Make generic to avoid boxing
 #pragma warning disable MEVD9000 // KeyResolver and VectorResolver are experimental
-        this._keyResolver = this._options.KeyResolver is null
+        this._keyResolver = options.KeyResolver is null
             ? record => (TKey)this._model.KeyProperty.GetValueAsObject(record)!
-            : this._options.KeyResolver;
+            : options.KeyResolver;
 
-        this._vectorResolver = this._options.VectorResolver is not null
-            ? this._options.VectorResolver
+        this._vectorResolver = options.VectorResolver is not null
+            ? options.VectorResolver
             : (vectorPropertyName, record) =>
             {
                 if (!this._model.PropertyMap.TryGetValue(vectorPropertyName, out var property))

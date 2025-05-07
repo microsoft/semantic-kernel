@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -25,11 +26,21 @@ public sealed class WeaviateVectorStore : VectorStore
     /// <summary><see cref="HttpClient"/> that is used to interact with Weaviate API.</summary>
     private readonly HttpClient _httpClient;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly WeaviateVectorStoreOptions _options;
-
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(Guid)), new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 1)] };
+
+    /// <summary>Weaviate endpoint for remote or local cluster.</summary>
+    private readonly Uri? _endpoint;
+
+    /// <summary>
+    /// Weaviate API key.
+    /// </summary>
+    private readonly string? _apiKey;
+
+    /// <summary>Whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector in Weaviate collection.</summary>
+    private readonly bool _hasNamedVectors;
+
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStore"/> class.
@@ -45,7 +56,12 @@ public sealed class WeaviateVectorStore : VectorStore
         Verify.NotNull(httpClient);
 
         this._httpClient = httpClient;
-        this._options = options ?? new();
+
+        options ??= WeaviateVectorStoreOptions.Default;
+        this._endpoint = options.Endpoint;
+        this._apiKey = options.ApiKey;
+        this._hasNamedVectors = options.HasNamedVectors;
+        this._embeddingGenerator = options.EmbeddingGenerator;
 
         this._metadata = new()
         {
@@ -67,10 +83,10 @@ public sealed class WeaviateVectorStore : VectorStore
             new()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                Endpoint = this._options.Endpoint,
-                ApiKey = this._options.ApiKey,
-                HasNamedVectors = this._options.HasNamedVectors,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
+                Endpoint = this._endpoint,
+                ApiKey = this._apiKey,
+                HasNamedVectors = this._hasNamedVectors,
+                EmbeddingGenerator = this._embeddingGenerator
             });
 #pragma warning restore IDE0090
 

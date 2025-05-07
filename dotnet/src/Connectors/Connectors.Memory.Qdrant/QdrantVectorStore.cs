@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Qdrant.Client;
 
@@ -25,11 +26,13 @@ public sealed class QdrantVectorStore : VectorStore
     /// <summary>Qdrant client that can be used to manage the collections and points in a Qdrant store.</summary>
     private readonly MockableQdrantClient _qdrantClient;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly QdrantVectorStoreOptions _options;
-
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(ulong)), new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 1)] };
+
+    /// <summary>Whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector per qdrant point.</summary>
+    private readonly bool _hasNamedVectors;
+
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStore"/> class.
@@ -51,7 +54,10 @@ public sealed class QdrantVectorStore : VectorStore
         Verify.NotNull(qdrantClient);
 
         this._qdrantClient = qdrantClient;
-        this._options = options ?? new QdrantVectorStoreOptions();
+
+        options ??= QdrantVectorStoreOptions.Default;
+        this._hasNamedVectors = options.HasNamedVectors;
+        this._embeddingGenerator = options.EmbeddingGenerator;
 
         this._metadata = new()
         {
@@ -68,9 +74,9 @@ public sealed class QdrantVectorStore : VectorStore
 #endif
         => new QdrantCollection<TKey, TRecord>(this._qdrantClient, name, new QdrantCollectionOptions()
         {
-            HasNamedVectors = this._options.HasNamedVectors,
+            HasNamedVectors = this._hasNamedVectors,
             VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-            EmbeddingGenerator = this._options.EmbeddingGenerator
+            EmbeddingGenerator = this._embeddingGenerator
         });
 #pragma warning restore IDE0090
 

@@ -45,9 +45,6 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
     /// <summary>Azure AI Search client that can be used to manage data in an Azure AI Search Service index.</summary>
     private readonly SearchClient _searchClient;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly AzureAISearchCollectionOptions _options;
-
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
     private readonly AzureAISearchDynamicMapper? _dynamicMapper;
 
@@ -74,14 +71,15 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
         }
 
         // Assign.
-        this._searchIndexClient = searchIndexClient;
         this.Name = name;
-        this._options = options ?? new AzureAISearchCollectionOptions();
+        this._searchIndexClient = searchIndexClient;
         this._searchClient = this._searchIndexClient.GetSearchClient(name);
 
+        options ??= AzureAISearchCollectionOptions.Default;
+
         this._model = typeof(TRecord) == typeof(Dictionary<string, object?>) ?
-            new AzureAISearchDynamicModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator) :
-            new AzureAISearchModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, this._options.JsonSerializerOptions);
+            new AzureAISearchDynamicModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator) :
+            new AzureAISearchModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, options.JsonSerializerOptions);
 
         // Resolve mapper.
         // If they didn't provide a custom mapper, and the record type is the generic data model, use the built in mapper for that.

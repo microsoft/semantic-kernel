@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Driver;
 
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
+
 /// <summary>
 /// A decorator for <see cref="IAsyncCursor{T}"/> that handles errors on move next.
 /// </summary>

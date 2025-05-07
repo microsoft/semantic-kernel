@@ -14,7 +14,7 @@ public sealed class SqlServerVectorStoreOptions
     /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
-    public string? Schema { get; init; } = null;
+    public string? Schema { get; set; }
 
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.

@@ -3,7 +3,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using Microsoft.SemanticKernel.Connectors.Sqlite;
+using Microsoft.SemanticKernel.Connectors.SqliteVec;
 using Microsoft.SemanticKernel.Embeddings;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
