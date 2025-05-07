@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.AI.OpenAI;
 using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Data;
 
@@ -33,19 +34,20 @@ public class ChatCompletion_Rag(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     private async Task BasicRagAsync()
     {
-        var textEmbeddingService = new AzureOpenAITextEmbeddingGenerationService(
-            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-            TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            new AzureCliCredential());
+        var textEmbeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
+            .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
+            .AsIEmbeddingGenerator();
 
         // Create a vector store to store our documents.
-        var vectorStore = new InMemoryVectorStore();
+        // Note that the embedding generator provided here must be able to generate embeddings matching the
+        // number of dimensions configured for the TextSearchStore below.
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = textEmbeddingGenerator });
 
         // Create a store that uses a built in schema for storing text documents
         // and provides easy upload and search capabilities.
         // The data is stored in the `FinancialData` collection and embeddings have 1536 dimensions.
         // When searching results will be limited to those with the `group/g2` namespace.
-        using var textSearchStore = new TextSearchStore<string>(vectorStore, textEmbeddingService, "FinancialData", 1536);
+        using var textSearchStore = new TextSearchStore<string>(vectorStore, collectionName: "FinancialData", vectorDimensions: 1536);
 
         // Upsert documents into the store.
         await textSearchStore.UpsertTextAsync(
@@ -90,19 +92,20 @@ public class ChatCompletion_Rag(ITestOutputHelper output) : BaseTest(output)
     [Fact]
     private async Task RagWithCitationsAndFilteringAsync()
     {
-        var textEmbeddingService = new AzureOpenAITextEmbeddingGenerationService(
-            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-            TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            new AzureCliCredential());
+        var textEmbeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
+            .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
+            .AsIEmbeddingGenerator();
 
         // Create a vector store to store our documents.
-        var vectorStore = new InMemoryVectorStore();
+        // Note that the embedding generator provided here must be able to generate embeddings matching the
+        // number of dimensions configured for the TextSearchStore below.
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = textEmbeddingGenerator });
 
         // Create a store that uses a built in schema for storing text documents
         // and provides easy upload and search capabilities.
         // The data is stored in the `FinancialData` collection and embeddings have 1536 dimensions.
         // When searching results will be limited to those with the `group/g2` namespace.
-        using var textSearchStore = new TextSearchStore<string>(vectorStore, textEmbeddingService, "FinancialData", 1536, new() { SearchNamespace = "group/g2" });
+        using var textSearchStore = new TextSearchStore<string>(vectorStore, collectionName: "FinancialData", vectorDimensions: 1536, new() { SearchNamespace = "group/g2" });
 
         // Upsert documents into the store.
         // Not that documents have different namespaces, and only the ones

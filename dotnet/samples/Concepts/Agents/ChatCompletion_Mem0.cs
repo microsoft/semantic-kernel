@@ -32,13 +32,13 @@ public class ChatCompletion_Mem0(ITestOutputHelper output) : BaseTest(output)
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", TestConfiguration.Mem0.ApiKey);
 
         // Create a mem0 component with the current user's id, so that it stores memories for that user.
-        var mem0Component = new Mem0MemoryComponent(httpClient, new()
+        var mem0Behavior = new Mem0Behavior(httpClient, new()
         {
             UserId = "U1"
         });
 
         // Clear out any memories from previous runs, if any, to demonstrate a first run experience.
-        await mem0Component.ClearStoredMemoriesAsync();
+        await mem0Behavior.ClearStoredMemoriesAsync();
 
         // Create our agent and add our finance plugin with auto function invocation.
         Kernel kernel = this.CreateKernelWithChatCompletion();
@@ -56,7 +56,7 @@ public class ChatCompletion_Mem0(ITestOutputHelper output) : BaseTest(output)
 
         // Create a thread for the agent and add the mem0 component to it.
         ChatHistoryAgentThread agentThread = new();
-        agentThread.AIContextBehaviors.Add(mem0Component);
+        agentThread.AIContextBehaviors.Add(mem0Behavior);
 
         // First ask the agent to retrieve a company report with no previous context.
         // The agent will not be able to invoke the plugin, since it doesn't know
@@ -80,7 +80,7 @@ public class ChatCompletion_Mem0(ITestOutputHelper output) : BaseTest(output)
         // Create a new thread for the agent and add our mem0 component to it again
         // The new thread has no context of the previous conversation.
         agentThread = new();
-        agentThread.AIContextBehaviors.Add(mem0Component);
+        agentThread.AIContextBehaviors.Add(mem0Behavior);
 
         // Since we have the mem0 component in the thread, the agent should be able to
         // retrieve the company report without asking for clarification, as it will

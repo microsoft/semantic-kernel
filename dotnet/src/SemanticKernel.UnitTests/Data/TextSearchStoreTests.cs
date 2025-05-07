@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Data;
-using Microsoft.SemanticKernel.Embeddings;
 using Moq;
 using Xunit;
 
@@ -16,29 +15,23 @@ namespace SemanticKernel.UnitTests.Data;
 public class TextSearchStoreTests
 {
     private readonly Mock<IVectorStore> _vectorStoreMock;
-    private readonly Mock<ITextEmbeddingGenerationService> _embeddingServiceMock;
     private readonly Mock<IVectorStoreRecordCollection<string, TextSearchStore<string>.TextRagStorageDocument<string>>> _recordCollectionMock;
 
     public TextSearchStoreTests()
     {
         this._vectorStoreMock = new Mock<IVectorStore>();
         this._recordCollectionMock = new Mock<IVectorStoreRecordCollection<string, TextSearchStore<string>.TextRagStorageDocument<string>>>();
-        this._embeddingServiceMock = new Mock<ITextEmbeddingGenerationService>();
 
         this._vectorStoreMock
             .Setup(v => v.GetCollection<string, TextSearchStore<string>.TextRagStorageDocument<string>>("testCollection", It.IsAny<VectorStoreRecordDefinition>()))
             .Returns(this._recordCollectionMock.Object);
-
-        this._embeddingServiceMock
-            .Setup(e => e.GenerateEmbeddingsAsync(It.IsAny<IList<string>>(), null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new[] { new ReadOnlyMemory<float>(new float[128]) });
     }
 
     [Fact]
     public async Task UpsertDocumentsAsyncThrowsWhenDocumentsAreNull()
     {
         // Arrange
-        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128);
+        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() => store.UpsertDocumentsAsync(null!));
@@ -48,7 +41,7 @@ public class TextSearchStoreTests
     public async Task UpsertTextAsyncThrowsWhenDocumentsAreNull()
     {
         // Arrange
-        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128);
+        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() => store.UpsertTextAsync(null!));
@@ -60,7 +53,16 @@ public class TextSearchStoreTests
     public async Task UpsertDocumentsAsyncThrowsDocumentTextIsNullOrWhiteSpace(string? text)
     {
         // Arrange
-        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128);
+        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
+        this._recordCollectionMock
+            .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
+            .Callback(
+                (IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>> documents, CancellationToken token) =>
+                {
+                    // Enumerate upserted documents to trigger the exception.
+                    var a = documents.ToList();
+                })
+            .ReturnsAsync(new List<string>());
 
         var documents = new List<TextSearchDocument>
         {
@@ -77,21 +79,30 @@ public class TextSearchStoreTests
     public async Task UpsertTextAsyncThrowsDocumentTextIsNullOrWhiteSpace(string? text)
     {
         // Arrange
-        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128);
+        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
+        this._recordCollectionMock
+            .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
+            .Callback(
+                (IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>> documents, CancellationToken token) =>
+                {
+                    // Enumerate upserted documents to trigger the exception.
+                    var a = documents.ToList();
+                })
+            .ReturnsAsync(new List<string>());
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => store.UpsertTextAsync([text!]));
     }
 
     [Fact]
-    public async Task UpsertDocumentsAsyncCreatesCollectionGeneratesVectorAndUpsertsDocument()
+    public async Task UpsertDocumentsAsyncCreatesCollectionUpsertsDocument()
     {
         // Arrange
         this._recordCollectionMock
             .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<string>());
 
-        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128);
+        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
 
         var documents = new List<TextSearchDocument>
         {
@@ -103,7 +114,6 @@ public class TextSearchStoreTests
 
         // Assert
         this._recordCollectionMock.Verify(r => r.CreateCollectionIfNotExistsAsync(It.IsAny<CancellationToken>()), Times.Once);
-        this._embeddingServiceMock.Verify(e => e.GenerateEmbeddingsAsync(It.Is<IList<string>>(texts => texts.Count == 1 && texts[0] == "Sample text"), null, It.IsAny<CancellationToken>()), Times.Once);
         this._recordCollectionMock.Verify(r => r.UpsertAsync(
             It.Is<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(doc =>
                 doc.Count() == 1 &&
@@ -113,19 +123,19 @@ public class TextSearchStoreTests
                 doc.First().SourceId == "sid" &&
                 doc.First().SourceLink == "sl" &&
                 doc.First().SourceName == "sn" &&
-                doc.First().TextEmbedding.Length == 128),
+                doc.First().TextEmbedding == "Sample text"),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task UpsertDocumentsAsyncCreatesCollectionGeneratesVectorAndUpsertsDocumentWithSourceIdAsId()
+    public async Task UpsertDocumentsAsyncCreatesCollectionUpsertsDocumentWithSourceIdAsId()
     {
         // Arrange
         this._recordCollectionMock
             .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<string>());
 
-        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128, new() { UseSourceIdAsPrimaryKey = true });
+        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128, new() { UseSourceIdAsPrimaryKey = true });
 
         var documents = new List<TextSearchDocument>
         {
@@ -146,19 +156,19 @@ public class TextSearchStoreTests
                 doc.First().SourceId == "sid" &&
                 doc.First().SourceLink == "sl" &&
                 doc.First().SourceName == "sn" &&
-                doc.First().TextEmbedding.Length == 128),
+                doc.First().TextEmbedding == "Sample text"),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task UpsertDocumentsAsyncCreatesCollectionGeneratesVectorAndUpsertsDocumentWithoutSourceText()
+    public async Task UpsertDocumentsAsyncCreatesCollectionUpsertsDocumentWithoutSourceText()
     {
         // Arrange
         this._recordCollectionMock
             .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<string>());
 
-        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128);
+        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
 
         var documents = new List<TextSearchDocument>
         {
@@ -178,26 +188,25 @@ public class TextSearchStoreTests
                 doc.First().SourceId == "sid" &&
                 doc.First().SourceLink == "sl" &&
                 doc.First().SourceName == "sn" &&
-                doc.First().TextEmbedding.Length == 128),
+                doc.First().TextEmbedding == "Sample text"),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task UpsertTextAsyncCreatesCollectionGeneratesVectorAndUpsertsDocument()
+    public async Task UpsertTextAsyncCreatesCollectionUpsertsDocument()
     {
         // Arrange
         this._recordCollectionMock
             .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<string>());
 
-        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128);
+        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
 
         // Act
         await store.UpsertTextAsync(["Sample text"]);
 
         // Assert
         this._recordCollectionMock.Verify(r => r.CreateCollectionIfNotExistsAsync(It.IsAny<CancellationToken>()), Times.Once);
-        this._embeddingServiceMock.Verify(e => e.GenerateEmbeddingsAsync(It.Is<IList<string>>(texts => texts.Count == 1 && texts[0] == "Sample text"), null, It.IsAny<CancellationToken>()), Times.Once);
         this._recordCollectionMock.Verify(r => r.UpsertAsync(
             It.Is<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(doc =>
                 doc.Count() == 1 &&
@@ -206,7 +215,7 @@ public class TextSearchStoreTests
                 doc.First().SourceId == null &&
                 doc.First().SourceLink == null &&
                 doc.First().SourceName == null &&
-                doc.First().TextEmbedding.Length == 128),
+                doc.First().TextEmbedding == "Sample text"),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -220,10 +229,10 @@ public class TextSearchStoreTests
         };
 
         this._recordCollectionMock
-            .Setup(r => r.SearchEmbeddingAsync(It.IsAny<ReadOnlyMemory<float>>(), It.IsAny<int>(), It.IsAny<VectorSearchOptions<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.SearchAsync("query", 3, It.IsAny<VectorSearchOptions<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
             .Returns(mockResults.ToAsyncEnumerable());
 
-        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, this._embeddingServiceMock.Object, "testCollection", 128);
+        using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
 
         // Act
         var actualResults = await store.SearchAsync("query");
@@ -246,12 +255,11 @@ public class TextSearchStoreTests
         };
 
         this._recordCollectionMock
-            .Setup(r => r.SearchEmbeddingAsync(It.IsAny<ReadOnlyMemory<float>>(), It.IsAny<int>(), It.IsAny<VectorSearchOptions<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.SearchAsync("query", 3, It.IsAny<VectorSearchOptions<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
             .Returns(mockResults.ToAsyncEnumerable());
 
         using var store = new TextSearchStore<string>(
             this._vectorStoreMock.Object,
-            this._embeddingServiceMock.Object,
             "testCollection",
             128,
             new()
