@@ -122,14 +122,15 @@ class FunctionResultContent(KernelContent):
         cls: type[_T],
         function_call_content: "FunctionCallContent",
         result: "FunctionResult | TextContent | ChatMessageContent | Any",
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
     ) -> _T:
         """Create an instance from a FunctionCallContent and a result."""
         from semantic_kernel.contents.chat_message_content import ChatMessageContent
         from semantic_kernel.functions.function_result import FunctionResult
 
-        metadata.update(function_call_content.metadata or {})
-        metadata.update(getattr(result, "metadata", {}))
+        metadata = metadata or {}
+        metadata = metadata | (function_call_content.metadata or {})
+        metadata = metadata | getattr(result, "metadata", {})
         inner_content = result
         if isinstance(result, FunctionResult):
             result = result.value
