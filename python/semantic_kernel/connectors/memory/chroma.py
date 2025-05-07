@@ -490,7 +490,7 @@ class ChromaStore(VectorStore):
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
+    ) -> ChromaCollection:
         """Get a vector record store."""
         return ChromaCollection(
             client=self.client,

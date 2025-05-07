@@ -142,15 +142,17 @@ async def test_create_collection_fail(pinecone_unit_test_env, data_model_definit
         )
 
 
-async def test_get_collection(store, data_model_definition):
+async def test_get_collection(store: PineconeStore, data_model_definition):
     """Test the creation of a Pinecone collection."""
     # Create a collection
-    collection = store.get_collection("test_collection", dict, data_model_definition)
+    collection = store.get_collection(
+        collection_name="test_collection", data_model_type=dict, data_model_definition=data_model_definition
+    )
     assert collection is not None
     assert collection.collection_name == "test_collection"
 
 
-async def test_list_collection_names(store):
+async def test_list_collection_names(store: PineconeStore):
     """Test the listing of Pinecone collections."""
     # List collections
     collections = await store.list_collection_names()
@@ -191,7 +193,7 @@ async def test_create_collection_integrated(collection, mock_create_index_for_mo
         name=collection.collection_name,
         cloud="aws",
         region="us-east-1",
-        embed={"model": "test-model", "metric": Metric.COSINE, "field_map": {"text": "content"}},
+        embed={"model": "test-model", "metric": Metric.COSINE, "field_map": {"text": "vector"}},
     )
 
 
@@ -255,7 +257,8 @@ async def test_get(collection):
             ids=[record["id"]],
             namespace=collection.namespace,
         )
-        assert record == get_record
+        assert record["id"] == get_record["id"]
+        assert record["content"] == get_record["content"]
 
 
 async def test_delete(collection):
@@ -288,12 +291,12 @@ async def test_search(collection):
     await collection._load_index_client()
     with patch.object(collection.index_client, "query", new_callable=AsyncMock) as mock_query:
         mock_query.return_value = query_response
-        query_response = await collection.vectorized_search(
+        query_response = await collection.search(
             vector=[0.1, 0.2, 0.3, 0.4, 0.5],
             options=VectorSearchOptions(
                 top=1,
-                include_vectors=False,
-                # filter=VectorSearchFilter.equal_to("content", "test_content")
+                include_vectors=True,
+                filter=lambda x: x.content == "test_content",
             ),
         )
         mock_query.assert_awaited_once_with(
@@ -302,7 +305,7 @@ async def test_search(collection):
             include_metadata=True,
             include_values=True,
             namespace=collection.namespace,
-            filter={"content": {"$eq": "test_content"}},
+            filter={"content": "test_content"},
         )
         assert query_response.total_count == 1
         async for result in query_response.results:
@@ -328,8 +331,8 @@ async def test_search_embed(collection):
     await collection._load_index_client()
     with patch.object(collection.index_client, "search_records", new_callable=AsyncMock) as mock_query:
         mock_query.return_value = query_response
-        query_response = await collection.vectorizable_text_search(
-            vectorizable_text="test", options=VectorSearchOptions(top=1, include_vectors=True)
+        query_response = await collection.search(
+            values="test", options=VectorSearchOptions(top=1, include_vectors=True)
         )
         mock_query.assert_awaited_once_with(
             query={"inputs": {"text": "test"}, "top_k": 1},

@@ -695,7 +695,7 @@ class AzureAISearchStore(VectorStore):
         embedding_generator: EmbeddingGeneratorBase | None = None,
         search_client: SearchClient | None = None,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
+    ) -> AzureAISearchCollection:
         """Get a AzureAISearchCollection tied to a collection.
 
         Args:

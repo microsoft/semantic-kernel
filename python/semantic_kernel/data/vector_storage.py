@@ -135,6 +135,13 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
                 f"Key field must be one of {self.supported_key_types}, "
                 f"got {self.data_model_definition.key_field.property_type}"
             )
+        if not self.supported_vector_types:
+            return
+        for field in self.data_model_definition.vector_fields:
+            if field.property_type and field.property_type not in self.supported_vector_types:
+                raise VectorStoreModelValidationError(
+                    f"Vector field {field.name} must be one of {self.supported_vector_types}, got {field.property_type}"
+                )
 
     @abstractmethod
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
@@ -220,6 +227,8 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
         """
         if self.data_model_definition.to_dict:
             return self.data_model_definition.to_dict(record, **kwargs)
+        if isinstance(record, BaseModel):
+            return record.model_dump()
 
         store_model = {}
         for field in self.data_model_definition.fields:
@@ -776,7 +785,9 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
             return None
 
         try:
-            model_records = self.deserialize(records if batch else records[0], **kwargs)
+            model_records = self.deserialize(
+                records if batch else records[0], include_vectors=include_vectors, **kwargs
+            )
         # the deserialize method will parse any exception into a VectorStoreModelDeserializationException
         except VectorStoreModelDeserializationException:
             raise
@@ -832,7 +843,19 @@ class VectorStore(KernelBaseModel):
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> "VectorStoreRecordCollection":
-        """Get a vector record store."""
+        """Get a vector store record collection instance tied to this store.
+
+        Args:
+            data_model_type: The type of the data model.
+            data_model_definition: The data model definition.
+            collection_name: The name of the collection.
+            embedding_generator: The embedding generator to use.
+            **kwargs: Additional arguments.
+
+        Returns:
+            A vector store record collection instance tied to this store.
+
+        """
         ...  # pragma: no cover
 
     @abstractmethod
@@ -843,7 +866,8 @@ class VectorStore(KernelBaseModel):
     async def does_collection_exist(self, collection_name: str) -> bool:
         """Check if a collection exists.
 
-        This is a wrapper around the get_collection method, to check if the collection exists.
+        This is a wrapper around the get_collection method of a collection,
+        to check if the collection exists.
         """
         try:
             data_model = VectorStoreRecordDefinition(fields=[VectorStoreRecordKeyField(name="id")])
@@ -857,7 +881,8 @@ class VectorStore(KernelBaseModel):
     async def delete_collection(self, collection_name: str) -> None:
         """Delete a collection.
 
-        This is a wrapper around the get_collection method, to delete the collection.
+        This is a wrapper around the get_collection method of a collection,
+        to delete the collection.
         """
         try:
             data_model = VectorStoreRecordDefinition(fields=[VectorStoreRecordKeyField(name="id")])

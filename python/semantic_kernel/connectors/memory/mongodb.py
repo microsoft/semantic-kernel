@@ -598,16 +598,7 @@ class MongoDBAtlasStore(VectorStore):
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
-        """Get a MongoDBAtlasCollection tied to a collection.
-
-        Args:
-            data_model_type: The type of the data model.
-            data_model_definition: The model fields, optional.
-            collection_name: The name of the collection.
-            embedding_generator: The embedding generator, optional.
-            **kwargs: Additional keyword arguments, passed to the collection constructor.
-        """
+    ) -> MongoDBAtlasCollection:
         return MongoDBAtlasCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,

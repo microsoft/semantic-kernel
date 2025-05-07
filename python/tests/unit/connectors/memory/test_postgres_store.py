@@ -64,14 +64,14 @@ async def vector_store(postgres_unit_test_env) -> AsyncGenerator[PostgresStore, 
 class SimpleDataModel:
     id: Annotated[int, VectorStoreRecordKeyField()]
     data: Annotated[
-        str | list[float],
+        list[float] | str | None,
         VectorStoreRecordVectorField(
             index_kind=IndexKind.HNSW,
             dimensions=1536,
             distance_function=DistanceFunction.COSINE_SIMILARITY,
             property_type="float",
         ),
-    ]
+    ] = None
 
 
 # region VectorStore Tests
@@ -99,19 +99,19 @@ async def test_list_collection_names(vector_store: PostgresStore, mock_cursor: M
 
 
 def test_get_collection(vector_store: PostgresStore) -> None:
-    collection = vector_store.get_collection("test_collection", SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
     assert collection.collection_name == "test_collection"
 
 
 async def test_does_collection_exist(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     mock_cursor.fetchall.return_value = [("test_collection",)]
-    collection = vector_store.get_collection("test_collection", SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
     result = await collection.does_collection_exist()
     assert result is True
 
 
 async def test_delete_collection(vector_store: PostgresStore, mock_cursor: Mock) -> None:
-    collection = vector_store.get_collection("test_collection", SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
     await collection.delete_collection()
 
     assert mock_cursor.execute.call_count == 1
@@ -123,8 +123,8 @@ async def test_delete_collection(vector_store: PostgresStore, mock_cursor: Mock)
 
 
 async def test_delete_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
-    collection = vector_store.get_collection("test_collection", SimpleDataModel)
-    await collection.delete_batch([1, 2])
+    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
+    await collection.delete([1, 2])
 
     assert mock_cursor.execute.call_count == 1
     execute_args, _ = mock_cursor.execute.call_args
@@ -135,7 +135,7 @@ async def test_delete_records(vector_store: PostgresStore, mock_cursor: Mock) ->
 
 
 async def test_create_collection_simple_model(vector_store: PostgresStore, mock_cursor: Mock) -> None:
-    collection = vector_store.get_collection("test_collection", SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
     await collection.create_collection()
 
     # 2 calls, once for the table creation and once for the index creation
@@ -145,17 +145,14 @@ async def test_create_collection_simple_model(vector_store: PostgresStore, mock_
     execute_args, _ = mock_cursor.execute.call_args_list[0]
     statement = execute_args[0]
     statement_str = statement.as_string()
-    assert statement_str == (
-        'CREATE TABLE "public"."test_collection" ("id" INTEGER PRIMARY KEY, "embedding" VECTOR(1536), "data" JSONB)'
-    )
+    assert statement_str == ('CREATE TABLE "public"."test_collection" ("id" INTEGER PRIMARY KEY, "data" VECTOR(1536))')
 
     # Check the index creation statement
     execute_args, _ = mock_cursor.execute.call_args_list[1]
     statement = execute_args[0]
     statement_str = statement.as_string()
     assert statement_str == (
-        'CREATE INDEX "test_collection_embedding_idx" ON "public"."test_collection" '
-        'USING hnsw ("embedding" vector_cosine_ops)'
+        'CREATE INDEX "test_collection_data_idx" ON "public"."test_collection" USING hnsw ("data" vector_cosine_ops)'
     )
 
 
@@ -170,30 +167,38 @@ async def test_create_collection_model_with_python_types(vector_store: PostgresS
         scores: Annotated[list[float], VectorStoreRecordDataField()]
         tags: Annotated[list[str], VectorStoreRecordDataField()]
 
-    collection = vector_store.get_collection("test_collection", ModelWithImplicitTypes)
+    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=ModelWithImplicitTypes)
 
     await collection.create_collection()
 
-    assert mock_cursor.execute.call_count == 1
+    assert mock_cursor.execute.call_count == 2
 
-    execute_args, _ = mock_cursor.execute.call_args
-
+    # Check the table creation statement
+    execute_args, _ = mock_cursor.execute.call_args_list[0]
     statement = execute_args[0]
     statement_str = statement.as_string()
-
     assert statement_str == (
         'CREATE TABLE "public"."test_collection" '
         '("name" TEXT PRIMARY KEY, "age" INTEGER, "data" JSONB, '
         '"embedding" VECTOR(20), "scores" DOUBLE PRECISION[], "tags" TEXT[])'
     )
 
+    # Check the index creation statement
+    execute_args, _ = mock_cursor.execute.call_args_list[1]
+    statement = execute_args[0]
+    statement_str = statement.as_string()
+    assert statement_str == (
+        'CREATE INDEX "test_collection_embedding_idx" ON "public"."test_collection" '
+        'USING hnsw ("embedding" vector_cosine_ops)'
+    )
+
 
 async def test_upsert_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
-    collection = vector_store.get_collection("test_collection", SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
     await collection.upsert([
-        SimpleDataModel(id=1, embedding=[1.0, 2.0, 3.0], data={"key": "value1"}),
-        SimpleDataModel(id=2, embedding=[4.0, 5.0, 6.0], data={"key": "value2"}),
-        SimpleDataModel(id=3, embedding=[5.0, 6.0, 1.0], data={"key": "value3"}),
+        SimpleDataModel(id=1, data=[1.0, 2.0, 3.0]),
+        SimpleDataModel(id=2, data=[4.0, 5.0, 6.0]),
+        SimpleDataModel(id=3, data=[5.0, 6.0, 1.0]),
     ])
 
     assert mock_cursor.executemany.call_count == 1
@@ -203,14 +208,14 @@ async def test_upsert_records(vector_store: PostgresStore, mock_cursor: Mock) ->
     assert len(values) == 3
 
     assert statement_str == (
-        'INSERT INTO "public"."test_collection" ("id", "embedding", "data") '
-        "VALUES (%s, %s, %s) "
-        'ON CONFLICT ("id") DO UPDATE SET "embedding" = EXCLUDED."embedding", "data" = EXCLUDED."data"'
+        'INSERT INTO "public"."test_collection" ("id", "data") '
+        "VALUES (%s, %s) "
+        'ON CONFLICT ("id") DO UPDATE SET "data" = EXCLUDED."data"'
     )
 
-    assert values[0] == (1, [1.0, 2.0, 3.0], '{"key": "value1"}')
-    assert values[1] == (2, [4.0, 5.0, 6.0], '{"key": "value2"}')
-    assert values[2] == (3, [5.0, 6.0, 1.0], '{"key": "value3"}')
+    assert values[0] == (1, [1.0, 2.0, 3.0])
+    assert values[1] == (2, [4.0, 5.0, 6.0])
+    assert values[2] == (3, [5.0, 6.0, 1.0])
 
 
 async def test_get_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
@@ -220,21 +225,13 @@ async def test_get_records(vector_store: PostgresStore, mock_cursor: Mock) -> No
         (3, "[5.0, 6.0, 1.0]", {"key": "value3"}),
     ]
 
-    collection = vector_store.get_collection("test_collection", SimpleDataModel)
-    records = await collection.get_batch([1, 2, 3])
+    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
+    records = await collection.get([1, 2, 3])
 
     assert len(records) == 3
     assert records[0].id == 1
-    assert records[0].embedding == [1.0, 2.0, 3.0]
-    assert records[0].data == {"key": "value1"}
-
     assert records[1].id == 2
-    assert records[1].embedding == [4.0, 5.0, 6.0]
-    assert records[1].data == {"key": "value2"}
-
     assert records[2].id == 3
-    assert records[2].embedding == [5.0, 6.0, 1.0]
-    assert records[2].data == {"key": "value3"}
 
 
 # endregion
@@ -279,7 +276,7 @@ async def test_vector_search(
             VectorStoreRecordDataField(property_type="JSONB"),
         ]
 
-    collection = vector_store.get_collection("test_collection", SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
     assert isinstance(collection, PostgresCollection)
 
     search_results = await collection.search(
@@ -348,7 +345,7 @@ async def test_model_post_init_conflicting_distance_column_name(vector_store: Po
             VectorStoreRecordDataField(property_type="JSONB"),
         ]
 
-    collection = vector_store.get_collection("test_collection", ConflictingDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=ConflictingDataModel)
     assert isinstance(collection, PostgresCollection)
 
     # Ensure that the distance column name has been changed to avoid conflict

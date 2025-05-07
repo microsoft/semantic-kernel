@@ -531,7 +531,7 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
+    ) -> AzureCosmosDBforMongoDBCollection:
         return AzureCosmosDBforMongoDBCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
@@ -1063,7 +1063,7 @@ class AzureCosmosDBNoSQLStore(AzureCosmosDBNoSQLBase, VectorStore):
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
+    ) -> AzureCosmosDBNoSQLCollection:
         return AzureCosmosDBNoSQLCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,

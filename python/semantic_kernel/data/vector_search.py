@@ -248,8 +248,8 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         """Search the vector store with Vector search for records that match the given vector and filter.
 
         Args:
-            vector: The vector to search for
             options: The options to use for the search.
+            vector: The vector to search for
             kwargs: If options are not set, this is used to create them.
                 they are passed on to the inner search method.
 
@@ -274,8 +274,8 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
 
         Args:
             values: The values to search for.
-            vector: The vector to search for, if not provided, the values will be used to generate a vector.
             options: The options to use for the search.
+            vector: The vector to search for, if not provided, the values will be used to generate a vector.
             kwargs: If options are not set, this is used to create them.
                 they are passed on to the inner search method.
 
@@ -488,7 +488,7 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
 
     """
 
-    vector_search: VectorSearch
+    vector_search: VectorSearch = Field(..., kw_only=False)
     search_type: SearchType = SearchType.VECTOR
     string_mapper: Callable[[TModel], str] | None = None
     text_search_results_mapper: Callable[[TModel], TextSearchResult] | None = None
@@ -526,7 +526,7 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
     ) -> "KernelSearchResults[VectorSearchResult[TModel]]":
         """Internal method to execute the search."""
         if self.search_type == SearchType.VECTOR:
-            return await self.vector_search.search(query, options=options, **kwargs)
+            return await self.vector_search.search(values=query, options=options, **kwargs)
         if self.search_type == SearchType.KEYWORD_HYBRID:
             return await self.vector_search.hybrid_search(values=query, options=options, **kwargs)
         raise VectorSearchExecutionException("No search method available.")  # pragma: no cover

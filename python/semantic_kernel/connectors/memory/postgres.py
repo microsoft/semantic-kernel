@@ -126,6 +126,12 @@ def _python_type_to_postgres(python_type_str: str) -> str | None:
         postgres_element_type = _python_type_to_postgres(element_type_str)
         return f"{postgres_element_type}[]"
 
+    # Check if the type is a dictionary
+    dict_pattern = re.compile(r"(?i)Dict\[(.*), (.*)\]")
+    match = dict_pattern.match(python_type_str)
+    if match:
+        return "JSONB"
+
     # Handle basic types
     if python_type_str in type_mapping:
         return type_mapping[python_type_str]
@@ -369,7 +375,7 @@ class PostgresCollection(
 
         distance_column_name = DISTANCE_COLUMN_NAME
         tries = 0
-        while distance_column_name in self.data_model_definition.fields:
+        while distance_column_name in self.data_model_definition.get_storage_property_names():
             # Reset the distance column name, ensuring no collision with existing model fields
             # Avoid bandit B311 - random is not used for a security/cryptographic purpose
             suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))  # nosec B311
@@ -973,7 +979,7 @@ class PostgresStore(VectorStore):
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
+    ) -> PostgresCollection:
         return PostgresCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,

@@ -631,16 +631,7 @@ class QdrantStore(VectorStore):
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
-        """Get a QdrantCollection tied to a collection.
-
-        Args:
-            data_model_type (type[TModel]): The type of the data model.
-            data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
-            collection_name (str): The name of the collection.
-            embedding_generator (EmbeddingGeneratorBase | None): The embedding generator to use, optional.
-            **kwargs: Additional keyword arguments, passed to the collection constructor.
-        """
+    ) -> QdrantCollection:
         return QdrantCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,

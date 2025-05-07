@@ -294,7 +294,7 @@ class InMemoryStore(VectorStore):
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
+    ) -> InMemoryCollection:
         """Get a collection."""
         return InMemoryCollection(
             data_model_type=data_model_type,
