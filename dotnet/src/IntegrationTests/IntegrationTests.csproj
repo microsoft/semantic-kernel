@@ -73,7 +73,7 @@
     <ProjectReference Include="..\Connectors\Connectors.Amazon\Connectors.Amazon.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.SqliteVec\Connectors.Memory.SqliteVec.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />
     <ProjectReference Include="..\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\Agents\OpenAI\Agents.OpenAI.csproj" />
@@ -91,7 +91,7 @@
     <ProjectReference Include="..\Connectors\Connectors.Memory.InMemory\Connectors.Memory.InMemory.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Milvus\Connectors.Memory.Milvus.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.PgVector\Connectors.Memory.PgVector.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
     <ProjectReference Include="..\Experimental\Process.Abstractions\Process.Abstractions.csproj" />
     <ProjectReference Include="..\Experimental\Process.Core\Process.Core.csproj" />
