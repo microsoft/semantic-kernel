@@ -14,6 +14,7 @@ namespace Microsoft.SemanticKernel;
 public sealed class ListenForBuilder
 {
     private readonly ProcessBuilder _processBuilder;
+    private ListenForTargetBuilder? _targetBuilder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ListenForBuilder"/> class.
@@ -35,7 +36,21 @@ public sealed class ListenForBuilder
         Verify.NotNullOrWhiteSpace(messageType, nameof(messageType));
         Verify.NotNull(from, nameof(from));
 
-        return new ListenForTargetBuilder(new List<MessageSourceBuilder> { new(messageType, from) }, this._processBuilder);
+        this._targetBuilder = new ListenForTargetBuilder([new(messageType, from)], this._processBuilder);
+        return this._targetBuilder;
+    }
+
+    /// <summary>
+    /// Defines a message to listen for from a specific process step.
+    /// </summary>
+    /// <param name="from">The process step from which the message originates.</param>
+    /// <returns>A builder for defining the target of the message.</returns>
+    public ListenForTargetBuilder OnResult(ProcessStepBuilder from)
+    {
+        Verify.NotNull(from, nameof(from));
+
+        this._targetBuilder = new ListenForTargetBuilder([new("Invoke.OnResult", from)], this._processBuilder);
+        return this._targetBuilder;
     }
 
     /// <summary>
@@ -48,7 +63,8 @@ public sealed class ListenForBuilder
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
 
         var edgeGroup = new KernelProcessEdgeGroupBuilder(this.GetGroupId(messageSources), messageSources);
-        return new ListenForTargetBuilder(messageSources, this._processBuilder, edgeGroup: edgeGroup);
+        this._targetBuilder = new ListenForTargetBuilder(messageSources, this._processBuilder, edgeGroup: edgeGroup);
+        return this._targetBuilder;
     }
 
     private string GetGroupId(List<MessageSourceBuilder> messageSources)

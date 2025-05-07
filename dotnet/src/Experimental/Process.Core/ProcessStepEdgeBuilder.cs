@@ -2,7 +2,6 @@
 
 using System;
 using System.Linq;
-using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
@@ -30,13 +29,19 @@ public class ProcessStepEdgeBuilder
     internal KernelProcessEdgeGroupBuilder? EdgeGroupBuilder { get; set; }
 
     /// <summary>
+    /// The condition that must be met for the edge to fire.
+    /// </summary>
+    internal KernelProcessEdgeCondition? Condition { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ProcessStepEdgeBuilder"/> class.
     /// </summary>
     /// <param name="source">The source step.</param>
     /// <param name="eventId">The Id of the event.</param>
     /// <param name="eventName"></param>
     /// <param name="edgeGroupBuilder">The group Id for the edge.</param>
-    internal ProcessStepEdgeBuilder(ProcessStepBuilder source, string eventId, string eventName, KernelProcessEdgeGroupBuilder? edgeGroupBuilder = null)
+    /// <param name="condition">The condition that must be met for the edge to fire.</param>
+    internal ProcessStepEdgeBuilder(ProcessStepBuilder source, string eventId, string eventName, KernelProcessEdgeGroupBuilder? edgeGroupBuilder = null, KernelProcessEdgeCondition? condition = null)
     {
         Verify.NotNull(source, nameof(source));
         Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
@@ -44,6 +49,7 @@ public class ProcessStepEdgeBuilder
         this.Source = source;
         this.EventData = new() { EventId = eventId, EventName = eventName };
         this.EdgeGroupBuilder = edgeGroupBuilder;
+        this.Condition = condition;
     }
 
     /// <summary>
@@ -61,7 +67,7 @@ public class ProcessStepEdgeBuilder
             this.Target.Step.RegisterGroupInputMapping(edgeGroup);
         }
 
-        return new KernelProcessEdge(this.Source.Id, this.Target.Build(processBuilder), groupId: this.EdgeGroupBuilder?.GroupId);
+        return new KernelProcessEdge(this.Source.Id, this.Target.Build(processBuilder), groupId: this.EdgeGroupBuilder?.GroupId, this.Condition);
     }
 
     /// <summary>
@@ -72,6 +78,18 @@ public class ProcessStepEdgeBuilder
     public ProcessStepEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder target)
     {
         return this.SendEventTo_Internal(target);
+    }
+
+    /// <summary>
+    /// Sets the condition for the edge.
+    /// </summary>
+    /// <param name="condition"></param>
+    /// <returns></returns>
+    public ProcessStepEdgeBuilder OnCondition(KernelProcessEdgeCondition condition)
+    {
+        Verify.NotNull(condition, nameof(condition));
+        this.Condition = condition;
+        return this;
     }
 
     /// <summary>
@@ -96,7 +114,7 @@ public class ProcessStepEdgeBuilder
         this.Target = target;
         this.Source.LinkTo(this.EventData.EventId, this);
 
-        return new ProcessStepEdgeBuilder(this.Source, this.EventData.EventId, this.EventData.EventName, this.EdgeGroupBuilder);
+        return this; // new ProcessStepEdgeBuilder(this.Source, this.EventData.EventId, this.EventData.EventName, this.EdgeGroupBuilder, this.Condition);
     }
 
     /// <summary>

@@ -473,7 +473,7 @@ public class WorkflowBuilder
                 {
                     OnCondition = new DeclarativeProcessCondition
                     {
-                        Type = "state",
+                        Type = DeclarativeProcessConditionType.State,
                         Expression = h.Expression,
                         Emits = h.Emits,
                         Updates = h.Updates
@@ -490,7 +490,7 @@ public class WorkflowBuilder
                 {
                     OnCondition = new DeclarativeProcessCondition
                     {
-                        Type = "semantic",
+                        Type = DeclarativeProcessConditionType.Semantic,
                         Expression = h.Expression,
                         Emits = h.Emits,
                         Updates = h.Updates
@@ -506,7 +506,7 @@ public class WorkflowBuilder
                 {
                     OnCondition = new DeclarativeProcessCondition
                     {
-                        Type = "default",
+                        Type = DeclarativeProcessConditionType.Default,
                         Expression = handler.Default.Expression,
                         Emits = handler.Default.Emits,
                         Updates = handler.Default.Updates

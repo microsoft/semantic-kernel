@@ -72,4 +72,14 @@ public record ProcessEvent
             IsError = isError,
             Visibility = eventVisibility,
         };
+
+    internal KernelProcessEvent ToKernelProcessEvent()
+    {
+        return new KernelProcessEvent
+        {
+            Id = this.SourceId,
+            Data = this.Data,
+            Visibility = this.Visibility,
+        };
+    }
 }

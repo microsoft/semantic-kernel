@@ -523,6 +523,32 @@ public class OnEventAction
 }
 
 /// <summary>
+/// Type of the declarative process condition.
+/// </summary>
+public enum DeclarativeProcessConditionType
+{
+    /// <summary>
+    /// Condition on the process state.
+    /// </summary>
+    State,
+
+    /// <summary>
+    /// Condition on the output of an agent or step.
+    /// </summary>
+    Output,
+
+    /// <summary>
+    /// Condition on the input to an agent or step.
+    /// </summary>
+    Semantic,
+
+    /// <summary>
+    /// Condition that activates when no other condition is met.
+    /// </summary>
+    Default
+}
+
+/// <summary>
 /// Condition for an action.
 /// </summary>
 public class DeclarativeProcessCondition
@@ -532,7 +558,7 @@ public class DeclarativeProcessCondition
     /// </summary>
     [YamlMember(Alias = "type")]
     [JsonPropertyName("type")]
-    public string Type { get; set; } = string.Empty;
+    public DeclarativeProcessConditionType Type { get; set; } = DeclarativeProcessConditionType.State;
 
     /// <summary>
     /// Gets or sets the expression of the condition.

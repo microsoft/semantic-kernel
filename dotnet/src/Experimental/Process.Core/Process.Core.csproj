@@ -32,7 +32,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="JmesPath.Net" />
     <PackageReference Include="JsonSchema.Net.Generation" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
 
 </Project>

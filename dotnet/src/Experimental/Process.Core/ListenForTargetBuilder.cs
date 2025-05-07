@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
@@ -38,6 +39,40 @@ public sealed class ListenForTargetBuilder : ProcessStepEdgeBuilder
     }
 
     /// <summary>
+    /// Sets the condition for the edge.
+    /// </summary>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    public ProcessStepEdgeBuilder OnEventCondition(string expression)
+    {
+        Verify.NotNullOrWhiteSpace(expression, nameof(expression));
+
+        return this.OnCondition(new KernelProcessEdgeCondition(
+            (e, s) =>
+            {
+                var result = JMESPathConditionEvaluator.EvaluateCondition(e.Data, expression);
+                return Task.FromResult(result);
+            }));
+    }
+
+    /// <summary>
+    /// Sets the condition for the edge.
+    /// </summary>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    public ProcessStepEdgeBuilder OnStateCondition(string expression)
+    {
+        Verify.NotNullOrWhiteSpace(expression, nameof(expression));
+
+        return this.OnCondition(new KernelProcessEdgeCondition(
+            (e, s) =>
+            {
+                var result = JMESPathConditionEvaluator.EvaluateCondition(s, expression);
+                return Task.FromResult(result);
+            }));
+    }
+
+    /// <summary>
     /// Sends the event to the specified target.
     /// </summary>
     /// <param name="target">The target to send the event to.</param>
@@ -56,10 +91,15 @@ public sealed class ListenForTargetBuilder : ProcessStepEdgeBuilder
             // Link all the source steps to the event listener
             var onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
             onEventBuilder.EdgeGroupBuilder = this.EdgeGroupBuilder;
+
+            if (this.Condition != null)
+            {
+                onEventBuilder.Condition = this.Condition;
+            }
             onEventBuilder.SendEventTo(target);
         }
 
-        return new ListenForTargetBuilder(this._messageSources, this._processBuilder, edgeGroup: this.EdgeGroupBuilder);
+        return this; // new ListenForTargetBuilder(this._messageSources, this._processBuilder, edgeGroup: this.EdgeGroupBuilder);
     }
 
     /// <summary>

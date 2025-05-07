@@ -23,6 +23,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <summary>The collection of entry steps within this process.</summary>
     private readonly List<ProcessStepBuilder> _entrySteps = [];
 
+    /// <summary>
+    /// The collection of builders for the ListenFor step.
+    /// </summary>
+    private readonly List<ListenForBuilder> _listenForBuilders = [];
+
     /// <summary>Maps external input event Ids to the target entry step for the event.</summary>
     private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
 
@@ -412,7 +417,9 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns></returns>
     public ListenForBuilder ListenFor()
     {
-        return new ListenForBuilder(this);
+        var builder = new ListenForBuilder(this);
+        this._listenForBuilders.Add(builder);
+        return builder;
     }
 
     /// <summary>

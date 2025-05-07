@@ -242,7 +242,7 @@ public class DeclarativeEventHandlerGroupBuilder
                     continue;
                 }
 
-                if (condition.Type.Equals("default", StringComparison.OrdinalIgnoreCase))
+                if (condition.Type == DeclarativeProcessConditionType.Default)
                 {
                     if (this.DefaultHandler is not null)
                     {
@@ -251,12 +251,12 @@ public class DeclarativeEventHandlerGroupBuilder
 
                     this.DefaultHandler = new DeclarativeEventHandlerBuilder(condition);
                 }
-                else if (condition.Type.Equals("state", StringComparison.OrdinalIgnoreCase))
+                else if (condition.Type == DeclarativeProcessConditionType.State)
                 {
                     this.StateHandlers ??= [];
                     this.StateHandlers.Add(new DeclarativeEventHandlerBuilder(condition));
                 }
-                else if (condition.Type.Equals("semantic", StringComparison.OrdinalIgnoreCase))
+                else if (condition.Type == DeclarativeProcessConditionType.Semantic)
                 {
                     this.SemanticHandlers ??= [];
                     this.SemanticHandlers.Add(new DeclarativeEventHandlerBuilder(condition));
