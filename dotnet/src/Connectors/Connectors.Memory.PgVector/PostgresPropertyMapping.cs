@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
 internal static class PostgresPropertyMapping
 {
-    public static Vector? MapVectorForStorageModel(object? vector)
+    public static object? MapVectorForStorageModel(object? vector)
         => vector switch
         {
             ReadOnlyMemory<float> floatMemory
@@ -24,7 +24,15 @@ internal static class PostgresPropertyMapping
                     MemoryMarshal.TryGetArray(floatMemory, out ArraySegment<float> segment) &&
                     segment.Count == segment.Array!.Length ? segment.Array : floatMemory.ToArray()),
 
-            // TODO: Implement support for Half, binary, sparse embeddings (#11083)
+#if NET8_0_OR_GREATER
+            ReadOnlyMemory<Half> halfMemory
+                => new Pgvector.HalfVector(
+                    MemoryMarshal.TryGetArray(halfMemory, out ArraySegment<Half> segment) &&
+                    segment.Count == segment.Array!.Length ? segment.Array : halfMemory.ToArray()),
+#endif
+
+            BitArray bitArray => bitArray,
+            SparseVector sparseVector => sparseVector,
 
             null => null,
 
@@ -138,32 +146,44 @@ internal static class PostgresPropertyMapping
     /// <returns>The PostgreSQL vector type name.</returns>
     public static (string PgType, bool IsNullable) GetPgVectorTypeName(VectorPropertyModel vectorProperty)
     {
-        return ($"VECTOR({vectorProperty.Dimensions})", Nullable.GetUnderlyingType(vectorProperty.EmbeddingType) != null);
+        var unwrappedEmbeddingType = Nullable.GetUnderlyingType(vectorProperty.EmbeddingType) ?? vectorProperty.EmbeddingType;
+
+        var pgType = unwrappedEmbeddingType switch
+        {
+            Type t when t == typeof(ReadOnlyMemory<float>) => "VECTOR",
+
+#if NET8_0_OR_GREATER
+            Type t when t == typeof(ReadOnlyMemory<Half>) => "HALFVEC",
+#endif
+
+            Type t when t == typeof(SparseVector) => "SPARSEVEC",
+            Type t when t == typeof(BitArray) => "BIT",
+
+            _ => throw new NotSupportedException($"Type {vectorProperty.EmbeddingType.Name} is not supported by this store.")
+        };
+
+        return ($"{pgType}({vectorProperty.Dimensions})", unwrappedEmbeddingType != vectorProperty.EmbeddingType);
     }
 
     public static NpgsqlParameter GetNpgsqlParameter(object? value)
-    {
-        if (value == null)
+        => value switch
         {
-            return new NpgsqlParameter() { Value = DBNull.Value };
-        }
+            null => new NpgsqlParameter { Value = DBNull.Value },
 
-        // If it's an IEnumerable<T>, use reflection to determine if it needs to be converted to a list
-        if (value is IEnumerable enumerable && !(value is string))
-        {
-            Type propertyType = value.GetType();
-            if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
-            {
+            // If it's an IEnumerable<T>, use reflection to determine if it needs to be converted to a list.
+            // Exclude strings which are enumerable (but should not be treated as arrays), and BitArray which
+            // represents a pgvector binary embedding.
+            IEnumerable enumerable and not string and not BitArray when value.GetType() is var propertyType
                 // If it's already a List<T>, return it directly
-                return new NpgsqlParameter() { Value = value };
-            }
+                => new NpgsqlParameter
+                {
+                    Value = propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>)
+                        ? value
+                        : ConvertToListIfNecessary(enumerable)
+                },
 
-            return new NpgsqlParameter() { Value = ConvertToListIfNecessary(enumerable) };
-        }
-
-        // Return the value directly if it's not IEnumerable
-        return new NpgsqlParameter() { Value = value };
-    }
+            _ => new NpgsqlParameter { Value = value }
+        };
 
     /// <summary>
     /// Returns information about indexes to create, validating that the dimensions of the vector are supported.

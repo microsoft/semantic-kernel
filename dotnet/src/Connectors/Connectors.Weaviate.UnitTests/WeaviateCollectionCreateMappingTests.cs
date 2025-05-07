@@ -90,7 +90,7 @@ public sealed class WeaviateCollectionCreateMappingTests
     [InlineData(DistanceFunction.CosineDistance, "cosine")]
     [InlineData(DistanceFunction.NegativeDotProductSimilarity, "dot")]
     [InlineData(DistanceFunction.EuclideanSquaredDistance, "l2-squared")]
-    [InlineData(DistanceFunction.Hamming, "hamming")]
+    [InlineData(DistanceFunction.HammingDistance, "hamming")]
     [InlineData(DistanceFunction.ManhattanDistance, "manhattan")]
     public void ItReturnsCorrectSchemaWithValidDistanceFunction(string distanceFunction, string expectedDistanceFunction)
     {

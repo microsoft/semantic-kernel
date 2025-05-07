@@ -9,7 +9,6 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Npgsql;
 using NpgsqlTypes;
-using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -294,7 +293,7 @@ WHERE "{keyColumn}" = ANY($1);
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <inheritdoc />
     internal static PostgresSqlCommandInfo BuildGetNearestMatchCommand<TRecord>(
-        string schema, string tableName, CollectionModel model, VectorPropertyModel vectorProperty, Vector vectorValue,
+        string schema, string tableName, CollectionModel model, VectorPropertyModel vectorProperty, object vectorValue,
         VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter, int? skip, bool includeVectors, int limit)
     {
         var columns = string.Join(" ,", model.Properties.Select(property => $"\"{property.StorageName}\""));
@@ -302,12 +301,12 @@ WHERE "{keyColumn}" = ANY($1);
         var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
         var distanceOp = distanceFunction switch
         {
-            DistanceFunction.CosineDistance => "<=>",
-            DistanceFunction.CosineSimilarity => "<=>",
-            DistanceFunction.EuclideanDistance => "<->",
+            DistanceFunction.EuclideanDistance or null => "<->",
+            DistanceFunction.CosineDistance or DistanceFunction.CosineSimilarity => "<=>",
             DistanceFunction.ManhattanDistance => "<+>",
             DistanceFunction.DotProductSimilarity => "<#>",
-            null or "" => "<->",  // Default to Euclidean distance
+            DistanceFunction.HammingDistance => "<~>",
+
             _ => throw new NotSupportedException($"Distance function {vectorProperty.DistanceFunction} is not supported.")
         };
 

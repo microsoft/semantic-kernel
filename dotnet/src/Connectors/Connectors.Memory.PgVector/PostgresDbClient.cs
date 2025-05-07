@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Npgsql;
-using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -185,7 +184,7 @@ internal class PostgresDbClient(NpgsqlDataSource dataSource, string schema = Pos
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync<TRecord>(
-        string tableName, CollectionModel model, VectorPropertyModel vectorProperty, Vector vectorValue, int limit,
+        string tableName, CollectionModel model, VectorPropertyModel vectorProperty, object vectorValue, int limit,
         RecordSearchOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         NpgsqlConnection connection = await this.DataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);

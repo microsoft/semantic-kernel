@@ -121,7 +121,7 @@ internal static class WeaviateCollectionCreateMapping
             DistanceFunction.CosineDistance => Cosine,
             DistanceFunction.NegativeDotProductSimilarity => Dot,
             DistanceFunction.EuclideanSquaredDistance => EuclideanSquared,
-            DistanceFunction.Hamming => Hamming,
+            DistanceFunction.HammingDistance => Hamming,
             DistanceFunction.ManhattanDistance => Manhattan,
             _ => throw new NotSupportedException(
                 $"Distance function '{distanceFunction}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. " +
@@ -129,7 +129,7 @@ internal static class WeaviateCollectionCreateMapping
                     DistanceFunction.CosineDistance,
                     DistanceFunction.NegativeDotProductSimilarity,
                     DistanceFunction.EuclideanSquaredDistance,
-                    DistanceFunction.Hamming,
+                    DistanceFunction.HammingDistance,
                     DistanceFunction.ManhattanDistance)}")
         };
     }

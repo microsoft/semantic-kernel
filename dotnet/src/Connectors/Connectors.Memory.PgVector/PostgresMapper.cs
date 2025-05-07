@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
+using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -40,9 +42,24 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                         ? e[recordIndex] switch
                         {
                             Embedding<float> fe => fe.Vector,
+#if NET8_0_OR_GREATER
+                            Embedding<Half> fe => fe.Vector,
+#endif
                             _ => throw new UnreachableException()
                         }
-                        : (ReadOnlyMemory<float>?)property.GetValueAsObject(dataModel!)!));
+                        : property.GetValueAsObject(dataModel!) switch
+                        {
+                            ReadOnlyMemory<float> f => f,
+
+#if NET8_0_OR_GREATER
+                            ReadOnlyMemory<Half> h => h,
+#endif
+
+                            BitArray b => b,
+                            SparseVector v => v,
+
+                            _ => throw new UnreachableException()
+                        }));
         }
 
         return properties;
@@ -71,7 +88,19 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                         vectorProperty.SetValueAsObject(record, pgVector.Memory);
                         continue;
 
-                    // TODO: Implement support for Half, binary, sparse embeddings (#11083)
+#if NET8_0_OR_GREATER
+                    case Pgvector.HalfVector pgHalfVector:
+                        vectorProperty.SetValueAsObject(record, pgHalfVector.Memory);
+                        continue;
+#endif
+
+                    case BitArray bitArray:
+                        vectorProperty.SetValueAsObject(record, bitArray);
+                        continue;
+
+                    case Pgvector.SparseVector pgSparseVector:
+                        vectorProperty.SetValueAsObject(record, pgSparseVector);
+                        continue;
 
                     // TODO: We currently allow round-tripping null for the vector property; this is not supported for most (?) dedicated databases; think about it.
                     case null:

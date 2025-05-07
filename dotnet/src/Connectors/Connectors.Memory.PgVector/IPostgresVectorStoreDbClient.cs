@@ -133,7 +133,7 @@ internal interface IPostgresVectorStoreDbClient
     /// <param name="options">The options that control the behavior of the search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An asynchronous stream of result objects that the nearest matches to the <see cref="Vector"/>.</returns>
-    IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync<TRecord>(string tableName, CollectionModel model, VectorPropertyModel vectorProperty, Vector vectorValue, int limit,
+    IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync<TRecord>(string tableName, CollectionModel model, VectorPropertyModel vectorProperty, object vectorValue, int limit,
         RecordSearchOptions<TRecord> options, CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecordsAsync<TRecord>(string tableName, CollectionModel model,

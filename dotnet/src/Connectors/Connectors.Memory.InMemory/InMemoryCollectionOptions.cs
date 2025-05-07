@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
@@ -28,26 +27,4 @@ public sealed class InMemoryCollectionOptions<TKey, TRecord>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
-
-    /// <summary>
-    /// An optional function that can be used to look up vectors from a record.
-    /// </summary>
-    /// <remarks>
-    /// If not provided, the default behavior is to look for direct properties of the record
-    /// using reflection. This delegate can be used to provide a custom implementation if
-    /// the vector properties are located somewhere else on the record.
-    /// </remarks>
-    [Experimental("MEVD9000")]
-    public InMemoryVectorResolver<TRecord>? VectorResolver { get; set; }
-
-    /// <summary>
-    /// An optional function that can be used to look up record keys.
-    /// </summary>
-    /// <remarks>
-    /// If not provided, the default behavior is to look for a direct property of the record
-    /// using reflection. This delegate can be used to provide a custom implementation if
-    /// the key property is located somewhere else on the record.
-    /// </remarks>
-    [Experimental("MEVD9000")]
-    public InMemoryKeyResolver<TKey, TRecord>? KeyResolver { get; set; }
 }
