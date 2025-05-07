@@ -53,6 +53,7 @@ public sealed class BedrockEmbeddingGenerator : IEmbeddingGenerator<string, Embe
         return
             serviceKey is null ? null :
             serviceType.IsInstanceOfType(this) ? this :
+            serviceType.IsInstanceOfType(typeof(EmbeddingGeneratorMetadata)) ? this._metadata :
             null;
     }
 }
