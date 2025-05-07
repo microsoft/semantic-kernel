@@ -197,7 +197,7 @@ public sealed class SqliteCommandBuilderTests : IDisposable
         FilteredRecordRetrievalOptions<Dictionary<string, object?>> filterOptions = new();
         if (!string.IsNullOrWhiteSpace(orderByPropertyName))
         {
-            filterOptions.OrderBy.Ascending(record => record[orderByPropertyName]);
+            filterOptions.OrderBy = orderBy => orderBy.Ascending(record => record[orderByPropertyName]);
         }
 
         // Act
@@ -252,7 +252,7 @@ public sealed class SqliteCommandBuilderTests : IDisposable
         FilteredRecordRetrievalOptions<Dictionary<string, object?>> filterOptions = new();
         if (!string.IsNullOrWhiteSpace(orderByPropertyName))
         {
-            filterOptions.OrderBy.Ascending(record => record[orderByPropertyName]);
+            filterOptions.OrderBy = orderBy => orderBy.Ascending(record => record[orderByPropertyName]);
         }
 
         // Act

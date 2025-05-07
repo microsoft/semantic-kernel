@@ -382,11 +382,12 @@ FROM ({commandText}) AS subquery
         translator.Translate(appendWhere: true);
         query.AppendLine();
 
-        if (options.OrderBy.Values.Count > 0)
+        var orderBy = options.OrderBy?.Invoke(new()).Values;
+        if (orderBy is { Count: > 0 })
         {
             query.Append("ORDER BY ");
 
-            foreach (var sortInfo in options.OrderBy.Values)
+            foreach (var sortInfo in orderBy)
             {
                 query.AppendFormat("\"{0}\" {1},",
                     model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,

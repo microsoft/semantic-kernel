@@ -78,10 +78,11 @@ internal static class RedisCollectionSearchMapping
             .Limit(options.Skip, top)
             .Dialect(2);
 
-        var sortInfo = options.OrderBy.Values.Count switch
+        var orderByValues = options.OrderBy?.Invoke(new()).Values;
+        var sortInfo = orderByValues switch
         {
-            0 => null,
-            1 => options.OrderBy.Values[0],
+            null => null,
+            _ when orderByValues.Count == 1 => orderByValues[0],
             _ => throw new NotSupportedException("Redis does not support ordering by more than one property.")
         };
 

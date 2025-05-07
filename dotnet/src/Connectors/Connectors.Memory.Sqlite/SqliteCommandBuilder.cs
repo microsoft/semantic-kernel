@@ -286,11 +286,12 @@ internal static class SqliteCommandBuilder
     private static StringBuilder AppendOrderBy<TRecord>(this StringBuilder builder, CollectionModel model,
         FilteredRecordRetrievalOptions<TRecord> options, string? tableName = null)
     {
-        if (options.OrderBy.Values.Count > 0)
+        var orderBy = options.OrderBy?.Invoke(new()).Values;
+        if (orderBy is { Count: > 0 })
         {
             builder.Append("ORDER BY ");
 
-            foreach (var sortInfo in options.OrderBy.Values)
+            foreach (var sortInfo in orderBy)
             {
                 var storageName = model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
 
