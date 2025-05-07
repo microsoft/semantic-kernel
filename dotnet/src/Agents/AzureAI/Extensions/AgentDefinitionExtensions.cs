@@ -175,7 +175,7 @@ internal static class AgentDefinitionExtensions
         {
             var vectorStoreIds = fileSearch.GetVectorStoreIds();
             var vectorStores = fileSearch.GetVectorStoreConfigurations();
-            if (vectorStoreIds is not null || vectorStoreIds is not null)
+            if (vectorStoreIds is not null || vectorStores is not null)
             {
                 return new FileSearchToolResource(vectorStoreIds, vectorStores);
             }
@@ -193,7 +193,7 @@ internal static class AgentDefinitionExtensions
         {
             string? indexConnectionId = azureAISearch.GetOption<string>("index_connection_id");
             string? indexName = azureAISearch.GetOption<string>("index_name");
-            if (string.IsNullOrEmpty(indexConnectionId) || string.IsNullOrEmpty(indexName))
+            if (string.IsNullOrEmpty(indexConnectionId) && string.IsNullOrEmpty(indexName))
             {
                 return null;
             }

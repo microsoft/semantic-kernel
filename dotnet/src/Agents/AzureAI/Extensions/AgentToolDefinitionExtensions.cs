@@ -140,8 +140,7 @@ internal static class AgentToolDefinitionExtensions
         List<VectorStoreDataSource> dataSources = [];
         foreach (var value in values)
         {
-            var dataSourceDict = value as Dictionary<object, object>;
-            if (dataSourceDict is not null)
+            if (value is Dictionary<object, object> dataSourceDict)
             {
                 string? assetIdentifier = dataSourceDict.TryGetValue("asset_identifier", out var identifierValue) && identifierValue is string identifierString ? identifierString : null;
                 string? assetType = dataSourceDict.TryGetValue("asset_type", out var typeValue) && typeValue is string typeString ? typeString : null;
@@ -169,8 +168,7 @@ internal static class AgentToolDefinitionExtensions
         List<VectorStoreConfigurations> configurations = [];
         foreach (var value in values)
         {
-            var configurationDict = value as Dictionary<object, object>;
-            if (configurationDict is not null)
+            if (value is Dictionary<object, object> configurationDict)
             {
                 var storeName = configurationDict.TryGetValue("store_name", out var storeNameValue) && storeNameValue is string storeNameString ? storeNameString : null;
                 var dataSources = configurationDict.TryGetValue("data_sources", out var dataSourceValue) && dataSourceValue is List<object> dataSourceList ? CreateDataSources(dataSourceList) : null;
