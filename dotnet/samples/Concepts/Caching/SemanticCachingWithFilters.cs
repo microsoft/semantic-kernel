@@ -82,13 +82,13 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// How to setup Azure Cosmos DB for MongoDB cluster: https://learn.microsoft.com/en-gb/azure/cosmos-db/mongodb/vcore/quickstart-portal
     /// </summary>
     [Fact]
-    public async Task AzureCosmosDBMongoDBCacheAsync()
+    public async Task CosmosMongoDBCacheAsync()
     {
         var kernel = GetKernelWithCache(services =>
         {
-            services.AddAzureCosmosDBMongoDBVectorStore(
-                TestConfiguration.AzureCosmosDbMongoDb.ConnectionString,
-                TestConfiguration.AzureCosmosDbMongoDb.DatabaseName);
+            services.AddCosmosMongoVectorStore(
+                TestConfiguration.CosmosMongo.ConnectionString,
+                TestConfiguration.CosmosMongo.DatabaseName);
         });
 
         var result1 = await ExecuteAsync(kernel, "First run", "What's the tallest building in New York?");

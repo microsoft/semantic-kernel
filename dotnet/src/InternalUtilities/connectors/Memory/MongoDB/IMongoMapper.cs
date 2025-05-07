@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using Microsoft.Extensions.AI;
 using MongoDB.Bson;
 
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
+
 internal interface IMongoMapper<TRecord>
 {
     /// <summary>

@@ -50,7 +50,7 @@ public class CosmosMongoBasicQueryTests(CosmosMongoBasicQueryTests.Fixture fixtu
 
     public new class Fixture : BasicQueryTests<string>.QueryFixture
     {
-        public override TestStore TestStore => CosmosMongoDBTestStore.Instance;
+        public override TestStore TestStore => CosmosMongoTestStore.Instance;
 
         protected override string IndexKind => Microsoft.Extensions.VectorData.IndexKind.IvfFlat;
         protected override string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
