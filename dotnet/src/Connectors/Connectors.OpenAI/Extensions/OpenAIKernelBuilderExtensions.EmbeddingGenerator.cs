@@ -14,14 +14,14 @@ namespace Microsoft.SemanticKernel;
 public static partial class OpenAIKernelBuilderExtensions
 {
     /// <summary>
-    /// Adds <see cref="OpenAITextEmbeddingGenerationService"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// Adds <see cref="OpenAIEmbeddingGenerator"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
@@ -30,8 +30,8 @@ public static partial class OpenAIKernelBuilderExtensions
         string modelId,
         string apiKey,
         string? orgId = null,
-        string? serviceId = null,
         int? dimensions = null,
+        string? serviceId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(builder);
@@ -42,29 +42,29 @@ public static partial class OpenAIKernelBuilderExtensions
             modelId,
             apiKey,
             orgId,
-            serviceId,
             dimensions,
+            serviceId,
             httpClient);
 
         return builder;
     }
 
     /// <summary>
-    /// Adds the <see cref="OpenAITextEmbeddingGenerationService"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// Adds the <see cref="OpenAIEmbeddingGenerator"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
-    /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAIEmbeddingGenerator(
         this IKernelBuilder builder,
         string modelId,
         OpenAIClient? openAIClient = null,
-        string? serviceId = null,
-        int? dimensions = null)
+        int? dimensions = null,
+        string? serviceId = null)
     {
         Verify.NotNull(builder);
         Verify.NotNullOrWhiteSpace(modelId);
@@ -72,8 +72,8 @@ public static partial class OpenAIKernelBuilderExtensions
         builder.Services.AddOpenAIEmbeddingGenerator(
             modelId,
             openAIClient,
-            serviceId,
-            dimensions);
+            dimensions,
+            serviceId);
 
         return builder;
     }

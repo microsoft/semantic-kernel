@@ -18,14 +18,14 @@ public static partial class OpenAIServiceCollectionExtensions
 {
     #region Text Embedding
     /// <summary>
-    /// Adds the <see cref="OpenAITextEmbeddingGenerationService"/> to the <see cref="IServiceCollection"/>.
+    /// Adds the <see cref="OpenAIEmbeddingGenerator"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="orgId">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>
-    /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
@@ -34,8 +34,8 @@ public static partial class OpenAIServiceCollectionExtensions
         string modelId,
         string apiKey,
         string? orgId = null,
-        string? serviceId = null,
         int? dimensions = null,
+        string? serviceId = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(services);
@@ -43,40 +43,40 @@ public static partial class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new OpenAITextEmbeddingGenerationService(
+            new OpenAIEmbeddingGenerator(
                 modelId,
                 apiKey,
                 orgId,
+                dimensions,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>(),
-                dimensions));
+                serviceProvider.GetService<ILoggerFactory>()));
     }
 
     /// <summary>
-    /// Adds the <see cref="OpenAITextEmbeddingGenerationService"/> to the <see cref="IServiceCollection"/>.
+    /// Adds the <see cref="OpenAIEmbeddingGenerator"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">The OpenAI model id.</param>
     /// <param name="openAIClient"><see cref="OpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
-    /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddOpenAIEmbeddingGenerator(this IServiceCollection services,
         string modelId,
         OpenAIClient? openAIClient = null,
-        string? serviceId = null,
-        int? dimensions = null)
+        int? dimensions = null,
+        string? serviceId = null)
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(modelId);
 
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new OpenAITextEmbeddingGenerationService(
+            new OpenAIEmbeddingGenerator(
                 modelId,
                 openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
-                serviceProvider.GetService<ILoggerFactory>(),
-                dimensions));
+                dimensions,
+                serviceProvider.GetService<ILoggerFactory>()));
     }
     #endregion
 }

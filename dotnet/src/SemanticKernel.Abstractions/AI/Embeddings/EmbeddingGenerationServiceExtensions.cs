@@ -21,7 +21,7 @@ public static class EmbeddingGenerationExtensions
     /// <summary>
     /// Gets the key used to store the dimensions value in the <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/> dictionary.
     /// </summary>
-    [Obsolete("Use IEmbeddingGenerator.GetService<EmbeddingGeneratorMetadata>().DefaultModelDimensions instead.")]
+    //[Obsolete("Use IEmbeddingGenerator.GetService<EmbeddingGeneratorMetadata>().DefaultModelDimensions instead.")]
     public static string DimensionsKey => "Dimensions";
 
     /// <summary>
@@ -34,7 +34,7 @@ public static class EmbeddingGenerationExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A list of embedding structs representing the input <paramref name="value"/>.</returns>
-    [Obsolete("Use IEmbeddingGenerator.GenerateAsync<TValue, Embedding<TEmbedding>> instead.")]
+    //[Obsolete("Use IEmbeddingGenerator.GenerateAsync<TValue, Embedding<TEmbedding>> instead.")]
     public static async Task<ReadOnlyMemory<TEmbedding>> GenerateEmbeddingAsync<TValue, TEmbedding>(
         this IEmbeddingGenerationService<TValue, TEmbedding> generator,
         TValue value,
@@ -52,7 +52,7 @@ public static class EmbeddingGenerationExtensions
     /// The <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>. If the <paramref name="service"/> is an <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>,
     /// the <paramref name="service"/> will be returned. Otherwise, a new <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> will be created that wraps the <paramref name="service"/>.
     /// </returns>
-    [Obsolete("Use IEmbeddingGenerator<TValue, Embedding<TEmbedding>> directly instead.")]
+    //[Obsolete("Use IEmbeddingGenerator<TValue, Embedding<TEmbedding>> directly instead.")]
     public static IEmbeddingGenerator<TValue, Embedding<TEmbedding>> AsEmbeddingGenerator<TValue, TEmbedding>(
         this IEmbeddingGenerationService<TValue, TEmbedding> service)
         where TEmbedding : unmanaged
@@ -71,7 +71,7 @@ public static class EmbeddingGenerationExtensions
     /// The <see cref="IEmbeddingGenerationService{TInput, TEmbedding}"/>. If the <paramref name="generator"/> is an <see cref="IEmbeddingGenerationService{TInput, TEmbedding}"/>,
     /// the <paramref name="generator"/> will be returned. Otherwise, a new <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/> will be created that wraps the <paramref name="generator"/>.
     /// </returns>
-    [Obsolete("Keep using IEmbeddingGenerator<TValue, Embedding<TEmbedding>> instead.")]
+    //[Obsolete("Keep using IEmbeddingGenerator<TValue, Embedding<TEmbedding>> instead.")]
     public static IEmbeddingGenerationService<TValue, TEmbedding> AsEmbeddingGenerationService<TValue, TEmbedding>(
         this IEmbeddingGenerator<TValue, Embedding<TEmbedding>> generator,
         IServiceProvider? serviceProvider = null)
@@ -91,7 +91,7 @@ public static class EmbeddingGenerationExtensions
     /// The <see cref="ITextEmbeddingGenerationService"/>. If the <paramref name="generator"/> is an <see cref="ITextEmbeddingGenerationService"/>,
     /// the <paramref name="generator"/> will be returned. Otherwise, a new <see cref="ITextEmbeddingGenerationService"/> will be created that wraps the <paramref name="generator"/>.
     /// </returns>
-    [Obsolete("Use IEmbeddingGenerator<string, Embedding<float>> directly instead.")]
+    //[Obsolete("Use IEmbeddingGenerator<string, Embedding<float>> directly instead.")]
     public static ITextEmbeddingGenerationService AsTextEmbeddingGenerationService(this IEmbeddingGenerator<string, Embedding<float>> generator, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(generator);
@@ -105,7 +105,7 @@ public static class EmbeddingGenerationExtensions
     /// </summary>
     /// <param name="service">The service from which to get the dimensions.</param>
     /// <returns>The dimensions if it was specified in the service's attributes; otherwise, null.</returns>
-    [Obsolete("Use IEmbeddingGenerator.GetService<EmbeddingGeneratorMetadata>().DefaultModelDimensions instead.")]
+    //[Obsolete("Use IEmbeddingGenerator.GetService<EmbeddingGeneratorMetadata>().DefaultModelDimensions instead.")]
     public static int? GetDimensions<TValue, TEmbedding>(this IEmbeddingGenerationService<TValue, TEmbedding> service) where TEmbedding : unmanaged
     {
         Verify.NotNull(service);
@@ -113,7 +113,7 @@ public static class EmbeddingGenerationExtensions
     }
 
     /// <summary>Provides an implementation of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> around an <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/>.</summary>
-    [Obsolete("Use IEmbeddingGenerator instead")]
+    //[Obsolete("Use IEmbeddingGenerator instead")]
     private sealed class EmbeddingGenerationServiceEmbeddingGenerator<TValue, TEmbedding> : IEmbeddingGenerator<TValue, Embedding<TEmbedding>>
         where TEmbedding : unmanaged
     {
@@ -162,7 +162,7 @@ public static class EmbeddingGenerationExtensions
     }
 
     /// <summary>Provides an implementation of <see cref="IEmbeddingGenerationService{TInput, TEmbedding}"/> around an <see cref="EmbeddingGeneratorEmbeddingGenerationService{TValue, TEmbedding}"/>.</summary>
-    [Obsolete("Use IEmbeddingGenerator instead")]
+    //[Obsolete("Use IEmbeddingGenerator instead")]
     private class EmbeddingGeneratorEmbeddingGenerationService<TValue, TEmbedding> : IEmbeddingGenerationService<TValue, TEmbedding>
         where TEmbedding : unmanaged
     {
@@ -209,7 +209,7 @@ public static class EmbeddingGenerationExtensions
         }
     }
 
-    [Obsolete("Use IEmbeddingGenerator instead")]
+    //[Obsolete("Use IEmbeddingGenerator instead")]
     private sealed class EmbeddingGeneratorTextEmbeddingGenerationService : EmbeddingGeneratorEmbeddingGenerationService<string, float>, ITextEmbeddingGenerationService
     {
         public EmbeddingGeneratorTextEmbeddingGenerationService(IEmbeddingGenerator<string, Embedding<float>> generator, IServiceProvider? serviceProvider) : base(generator, serviceProvider)

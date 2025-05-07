@@ -26,15 +26,16 @@ public static class TextSearchExtensions
     /// <param name="textSearch">The instance of ITextSearch to be used by the plugin.</param>
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="description">A description of the plugin.</param>
+    /// <param name="searchOptions">Optional TextSearchOptions which override the options provided when the function is invoked.</param>
     /// <returns>A <see cref="KernelPlugin"/> instance with a Search operation that calls the provided <see cref="ITextSearch.SearchAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    public static KernelPlugin CreateWithSearch(this ITextSearch textSearch, string pluginName, string? description = null)
+    public static KernelPlugin CreateWithSearch(this ITextSearch textSearch, string pluginName, string? description = null, TextSearchOptions? searchOptions = null)
     {
         Verify.NotNull(textSearch);
         Verify.NotNull(pluginName);
 
-        return KernelPluginFactory.CreateFromFunctions(pluginName, description, [textSearch.CreateSearch()]);
+        return KernelPluginFactory.CreateFromFunctions(pluginName, description, [textSearch.CreateSearch(searchOptions: searchOptions)]);
     }
 
     /// <summary>
