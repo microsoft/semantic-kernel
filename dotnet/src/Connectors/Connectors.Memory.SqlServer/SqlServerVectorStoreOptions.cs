@@ -12,6 +12,19 @@ public sealed class SqlServerVectorStoreOptions
     internal static readonly SqlServerVectorStoreOptions Defaults = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="SqlServerVectorStoreOptions"/> class.
+    /// </summary>
+    public SqlServerVectorStoreOptions()
+    {
+    }
+
+    internal SqlServerVectorStoreOptions(SqlServerVectorStoreOptions? source, IEmbeddingGenerator embeddingGenerator)
+    {
+        this.Schema = source?.Schema;
+        this.EmbeddingGenerator = embeddingGenerator;
+    }
+
+    /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
     public string? Schema { get; set; }

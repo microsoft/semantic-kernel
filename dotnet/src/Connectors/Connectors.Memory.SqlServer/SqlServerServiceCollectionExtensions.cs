@@ -200,22 +200,28 @@ public static class SqlServerServiceCollectionExtensions
     private static SqlServerVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, SqlServerVectorStoreOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
-        return new() // Create a new instance to avoid modifying the original options.
+        if (options?.EmbeddingGenerator is not null)
         {
-            // Don't override the embedding generator if the user has provided one.
-            EmbeddingGenerator = options?.EmbeddingGenerator ?? sp.GetService<IEmbeddingGenerator>(),
-            Schema = options?.Schema,
-        };
+            return options; // The user has provided everything, there is nothing to change.
+        }
+
+        var embeddingGenerator = sp.GetService<IEmbeddingGenerator>();
+        return embeddingGenerator is null
+            ? options // There is nothing to change.
+            : new(options, embeddingGenerator); // Create a brand new copy in order to avoid modifying the original options.
     }
 
     private static SqlServerCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, SqlServerCollectionOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
-        return new() // Create a new instance to avoid modifying the original options.
+        if (options?.EmbeddingGenerator is not null)
         {
-            // Don't override the embedding generator if the user has provided one.
-            EmbeddingGenerator = options?.EmbeddingGenerator ?? sp.GetService<IEmbeddingGenerator>(),
-            Schema = options?.Schema,
-        };
+            return options; // The user has provided everything, there is nothing to change.
+        }
+
+        var embeddingGenerator = sp.GetService<IEmbeddingGenerator>();
+        return embeddingGenerator is null
+            ? options // There is nothing to change.
+            : new(options, embeddingGenerator); // Create a brand new copy in order to avoid modifying the original options.
     }
 }
