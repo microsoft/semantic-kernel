@@ -36,7 +36,14 @@ public static class TeacherStudentProcess
     /// </summary>
     public static class InteractionTopics
     {
+        /// <summary>
+        /// Event emitted when the agent has a response
+        /// </summary>
         public const string AgentResponseMessage = nameof(AgentResponseMessage);
+
+        /// <summary>
+        /// Event emitted when the agent has an error
+        /// </summary>
         public const string AgentErrorMessage = nameof(AgentErrorMessage);
     }
 
@@ -51,7 +58,7 @@ public static class TeacherStudentProcess
         ProcessBuilder processBuilder = new(processName);
 
         // Add the steps
-        var studentAgentStep = processBuilder.AddStepFromDeclarativeAgent(
+        var studentAgentStep = processBuilder.AddStepFromAgent(
             new()
             {
                 Name = "Student",

@@ -200,13 +200,13 @@ public class CloudEvent
     /// </summary>
     [YamlMember(Alias = "filters")]
     [JsonPropertyName("filters")]
-    public List<ProcesFilterFilter>? Filters { get; set; }
+    public List<ProcesFilter>? Filters { get; set; }
 }
 
 /// <summary>
 /// Filter for the cloud event.
 /// </summary>
-public class ProcesFilterFilter
+public class ProcesFilter
 {
     /// <summary>
     /// Gets or sets the filter expression.
