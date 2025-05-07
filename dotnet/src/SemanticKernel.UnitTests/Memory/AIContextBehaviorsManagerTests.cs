@@ -12,48 +12,48 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
-/// Contains tests for the <see cref="ConversationStatePartsManager"/> class.
+/// Contains tests for the <see cref="AIContextBehaviorsManager"/> class.
 /// </summary>
-public class ConversationStatePartsManagerTests
+public class AIContextBehaviorsManagerTests
 {
     [Fact]
     public void ConstructorShouldInitializeEmptyPartsList()
     {
         // Act
-        var manager = new ConversationStatePartsManager();
+        var manager = new AIContextBehaviorsManager();
 
         // Assert
-        Assert.NotNull(manager.Parts);
-        Assert.Empty(manager.Parts);
+        Assert.NotNull(manager.Behaviors);
+        Assert.Empty(manager.Behaviors);
     }
 
     [Fact]
     public void ConstructorShouldInitializeWithProvidedParts()
     {
         // Arrange
-        var mockPart = new Mock<ConversationStatePart>();
+        var mockPart = new Mock<AIContextBehavior>();
 
         // Act
-        var manager = new ConversationStatePartsManager(new[] { mockPart.Object });
+        var manager = new AIContextBehaviorsManager(new[] { mockPart.Object });
 
         // Assert
-        Assert.Single(manager.Parts);
-        Assert.Contains(mockPart.Object, manager.Parts);
+        Assert.Single(manager.Behaviors);
+        Assert.Contains(mockPart.Object, manager.Behaviors);
     }
 
     [Fact]
     public void AddShouldRegisterNewPart()
     {
         // Arrange
-        var manager = new ConversationStatePartsManager();
-        var mockPart = new Mock<ConversationStatePart>();
+        var manager = new AIContextBehaviorsManager();
+        var mockPart = new Mock<AIContextBehavior>();
 
         // Act
         manager.Add(mockPart.Object);
 
         // Assert
-        Assert.Single(manager.Parts);
-        Assert.Contains(mockPart.Object, manager.Parts);
+        Assert.Single(manager.Behaviors);
+        Assert.Contains(mockPart.Object, manager.Behaviors);
     }
 
     [Fact]
@@ -61,26 +61,26 @@ public class ConversationStatePartsManagerTests
     {
         // Arrange
         var serviceCollection = new ServiceCollection();
-        var mockPart = new Mock<ConversationStatePart>();
+        var mockPart = new Mock<AIContextBehavior>();
         serviceCollection.AddSingleton(mockPart.Object);
         var serviceProvider = serviceCollection.BuildServiceProvider();
 
-        var manager = new ConversationStatePartsManager();
+        var manager = new AIContextBehaviorsManager();
 
         // Act
         manager.AddFromServiceProvider(serviceProvider);
 
         // Assert
-        Assert.Single(manager.Parts);
-        Assert.Contains(mockPart.Object, manager.Parts);
+        Assert.Single(manager.Behaviors);
+        Assert.Contains(mockPart.Object, manager.Behaviors);
     }
 
     [Fact]
     public async Task OnThreadCreatedAsyncShouldCallOnThreadCreatedOnAllParts()
     {
         // Arrange
-        var manager = new ConversationStatePartsManager();
-        var mockPart = new Mock<ConversationStatePart>();
+        var manager = new AIContextBehaviorsManager();
+        var mockPart = new Mock<AIContextBehavior>();
         manager.Add(mockPart.Object);
 
         // Act
@@ -94,8 +94,8 @@ public class ConversationStatePartsManagerTests
     public async Task OnThreadDeleteAsyncShouldCallOnThreadDeleteOnAllParts()
     {
         // Arrange
-        var manager = new ConversationStatePartsManager();
-        var mockPart = new Mock<ConversationStatePart>();
+        var manager = new AIContextBehaviorsManager();
+        var mockPart = new Mock<AIContextBehavior>();
         manager.Add(mockPart.Object);
 
         // Act
@@ -109,8 +109,8 @@ public class ConversationStatePartsManagerTests
     public async Task OnNewMessageAsyncShouldCallOnNewMessageOnAllParts()
     {
         // Arrange
-        var manager = new ConversationStatePartsManager();
-        var mockPart = new Mock<ConversationStatePart>();
+        var manager = new AIContextBehaviorsManager();
+        var mockPart = new Mock<AIContextBehavior>();
         var message = new ChatMessage(ChatRole.User, "Hello");
         manager.Add(mockPart.Object);
 
@@ -125,9 +125,9 @@ public class ConversationStatePartsManagerTests
     public async Task OnAIInvocationAsyncShouldAggregateContextsFromAllParts()
     {
         // Arrange
-        var manager = new ConversationStatePartsManager();
-        var mockPart1 = new Mock<ConversationStatePart>();
-        var mockPart2 = new Mock<ConversationStatePart>();
+        var manager = new AIContextBehaviorsManager();
+        var mockPart1 = new Mock<AIContextBehavior>();
+        var mockPart2 = new Mock<AIContextBehavior>();
         mockPart1.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
                       .ReturnsAsync("Context1");
         mockPart2.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
@@ -148,8 +148,8 @@ public class ConversationStatePartsManagerTests
     public async Task OnSuspendAsyncShouldCallOnSuspendOnAllParts()
     {
         // Arrange
-        var manager = new ConversationStatePartsManager();
-        var mockPart = new Mock<ConversationStatePart>();
+        var manager = new AIContextBehaviorsManager();
+        var mockPart = new Mock<AIContextBehavior>();
         manager.Add(mockPart.Object);
 
         // Act
@@ -163,8 +163,8 @@ public class ConversationStatePartsManagerTests
     public async Task OnResumeAsyncShouldCallOnResumeOnAllParts()
     {
         // Arrange
-        var manager = new ConversationStatePartsManager();
-        var mockPart = new Mock<ConversationStatePart>();
+        var manager = new AIContextBehaviorsManager();
+        var mockPart = new Mock<AIContextBehavior>();
         manager.Add(mockPart.Object);
 
         // Act

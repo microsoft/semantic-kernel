@@ -181,8 +181,8 @@ public class AgentThreadTests
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockPart = new Mock<ConversationStatePart>();
-        thread.StateParts.Add(mockPart.Object);
+        var mockPart = new Mock<AIContextBehavior>();
+        thread.AIContextBehaviors.Add(mockPart.Object);
         await thread.CreateAsync();
 
         // Act.
@@ -201,8 +201,8 @@ public class AgentThreadTests
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockPart = new Mock<ConversationStatePart>();
-        thread.StateParts.Add(mockPart.Object);
+        var mockPart = new Mock<AIContextBehavior>();
+        thread.AIContextBehaviors.Add(mockPart.Object);
         await thread.CreateAsync();
 
         // Act.
@@ -221,8 +221,8 @@ public class AgentThreadTests
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockPart = new Mock<ConversationStatePart>();
-        thread.StateParts.Add(mockPart.Object);
+        var mockPart = new Mock<AIContextBehavior>();
+        thread.AIContextBehaviors.Add(mockPart.Object);
 
         // Act.
         await thread.CreateAsync();
@@ -240,8 +240,8 @@ public class AgentThreadTests
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockPart = new Mock<ConversationStatePart>();
-        thread.StateParts.Add(mockPart.Object);
+        var mockPart = new Mock<AIContextBehavior>();
+        thread.AIContextBehaviors.Add(mockPart.Object);
         await thread.CreateAsync();
 
         // Act.
@@ -260,8 +260,8 @@ public class AgentThreadTests
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockPart = new Mock<ConversationStatePart>();
-        thread.StateParts.Add(mockPart.Object);
+        var mockPart = new Mock<AIContextBehavior>();
+        thread.AIContextBehaviors.Add(mockPart.Object);
         var message = new ChatMessageContent(AuthorRole.User, "Test Message.");
 
         await thread.CreateAsync();

@@ -56,7 +56,7 @@ public class ChatCompletion_Mem0(ITestOutputHelper output) : BaseTest(output)
 
         // Create a thread for the agent and add the mem0 component to it.
         ChatHistoryAgentThread agentThread = new();
-        agentThread.StateParts.Add(mem0Component);
+        agentThread.AIContextBehaviors.Add(mem0Component);
 
         // First ask the agent to retrieve a company report with no previous context.
         // The agent will not be able to invoke the plugin, since it doesn't know
@@ -80,7 +80,7 @@ public class ChatCompletion_Mem0(ITestOutputHelper output) : BaseTest(output)
         // Create a new thread for the agent and add our mem0 component to it again
         // The new thread has no context of the previous conversation.
         agentThread = new();
-        agentThread.StateParts.Add(mem0Component);
+        agentThread.AIContextBehaviors.Add(mem0Component);
 
         // Since we have the mem0 component in the thread, the agent should be able to
         // retrieve the company report without asking for clarification, as it will

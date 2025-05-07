@@ -25,7 +25,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     public virtual async Task StatePartReceivesMessagesFromAgentAsync()
     {
         // Arrange
-        var mockStatePart = new Mock<ConversationStatePart>() { CallBase = true };
+        var mockStatePart = new Mock<AIContextBehavior>() { CallBase = true };
         mockStatePart.Setup(x => x.OnNewMessageAsync(It.IsAny<string>(), It.IsAny<ChatMessage>(), It.IsAny<CancellationToken>()));
 
         var agent = this.Fixture.Agent;
@@ -34,7 +34,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
 
         try
         {
-            agentThread.StateParts.Add(mockStatePart.Object);
+            agentThread.AIContextBehaviors.Add(mockStatePart.Object);
 
             // Act
             var inputMessage = "What is the capital of France?";
@@ -57,7 +57,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     public virtual async Task StatePartReceivesMessagesFromAgentWhenStreamingAsync()
     {
         // Arrange
-        var mockStatePart = new Mock<ConversationStatePart>() { CallBase = true };
+        var mockStatePart = new Mock<AIContextBehavior>() { CallBase = true };
         mockStatePart.Setup(x => x.OnNewMessageAsync(It.IsAny<string>(), It.IsAny<ChatMessage>(), It.IsAny<CancellationToken>()));
 
         var agent = this.Fixture.Agent;
@@ -66,7 +66,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
 
         try
         {
-            agentThread.StateParts.Add(mockStatePart.Object);
+            agentThread.AIContextBehaviors.Add(mockStatePart.Object);
 
             // Act
             var inputMessage = "What is the capital of France?";
@@ -90,7 +90,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     public virtual async Task StatePartPreInvokeStateIsUsedByAgentAsync()
     {
         // Arrange
-        var mockStatePart = new Mock<ConversationStatePart>() { CallBase = true };
+        var mockStatePart = new Mock<AIContextBehavior>() { CallBase = true };
         mockStatePart.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync("User name is Caoimhe");
 
         var agent = this.Fixture.Agent;
@@ -99,7 +99,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
 
         try
         {
-            agentThread.StateParts.Add(mockStatePart.Object);
+            agentThread.AIContextBehaviors.Add(mockStatePart.Object);
 
             // Act
             var inputMessage = "What is my name?.";
@@ -120,7 +120,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     public virtual async Task StatePartPreInvokeStateIsUsedByAgentWhenStreamingAsync()
     {
         // Arrange
-        var mockStatePart = new Mock<ConversationStatePart>() { CallBase = true };
+        var mockStatePart = new Mock<AIContextBehavior>() { CallBase = true };
         mockStatePart.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync("User name is Caoimhe");
 
         var agent = this.Fixture.Agent;
@@ -129,7 +129,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
 
         try
         {
-            agentThread.StateParts.Add(mockStatePart.Object);
+            agentThread.AIContextBehaviors.Add(mockStatePart.Object);
 
             // Act
             var inputMessage = "What is my name?.";

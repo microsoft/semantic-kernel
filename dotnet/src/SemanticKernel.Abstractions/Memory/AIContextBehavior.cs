@@ -10,15 +10,15 @@ using Microsoft.Extensions.AI;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Base class for all conversation state parts.
+/// Base class for all AI context behaviors.
 /// </summary>
 /// <remarks>
-/// A conversation state part is a component that can be used to store additional state related
-/// to a conversation, listen to changes in the conversation state, and provide additional context to
-/// the AI model in use just before invocation.
+/// An AI context behavior is a component that can be used to enhance the AI's context management.
+/// It can listen to changes in the conversation, provide additional context to
+/// the AI model just before invocation and supply additional tools for function invocation.
 /// </remarks>
 [Experimental("SKEXP0130")]
-public abstract class ConversationStatePart
+public abstract class AIContextBehavior
 {
     /// <summary>
     /// Gets the list of AI functions that this component exposes

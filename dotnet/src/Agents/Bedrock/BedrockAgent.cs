@@ -118,9 +118,9 @@ public sealed class BedrockAgent : Agent
             () => new BedrockAgentThread(this.RuntimeClient),
             cancellationToken).ConfigureAwait(false);
 
-        // Get the conversation state extensions context contributions and register plugins from the extensions.
+        // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await bedrockThread.StateParts.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        var extensionsContext = await bedrockThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Ensure that the last message provided is a user message
@@ -354,9 +354,9 @@ public sealed class BedrockAgent : Agent
             () => new BedrockAgentThread(this.RuntimeClient),
             cancellationToken).ConfigureAwait(false);
 
-        // Get the conversation state extensions context contributions and register plugins from the extensions.
+        // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await bedrockThread.StateParts.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        var extensionsContext = await bedrockThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Ensure that the last message provided is a user message

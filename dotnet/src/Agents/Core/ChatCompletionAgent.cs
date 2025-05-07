@@ -76,10 +76,10 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         var kernel = (options?.Kernel ?? this.Kernel).Clone();
 
-        // Get the conversation state extensions context contributions and register plugins from the extensions.
+        // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await chatHistoryAgentThread.StateParts.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        chatHistoryAgentThread.StateParts.RegisterPlugins(kernel);
+        var extensionsContext = await chatHistoryAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        chatHistoryAgentThread.AIContextBehaviors.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.
@@ -169,10 +169,10 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         var kernel = (options?.Kernel ?? this.Kernel).Clone();
 
-        // Get the conversation state extensions context contributions and register plugins from the extensions.
+        // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await chatHistoryAgentThread.StateParts.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        chatHistoryAgentThread.StateParts.RegisterPlugins(kernel);
+        var extensionsContext = await chatHistoryAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        chatHistoryAgentThread.AIContextBehaviors.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.
