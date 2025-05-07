@@ -502,7 +502,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
-        if (options?.OrderBy.Values.Count > 0)
+        if (options?.OrderBy is not null)
         {
             throw new NotSupportedException("Pinecone does not support ordering.");
         }

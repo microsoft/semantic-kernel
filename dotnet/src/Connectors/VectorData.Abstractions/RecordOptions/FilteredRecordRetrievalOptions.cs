@@ -39,7 +39,7 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
     /// <value>
     /// If not provided, the order of returned results is non-deterministic.
     /// </value>
-    public OrderByDefinition OrderBy { get; } = new();
+    public Func<OrderByDefinition, OrderByDefinition>? OrderBy { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.
