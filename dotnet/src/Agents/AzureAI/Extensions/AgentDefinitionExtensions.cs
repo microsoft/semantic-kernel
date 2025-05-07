@@ -141,7 +141,29 @@ internal static class AgentDefinitionExtensions
     private static CodeInterpreterToolResource? GetCodeInterpreterToolResource(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
-        return null;
+
+        CodeInterpreterToolResource? resource = null;
+
+        var codeInterpreter = agentDefinition.GetFirstToolDefinition(CodeInterpreterType);
+        if (codeInterpreter is not null)
+        {
+            var fileIds = codeInterpreter.GetFileIds();
+            var dataSources = codeInterpreter.GetDataSources();
+            if (fileIds is not null || dataSources is not null)
+            {
+                resource = new CodeInterpreterToolResource();
+                if (fileIds is not null)
+                {
+                    resource.FileIds.AddRange(fileIds);
+                }
+                if (dataSources is not null)
+                {
+                    resource.DataSources.AddRange(dataSources);
+                }
+            }
+        }
+
+        return resource;
     }
 
     private static FileSearchToolResource? GetFileSearchToolResource(this AgentDefinition agentDefinition)
@@ -152,9 +174,10 @@ internal static class AgentDefinitionExtensions
         if (fileSearch is not null)
         {
             var vectorStoreIds = fileSearch.GetVectorStoreIds();
-            if (vectorStoreIds is not null)
+            var vectorStores = fileSearch.GetVectorStoreConfigurations();
+            if (vectorStoreIds is not null || vectorStores is not null)
             {
-                return new FileSearchToolResource(vectorStoreIds, vectorStores: null);
+                return new FileSearchToolResource(vectorStoreIds, vectorStores);
             }
         }
 
@@ -164,6 +187,27 @@ internal static class AgentDefinitionExtensions
     private static AzureAISearchResource? GetAzureAISearchResource(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
+
+        var azureAISearch = agentDefinition.GetFirstToolDefinition(AzureAISearchType);
+        if (azureAISearch is not null)
+        {
+            string? indexConnectionId = azureAISearch.GetOption<string>("index_connection_id");
+            string? indexName = azureAISearch.GetOption<string>("index_name");
+            if (string.IsNullOrEmpty(indexConnectionId) && string.IsNullOrEmpty(indexName))
+            {
+                return null;
+            }
+            if (string.IsNullOrEmpty(indexConnectionId) || string.IsNullOrEmpty(indexName))
+            {
+                throw new InvalidOperationException("Azure AI Search tool definition must have both 'index_connection_id' and 'index_name' options set.");
+            }
+            int topK = azureAISearch.GetTopK() ?? 5;
+            string filter = azureAISearch.GetFilter() ?? string.Empty;
+            AzureAISearchQueryType? queryType = azureAISearch.GetAzureAISearchQueryType();
+
+            return new AzureAISearchResource(indexConnectionId, indexName, topK, filter, queryType);
+        }
+
         return null;
     }
 
@@ -230,9 +274,9 @@ internal static class AgentDefinitionExtensions
     {
         Verify.NotNull(tool);
 
-        ToolConnectionList fabricAiskill = tool.GetToolConnectionList();
+        ToolConnectionList fabricAiSkill = tool.GetToolConnectionList();
 
-        return new MicrosoftFabricToolDefinition(fabricAiskill);
+        return new MicrosoftFabricToolDefinition(fabricAiSkill);
     }
 
     private static OpenApiToolDefinition CreateOpenApiToolDefinition(AgentToolDefinition tool)
