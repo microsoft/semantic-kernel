@@ -150,14 +150,14 @@ internal static class PostgresPropertyMapping
 
         var pgType = unwrappedEmbeddingType switch
         {
-            Type t when t == typeof(ReadOnlyMemory<float>) => "vector",
+            Type t when t == typeof(ReadOnlyMemory<float>) => "VECTOR",
 
 #if NET8_0_OR_GREATER
-            Type t when t == typeof(ReadOnlyMemory<Half>) => "halfvec",
+            Type t when t == typeof(ReadOnlyMemory<Half>) => "HALFVEC",
 #endif
 
-            Type t when t == typeof(SparseVector) => "sparsevec",
-            Type t when t == typeof(BitArray) => "bit",
+            Type t when t == typeof(SparseVector) => "SPARSEVEC",
+            Type t when t == typeof(BitArray) => "BIT",
 
             _ => throw new NotSupportedException($"Type {vectorProperty.EmbeddingType.Name} is not supported by this store.")
         };

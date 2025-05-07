@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using SqlServerIntegrationTests.Support;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
-using SqlServerIntegrationTests.Support;
 using Xunit;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope

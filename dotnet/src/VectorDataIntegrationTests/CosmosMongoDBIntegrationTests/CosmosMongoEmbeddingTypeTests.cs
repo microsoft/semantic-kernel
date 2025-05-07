@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using CosmosMongoDBIntegrationTests.Support;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
-using CosmosMongoDBIntegrationTests.Support;
 using Xunit;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope

@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using InMemoryIntegrationTests.Support;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
-using InMemoryIntegrationTests.Support;
 using Xunit;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
