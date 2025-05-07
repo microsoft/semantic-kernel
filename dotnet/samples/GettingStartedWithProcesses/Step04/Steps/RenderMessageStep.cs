@@ -14,7 +14,7 @@ namespace Step04.Steps;
 /// </summary>
 public class RenderMessageStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string RenderDone = nameof(RenderMessageStep.RenderDone);
         public const string RenderError = nameof(RenderMessageStep.RenderError);

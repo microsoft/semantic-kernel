@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
@@ -14,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides functionality for incrementally defining a process.
 /// </summary>
-public sealed class ProcessBuilder : ProcessStepBuilder
+public sealed partial class ProcessBuilder : ProcessStepBuilder
 {
     /// <summary>The collection of steps within this process.</summary>
     private readonly List<ProcessStepBuilder> _steps = [];
@@ -26,6 +27,11 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
 
     /// <summary>
+    /// The collection of threads within this process.
+    /// </summary>
+    private readonly Dictionary<string, KernelProcessAgentThread> _threads = [];
+
+    /// <summary>
     /// A boolean indicating if the current process is a step within another process.
     /// </summary>
     internal bool HasParentProcess { get; set; }
@@ -34,6 +40,23 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// Version of the process, used when saving the state of the process
     /// </summary>
     public string Version { get; init; } = "v1";
+
+    /// <summary>
+    /// The type of the state. This is optional.
+    /// </summary>
+    public Type? StateType { get; init; } = null;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
+    /// </summary>
+    /// <param name="id">The name of the process. This is required.</param>
+    /// <param name="stateType">The type of the state. This is optional.</param>
+    public ProcessBuilder(string id, Type? stateType = null)
+        : base(id)
+    {
+        Verify.NotNullOrWhiteSpace(id, nameof(id));
+        this.StateType = stateType;
+    }
 
     /// <summary>
     /// Used to resolve the target function and parameter for a given optional function name and parameter name.
@@ -198,41 +221,30 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <summary>
     /// Adds a step to the process from a declarative agent.
     /// </summary>
-    /// <param name="agentDefinition"></param>
+    /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
+    /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromDeclarativeAgent(AgentDefinition agentDefinition, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? threadName = null, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
+
         if (string.IsNullOrWhiteSpace(agentDefinition.Name))
         {
             throw new ArgumentException("AgentDefinition.Name cannot be null or empty.", nameof(agentDefinition));
         }
 
-        ProcessAgentBuilder stepBuilder = new(agentDefinition);
+        if (string.IsNullOrWhiteSpace(threadName))
+        {
+            // No thread name was specified so add a new thread for the agent.
+            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            threadName = agentDefinition.Name;
+        }
+
+        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName, new NodeInputs()); // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
-
-    /// <summary>
-    /// Adds a step to the process from an agent.
-    /// </summary>
-    /// <param name="agent"></param>
-    /// <param name="onComplete"></param>
-    /// <param name="onError"></param>
-    /// <param name="aliases"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    //public ProcessStepBuilder AddStepFromAgent(Agent agent, Action<object?, KernelProcessStepContext> onComplete, Action<object?, KernelProcessStepContext> onError, IReadOnlyList<string>? aliases = null)
-    //{
-    //    Verify.NotNull(agent, nameof(agent));
-    //    if (string.IsNullOrWhiteSpace(agent.Id))
-    //    {
-    //        throw new ArgumentException("Agent.Id cannot be null or empty.", nameof(agent));
-    //    }
-    //    ProcessStepBuilder stepBuilder = new ProcessAgentBuilder(agent);
-    //    return this.AddStep(stepBuilder, aliases);
-    //}
 
     /// <summary>
     /// Adds a step to the process that represents the end of the process.
@@ -325,6 +337,53 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     }
 
     /// <summary>
+    /// Adds a thread to the process.
+    /// </summary>
+    /// <typeparam name="T">The concrete type of the <see cref="AgentThread"/></typeparam>
+    /// <param name="threadName">The name of the thread.</param>
+    /// <param name="threadId">The Id of an existing thread that should be used.</param>
+    /// <returns></returns>
+    public ProcessBuilder AddThread<T>(string threadName, string threadId) where T : AgentThread
+    {
+        Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
+        Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
+
+        var threadType = typeof(T) switch
+        {
+            Type t when t == typeof(AzureAIAgentThread) => KernelProcessThreadType.AzureAI,
+            _ => throw new ArgumentException($"Unsupported thread type: {typeof(T).Name}")
+        };
+
+        var processThread = new KernelProcessAgentThread() { ThreadName = threadName, ThreadId = threadId, ThreadType = threadType };
+        this._threads[threadName] = processThread;
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a thread to the process.
+    /// </summary>
+    /// <typeparam name="T">The concrete type of the <see cref="AgentThread"/></typeparam>
+    /// <param name="threadName">The name of the thread.</param>
+    /// <param name="threadPolicy">The policy that determines the lifetime of the <see cref="AgentThread"/></param>
+    /// <returns></returns>
+    public ProcessBuilder AddThread<T>(string threadName, KernelProcessThreadLifetime threadPolicy) where T : AgentThread
+    {
+        Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
+        Verify.NotNull(threadPolicy, nameof(threadPolicy));
+
+        var processThread = new KernelProcessAgentThread() { ThreadName = threadName, ThreadPolicy = threadPolicy };
+        this._threads[threadName] = processThread;
+        return this;
+    }
+
+    //public ProcessBuilder Add<T>(string variableName, T initialValue)
+    //{
+    //    Verify.NotNullOrWhiteSpace(variableName, nameof(variableName));
+    //    //this.Variables[variableName] = initialValue;
+    //    return this;
+    //}
+
+    /// <summary>
     /// Provides an instance of <see cref="ProcessEdgeBuilder"/> for defining an input edge to a process.
     /// </summary>
     /// <param name="eventId">The Id of the external event.</param>
@@ -391,18 +450,9 @@ public sealed class ProcessBuilder : ProcessStepBuilder
 
         // Create the process
         KernelProcessState state = new(this.Name, version: this.Version, id: this.HasParentProcess ? this.Id : null);
-        KernelProcess process = new(state, builtSteps, builtEdges);
+        KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads, UserStateype = this.StateType };
 
         return process;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
-    /// </summary>
-    /// <param name="id">The name of the process. This is required.</param>
-    public ProcessBuilder(string id)
-        : base(id)
-    {
     }
 
     /// <summary>

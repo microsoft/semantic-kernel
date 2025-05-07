@@ -5,21 +5,32 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Process;
+using Microsoft.SemanticKernel.Process.Internal;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace Microsoft.SemanticKernel;
-internal class WorkflowBuilder
+
+/// <summary>
+/// Builds a workflow from a YAML definition.
+/// </summary>
+public class WorkflowBuilder
 {
     private readonly Dictionary<string, ProcessStepBuilder> _stepBuilders = [];
     private readonly Dictionary<string, CloudEvent> _inputEvents = [];
     private string? _yaml;
 
+    /// <summary>
+    /// Builds a process from a workflow definition.
+    /// </summary>
+    /// <param name="workflow"></param>
+    /// <param name="yaml"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     public async Task<KernelProcess?> BuildProcessAsync(Workflow workflow, string yaml)
     {
         this._yaml = yaml;
@@ -114,6 +125,8 @@ internal class WorkflowBuilder
 
     private Task BuildDeclarativeStepAsync(Node node, ProcessBuilder processBuilder)
     {
+        Verify.NotNull(node);
+
         // Check for built-in step types
         if (node.Id.Equals("End", StringComparison.OrdinalIgnoreCase))
         {
@@ -122,19 +135,8 @@ internal class WorkflowBuilder
             return Task.CompletedTask;
         }
 
-        // get the raw yaml from the node
-        string? rawYaml = this.ExtractRawAgentYaml(node.Id);
-
-        // try to parse the agent yaml into an AgentDefinition
-        var deserializer = new DeserializerBuilder()
-                .WithNamingConvention(UnderscoredNamingConvention.Instance)
-                .IgnoreUnmatchedProperties()
-                .Build();
-
-        var agentDefinition = deserializer.Deserialize<AgentDefinition>(rawYaml);
-
-        // TODO: Parse the agent actions and translate them into actions in the next line
-        var stepBuilder = processBuilder.AddStepFromDeclarativeAgent(agentDefinition);
+        AgentDefinition? agentDefinition = node.Agent ?? throw new KernelException("Declarative steps must have an agent defined.");
+        var stepBuilder = processBuilder.AddStepFromAgent(agentDefinition);
         if (stepBuilder is not ProcessAgentBuilder agentBuilder)
         {
             throw new KernelException($"Failed to build step from agent definition: {node.Id}");
@@ -167,7 +169,7 @@ internal class WorkflowBuilder
         if (node.Inputs != null)
         {
             var inputMapping = this.ExtractNodeInputs(node.Id);
-            agentBuilder.WithInputs(inputMapping);
+            agentBuilder.WithNodeInputs(node.Inputs);
         }
 
         this._stepBuilders[node.Id] = stepBuilder;
@@ -301,14 +303,59 @@ internal class WorkflowBuilder
 
     #region FromProcess
 
+    /// <summary>
+    /// Builds a workflow from a kernel process.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <returns></returns>
     public static Task<Workflow> BuildWorkflow(KernelProcess process)
     {
         Verify.NotNull(process);
 
-        Workflow workflow = new();
-        workflow.Nodes = [];
+        Workflow workflow = new()
+        {
+            Nodes = [],
+            Variables = [],
+        };
 
+        // Add variables
+        foreach (var thread in process.Threads)
+        {
+            workflow.Variables.Add(thread.Key, new Variable()
+            {
+                Type = "messages"
+            });
+        }
+
+        if (process.UserStateype != null)
+        {
+            workflow.Variables.Add("user_state", new Variable()
+            {
+                Type = "object"
+            });
+        }
+
+        // Add edges
         var orchestration = new List<OrchestrationStep>();
+        foreach (var edge in process.Edges)
+        {
+            // Get all the input events
+            OrchestrationStep orchestrationStep = new()
+            {
+                ListenFor = new ListenCondition()
+                {
+                    From = "$.inputs.events",
+                    Event = edge.Key
+                },
+                Then = [.. edge.Value.Select(e => new ThenAction()
+                {
+                    Node = e.OutputTarget.StepId
+                })]
+            };
+
+            orchestration.Add(orchestrationStep);
+        }
+
         var steps = process.Steps;
         foreach (var step in steps)
         {
@@ -323,6 +370,11 @@ internal class WorkflowBuilder
     {
         Verify.NotNullOrWhiteSpace(step?.State?.Id, nameof(step.State.Id));
 
+        if (step is KernelProcessAgentStep agentStep)
+        {
+            return BuildAgentNode(agentStep, orchestrationSteps);
+        }
+
         var innerStepTypeString = step.InnerStepType.AssemblyQualifiedName;
         if (string.IsNullOrWhiteSpace(innerStepTypeString))
         {
@@ -333,7 +385,7 @@ internal class WorkflowBuilder
         {
             Id = step.State.Id,
             Type = "dotnet",
-            Agent = new WorkflowAgent()
+            Agent = new AgentDefinition()
             {
                 Type = innerStepTypeString,
                 Id = step.State.Id
@@ -351,6 +403,50 @@ internal class WorkflowBuilder
                 },
                 Then = [.. edge.Value.Select(e => new ThenAction()
                 {
+                    Node = e.OutputTarget.StepId switch
+                    {
+                        ProcessConstants.EndStepName => "End",
+                        string s => s
+                    }
+                })]
+            };
+
+            orchestrationSteps.Add(orchestrationStep);
+        }
+
+        return node;
+    }
+
+    private static Node BuildAgentNode(KernelProcessAgentStep agentStep, List<OrchestrationStep> orchestrationSteps)
+    {
+        Verify.NotNull(agentStep);
+
+        if (agentStep.AgentDefinition is null || string.IsNullOrWhiteSpace(agentStep.State?.Id) || string.IsNullOrWhiteSpace(agentStep.AgentDefinition.Type))
+        {
+            throw new InvalidOperationException("Attempt to build a workflow node from step with no Id");
+        }
+
+        var node = new Node()
+        {
+            Id = agentStep.State.Id!,
+            Type = agentStep.AgentDefinition.Type!,
+            Agent = agentStep.AgentDefinition,
+            OnComplete = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnComplete),
+            OnError = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnError),
+            Inputs = agentStep.Inputs
+        };
+
+        foreach (var edge in agentStep.Edges)
+        {
+            OrchestrationStep orchestrationStep = new()
+            {
+                ListenFor = new ListenCondition()
+                {
+                    From = agentStep.State.Id,
+                    Event = edge.Key
+                },
+                Then = [.. edge.Value.Select(e => new ThenAction()
+                {
                     Node = e.OutputTarget.StepId
                 })]
             };
@@ -359,6 +455,66 @@ internal class WorkflowBuilder
         }
 
         return node;
+    }
+
+    private static List<OnEventAction> ToEventActions(KernelProcessDeclarativeConditionHandler? handler)
+    {
+        if (handler is null)
+        {
+            return [];
+        }
+
+        List<OnEventAction> actions = [];
+        if (handler.StateConditions is not null && handler.StateConditions.Count > 0)
+        {
+            actions.AddRange(handler.StateConditions.Select(h =>
+            {
+                return new OnEventAction
+                {
+                    OnCondition = new DeclarativeProcessCondition
+                    {
+                        Type = "state",
+                        Expression = h.Expression,
+                        Emits = h.Emits,
+                        Updates = h.Updates
+                    }
+                };
+            }));
+        }
+
+        if (handler.SemanticConditions is not null && handler.SemanticConditions.Count > 0)
+        {
+            actions.AddRange(handler.SemanticConditions.Select(h =>
+            {
+                return new OnEventAction
+                {
+                    OnCondition = new DeclarativeProcessCondition
+                    {
+                        Type = "semantic",
+                        Expression = h.Expression,
+                        Emits = h.Emits,
+                        Updates = h.Updates
+                    }
+                };
+            }));
+        }
+
+        if (handler.Default is not null)
+        {
+            actions.Add(
+                new OnEventAction
+                {
+                    OnCondition = new DeclarativeProcessCondition
+                    {
+                        Type = "default",
+                        Expression = handler.Default.Expression,
+                        Emits = handler.Default.Emits,
+                        Updates = handler.Default.Updates
+                    }
+                });
+        }
+
+        return actions;
     }
 
     /// <summary>
@@ -395,33 +551,7 @@ internal class WorkflowBuilder
 
     #endregion
 
-    private string ExtractRawAgentYaml(string nodeId)
-    {
-        var input = new StringReader(this._yaml ?? "");
-        var yamlStream = new YamlStream();
-        yamlStream.Load(input);
-
-        var rootNode = yamlStream.Documents[0].RootNode;
-        var agentsNode = rootNode["nodes"] as YamlSequenceNode;
-        var node = agentsNode?.Children
-            .OfType<YamlMappingNode>()
-            .FirstOrDefault(node => node["id"]?.ToString() == nodeId);
-
-        if (node is null || !node.Children.TryGetValue("agent", out YamlNode? agent) || agent is null)
-        {
-            throw new KernelException("Failed to deserialize workflow.");
-        }
-
-        // Create a serializer
-        var serializer = new SerializerBuilder().Build();
-
-        // Serialize the YamlMappingNode to a string
-        string rawYaml = serializer.Serialize(agent);
-
-        return rawYaml;
-    }
-
-    private Dictionary<string, JsonSchema> ExtractNodeInputs(string nodeId)
+    private Dictionary<string, JsonNode> ExtractNodeInputs(string nodeId)
     {
         var input = new StringReader(this._yaml ?? "");
         var yamlStream = new YamlStream();
@@ -449,8 +579,9 @@ internal class WorkflowBuilder
 
         // Serialize the object to a JSON string
         var jsonSchema = JsonSerializer.Serialize(yamlObject);
+        var jsonNode = JsonNode.Parse(jsonSchema) ?? throw new KernelException("Failed to parse schema.");
 
-        var inputsDictionary = inputMap.Select(inputMap => new KeyValuePair<string, JsonSchema>(inputMap.Key.ToString(), JsonSchema.FromText(jsonSchema)))
+        var inputsDictionary = inputMap.Select(inputMap => new KeyValuePair<string, JsonNode>(inputMap.Key.ToString(), jsonNode))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         return inputsDictionary;

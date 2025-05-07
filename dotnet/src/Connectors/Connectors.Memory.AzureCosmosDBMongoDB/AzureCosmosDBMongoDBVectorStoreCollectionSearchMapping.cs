@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 
@@ -25,12 +25,10 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
     /// Build Azure CosmosDB MongoDB filter from the provided <see cref="VectorSearchFilter"/>.
     /// </summary>
     /// <param name="vectorSearchFilter">The <see cref="VectorSearchFilter"/> to build Azure CosmosDB MongoDB filter from.</param>
-    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name.</param>
+    /// <param name="model">The model.</param>
     /// <exception cref="NotSupportedException">Thrown when the provided filter type is unsupported.</exception>
     /// <exception cref="InvalidOperationException">Thrown when property name specified in filter doesn't exist.</exception>
-    public static BsonDocument? BuildFilter(
-        VectorSearchFilter? vectorSearchFilter,
-        Dictionary<string, string> storagePropertyNames)
+    public static BsonDocument? BuildFilter(VectorSearchFilter? vectorSearchFilter, VectorStoreRecordModel model)
     {
         const string EqualOperator = "$eq";
 
@@ -63,25 +61,27 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
                         nameof(EqualToFilterClause)])}");
             }
 
-            if (!storagePropertyNames.TryGetValue(propertyName, out var storagePropertyName))
+            if (!model.PropertyMap.TryGetValue(propertyName, out var property))
             {
                 throw new InvalidOperationException($"Property name '{propertyName}' provided as part of the filter clause is not a valid property name.");
             }
 
-            if (filter.Contains(storagePropertyName))
+            var storageName = property.StorageName;
+
+            if (filter.Contains(storageName))
             {
-                if (filter[storagePropertyName] is BsonDocument document && document.Contains(filterOperator))
+                if (filter[storageName] is BsonDocument document && document.Contains(filterOperator))
                 {
                     throw new NotSupportedException(
                         $"Filter with operator '{filterOperator}' is already added to '{propertyName}' property. " +
                         "Multiple filters of the same type in the same property are not supported.");
                 }
 
-                filter[storagePropertyName][filterOperator] = propertyValue;
+                filter[storageName][filterOperator] = propertyValue;
             }
             else
             {
-                filter[storagePropertyName] = new BsonDocument() { [filterOperator] = propertyValue };
+                filter[storageName] = new BsonDocument() { [filterOperator] = propertyValue };
             }
         }
 

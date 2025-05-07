@@ -106,7 +106,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         return_function_results: bool = False,
         **kwargs: Any,
     ) -> AsyncGenerator[list["StreamingContentMixin"] | FunctionResult | list[FunctionResult], Any]:
@@ -169,7 +169,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         arguments: KernelArguments | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> FunctionResult | None:
         """Execute a function and return the FunctionResult.
@@ -405,6 +405,10 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             inner_function=self._inner_auto_function_invoke_handler,
         )
         await stack(invocation_context)
+
+        # Snapshot the tool's return value so later mutations don't leak back
+        if invocation_context.function_result and invocation_context.function_result.value is not None:
+            invocation_context.function_result.value = deepcopy(invocation_context.function_result.value)
 
         frc = FunctionResultContent.from_function_call_content_and_result(
             function_call_content=function_call,

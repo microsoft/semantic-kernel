@@ -100,7 +100,7 @@ public static class ApiManifestKernelExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidPluginName(pluginName, kernel.Plugins);
+        KernelVerify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(pluginParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
@@ -149,7 +149,7 @@ public static class ApiManifestKernelExtensions
 
             var documentReadResult = await new OpenApiStreamReader(new()
             {
-                BaseUrl = new(apiDescriptionUrl)
+                BaseUrl = parsedDescriptionUrl
             }
             ).ReadAsync(openApiDocumentStream, cancellationToken).ConfigureAwait(false);
             var openApiDocument = documentReadResult.OpenApiDocument;

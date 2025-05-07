@@ -3,11 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process.Models;
+using Json.Schema.Generation;
+using Json.More;
 
-namespace Microsoft.SemanticKernel.Process;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Builder for a process step that represents an agent.
@@ -20,14 +23,42 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// Creates a new instance of the <see cref="ProcessAgentBuilder"/> class.
     /// </summary>
     /// <param name="agentDefinition"></param>
+    /// <param name="threadName"></param>
+    /// <param name="nodeInputs"></param>
     /// <exception cref="KernelException"></exception>
-    public ProcessAgentBuilder(AgentDefinition agentDefinition) : base(id: agentDefinition.Id ?? agentDefinition.Name)
+    public ProcessAgentBuilder(AgentDefinition agentDefinition, string threadName, NodeInputs nodeInputs) : base(id: agentDefinition.Id ?? agentDefinition.Name ?? throw new KernelException("All declarative agents must have an Id or a Name assigned."))
     {
         Verify.NotNull(agentDefinition);
         this._agentDefinition = agentDefinition;
+        this.ThreadName = threadName;
+        this.Inputs = nodeInputs;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="ProcessAgentBuilder"/> class.
+    /// </summary>
+    /// <param name="agentDefinition"></param>
+    /// <param name="onComplete"></param>
+    /// <param name="onError"></param>
+    /// <param name="threadName"></param>
+    /// <param name="nodeInputs"></param>
+    /// <exception cref="KernelException"></exception>
+    public ProcessAgentBuilder(AgentDefinition agentDefinition, Action<object?, KernelProcessStepContext> onComplete, Action<object?, KernelProcessStepContext> onError, string threadName, NodeInputs nodeInputs) : base(agentDefinition.Id ?? throw new KernelException("AgentDefinition Id must be set"))
+    {
+        Verify.NotNull(agentDefinition);
+        this._agentDefinition = agentDefinition;
+        this.OnCompleteCodeAction = onComplete;
+        this.OnErrorCodeAction = onError;
+        this.ThreadName = threadName;
+        this.Inputs = nodeInputs;
     }
 
     #region Public Interface
+
+    /// <summary>
+    /// The name of the thread that this agent will run on.
+    /// </summary>
+    public string ThreadName { get; init; }
 
     /// <summary>
     /// The optional handler group for OnComplete events.
@@ -52,38 +83,110 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// <summary>
     /// The inputs for this agent.
     /// </summary>
-    public Dictionary<string, JsonSchema>? Inputs { get; internal set; }
+    public NodeInputs Inputs { get; internal set; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
     /// </summary>
     /// <returns></returns>
-    public DeclarativeEventHandlerGroupBuilder OnComplete(List<DeclarativeProcessCondition> conditions)
+    public ProcessAgentBuilder OnComplete(List<DeclarativeProcessCondition> conditions)
     {
         var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
         this.OnCompleteBuilder = builder;
-        return builder;
+        return this;
     }
 
     /// <summary>
     /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
     /// </summary>
     /// <returns></returns>
-    public DeclarativeEventHandlerGroupBuilder OnError(List<DeclarativeProcessCondition> conditions)
+    public ProcessAgentBuilder OnError(List<DeclarativeProcessCondition> conditions)
     {
         var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
         this.OnErrorBuilder = builder;
-        return builder;
+        return this;
     }
 
     /// <summary>
     /// Sets the inputs for this agent.
     /// </summary>
-    /// <param name="inputs"></param>
+    /// <param name="schema"></param>
+    /// <param name="defaultValue"></param>
     /// <returns></returns>
-    public ProcessAgentBuilder WithInputs(Dictionary<string, JsonSchema> inputs)
+    public ProcessAgentBuilder WithStructuredInputs(JsonNode schema, object? defaultValue = null)
     {
-        this.Inputs = inputs;
+        Verify.NotNull(schema, nameof(schema));
+
+        this.Inputs = new NodeInputs { Type = AgentInputType.Structured, StructuredInputSchema = schema.ToJsonString(), Default = defaultValue };
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the inputs for this agent.
+    /// </summary>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    /// <exception cref="KernelException"></exception>
+    internal ProcessAgentBuilder WithStructuredInput<T>(T? defaultValue = default) where T : class, new()
+    {
+        return this.WithStructuredInput(typeof(T), defaultValue);
+    }
+
+    /// <summary>
+    /// Sets the inputs for this agent.
+    /// </summary>
+    /// <param name="inputType"></param>
+    /// <param name="defaultValue"></param>
+    /// <returns></returns>
+    /// <exception cref="KernelException"></exception>
+    internal ProcessAgentBuilder WithStructuredInput(Type inputType, object? defaultValue = null)
+    {
+        Verify.NotNull(inputType, nameof(inputType));
+
+        // TODO, verify that defaultValue is of the same type as inputType
+
+        var schemaBuilder = new JsonSchemaBuilder();
+        JsonSchema schema = schemaBuilder
+                    .FromType(inputType)
+                    .Build();
+
+        var json = schema.ToJsonDocument().RootElement.ToString();
+        this.Inputs = new NodeInputs
+        {
+            Type = AgentInputType.Structured,
+            StructuredInputSchema = json,
+            Default = defaultValue
+        };
+
+        return this;
+    }
+
+    internal ProcessAgentBuilder WithNodeInputs(NodeInputs nodeInputs)
+    {
+        Verify.NotNull(nodeInputs, nameof(nodeInputs));
+        this.Inputs = nodeInputs;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the inputs for this agent.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public ProcessAgentBuilder WithUserStateInput(string path)
+    {
+        // TODO: Get schema from state object
+        this.Inputs = new NodeInputs { Type = AgentInputType.Structured, Default = $"state.{path}" };
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the inputs for this agent.
+    /// </summary>
+    /// <returns></returns>
+    public ProcessAgentBuilder WithMessageInput()
+    {
+        this.Inputs = new NodeInputs { Type = AgentInputType.Thread };
         return this;
     }
 
@@ -107,22 +210,14 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
                 OnError = this.OnErrorBuilder?.Build()
             });
 
-        var state = new KernelProcessStepState<KernelProcessAgentExecutorState>(this.Name, "1.0", this.Id);
+        var state = new KernelProcessStepState(this.Name, "1.0", this.Id);
 
-        return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges)
-        {
-            Inputs = this.Inputs,
-        };
+        return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.ThreadName, this.Inputs);
     }
 
     internal ProcessFunctionTargetBuilder GetInvokeAgentFunctionTargetBuilder()
     {
-        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.Functions.InvokeAgent, parameterName: "message");
-    }
-
-    internal ProcessFunctionTargetBuilder GetResetAgentThreadIdFunctionTargetBuilder()
-    {
-        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.Functions.ResetThreadId);
+        return new ProcessFunctionTargetBuilder(this, functionName: KernelProcessAgentExecutor.ProcessFunctions.Invoke, parameterName: "message");
     }
 }
 

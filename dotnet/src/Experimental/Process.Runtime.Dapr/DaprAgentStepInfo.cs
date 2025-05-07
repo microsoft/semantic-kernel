@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Process;
 
 namespace Microsoft.SemanticKernel;
 
@@ -30,7 +27,7 @@ public sealed record DaprAgentStepInfo : DaprStepInfo
     /// <summary>
     /// The inputs for this agent.
     /// </summary>
-    public Dictionary<string, JsonSchema>? Inputs { get; init; }
+    public required NodeInputs Inputs { get; init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessAgentStep"/> class from this instance of <see cref="DaprAgentStepInfo"/>.
@@ -45,7 +42,7 @@ public sealed record DaprAgentStepInfo : DaprStepInfo
             throw new KernelException($"Unable to read state from agent step with name '{this.State.Name}', Id '{this.State.Id}' and type {this.State.GetType()}.");
         }
 
-        return new KernelProcessAgentStep(this.AgentDefinition, this.Actions, this.State, this.Edges);
+        return new KernelProcessAgentStep(this.AgentDefinition, this.Actions, this.State, this.Edges, threadName: "", inputs: this.Inputs); // TODO: Set threadName
     }
 
     /// <summary>

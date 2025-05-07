@@ -128,7 +128,7 @@ public class ProcessStepEdgeBuilder
     /// <summary>
     /// Signals that the process should be stopped.
     /// </summary>
-    public void StopProcess()
+    public virtual void StopProcess()
     {
         if (this.Target is not null)
         {

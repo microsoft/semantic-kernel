@@ -8,6 +8,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
@@ -22,7 +23,8 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
-    private readonly Lazy<ValueTask> _initializeTask;
+    private new readonly Lazy<ValueTask> _initializeTask;
+    private readonly Dictionary<string, KernelProcessAgentThread> _threads = [];
 
     internal readonly List<KernelProcessStepInfo> _stepsInfos;
     internal readonly List<LocalStep> _steps = [];
@@ -32,6 +34,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
     private JoinableTask? _processTask;
     private CancellationTokenSource? _processCancelSource;
+    private ProcessStateManager? _processStateManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LocalProcess"/> class.
@@ -179,10 +182,44 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     /// Loads the process and initializes the steps. Once this is complete the process can be started.
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
-    private ValueTask InitializeProcessAsync()
+    private async ValueTask InitializeProcessAsync()
     {
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
+
+        // TODO: Pull user state from persisted state on resume.
+        this._processStateManager = new ProcessStateManager(this._process.UserStateype, null);
+
+        // Initialize threads. TODO: Need to implement state management here.
+        foreach (var kvp in this._process.Threads)
+        {
+            var threadDefinition = kvp.Value;
+            KernelProcessAgentThread? processThread = null;
+            if (threadDefinition.ThreadPolicy == KernelProcessThreadLifetime.Scoped)
+            {
+                // Create scoped threads now as they may be shared across steps
+                AgentThread thread = await threadDefinition.CreateAgentThreadAsync(this._kernel).ConfigureAwait(false);
+                processThread = new KernelProcessAgentThread
+                {
+                    ThreadId = thread.Id,
+                    ThreadName = kvp.Key,
+                    ThreadType = threadDefinition.ThreadType,
+                    ThreadPolicy = threadDefinition.ThreadPolicy
+                };
+            }
+            else
+            {
+                var thread = new KernelProcessAgentThread
+                {
+                    ThreadId = null,
+                    ThreadName = kvp.Key,
+                    ThreadType = threadDefinition.ThreadType,
+                    ThreadPolicy = threadDefinition.ThreadPolicy
+                };
+            }
+
+            this._threads.Add(kvp.Key, processThread ?? throw new KernelException("Failed to create process thread."));
+        }
 
         // Initialize the steps within this process
         foreach (var step in this._stepsInfos)
@@ -207,7 +244,6 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         RootProcessId = this.RootProcessId,
                         EventProxy = this.EventProxy,
                         ExternalMessageChannel = this.ExternalMessageChannel,
-                        AgentFactory = this.AgentFactory,
                     };
             }
             else if (step is KernelProcessMap mapStep)
@@ -225,13 +261,17 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     {
                         ParentProcessId = this.RootProcessId,
                         EventProxy = this.EventProxy,
-                        ExternalMessageChannel = this.ExternalMessageChannel,
+                        ExternalMessageChannel = this.ExternalMessageChannel
                     };
             }
             else if (step is KernelProcessAgentStep agentStep)
             {
-                localStep =
-                    new LocalAgentStep(agentStep, this.AgentFactory, this._kernel, this.ParentProcessId);
+                if (!this._threads.TryGetValue(agentStep.ThreadName, out KernelProcessAgentThread? thread) || thread is null)
+                {
+                    throw new KernelException($"The thread name {agentStep.ThreadName} does not have a matching thread variable defined.").Log(this._logger);
+                }
+
+                localStep = new LocalAgentStep(agentStep, this._kernel, thread, this._processStateManager, this.ParentProcessId);
             }
             else
             {
@@ -242,15 +282,12 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     new LocalStep(step, this._kernel)
                     {
                         ParentProcessId = this.Id,
-                        EventProxy = this.EventProxy,
-                        AgentFactory = this.AgentFactory,
+                        EventProxy = this.EventProxy
                     };
             }
 
             this._steps.Add(localStep);
         }
-
-        return default;
     }
 
     /// <summary>
@@ -404,7 +441,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         var processState = new KernelProcessState(this.Name, this._stepState.Version, this.Id);
         var stepTasks = this._steps.Select(step => step.ToKernelProcessStepInfoAsync()).ToList();
         var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
-        return new KernelProcess(processState, steps, this._outputEdges);
+        return new KernelProcess(processState, steps, this._outputEdges, this._process.Threads);
     }
 
     /// <summary>

@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
@@ -20,8 +18,8 @@ namespace Microsoft.SemanticKernel;
 internal class LocalStep : IKernelProcessMessageChannel
 {
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
-    internal readonly Lazy<ValueTask> _initializeTask;
-    internal readonly ILogger _logger;
+    protected readonly Lazy<ValueTask> _initializeTask;
+    private readonly ILogger _logger;
 
     protected readonly Kernel _kernel;
     protected readonly Dictionary<string, KernelFunction> _functions = [];
@@ -85,8 +83,6 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// An event proxy that can be used to intercept events emitted by the step.
     /// </summary>
     internal ProcessEventProxy? EventProxy { get; init; }
-
-    internal AgentFactory? AgentFactory { get; init; }
 
     internal IExternalKernelProcessMessageChannel? ExternalMessageChannel { get; init; }
 
@@ -276,16 +272,7 @@ internal class LocalStep : IKernelProcessMessageChannel
     protected virtual async ValueTask InitializeStepAsync()
     {
         // Instantiate an instance of the inner step object
-        if (this._stepInfo.InnerStepType == typeof(KernelProcessAgentExecutor))
-        {
-            // Only KernelStep that has a constructor with parameters - used to pass the already initialized agent
-            this._stepInstance = (KernelProcessStep<KernelProcessAgentExecutorState>)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType, parameters: this.AgentFactory!);
-        }
-        else
-        {
-            this._stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
-        }
-
+        this._stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
         var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
 
         // Load the kernel functions

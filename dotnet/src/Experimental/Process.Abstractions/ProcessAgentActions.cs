@@ -3,7 +3,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.SemanticKernel.Process;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents the actions that can be performed by a process agent.

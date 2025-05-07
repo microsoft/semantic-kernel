@@ -81,9 +81,9 @@ public sealed record ProcessStepTargetBuilder : ProcessFunctionTargetBuilder
     /// </summary>
     /// <param name="stepBuilder"></param>
     /// <param name="inputMapping"></param>
-    public ProcessStepTargetBuilder(ProcessStepBuilder stepBuilder, Func<Dictionary<string, object?>, Dictionary<string, object?>> inputMapping) : base(stepBuilder)
+    public ProcessStepTargetBuilder(ProcessStepBuilder stepBuilder, Func<Dictionary<string, object?>, Dictionary<string, object?>>? inputMapping = null) : base(stepBuilder)
     {
-        this.InputMapping = inputMapping;
+        this.InputMapping = inputMapping ?? new Func<Dictionary<string, object?>, Dictionary<string, object?>>((input) => input);
     }
 
     /// <summary>

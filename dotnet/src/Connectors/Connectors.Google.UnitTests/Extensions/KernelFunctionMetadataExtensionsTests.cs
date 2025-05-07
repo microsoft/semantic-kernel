@@ -235,7 +235,7 @@ public sealed class KernelFunctionMetadataExtensionsTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(
-            """{"type":"object","required":["parameter1","parameter2"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter"}}}""",
+            """{"type":"object","required":["parameter1","parameter2"],"properties":{"parameter1":{"type":"string","description":"String parameter"},"parameter2":{"enum":["Value1","Value2"],"description":"Enum parameter","type":"string"}}}""",
             JsonSerializer.Serialize(result.Parameters)
         );
     }
