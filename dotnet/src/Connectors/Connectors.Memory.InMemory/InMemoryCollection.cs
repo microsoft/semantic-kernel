@@ -412,16 +412,17 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
             .AsQueryable()
             .Where(filter);
 
-        if (options.OrderBy.Values.Count > 0)
+        var orderBy = options.OrderBy?.Invoke(new()).Values;
+        if (orderBy is { Count: > 0 })
         {
-            var first = options.OrderBy.Values[0];
+            var first = orderBy[0];
             var sorted = first.Ascending
                     ? records.OrderBy(first.PropertySelector)
                     : records.OrderByDescending(first.PropertySelector);
 
-            for (int i = 1; i < options.OrderBy.Values.Count; i++)
+            for (int i = 1; i < orderBy.Count; i++)
             {
-                var next = options.OrderBy.Values[i];
+                var next = orderBy[i];
                 sorted = next.Ascending
                     ? sorted.ThenBy(next.PropertySelector)
                     : sorted.ThenByDescending(next.PropertySelector);

@@ -391,19 +391,22 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
             }
         }
 
-        foreach (var pair in options.OrderBy.Values)
+        if (options.OrderBy is not null)
         {
-            PropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
-            string name = property.StorageName;
-            // From https://learn.microsoft.com/dotnet/api/azure.search.documents.searchoptions.orderby:
-            // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".
-            // "The default is ascending order."
-            if (!pair.Ascending)
+            foreach (var pair in options.OrderBy(new()).Values)
             {
-                name += " desc";
-            }
+                PropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
+                string name = property.StorageName;
+                // From https://learn.microsoft.com/dotnet/api/azure.search.documents.searchoptions.orderby:
+                // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".
+                // "The default is ascending order."
+                if (!pair.Ascending)
+                {
+                    name += " desc";
+                }
 
-            searchOptions.OrderBy.Add(name);
+                searchOptions.OrderBy.Add(name);
+            }
         }
 
         return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken)

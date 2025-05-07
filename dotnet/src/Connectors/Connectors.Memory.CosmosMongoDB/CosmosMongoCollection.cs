@@ -471,10 +471,11 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
         var translatedFilter = new CosmosMongoFilterTranslator().Translate(filter, this._model);
 
         SortDefinition<BsonDocument>? sortDefinition = null;
-        if (options.OrderBy.Values.Count > 0)
+        var orderBy = options.OrderBy?.Invoke(new()).Values;
+        if (orderBy is { Count: > 0 })
         {
             sortDefinition = Builders<BsonDocument>.Sort.Combine(
-                options.OrderBy.Values.Select(pair =>
+                orderBy.Select(pair =>
                 {
                     var storageName = this._model.GetDataOrKeyProperty(pair.PropertySelector).StorageName;
 

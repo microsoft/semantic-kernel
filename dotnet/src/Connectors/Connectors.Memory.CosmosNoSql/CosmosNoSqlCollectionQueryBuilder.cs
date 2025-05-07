@@ -153,11 +153,12 @@ internal static class CosmosNoSqlCollectionQueryBuilder
         builder.AppendLine($"FROM {tableVariableName}");
         builder.Append("WHERE ").AppendLine(whereClause);
 
-        if (filterOptions.OrderBy.Values.Count > 0)
+        var orderBy = filterOptions.OrderBy?.Invoke(new()).Values;
+        if (orderBy is { Count: > 0 })
         {
             builder.Append("ORDER BY ");
 
-            foreach (var sortInfo in filterOptions.OrderBy.Values)
+            foreach (var sortInfo in orderBy)
             {
                 builder.AppendFormat("{0}.{1} {2},", tableVariableName,
                     model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,

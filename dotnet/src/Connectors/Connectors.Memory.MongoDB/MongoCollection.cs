@@ -456,10 +456,11 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         // Translate the filter now, so if it fails, we throw immediately.
         var translatedFilter = new MongoFilterTranslator().Translate(filter, this._model);
         SortDefinition<BsonDocument>? sortDefinition = null;
-        if (options.OrderBy.Values.Count > 0)
+        var orderBy = options.OrderBy?.Invoke(new()).Values;
+        if (orderBy is { Count: > 0 })
         {
             sortDefinition = Builders<BsonDocument>.Sort.Combine(
-                options.OrderBy.Values.Select(pair =>
+                orderBy.Select(pair =>
                 {
                     var storageName = this._model.GetDataOrKeyProperty(pair.PropertySelector).StorageName;
 
