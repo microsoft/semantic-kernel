@@ -3,7 +3,6 @@
 using System.Linq.Expressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.VectorData;
 using Xunit;
 
@@ -33,16 +32,16 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
     [Fact]
     public void CollectionNameCantBeNullOrEmpty()
     {
-        HostApplicationBuilder builder = this.CreateHostBuilder();
+        IServiceCollection services = this.CreateServices();
 
-        Assert.Throws<ArgumentNullException>(() => this.RegisterCollection(builder.Services, ServiceLifetime.Singleton, collectionName: null!, serviceKey: null));
-        Assert.Throws<ArgumentNullException>(() => this.RegisterCollection(builder.Services, ServiceLifetime.Singleton, collectionName: null!, serviceKey: "notNull"));
-        Assert.Throws<ArgumentException>(() => this.RegisterCollection(builder.Services, ServiceLifetime.Singleton, collectionName: "", serviceKey: null));
-        Assert.Throws<ArgumentException>(() => this.RegisterCollection(builder.Services, ServiceLifetime.Singleton, collectionName: "", serviceKey: "notNull"));
+        Assert.Throws<ArgumentNullException>(() => this.RegisterCollection(services, ServiceLifetime.Singleton, collectionName: null!, serviceKey: null));
+        Assert.Throws<ArgumentNullException>(() => this.RegisterCollection(services, ServiceLifetime.Singleton, collectionName: null!, serviceKey: "notNull"));
+        Assert.Throws<ArgumentException>(() => this.RegisterCollection(services, ServiceLifetime.Singleton, collectionName: "", serviceKey: null));
+        Assert.Throws<ArgumentException>(() => this.RegisterCollection(services, ServiceLifetime.Singleton, collectionName: "", serviceKey: "notNull"));
     }
 
 #pragma warning disable CA1000 // Do not declare static members on generic types
-    public static IEnumerable<object?[]> LiftetimesAndKeys()
+    public static IEnumerable<object?[]> LifetimesAndServiceKeys()
 #pragma warning restore CA1000 // Do not declare static members on generic types
     {
         foreach (ServiceLifetime lifetime in new ServiceLifetime[] { ServiceLifetime.Scoped, ServiceLifetime.Singleton, ServiceLifetime.Transient })
@@ -54,103 +53,93 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
     }
 
     [Theory]
-    [MemberData(nameof(LiftetimesAndKeys))]
+    [MemberData(nameof(LifetimesAndServiceKeys))]
     public virtual void CanRegisterVectorStore(ServiceLifetime lifetime, object? serviceKey)
     {
-        HostApplicationBuilder builder = this.CreateHostBuilder(serviceKey);
+        IServiceCollection services = this.CreateServices(serviceKey);
 
-        this.RegisterVectorStore(builder.Services, lifetime, serviceKey);
+        this.RegisterVectorStore(services, lifetime, serviceKey);
 
-        using IHost host = builder.Build();
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
         // let's ensure that concrete types are registered
-        Verify<TVectorStore>(host, lifetime, serviceKey);
+        Verify<TVectorStore>(serviceProvider, lifetime, serviceKey);
         // and the abstraction too
-        Verify<VectorStore>(host, lifetime, serviceKey);
+        Verify<VectorStore>(serviceProvider, lifetime, serviceKey);
     }
 
     [Theory]
-    [MemberData(nameof(LiftetimesAndKeys))]
+    [MemberData(nameof(LifetimesAndServiceKeys))]
     public void CanRegisterCollections(ServiceLifetime lifetime, object? serviceKey)
     {
-        HostApplicationBuilder builder = this.CreateHostBuilder(serviceKey);
+        IServiceCollection services = this.CreateServices(serviceKey);
 
-        this.RegisterCollection(builder.Services, lifetime, serviceKey: serviceKey);
+        this.RegisterCollection(services, lifetime, serviceKey: serviceKey);
 
-        using IHost host = builder.Build();
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
         // Let's ensure that concrete types are registered.
-        Verify<TCollection>(host, lifetime, serviceKey);
+        Verify<TCollection>(serviceProvider, lifetime, serviceKey);
         // And the VectorStoreCollection abstraction.
-        Verify<VectorStoreCollection<TKey, TRecord>>(host, lifetime, serviceKey);
+        Verify<VectorStoreCollection<TKey, TRecord>>(serviceProvider, lifetime, serviceKey);
         // And the IVectorSearchable abstraction.
-        Verify<IVectorSearchable<TRecord>>(host, lifetime, serviceKey);
+        Verify<IVectorSearchable<TRecord>>(serviceProvider, lifetime, serviceKey);
     }
 
     [Theory]
-    [MemberData(nameof(LiftetimesAndKeys))]
+    [MemberData(nameof(LifetimesAndServiceKeys))]
     public virtual void CanRegisterConcreteTypeVectorStoreAfterSomeAbstractionHasBeenRegistered(ServiceLifetime lifetime, object? serviceKey)
     {
-        HostApplicationBuilder builder = this.CreateHostBuilder(serviceKey);
+        IServiceCollection services = this.CreateServices(serviceKey);
 
         // Users may be willing to register more than one IVectorStore implementation.
-        if (serviceKey is null)
-        {
-            builder.Services.Add(new ServiceDescriptor(typeof(VectorStore), sp => new FakeVectorStore(), lifetime));
-        }
-        else
-        {
-            builder.Services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey, (sp, key) => new FakeVectorStore(), lifetime));
-        }
+        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey, (sp, key) => new FakeVectorStore(), lifetime));
 
-        this.RegisterVectorStore(builder.Services, lifetime, serviceKey);
+        this.RegisterVectorStore(services, lifetime, serviceKey);
 
-        using IHost host = builder.Build();
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
         // let's ensure that concrete types are registered
-        Verify<TVectorStore>(host, lifetime, serviceKey);
+        Verify<TVectorStore>(serviceProvider, lifetime, serviceKey);
     }
 
     [Theory]
-    [MemberData(nameof(LiftetimesAndKeys))]
+    [MemberData(nameof(LifetimesAndServiceKeys))]
     public void CanRegisterConcreteTypeCollectionsAfterSomeAbstractionHasBeenRegistered(ServiceLifetime lifetime, object? serviceKey)
     {
-        HostApplicationBuilder builder = this.CreateHostBuilder(serviceKey);
+        IServiceCollection services = this.CreateServices(serviceKey);
 
         // Users may be willing to register more than one VectorStoreCollection implementation.
-        if (serviceKey is null)
-        {
-            builder.Services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), sp => new FakeVectorStoreRecordCollection(), lifetime));
-        }
-        else
-        {
-            builder.Services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey, (sp, key) => new FakeVectorStoreRecordCollection(), lifetime));
-        }
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey, (sp, key) => new FakeVectorStoreRecordCollection(), lifetime));
 
-        this.RegisterCollection(builder.Services, lifetime, serviceKey: serviceKey);
+        this.RegisterCollection(services, lifetime, serviceKey: serviceKey);
 
-        using IHost host = builder.Build();
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
         // let's ensure that concrete types are registered
-        Verify<TCollection>(host, lifetime, serviceKey);
+        Verify<TCollection>(serviceProvider, lifetime, serviceKey);
     }
 
-    protected HostApplicationBuilder CreateHostBuilder(object? serviceKey = null)
+    protected IServiceCollection CreateServices(object? serviceKey = null)
     {
-        HostApplicationBuilder builder = Host.CreateEmptyApplicationBuilder(settings: null);
+        IServiceCollection services = new ServiceCollection();
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        ConfigurationManager configuration = new();
+#pragma warning restore CA2000 // Dispose objects before losing scope
+        services.AddSingleton<IConfiguration>(configuration);
 
-        this.PopulateConfiguration(builder.Configuration, serviceKey);
+        this.PopulateConfiguration(configuration, serviceKey);
 
-        return builder;
+        return services;
     }
 
-    private static void Verify<TService>(IHost host, ServiceLifetime lifetime, object? serviceKey)
+    private static void Verify<TService>(ServiceProvider serviceProvider, ServiceLifetime lifetime, object? serviceKey)
         where TService : class
     {
         TService? serviceFromFirstScope, serviceFromSecondScope, secondServiceFromSecondScope;
 
-        using (IServiceScope scope1 = host.Services.CreateScope())
+        using (IServiceScope scope1 = serviceProvider.CreateScope())
         {
             serviceFromFirstScope = Resolve<TService>(scope1.ServiceProvider, serviceKey);
         }
 
-        using (IServiceScope scope2 = host.Services.CreateScope())
+        using (IServiceScope scope2 = serviceProvider.CreateScope())
         {
             serviceFromSecondScope = Resolve<TService>(scope2.ServiceProvider, serviceKey);
 

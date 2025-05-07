@@ -2,8 +2,6 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Models;
@@ -61,26 +59,26 @@ public class SqlServerDependencyInjectionTests
     [Fact]
     public void ConnectionStringProviderCantBeNull()
     {
-        HostApplicationBuilder builder = this.CreateHostBuilder();
+        IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => builder.Services.AddSqlServerVectorStore(connectionStringProvider: null!));
-        Assert.Throws<ArgumentNullException>(() => builder.Services.AddKeyedSqlServerVectorStore(serviceKey: "notNull", connectionStringProvider: null!));
-        Assert.Throws<ArgumentNullException>(() => builder.Services.AddSqlServerCollection<string, SimpleRecord<string>>(collectionName: "notNull", connectionStringProvider: null!));
-        Assert.Throws<ArgumentNullException>(() => builder.Services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(serviceKey: "notNull", collectionName: "notNull", connectionStringProvider: null!));
+        Assert.Throws<ArgumentNullException>(() => services.AddSqlServerVectorStore(connectionStringProvider: null!));
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedSqlServerVectorStore(serviceKey: "notNull", connectionStringProvider: null!));
+        Assert.Throws<ArgumentNullException>(() => services.AddSqlServerCollection<string, SimpleRecord<string>>(collectionName: "notNull", connectionStringProvider: null!));
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(serviceKey: "notNull", collectionName: "notNull", connectionStringProvider: null!));
     }
 
     [Fact]
     public void ConnectionStringCantBeNullOrEmpty()
     {
-        HostApplicationBuilder builder = this.CreateHostBuilder();
+        IServiceCollection services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => builder.Services.AddSqlServerCollection<string, SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddSqlServerCollection<string, SimpleRecord<string>>(
             collectionName: "notNull", connectionString: null!));
-        Assert.Throws<ArgumentException>(() => builder.Services.AddSqlServerCollection<string, SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddSqlServerCollection<string, SimpleRecord<string>>(
             collectionName: "notNull", connectionString: ""));
-        Assert.Throws<ArgumentNullException>(() => builder.Services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
             serviceKey: "notNull", collectionName: "notNull", connectionString: null!));
-        Assert.Throws<ArgumentException>(() => builder.Services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
+        Assert.Throws<ArgumentException>(() => services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
             serviceKey: "notNull", collectionName: "notNull", connectionString: ""));
     }
 }

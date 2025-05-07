@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
 
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extension methods to register <see cref="SqlServerVectorStore"/> instances on an <see cref="IServiceCollection"/>.
@@ -32,14 +32,11 @@ public static class SqlServerServiceCollectionExtensions
         services.Add(new ServiceDescriptor(typeof(SqlServerVectorStore), sp =>
         {
             var connectionString = connectionStringProvider(sp);
-            var options = optionsProvider?.Invoke(sp);
+            var options = GetStoreOptions(sp, optionsProvider);
             return new SqlServerVectorStore(connectionString, options);
         }, lifetime));
 
-        // We try to add the SqlServerVectorStore as a VectorStore,
-        // but if it already exists, we don't override it.
-        // Sample scenario: one app using two different vector stores.
-        services.TryAdd(new ServiceDescriptor(typeof(VectorStore),
+        services.Add(new ServiceDescriptor(typeof(VectorStore),
             static sp => sp.GetRequiredService<SqlServerVectorStore>(), lifetime));
 
         return services;
@@ -67,11 +64,11 @@ public static class SqlServerServiceCollectionExtensions
         services.Add(new ServiceDescriptor(typeof(SqlServerVectorStore), serviceKey, (sp, _) =>
         {
             var connectionString = connectionStringProvider(sp);
-            var options = optionsProvider?.Invoke(sp);
+            var options = GetStoreOptions(sp, optionsProvider);
             return new SqlServerVectorStore(connectionString, options);
         }, lifetime));
 
-        services.TryAdd(new ServiceDescriptor(typeof(VectorStore), serviceKey,
+        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
             static (sp, key) => sp.GetRequiredKeyedService<SqlServerVectorStore>(key), lifetime));
 
         return services;
@@ -101,7 +98,7 @@ public static class SqlServerServiceCollectionExtensions
         services.Add(new ServiceDescriptor(typeof(SqlServerCollection<TKey, TRecord>), sp =>
         {
             var connectionString = connectionStringProvider(sp);
-            var options = optionsProvider?.Invoke(sp);
+            var options = GetCollectionOptions(sp, optionsProvider);
             return new SqlServerCollection<TKey, TRecord>(connectionString, collectionName, options);
         }, lifetime));
 
@@ -137,7 +134,7 @@ public static class SqlServerServiceCollectionExtensions
         services.Add(new ServiceDescriptor(typeof(SqlServerCollection<TKey, TRecord>), serviceKey, (sp, _) =>
         {
             var connectionString = connectionStringProvider(sp);
-            var options = optionsProvider?.Invoke(sp);
+            var options = GetCollectionOptions(sp, optionsProvider);
             return new SqlServerCollection<TKey, TRecord>(connectionString, collectionName, options);
         }, lifetime));
 
@@ -168,7 +165,11 @@ public static class SqlServerServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(connectionString);
 
         services.Add(new ServiceDescriptor(typeof(SqlServerCollection<TKey, TRecord>),
-            sp => new SqlServerCollection<TKey, TRecord>(connectionString, collectionName, options), lifetime));
+            sp =>
+            {
+                options ??= GetCollectionOptions(sp, optionsProvider: null);
+                return new SqlServerCollection<TKey, TRecord>(connectionString, collectionName, options);
+            }, lifetime));
 
         RegisterAbstractions<TKey, TRecord>(services, lifetime, serviceKey: null);
 
@@ -200,7 +201,11 @@ public static class SqlServerServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(connectionString);
 
         services.Add(new ServiceDescriptor(typeof(SqlServerCollection<TKey, TRecord>), serviceKey,
-            (sp, _) => new SqlServerCollection<TKey, TRecord>(connectionString, collectionName, options), lifetime));
+            (sp, _) =>
+            {
+                options ??= GetCollectionOptions(sp, optionsProvider: null);
+                return new SqlServerCollection<TKey, TRecord>(connectionString, collectionName, options);
+            }, lifetime));
 
         RegisterAbstractions<TKey, TRecord>(services, lifetime, serviceKey);
 
@@ -211,21 +216,25 @@ public static class SqlServerServiceCollectionExtensions
         where TKey : notnull
         where TRecord : class
     {
-        if (serviceKey is null)
-        {
-            services.TryAdd(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>),
-                static sp => sp.GetRequiredService<SqlServerCollection<TKey, TRecord>>(), lifetime));
+        // Once HybridSearch supports get implemented (https://github.com/microsoft/semantic-kernel/issues/11080)
+        // we need to add IKeywordHybridSearchable abstraction here as well.
 
-            services.TryAdd(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>),
-                static sp => sp.GetRequiredService<SqlServerCollection<TKey, TRecord>>(), lifetime));
-        }
-        else
-        {
-            services.TryAdd(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey,
-                static (sp, key) => sp.GetRequiredKeyedService<SqlServerCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<SqlServerCollection<TKey, TRecord>>(key), lifetime));
 
-            services.TryAdd(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
-                static (sp, key) => sp.GetRequiredKeyedService<SqlServerCollection<TKey, TRecord>>(key), lifetime));
-        }
+        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<SqlServerCollection<TKey, TRecord>>(key), lifetime));
     }
+
+    private static SqlServerVectorStoreOptions GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, SqlServerVectorStoreOptions>? optionsProvider)
+        => optionsProvider?.Invoke(sp) ?? new()
+        {
+            EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+        };
+
+    private static SqlServerCollectionOptions GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, SqlServerCollectionOptions>? optionsProvider)
+        => optionsProvider?.Invoke(sp) ?? new()
+        {
+            EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+        };
 }

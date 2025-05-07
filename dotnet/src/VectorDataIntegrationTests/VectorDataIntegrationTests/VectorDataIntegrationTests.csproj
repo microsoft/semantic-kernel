@@ -14,8 +14,8 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="System.Linq.Async" /> <!-- Remove when targeting .NET 10 -->
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
   <ItemGroup>
