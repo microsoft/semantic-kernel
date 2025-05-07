@@ -13,9 +13,9 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Memory;
 
 /// <summary>
-/// Contains tests for the <see cref="Mem0MemoryComponent"/> class.
+/// Contains tests for the <see cref="Mem0Behavior"/> class.
 /// </summary>
-public class Mem0MemoryComponentTests : IDisposable
+public class Mem0BehaviorTests : IDisposable
 {
     // If null, all tests will be enabled
     private const string SkipReason = "Requires a Mem0 service configured";
@@ -23,13 +23,13 @@ public class Mem0MemoryComponentTests : IDisposable
     private readonly HttpClient _httpClient;
     private bool _disposedValue;
 
-    public Mem0MemoryComponentTests()
+    public Mem0BehaviorTests()
     {
         IConfigurationRoot configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<Mem0MemoryComponentTests>()
+            .AddUserSecrets<Mem0BehaviorTests>()
             .Build();
 
         var mem0Settings = configuration.GetRequiredSection("Mem0").Get<Mem0Configuration>()!;
@@ -40,13 +40,13 @@ public class Mem0MemoryComponentTests : IDisposable
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task Mem0ComponentCanAddAndRetrieveMemoriesAsync()
+    public async Task CanAddAndRetrieveMemoriesAsync()
     {
         // Arrange
         var question = new ChatMessage(ChatRole.User, "What is my name?");
         var input = new ChatMessage(ChatRole.User, "Hello, my name is Caoimhe.");
 
-        var sut = new Mem0MemoryComponent(this._httpClient, new() { ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = true });
+        var sut = new Mem0Behavior(this._httpClient, new() { ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = true });
 
         await sut.ClearStoredMemoriesAsync();
         var answerBeforeAdding = await sut.OnModelInvokeAsync([question]);
@@ -67,13 +67,13 @@ public class Mem0MemoryComponentTests : IDisposable
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task Mem0ComponentCanAddAndRetrieveAgentMemoriesAsync()
+    public async Task CanAddAndRetrieveAgentMemoriesAsync()
     {
         // Arrange
         var question = new ChatMessage(ChatRole.User, "What is your name?");
         var input = new ChatMessage(ChatRole.Assistant, "Hello, I'm a friendly assistant and my name is Caoimhe.");
 
-        var sut = new Mem0MemoryComponent(this._httpClient, new() { AgentId = "test-agent-id" });
+        var sut = new Mem0Behavior(this._httpClient, new() { AgentId = "test-agent-id" });
 
         await sut.ClearStoredMemoriesAsync();
         var answerBeforeAdding = await sut.OnModelInvokeAsync([question]);
@@ -94,14 +94,14 @@ public class Mem0MemoryComponentTests : IDisposable
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task Mem0ComponentDoesNotLeakMessagesAcrossScopesAsync()
+    public async Task DoesNotLeakMessagesAcrossScopesAsync()
     {
         // Arrange
         var question = new ChatMessage(ChatRole.User, "What is your name?");
         var input = new ChatMessage(ChatRole.Assistant, "I'm an AI tutor with a personality. My name is Caoimhe.");
 
-        var sut1 = new Mem0MemoryComponent(this._httpClient, new() { AgentId = "test-agent-id-1" });
-        var sut2 = new Mem0MemoryComponent(this._httpClient, new() { AgentId = "test-agent-id-2" });
+        var sut1 = new Mem0Behavior(this._httpClient, new() { AgentId = "test-agent-id-1" });
+        var sut2 = new Mem0Behavior(this._httpClient, new() { AgentId = "test-agent-id-2" });
 
         await sut1.ClearStoredMemoriesAsync();
         await sut2.ClearStoredMemoriesAsync();
@@ -128,12 +128,12 @@ public class Mem0MemoryComponentTests : IDisposable
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task Mem0ComponentDoesNotWorkWithMultiplePerOperationThreadsAsync()
+    public async Task DoesNotWorkWithMultiplePerOperationThreadsAsync()
     {
         // Arrange
         var input = new ChatMessage(ChatRole.User, "Hello, my name is Caoimhe.");
 
-        var sut = new Mem0MemoryComponent(this._httpClient, new() { UserId = "test-user-id", ScopeToPerOperationThreadId = true });
+        var sut = new Mem0Behavior(this._httpClient, new() { UserId = "test-user-id", ScopeToPerOperationThreadId = true });
 
         await sut.ClearStoredMemoriesAsync();
 

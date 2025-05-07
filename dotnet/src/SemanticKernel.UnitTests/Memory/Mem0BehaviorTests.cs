@@ -15,15 +15,15 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
-/// Contains tests for the <see cref="Mem0MemoryComponent"/> class.
+/// Contains tests for the <see cref="Mem0Behavior"/> class.
 /// </summary>
-public class Mem0MemoryComponentTests : IDisposable
+public class Mem0BehaviorTests : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly Mock<MockableMessageHandler> _mockMessageHandler;
     private bool _disposedValue;
 
-    public Mem0MemoryComponentTests()
+    public Mem0BehaviorTests()
     {
         this._mockMessageHandler = new Mock<MockableMessageHandler>() { CallBase = true };
         this._httpClient = new HttpClient(this._mockMessageHandler.Object)
@@ -41,7 +41,7 @@ public class Mem0MemoryComponentTests : IDisposable
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
         {
-            new Mem0MemoryComponent(httpClientWithoutBaseAddress);
+            new Mem0Behavior(httpClientWithoutBaseAddress);
         });
 
         Assert.Equal("The BaseAddress of the provided httpClient parameter must be set. (Parameter 'httpClient')", exception.Message);
@@ -51,7 +51,7 @@ public class Mem0MemoryComponentTests : IDisposable
     public void AIFunctionsAreSetCorrectly()
     {
         // Arrange
-        var sut = new Mem0MemoryComponent(this._httpClient, new() { ApplicationId = "test-app-id" });
+        var sut = new Mem0Behavior(this._httpClient, new() { ApplicationId = "test-app-id" });
 
         // Act
         var aiFunctions = sut.AIFunctions;
@@ -72,7 +72,7 @@ public class Mem0MemoryComponentTests : IDisposable
             .Setup(x => x.MockableSendAsync(It.IsAny<HttpMethod>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(httpResponse);
 
-        var sut = new Mem0MemoryComponent(this._httpClient, new() { ApplicationId = "test-app-id", AgentId = "test-agent-id", ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = scopePerOperationThread });
+        var sut = new Mem0Behavior(this._httpClient, new() { ApplicationId = "test-app-id", AgentId = "test-agent-id", ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = scopePerOperationThread });
 
         // Act
         await sut.OnNewMessageAsync("test-thread-id-1", new ChatMessage(ChatRole.User, "Hello, my name is Caoimhe."));
@@ -103,7 +103,7 @@ public class Mem0MemoryComponentTests : IDisposable
             .Setup(x => x.MockableSendAsync(It.IsAny<HttpMethod>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(httpResponse);
 
-        var sut = new Mem0MemoryComponent(this._httpClient, new()
+        var sut = new Mem0Behavior(this._httpClient, new()
         {
             ApplicationId = "test-app-id",
             AgentId = "test-agent-id",
@@ -137,7 +137,7 @@ public class Mem0MemoryComponentTests : IDisposable
             .Setup(x => x.MockableSendAsync(It.IsAny<HttpMethod>(), It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(httpResponse);
 
-        var sut = new Mem0MemoryComponent(this._httpClient, new() { ApplicationId = "test-app-id", AgentId = "test-agent-id", ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = scopePerOperationThread });
+        var sut = new Mem0Behavior(this._httpClient, new() { ApplicationId = "test-app-id", AgentId = "test-agent-id", ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = scopePerOperationThread });
         await sut.OnThreadCreatedAsync("test-thread-id-1");
 
         // Act
@@ -152,7 +152,7 @@ public class Mem0MemoryComponentTests : IDisposable
     public async Task ThrowsExceptionWhenThreadIdChangesAfterBeingSet()
     {
         // Arrange
-        var sut = new Mem0MemoryComponent(this._httpClient, new() { ScopeToPerOperationThreadId = true });
+        var sut = new Mem0Behavior(this._httpClient, new() { ScopeToPerOperationThreadId = true });
 
         // Act
         await sut.OnThreadCreatedAsync("initial-thread-id");
@@ -163,7 +163,7 @@ public class Mem0MemoryComponentTests : IDisposable
             await sut.OnThreadCreatedAsync("new-thread-id");
         });
 
-        Assert.Equal("The Mem0MemoryComponent can only be used with one thread at a time when ScopeToPerOperationThreadId is set to true.", exception.Message);
+        Assert.Equal("The Mem0Behavior can only be used with one thread at a time when ScopeToPerOperationThreadId is set to true.", exception.Message);
     }
 
     protected virtual void Dispose(bool disposing)
