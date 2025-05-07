@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="IKernelBuilder"/> class to configure Mistral connectors.
 /// </summary>
-public static class MistralAIKernelBuilderExtensions
+public static partial class MistralAIKernelBuilderExtensions
 {
     /// <summary>
     /// Adds an Mistral chat completion service with the specified configuration.
@@ -47,6 +47,7 @@ public static class MistralAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Obsolete("Use AddMistralEmbeddingGenerator instead.")]
     public static IKernelBuilder AddMistralTextEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
