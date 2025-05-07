@@ -13,6 +13,20 @@ public sealed class SqlServerCollectionOptions
     internal static readonly SqlServerCollectionOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="SqlServerCollectionOptions"/> class.
+    /// </summary>
+    public SqlServerCollectionOptions()
+    {
+    }
+
+    internal SqlServerCollectionOptions(SqlServerCollectionOptions? source, IEmbeddingGenerator embeddingGenerator)
+    {
+        this.Schema = source?.Schema;
+        this.RecordDefinition = source?.RecordDefinition;
+        this.EmbeddingGenerator = embeddingGenerator;
+    }
+
+    /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
     public string? Schema { get; set; }

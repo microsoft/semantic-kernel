@@ -22,12 +22,13 @@ public class SqlServerEmbeddingGenerationTests(SqlServerEmbeddingGenerationTests
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
         [
-            // TODO: Implement DI registration for SqlServer (https://github.com/microsoft/semantic-kernel/issues/10948)
+            services => services.AddSqlServerVectorStore(sp => SqlServerTestEnvironment.ConnectionString!)
         ];
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
         [
-            // TODO: Implement DI registration for SqlServer (https://github.com/microsoft/semantic-kernel/issues/10948)
+            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, sp => SqlServerTestEnvironment.ConnectionString!),
+            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, SqlServerTestEnvironment.ConnectionString!),
         ];
     }
 }
