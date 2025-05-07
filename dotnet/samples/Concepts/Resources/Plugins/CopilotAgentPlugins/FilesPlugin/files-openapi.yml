@@ -1,0 +1,556 @@
+openapi: 3.0.4
+info:
+  title: OData Service for namespace microsoft.graph - Subset
+  description: This OData service is located at https://graph.microsoft.com/v1.0
+  version: v1.0
+servers:
+  - url: https://graph.microsoft.com/v1.0
+paths:
+  '/drives/{drive-id}/items/{driveItem-id}/content':
+    get:
+      tags:
+        - drives.driveItem
+      summary: Get content for the navigation property items from drives
+      description: 'The content stream, if the item represents a file.'
+      operationId: drives_GetItemsContent
+      parameters:
+        - name: $format
+          in: query
+          description: Format of the content
+          explode: false
+          schema:
+            type: string
+      responses:
+        2XX:
+          description: Retrieved media content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+    parameters:
+      - name: drive-id
+        in: path
+        description: The unique identifier of drive
+        required: true
+        schema:
+          type: string
+      - name: driveItem-id
+        in: path
+        description: The unique identifier of driveItem
+        required: true
+        schema:
+          type: string
+  /search/query:
+    post:
+      tags:
+        - search.searchEntity.Actions
+      summary: Invoke action query
+      description: Runs the query specified in the request body. Search results are provided in the response.
+      operationId: search_query
+      requestBody:
+        description: Action parameters
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requests:
+                  type: array
+                  items:
+                    title: searchRequest
+                    required:
+                      - '@odata.type'
+                    type: object
+                    properties:
+                      aggregationFilters:
+                        type: array
+                        items:
+                          type: string
+                          nullable: true
+                        description: 'Contains one or more filters to obtain search results aggregated and filtered to a specific value of a field. Optional.Build this filter based on a prior search that aggregates by the same field. From the response of the prior search, identify the searchBucket that filters results to the specific value of the field, use the string in its aggregationFilterToken property, and build an aggregation filter string in the format ''{field}:/''{aggregationFilterToken}/''''. If multiple values for the same field need to be provided, use the strings in its aggregationFilterToken property and build an aggregation filter string in the format ''{field}:or(/''{aggregationFilterToken1}/'',/''{aggregationFilterToken2}/'')''. For example, searching and aggregating drive items by file type returns a searchBucket for the file type docx in the response. You can conveniently use the aggregationFilterToken returned for this searchBucket in a subsequent search query and filter matches down to drive items of the docx file type. Example 1 and example 2 show the actual requests and responses.'
+                      aggregations:
+                        type: array
+                        items:
+                          title: aggregationOption
+                          required:
+                            - '@odata.type'
+                          type: object
+                          properties:
+                            bucketDefinition:
+                              title: bucketAggregationDefinition
+                              required:
+                                - '@odata.type'
+                              type: object
+                              properties:
+                                isDescending:
+                                  type: boolean
+                                  nullable: true
+                                  description: 'True to specify the sort order as descending. The default is false, with the sort order as ascending. Optional.'
+                                minimumCount:
+                                  maximum: 2147483647
+                                  minimum: -2147483648
+                                  type: number
+                                  nullable: true
+                                  description: The minimum number of items that should be present in the aggregation to be returned in a bucket. Optional.
+                                  format: int32
+                                prefixFilter:
+                                  type: string
+                                  nullable: true
+                                  description: A filter to define a matching criteria. The key should start with the specified prefix to be returned in the response. Optional.
+                                ranges:
+                                  type: array
+                                  items:
+                                    title: bucketAggregationRange
+                                    required:
+                                      - '@odata.type'
+                                    type: object
+                                    properties:
+                                      from:
+                                        type: string
+                                        description: Defines the lower bound from which to compute the aggregation. This can be a numeric value or a string representation of a date using the YYYY-MM-DDTHH:mm:ss.sssZ format. Required.
+                                      to:
+                                        type: string
+                                        description: Defines the upper bound up to which to compute the aggregation. This can be a numeric value or a string representation of a date using the YYYY-MM-DDTHH:mm:ss.sssZ format. Required.
+                                      '@odata.type':
+                                        type: string
+                                  description: Specifies the manual ranges to compute the aggregations. This is only valid for nonstring refiners of date or numeric type. Optional.
+                                sortBy:
+                                  title: bucketAggregationSortProperty
+                                  enum:
+                                    - count
+                                    - keyAsString
+                                    - keyAsNumber
+                                    - unknownFutureValue
+                                  type: string
+                                '@odata.type':
+                                  type: string
+                            field:
+                              type: string
+                              description: Computes aggregation on the field while the field exists in the current entity type. Required.
+                            size:
+                              maximum: 2147483647
+                              minimum: -2147483648
+                              type: number
+                              nullable: true
+                              description: 'The number of searchBucket resources to be returned. This isn''t required when the range is provided manually in the search request. The minimum accepted size is 1, and the maximum is 65535. Optional.'
+                              format: int32
+                            '@odata.type':
+                              type: string
+                        description: Specifies aggregations (also known as refiners) to be returned alongside search results. Optional.
+                      collapseProperties:
+                        type: array
+                        items:
+                          title: collapseProperty
+                          required:
+                            - '@odata.type'
+                          type: object
+                          properties:
+                            fields:
+                              type: array
+                              items:
+                                type: string
+                              description: Defines the collapse group to trim results. The properties in this collection must be sortable/refinable properties. Required.
+                            limit:
+                              maximum: 32767
+                              minimum: -32768
+                              type: number
+                              description: Defines a maximum limit count for this field. This numeric value must be a positive integer. Required.
+                              format: int16
+                            '@odata.type':
+                              type: string
+                        description: Contains the ordered collection of fields and limit to collapse results. Optional.
+                      contentSources:
+                        type: array
+                        items:
+                          type: string
+                          nullable: true
+                        description: Contains the connection to be targeted.
+                      enableTopResults:
+                        type: boolean
+                        nullable: true
+                        description: 'This triggers hybrid sort for messages : the first 3 messages are the most relevant. This property is only applicable to entityType=message. Optional.'
+                      entityTypes:
+                        type: array
+                        items:
+                          title: entityType
+                          enum:
+                            - event
+                            - message
+                            - driveItem
+                            - externalItem
+                            - site
+                            - list
+                            - listItem
+                            - drive
+                            - unknownFutureValue
+                            - chatMessage
+                            - person
+                            - acronym
+                            - bookmark
+                          type: string
+                        description: 'One or more types of resources expected in the response. Possible values are: event, message, driveItem, externalItem, site, list, listItem, drive, chatMessage, person, acronym, bookmark.  Use the Prefer: include-unknown-enum-members request header to get the following value(s) in this evolvable enum: chatMessage, person, acronym, bookmark. See known limitations for those combinations of two or more entity types that are supported in the same search request. Required.'
+                      fields:
+                        type: array
+                        items:
+                          type: string
+                          nullable: true
+                        description: 'Contains the fields to be returned for each resource object specified in entityTypes, allowing customization of the fields returned by default; otherwise, including additional fields such as custom managed properties from SharePoint and OneDrive, or custom fields in externalItem from the content that Microsoft Graph connectors bring in. The fields property can use the semantic labels applied to properties. For example, if a property is labeled as title, you can retrieve it using the following syntax: label_title. Optional.'
+                      from:
+                        maximum: 2147483647
+                        minimum: -2147483648
+                        type: number
+                        description: Specifies the offset for the search results. Offset 0 returns the very first result. Optional.
+                        format: int32
+                      query:
+                        title: searchQuery
+                        required:
+                          - '@odata.type'
+                        type: object
+                        properties:
+                          queryString:
+                            type: string
+                            description: The search query containing the search terms. Required.
+                          queryTemplate:
+                            type: string
+                            nullable: true
+                            description: Provides a way to decorate the query string. Supports both KQL and query variables. Optional.
+                          '@odata.type':
+                            type: string
+                      queryAlterationOptions:
+                        title: searchAlterationOptions
+                        required:
+                          - '@odata.type'
+                        type: object
+                        properties:
+                          enableModification:
+                            type: boolean
+                            nullable: true
+                            description: 'Indicates whether spelling modifications are enabled. If enabled, the user gets the search results for the corrected query if there were no results for the original query with typos. The response will also include the spelling modification information in the queryAlterationResponse property. Optional.'
+                          enableSuggestion:
+                            type: boolean
+                            nullable: true
+                            description: 'Indicates whether spelling suggestions are enabled. If enabled, the user gets the search results for the original search query and suggestions for spelling correction in the queryAlterationResponse property of the response for the typos in the query. Optional.'
+                          '@odata.type':
+                            type: string
+                      region:
+                        type: string
+                        nullable: true
+                        description: 'The geographic location for the search. Required for searches that use application permissions. For details, see Get the region value.'
+                      resultTemplateOptions:
+                        title: resultTemplateOption
+                        required:
+                          - '@odata.type'
+                        type: object
+                        properties:
+                          enableResultTemplate:
+                            type: boolean
+                            nullable: true
+                            description: 'Indicates whether search display layouts are enabled. If enabled, the user will get the result template to render the search results content in the resultTemplates property of the response. The result template is based on Adaptive Cards. Optional.'
+                          '@odata.type':
+                            type: string
+                      sharePointOneDriveOptions:
+                        title: sharePointOneDriveOptions
+                        required:
+                          - '@odata.type'
+                        type: object
+                        properties:
+                          includeContent:
+                            title: searchContent
+                            enum:
+                              - sharedContent
+                              - privateContent
+                              - unknownFutureValue
+                            type: string
+                            x-ms-enum-flags:
+                              isFlags: true
+                          '@odata.type':
+                            type: string
+                      size:
+                        maximum: 2147483647
+                        minimum: -2147483648
+                        type: number
+                        description: The size of the page to be retrieved. The maximum value is 500. Optional.
+                        format: int32
+                      sortProperties:
+                        type: array
+                        items:
+                          title: sortProperty
+                          required:
+                            - '@odata.type'
+                          type: object
+                          properties:
+                            isDescending:
+                              type: boolean
+                              nullable: true
+                              description: 'True if the sort order is descending. Default is false, with the sort order as ascending. Optional.'
+                            name:
+                              type: string
+                              description: The name of the property to sort on. Required.
+                            '@odata.type':
+                              type: string
+                        description: Contains the ordered collection of fields and direction to sort results. There can be at most 5 sort properties in the collection. Optional.
+                      '@odata.type':
+                        type: string
+        required: true
+      responses:
+        2XX:
+          description: Success
+          content:
+            application/json:
+              schema:
+                title: Base collection pagination and count responses
+                type: object
+                properties:
+                  '@odata.count':
+                    type: integer
+                    nullable: true
+                    format: int64
+                  '@odata.nextLink':
+                    type: string
+                    nullable: true
+                  value:
+                    type: array
+                    items:
+                      title: searchResponse
+                      required:
+                        - '@odata.type'
+                      type: object
+                      properties:
+                        hitsContainers:
+                          type: array
+                          items:
+                            title: searchHitsContainer
+                            required:
+                              - '@odata.type'
+                            type: object
+                            properties:
+                              aggregations:
+                                type: array
+                                items:
+                                  title: searchAggregation
+                                  required:
+                                    - '@odata.type'
+                                  type: object
+                                  properties:
+                                    buckets:
+                                      type: array
+                                      items:
+                                        title: searchBucket
+                                        required:
+                                          - '@odata.type'
+                                        type: object
+                                        properties:
+                                          aggregationFilterToken:
+                                            type: string
+                                            nullable: true
+                                            description: 'A token containing the encoded filter to aggregate search matches by the specific key value. To use the filter, pass the token as part of the aggregationFilter property in a searchRequest object, in the format ''{field}:/''{aggregationFilterToken}/''''. See an example.'
+                                          count:
+                                            maximum: 2147483647
+                                            minimum: -2147483648
+                                            type: number
+                                            nullable: true
+                                            description: The approximate number of search matches that share the same value specified in the key property. Note that this number is not the exact number of matches.
+                                            format: int32
+                                          key:
+                                            type: string
+                                            nullable: true
+                                            description: The discrete value of the field that an aggregation was computed on.
+                                          '@odata.type':
+                                            type: string
+                                    field:
+                                      type: string
+                                      nullable: true
+                                    '@odata.type':
+                                      type: string
+                              hits:
+                                type: array
+                                items:
+                                  title: searchHit
+                                  required:
+                                    - '@odata.type'
+                                  type: object
+                                  properties:
+                                    contentSource:
+                                      type: string
+                                      nullable: true
+                                      description: The name of the content source that the externalItem is part of.
+                                    hitId:
+                                      type: string
+                                      nullable: true
+                                      description: 'The internal identifier for the item. The format of the identifier varies based on the entity type. For details, see hitId format.'
+                                    isCollapsed:
+                                      type: boolean
+                                      nullable: true
+                                      description: Indicates whether the current result is collapsed when the collapseProperties property in the searchRequest is used.
+                                    rank:
+                                      maximum: 2147483647
+                                      minimum: -2147483648
+                                      type: number
+                                      nullable: true
+                                      description: The rank or the order of the result.
+                                      format: int32
+                                    resultTemplateId:
+                                      type: string
+                                      nullable: true
+                                      description: ID of the result template used to render the search result. This ID must map to a display layout in the resultTemplates dictionary that is also included in the searchResponse.
+                                    summary:
+                                      type: string
+                                      nullable: true
+                                      description: 'A summary of the result, if a summary is available.'
+                                    resource:
+                                      title: entity
+                                      required:
+                                        - '@odata.type'
+                                      type: object
+                                      properties:
+                                        id:
+                                          type: string
+                                          description: The unique identifier for an entity. Read-only.
+                                        '@odata.type':
+                                          type: string
+                                      discriminator:
+                                        propertyName: '@odata.type'
+                                    '@odata.type':
+                                      type: string
+                                description: A collection of the search results.
+                              moreResultsAvailable:
+                                type: boolean
+                                nullable: true
+                                description: 'Provides information if more results are available. Based on this information, you can adjust the from and size properties of the searchRequest accordingly.'
+                              total:
+                                maximum: 2147483647
+                                minimum: -2147483648
+                                type: number
+                                nullable: true
+                                description: 'The total number of results. Note this isn''t the number of results on the page, but the total number of results satisfying the query.'
+                                format: int32
+                              '@odata.type':
+                                type: string
+                          description: A collection of search results.
+                        queryAlterationResponse:
+                          title: alterationResponse
+                          required:
+                            - '@odata.type'
+                          type: object
+                          properties:
+                            originalQueryString:
+                              type: string
+                              nullable: true
+                              description: Defines the original user query string.
+                            queryAlteration:
+                              title: searchAlteration
+                              required:
+                                - '@odata.type'
+                              type: object
+                              properties:
+                                alteredHighlightedQueryString:
+                                  type: string
+                                  nullable: true
+                                  description: 'Defines the altered highlighted query string with spelling correction. The annotation around the corrected segment is: /ue000, /ue001.'
+                                alteredQueryString:
+                                  type: string
+                                  nullable: true
+                                  description: Defines the altered query string with spelling correction.
+                                alteredQueryTokens:
+                                  type: array
+                                  items:
+                                    title: alteredQueryToken
+                                    required:
+                                      - '@odata.type'
+                                    type: object
+                                    properties:
+                                      length:
+                                        maximum: 2147483647
+                                        minimum: -2147483648
+                                        type: number
+                                        nullable: true
+                                        description: Defines the length of a changed segment.
+                                        format: int32
+                                      offset:
+                                        maximum: 2147483647
+                                        minimum: -2147483648
+                                        type: number
+                                        nullable: true
+                                        description: Defines the offset of a changed segment.
+                                        format: int32
+                                      suggestion:
+                                        type: string
+                                        nullable: true
+                                        description: Represents the corrected segment string.
+                                      '@odata.type':
+                                        type: string
+                                  description: Represents changed segments related to an original user query.
+                                '@odata.type':
+                                  type: string
+                            queryAlterationType:
+                              title: searchAlterationType
+                              enum:
+                                - suggestion
+                                - modification
+                                - unknownFutureValue
+                              type: string
+                            '@odata.type':
+                              type: string
+                        resultTemplates:
+                          title: resultTemplateDictionary
+                          required:
+                            - '@odata.type'
+                          type: object
+                          properties:
+                            '@odata.type':
+                              type: string
+                        searchTerms:
+                          type: array
+                          items:
+                            type: string
+                            nullable: true
+                          description: Contains the search terms sent in the initial search query.
+                        '@odata.type':
+                          type: string
+      x-ms-pageable:
+        nextLinkName: '@odata.nextLink'
+        operationName: listMore
+        itemName: value
+  '/sites/{site-id}/lists/{list-id}/items/{listItem-id}/driveItem/content':
+    get:
+      tags:
+        - sites.list
+      summary: Get content for the navigation property driveItem from sites
+      description: 'The content stream, if the item represents a file.'
+      operationId: sites_lists_items_GetDriveItemContent
+      parameters:
+        - name: $format
+          in: query
+          description: Format of the content
+          explode: false
+          schema:
+            type: string
+      responses:
+        2XX:
+          description: Retrieved media content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+    parameters:
+      - name: site-id
+        in: path
+        description: The unique identifier of site
+        required: true
+        schema:
+          type: string
+      - name: list-id
+        in: path
+        description: The unique identifier of list
+        required: true
+        schema:
+          type: string
+      - name: listItem-id
+        in: path
+        description: The unique identifier of listItem
+        required: true
+        schema:
+          type: string
+components: { }

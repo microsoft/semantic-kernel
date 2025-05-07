@@ -55,6 +55,13 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
             _ => throw new InvalidOperationException($"Invalid kernel selection. {selectedKernelName} is not a valid kernel.")
         };
         kernel.AutoFunctionInvocationFilters.Add(new ExpectedSchemaFunctionFilter());
+        kernel.Plugins.AddFromFunctions("time_plugin", [
+            KernelFunctionFactory.CreateFromMethod(
+                method: () => DateTime.Today,
+                functionName: "get_the_date_and_time_today",
+                description: "Get the date today and the time now."
+            )
+        ]);
 
         while (true)
         {
@@ -389,36 +396,42 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     private static readonly HashSet<string> s_fieldsToIgnore = new(
         [
             "@odata.type",
-            "attachments",
+            "aggregationFilters",
+            "aggregations",
             "allowNewTimeProposals",
+            "attachments",
             "bccRecipients",
             "bodyPreview",
             "calendar",
             "categories",
             "ccRecipients",
             "changeKey",
+            "collapseProperties",
+            "contentSources",
             "conversationId",
-            "coordinates",
             "conversationIndex",
+            "coordinates",
             "createdDateTime",
             "discriminator",
-            "lastModifiedDateTime",
-            "locations",
+            "enableTopResults",
             "extensions",
+            "fields",
             "flag",
             "from",
             "hasAttachments",
             "iCalUId",
             "id",
             "inferenceClassification",
-            "internetMessageHeaders",
             "instances",
+            "internetMessageHeaders",
             "isCancelled",
             "isDeliveryReceiptRequested",
             "isDraft",
             "isOrganizer",
             "isRead",
             "isReadReceiptRequested",
+            "lastModifiedDateTime",
+            "locations",
             "multiValueExtendedProperties",
             "onlineMeeting",
             "onlineMeetingProvider",
@@ -429,17 +442,21 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
             "range",
             "receivedDateTime",
             "recurrence",
+            "region",
             "replyTo",
+            "resultTemplateOptions",
             "sender",
             "sentDateTime",
             "seriesMasterId",
             "singleValueExtendedProperties",
-            "transactionId",
+            "sortProperties",
             "time",
+            "transactionId",
             "uniqueBody",
             "uniqueId",
             "uniqueIdType",
             "webLink",
+
         ],
         StringComparer.OrdinalIgnoreCase
     );
@@ -499,9 +516,16 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     private static readonly RestApiParameterFilter s_restApiParameterFilter = (RestApiParameterFilterContext context) =>
     {
 #pragma warning restore SKEXP0040
-        if (("me_sendMail".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) ||
-            ("me_calendar_CreateEvents".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase)) &&
-            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase)))
+        // Handle _format parameter for drives_GetItemsContent
+        if (context.Operation.Id.Equals("drives_GetItemsContent", StringComparison.OrdinalIgnoreCase)
+            && context.Parameter.Name.Equals("$format", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        string[] _functionNames = ["drives_GetItemsContent", "me_calendar_CreateEvents", "me_sendMail", "search_query", "sites_lists_items_GetDriveItemContent"];
+        bool hasFunctionName = _functionNames.Any(s => s.Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase));
+        if (hasFunctionName && "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase))
         {
             context.Parameter.Schema = TrimPropertiesFromRequestBody(context.Parameter.Schema);
             return context.Parameter;

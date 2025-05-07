@@ -1,0 +1,52 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.1/schema.json",
+  "schema_version": "v2.1",
+  "name_for_human": "OData Service for namespace microsoft.graph",
+  "description_for_human": "This OData service is located at https://graph.microsoft.com/v1.0",
+  "description_for_model": "This OData service is located at https://graph.microsoft.com/v1.0",
+  "contact_email": "publisher-email@example.com",
+  "namespace": "Files",
+  "capabilities": {
+    "conversation_starters": [
+      {
+        "text": "Get content for the navigation property items from"
+      },
+      {
+        "text": "Invoke action query"
+      },
+      {
+        "text": "Get content for the navigation property driveItem "
+      }
+    ]
+  },
+  "functions": [
+    {
+      "name": "drives_GetItemsContent",
+      "description": "The content stream, if the item represents a file."
+    },
+    {
+      "name": "search_query",
+      "description": "Runs the query specified in the request body. Search results are provided in the response."
+    },
+    {
+      "name": "sites_lists_items_GetDriveItemContent",
+      "description": "The content stream, if the item represents a file."
+    }
+  ],
+  "runtimes": [
+    {
+      "type": "OpenApi",
+      "auth": {
+        "type": "None"
+      },
+      "spec": {
+        "url": "files-openapi.yml"
+      },
+      "run_for_functions": [
+        "drives_GetItemsContent",
+        "search_query",
+        "sites_lists_items_GetDriveItemContent"
+      ]
+    }
+  ]
+}
