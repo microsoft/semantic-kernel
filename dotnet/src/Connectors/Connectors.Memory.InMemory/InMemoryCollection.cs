@@ -41,12 +41,6 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
 
-    /// <summary>An function to look up vectors from the records.</summary>
-    private readonly InMemoryVectorResolver<TRecord> _vectorResolver;
-
-    /// <summary>An function to look up keys from the records.</summary>
-    private readonly InMemoryKeyResolver<TKey, TRecord> _keyResolver;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryCollection{TKey,TRecord}"/> class.
     /// </summary>
@@ -65,31 +59,6 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         this._model = new InMemoryModelBuilder()
             .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
-
-        // Assign resolvers.
-        // TODO: Make generic to avoid boxing
-#pragma warning disable MEVD9000 // KeyResolver and VectorResolver are experimental
-        this._keyResolver = options.KeyResolver is null
-            ? record => (TKey)this._model.KeyProperty.GetValueAsObject(record)!
-            : options.KeyResolver;
-
-        this._vectorResolver = options.VectorResolver is not null
-            ? options.VectorResolver
-            : (vectorPropertyName, record) =>
-            {
-                if (!this._model.PropertyMap.TryGetValue(vectorPropertyName, out var property))
-                {
-                    throw new InvalidOperationException($"The collection does not have a vector field named '{vectorPropertyName}', so vector search is not possible.");
-                }
-
-                if (property is not VectorPropertyModel vectorProperty)
-                {
-                    throw new InvalidOperationException($"The property '{vectorPropertyName}' isn't a vector property.");
-                }
-
-                return property.GetValueAsObject(record);
-            };
-#pragma warning restore MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         this._collectionMetadata = new()
         {
@@ -244,7 +213,7 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
         var recordIndex = 0;
         foreach (var record in records)
         {
-            var key = (TKey)this._keyResolver(record)!;
+            var key = (TKey)this._model.KeyProperty.GetValueAsObject(record)!;
             var wrappedRecord = new InMemoryRecordWrapper<TRecord>(record);
 
             if (generatedEmbeddings is not null)
@@ -361,8 +330,7 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
 
             if (vectorProperty.EmbeddingGenerator is null)
             {
-                var vectorObject = this._vectorResolver(vectorProperty.ModelName!, wrapper.Record);
-                if (vectorObject is not ReadOnlyMemory<float> dbVector)
+                if (vectorProperty.GetValueAsObject(wrapper.Record) is not ReadOnlyMemory<float> dbVector)
                 {
                     return null;
                 }
