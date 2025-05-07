@@ -100,75 +100,8 @@ public sealed class MongoCollectionTests
         Assert.Equal(expectedResult, actualResult);
     }
 
-    [Theory]
-    [InlineData(true, 0)]
-    [InlineData(false, 1)]
-    public async Task CreateCollectionInvokesValidMethodsAsync(bool indexExists, int actualIndexCreations)
-    {
-        // Arrange
-        const string CollectionName = "collection";
-
-        List<BsonDocument> indexes = indexExists ? [new BsonDocument { ["name"] = "vector_index" }] : [];
-
-        var mockIndexCursor = new Mock<IAsyncCursor<BsonDocument>>();
-        mockIndexCursor
-            .SetupSequence(l => l.MoveNext(It.IsAny<CancellationToken>()))
-            .Returns(true)
-            .Returns(false);
-
-        mockIndexCursor
-            .Setup(l => l.Current)
-            .Returns(indexes);
-
-        var mockCursor = new Mock<IAsyncCursor<string>>();
-        mockCursor
-            .Setup(l => l.MoveNextAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-
-        mockCursor
-            .Setup(l => l.Current)
-            .Returns([]);
-
-        var mockMongoIndexManager = new Mock<IMongoIndexManager<BsonDocument>>();
-
-        mockMongoIndexManager
-            .Setup(l => l.ListAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(mockIndexCursor.Object);
-
-        this._mockMongoCollection
-            .Setup(l => l.Indexes)
-            .Returns(mockMongoIndexManager.Object);
-
-        this._mockMongoDatabase
-            .Setup(l => l.ListCollectionNamesAsync(It.IsAny<ListCollectionNamesOptions>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(mockCursor.Object);
-
-        var sut = new MongoCollection<string, MongoHotelModel>(this._mockMongoDatabase.Object, CollectionName);
-
-        // Act
-        await sut.CreateCollectionAsync();
-
-        // Assert
-        this._mockMongoDatabase.Verify(l => l.CreateCollectionAsync(
-            CollectionName,
-            It.IsAny<CreateCollectionOptions>(),
-            It.IsAny<CancellationToken>()), Times.Once);
-
-        this._mockMongoDatabase.Verify(l => l.ListCollectionNamesAsync(
-            It.IsAny<ListCollectionNamesOptions>(),
-            It.IsAny<CancellationToken>()), Times.Once);
-
-        this._mockMongoDatabase.Verify(l => l.RunCommandAsync<BsonDocument>(
-            It.Is<BsonDocumentCommand<BsonDocument>>(command =>
-                command.Document["createSearchIndexes"] == CollectionName &&
-                command.Document["indexes"].GetType() == typeof(BsonArray) &&
-                ((BsonArray)command.Document["indexes"]).Count == 1),
-            It.IsAny<ReadPreference>(),
-            It.IsAny<CancellationToken>()), Times.Exactly(actualIndexCreations));
-    }
-
     [Fact]
-    public async Task CreateCollectionIfNotExistsInvokesValidMethodsAsync()
+    public async Task EnsureCollectionExistsInvokesValidMethodsAsync()
     {
         // Arrange
         const string CollectionName = "collection";
@@ -211,7 +144,7 @@ public sealed class MongoCollectionTests
             CollectionName);
 
         // Act
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert
         this._mockMongoDatabase.Verify(l => l.CreateCollectionAsync(
@@ -608,7 +541,7 @@ public sealed class MongoCollectionTests
         { [], "non-existent-collection", false }
     };
 
-    public static TheoryData<List<string>, int> CreateCollectionIfNotExistsData => new()
+    public static TheoryData<List<string>, int> EnsureCollectionExistsData => new()
     {
         { ["collection"], 0 },
         { [], 1 }

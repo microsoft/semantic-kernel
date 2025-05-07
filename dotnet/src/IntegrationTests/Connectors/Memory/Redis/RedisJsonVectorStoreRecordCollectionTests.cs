@@ -61,7 +61,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var sut = new RedisJsonCollection<string, RedisHotel>(fixture.Database, testCollectionName, options);
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
         await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync("Upsert-10", new RecordRetrievalOptions { IncludeVectors = true });
         var searchResults = await sut.SearchEmbeddingAsync(
@@ -356,7 +356,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         // Arrange
         var options = new RedisJsonCollectionOptions { PrefixCollectionNameToKeyNames = true };
         var sut = new RedisJsonCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName + "TopSkip", options);
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
         await sut.UpsertAsync(new RedisBasicFloat32Hotel { HotelId = "TopSkip_1", HotelName = "1", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 1.0f]) });
         await sut.UpsertAsync(new RedisBasicFloat32Hotel { HotelId = "TopSkip_2", HotelName = "2", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 2.0f]) });
         await sut.UpsertAsync(new RedisBasicFloat32Hotel { HotelId = "TopSkip_3", HotelName = "3", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 3.0f]) });
@@ -386,7 +386,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         // Arrange
         var options = new RedisJsonCollectionOptions { PrefixCollectionNameToKeyNames = true };
         var sut = new RedisJsonCollection<string, RedisBasicFloat64Hotel>(fixture.Database, TestCollectionName + "Float64", options);
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
         await sut.UpsertAsync(new RedisBasicFloat64Hotel { HotelId = "Float64_1", HotelName = "1", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<double>([1.0d, 1.1d, 1.2d, 1.3d]) });
         await sut.UpsertAsync(new RedisBasicFloat64Hotel { HotelId = "Float64_2", HotelName = "2", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<double>([2.0d, 2.1d, 2.2d, 2.3d]) });
         await sut.UpsertAsync(new RedisBasicFloat64Hotel { HotelId = "Float64_3", HotelName = "3", Description = "Nice hotel", DescriptionEmbedding = new ReadOnlyMemory<double>([3.0d, 3.1d, 3.2d, 3.3d]) });

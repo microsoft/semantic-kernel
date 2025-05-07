@@ -49,7 +49,7 @@ public class InMemoryVectorStoreTests
         // Arrange.
         var sut = new InMemoryVectorStore();
         var stringKeyCollection = sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName);
-        await stringKeyCollection.CreateCollectionAsync();
+        await stringKeyCollection.EnsureCollectionExistsAsync();
 
         // Act and assert.
         var exception = Assert.Throws<InvalidOperationException>(() => sut.GetCollection<string, SecondModel>(TestCollectionName));

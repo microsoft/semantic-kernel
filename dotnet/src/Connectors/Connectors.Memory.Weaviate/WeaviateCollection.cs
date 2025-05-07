@@ -135,8 +135,14 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     }
 
     /// <inheritdoc />
-    public override async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
+        // Don't even try to create if the collection already exists.
+        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return;
+        }
+
         var schema = WeaviateCollectionCreateMapping.MapToSchema(
             this.Name,
             this._hasNamedVectors,
@@ -144,15 +150,29 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         using var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
 
-        await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        try
         {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+            await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (VectorStoreException)
+        {
+            // Since weaviate error info is ambuguous, we can check here if the index already exists.
+            // If it does, we can ignore the error.
+            bool collectionExists = false;
+#pragma warning disable CA1031 // Do not catch general exception types
+            try
+            {
+                collectionExists = await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+            if (!collectionExists)
+            {
+                throw;
+            }
         }
     }
 

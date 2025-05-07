@@ -97,8 +97,14 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             });
 
     /// <inheritdoc />
-    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
+        // Don't even try to create if the collection already exists.
+        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return;
+        }
+
         // we already run through record property validation, so a single VectorStoreRecordVectorProperty is guaranteed.
         var vectorProperty = this._model.VectorProperty!;
 
@@ -123,23 +129,23 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             },
         };
 
-        return this.RunCollectionOperationAsync("CreateCollection",
-            () => this._pineconeClient.CreateIndexAsync(request, cancellationToken: cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        try
         {
-            try
+            await this._pineconeClient.CreateIndexAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (ConflictError)
+        {
+            // Do nothing, since the index is already created.
+        }
+        catch (PineconeApiException other)
+        {
+            throw new VectorStoreException("Call to vector store failed.", other)
             {
-                await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (VectorStoreException ex) when (ex.InnerException is PineconeApiException apiEx && apiEx.InnerException is ConflictError)
-            {
-                // If the collection got created in the meantime, we should ignore the exception.
-            }
+                VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
+                OperationName = "EnsureCollectionExists"
+            };
         }
     }
 

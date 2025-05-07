@@ -165,18 +165,31 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
     }
 
     /// <inheritdoc />
-    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("CreateContainer", () =>
-            this._database.CreateContainerAsync(this.GetContainerProperties(), cancellationToken: cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        // Don't even try to create if the collection already exists.
+        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        try
+        {
+            await this._database.CreateContainerAsync(this.GetContainerProperties(), cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            // Do nothing, since the container is already created.
+        }
+        catch (CosmosException ex)
+        {
+            throw new VectorStoreException("Call to vector store failed.", ex)
+            {
+                VectorStoreSystemName = CosmosNoSqlConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
+                OperationName = "CreateContainer"
+            };
         }
     }
 

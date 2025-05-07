@@ -60,10 +60,10 @@ public sealed class SqliteCollectionTests
     }
 
     [Fact]
-    public async Task CreateCollectionIfNotExistsCallsExecuteNonQueryMethodAsync()
+    public async Task EnsureCollectionExistsCallsExecuteNonQueryMethodAsync()
     {
         // Arrange
-        const string TableName = "CreateCollectionIfNotExists";
+        const string TableName = "EnsureCollectionExists";
 
         using var fakeCommand = new FakeDbCommand();
         using var fakeConnection = new FakeDBConnection(fakeCommand);
@@ -71,7 +71,7 @@ public sealed class SqliteCollectionTests
         var sut = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnection, TableName);
 
         // Act
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert
         Assert.Equal(2, fakeCommand.ExecuteNonQueryCallCount);

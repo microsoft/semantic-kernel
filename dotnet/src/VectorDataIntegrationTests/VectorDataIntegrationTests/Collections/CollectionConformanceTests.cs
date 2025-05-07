@@ -16,7 +16,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
     {
         // Arrange.
         var collection = await this.GetNonExistingCollectionAsync<SimpleRecord<TKey>>();
-        await collection.CreateCollectionAsync();
+        await collection.EnsureCollectionExistsAsync();
         Assert.True(await collection.CollectionExistsAsync());
 
         // Act.
@@ -40,7 +40,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 
         try
         {
-            await collection.CreateCollectionAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             // Act & Assert.
             Assert.True(await fixture.TestStore.DefaultVectorStore.CollectionExistsAsync(collection.Name));
@@ -73,7 +73,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 
     [ConditionalTheory]
     [MemberData(nameof(UseDynamicMappingData))]
-    public Task CreateCollectionCreatesTheCollection(bool useDynamicMapping)
+    public Task EnsureCollectionExistsCreatesTheCollection(bool useDynamicMapping)
     {
         return useDynamicMapping ? Core<Dictionary<string, object?>>() : Core<SimpleRecord<TKey>>();
 
@@ -81,7 +81,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         {
             var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 
-            await collection.CreateCollectionAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             try
             {
@@ -104,7 +104,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 
     [ConditionalTheory]
     [MemberData(nameof(UseDynamicMappingData))]
-    public Task CreateCollectionIfNotExistsCalledMoreThanOnceDoesNotThrow(bool useDynamicMapping)
+    public Task EnsureCollectionExistsCalledMoreThanOnceDoesNotThrow(bool useDynamicMapping)
     {
         return useDynamicMapping ? Core<Dictionary<string, object?>>() : Core<SimpleRecord<TKey>>();
 
@@ -112,7 +112,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         {
             var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             try
             {
@@ -126,42 +126,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 
                 Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
 
-                await collection.CreateCollectionIfNotExistsAsync();
-            }
-            finally
-            {
-                await collection.DeleteCollectionAsync();
-            }
-        }
-    }
-
-    [ConditionalTheory]
-    [MemberData(nameof(UseDynamicMappingData))]
-    public Task CreateCollectionCalledMoreThanOnceThrowsVectorStoreException(bool useDynamicMapping)
-    {
-        return useDynamicMapping ? Core<Dictionary<string, object?>>() : Core<SimpleRecord<TKey>>();
-
-        async Task Core<TRecord>() where TRecord : class
-        {
-            var collection = await this.GetNonExistingCollectionAsync<TRecord>();
-
-            await collection.CreateCollectionAsync();
-
-            try
-            {
-                Assert.True(await collection.CollectionExistsAsync());
-
-                var collectionMetadata = collection.GetService(typeof(VectorStoreCollectionMetadata)) as VectorStoreCollectionMetadata;
-
-                Assert.NotNull(collectionMetadata);
-                Assert.NotNull(collectionMetadata.VectorStoreSystemName);
-                Assert.NotNull(collectionMetadata.CollectionName);
-
-                Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
-
-                await collection.CreateCollectionIfNotExistsAsync();
-
-                await Assert.ThrowsAsync<VectorStoreException>(() => collection.CreateCollectionAsync());
+                await collection.EnsureCollectionExistsAsync();
             }
             finally
             {

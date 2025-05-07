@@ -126,30 +126,15 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
     }
 
     /// <inheritdoc />
-    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        if (!this._internalCollections.ContainsKey(this.Name)
-            && this._internalCollections.TryAdd(this.Name, new ConcurrentDictionary<object, object>())
-            && this._internalCollectionTypes.TryAdd(this.Name, typeof(TRecord)))
+        if (!this._internalCollections.ContainsKey(this.Name))
         {
-            return Task.CompletedTask;
+            this._internalCollections.TryAdd(this.Name, new ConcurrentDictionary<object, object>());
+            this._internalCollectionTypes.TryAdd(this.Name, typeof(TRecord));
         }
 
-        return Task.FromException(new VectorStoreException("Collection already exists.")
-        {
-            VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
-            CollectionName = this.Name,
-            OperationName = "CreateCollection"
-        });
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
-        {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
-        }
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />

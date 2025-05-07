@@ -21,7 +21,7 @@ public abstract class VectorSearchWithFilterConformanceTests<TKey>(VectorStoreFi
         // Act
         try
         {
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             List<VectorSearchWithFilterRecord> records =
             [

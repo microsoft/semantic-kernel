@@ -132,7 +132,7 @@ public sealed class CosmosNoSqlCollectionTests
     [InlineData(IndexingMode.Consistent)]
     [InlineData(IndexingMode.Lazy)]
     [InlineData(IndexingMode.None)]
-    public async Task CreateCollectionUsesValidContainerPropertiesAsync(IndexingMode indexingMode)
+    public async Task EnsureCollectionExistsUsesValidContainerPropertiesAsync(IndexingMode indexingMode)
     {
         // Arrange
         const string CollectionName = "collection";
@@ -197,7 +197,7 @@ public sealed class CosmosNoSqlCollectionTests
         };
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert
         this._mockDatabase.Verify(l => l.CreateContainerAsync(
@@ -209,8 +209,8 @@ public sealed class CosmosNoSqlCollectionTests
     }
 
     [Theory]
-    [MemberData(nameof(CreateCollectionIfNotExistsData))]
-    public async Task CreateCollectionIfNotExistsInvokesValidMethodsAsync(List<string> collections, int actualCollectionCreations)
+    [MemberData(nameof(EnsureCollectionExistsData))]
+    public async Task EnsureCollectionExistsInvokesValidMethodsAsync(List<string> collections, int actualCollectionCreations)
     {
         // Arrange
         const string CollectionName = "collection";
@@ -242,7 +242,7 @@ public sealed class CosmosNoSqlCollectionTests
             CollectionName);
 
         // Act
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert
         this._mockDatabase.Verify(l => l.CreateContainerAsync(
@@ -555,7 +555,7 @@ public sealed class CosmosNoSqlCollectionTests
         { [], "non-existent-collection", false }
     };
 
-    public static TheoryData<List<string>, int> CreateCollectionIfNotExistsData => new()
+    public static TheoryData<List<string>, int> EnsureCollectionExistsData => new()
     {
         { ["collection"], 0 },
         { [], 1 }

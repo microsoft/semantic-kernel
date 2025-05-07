@@ -25,7 +25,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         if (createCollection)
         {
-            await sut.CreateCollectionAsync();
+            await sut.EnsureCollectionExistsAsync();
         }
 
         try
@@ -55,7 +55,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         try
         {
             // Act
-            await sut.CreateCollectionAsync();
+            await sut.EnsureCollectionExistsAsync();
         }
         finally
         {
@@ -74,7 +74,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             await sut.DeleteCollectionAsync();
         }
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var writtenHotel1 = new PostgresHotel<int> { HotelId = 1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
         var writtenHotel2 = new PostgresHotel<int> { HotelId = 2, HotelName = "Hotel 2", HotelCode = 2, ParkingIncluded = false, HotelRating = 2.5f, ListInts = [1, 2] };
@@ -186,7 +186,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         var sut = fixture.GetCollection<int, PostgresHotel<int>>("GetUpsertDeleteBatch");
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var record1 = new PostgresHotel<int> { HotelId = HotelId1, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
         var record2 = new PostgresHotel<int> { HotelId = HotelId2, HotelName = "Hotel 2", HotelCode = 1, ParkingIncluded = false, HotelRating = 3.5f, Tags = ["tag1", "tag3"] };
@@ -215,7 +215,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         const int HotelId = 5;
         var sut = fixture.GetCollection<int, PostgresHotel<int>>("UpsertRecord");
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var record = new PostgresHotel<int> { HotelId = HotelId, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
 
@@ -248,7 +248,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         const string CollectionName = "ItCanReadManuallyInsertedRecordAsync";
         // Arrange
         var sut = fixture.GetCollection<int, PostgresHotel<int>>(CollectionName);
-        await sut.CreateCollectionAsync().ConfigureAwait(true);
+        await sut.EnsureCollectionExistsAsync().ConfigureAwait(true);
         Assert.True(await sut.CollectionExistsAsync().ConfigureAwait(true));
         await using (var connection = fixture.GetConnection())
         {
@@ -284,7 +284,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithNumericKey", GetVectorStoreRecordDefinition<int>());
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var record = new PostgresHotel<int> { HotelId = (int)HotelId, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
 
@@ -351,7 +351,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         var sut = fixture.GetCollection<int, PostgresHotel<int>>($"VectorizedSearch_{includeVectors}_{distanceFunction}", GetVectorStoreRecordDefinition<int>(distanceFunction));
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -387,7 +387,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         var sut = fixture.GetCollection<int, PostgresHotel<int>>("VectorizedSearchWithEqualToFilter");
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -417,7 +417,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         var sut = fixture.GetCollection<int, PostgresHotel<int>>("VectorizedSearchWithAnyTagEqualToFilter");
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -442,7 +442,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         // Arrange
         var sut = fixture.GetCollection<int, RecordWithEnumerables>("UpsertAndGetEnumerableTypes");
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var record = new RecordWithEnumerables
         {

@@ -125,53 +125,77 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
     }
 
     /// <inheritdoc />
-    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        var vectorSearchConfig = new VectorSearch();
-        var searchFields = new List<SearchField>();
+        const string OperationName = "CreateIndex";
 
-        // Loop through all properties and create the search fields.
-        foreach (var property in this._model.Properties)
+        // Don't even try to create if the collection already exists.
+        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            switch (property)
-            {
-                case KeyPropertyModel p:
-                    searchFields.Add(AzureAISearchCollectionCreateMapping.MapKeyField(p));
-                    break;
-
-                case DataPropertyModel p:
-                    searchFields.Add(AzureAISearchCollectionCreateMapping.MapDataField(p));
-                    break;
-
-                case VectorPropertyModel p:
-                    (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) = AzureAISearchCollectionCreateMapping.MapVectorField(p);
-
-                    // Add the search field, plus its profile and algorithm configuration to the search config.
-                    searchFields.Add(vectorSearchField);
-                    vectorSearchConfig.Algorithms.Add(algorithmConfiguration);
-                    vectorSearchConfig.Profiles.Add(vectorSearchProfile);
-                    break;
-
-                default:
-                    throw new UnreachableException();
-            }
+            return;
         }
 
-        // Create the index.
-        var searchIndex = new SearchIndex(this.Name, searchFields);
-        searchIndex.VectorSearch = vectorSearchConfig;
-
-        return this.RunOperationAsync(
-            "CreateIndex",
-            () => this._searchIndexClient.CreateIndexAsync(searchIndex, cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        try
         {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+            var vectorSearchConfig = new VectorSearch();
+            var searchFields = new List<SearchField>();
+
+            // Loop through all properties and create the search fields.
+            foreach (var property in this._model.Properties)
+            {
+                switch (property)
+                {
+                    case KeyPropertyModel p:
+                        searchFields.Add(AzureAISearchCollectionCreateMapping.MapKeyField(p));
+                        break;
+
+                    case DataPropertyModel p:
+                        searchFields.Add(AzureAISearchCollectionCreateMapping.MapDataField(p));
+                        break;
+
+                    case VectorPropertyModel p:
+                        (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) = AzureAISearchCollectionCreateMapping.MapVectorField(p);
+
+                        // Add the search field, plus its profile and algorithm configuration to the search config.
+                        searchFields.Add(vectorSearchField);
+                        vectorSearchConfig.Algorithms.Add(algorithmConfiguration);
+                        vectorSearchConfig.Profiles.Add(vectorSearchProfile);
+                        break;
+
+                    default:
+                        throw new UnreachableException();
+                }
+            }
+
+            // Create the index.
+            var searchIndex = new SearchIndex(this.Name, searchFields);
+            searchIndex.VectorSearch = vectorSearchConfig;
+
+            await this._searchIndexClient.CreateIndexAsync(searchIndex, cancellationToken).ConfigureAwait(false);
+        }
+        catch (RequestFailedException ex) when (ex.ErrorCode == "ResourceNameAlreadyInUse")
+        {
+            // Index already exists, ignore.
+        }
+        catch (RequestFailedException ex)
+        {
+            throw new VectorStoreException("Call to vector store failed.", ex)
+            {
+                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
+                OperationName = OperationName
+            };
+        }
+        catch (AggregateException ex) when (ex.InnerException is RequestFailedException innerEx)
+        {
+            throw new VectorStoreException("Call to vector store failed.", ex)
+            {
+                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
+                OperationName = OperationName
+            };
         }
     }
 

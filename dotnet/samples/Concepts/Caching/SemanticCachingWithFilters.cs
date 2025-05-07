@@ -196,7 +196,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
             var promptEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(prompt);
 
             var collection = vectorStore.GetCollection<string, CacheRecord>(CollectionName);
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             // Search for similar prompts in cache.
             var searchResult = (await collection.SearchEmbeddingAsync(promptEmbedding, top: 1, cancellationToken: context.CancellationToken)
@@ -241,7 +241,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
 
                 // Cache rendered prompt and LLM result.
                 var collection = vectorStore.GetCollection<string, CacheRecord>(CollectionName);
-                await collection.CreateCollectionIfNotExistsAsync();
+                await collection.EnsureCollectionExistsAsync();
 
                 var cacheRecord = new CacheRecord
                 {

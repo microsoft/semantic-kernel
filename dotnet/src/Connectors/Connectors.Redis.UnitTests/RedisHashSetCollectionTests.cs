@@ -67,14 +67,14 @@ public class RedisHashSetCollectionTests
     }
 
     [Fact]
-    public async Task CanCreateCollectionAsync()
+    public async Task CanEnsureCollectionExistsAsync()
     {
         // Arrange.
         SetupExecuteMock(this._redisDatabaseMock, string.Empty);
         var sut = new RedisHashSetCollection<string, SinglePropsModel>(this._redisDatabaseMock.Object, TestCollectionName);
 
         // Act.
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert.
         var expectedArgs = new object[] {

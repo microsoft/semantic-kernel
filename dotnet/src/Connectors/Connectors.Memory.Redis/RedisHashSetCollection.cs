@@ -158,27 +158,55 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
     }
 
     /// <inheritdoc />
-    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        // Map the record definition to a schema.
-        var schema = RedisCollectionCreateMapping.MapToSchema(this._model.Properties, useDollarPrefix: false);
+        const string OperationName = "FT.CREATE";
 
-        // Create the index creation params.
-        // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
-        var createParams = new FTCreateParams()
-            .AddPrefix($"{this.Name}:")
-            .On(IndexDataType.HASH);
-
-        // Create the index.
-        return this.RunOperationAsync("FT.CREATE", () => this._database.FT().CreateAsync(this.Name, createParams, schema));
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        // Don't even try to create if the collection already exists.
+        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        try
+        {
+            // Map the record definition to a schema.
+            var schema = RedisCollectionCreateMapping.MapToSchema(this._model.Properties, useDollarPrefix: false);
+
+            // Create the index creation params.
+            // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
+            var createParams = new FTCreateParams()
+                .AddPrefix($"{this.Name}:")
+                .On(IndexDataType.HASH);
+
+            // Create the index.
+            await this._database.FT().CreateAsync(this.Name, createParams, schema).ConfigureAwait(false);
+        }
+        catch (RedisException ex)
+        {
+            // Since redis only returns textual error messages, we can check here if the index already exists.
+            // If it does, we can ignore the error.
+            bool collectionExists = false;
+#pragma warning disable CA1031 // Do not catch general exception types
+            try
+            {
+                collectionExists = await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+            if (!collectionExists)
+            {
+                throw new VectorStoreException("Call to vector store failed.", ex)
+                {
+                    VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
+                    VectorStoreName = this._collectionMetadata.VectorStoreName,
+                    CollectionName = this.Name,
+                    OperationName = OperationName
+                };
+            }
         }
     }
 

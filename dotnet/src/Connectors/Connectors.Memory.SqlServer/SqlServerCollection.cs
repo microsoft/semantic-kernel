@@ -94,11 +94,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
-        => this.CreateCollectionAsync(ifNotExists: false, cancellationToken);
-
-    /// <inheritdoc/>
-    public override Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
         => this.CreateCollectionAsync(ifNotExists: true, cancellationToken);
 
     private async Task CreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)

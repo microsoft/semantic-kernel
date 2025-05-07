@@ -95,9 +95,7 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
         var collection = fixture.TestStore.DefaultVectorStore.GetCollection<TKey, SearchRecord>(
             uniqueCollectionName, this.GetRecordDefinition(distanceFunction));
 
-        await collection.CreateCollectionAsync();
-
-        await collection.CreateCollectionIfNotExistsAsync(); // just to make sure it's idempotent
+        await collection.EnsureCollectionExistsAsync();
 
         try
         {

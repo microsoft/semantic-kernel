@@ -34,8 +34,8 @@ public sealed class SqliteVectorStoreTests(SqliteVectorStoreFixture fixture)
         var collection1 = sut.GetCollection<string, SqliteHotel<string>>("ListCollectionNames1");
         var collection2 = sut.GetCollection<string, SqliteHotel<string>>("ListCollectionNames2");
 
-        await collection1.CreateCollectionIfNotExistsAsync();
-        await collection2.CreateCollectionIfNotExistsAsync();
+        await collection1.EnsureCollectionExistsAsync();
+        await collection2.EnsureCollectionExistsAsync();
 
         // Act
         var collectionNames = await sut.ListCollectionNamesAsync().ToListAsync();

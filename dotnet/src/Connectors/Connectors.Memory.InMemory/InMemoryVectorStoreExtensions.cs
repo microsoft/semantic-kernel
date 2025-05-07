@@ -75,7 +75,7 @@ public static class InMemoryVectorStoreExtensions
 
             // Get and create collection if it doesn't exist.
             collection = vectorStore.GetCollection<TKey, TRecord>(recordCollection.Name);
-            await collection.CreateCollectionIfNotExistsAsync().ConfigureAwait(false);
+            await collection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
             // Upsert records.
             var tasks = recordCollection.Records.Values.Select(record => Task.Run(async () =>

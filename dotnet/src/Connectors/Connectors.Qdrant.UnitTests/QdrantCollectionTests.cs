@@ -76,7 +76,7 @@ public class QdrantCollectionTests
             .ReturnsAsync(new UpdateResult());
 
         // Act.
-        await sut.CreateCollectionAsync(this._testCancellationToken);
+        await sut.EnsureCollectionExistsAsync(this._testCancellationToken);
 
         // Assert.
         this._qdrantClientMock

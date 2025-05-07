@@ -173,7 +173,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         {
             // Get and create collection if it doesn't exist.
             var collection = vectorStore.GetCollection<TKey, Glossary<TKey>>("skglossary");
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             // Create glossary entries and generate embeddings for them.
             var glossaryEntries = CreateGlossaryEntries(uniqueKeyGenerator).ToList();

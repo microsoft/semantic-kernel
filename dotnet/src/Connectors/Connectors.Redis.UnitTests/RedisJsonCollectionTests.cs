@@ -74,14 +74,14 @@ public class RedisJsonCollectionTests
     [InlineData(true, false, "Data2", "Vector2")]
     [InlineData(false, true, "data2", "vector2")]
     [InlineData(false, false, "Data2", "Vector2")]
-    public async Task CanCreateCollectionAsync(bool useDefinition, bool useCustomJsonSerializerOptions, string expectedData2Name, string expectedVector2Name)
+    public async Task CanEnsureCollectionExistsAsync(bool useDefinition, bool useCustomJsonSerializerOptions, string expectedData2Name, string expectedVector2Name)
     {
         // Arrange.
         SetupExecuteMock(this._redisDatabaseMock, string.Empty);
         var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
 
         // Act.
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert.
         var expectedArgs = new object[] {

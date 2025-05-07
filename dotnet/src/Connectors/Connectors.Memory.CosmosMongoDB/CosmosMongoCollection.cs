@@ -112,26 +112,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
         => this.RunOperationAsync("ListCollectionNames", () => this.InternalCollectionExistsAsync(cancellationToken));
 
     /// <inheritdoc />
-    public override async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
-    {
-        // The IMongoDatabase.CreateCollectionAsync "Creates a new collection if not already available".
-        // To make sure that all the connectors are consistent, we throw when the collection exists.
-        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
-        {
-            throw new VectorStoreException("Collection already exists.")
-            {
-                VectorStoreSystemName = CosmosMongoConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
-                OperationName = "CreateCollection"
-            };
-        }
-
-        await this.CreateCollectionIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         await this.RunOperationAsync("CreateCollection",
             () => this._mongoDatabase.CreateCollectionAsync(this.Name, cancellationToken: cancellationToken)).ConfigureAwait(false);

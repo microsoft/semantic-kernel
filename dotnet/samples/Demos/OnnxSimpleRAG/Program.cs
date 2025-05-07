@@ -48,7 +48,7 @@ var embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService
 // Create a vector store and a collection to store information
 var vectorStore = new InMemoryVectorStore();
 var collection = vectorStore.GetCollection<string, InformationItem>("ExampleCollection");
-await collection.CreateCollectionIfNotExistsAsync();
+await collection.EnsureCollectionExistsAsync();
 
 // Save some information to the memory
 var collectionName = "ExampleCollection";

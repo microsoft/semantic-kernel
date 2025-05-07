@@ -50,7 +50,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
 
         // Get and create collection if it doesn't exist using the dynamic data model and record definition that defines the schema.
         var dynamicDataModelCollection = vectorStore.GetCollection<object, Dictionary<string, object?>>("skglossary", s_vectorStoreRecordDefinition);
-        await dynamicDataModelCollection.CreateCollectionIfNotExistsAsync();
+        await dynamicDataModelCollection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateDynamicGlossaryEntries().ToList();
@@ -88,7 +88,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
 
         // Get and create collection if it doesn't exist using the custom data model.
         var customDataModelCollection = vectorStore.GetCollection<ulong, Glossary>("skglossary");
-        await customDataModelCollection.CreateCollectionIfNotExistsAsync();
+        await customDataModelCollection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateCustomGlossaryEntries().ToList();

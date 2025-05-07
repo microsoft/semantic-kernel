@@ -37,7 +37,7 @@ public class VectorStore_ConsumeFromMemoryStore_Qdrant(ITestOutputHelper output,
 
         // Use the VectorStore abstraction to connect to an existing collection which was previously created via the IMemoryStore abstraction
         var collection = vectorStore.GetCollection<Guid, VectorStoreRecord>("memorystorecollection");
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Show that the data can be read using the VectorStore abstraction.
         var record1 = await collection.GetAsync(new Guid("11111111-1111-1111-1111-111111111111"));

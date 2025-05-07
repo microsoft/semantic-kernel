@@ -33,7 +33,7 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<int, Product>("skproducts");
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create product records and generate embeddings for them.
         var productRecords = CreateProductRecords().ToList();
