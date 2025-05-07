@@ -54,9 +54,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.UnitTests", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Qdrant", "src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj", "{5DEBAA62-F117-496A-8778-FED3604B70E2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Sqlite", "src\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.SqliteVec", "src\Connectors\Connectors.Memory.SqliteVec\Connectors.Memory.SqliteVec.csproj", "{EC004F12-2F60-4EDD-B3CD-3A504900D929}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Postgres", "src\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj", "{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.PgVector", "src\Connectors\Connectors.Memory.PgVector\Connectors.Memory.PgVector.csproj", "{C9F957FA-A70F-4A6D-8F95-23FCD7F4FB87}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Redis", "src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj", "{3720F5ED-FB4D-485E-8A93-CDE60DEF0805}"
 EndProject
@@ -177,7 +177,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Planners.OpenAI", "src\Plan
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.MongoDB", "src\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj", "{6009CC87-32F1-4282-88BB-8E5A7BA12925}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCosmosDBMongoDB", "src\Connectors\Connectors.Memory.AzureCosmosDBMongoDB\Connectors.Memory.AzureCosmosDBMongoDB.csproj", "{8B62C632-9D70-4DC1-AEAB-82D057A09A19}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.CosmosMongoDB", "src\Connectors\Connectors.Memory.CosmosMongoDB\Connectors.Memory.CosmosMongoDB.csproj", "{8B62C632-9D70-4DC1-AEAB-82D057A09A19}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PromptTemplates.Handlebars", "src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj", "{B0646036-0C50-4F66-B479-ADA9C1166816}"
 EndProject
@@ -324,7 +324,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QualityCheckWithFilters", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimePlugin", "samples\Demos\TimePlugin\TimePlugin.csproj", "{F312FCE1-12D7-4DEF-BC29-2FF6618509F3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCosmosDBNoSQL", "src\Connectors\Connectors.Memory.AzureCosmosDBNoSQL\Connectors.Memory.AzureCosmosDBNoSQL.csproj", "{B0B3901E-AF56-432B-8FAA-858468E5D0DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.CosmosNoSql", "src\Connectors\Connectors.Memory.CosmosNoSql\Connectors.Memory.CosmosNoSql.csproj", "{B0B3901E-AF56-432B-8FAA-858468E5D0DF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Amazon", "src\Connectors\Connectors.Amazon\Connectors.Amazon.csproj", "{E059E9B0-1302-474D-B1B5-10A6E0F1A769}"
 EndProject
@@ -338,7 +338,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Qdrant.UnitTests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Ollama", "src\Connectors\Connectors.Ollama\Connectors.Ollama.csproj", "{E7E60E1D-1A44-4DE9-A44D-D5052E809DDD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureCosmosDBMongoDB.UnitTests", "src\Connectors\Connectors.AzureCosmosDBMongoDB.UnitTests\Connectors.AzureCosmosDBMongoDB.UnitTests.csproj", "{2918478E-BC86-4D53-9D01-9C318F80C14F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.CosmosMongoDB.UnitTests", "src\Connectors\Connectors.CosmosMongoDB.UnitTests\Connectors.CosmosMongoDB.UnitTests.csproj", "{2918478E-BC86-4D53-9D01-9C318F80C14F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIModelRouter", "samples\Demos\AIModelRouter\AIModelRouter.csproj", "{E06818E3-00A5-41AC-97ED-9491070CDEA1}"
 EndProject
@@ -346,7 +346,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Ollama.UnitTests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StepwisePlannerMigration", "samples\Demos\StepwisePlannerMigration\StepwisePlannerMigration.csproj", "{38374C62-0263-4FE8-A18C-70FC8132912B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AzureCosmosDBNoSQL.UnitTests", "src\Connectors\Connectors.AzureCosmosDBNoSQL.UnitTests\Connectors.AzureCosmosDBNoSQL.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.CosmosNoSql.UnitTests", "src\Connectors\Connectors.CosmosNoSql.UnitTests\Connectors.CosmosNoSql.UnitTests.csproj", "{385A8FE5-87E2-4458-AE09-35E10BD2E67F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.OpenAI.UnitTests", "src\Connectors\Connectors.OpenAI.UnitTests\Connectors.OpenAI.UnitTests.csproj", "{36DDC119-C030-407E-AC51-A877E9E0F660}"
 EndProject
@@ -380,7 +380,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Process.UnitTests", "src\Ex
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GettingStartedWithProcesses", "samples\GettingStartedWithProcesses\GettingStartedWithProcesses.csproj", "{C057ACDF-DDD8-496B-BAF9-1C6E4E1248D7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Sqlite.UnitTests", "src\Connectors\Connectors.Sqlite.UnitTests\Connectors.Sqlite.UnitTests.csproj", "{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.SqliteVec.UnitTests", "src\Connectors\Connectors.SqliteVec.UnitTests\Connectors.SqliteVec.UnitTests.csproj", "{0846F178-7EC3-4FE6-AC5C-7146E9FD9A3E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VectorData.Abstractions", "src\Connectors\VectorData.Abstractions\VectorData.Abstractions.csproj", "{CF09AE39-67BA-4FE0-A0CD-A49BED956311}"
 EndProject
@@ -445,13 +445,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorDataIntegrationTests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedisIntegrationTests", "src\VectorDataIntegrationTests\RedisIntegrationTests\RedisIntegrationTests.csproj", "{F7EA82A4-A626-4316-AA47-EAC3A0E85870}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostgresIntegrationTests", "src\VectorDataIntegrationTests\PostgresIntegrationTests\PostgresIntegrationTests.csproj", "{3148FF01-38C7-4BEB-8CEC-9323EC7C593B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PgVectorIntegrationTests", "src\VectorDataIntegrationTests\PgVectorIntegrationTests\PgVectorIntegrationTests.csproj", "{3148FF01-38C7-4BEB-8CEC-9323EC7C593B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMemoryIntegrationTests", "src\VectorDataIntegrationTests\InMemoryIntegrationTests\InMemoryIntegrationTests.csproj", "{F5126690-0FD1-4777-9EDF-B3F5B7B3730B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosNoSQLIntegrationTests", "src\VectorDataIntegrationTests\CosmosNoSQLIntegrationTests\CosmosNoSQLIntegrationTests.csproj", "{E200425C-E501-430C-8A8B-BC0088BD94DB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosNoSqlIntegrationTests", "src\VectorDataIntegrationTests\CosmosNoSqlIntegrationTests\CosmosNoSqlIntegrationTests.csproj", "{E200425C-E501-430C-8A8B-BC0088BD94DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteIntegrationTests", "src\VectorDataIntegrationTests\SqliteIntegrationTests\SqliteIntegrationTests.csproj", "{709B3933-5286-4139-8D83-8C7AA5746FAE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqliteVecIntegrationTests", "src\VectorDataIntegrationTests\SqliteVecIntegrationTests\SqliteVecIntegrationTests.csproj", "{709B3933-5286-4139-8D83-8C7AA5746FAE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeaviateIntegrationTests", "src\VectorDataIntegrationTests\WeaviateIntegrationTests\WeaviateIntegrationTests.csproj", "{E3CECC65-1B00-4E3A-90B6-FC7A2C64E41F}"
 EndProject
@@ -467,7 +467,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.AI", "src\Plugins\P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.AI.UnitTests", "src\Plugins\Plugins.AI.UnitTests\Plugins.AI.UnitTests.csproj", "{03ACF9DD-00C9-4F2B-80F1-537E2151AF5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Postgres.UnitTests", "src\Connectors\Connectors.Postgres.UnitTests\Connectors.Postgres.UnitTests.csproj", "{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.PgVector.UnitTests", "src\Connectors\Connectors.PgVector.UnitTests\Connectors.PgVector.UnitTests.csproj", "{2A1EC0DA-AD01-4421-AADC-1DFF65C71CCC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.Yaml", "src\Agents\Yaml\Agents.Yaml.csproj", "{29DF6278-06FC-4F1D-8555-D3E880AF3204}"
 EndProject
