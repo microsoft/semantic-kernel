@@ -810,8 +810,8 @@ class RedisStore(VectorStore):
         embedding_generator: EmbeddingGeneratorBase | None = None,
         collection_type: RedisCollectionTypes = RedisCollectionTypes.HASHSET,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
-        """Get a RedisCollection..
+    ) -> RedisCollection:
+        """Get a RedisCollection instance.
 
         Args:
             data_model_type: The type of the data model.

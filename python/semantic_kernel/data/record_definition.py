@@ -389,7 +389,7 @@ def _parse_vector_store_record_field_class(
     property_type = field.annotation.__origin__
     if (args := getattr(property_type, "__args__", None)) and NoneType in args and len(args) == 2:
         property_type = args[0]
-    property_type_name = property_type.__name__
+    property_type_name = str(property_type) if hasattr(property_type, "__args__") else property_type.__name__
     return field_type(name=field.name, property_type=property_type_name)
 
 
@@ -400,20 +400,32 @@ def _parse_vector_store_record_field_instance(
         record_field.name = field.name
     if not record_field.property_type and hasattr(field.annotation, "__origin__"):
         property_type = field.annotation.__origin__
-        if (args := getattr(property_type, "__args__", None)) and NoneType in args and len(args) > 1:
-            for arg in args:
-                if arg is NoneType:
-                    continue
-                if (
-                    (inner_args := getattr(arg, "__args__", None))
-                    and len(inner_args) == 1
-                    and inner_args[0] is not NoneType
-                ):
-                    property_type = inner_args[0]
-                    break
-                property_type = arg
-                break
-        record_field.property_type = property_type.__name__
+        if isinstance(record_field, VectorStoreRecordVectorField):
+            if args := getattr(property_type, "__args__", None):
+                if NoneType in args and len(args) > 1:
+                    for arg in args:
+                        if arg is NoneType:
+                            continue
+
+                        if (
+                            (inner_args := getattr(arg, "__args__", None))
+                            and len(inner_args) == 1
+                            and inner_args[0] is not NoneType
+                        ):
+                            property_type = inner_args[0]
+                            break
+                        property_type = arg
+                        break
+                else:
+                    property_type = args[0]
+
+        else:
+            if (args := getattr(property_type, "__args__", None)) and NoneType in args and len(args) == 2:
+                property_type = args[0]
+
+        record_field.property_type = (
+            str(property_type) if hasattr(property_type, "__args__") else property_type.__name__
+        )
 
     return record_field
 

@@ -229,16 +229,14 @@ class TestQueryBuildFunctions:
         vector = [0.1, 0.2, 0.3, 0.4, 0.5]
         options = VectorSearchOptions(
             vector_field_name="embedding",
-            # filter=VectorSearchFilter.equal_to("age", "30").any_tag_equal_to("name", "test"),
         )
+
         cmd = _build_search_query(schema, table, key_field, data_fields, vector_fields, vector, options)
         assert cmd.parameters[0] == json.dumps(vector)
-        assert cmd.parameters[1] == "30"
-        assert cmd.parameters[2] == "test"
         str_cmd = str(cmd)
         assert (
             str_cmd == "SELECT id, name, age, VECTOR_DISTANCE('cosine', embedding, CAST(? AS VECTOR(5))) as "
-            "_vector_distance_value\n FROM [dbo].[Test] \nWHERE [age] = ? AND\n? IN [name] \nORDER BY "
+            "_vector_distance_value\n FROM [dbo].[Test] \nORDER BY "
             "_vector_distance_value ASC\nOFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;"
         )
 
@@ -324,7 +322,9 @@ class TestSqlServerStore:
 
     def test_get_collection(self, sql_server_unit_test_env, data_model_definition):
         store = SqlServerStore()
-        collection = store.get_collection("test", data_model_type=dict, data_model_definition=data_model_definition)
+        collection = store.get_collection(
+            collection_name="test", data_model_type=dict, data_model_definition=data_model_definition
+        )
         assert collection is not None
 
     async def test_list_collection_names(self, sql_server_unit_test_env, mock_connection):
@@ -422,7 +422,7 @@ class TestSqlServerCollection:
         mock_cursor.description = [["id"], ["content"], ["vector"]]
 
         mock_cursor.__iter__.return_value = [row]
-        record = await collection.get(key)
+        record = await collection.get(key, include_vectors=True)
         mock_cursor.execute.assert_called_with(
             "SELECT\nid, content, vector FROM [dbo].[test] \nWHERE id IN\n (?) ;", ("1",)
         )
@@ -456,7 +456,8 @@ class TestSqlServerCollection:
     ):
         mock_cursor = MagicMock()
         mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
-        data_model_definition.fields["vector"].distance_function = DistanceFunction.COSINE_DISTANCE
+        for field in data_model_definition.vector_fields:
+            field.distance_function = DistanceFunction.COSINE_DISTANCE
         collection = SqlServerCollection(
             collection_name="test",
             data_model_type=dict,
@@ -466,7 +467,7 @@ class TestSqlServerCollection:
         vector = [0.1, 0.2, 0.3, 0.4, 0.5]
         options = VectorSearchOptions(
             vector_field_name="vector",
-            # filter=VectorSearchFilter.equal_to("content", "test"),
+            filter=lambda x: x.content == "test",
         )
 
         @dataclass
@@ -487,7 +488,7 @@ class TestSqlServerCollection:
         mock_cursor.execute.assert_called_with(
             (
                 "SELECT id, content, VECTOR_DISTANCE('cosine', vector, CAST(? AS VECTOR(5))) as "
-                "_vector_distance_value\n FROM [dbo].[test] \nWHERE [content] = ? \nORDER BY _vector_distance_value "
+                "_vector_distance_value\n FROM [dbo].[test] \n WHERE [content] = ? \nORDER BY _vector_distance_value "
                 "ASC\nOFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;"
             ),
             (json.dumps(vector), "test"),
@@ -499,7 +500,8 @@ class TestSqlServerCollection:
         mock_connection,
         data_model_definition,
     ):
-        data_model_definition.fields["vector"].index_kind = IndexKind.FLAT
+        for field in data_model_definition.vector_fields:
+            field.index_kind = IndexKind.FLAT
         collection = SqlServerCollection(
             collection_name="test",
             data_model_type=dict,

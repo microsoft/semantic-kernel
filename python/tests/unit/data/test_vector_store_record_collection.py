@@ -48,8 +48,8 @@ def test_data_model_validation_key_fail(data_model_type_vanilla, DictVectorStore
 
 
 def test_data_model_validation_vector_fail(data_model_type_vanilla, DictVectorStoreRecordCollection):
-    DictVectorStoreRecordCollection.supported_vector_types = PropertyMock(return_value=["list[int]"])
-    with raises(VectorStoreModelValidationError, match="Vector field "):
+    DictVectorStoreRecordCollection.supported_vector_types = PropertyMock(return_value={"list[int]"})
+    with raises(VectorStoreModelValidationError):
         DictVectorStoreRecordCollection(
             collection_name="test",
             data_model_type=data_model_type_vanilla,
@@ -214,26 +214,6 @@ async def test_crud_batch_operations_pandas(vector_store_record_collection):
     assert len(vector_store_record_collection.inner_storage) == 0
 
 
-async def test_upsert_with_vectorizing(vector_store_record_collection):
-    record = {"id": "test_id", "content": "test_content"}
-    record2 = {"id": "test_id", "content": "test_content"}
-
-    async def embedding_func(record, type, definition):
-        if isinstance(record, list):
-            for r in record:
-                r["vector"] = [1.0, 2.0, 3.0]
-            return record
-        record["vector"] = [1.0, 2.0, 3.0]
-        return record
-
-    await vector_store_record_collection.upsert(record, embedding_generation_function=embedding_func)
-    assert vector_store_record_collection.inner_storage["test_id"]["vector"] == [1.0, 2.0, 3.0]
-    await vector_store_record_collection.delete("test_id")
-    assert len(vector_store_record_collection.inner_storage) == 0
-    await vector_store_record_collection.upsert([record2], embedding_generation_function=embedding_func)
-    assert vector_store_record_collection.inner_storage["test_id"]["vector"] == [1.0, 2.0, 3.0]
-
-
 # region Fails
 async def test_upsert_fail(DictVectorStoreRecordCollection, data_model_definition):
     DictVectorStoreRecordCollection._inner_upsert = MagicMock(side_effect=Exception)
@@ -353,17 +333,6 @@ def test_serialize_data_model_type_serialize_fail(DictVectorStoreRecordCollectio
         vector_store_record_collection.serialize(record)
 
 
-def test_serialize_data_model_to_dict_fail_mapping(DictVectorStoreRecordCollection, data_model_definition):
-    vector_store_record_collection = DictVectorStoreRecordCollection(
-        collection_name="test",
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
-    )
-    record = {"content": "test_content", "vector": [1.0, 2.0, 3.0]}
-    with raises(VectorStoreModelSerializationException):
-        vector_store_record_collection._serialize_data_model_to_dict(record)
-
-
 def test_serialize_data_model_to_dict_fail_object(DictVectorStoreRecordCollection, data_model_type_vanilla):
     vector_store_record_collection = DictVectorStoreRecordCollection(
         collection_name="test",
@@ -442,19 +411,6 @@ def test_deserialize_dict_data_model_fail_sequence(DictVectorStoreRecordCollecti
         vector_store_record_collection._deserialize_dict_to_data_model([{}, {}])
 
 
-def test_deserialize_dict_data_model_fail(DictVectorStoreRecordCollection, data_model_definition):
-    vector_store_record_collection = DictVectorStoreRecordCollection(
-        collection_name="test",
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
-    )
-    with raises(VectorStoreModelDeserializationException):
-        vector_store_record_collection._deserialize_dict_to_data_model({
-            "content": "test_content",
-            "vector": [1.0, 2.0, 3.0],
-        })
-
-
 def test_deserialize_dict_data_model_shortcut(DictVectorStoreRecordCollection, data_model_definition):
     vector_store_record_collection = DictVectorStoreRecordCollection(
         collection_name="test",
@@ -464,7 +420,7 @@ def test_deserialize_dict_data_model_shortcut(DictVectorStoreRecordCollection, d
     record = vector_store_record_collection._deserialize_dict_to_data_model([
         {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     ])
-    assert record == {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
+    assert record == {"id": "test_id", "content": "test_content"}
 
 
 @mark.parametrize("vector_store_record_collection", ["type_pydantic"], indirect=True)

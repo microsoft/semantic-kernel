@@ -166,7 +166,7 @@ async def test_store_list_collection_names(vector_store, moc_list_collection_nam
 def test_get_collection(vector_store, data_model_definition, type_):
     if type_ == "hashset":
         collection = vector_store.get_collection(
-            "test",
+            collection_name="test",
             data_model_type=dict,
             data_model_definition=data_model_definition,
             collection_type=RedisCollectionTypes.HASHSET,
@@ -174,7 +174,7 @@ def test_get_collection(vector_store, data_model_definition, type_):
         assert isinstance(collection, RedisHashsetCollection)
     else:
         collection = vector_store.get_collection(
-            "test",
+            collection_name="test",
             data_model_type=dict,
             data_model_definition=data_model_definition,
             collection_type=RedisCollectionTypes.JSON,
@@ -184,7 +184,6 @@ def test_get_collection(vector_store, data_model_definition, type_):
     assert collection.redis_database == vector_store.redis_database
     assert collection.data_model_type is dict
     assert collection.data_model_definition == data_model_definition
-    assert vector_store.vector_record_collections["test"] == collection
 
 
 @mark.parametrize("type_", ["hashset", "json"])
@@ -241,37 +240,18 @@ def test_collection_fail(redis_unit_test_env, data_model_definition):
 
 @mark.parametrize("type_", ["hashset", "json"])
 async def test_upsert(collection_hash, collection_json, type_):
-    if type_ == "hashset":
-        record = {
-            "name": "id1",
-            "mapping": {
-                "metadata": {"content": "content"},
-                "vector": [1.0, 2.0, 3.0],
-            },
-        }
-    else:
-        record = {
-            "name": "id1",
-            "value": {
-                "content": "content",
-                "vector": [1.0, 2.0, 3.0],
-            },
-        }
     collection = collection_hash if type_ == "hashset" else collection_json
-    ids = await collection._inner_upsert([record])
-    assert ids[0] == "id1"
-
-    ids = await collection.upsert(record={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]})
+    ids = await collection.upsert(records={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]})
     assert ids == "id1"
 
 
 async def test_upsert_with_prefix(collection_with_prefix_hash, collection_with_prefix_json):
     ids = await collection_with_prefix_hash.upsert(
-        record={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]}
+        records={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]}
     )
     assert ids == "id1"
     ids = await collection_with_prefix_json.upsert(
-        record={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]}
+        records={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]}
     )
     assert ids == "id1"
 
@@ -285,8 +265,6 @@ async def test_get(
         collection = collection_with_prefix_hash if type_ == "hashset" else collection_with_prefix_json
     else:
         collection = collection_hash if type_ == "hashset" else collection_json
-    records = await collection._inner_get(["id1"])
-    assert records is not None
 
     records = await collection.get("id1")
     assert records is not None

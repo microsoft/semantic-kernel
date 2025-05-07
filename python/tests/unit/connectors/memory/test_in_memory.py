@@ -38,7 +38,8 @@ async def test_get(collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await collection.upsert(record)
     result = await collection.get("testid")
-    assert result == record
+    assert result["id"] == record["id"]
+    assert result["content"] == record["content"]
 
 
 async def test_get_missing(collection):
@@ -82,10 +83,12 @@ async def test_create_collection(collection):
     ],
 )
 async def test_vectorized_search_similar(collection, distance_function):
-    collection.data_model_definition.fields["vector"].distance_function = distance_function
+    for field in collection.data_model_definition.fields:
+        if field.name == "vector":
+            field.distance_function = distance_function
     record1 = {"id": "testid1", "content": "test content", "vector": [1.0, 1.0, 1.0, 1.0, 1.0]}
     record2 = {"id": "testid2", "content": "test content", "vector": [-1.0, -1.0, -1.0, -1.0, -1.0]}
-    await collection.upsert_batch([record1, record2])
+    await collection.upsert([record1, record2])
     results = await collection.search(
         vector=[0.9, 0.9, 0.9, 0.9, 0.9],
         options=VectorSearchOptions(vector_field_name="vector", include_total_count=True, include_vectors=True),

@@ -625,14 +625,14 @@ class SqlServerCollection(
                         raise VectorStoreOperationException(
                             f"Field '{node.attr}' not in data model (storage property names are used)."
                         )
-                    return f'"{node.attr}"'
+                    return f"[{node.attr}]"
                 case ast.Name():
                     # Only allow names that are in the data model
                     if node.id not in self.data_model_definition.storage_property_names:
                         raise VectorStoreOperationException(
                             f"Field '{node.id}' not in data model (storage property names are used)."
                         )
-                    return f'"{node.id}"'
+                    return f"[{node.id}]"
                 case ast.Constant():
                     # Always use parameterization for constants
                     command.add_parameter(node.value)
@@ -703,7 +703,8 @@ class SqlServerStore(VectorStore):
                 raise VectorStoreInitializationException(
                     "Invalid settings provided. Please check the connection string."
                 ) from e
-
+        else:
+            settings = None
         super().__init__(
             connection=connection,
             settings=settings,
@@ -755,18 +756,7 @@ class SqlServerStore(VectorStore):
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
-        """Get a collection.
-
-        Args:
-            data_model_type: The type of the data model.
-            data_model_definition: The data model definition.
-            collection_name: The name of the collection, which corresponds to the table name.
-                When not provided, the collection name will be inferred from the data model.
-            embedding_generator: The embedding generator to use.
-            **kwargs: Additional arguments.
-
-        """
+    ) -> SqlServerCollection:
         return SqlServerCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
@@ -1123,7 +1113,7 @@ def _build_search_query(
                 command.query.append(" WHERE ")
             else:
                 command.query.append(" AND ")
-            command.query.append(str(f.query))
+            command.query.append(str(f.query), suffix=" \n")
             command.add_parameters(f.parameters)
 
     # add the ORDER BY clause

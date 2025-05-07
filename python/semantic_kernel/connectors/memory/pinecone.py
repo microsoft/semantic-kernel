@@ -455,7 +455,10 @@ class PineconeCollection(
                     "Please use the Pinecone Asyncio client."
                 )
             search_args = {
-                "query": {"inputs": {"text": values}, "top_k": options.top},
+                "query": {
+                    "inputs": {"text": values},
+                    "top_k": options.top,
+                },
                 "namespace": kwargs.get("namespace", self.namespace),
             }
             if filter:
@@ -668,8 +671,7 @@ class PineconeStore(VectorStore):
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
-    ) -> "VectorStoreRecordCollection":
-        """Create the Pinecone collection."""
+    ) -> PineconeCollection:
         return PineconeCollection(
             collection_name=collection_name,
             data_model_type=data_model_type,

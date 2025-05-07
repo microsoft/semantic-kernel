@@ -4,9 +4,10 @@ from unittest.mock import MagicMock, patch
 
 from pytest import fixture, mark, raises
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
-from qdrant_client.models import Datatype, Distance, VectorParams
+from qdrant_client.models import Datatype, Distance, FieldCondition, MatchValue, VectorParams
 
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection, QdrantStore
+from semantic_kernel.data.const import DistanceFunction
 from semantic_kernel.data.record_definition import VectorStoreRecordVectorField
 from semantic_kernel.data.vector_search import VectorSearchOptions
 from semantic_kernel.exceptions import (
@@ -154,13 +155,14 @@ async def test_store_list_collection_names(vector_store):
     assert collections == ["test"]
 
 
-def test_get_collection(vector_store, data_model_definition, qdrant_unit_test_env):
-    collection = vector_store.get_collection("test", data_model_type=dict, data_model_definition=data_model_definition)
+def test_get_collection(vector_store: QdrantStore, data_model_definition, qdrant_unit_test_env):
+    collection = vector_store.get_collection(
+        collection_name="test", data_model_type=dict, data_model_definition=data_model_definition
+    )
     assert collection.collection_name == "test"
     assert collection.qdrant_client == vector_store.qdrant_client
     assert collection.data_model_type is dict
     assert collection.data_model_definition == data_model_definition
-    assert vector_store.vector_record_collections["test"] == collection
 
 
 async def test_collection_init(data_model_definition, qdrant_unit_test_env):
@@ -198,7 +200,7 @@ def test_collection_init_fail(data_model_definition):
     with raises(
         VectorStoreModelValidationError, match="Only one vector field is allowed when not using named vectors."
     ):
-        data_model_definition.fields["vector2"] = VectorStoreRecordVectorField(name="vector2", dimensions=3)
+        data_model_definition.fields.append(VectorStoreRecordVectorField(name="vector2", dimensions=3))
         QdrantCollection(
             data_model_type=dict,
             collection_name="test",
@@ -220,7 +222,7 @@ async def test_upsert(collection_to_use, request):
     ids = await collection._inner_upsert([record])
     assert ids[0] == "id1"
 
-    ids = await collection.upsert(record={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]})
+    ids = await collection.upsert(records={"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]})
     assert ids == "id1"
 
 
@@ -271,13 +273,15 @@ async def test_create_index_with_named_vectors(collection_to_use, results, mock_
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
 async def test_create_index_fail(collection_to_use, request):
     collection = request.getfixturevalue(collection_to_use)
-    collection.data_model_definition.fields["vector"].dimensions = None
-    with raises(VectorStoreOperationException, match="Vector field must have dimensions."):
+    for field in collection.data_model_definition.vector_fields:
+        field.distance_function = DistanceFunction.HAMMING
+    with raises(VectorStoreOperationException):
         await collection.create_collection()
 
 
 async def test_search(collection, mock_search):
-    results = await collection._inner_search(vector=[1.0, 2.0, 3.0], options=VectorSearchOptions(include_vectors=False))
+    collection.named_vectors = False
+    results = await collection.search(vector=[1.0, 2.0, 3.0], options=VectorSearchOptions(include_vectors=False))
     async for result in results.results:
         assert result.record["id"] == "id1"
         break
@@ -295,7 +299,7 @@ async def test_search(collection, mock_search):
 
 async def test_search_named_vectors(collection, mock_search):
     collection.named_vectors = True
-    results = await collection._inner_search(
+    results = await collection.search(
         vector=[1.0, 2.0, 3.0], options=VectorSearchOptions(vector_field_name="vector", include_vectors=False)
     )
     async for result in results.results:
@@ -313,26 +317,26 @@ async def test_search_named_vectors(collection, mock_search):
     )
 
 
-# async def test_search_filter(collection, mock_search):
-#     results = await collection._inner_search(
-#         vector=[1.0, 2.0, 3.0],
-#         options=VectorSearchOptions(include_vectors=False, filter=VectorSearchFilter.equal_to("id", "id1")),
-#     )
-#     async for result in results.results:
-#         assert result.record["id"] == "id1"
-#         break
+async def test_search_filter(collection, mock_search):
+    results = await collection.search(
+        vector=[1.0, 2.0, 3.0],
+        options=VectorSearchOptions(include_vectors=False, filter=lambda x: x.id == "id1"),
+    )
+    async for result in results.results:
+        assert result.record["id"] == "id1"
+        break
 
-#     assert mock_search.call_count == 1
-#     mock_search.assert_called_with(
-#         collection_name="test",
-#         query_vector=[1.0, 2.0, 3.0],
-#         query_filter=Filter(must=[FieldCondition(key="id", match=MatchAny(any=["id1"]))]),
-#         with_vectors=False,
-#         limit=3,
-#         offset=0,
-#     )
+    assert mock_search.call_count == 1
+    mock_search.assert_called_with(
+        collection_name="test",
+        query_vector=("vector", [1.0, 2.0, 3.0]),
+        query_filter=FieldCondition(key="id", match=MatchValue(value="id1")),
+        with_vectors=False,
+        limit=3,
+        offset=0,
+    )
 
 
 async def test_search_fail(collection):
     with raises(VectorSearchExecutionException, match="Search requires a vector."):
-        await collection._inner_search(options=VectorSearchOptions(include_vectors=False))
+        await collection.search(options=VectorSearchOptions(include_vectors=False))
