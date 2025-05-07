@@ -712,7 +712,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
         }
     }
 
-    private async Task<IReadOnlyList<TKey>> InternalUpsertBatchAsync(
+    private async Task<IReadOnlyList<TKey?>> InternalUpsertBatchAsync(
         SqliteConnection connection,
         List<Dictionary<string, object?>> storageModels,
         SqliteWhereCondition condition,
@@ -766,16 +766,13 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
             () => dataCommand.ExecuteReaderAsync(cancellationToken),
             cancellationToken).ConfigureAwait(false);
 
-        var keys = new List<TKey>();
+        var keys = new List<TKey?>();
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             var key = reader.GetFieldValue<TKey?>(0);
 
-            if (key is not null)
-            {
-                keys.Add(key);
-            }
+            keys.Add(key);
 
             await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
         }
