@@ -4,8 +4,10 @@ from typing import Any
 
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
 from semantic_kernel.processes.process_message import ProcessMessage
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
+@experimental
 class ProcessMessageFactory:
     """Factory class for creating ProcessMessage instances."""
 

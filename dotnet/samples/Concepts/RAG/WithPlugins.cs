@@ -2,10 +2,13 @@
 
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.Chroma;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Connectors.InMemory;
+using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using OpenAI;
 using Resources;
 
 namespace RAG;
@@ -27,23 +30,45 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
     }
 
     /// <summary>
-    /// Shows how to use RAG pattern with <see cref="Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin"/>.
+    /// Shows how to use RAG pattern with <see cref="InMemoryVectorStore"/>.
     /// </summary>
-    [Fact(Skip = "Requires Chroma server up and running")]
-    public async Task RAGWithTextMemoryPluginAsync()
+    [Fact]
+    public async Task RAGWithInMemoryVectorStoreAndPluginAsync()
     {
-        var memory = new MemoryBuilder()
-            .WithMemoryStore(new ChromaMemoryStore("http://localhost:8000"))
-            .WithOpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
-            .Build();
+        var textEmbeddingGenerator = new OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+            .GetEmbeddingClient(TestConfiguration.OpenAI.EmbeddingModelId)
+            .AsIEmbeddingGenerator();
 
         var kernel = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        kernel.ImportPluginFromObject(new Microsoft.SemanticKernel.Plugins.Memory.TextMemoryPlugin(memory));
+        // Create the collection and add data
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = textEmbeddingGenerator });
+        var collection = vectorStore.GetCollection<string, FinanceInfo>("finances");
+        await collection.CreateCollectionAsync();
+        string[] budgetInfo =
+        {
+            "The budget for 2020 is EUR 100 000",
+            "The budget for 2021 is EUR 120 000",
+            "The budget for 2022 is EUR 150 000",
+            "The budget for 2023 is EUR 200 000",
+            "The budget for 2024 is EUR 364 000"
+        };
+        var records = budgetInfo.Select((input, index) => new FinanceInfo { Key = index.ToString(), Text = input });
+        await collection.UpsertAsync(records);
 
-        var result = await kernel.InvokePromptAsync("{{recall 'budget by year' collection='finances'}} What is my budget for 2024?");
+        // Add the collection to the kernel as a plugin.
+        var textSearch = new VectorStoreTextSearch<FinanceInfo>(collection);
+        kernel.Plugins.Add(textSearch.CreateWithSearch("FinanceSearch", "Can search for budget information"));
+
+        // Invoke the kernel, using the plugin from within the prompt.
+        KernelArguments arguments = new() { { "query", "What is my budget for 2024?" } };
+        var result = await kernel.InvokePromptAsync(
+            "{{FinanceSearch-Search query}} {{query}}",
+            arguments,
+            templateFormat: HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
+            promptTemplateFactory: new HandlebarsPromptTemplateFactory());
 
         Console.WriteLine(result);
     }
@@ -91,5 +116,18 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    #endregion
+    private sealed class FinanceInfo
+    {
+        [VectorStoreRecordKey]
+        public string Key { get; set; } = string.Empty;
+
+        [TextSearchResultValue]
+        [VectorStoreRecordData]
+        public string Text { get; set; } = string.Empty;
+
+        [VectorStoreRecordVector(1536)]
+        public string Embedding => this.Text;
+    }
+
+    #endregion Custom Plugin
 }

@@ -3,21 +3,19 @@
   "value": [
     {
       "$id": "2",
-      "properties": {
-        "$id": "3",
-        "filename": "test-file.txt",
-        "size": 516,
-        "lastModifiedTime": "2024-08-06T16:21:22.2423944Z"
-      }
+      "name": "test-file.txt",
+      "type": "file",
+      "contentType": "text/plain; charset=utf-8",
+      "sizeInBytes": 516,
+      "lastModifiedAt": "2024-08-06T16:21:22.2423944Z"
     },
     {
-      "$id": "4",
-      "properties": {
-        "$id": "5",
-        "filename": "test-file2.txt",
-        "size": 211,
-        "lastModifiedTime": "2024-08-06T16:21:22.2423944Z"
-      }
+      "$id": "3",
+      "name": "test-file2.txt",
+      "type": "file",
+      "contentType": "text/plain; charset=utf-8",
+      "sizeInBytes": 211,
+      "lastModifiedAt": "2024-08-06T16:21:22.2423944Z"
     }
   ]
 }

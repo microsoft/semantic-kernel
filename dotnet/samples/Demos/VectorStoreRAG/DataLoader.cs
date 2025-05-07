@@ -4,7 +4,6 @@ using System.Net;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Embeddings;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
@@ -17,12 +16,10 @@ namespace VectorStoreRAG;
 /// <typeparam name="TKey">The type of the data model key.</typeparam>
 /// <param name="uniqueKeyGenerator">A function to generate unique keys with.</param>
 /// <param name="vectorStoreRecordCollection">The collection to load the data into.</param>
-/// <param name="textEmbeddingGenerationService">The service to use for generating embeddings from the text.</param>
 /// <param name="chatCompletionService">The chat completion service to use for generating text from images.</param>
 internal sealed class DataLoader<TKey>(
     UniqueKeyGenerator<TKey> uniqueKeyGenerator,
     IVectorStoreRecordCollection<TKey, TextSnippet<TKey>> vectorStoreRecordCollection,
-    ITextEmbeddingGenerationService textEmbeddingGenerationService,
     IChatCompletionService chatCompletionService) : IDataLoader where TKey : notnull
 {
     /// <inheritdoc/>
@@ -54,20 +51,20 @@ internal sealed class DataLoader<TKey>(
             });
             var textContent = await Task.WhenAll(textContentTasks).ConfigureAwait(false);
 
-            // Map each paragraph to a TextSnippet and generate an embedding for it.
-            var recordTasks = textContent.Select(async content => new TextSnippet<TKey>
+            // Map each paragraph to a TextSnippet.
+            var records = textContent.Select(content => new TextSnippet<TKey>
             {
                 Key = uniqueKeyGenerator.GenerateKey(),
+                // The vector store will automatically generate the embedding for this text.
+                // See the TextEmbedding field on the TextSnippet class.
                 Text = content.Text,
                 ReferenceDescription = $"{new FileInfo(pdfPath).Name}#page={content.PageNumber}",
                 ReferenceLink = $"{new Uri(new FileInfo(pdfPath).FullName).AbsoluteUri}#page={content.PageNumber}",
-                TextEmbedding = await GenerateEmbeddingsWithRetryAsync(textEmbeddingGenerationService, content.Text!, cancellationToken: cancellationToken).ConfigureAwait(false)
             });
 
             // Upsert the records into the vector store.
-            var records = await Task.WhenAll(recordTasks).ConfigureAwait(false);
-            var upsertedKeys = vectorStoreRecordCollection.UpsertBatchAsync(records, cancellationToken: cancellationToken);
-            await foreach (var key in upsertedKeys.ConfigureAwait(false))
+            var upsertedKeys = await vectorStoreRecordCollection.UpsertAsync(records, cancellationToken: cancellationToken).ConfigureAwait(false);
+            foreach (var key in upsertedKeys)
             {
                 Console.WriteLine($"Upserted record '{key}' into VectorDB");
             }
@@ -114,41 +111,6 @@ internal sealed class DataLoader<TKey>(
                     }
 
                     yield return new RawContent { Text = block.Text, PageNumber = page.Number };
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Add a simple retry mechanism to embedding generation.
-    /// </summary>
-    /// <param name="textEmbeddingGenerationService">The embedding generation service.</param>
-    /// <param name="text">The text to generate the embedding for.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>The generated embedding.</returns>
-    private static async Task<ReadOnlyMemory<float>> GenerateEmbeddingsWithRetryAsync(ITextEmbeddingGenerationService textEmbeddingGenerationService, string text, CancellationToken cancellationToken)
-    {
-        var tries = 0;
-
-        while (true)
-        {
-            try
-            {
-                return await textEmbeddingGenerationService.GenerateEmbeddingAsync(text, cancellationToken: cancellationToken).ConfigureAwait(false);
-            }
-            catch (HttpOperationException ex) when (ex.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                tries++;
-
-                if (tries < 3)
-                {
-                    Console.WriteLine($"Failed to generate embedding. Error: {ex}");
-                    Console.WriteLine("Retrying embedding generation...");
-                    await Task.Delay(10_000, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    throw;
                 }
             }
         }

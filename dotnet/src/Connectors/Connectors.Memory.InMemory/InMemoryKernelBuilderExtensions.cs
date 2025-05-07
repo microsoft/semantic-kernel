@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Data services on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("The IKernelBuilder extensions are being obsoleted, call the appropriate function on the Services property of your IKernelBuilder")]
 public static class InMemoryKernelBuilderExtensions
 {
     /// <summary>
@@ -18,12 +20,12 @@ public static class InMemoryKernelBuilderExtensions
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddInMemoryVectorStore(this IKernelBuilder builder, string? serviceId = default)
     {
-        builder.Services.AddInMemoryVectorStore(serviceId);
+        builder.Services.AddInMemoryVectorStore(serviceId: serviceId);
         return builder;
     }
 
     /// <summary>
-    /// Register an InMemory <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID.
+    /// Register an InMemory <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
@@ -38,6 +40,7 @@ public static class InMemoryKernelBuilderExtensions
         InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
+        where TRecord : notnull
     {
         builder.Services.AddInMemoryVectorStoreRecordCollection<TKey, TRecord>(collectionName, options, serviceId);
         return builder;

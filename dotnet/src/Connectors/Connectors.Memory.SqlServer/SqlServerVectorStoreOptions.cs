@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
+
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 /// <summary>
@@ -13,4 +15,9 @@ public sealed class SqlServerVectorStoreOptions
     /// Gets or sets the database schema.
     /// </summary>
     public string? Schema { get; init; } = null;
+
+    /// <summary>
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

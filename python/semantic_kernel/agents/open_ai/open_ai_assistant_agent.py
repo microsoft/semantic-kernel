@@ -6,8 +6,6 @@ from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
-from typing_extensions import deprecated
-
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 if sys.version_info >= (3, 12):
@@ -59,7 +57,6 @@ if TYPE_CHECKING:
     from openai.types.beta.assistant_tool_param import AssistantToolParam
     from openai.types.beta.code_interpreter_tool_param import CodeInterpreterToolParam
     from openai.types.beta.thread_create_params import Message as ThreadCreateMessage
-    from openai.types.beta.threads.message import Message
     from openai.types.beta.threads.run_create_params import TruncationStrategy
 
     from semantic_kernel.kernel import Kernel
@@ -440,30 +437,6 @@ class OpenAIAssistantAgent(Agent):
 
     # endregion
 
-    # region Message Handling
-
-    @deprecated(
-        "Pass messages directly to get_response(...)/invoke(...) instead. This method will be removed after May 1st 2025."  # noqa: E501
-    )
-    async def add_chat_message(
-        self, thread_id: str, message: "str | ChatMessageContent", **kwargs: Any
-    ) -> "Message | None":
-        """Add a chat message to the thread.
-
-        Args:
-            thread_id: The ID of the thread
-            message: The chat message to add
-            kwargs: Additional keyword arguments
-
-        Returns:
-            The thread message or None
-        """
-        return await AssistantThreadActions.create_message(
-            client=self.client, thread_id=thread_id, message=message, **kwargs
-        )
-
-    # endregion
-
     # region Invocation Methods
 
     @trace_agent_get_response
@@ -489,6 +462,7 @@ class OpenAIAssistantAgent(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent on a thread.
@@ -513,6 +487,7 @@ class OpenAIAssistantAgent(Agent):
             temperature: The temperature.
             top_p: The top p.
             truncation_strategy: The truncation strategy.
+            polling_options: The polling options at the run-level.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -549,6 +524,7 @@ class OpenAIAssistantAgent(Agent):
             "tools": tools,
             "top_p": top_p,
             "truncation_strategy": truncation_strategy,
+            "polling_options": polling_options,
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 
@@ -594,6 +570,7 @@ class OpenAIAssistantAgent(Agent):
         temperature: float | None = None,
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
@@ -619,6 +596,7 @@ class OpenAIAssistantAgent(Agent):
             temperature: The temperature.
             top_p: The top p.
             truncation_strategy: The truncation strategy.
+            polling_options: The polling options at the run-level.
             kwargs: Additional keyword arguments.
 
         Yields:
@@ -655,6 +633,7 @@ class OpenAIAssistantAgent(Agent):
             "tools": tools,
             "top_p": top_p,
             "truncation_strategy": truncation_strategy,
+            "polling_options": polling_options,
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 

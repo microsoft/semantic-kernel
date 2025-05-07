@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -37,7 +38,10 @@ public static class WeaviateServiceCollectionExtensions
             (sp, obj) =>
             {
                 var selectedHttpClient = HttpClientProvider.GetHttpClient(httpClient, sp);
-                var selectedOptions = options ?? sp.GetService<WeaviateVectorStoreOptions>();
+                options ??= sp.GetService<WeaviateVectorStoreOptions>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
                 return new WeaviateVectorStore(selectedHttpClient, options);
             });
 
@@ -45,7 +49,7 @@ public static class WeaviateServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Weaviate <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID.
+    /// Register a Weaviate <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
@@ -64,15 +68,19 @@ public static class WeaviateServiceCollectionExtensions
         HttpClient? httpClient = default,
         WeaviateVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<Guid, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var selectedHttpClient = HttpClientProvider.GetHttpClient(httpClient, sp);
-                var selectedOptions = options ?? sp.GetService<WeaviateVectorStoreRecordCollectionOptions<TRecord>>();
+                options ??= sp.GetService<WeaviateVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new WeaviateVectorStoreRecordCollection<TRecord>(selectedHttpClient, collectionName, selectedOptions);
+                return new WeaviateVectorStoreRecordCollection<Guid, TRecord>(selectedHttpClient, collectionName, options);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -81,14 +89,14 @@ public static class WeaviateServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
     {
-        services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
+        services.AddKeyedTransient<IVectorSearch<TRecord>>(
             serviceId,
             (sp, obj) =>
             {

@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
@@ -43,23 +41,6 @@ public class InMemoryVectorStoreTests
         // Assert.
         Assert.NotNull(actual);
         Assert.IsType<InMemoryVectorStoreRecordCollection<int, SinglePropsModel<int>>>(actual);
-    }
-
-    [Fact]
-    public async Task ListCollectionNamesReadsDictionaryAsync()
-    {
-        // Arrange.
-        var collectionStore = new ConcurrentDictionary<string, ConcurrentDictionary<object, object>>();
-        collectionStore.TryAdd("collection1", new ConcurrentDictionary<object, object>());
-        collectionStore.TryAdd("collection2", new ConcurrentDictionary<object, object>());
-        var sut = new InMemoryVectorStore(collectionStore);
-
-        // Act.
-        var collectionNames = sut.ListCollectionNamesAsync();
-
-        // Assert.
-        var collectionNamesList = await collectionNames.ToListAsync();
-        Assert.Equal(new[] { "collection1", "collection2" }, collectionNamesList);
     }
 
     [Fact]

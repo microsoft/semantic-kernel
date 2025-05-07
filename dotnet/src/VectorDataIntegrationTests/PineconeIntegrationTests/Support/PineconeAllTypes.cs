@@ -48,7 +48,7 @@ public record PineconeAllTypes()
     [VectorStoreRecordData]
     public List<string>? NullableStringList { get; set; }
 
-    [VectorStoreRecordVector(Dimensions: 8, DistanceFunction: DistanceFunction.DotProductSimilarity)]
+    [VectorStoreRecordVector(Dimensions: 8, DistanceFunction = DistanceFunction.DotProductSimilarity)]
     public ReadOnlyMemory<float>? Embedding { get; set; }
 
     internal void AssertEqual(PineconeAllTypes other)
@@ -95,7 +95,7 @@ public record PineconeAllTypes()
                 new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableStringArray), typeof(string[])),
                 new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.StringList), typeof(List<string>)),
                 new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableStringList), typeof(List<string?>)),
-                new VectorStoreRecordVectorProperty(nameof(PineconeAllTypes.Embedding), typeof(ReadOnlyMemory<float>?)) { Dimensions = 8, DistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction.DotProductSimilarity }
+                new VectorStoreRecordVectorProperty(nameof(PineconeAllTypes.Embedding), typeof(ReadOnlyMemory<float>?), 8) { DistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction.DotProductSimilarity }
             ]
         };
 }
