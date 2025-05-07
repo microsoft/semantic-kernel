@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -53,7 +52,6 @@ public sealed class RestApiOperationResponse
     /// <summary>
     /// Gets a dictionary for ambient data associated with the response.
     /// </summary>
-    [Experimental("SKEXP0040")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, object?>? Data { get; set; }
 

@@ -4,12 +4,7 @@ import logging
 import sys
 from collections.abc import AsyncIterable
 from importlib import metadata
-from typing import Any, Generic, TypeVar
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
+from typing import Any, Generic
 
 from pydantic import ValidationError
 from pymongo import AsyncMongoClient
@@ -24,11 +19,10 @@ from semantic_kernel.connectors.memory.mongodb_atlas.const import (
     MONGODB_SCORE_FIELD,
 )
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_collection import MongoDBAtlasCollection
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordDataField
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
+from semantic_kernel.data.record_definition import VectorStoreRecordDataField, VectorStoreRecordDefinition
+from semantic_kernel.data.text_search import KernelSearchResults
+from semantic_kernel.data.vector_search import VectorSearchOptions, VectorSearchResult
+from semantic_kernel.data.vector_storage import TKey, TModel
 from semantic_kernel.exceptions import (
     VectorStoreInitializationException,
 )
@@ -39,10 +33,12 @@ from semantic_kernel.exceptions.vector_store_exceptions import (
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
-logger: logging.Logger = logging.getLogger(__name__)
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
-TKey = TypeVar("TKey", bound=str)
-TModel = TypeVar("TModel")
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental
@@ -95,7 +91,7 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
         )
 
         try:
-            settings = AzureCosmosDBforMongoDBSettings.create(
+            settings = AzureCosmosDBforMongoDBSettings(
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
                 connection_string=connection_string,

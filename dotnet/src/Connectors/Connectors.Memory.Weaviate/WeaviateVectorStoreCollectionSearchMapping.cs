@@ -13,7 +13,10 @@ internal static class WeaviateVectorStoreCollectionSearchMapping
     /// <summary>
     /// Maps vector search result to the format, which is processable by <see cref="WeaviateVectorStoreRecordMapper{TRecord}"/>.
     /// </summary>
-    public static (JsonObject StorageModel, double? Score) MapSearchResult(JsonNode result, string scorePropertyName)
+    public static (JsonObject StorageModel, double? Score) MapSearchResult(
+        JsonNode result,
+        string scorePropertyName,
+        bool hasNamedVectors)
     {
         var additionalProperties = result[WeaviateConstants.AdditionalPropertiesPropertyName];
 
@@ -25,14 +28,18 @@ internal static class WeaviateVectorStoreCollectionSearchMapping
             _ => null
         };
 
+        var vectorPropertyName = hasNamedVectors ?
+            WeaviateConstants.ReservedVectorPropertyName :
+            WeaviateConstants.ReservedSingleVectorPropertyName;
+
         var id = additionalProperties?[WeaviateConstants.ReservedKeyPropertyName];
-        var vectors = additionalProperties?[WeaviateConstants.ReservedVectorPropertyName];
+        var vectors = additionalProperties?[vectorPropertyName];
 
         var storageModel = new JsonObject
         {
             { WeaviateConstants.ReservedKeyPropertyName, id?.DeepClone() },
             { WeaviateConstants.ReservedDataPropertyName, result?.DeepClone() },
-            { WeaviateConstants.ReservedVectorPropertyName, vectors?.DeepClone() },
+            { vectorPropertyName, vectors?.DeepClone() },
         };
 
         return (storageModel, score);

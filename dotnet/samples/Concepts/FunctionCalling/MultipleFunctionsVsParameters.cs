@@ -131,7 +131,7 @@ public class MultipleFunctionsVsParameters(ITestOutputHelper output) : BaseTest(
 
         [KernelFunction]
         [Description("Search for invoices by purchase order.")]
-        public IEnumerable<Invoice> SearchByPurchaseOrder([Description("The purchase order. Purchase orders begin with a PN prefix.")] string purchaseOrder)
+        public IEnumerable<Invoice> SearchByPurchaseOrder([Description("The purchase order. Purchase orders begin with a PO prefix.")] string purchaseOrder)
         {
             return
                 [

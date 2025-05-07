@@ -12,19 +12,21 @@ from semantic_kernel.connectors.search.google.const import CUSTOM_SEARCH_URL, QU
 from semantic_kernel.connectors.search.google.google_search_response import GoogleSearchResponse
 from semantic_kernel.connectors.search.google.google_search_result import GoogleSearchResult
 from semantic_kernel.connectors.search.google.google_search_settings import GoogleSearchSettings
-from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.text_search import TextSearch
-from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
-from semantic_kernel.data.text_search.text_search_result import TextSearchResult
+from semantic_kernel.data.text_search import (
+    AnyTagsEqualTo,
+    EqualTo,
+    KernelSearchResults,
+    TextSearch,
+    TextSearchOptions,
+    TextSearchResult,
+)
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
-    from semantic_kernel.data.search_options import SearchOptions
+    from semantic_kernel.data.text_search import SearchOptions
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -54,7 +56,7 @@ class GoogleSearch(KernelBaseModel, TextSearch):
             env_file_encoding: The optional encoding of the .env file.
         """
         try:
-            settings = GoogleSearchSettings.create(
+            settings = GoogleSearchSettings(
                 api_key=api_key,
                 engine_id=search_engine_id,
                 env_file_path=env_file_path,
@@ -63,7 +65,7 @@ class GoogleSearch(KernelBaseModel, TextSearch):
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create Google settings.") from ex
 
-        super().__init__(settings=settings)
+        super().__init__(settings=settings)  # type: ignore[call-arg]
 
     async def search(
         self, query: str, options: "SearchOptions | None" = None, **kwargs: Any

@@ -16,9 +16,9 @@ using AAIP = Azure.AI.Projects;
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
 /// <summary>
-/// Provides a specialized <see cref="KernelAgent"/> based on an Azure AI agent.
+/// Provides a specialized <see cref="Agent"/> based on an Azure AI agent.
 /// </summary>
-public sealed partial class AzureAIAgent : KernelAgent
+public sealed partial class AzureAIAgent : Agent
 {
     /// <summary>
     /// Provides tool definitions used when associating a file attachment to an input message:
@@ -93,7 +93,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     }
 
     /// <summary>
-    /// %%%
+    /// The associated client.
     /// </summary>
     public AgentsClient Client { get; }
 
@@ -106,7 +106,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     /// <remarks>
     /// Only supports messages with <see href="https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages">role = User or agent</see>.
     /// </remarks>
-    [Obsolete("Pass messages directly to Invoke instead.")]
+    [Obsolete("Pass messages directly to Invoke instead. This method will be removed after May 1st 2025.")]
     public Task AddChatMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
     {
         return AgentThreadActions.CreateMessageAsync(this.Client, threadId, message, cancellationToken);
@@ -118,7 +118,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     /// <param name="threadId">The thread identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An asynchronous enumeration of messages.</returns>
-    [Obsolete("Use the AzureAIAgentThread to retrieve messages instead.")]
+    [Obsolete("Use the AzureAIAgentThread to retrieve messages instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId, CancellationToken cancellationToken = default)
     {
         return AgentThreadActions.GetMessagesAsync(this.Client, threadId, null, cancellationToken);
@@ -135,7 +135,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
         KernelArguments? arguments = null,
@@ -201,14 +201,14 @@ public sealed partial class AzureAIAgent : KernelAgent
                 options?.ToAzureAIInvocationOptions(),
                 this.Logger,
                 options?.Kernel ?? this.Kernel,
-                this.MergeArguments(options?.KernelArguments),
+                options?.KernelArguments,
                 cancellationToken).ConfigureAwait(false))
             {
                 // The thread and the caller should be notified of all messages regardless of visibility.
                 await this.NotifyThreadOfNewMessage(azureAIAgentThread, message, cancellationToken).ConfigureAwait(false);
-                if (options?.OnNewMessage is not null)
+                if (options?.OnIntermediateMessage is not null)
                 {
-                    await options.OnNewMessage(message).ConfigureAwait(false);
+                    await options.OnIntermediateMessage(message).ConfigureAwait(false);
                 }
 
                 if (isVisible)
@@ -237,7 +237,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
         AzureAIInvocationOptions? options,
@@ -253,8 +253,6 @@ public sealed partial class AzureAIAgent : KernelAgent
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {
             kernel ??= this.Kernel;
-            arguments = this.MergeArguments(arguments);
-
             await foreach ((bool isVisible, ChatMessageContent message) in AgentThreadActions.InvokeAsync(this, this.Client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
             {
                 if (isVisible)
@@ -313,7 +311,7 @@ public sealed partial class AzureAIAgent : KernelAgent
         var invokeResults = this.InvokeStreamingAsync(
             azureAIAgentThread.Id!,
             options?.ToAzureAIInvocationOptions(),
-            this.MergeArguments(options?.KernelArguments),
+            options?.KernelArguments,
             options?.Kernel ?? this.Kernel,
             newMessagesReceiver,
             cancellationToken);
@@ -330,9 +328,9 @@ public sealed partial class AzureAIAgent : KernelAgent
         {
             await this.NotifyThreadOfNewMessage(azureAIAgentThread, newMessage, cancellationToken).ConfigureAwait(false);
 
-            if (options?.OnNewMessage is not null)
+            if (options?.OnIntermediateMessage is not null)
             {
-                await options.OnNewMessage(newMessage).ConfigureAwait(false);
+                await options.OnIntermediateMessage(newMessage).ConfigureAwait(false);
             }
         }
     }
@@ -349,7 +347,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string threadId,
         KernelArguments? arguments = null,
@@ -373,7 +371,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     /// <remarks>
     /// The `arguments` parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string threadId,
         AzureAIInvocationOptions? options,
@@ -390,8 +388,6 @@ public sealed partial class AzureAIAgent : KernelAgent
         IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
         {
             kernel ??= this.Kernel;
-            arguments = this.MergeArguments(arguments);
-
             return AgentThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
         }
     }
@@ -427,7 +423,7 @@ public sealed partial class AzureAIAgent : KernelAgent
 
     internal Task<string?> GetInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
-        return this.FormatInstructionsAsync(kernel, arguments, cancellationToken);
+        return this.RenderInstructionsAsync(kernel, arguments, cancellationToken);
     }
 
     /// <inheritdoc/>

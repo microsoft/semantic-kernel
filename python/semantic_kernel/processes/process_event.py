@@ -7,8 +7,10 @@ from semantic_kernel.processes.kernel_process.kernel_process_event import (
     KernelProcessEvent,
     KernelProcessEventVisibility,
 )
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
+@experimental
 class ProcessEvent(KernelBaseModel):
     """A wrapper around KernelProcessEvent that helps to manage the namespace of the event."""
 

@@ -13,6 +13,11 @@ public abstract class TestStore
     private readonly SemaphoreSlim _lock = new(1, 1);
     private int _referenceCount;
 
+    /// <summary>
+    /// Some databases modify vectors on upsert, e.g. normalizing them, so vectors
+    /// returned cannot be compared with the original ones.
+    /// </summary>
+    public virtual bool VectorsComparable => true;
     public virtual string DefaultDistanceFunction => DistanceFunction.CosineSimilarity;
     public virtual string DefaultIndexKind => IndexKind.Flat;
 
@@ -72,24 +77,31 @@ public abstract class TestStore
     public virtual async Task WaitForDataAsync<TKey, TRecord>(
         IVectorStoreRecordCollection<TKey, TRecord> collection,
         int recordCount,
-        Expression<Func<TRecord, bool>>? filter = null)
+        Expression<Func<TRecord, bool>>? filter = null,
+        int vectorSize = 3)
         where TKey : notnull
+        where TRecord : notnull
     {
+        var vector = new float[vectorSize];
+        for (var i = 0; i < vectorSize; i++)
+        {
+            vector[i] = 1.0f;
+        }
+
         for (var i = 0; i < 20; i++)
         {
-            var results = await collection.VectorizedSearchAsync(
-                new ReadOnlyMemory<float>([1, 2, 3]),
-                new()
-                {
-                    Top = recordCount,
-                    // In some databases (Azure AI Search), the data shows up but the filtering index isn't yet updated,
-                    // so filtered searches show empty results. Add a filter to the seed data check below.
-                    Filter = filter
-                });
-            var count = await results.Results.CountAsync();
+            var results = collection.SearchEmbeddingAsync(
+                new ReadOnlyMemory<float>(vector),
+                top: 1000, // TODO: this should be recordCount, but see #11655
+                new() { Filter = filter });
+            var count = await results.CountAsync();
             if (count == recordCount)
             {
                 return;
+            }
+            if (count > recordCount)
+            {
+                throw new InvalidOperationException($"Expected at most {recordCount} records, but found {count}.");
             }
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));

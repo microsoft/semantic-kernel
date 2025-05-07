@@ -17,6 +17,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 /// The Weaviate instance API key is set in the Docker Container as "my-secret-key".
 /// </summary>
 [Collection("Sequential")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public sealed class WeaviateMemoryStoreTests : IDisposable
 {
     // If null, all tests will be enabled

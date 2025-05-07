@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if NETSTANDARD2_0
+#if !NET8_0_OR_GREATER
 
 // Polyfill for using UnreachableException with .NET Standard 2.0
 

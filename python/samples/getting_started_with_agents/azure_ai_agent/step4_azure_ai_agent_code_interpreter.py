@@ -17,8 +17,6 @@ TASK = "Use code to determine the values in the Fibonacci sequence that that are
 
 
 async def main() -> None:
-    ai_agent_settings = AzureAIAgentSettings.create()
-
     async with (
         DefaultAzureCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
@@ -26,7 +24,7 @@ async def main() -> None:
         # 1. Create an agent with a code interpreter on the Azure AI agent service
         code_interpreter = CodeInterpreterTool()
         agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.model_deployment_name,
+            model=AzureAIAgentSettings().model_deployment_name,
             tools=code_interpreter.definitions,
             tool_resources=code_interpreter.resources,
         )
@@ -40,7 +38,7 @@ async def main() -> None:
         # 3. Create a thread for the agent
         # If no thread is provided, a new thread will be
         # created and returned with the initial response
-        thread: AzureAIAgentThread = None
+        thread: AzureAIAgentThread | None = None
 
         try:
             print(f"# User: '{TASK}'")

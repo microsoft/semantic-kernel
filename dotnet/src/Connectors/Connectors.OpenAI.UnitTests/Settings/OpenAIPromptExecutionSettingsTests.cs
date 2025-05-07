@@ -38,6 +38,8 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Null(executionSettings.ReasoningEffort);
         Assert.Null(executionSettings.ChatSystemPrompt);
         Assert.Null(executionSettings.ChatDeveloperPrompt);
+        Assert.Null(executionSettings.Audio);
+        Assert.Null(executionSettings.Modalities);
     }
 
     [Fact]
@@ -60,7 +62,9 @@ public class OpenAIPromptExecutionSettingsTests
             Seed = 123456,
             Store = true,
             Metadata = new Dictionary<string, string>() { { "foo", "bar" } },
-            ReasoningEffort = "high"
+            ReasoningEffort = "high",
+            Audio = JsonSerializer.Deserialize<JsonElement>("{\"format\":\"mp3\", \"voice\": \"alloy\"}"),
+            Modalities = new List<string> { "audio", "text" }
         };
 
         // Act
@@ -79,6 +83,8 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(actualSettings.ReasoningEffort, executionSettings.ReasoningEffort);
         Assert.Equal(actualSettings.ChatSystemPrompt, executionSettings.ChatSystemPrompt);
         Assert.Equal(actualSettings.ChatDeveloperPrompt, executionSettings.ChatDeveloperPrompt);
+        Assert.Equal(actualSettings.Audio, executionSettings.Audio);
+        Assert.Equal(actualSettings.Modalities, executionSettings.Modalities);
     }
 
     [Fact]
@@ -129,6 +135,8 @@ public class OpenAIPromptExecutionSettingsTests
                 { "logprobs", true },
                 { "top_logprobs", 5 },
                 { "store", true },
+                { "audio", JsonSerializer.Deserialize<JsonElement>("{\"format\":\"mp3\", \"voice\": \"alloy\"}") },
+                { "modalities", new [] { "audio", "text" } },
                 { "metadata", new Dictionary<string, string>() { { "foo", "bar" } } }
             }
         };
@@ -163,6 +171,8 @@ public class OpenAIPromptExecutionSettingsTests
                 { "logprobs", true },
                 { "top_logprobs", 5 },
                 { "store", true },
+                { "audio", new Dictionary<string, string>() { ["format"] = "mp3", ["voice"] = "alloy" } },
+                { "modalities", new [] { "audio", "text" } },
                 { "metadata", new Dictionary<string, string>() { { "foo", "bar" } } }
             }
         };
@@ -194,6 +204,8 @@ public class OpenAIPromptExecutionSettingsTests
               "seed": 123456,
               "logprobs": true,
               "top_logprobs": 5,
+              "audio": { "format": "mp3", "voice": "alloy" },
+              "modalities": ["audio", "text"],
               "store": true,
               "metadata": { "foo": "bar" }
             }
@@ -260,6 +272,8 @@ public class OpenAIPromptExecutionSettingsTests
             "logprobs": true,
             "top_logprobs": 5,
             "store": true,
+            "audio": { "format": "mp3", "voice": "alloy" },
+            "modalities": ["audio", "text"],
             "metadata": { "foo": "bar" }
         }
         """;
@@ -280,6 +294,8 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Throws<InvalidOperationException>(() => executionSettings.TopLogprobs = 10);
         Assert.Throws<InvalidOperationException>(() => executionSettings.Store = false);
         Assert.Throws<NotSupportedException>(() => executionSettings.Metadata?.Add("bar", "baz"));
+        Assert.Throws<InvalidOperationException>(() => executionSettings.Audio = new object());
+        Assert.Throws<InvalidOperationException>(() => executionSettings.Modalities = new object());
 
         executionSettings!.Freeze(); // idempotent
         Assert.True(executionSettings.IsFrozen);
@@ -317,6 +333,143 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(functionChoiceBehavior, result.FunctionChoiceBehavior);
     }
 
+    [Fact]
+    public void ItCanCreateOpenAIPromptExecutionSettingsFromPromptExecutionSettings()
+    {
+        // Arrange
+        PromptExecutionSettings originalSettings = new()
+        {
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", 0.7 },
+                { "top_p", 0.7 },
+                { "frequency_penalty", 0.7 },
+                { "presence_penalty", 0.7 },
+                { "stop_sequences", new string[] { "foo", "bar" } },
+                { "chat_system_prompt", "chat system prompt" },
+                { "chat_developer_prompt", "chat developer prompt" },
+                { "reasoning_effort", "high" },
+                { "token_selection_biases", new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } } },
+                { "max_tokens", 128 },
+                { "logprobs", true },
+                { "seed", 123456 },
+                { "store", true },
+                { "top_logprobs", 5 },
+                { "audio", JsonSerializer.Deserialize<JsonElement>("{\"format\":\"mp3\", \"voice\": \"alloy\"}") },
+                { "modalities", new [] { "audio", "text" } },
+                { "metadata", new Dictionary<string, string>() { { "foo", "bar" } } }
+            }
+        };
+
+        // Act
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings);
+
+        // Assert
+        AssertExecutionSettings(executionSettings);
+    }
+
+    [Fact]
+    public void ItCanCreateOpenAIPromptExecutionSettingsFromJson()
+    {
+        // Arrange
+        var json =
+            """
+            {
+                "temperature": 0.7,
+                "top_p": 0.7,
+                "frequency_penalty": 0.7,
+                "presence_penalty": 0.7,
+                "stop_sequences": [ "foo", "bar" ],
+                "chat_system_prompt": "chat system prompt",
+                "chat_developer_prompt": "chat developer prompt",
+                "reasoning_effort": "high",
+                "token_selection_biases":
+                {
+                    "1": "2",
+                    "3": "4"
+                },
+                "max_tokens": 128,
+                "logprobs": true,
+                "seed": 123456,
+                "store": true,
+                "top_logprobs": 5,
+                "audio":
+                {
+                    "format": "mp3",
+                    "voice": "alloy"
+                },
+                "modalities": [ "audio", "text" ],
+                "metadata":
+                {
+                    "foo": "bar"
+                }
+            }
+            """;
+
+        // Act
+        var originalSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings);
+
+        // Assert
+        AssertExecutionSettings(executionSettings);
+    }
+
+    [Fact]
+    public void ItCanCreateOpenAIPromptExecutionSettingsFromPromptExecutionSettingsWithIncorrectTypes()
+    {
+        // Arrange
+        PromptExecutionSettings originalSettings = new()
+        {
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", "0.7" },
+                { "top_p", "0.7" },
+                { "frequency_penalty", "0.7" },
+                { "presence_penalty", "0.7" },
+                { "stop_sequences", new List<object> { "foo", "bar" } },
+                { "chat_system_prompt", "chat system prompt" },
+                { "chat_developer_prompt", "chat developer prompt" },
+                { "reasoning_effort", "high" },
+                { "token_selection_biases", new Dictionary<string, object>() { { "1", "2" }, { "3", "4" } } },
+                { "max_tokens", "128" },
+                { "logprobs", "true" },
+                { "seed", "123456" },
+                { "store", true },
+                { "top_logprobs", "5" },
+                { "audio", JsonSerializer.Deserialize<JsonElement>("{\"format\":\"mp3\", \"voice\": \"alloy\"}") },
+                { "modalities", new [] { "audio", "text" } },
+                { "metadata", new Dictionary<string, string>() { { "foo", "bar" } } }
+            }
+        };
+
+        // Act
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings);
+
+        // Assert
+        AssertExecutionSettings(executionSettings);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("123")]
+    [InlineData("Foo")]
+    [InlineData(1)]
+    [InlineData(1.0)]
+    public void ItCannotCreateOpenAIPromptExecutionSettingsWithInvalidBoolValues(object value)
+    {
+        // Arrange
+        PromptExecutionSettings originalSettings = new()
+        {
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "logprobs", value }
+            }
+        };
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => OpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings));
+    }
+
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);
@@ -335,5 +488,7 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(5, executionSettings.TopLogprobs);
         Assert.Equal(true, executionSettings.Store);
         Assert.Equal(new Dictionary<string, string>() { { "foo", "bar" } }, executionSettings.Metadata);
+        Assert.Equal("""{"format":"mp3","voice":"alloy"}""", JsonSerializer.Serialize(executionSettings.Audio));
+        Assert.Equal("""["audio","text"]""", JsonSerializer.Serialize(executionSettings.Modalities));
     }
 }

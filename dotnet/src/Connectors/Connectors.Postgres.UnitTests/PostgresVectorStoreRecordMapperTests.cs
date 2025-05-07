@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.Postgres;
 using Pgvector;
 using Xunit;
@@ -19,13 +20,13 @@ public sealed class PostgresVectorStoreRecordMapperTests
     {
         // Arrange
         var definition = GetRecordDefinition<string>();
-        var propertyReader = GetPropertyReader<TestRecord<string>>(definition);
-        var dataModel = GetDataModel<string>("key");
+        var model = GetModel<TestRecord<string>>(definition);
+        var dataModel = GetRecord<string>("key");
 
-        var mapper = new PostgresVectorStoreRecordMapper<TestRecord<string>>(propertyReader);
+        var mapper = new PostgresVectorStoreRecordMapper<TestRecord<string>>(model);
 
         // Act
-        var result = mapper.MapFromDataToStorageModel(dataModel);
+        var result = mapper.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", result["Key"]);
@@ -43,17 +44,17 @@ public sealed class PostgresVectorStoreRecordMapperTests
     public void MapFromDataToStorageModelWithNumericKeyReturnsValidStorageModel()
     {
         // Arrange
-        var definition = GetRecordDefinition<ulong>();
-        var propertyReader = GetPropertyReader<TestRecord<ulong>>(definition);
-        var dataModel = GetDataModel<ulong>(1);
+        var definition = GetRecordDefinition<long>();
+        var propertyReader = GetModel<TestRecord<long>>(definition);
+        var dataModel = GetRecord<long>(1);
 
-        var mapper = new PostgresVectorStoreRecordMapper<TestRecord<ulong>>(propertyReader);
+        var mapper = new PostgresVectorStoreRecordMapper<TestRecord<long>>(propertyReader);
 
         // Act
-        var result = mapper.MapFromDataToStorageModel(dataModel);
+        var result = mapper.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
-        Assert.Equal((ulong)1, result["Key"]);
+        Assert.Equal(1L, result["Key"]);
         Assert.Equal("Value1", result["StringProperty"]);
         Assert.Equal(5, result["IntProperty"]);
         Assert.Equal(new List<string> { "Value2", "Value3" }, result["StringArray"]);
@@ -67,7 +68,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void MapFromStorageToDataModelWithStringKeyReturnsValidGenericModel(bool includeVectors)
+    public void MapFromStorageToDataModelWithStringKeyReturnsValidDynamicModel(bool includeVectors)
     {
         // Arrange
         var vector = new ReadOnlyMemory<float>([1.1f, 2.2f, 3.3f, 4.4f]);
@@ -83,7 +84,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
         };
 
         var definition = GetRecordDefinition<string>();
-        var propertyReader = GetPropertyReader<TestRecord<string>>(definition);
+        var propertyReader = GetModel<TestRecord<string>>(definition);
 
         var mapper = new PostgresVectorStoreRecordMapper<TestRecord<string>>(propertyReader);
 
@@ -110,7 +111,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void MapFromStorageToDataModelWithNumericKeyReturnsValidGenericModel(bool includeVectors)
+    public void MapFromStorageToDataModelWithNumericKeyReturnsValidDynamicModel(bool includeVectors)
     {
         // Arrange
         var vector = new ReadOnlyMemory<float>([1.1f, 2.2f, 3.3f, 4.4f]);
@@ -118,23 +119,23 @@ public sealed class PostgresVectorStoreRecordMapperTests
 
         var storageModel = new Dictionary<string, object?>
         {
-            ["Key"] = (ulong)1,
+            ["Key"] = 1L,
             ["StringProperty"] = "Value1",
             ["IntProperty"] = 5,
             ["StringArray"] = new List<string> { "Value2", "Value3" },
             ["FloatVector"] = storageVector
         };
 
-        var definition = GetRecordDefinition<ulong>();
-        var propertyReader = GetPropertyReader<TestRecord<ulong>>(definition);
+        var definition = GetRecordDefinition<long>();
+        var propertyReader = GetModel<TestRecord<long>>(definition);
 
-        var mapper = new PostgresVectorStoreRecordMapper<TestRecord<ulong>>(propertyReader);
+        var mapper = new PostgresVectorStoreRecordMapper<TestRecord<long>>(propertyReader);
 
         // Act
         var result = mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors });
 
         // Assert
-        Assert.Equal((ulong)1, result.Key);
+        Assert.Equal(1L, result.Key);
         Assert.Equal("Value1", result.StringProperty);
         Assert.Equal(5, result.IntProperty);
         Assert.Equal(new List<string> { "Value2", "Value3" }, result.StringArray);
@@ -162,12 +163,12 @@ public sealed class PostgresVectorStoreRecordMapperTests
                 new VectorStoreRecordDataProperty("StringProperty", typeof(string)),
                 new VectorStoreRecordDataProperty("IntProperty", typeof(int)),
                 new VectorStoreRecordDataProperty("StringArray", typeof(IEnumerable<string>)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
             }
         };
     }
 
-    private static TestRecord<TKey> GetDataModel<TKey>(TKey key)
+    private static TestRecord<TKey> GetRecord<TKey>(TKey key)
     {
         return new TestRecord<TKey>
         {
@@ -179,15 +180,8 @@ public sealed class PostgresVectorStoreRecordMapperTests
         };
     }
 
-    private static VectorStoreRecordPropertyReader GetPropertyReader<TRecord>(VectorStoreRecordDefinition definition)
-    {
-        return new VectorStoreRecordPropertyReader(typeof(TRecord), definition, new()
-        {
-            RequiresAtLeastOneVector = false,
-            SupportsMultipleKeys = false,
-            SupportsMultipleVectors = true
-        });
-    }
+    private static VectorStoreRecordModel GetModel<TRecord>(VectorStoreRecordDefinition definition)
+        => new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(TRecord), definition, defaultEmbeddingGenerator: null);
 
 #pragma warning disable CA1812
     private sealed class TestRecord<TKey>
@@ -204,7 +198,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
         [VectorStoreRecordData]
         public IEnumerable<string>? StringArray { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? FloatVector { get; set; }
     }
 #pragma warning restore CA1812

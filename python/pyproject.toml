@@ -2,7 +2,7 @@
 name = "semantic-kernel"
 description = "Semantic Kernel Python SDK"
 authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com"}]
-readme = "pip/README.md"
+readme = "README.md"
 # Version read from __version__ field in __init__.py by Flit
 dynamic = ["version"]
 requires-python = ">=3.10"
@@ -25,7 +25,7 @@ classifiers = [
 dependencies = [
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
-    "pydantic >=2.0,<2.11,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3",
+    "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
     # azure identity
@@ -34,7 +34,7 @@ dependencies = [
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
-    "openai ~= 1.61",
+    "openai >= 1.67",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
     "websockets >= 13, < 16",
@@ -42,20 +42,28 @@ dependencies = [
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
     "opentelemetry-sdk ~= 1.24",
-    "prance ~= 23.6.21.0",
+    "prance >= 23.6.21,< 25.4.9",
     # templating
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
     "nest-asyncio ~= 1.6",
     "scipy>=1.15.1",
-    "websockets >= 13, < 15",
+    "websockets >= 13, < 16",
     "aiortc>=1.9.0",
+    # Protobuf
+    "protobuf",
 ]
 
 ### Optional dependencies
 [project.optional-dependencies]
+anthropic = [
+    "anthropic ~= 0.32"
+]
 autogen = [
     "autogen-agentchat >= 0.2, <0.4"
+]
+aws = [
+    "boto3>=1.36.4,<1.38.0",
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
@@ -65,26 +73,33 @@ azure = [
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
-    "chromadb >= 0.5,< 0.7"
+    "chromadb >= 0.5,< 1.1"
 ]
-google = [
-    "google-cloud-aiplatform == 1.85.0",
-    "google-generativeai ~= 0.8"
+# Temporary: use direct Test PyPI links until packages are published to Public PyPI
+# Once published, these will simplify to just "microsoft-agents-core" and "microsoft-agents-copilotstudio-client"
+copilot_studio = [
+  "microsoft-agents-core @ https://test-files.pythonhosted.org/packages/17/ae/c87bfb943e75fac50522e2598232fc386b0d7f09a2dd462bbdc63cb83602/microsoft_agents_core-0.0.0a2-py3-none-any.whl",
+  "microsoft-agents-copilotstudio-client @ https://test-files.pythonhosted.org/packages/47/de/9f9e0a0c57132363154dcf197bf2ce0ed33e9c986a8df8573091bcc79b54/microsoft_agents_copilotstudio_client-0.0.0a2-py3-none-any.whl"
+]
+dapr = [
+    "dapr>=1.14.0",
+    "dapr-ext-fastapi>=1.14.0",
+    "flask-dapr>=1.14.0",
 ]
 faiss = [
     "faiss-cpu>=1.10.0"
 ]
+google = [
+    "google-cloud-aiplatform == 1.91.0",
+    "google-generativeai ~= 0.8"
+]
 hugging_face = [
     "transformers[torch] ~= 4.28",
-    "sentence-transformers >= 2.2,< 4.0",
+    "sentence-transformers >= 2.2,< 5.0",
     "torch == 2.6.0"
 ]
-mongo = [
-    "pymongo >= 4.8.0, < 4.12",
-    "motor >= 3.3.2,< 3.8.0"
-]
-notebooks = [
-    "ipykernel ~= 6.29"
+mcp = [
+    "mcp ~= 1.6"
 ]
 milvus = [
     "pymilvus >= 2.3,< 2.6",
@@ -93,14 +108,21 @@ milvus = [
 mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
+mongo = [
+    "pymongo >= 4.8.0, < 4.13",
+    "motor >= 3.3.2,< 3.8.0"
+]
+notebooks = [
+    "ipykernel ~= 6.29"
+]
 ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
     "onnxruntime-genai ~= 0.5; python_version < '3.13'"
 ]
-anthropic = [
-    "anthropic ~= 0.32"
+pandas = [
+    "pandas ~= 2.2"
 ]
 pinecone = [
     "pinecone[asyncio, grpc] ~= 6.0"
@@ -114,7 +136,14 @@ qdrant = [
 redis = [
     "redis[hiredis] ~= 5.0",
     "types-redis ~= 4.6.0.20240425",
-    "redisvl >= 0.3.6",
+    "redisvl ~= 0.4"
+]
+realtime = [
+    "websockets >= 13, < 16",
+    "aiortc>=1.9.0",
+]
+sql = [
+    "pyodbc >= 5.2"
 ]
 usearch = [
     "usearch ~= 2.16",
@@ -122,21 +151,6 @@ usearch = [
 ]
 weaviate = [
     "weaviate-client>=4.10,<5.0",
-]
-pandas = [
-    "pandas ~= 2.2"
-]
-aws = [
-    "boto3>=1.36.4,<1.38.0",
-]
-dapr = [
-    "dapr>=1.14.0",
-    "dapr-ext-fastapi>=1.14.0",
-    "flask-dapr>=1.14.0"
-]
-realtime = [
-    "websockets >= 13, < 16",
-    "aiortc>=1.9.0",
 ]
 
 [tool.uv]

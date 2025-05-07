@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
@@ -21,6 +23,7 @@ public sealed class SqlServerVectorStoreRecordCollectionOptions<TRecord>
     /// <remarks>
     /// If not set, the default mapper will be used.
     /// </remarks>
+    [Obsolete("Custom mappers are no longer supported.", error: true)]
     public IVectorStoreRecordMapper<TRecord, IDictionary<string, object?>>? Mapper { get; init; }
 
     /// <summary>
@@ -32,4 +35,9 @@ public sealed class SqlServerVectorStoreRecordCollectionOptions<TRecord>
     /// See <see cref="VectorStoreRecordKeyAttribute"/>, <see cref="VectorStoreRecordDataAttribute"/> and <see cref="VectorStoreRecordVectorAttribute"/>.
     /// </remarks>
     public VectorStoreRecordDefinition? RecordDefinition { get; init; }
+
+    /// <summary>
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

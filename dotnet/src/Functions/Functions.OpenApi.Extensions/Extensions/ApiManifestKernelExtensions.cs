@@ -39,8 +39,27 @@ public static class ApiManifestKernelExtensions
         string filePath,
         ApiManifestPluginParameters? pluginParameters = null,
         CancellationToken cancellationToken = default)
+        => await kernel.ImportPluginFromApiManifestAsync(pluginName, filePath, null, pluginParameters, cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Imports a plugin from an API manifest asynchronously.
+    /// </summary>
+    /// <param name="kernel">The kernel instance.</param>
+    /// <param name="pluginName">The name of the plugin.</param>
+    /// <param name="filePath">The file path of the API manifest.</param>
+    /// <param name="description">The description of the plugin.</param>
+    /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The imported plugin.</returns>
+    public static async Task<KernelPlugin> ImportPluginFromApiManifestAsync(
+        this Kernel kernel,
+        string pluginName,
+        string filePath,
+        string? description,
+        ApiManifestPluginParameters? pluginParameters = null,
+        CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, pluginParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, description, pluginParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -60,9 +79,28 @@ public static class ApiManifestKernelExtensions
         string filePath,
         ApiManifestPluginParameters? pluginParameters = null,
         CancellationToken cancellationToken = default)
+        => await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, null, pluginParameters, cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Creates a kernel plugin from an API manifest file asynchronously.
+    /// </summary>
+    /// <param name="kernel">The kernel instance.</param>
+    /// <param name="pluginName">The name of the plugin.</param>
+    /// <param name="filePath">The file path of the API manifest.</param>
+    /// <param name="description">The description of the plugin.</param>
+    /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the created kernel plugin.</returns>
+    public static async Task<KernelPlugin> CreatePluginFromApiManifestAsync(
+        this Kernel kernel,
+        string pluginName,
+        string filePath,
+        string? description,
+        ApiManifestPluginParameters? pluginParameters = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidPluginName(pluginName, kernel.Plugins);
+        KernelVerify.ValidPluginName(pluginName, kernel.Plugins);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(pluginParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
@@ -111,7 +149,7 @@ public static class ApiManifestKernelExtensions
 
             var documentReadResult = await new OpenApiStreamReader(new()
             {
-                BaseUrl = new(apiDescriptionUrl)
+                BaseUrl = parsedDescriptionUrl
             }
             ).ReadAsync(openApiDocumentStream, cancellationToken).ConfigureAwait(false);
             var openApiDocument = documentReadResult.OpenApiDocument;
@@ -187,6 +225,6 @@ public static class ApiManifestKernelExtensions
             }
         }
 
-        return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
+        return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
     }
 }

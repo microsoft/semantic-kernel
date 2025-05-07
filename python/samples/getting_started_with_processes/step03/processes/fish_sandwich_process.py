@@ -1,14 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
-
 from enum import Enum
 
-from samples.getting_started_with_processes.step03.processes.fried_fish_process import FriedFishProcess
+from samples.getting_started_with_processes.step03.processes.fried_fish_process import (
+    FriedFishProcess,
+)
 from samples.getting_started_with_processes.step03.steps.external_step import ExternalStep
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
-from semantic_kernel.processes.process_builder import ProcessBuilder
-from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.processes import ProcessBuilder
+from semantic_kernel.processes.kernel_process import (
+    KernelProcessEventVisibility,
+    KernelProcessStep,
+    KernelProcessStepContext,
+)
 
 
 class AddBunStep(KernelProcessStep):
@@ -36,11 +39,15 @@ class AddSpecialSauceStep(KernelProcessStep):
     async def slice_food(self, context: KernelProcessStepContext, food_actions: list[str]):
         print(f"SPECIAL_SAUCE_ADDED: Special sauce added to ingredient {food_actions[0]}")
         food_actions.append("Sauce")
-        await context.emit_event(process_event=self.OutputEvents.SpecialSauceAdded, data=food_actions)
+        await context.emit_event(
+            process_event=self.OutputEvents.SpecialSauceAdded,
+            data=food_actions,
+            visibility=KernelProcessEventVisibility.Public,
+        )
 
 
 class ExternalFriedFishStep(ExternalStep):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(FishSandwichProcess.ProcessEvents.FishSandwichReady)
 
 
@@ -50,27 +57,73 @@ class FishSandwichProcess:
         FishSandwichReady = "FishSandwichReady"
 
     @staticmethod
-    def create_process(process_name: str = "FishSandwichProcess"):
+    def create_process(process_name: str = "FishSandwichProcess") -> ProcessBuilder:
         process_builder = ProcessBuilder(process_name)
+
         make_fried_fish_step = process_builder.add_step_from_process(FriedFishProcess.create_process())
         add_buns_step = process_builder.add_step(AddBunStep)
-        add_special_sauce_step = process_builder.add_step(AddSpecialSauceStep)
+        add_sauce_step = process_builder.add_step(AddSpecialSauceStep)
         external_step = process_builder.add_step(ExternalFriedFishStep)
 
         process_builder.on_input_event(FishSandwichProcess.ProcessEvents.PrepareFishSandwich).send_event_to(
             make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish)
         )
 
-        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(
-            ProcessFunctionTargetBuilder(add_buns_step)
+        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(add_buns_step)
+
+        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded).send_event_to(add_sauce_step)
+
+        add_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded).send_event_to(external_step)
+
+        return process_builder
+
+    @staticmethod
+    def create_process_with_stateful_steps_v1(
+        process_name: str = "FishSandwichWithStatefulStepsProcess",
+    ) -> ProcessBuilder:
+        process_builder = ProcessBuilder(process_name, version="FishSandwich.V1")
+
+        make_fried_fish_step = process_builder.add_step_from_process(
+            FriedFishProcess.create_process_with_stateful_steps_v1()
+        )
+        add_buns_step = process_builder.add_step(AddBunStep)
+        add_sauce_step = process_builder.add_step(AddSpecialSauceStep)
+        external_step = process_builder.add_step(ExternalFriedFishStep)
+
+        process_builder.on_input_event(FishSandwichProcess.ProcessEvents.PrepareFishSandwich).send_event_to(
+            make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish)
         )
 
-        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded).send_event_to(
-            ProcessFunctionTargetBuilder(add_special_sauce_step)
+        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(add_buns_step)
+
+        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded).send_event_to(add_sauce_step)
+
+        add_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded).send_event_to(external_step)
+
+        return process_builder
+
+    @staticmethod
+    def create_process_with_stateful_steps_v2(
+        process_name: str = "FishSandwichWithStatefulStepsProcess",
+    ) -> ProcessBuilder:
+        process_builder = ProcessBuilder(process_name, version="FishSandwich.V2")
+
+        make_fried_fish_step = process_builder.add_step_from_process(
+            FriedFishProcess.create_process_with_stateful_steps_v2(),
+            aliases=["FriedFishWithStatefulStepsProcess"],
+        )
+        add_buns_step = process_builder.add_step(AddBunStep)
+        add_sauce_step = process_builder.add_step(AddSpecialSauceStep)
+        external_step = process_builder.add_step(ExternalFriedFishStep)
+
+        process_builder.on_input_event(FishSandwichProcess.ProcessEvents.PrepareFishSandwich).send_event_to(
+            make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish)
         )
 
-        add_special_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded).send_event_to(
-            ProcessFunctionTargetBuilder(external_step)
-        )
+        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(add_buns_step)
+
+        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded).send_event_to(add_sauce_step)
+
+        add_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded).send_event_to(external_step)
 
         return process_builder

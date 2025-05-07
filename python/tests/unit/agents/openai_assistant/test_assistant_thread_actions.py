@@ -433,7 +433,7 @@ async def test_agent_thread_actions_create_message():
 async def test_assistant_thread_actions_invoke(
     mock_run_step_message_creation, mock_run_step_tool_call, mock_run_in_progress, mock_thread_messages
 ):
-    async def mock_poll_run_status(agent, run, thread_id):
+    async def mock_poll_run_status(agent, run, thread_id, polling_options):
         run.update_status()
         return run
 
@@ -702,6 +702,8 @@ async def test_poll_loop_exits_on_status_change():
     initial_run = MagicMock()
     initial_run.id = run_id
 
+    polling_options = RunPollingOptions()
+
     run_in_progress = MagicMock()
     run_in_progress.id = run_id
     run_in_progress.status = "in_progress"
@@ -716,7 +718,7 @@ async def test_poll_loop_exits_on_status_change():
 
     thread_id = "thread_123"
 
-    result_run = await AssistantThreadActions._poll_loop(dummy_agent, initial_run, thread_id)
+    result_run = await AssistantThreadActions._poll_loop(dummy_agent, initial_run, thread_id, polling_options)
 
     assert result_run.status == "completed"
 
@@ -743,9 +745,9 @@ async def test_handle_streaming_requires_action_returns_result():
         ),
         patch(
             "semantic_kernel.agents.open_ai.assistant_thread_actions.merge_streaming_function_results",
-            return_value=[dummy_function_result_streaming_content],
+            return_value=dummy_function_result_streaming_content,
         ),
-        patch.object(AssistantThreadActions, "_invoke_function_calls", new=AsyncMock(return_value=None)),
+        patch.object(AssistantThreadActions, "_invoke_function_calls", new=AsyncMock(return_value=[None])),
         patch.object(AssistantThreadActions, "_format_tool_outputs", return_value=dummy_tool_outputs),
     ):
         result = await AssistantThreadActions._handle_streaming_requires_action(

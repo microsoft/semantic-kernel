@@ -121,7 +121,7 @@ async def test_open_ai_assistant_agent_init():
 
 def test_azure_open_ai_settings_create_throws(azure_openai_unit_test_env):
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings.AzureOpenAISettings.create"
+        "semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings.AzureOpenAISettings.__init__"
     ) as mock_create:
         mock_create.side_effect = ValidationError.from_exception_data("test", line_errors=[], input_type="python")
 
@@ -173,27 +173,6 @@ def test_configure_response_format_invalid_input_type():
     with pytest.raises(AgentInitializationException) as exc_info:
         AzureAssistantAgent.configure_response_format(3)  # type: ignore
     assert "response_format must be a dictionary" in str(exc_info.value)
-
-
-@pytest.mark.parametrize(
-    "message",
-    [
-        pytest.param(ChatMessageContent(role=AuthorRole.USER, content="text")),
-        pytest.param("text"),
-    ],
-)
-async def test_open_ai_assistant_agent_add_chat_message(message):
-    client = AsyncMock(spec=AsyncOpenAI)
-    definition = AsyncMock(spec=Assistant)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    agent = AzureAssistantAgent(client=client, definition=definition)
-    with patch(
-        "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.create_message",
-    ):
-        await agent.add_chat_message("threadId", message)
 
 
 @pytest.mark.parametrize(

@@ -88,7 +88,7 @@ class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase)
                 Otherwise they can also be passed to the context manager.
         """
         try:
-            azure_openai_settings = AzureOpenAISettings.create(
+            azure_openai_settings = AzureOpenAISettings(
                 api_key=api_key,
                 base_url=base_url,
                 endpoint=endpoint,

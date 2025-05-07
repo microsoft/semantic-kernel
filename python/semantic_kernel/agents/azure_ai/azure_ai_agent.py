@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from collections.abc import AsyncIterable, Callable, Iterable
+from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
 if sys.version_info >= (3, 12):
@@ -16,7 +16,6 @@ from azure.ai.projects.models import (
     AgentsApiResponseFormat,
     AgentsApiResponseFormatMode,
     ResponseFormatJsonSchemaType,
-    ThreadMessage,
     ThreadMessageOptions,
     ToolDefinition,
     TruncationObject,
@@ -29,7 +28,6 @@ from semantic_kernel.agents.azure_ai.azure_ai_agent_settings import AzureAIAgent
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
-from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
@@ -254,7 +252,7 @@ class AzureAIAgent(Agent):
             AIProjectClient: The Azure AI Project client
         """
         if conn_str is None:
-            ai_agent_settings = AzureAIAgentSettings.create()
+            ai_agent_settings = AzureAIAgentSettings()
             if not ai_agent_settings.project_connection_string:
                 raise AgentInitializationException("Please provide a valid Azure AI connection string.")
             conn_str = ai_agent_settings.project_connection_string.get_secret_value()
@@ -288,6 +286,7 @@ class AzureAIAgent(Agent):
         response_format: AgentsApiResponseFormatOption | None = None,
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent on a thread.
@@ -311,6 +310,7 @@ class AzureAIAgent(Agent):
             response_format: Response format for the agent.
             parallel_tool_calls: Whether to allow parallel tool calls.
             metadata: Metadata for the agent.
+            polling_options: The polling options for the agent.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -345,6 +345,7 @@ class AzureAIAgent(Agent):
             "truncation_strategy": truncation_strategy,
             "response_format": response_format,
             "parallel_tool_calls": parallel_tool_calls,
+            "polling_options": polling_options,
             "metadata": metadata,
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
@@ -374,6 +375,7 @@ class AzureAIAgent(Agent):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         kernel: Kernel | None = None,
         model: str | None = None,
@@ -389,6 +391,7 @@ class AzureAIAgent(Agent):
         response_format: AgentsApiResponseFormatOption | None = None,
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent on the specified thread.
@@ -397,6 +400,7 @@ class AzureAIAgent(Agent):
             messages: The input chat message content either as a string, ChatMessageContent or
                 a list of strings or ChatMessageContent.
             thread: The thread to use for the agent.
+            on_intermediate_message: A callback function to handle intermediate steps of the agent's execution.
             arguments: The arguments for the agent.
             kernel: The kernel to use for the agent.
             model: The model to use for the agent.
@@ -411,6 +415,7 @@ class AzureAIAgent(Agent):
             truncation_strategy: Truncation strategy for the agent.
             response_format: Response format for the agent.
             parallel_tool_calls: Whether to allow parallel tool calls.
+            polling_options: The polling options for the agent.
             metadata: Metadata for the agent.
             **kwargs: Additional keyword arguments.
 
@@ -447,6 +452,7 @@ class AzureAIAgent(Agent):
             "response_format": response_format,
             "parallel_tool_calls": parallel_tool_calls,
             "metadata": metadata,
+            "polling_options": polling_options,
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 
@@ -457,9 +463,13 @@ class AzureAIAgent(Agent):
             arguments=arguments,
             **run_level_params,  # type: ignore
         ):
+            message.metadata["thread_id"] = thread.id
+            await thread.on_new_message(message)
+
+            if on_intermediate_message:
+                await on_intermediate_message(message)
+
             if is_visible:
-                message.metadata["thread_id"] = thread.id
-                await thread.on_new_message(message)
                 yield AgentResponseItem(message=message, thread=thread)
 
     @trace_agent_invocation
@@ -469,13 +479,13 @@ class AzureAIAgent(Agent):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         additional_instructions: str | None = None,
         additional_messages: list[ThreadMessageOptions] | None = None,
         instructions_override: str | None = None,
         kernel: Kernel | None = None,
         model: str | None = None,
-        on_complete: Callable[["ChatHistory"], None] | None = None,
         tools: list[ToolDefinition] | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
@@ -493,14 +503,14 @@ class AzureAIAgent(Agent):
             messages: The input chat message content either as a string, ChatMessageContent or
                 a list of strings or ChatMessageContent.
             thread: The thread to use for the agent.
+            on_intermediate_message: A callback function to handle intermediate steps of the
+                                     agent's execution as fully formed messages.
             arguments: The arguments for the agent.
             additional_instructions: Additional instructions for the agent.
             additional_messages: Additional messages for the agent.
             instructions_override: Instructions to override the default instructions.
             kernel: The kernel to use for the agent.
             model: The model to use for the agent.
-            on_complete: A callback to receive the ChatHistory of full messages received from the agent.
-                These are full content messages formed from the streamed chunks.
             tools: Tools for the agent.
             temperature: Temperature for the agent.
             top_p: Top p for the agent.
@@ -548,7 +558,7 @@ class AzureAIAgent(Agent):
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 
-        collected_messages: list[ChatMessageContent] | None = [] if on_complete is not None else None
+        collected_messages: list[ChatMessageContent] | None = [] if on_intermediate_message else None
 
         async for message in AgentThreadActions.invoke_stream(
             agent=self,
@@ -561,8 +571,11 @@ class AzureAIAgent(Agent):
             message.metadata["thread_id"] = thread.id
             yield AgentResponseItem(message=message, thread=thread)
 
-        if on_complete and collected_messages:
-            on_complete(ChatHistory(messages=collected_messages))
+        for message in collected_messages or []:  # type: ignore
+            message.metadata["thread_id"] = thread.id
+            await thread.on_new_message(message)
+            if on_intermediate_message:
+                await on_intermediate_message(message)
 
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.
@@ -597,15 +610,3 @@ class AzureAIAgent(Agent):
         assert thread.id is not None  # nosec
 
         return AzureAIChannel(client=self.client, thread_id=thread.id)
-
-    async def add_chat_message(self, thread_id: str, message: str | ChatMessageContent) -> "ThreadMessage | None":
-        """Add a chat message to the thread.
-
-        Args:
-            thread_id: The ID of the thread
-            message: The chat message to add
-
-        Returns:
-            ThreadMessage | None: The thread message
-        """
-        return await AgentThreadActions.create_message(client=self.client, thread_id=thread_id, message=message)

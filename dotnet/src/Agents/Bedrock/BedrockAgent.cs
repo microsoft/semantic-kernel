@@ -16,19 +16,19 @@ using Microsoft.SemanticKernel.Diagnostics;
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
 
 /// <summary>
-/// Provides a specialized <see cref="KernelAgent"/> for the Bedrock Agent service.
+/// Provides a specialized <see cref="Agent"/> for the Bedrock Agent service.
 /// </summary>
-public sealed class BedrockAgent : KernelAgent
+public sealed class BedrockAgent : Agent
 {
     /// <summary>
     /// The client used to interact with the Bedrock Agent service.
     /// </summary>
-    public AmazonBedrockAgentClient Client { get; }
+    public IAmazonBedrockAgent Client { get; }
 
     /// <summary>
     /// The client used to interact with the Bedrock Agent runtime service.
     /// </summary>
-    public AmazonBedrockAgentRuntimeClient RuntimeClient { get; }
+    public IAmazonBedrockAgentRuntime RuntimeClient { get; }
 
     internal readonly Amazon.BedrockAgent.Model.Agent AgentModel;
 
@@ -48,8 +48,8 @@ public sealed class BedrockAgent : KernelAgent
     /// <param name="runtimeClient">A client used to interact with the Bedrock Agent runtime service.</param>
     public BedrockAgent(
         Amazon.BedrockAgent.Model.Agent agentModel,
-        AmazonBedrockAgentClient client,
-        AmazonBedrockAgentRuntimeClient runtimeClient)
+        IAmazonBedrockAgent client,
+        IAmazonBedrockAgentRuntime runtimeClient)
     {
         this.AgentModel = agentModel;
         this.Client = client;
@@ -137,8 +137,7 @@ public sealed class BedrockAgent : KernelAgent
         });
 
         // Invoke the agent
-        var arguments = this.MergeArguments(options?.KernelArguments);
-        var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, arguments, cancellationToken);
+        var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, options?.KernelArguments, cancellationToken);
 
         // Return the results to the caller in AgentResponseItems.
         await foreach (var result in invokeResults.ConfigureAwait(false))
@@ -181,8 +180,6 @@ public sealed class BedrockAgent : KernelAgent
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var arguments = this.MergeArguments(options?.KernelArguments);
-
         // The provided thread is used to continue the conversation. If the thread is not provided and the session id is provided,
         // a new thread is created with the provided session id. If neither is provided, a new thread is created.
         if (thread is null && invokeAgentRequest.SessionId is not null)
@@ -202,7 +199,7 @@ public sealed class BedrockAgent : KernelAgent
         invokeAgentRequest = this.ConfigureAgentRequest(options, () => invokeAgentRequest);
 
         // Invoke the agent
-        var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, arguments, cancellationToken);
+        var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, options?.KernelArguments, cancellationToken);
 
         // Return the results to the caller in AgentResponseItems.
         await foreach (var result in invokeResults.ConfigureAwait(false))
@@ -220,7 +217,7 @@ public sealed class BedrockAgent : KernelAgent
     /// <param name="invokeAgentRequest">The request to send to the agent.</param>
     /// <param name="arguments">The arguments to use when invoking the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         InvokeAgentRequest invokeAgentRequest,
         KernelArguments? arguments,
@@ -286,7 +283,7 @@ public sealed class BedrockAgent : KernelAgent
     /// <param name="agentAliasId">The alias id of the agent to use. The default is the working draft alias id.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="ChatMessageContent"/>.</returns>
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string sessionId,
         string message,
@@ -371,8 +368,7 @@ public sealed class BedrockAgent : KernelAgent
         });
 
         // Invoke the agent
-        var arguments = this.MergeArguments(options?.KernelArguments);
-        var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, arguments, cancellationToken);
+        var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, options?.KernelArguments, cancellationToken);
 
         // Return the results to the caller in AgentResponseItems.
         await foreach (var result in invokeResults.ConfigureAwait(false))
@@ -416,8 +412,6 @@ public sealed class BedrockAgent : KernelAgent
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var arguments = this.MergeArguments(options?.KernelArguments);
-
         // The provided thread is used to continue the conversation. If the thread is not provided and the session id is provided,
         // a new thread is created with the provided session id. If neither is provided, a new thread is created.
         if (thread is null && invokeAgentRequest.SessionId is not null)
@@ -436,7 +430,7 @@ public sealed class BedrockAgent : KernelAgent
         invokeAgentRequest.SessionId = bedrockThread.Id;
         invokeAgentRequest = this.ConfigureAgentRequest(options, () => invokeAgentRequest);
 
-        var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, arguments, cancellationToken);
+        var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, options?.KernelArguments, cancellationToken);
 
         // The Bedrock agent service has the same API for both streaming and non-streaming responses.
         // We are invoking the same method as the non-streaming response with the streaming configuration set,
@@ -466,7 +460,7 @@ public sealed class BedrockAgent : KernelAgent
     /// <param name="agentAliasId">The alias id of the agent to use. The default is the working draft alias id.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="ChatMessageContent"/>.</returns>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string sessionId,
         string message,
@@ -496,7 +490,7 @@ public sealed class BedrockAgent : KernelAgent
     /// <param name="arguments">The arguments to use when invoking the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="StreamingChatMessageContent"/>.</returns>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         InvokeAgentRequest invokeAgentRequest,
         KernelArguments? arguments,

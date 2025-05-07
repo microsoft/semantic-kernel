@@ -16,6 +16,7 @@ from azure.ai.projects.models import (
     OpenAIPageableListOfThreadMessage,
     ResponseFormatJsonSchemaType,
     RunStep,
+    RunStepBingGroundingToolCall,
     RunStepCodeInterpreterToolCall,
     RunStepDeltaChunk,
     RunStepDeltaToolCallObject,
@@ -31,22 +32,23 @@ from azure.ai.projects.models import (
 from azure.ai.projects.models._enums import MessageRole
 
 from semantic_kernel.agents.azure_ai.agent_content_generation import (
+    generate_bing_grounding_content,
     generate_code_interpreter_content,
     generate_function_call_content,
     generate_function_call_streaming_content,
     generate_function_result_content,
     generate_message_content,
+    generate_streaming_bing_grounding_content,
     generate_streaming_code_interpreter_content,
     generate_streaming_function_content,
     generate_streaming_message_content,
     get_function_call_contents,
 )
 from semantic_kernel.agents.azure_ai.azure_ai_agent_utils import AzureAIAgentUtils
+from semantic_kernel.agents.open_ai.assistant_content_generation import merge_streaming_function_results
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
-from semantic_kernel.connectors.ai.function_calling_utils import (
-    kernel_function_metadata_to_function_call_format,
-    merge_streaming_function_results,
-)
+from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -60,6 +62,9 @@ if TYPE_CHECKING:
     from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+    from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+        AutoFunctionInvocationContext,
+    )
     from semantic_kernel.kernel import Kernel
 
 _T = TypeVar("_T", bound="AgentThreadActions")
@@ -101,6 +106,7 @@ class AgentThreadActions:
         | None = None,
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Invoke the message in the thread.
@@ -125,6 +131,8 @@ class AgentThreadActions:
             response_format: The response format.
             parallel_tool_calls: The parallel tool calls.
             metadata: The metadata.
+            polling_options: The polling options defined at the run-level. These will override the agent-level
+                polling options.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -173,7 +181,9 @@ class AgentThreadActions:
         function_steps: dict[str, "FunctionCallContent"] = {}
 
         while run.status != "completed":
-            run = await cls._poll_run_status(agent=agent, run=run, thread_id=thread_id)
+            run = await cls._poll_run_status(
+                agent=agent, run=run, thread_id=thread_id, polling_options=polling_options or agent.polling_options
+            )
 
             if run.status in cls.error_message_states:
                 error_message = ""
@@ -209,6 +219,7 @@ class AgentThreadActions:
                         tool_outputs=tool_outputs,  # type: ignore
                     )
                     logger.debug(f"Submitted tool outputs for agent `{agent.name}` and thread `{thread_id}`")
+                    continue
 
             steps_response = await agent.client.agents.list_run_steps(run_id=run.id, thread_id=thread_id)
             logger.debug(f"Called for steps_response for run [{run.id}] agent `{agent.name}` and thread `{thread_id}`")
@@ -269,6 +280,17 @@ class AgentThreadActions:
                                         function_step=function_step,
                                         tool_call=tool_call,  # type: ignore
                                     )
+                                case AgentsNamedToolChoiceType.BING_GROUNDING:
+                                    logger.debug(
+                                        f"Entering tool_calls (bing grounding) for run [{run.id}], agent "
+                                        f" `{agent.name}` and thread `{thread_id}`"
+                                    )
+                                    bing_call: RunStepBingGroundingToolCall = cast(
+                                        RunStepBingGroundingToolCall, tool_call
+                                    )
+                                    content = generate_bing_grounding_content(
+                                        agent_name=agent.name, bing_tool_call=bing_call
+                                    )
 
                             if content:
                                 message_count += 1
@@ -292,7 +314,7 @@ class AgentThreadActions:
                             message_id=message_call_details.message_creation.message_id,  # type: ignore
                         )
                         if message:
-                            content = generate_message_content(agent.name, message)
+                            content = generate_message_content(agent.name, message, completed_step)
                             if content and len(content.items) > 0:
                                 message_count += 1
                                 logger.debug(
@@ -453,14 +475,24 @@ class AgentThreadActions:
                         if not details:
                             continue
                         if isinstance(details, RunStepDeltaToolCallObject) and details.tool_calls:
+                            content_is_visible = False
                             for tool_call in details.tool_calls:
                                 content = None
-                                if tool_call.type == "function":
-                                    content = generate_streaming_function_content(agent.name, details)
-                                elif tool_call.type == "code_interpreter":
-                                    content = generate_streaming_code_interpreter_content(agent.name, details)
+                                match tool_call.type:
+                                    case AgentsNamedToolChoiceType.FUNCTION:
+                                        content = generate_streaming_function_content(agent.name, details)
+                                    case AgentsNamedToolChoiceType.CODE_INTERPRETER:
+                                        content = generate_streaming_code_interpreter_content(agent.name, details)
+                                        content_is_visible = True
+                                    case AgentsNamedToolChoiceType.BING_GROUNDING:
+                                        content = generate_streaming_bing_grounding_content(
+                                            agent_name=agent.name, step_details=details
+                                        )
                                 if content:
-                                    yield content
+                                    if output_messages is not None:
+                                        output_messages.append(content)
+                                    if content_is_visible:
+                                        yield content
 
                     elif event_type == AgentStreamEvent.THREAD_RUN_REQUIRES_ACTION:
                         run = cast(ThreadRun, event_data)
@@ -477,11 +509,6 @@ class AgentThreadActions:
                                 f"thread: {thread_id}."
                             )
 
-                        if action_result.function_result_streaming_content:
-                            yield action_result.function_result_streaming_content
-                            if output_messages is not None:
-                                output_messages.append(action_result.function_result_streaming_content)
-
                         if action_result.function_call_streaming_content:
                             if output_messages is not None:
                                 output_messages.append(action_result.function_call_streaming_content)
@@ -495,7 +522,11 @@ class AgentThreadActions:
                             ):
                                 if sub_content:
                                     yield sub_content
-                            break
+
+                        if action_result.function_result_streaming_content and output_messages is not None:
+                            output_messages.append(action_result.function_result_streaming_content)
+
+                        break
 
                     elif event_type == AgentStreamEvent.THREAD_RUN_COMPLETED:
                         run = cast(ThreadRun, event_data)
@@ -721,7 +752,7 @@ class AgentThreadActions:
     def _generate_options(cls: type[_T], **kwargs: Any) -> dict[str, Any]:
         """Generate a dictionary of options that can be passed directly to create_run."""
         merged = cls._merge_options(**kwargs)
-        trunc_count = merged.get("truncation_message_count", None)
+        truncation_strategy = merged.get("truncation_strategy", None)
         max_completion_tokens = merged.get("max_completion_tokens", None)
         max_prompt_tokens = merged.get("max_prompt_tokens", None)
         parallel_tool_calls = merged.get("parallel_tool_calls_enabled", None)
@@ -731,7 +762,7 @@ class AgentThreadActions:
             "top_p": merged.get("top_p"),
             "response_format": merged.get("response_format"),
             "temperature": merged.get("temperature"),
-            "truncation_strategy": trunc_count,
+            "truncation_strategy": truncation_strategy,
             "metadata": merged.get("metadata"),
             "max_completion_tokens": max_completion_tokens,
             "max_prompt_tokens": max_prompt_tokens,
@@ -768,16 +799,18 @@ class AgentThreadActions:
         return [cls._prepare_tool_definition(tool) for tool in tools]
 
     @classmethod
-    async def _poll_run_status(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str) -> ThreadRun:
+    async def _poll_run_status(
+        cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str, polling_options: RunPollingOptions
+    ) -> ThreadRun:
         """Poll the run status."""
         logger.info(f"Polling run status: {run.id}, threadId: {thread_id}")
         try:
             run = await asyncio.wait_for(
-                cls._poll_loop(agent=agent, run=run, thread_id=thread_id),
-                timeout=agent.polling_options.run_polling_timeout.total_seconds(),
+                cls._poll_loop(agent=agent, run=run, thread_id=thread_id, polling_options=polling_options),
+                timeout=polling_options.run_polling_timeout.total_seconds(),
             )
         except asyncio.TimeoutError:
-            timeout_duration = agent.polling_options.run_polling_timeout
+            timeout_duration = polling_options.run_polling_timeout
             error_message = (
                 f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` "
                 f"after waiting {timeout_duration}."
@@ -788,11 +821,13 @@ class AgentThreadActions:
         return run
 
     @classmethod
-    async def _poll_loop(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str) -> ThreadRun:
+    async def _poll_loop(
+        cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str, polling_options: RunPollingOptions
+    ) -> ThreadRun:
         """Continuously poll the run status until it is no longer pending."""
         count = 0
         while True:
-            await asyncio.sleep(agent.polling_options.get_polling_interval(count).total_seconds())
+            await asyncio.sleep(polling_options.get_polling_interval(count).total_seconds())
             count += 1
             try:
                 run = await agent.client.agents.get_run(run_id=run.id, thread_id=thread_id)
@@ -833,13 +868,18 @@ class AgentThreadActions:
         fccs: list["FunctionCallContent"],
         chat_history: "ChatHistory",
         arguments: KernelArguments,
-    ) -> list[Any]:
+    ) -> list["AutoFunctionInvocationContext | None"]:
         """Invoke the function calls."""
-        tasks = [
-            kernel.invoke_function_call(function_call=function_call, chat_history=chat_history, arguments=arguments)
-            for function_call in fccs
-        ]
-        return await asyncio.gather(*tasks)
+        return await asyncio.gather(
+            *[
+                kernel.invoke_function_call(
+                    function_call=function_call,
+                    chat_history=chat_history,
+                    arguments=arguments,
+                )
+                for function_call in fccs
+            ],
+        )
 
     @classmethod
     def _format_tool_outputs(
@@ -877,13 +917,19 @@ class AgentThreadActions:
             from semantic_kernel.contents.chat_history import ChatHistory
 
             chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
-            _ = await cls._invoke_function_calls(
+            results = await cls._invoke_function_calls(
                 kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
             )
-            function_result_streaming_content = merge_streaming_function_results(chat_history.messages)[0]
+
+            function_result_streaming_content = merge_streaming_function_results(
+                messages=chat_history.messages[-len(results) :],
+                name=agent_name,
+            )
             tool_outputs = cls._format_tool_outputs(fccs, chat_history)
             return FunctionActionResult(
-                function_call_streaming_content, function_result_streaming_content, tool_outputs
+                function_call_streaming_content,
+                function_result_streaming_content,
+                tool_outputs,
             )
         return None
 

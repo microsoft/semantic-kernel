@@ -4,8 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using ModelContextProtocol.Client;
+using ModelContextProtocol.Protocol.Transport;
 
 var config = new ConfigurationBuilder()
     .AddUserSecrets<Program>()
@@ -19,22 +21,15 @@ if (config["OpenAI:ApiKey"] is not { } apiKey)
 }
 
 // Create an MCPClient for the GitHub server
-await using var mcpClient = await McpClientFactory.CreateAsync(
-    new()
-    {
-        Id = "github",
-        Name = "GitHub",
-        TransportType = "stdio",
-        TransportOptions = new Dictionary<string, string>
-        {
-            ["command"] = "npx",
-            ["arguments"] = "-y @modelcontextprotocol/server-github",
-        }
-    },
-    new() { ClientInfo = new() { Name = "GitHub", Version = "1.0.0" } }).ConfigureAwait(false);
+await using var mcpClient = await McpClientFactory.CreateAsync(new StdioClientTransport(new()
+{
+    Name = "MCPServer",
+    Command = "npx",
+    Arguments = ["-y", "@modelcontextprotocol/server-github"],
+}));
 
 // Retrieve the list of tools available on the GitHub server
-var tools = await mcpClient.GetAIFunctionsAsync().ConfigureAwait(false);
+var tools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
 foreach (var tool in tools)
 {
     Console.WriteLine($"{tool.Name}: {tool.Description}");
@@ -45,7 +40,6 @@ var builder = Kernel.CreateBuilder();
 builder.Services
     .AddLogging(c => c.AddDebug().SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace))
     .AddOpenAIChatCompletion(
-        serviceId: "openai",
         modelId: config["OpenAI:ChatModelId"] ?? "gpt-4o-mini",
         apiKey: apiKey);
 Kernel kernel = builder.Build();
@@ -62,3 +56,16 @@ OpenAIPromptExecutionSettings executionSettings = new()
 var prompt = "Summarize the last four commits to the microsoft/semantic-kernel repository?";
 var result = await kernel.InvokePromptAsync(prompt, new(executionSettings)).ConfigureAwait(false);
 Console.WriteLine($"\n\n{prompt}\n{result}");
+
+// Define the agent
+ChatCompletionAgent agent = new()
+{
+    Instructions = "Answer questions about GitHub repositories.",
+    Name = "GitHubAgent",
+    Kernel = kernel,
+    Arguments = new KernelArguments(executionSettings),
+};
+
+// Respond to user input, invoking functions where appropriate.
+ChatMessageContent response = await agent.InvokeAsync("Summarize the last four commits to the microsoft/semantic-kernel repository?").FirstAsync();
+Console.WriteLine($"\n\nResponse from GitHubAgent:\n{response.Content}");

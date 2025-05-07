@@ -7,7 +7,7 @@ namespace Agents;
 
 /// <summary>
 /// Demonstrate service selection for <see cref="ChatCompletionAgent"/> through setting service-id
-/// on <see cref="KernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
+/// on <see cref="Agent.Arguments"/> and also providing override <see cref="KernelArguments"/>
 /// when calling <see cref="ChatCompletionAgent.InvokeAsync(ChatHistory, KernelArguments?, Kernel?, CancellationToken)"/>
 /// </summary>
 public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseAgentsTest(output)

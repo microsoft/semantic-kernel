@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Postgres;
@@ -28,11 +29,12 @@ public static class PostgresServiceCollectionExtensions
             (sp, obj) =>
             {
                 var dataSource = sp.GetRequiredService<NpgsqlDataSource>();
-                var selectedOptions = options ?? sp.GetService<PostgresVectorStoreOptions>();
+                options ??= sp.GetService<PostgresVectorStoreOptions>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new PostgresVectorStore(
-                    dataSource,
-                    selectedOptions);
+                return new PostgresVectorStore(dataSource, options);
             });
 
         return services;
@@ -64,18 +66,19 @@ public static class PostgresServiceCollectionExtensions
             (sp, obj) =>
             {
                 var dataSource = sp.GetRequiredKeyedService<NpgsqlDataSource>(npgsqlServiceId);
-                var selectedOptions = options ?? sp.GetService<PostgresVectorStoreOptions>();
+                options ??= sp.GetService<PostgresVectorStoreOptions>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new PostgresVectorStore(
-                    dataSource,
-                    selectedOptions);
+                return new PostgresVectorStore(dataSource, options);
             });
 
         return services;
     }
 
     /// <summary>
-    /// Register a Postgres <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
+    /// Register a Postgres <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID
     /// and where the NpgsqlDataSource is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
@@ -91,15 +94,19 @@ public static class PostgresServiceCollectionExtensions
         PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
+        where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<TKey, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var dataSource = sp.GetRequiredService<NpgsqlDataSource>();
-                var selectedOptions = options ?? sp.GetService<PostgresVectorStoreRecordCollectionOptions<TRecord>>();
+                options ??= sp.GetService<PostgresVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return (new PostgresVectorStoreRecordCollection<TKey, TRecord>(dataSource, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
+                return (new PostgresVectorStoreRecordCollection<TKey, TRecord>(dataSource, collectionName, options) as IVectorStoreRecordCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);
@@ -108,7 +115,7 @@ public static class PostgresServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Postgres <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
+    /// Register a Postgres <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID
     /// and where the NpgsqlDataSource is constructed using the provided parameters.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
@@ -126,6 +133,7 @@ public static class PostgresServiceCollectionExtensions
         PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
+        where TRecord : notnull
     {
         string? npgsqlServiceId = serviceId == null ? default : $"{serviceId}_NpgsqlDataSource";
         // Register NpgsqlDataSource to ensure proper disposal.
@@ -144,6 +152,11 @@ public static class PostgresServiceCollectionExtensions
             {
                 var dataSource = sp.GetRequiredKeyedService<NpgsqlDataSource>(npgsqlServiceId);
 
+                options ??= sp.GetService<PostgresVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
+
                 return (new PostgresVectorStoreRecordCollection<TKey, TRecord>(dataSource, collectionName, options) as IVectorStoreRecordCollection<TKey, TRecord>)!;
             });
 
@@ -153,7 +166,7 @@ public static class PostgresServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
@@ -161,8 +174,9 @@ public static class PostgresServiceCollectionExtensions
     /// <param name="serviceId">The service id that the registrations should use.</param>
     private static void AddVectorizedSearch<TKey, TRecord>(IServiceCollection services, string? serviceId)
         where TKey : notnull
+        where TRecord : notnull
     {
-        services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
+        services.AddKeyedTransient<IVectorSearch<TRecord>>(
             serviceId,
             (sp, obj) =>
             {

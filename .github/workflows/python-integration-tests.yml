@@ -32,7 +32,11 @@ env:
   AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
   AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT: ${{ secrets.AZURE_OPENAI_AUDIO_TO_TEXT_ENDPOINT }}
   AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT: ${{ secrets.AZURE_OPENAI_TEXT_TO_AUDIO_ENDPOINT }}
+  AZURE_AI_AGENT_PROJECT_CONNECTION_STRING: ${{ secrets.AZURE_AI_AGENT_PROJECT_CONNECTION_STRING }}
+  AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME: ${{ secrets.AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME }}
+  AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME: ${{ vars.AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME }}
   BING_API_KEY: ${{ secrets.BING_API_KEY }}
+  OPENAI_RESPONSES_MODEL_ID: ${{ vars.OPENAI_RESPONSES_MODEL_ID }}
   OPENAI_CHAT_MODEL_ID: ${{ vars.OPENAI_CHAT_MODEL_ID }}
   OPENAI_TEXT_MODEL_ID: ${{ vars.OPENAI_TEXT_MODEL_ID }}
   OPENAI_EMBEDDING_MODEL_ID: ${{ vars.OPENAI_EMBEDDING_MODEL_ID }}
@@ -225,6 +229,13 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
+      - name: Azure CLI Login
+        if: github.event_name != 'pull_request'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Run Integration Tests
         id: run_tests_agents
         shell: bash
@@ -467,7 +478,7 @@ jobs:
           uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/samples
       - name: Run Integration Tests - Agents
         id: run_tests_agents
-        timeout-minutes: 5
+        timeout-minutes: 10
         shell: bash
         run: |
           uv run pytest -v -n logical --dist loadfile --dist worksteal ./tests/integration/agents
@@ -533,7 +544,7 @@ jobs:
           script: core.setFailed('Integration Tests Cancelled!')
 
       - name: Microsoft Teams Notification
-        uses: skitionek/notify-microsoft-teams@master
+        uses: skitionek/notify-microsoft-teams@v1.0.9
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
@@ -543,7 +554,7 @@ jobs:
           title: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
 
       - name: Microsoft Teams Notification (Dry Run)
-        uses: skitionek/notify-microsoft-teams@master
+        uses: skitionek/notify-microsoft-teams@v1.0.9
         if: github.ref != 'refs/heads/main'
         with:
           webhook_url: NONE

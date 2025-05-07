@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -14,11 +13,13 @@ using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
+#pragma warning disable SKEXP0001 // IMemoryStore is experimental (but we're obsoleting)
+
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Azure CosmosDB Mongo vCore database.
 /// Get more details about Azure Cosmos Mongo vCore vector search  https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search
 /// </summary>
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being phased out, use Microsoft.Extensions.VectorData and AzureMongoDBMongoDBVectorStore")]
 public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
 {
     private readonly MongoClient _mongoClient;
