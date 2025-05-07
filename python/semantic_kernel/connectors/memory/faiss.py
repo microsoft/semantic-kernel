@@ -2,7 +2,7 @@
 import logging
 import sys
 from collections.abc import MutableMapping, Sequence
-from typing import TYPE_CHECKING, Any, Final, Generic
+from typing import Any, Final, Generic
 
 import faiss
 import numpy as np
@@ -17,10 +17,6 @@ from semantic_kernel.data.vector_search import SearchType, VectorSearchOptions, 
 from semantic_kernel.data.vector_storage import TModel
 from semantic_kernel.exceptions import VectorStoreInitializationException, VectorStoreOperationException
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException
-
-if TYPE_CHECKING:
-    pass
-
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover

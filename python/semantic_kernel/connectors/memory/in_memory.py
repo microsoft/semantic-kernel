@@ -47,7 +47,7 @@ DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction | str, Callable[..., Any]]] =
 }
 
 
-TAKey = TypeVar("TAKey", bound=str | int | float)
+TAKey = TypeVar("TAKey", bound=str)
 TAValue = TypeVar("TAValue", bound=str | int | float | list[float] | None)
 
 
@@ -58,23 +58,23 @@ class AttributeDict(dict[TAKey, TAValue], Generic[TAKey, TAValue]):
     - `lambda x: x.key == 'id'` or `lambda x: x['key'] == 'id'`
     """
 
-    def __getattr__(self, item: TAKey) -> TAValue:
+    def __getattr__(self, name) -> TAValue:
         """Allow attribute-style access to dict keys."""
         try:
-            return self[item]
+            return self[name]
         except KeyError:
-            raise AttributeError(item)
+            raise AttributeError(name)
 
-    def __setattr__(self, key: TAKey, value: TAValue) -> None:
+    def __setattr__(self, name, value) -> None:
         """Allow setting dict keys via attribute access."""
-        self[key] = value
+        self[name] = value
 
-    def __delattr__(self, item: TAKey) -> None:
+    def __delattr__(self, name) -> None:
         """Allow deleting dict keys via attribute access."""
         try:
-            del self[item]
+            del self[name]
         except KeyError:
-            raise AttributeError(item)
+            raise AttributeError(name)
 
 
 class InMemoryCollection(
@@ -84,7 +84,7 @@ class InMemoryCollection(
 ):
     """In Memory Collection."""
 
-    inner_storage: dict[TKey, AttributeDict[TAKey, TAValue]] = Field(default_factory=dict)
+    inner_storage: dict[TKey, AttributeDict] = Field(default_factory=dict)
     supported_key_types: ClassVar[set[str] | None] = {"str", "int", "float"}
     supported_search_types: ClassVar[set[SearchType]] = {SearchType.VECTOR}
 
