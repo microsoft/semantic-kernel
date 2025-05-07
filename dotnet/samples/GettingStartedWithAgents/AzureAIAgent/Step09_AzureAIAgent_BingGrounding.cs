@@ -66,7 +66,7 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
         ConnectionResponse bingConnection = await cxnClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
 
         // Define the agent
-        ToolConnectionList connectionList = new()
+        ToolConnectionList tools = new()
         {
             ConnectionList = { new ToolConnection(bingConnection.Id) }
         };
