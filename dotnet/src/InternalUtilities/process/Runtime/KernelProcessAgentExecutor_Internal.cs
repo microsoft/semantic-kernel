@@ -27,7 +27,7 @@ public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProces
     public KernelProcessAgentExecutorInternal(KernelProcessAgentStep agentStep, KernelProcessAgentThread processThread)
     {
         Verify.NotNull(agentStep);
-        Verify.NotNull(agentStep.AgentDefinition); // TODO: Fix issue
+        Verify.NotNull(agentStep.AgentDefinition);
 
         this._agentStep = agentStep;
         this._processThread = processThread;
@@ -46,36 +46,34 @@ public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProces
     /// </summary>
     /// <param name="kernel">instance of <see cref="Kernel"/></param>
     /// <param name="message">incoming message to be processed by agent</param>
+    /// <param name="writtenToThread"> <see langword="true"/> if the message has already been written to the thread</param>
     /// <returns></returns>
     [KernelFunction]
-    public async Task<ChatMessageContent?> InvokeAsync(Kernel kernel, object? message = null)
+    public async Task<ChatMessageContent?> InvokeAsync(Kernel kernel, object? message = null, bool writtenToThread = false)
     {
+        ChatMessageContent? inputMessageContent = null;
         try
         {
-            ChatMessageContent? inputMessageContent = null;
-            if (message is ChatMessageContent chatMessage)
+            if (!writtenToThread) // TODO: This check is not correct. We need to determine if the message has already been written to the thread. How do we do this?
             {
-                // if receiving a chat message content, passing as is
-                inputMessageContent = chatMessage;
-            }
-            else
-            {
-                // else wrapping it up assuming it is serializable
-                // todo: add try catch and use shared serialization logic
-                inputMessageContent = new ChatMessageContent(
-                    ChatCompletion.AuthorRole.User,
-                    JsonSerializer.Serialize(message)
-                );
+                inputMessageContent = null;
+                if (message is ChatMessageContent chatMessage)
+                {
+                    // if receiving a chat message content, passing as is
+                    inputMessageContent = chatMessage;
+                }
+                else
+                {
+                    // else wrapping it up assuming it is serializable
+                    // todo: add try catch and use shared serialization logic
+                    inputMessageContent = new ChatMessageContent(
+                        ChatCompletion.AuthorRole.User,
+                        JsonSerializer.Serialize(message)
+                    );
+                }
             }
 
             List<ChatMessageContent> agentResponses = [];
-
-            // TODO: Is this needed?
-            //if (this._state != null && this._state.AgentId != null)
-            //{
-            //    this._agentStep.AgentDefinition.Id = this._state.AgentId;
-            //}
-
             AgentFactory agentFactory = ProcessAgentFactory.CreateAgentFactoryAsync(this._agentStep.AgentDefinition);
             Agent agent = await agentFactory.CreateAsync(kernel, this._agentStep.AgentDefinition).ConfigureAwait(false);
             this._state!.AgentId = agent.Id;
@@ -84,10 +82,21 @@ public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProces
             var agentThread = await this._processThread.CreateAgentThreadAsync(kernel).ConfigureAwait(false);
             this._state.ThreadId = agentThread.Id;
 
-            await foreach (var response in agent.InvokeAsync(inputMessageContent, agentThread).ConfigureAwait(false))
+            if (inputMessageContent is null)
             {
-                agentThread = response.Thread;
-                agentResponses.Add(response.Message);
+                await foreach (var response in agent.InvokeAsync(agentThread).ConfigureAwait(false))
+                {
+                    agentThread = response.Thread;
+                    agentResponses.Add(response.Message);
+                }
+            }
+            else
+            {
+                await foreach (var response in agent.InvokeAsync(inputMessageContent, agentThread).ConfigureAwait(false))
+                {
+                    agentThread = response.Thread;
+                    agentResponses.Add(response.Message);
+                }
             }
 
             return agentResponses.FirstOrDefault();

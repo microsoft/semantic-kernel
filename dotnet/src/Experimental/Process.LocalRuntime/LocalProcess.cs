@@ -436,7 +436,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     continue;
                 }
 
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data);
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
                 messageChannel.Enqueue(message);
                 foundEdge = true;
             }

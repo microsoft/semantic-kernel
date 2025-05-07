@@ -202,7 +202,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         kernelBuilder.Services.AddSingleton(foundryClient);
         var kernel = kernelBuilder.Build();
 
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" });
+        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are distributed systems hard to reason about?" });
         var agent1Result = await context.GetStateAsync();
 
         Assert.NotNull(context);
