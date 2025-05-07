@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// Utilities class for functions all Bedrock models need to use.
 /// </summary>
-internal static partial class BedrockModelUtilities
+internal static class BedrockModelUtilities
 {
     private const string PngMimeType = "image/png";
     private const string JpegMimeType = "image/jpeg";
@@ -164,7 +164,7 @@ internal static partial class BedrockModelUtilities
     {
         if (result is string text)
         {
-            var match = DataUriRegex().Match(text);
+            var match = Regex.Match(text, "data:(?<type>.+?);base64,(?<data>.+)");
             if (match.Groups.Count >= 3 && s_supportedMimeTypes.Contains(match.Groups["type"].Value))
             {
                 var data = match.Groups["data"].Value;
@@ -391,7 +391,4 @@ internal static partial class BedrockModelUtilities
         var value = getValue();
         setValue(value);
     }
-
-    [GeneratedRegex("data:(?<type>.+?);base64,(?<data>.+)")]
-    private static partial Regex DataUriRegex();
 }
