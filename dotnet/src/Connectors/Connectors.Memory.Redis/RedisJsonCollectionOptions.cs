@@ -11,6 +11,8 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </summary>
 public sealed class RedisJsonCollectionOptions
 {
+    internal static readonly RedisJsonCollectionOptions Default = new();
+
     /// <summary>
     /// Gets or sets a value indicating whether the collection name should be prefixed to the
     /// key names before reading or writing to the Redis store. Default is true.

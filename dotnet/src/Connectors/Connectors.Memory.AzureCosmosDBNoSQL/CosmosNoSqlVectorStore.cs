@@ -3,9 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
@@ -24,11 +26,11 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     private readonly Database _database;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly CosmosNoSqlVectorStoreOptions _options;
-
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CosmosNoSqlVectorStore"/> class.
@@ -40,7 +42,8 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         Verify.NotNull(database);
 
         this._database = database;
-        this._options = options ?? new();
+        this._embeddingGenerator = options?.EmbeddingGenerator;
+        this._jsonSerializerOptions = options?.JsonSerializerOptions;
 
         this._metadata = new()
         {
@@ -62,8 +65,8 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
             new()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                JsonSerializerOptions = this._options.JsonSerializerOptions,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
+                JsonSerializerOptions = this._jsonSerializerOptions,
+                EmbeddingGenerator = this._embeddingGenerator
             });
 #pragma warning restore IDE0090
 

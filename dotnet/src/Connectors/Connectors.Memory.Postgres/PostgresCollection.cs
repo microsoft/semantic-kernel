@@ -34,9 +34,6 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <summary>Postgres client that is used to interact with the database.</summary>
     private readonly IPostgresVectorStoreDbClient _client;
 
-    // <summary>Optional configuration options for this class.</summary>
-    private readonly PostgresCollectionOptions _options;
-
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
 
@@ -75,7 +72,6 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
         // Assign.
         this._client = client;
         this.Name = name;
-        this._options = options ?? new PostgresCollectionOptions();
 
         this._model = new CollectionModelBuilder(PostgresConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);

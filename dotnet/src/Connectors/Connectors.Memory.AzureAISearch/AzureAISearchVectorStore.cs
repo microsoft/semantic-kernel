@@ -3,10 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Search.Documents.Indexes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using static Microsoft.Extensions.VectorData.VectorStoreErrorHandler;
 
@@ -26,8 +28,8 @@ public sealed class AzureAISearchVectorStore : VectorStore
     /// <summary>Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</summary>
     private readonly SearchIndexClient _searchIndexClient;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly AzureAISearchVectorStoreOptions _options;
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
@@ -42,7 +44,8 @@ public sealed class AzureAISearchVectorStore : VectorStore
         Verify.NotNull(searchIndexClient);
 
         this._searchIndexClient = searchIndexClient;
-        this._options = options ?? new AzureAISearchVectorStoreOptions();
+        this._embeddingGenerator = options?.EmbeddingGenerator;
+        this._jsonSerializerOptions = options?.JsonSerializerOptions;
 
         this._metadata = new()
         {
@@ -63,9 +66,9 @@ public sealed class AzureAISearchVectorStore : VectorStore
             name,
             new AzureAISearchCollectionOptions()
             {
-                JsonSerializerOptions = this._options.JsonSerializerOptions,
+                JsonSerializerOptions = this._jsonSerializerOptions,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
+                EmbeddingGenerator = this._embeddingGenerator
             });
 #pragma warning restore IDE0090
 

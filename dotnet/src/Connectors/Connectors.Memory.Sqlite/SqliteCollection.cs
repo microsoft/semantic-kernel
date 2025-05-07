@@ -32,9 +32,6 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <summary>The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</summary>
     private readonly string _connectionString;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly SqliteCollectionOptions _options;
-
     /// <summary>The mapper to use when mapping between the consumer data model and the SQLite record.</summary>
     private readonly SqliteMapper<TRecord> _mapper;
 
@@ -85,15 +82,16 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
         // Assign.
         this._connectionString = connectionString;
         this.Name = name;
-        this._options = options ?? new();
-        this._vectorSearchExtensionName = this._options.VectorSearchExtensionName ?? SqliteConstants.VectorSearchExtensionName;
+
+        options ??= SqliteCollectionOptions.Default;
+        this._vectorSearchExtensionName = options.VectorSearchExtensionName ?? SqliteConstants.VectorSearchExtensionName;
 
         // Escape both table names before exposing them to anything that may build SQL commands.
         this._dataTableName = name.EscapeIdentifier();
-        this._vectorTableName = GetVectorTableName(name, this._options).EscapeIdentifier();
+        this._vectorTableName = GetVectorTableName(name, options).EscapeIdentifier();
 
         this._model = new CollectionModelBuilder(SqliteConstants.ModelBuildingOptions)
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
+            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
 
         this._vectorPropertiesExist = this._model.VectorProperties.Count > 0;
 
@@ -609,8 +607,8 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
         if (this._vectorPropertiesExist)
         {
-            var extensionName = !string.IsNullOrWhiteSpace(this._options.VectorSearchExtensionName) ?
-                this._options.VectorSearchExtensionName :
+            var extensionName = !string.IsNullOrWhiteSpace(this._vectorSearchExtensionName) ?
+                this._vectorSearchExtensionName :
                 SqliteConstants.VectorSearchExtensionName;
 
             List<SqliteColumn> vectorTableColumns = SqlitePropertyMapping.GetColumns(this._model.Properties, data: false);

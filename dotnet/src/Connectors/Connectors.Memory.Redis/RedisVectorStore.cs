@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using NRedisStack.RedisStackCommands;
 using StackExchange.Redis;
@@ -26,11 +27,13 @@ public sealed class RedisVectorStore : VectorStore
     /// <summary>The redis database to read/write indices from.</summary>
     private readonly IDatabase _database;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly RedisVectorStoreOptions _options;
-
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+
+    /// <summary>The way in which data should be stored in redis..</summary>
+    private readonly RedisStorageType? _storageType;
+
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisVectorStore"/> class.
@@ -42,7 +45,10 @@ public sealed class RedisVectorStore : VectorStore
         Verify.NotNull(database);
 
         this._database = database;
-        this._options = options ?? new RedisVectorStoreOptions();
+
+        options ??= RedisVectorStoreOptions.Default;
+        this._storageType = options.StorageType;
+        this._embeddingGenerator = options.EmbeddingGenerator;
 
         this._metadata = new()
         {
@@ -53,18 +59,18 @@ public sealed class RedisVectorStore : VectorStore
 
     /// <inheritdoc />
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        => this._options.StorageType switch
+        => this._storageType switch
         {
             RedisStorageType.HashSet => new RedisHashSetCollection<TKey, TRecord>(this._database, name, new RedisHashSetCollectionOptions()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
+                EmbeddingGenerator = this._embeddingGenerator
             }),
 
             RedisStorageType.Json => new RedisJsonCollection<TKey, TRecord>(this._database, name, new RedisJsonCollectionOptions()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
+                EmbeddingGenerator = this._embeddingGenerator
             }),
 
             _ => throw new UnreachableException()

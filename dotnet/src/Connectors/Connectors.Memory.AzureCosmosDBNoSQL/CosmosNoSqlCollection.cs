@@ -45,9 +45,6 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     private readonly Database _database;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly CosmosNoSqlCollectionOptions _options;
-
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
 
@@ -60,6 +57,12 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
 
     /// <inheritdoc />
     public override string Name { get; }
+
+    /// <summary>The indexing mode in the Azure Cosmos DB service.</summary>
+    private readonly IndexingMode _indexingMode;
+
+    /// <summary>Whether automatic indexing is enabled for a collection in the Azure Cosmos DB service.</summary>
+    private readonly bool _automatic;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> class.
@@ -91,22 +94,26 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
         // Assign.
         this._database = database;
         this.Name = name;
-        this._options = options ?? new();
-        var jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
+
+        options ??= CosmosNoSqlCollectionOptions.Default;
+        this._indexingMode = options.IndexingMode;
+        this._automatic = options.Automatic;
+        var jsonSerializerOptions = options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
+
         this._model = new CosmosNoSqlModelBuilder()
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, jsonSerializerOptions);
+            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, jsonSerializerOptions);
 
         // Assign mapper.
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? (new CosmosNoSqlDynamicMapper(this._model, jsonSerializerOptions) as ICosmosNoSqlMapper<TRecord>)!
-            : new CosmosNoSqlMapper<TRecord>(this._model, this._options.JsonSerializerOptions);
+            : new CosmosNoSqlMapper<TRecord>(this._model, options.JsonSerializerOptions);
 
         // Setup partition key property
-        if (this._options.PartitionKeyPropertyName is not null)
+        if (options.PartitionKeyPropertyName is not null)
         {
-            if (!this._model.PropertyMap.TryGetValue(this._options.PartitionKeyPropertyName, out var property))
+            if (!this._model.PropertyMap.TryGetValue(options.PartitionKeyPropertyName, out var property))
             {
-                throw new ArgumentException($"Partition key property '{this._options.PartitionKeyPropertyName}' is not part of the record definition.");
+                throw new ArgumentException($"Partition key property '{options.PartitionKeyPropertyName}' is not part of the record definition.");
             }
 
             if (property.Type != typeof(string))
@@ -604,11 +611,11 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
 
         var indexingPolicy = new IndexingPolicy
         {
-            IndexingMode = this._options.IndexingMode,
-            Automatic = this._options.Automatic
+            IndexingMode = this._indexingMode,
+            Automatic = this._automatic
         };
 
-        if (this._options.IndexingMode == IndexingMode.None)
+        if (this._indexingMode == IndexingMode.None)
         {
             return new ContainerProperties(this.Name, partitionKeyPath: $"/{this._partitionKeyProperty.StorageName}")
             {

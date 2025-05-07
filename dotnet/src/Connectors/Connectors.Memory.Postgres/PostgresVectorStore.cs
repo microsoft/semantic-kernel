@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Npgsql;
 
@@ -16,13 +17,17 @@ public sealed class PostgresVectorStore : VectorStore
 {
     private readonly IPostgresVectorStoreDbClient _postgresClient;
     private readonly NpgsqlDataSource? _dataSource;
-    private readonly PostgresVectorStoreOptions _options;
 
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+
+    /// <summary>The database schema.</summary>
+    private readonly string _schema;
+
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
@@ -32,8 +37,11 @@ public sealed class PostgresVectorStore : VectorStore
     public PostgresVectorStore(NpgsqlDataSource dataSource, PostgresVectorStoreOptions? options = default)
     {
         this._dataSource = dataSource;
-        this._options = options ?? new PostgresVectorStoreOptions();
-        this._postgresClient = new PostgresDbClient(this._dataSource, this._options.Schema);
+
+        options ??= new();
+        this._schema = options.Schema;
+        this._embeddingGenerator = options.EmbeddingGenerator;
+        this._postgresClient = new PostgresDbClient(this._dataSource, this._schema);
 
         this._metadata = new()
         {
@@ -50,7 +58,10 @@ public sealed class PostgresVectorStore : VectorStore
     internal PostgresVectorStore(IPostgresVectorStoreDbClient postgresDbClient, PostgresVectorStoreOptions? options = default)
     {
         this._postgresClient = postgresDbClient;
-        this._options = options ?? new PostgresVectorStoreOptions();
+
+        options ??= PostgresVectorStoreOptions.Default;
+        this._schema = options.Schema;
+        this._embeddingGenerator = options.EmbeddingGenerator;
 
         this._metadata = new()
         {
@@ -81,9 +92,9 @@ public sealed class PostgresVectorStore : VectorStore
             name,
             new PostgresCollectionOptions()
             {
-                Schema = this._options.Schema,
+                Schema = this._schema,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._options.EmbeddingGenerator,
+                EmbeddingGenerator = this._embeddingGenerator,
             }
         );
 #pragma warning restore IDE0090

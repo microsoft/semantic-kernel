@@ -9,6 +9,8 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// </summary>
 public sealed class PostgresVectorStoreOptions
 {
+    internal static readonly PostgresVectorStoreOptions Default = new();
+
     /// <summary>
     /// Gets or sets the database schema.
     /// </summary>

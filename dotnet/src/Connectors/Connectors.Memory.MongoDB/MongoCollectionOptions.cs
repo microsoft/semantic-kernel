@@ -10,6 +10,8 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// </summary>
 public sealed class MongoCollectionOptions
 {
+    internal static readonly MongoCollectionOptions Default = new();
+
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>

@@ -9,6 +9,8 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </summary>
 public sealed class RedisVectorStoreOptions
 {
+    internal static readonly RedisVectorStoreOptions Default = new();
+
     /// <summary>
     /// Indicates the way in which data should be stored in redis. Default is <see cref="RedisStorageType.Json"/>.
     /// </summary>

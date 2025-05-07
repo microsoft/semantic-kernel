@@ -46,9 +46,6 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
     /// <summary>Azure CosmosDB MongoDB collection to perform record operations.</summary>
     private readonly IMongoCollection<BsonDocument> _mongoCollection;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly CosmosMongoCollectionOptions _options;
-
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
     private readonly IMongoMapper<TRecord> _mapper;
 
@@ -57,6 +54,15 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
 
     /// <inheritdoc />
     public override string Name { get; }
+
+    /// <summary>This integer is the number of clusters that the inverted file (IVF) index uses to group the vector data.</summary>
+    private readonly int _numLists;
+
+    /// <summary>The size of the dynamic candidate list for constructing the graph.</summary>
+    private readonly int _efConstruction;
+
+    /// <summary>The size of the dynamic candidate list for search.</summary>
+    private readonly int _efSearch;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CosmosMongoCollection{TKey, TRecord}"/> class.
@@ -82,8 +88,13 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
         this.Name = name;
-        this._options = options ?? new CosmosMongoCollectionOptions();
-        this._model = new MongoModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
+
+        options ??= CosmosMongoCollectionOptions.Default;
+        this._numLists = options.NumLists;
+        this._efConstruction = options.EfConstruction;
+        this._efSearch = options.EfSearch;
+
+        this._model = new MongoModelBuilder().Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? (new MongoDynamicMapper(this._model) as IMongoMapper<TRecord>)!
             : new MongoMapper<TRecord>(this._model);
@@ -417,7 +428,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
                 vectorArray,
                 vectorProperty.StorageName,
                 itemsAmount,
-                this._options.EfSearch,
+                this._efSearch,
                 filter),
             IndexKind.IvfFlat => CosmosMongoCollectionSearchMapping.GetSearchQueryForIvfIndex(
                 vectorArray,
@@ -526,8 +537,8 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
         indexArray.AddRange(CosmosMongoCollectionCreateMapping.GetVectorIndexes(
             this._model.VectorProperties,
             uniqueIndexes,
-            this._options.NumLists,
-            this._options.EfConstruction));
+            this._numLists,
+            this._efConstruction));
 
         indexArray.AddRange(CosmosMongoCollectionCreateMapping.GetFilterableDataIndexes(
             this._model.DataProperties,

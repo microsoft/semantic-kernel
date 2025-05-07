@@ -72,9 +72,6 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
     /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly RedisHashSetCollectionOptions _options;
-
     /// <summary>The model.</summary>
     private readonly CollectionModel _model;
 
@@ -86,6 +83,9 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
     private readonly RedisHashSetMapper<TRecord> _mapper;
+
+    /// <summary>whether the collection name should be prefixed to the key names before reading or writing to the Redis store.</summary>
+    private readonly bool _prefixCollectionNameToKeyNames;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetCollection{TKey, TRecord}"/> class.
@@ -108,9 +108,12 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
         // Assign.
         this._database = database;
         this.Name = name;
-        this._options = options ?? new RedisHashSetCollectionOptions();
+
+        options ??= RedisHashSetCollectionOptions.Default;
+        this._prefixCollectionNameToKeyNames = options.PrefixCollectionNameToKeyNames;
+
         this._model = new CollectionModelBuilder(ModelBuildingOptions)
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
+            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
 
         // Lookup storage property names.
         this._dataStoragePropertyNameRedisValues = this._model.DataProperties.Select(p => RedisValue.Unbox(p.StorageName)).ToArray();
@@ -476,7 +479,7 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
     /// <returns>The updated key if updating is required, otherwise the input key.</returns>
     private string PrefixKeyIfNeeded(string key)
     {
-        if (this._options.PrefixCollectionNameToKeyNames)
+        if (this._prefixCollectionNameToKeyNames)
         {
             return $"{this.Name}:{key}";
         }
@@ -493,7 +496,7 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
     {
         var prefixLength = this.Name.Length + 1;
 
-        if (this._options.PrefixCollectionNameToKeyNames && key.Length > prefixLength)
+        if (this._prefixCollectionNameToKeyNames && key.Length > prefixLength)
         {
             return key.Substring(prefixLength);
         }
