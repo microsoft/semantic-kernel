@@ -191,65 +191,6 @@ internal static class VectorStoreRecordPropertyVerification
         return null;
     }
 
-    internal static bool IsGenericDataModel(Type recordType)
-        => recordType.IsGenericType && recordType.GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>);
-
-    /// <summary>
-    /// Checks that if the provided <paramref name="recordType"/> is a <see cref="VectorStoreGenericDataModel{T}"/> that the key type is supported by the default mappers.
-    /// If not supported, a custom mapper must be supplied, otherwise an exception is thrown.
-    /// </summary>
-    /// <param name="recordType">The type of the record data model used by the connector.</param>
-    /// <param name="customMapperSupplied">A value indicating whether a custom mapper was supplied to the connector</param>
-    /// <param name="allowedKeyTypes">The list of key types supported by the default mappers.</param>
-    /// <exception cref="ArgumentException">Thrown if the key type of the <see cref="VectorStoreGenericDataModel{T}"/> is not supported by the default mappers and a custom mapper was not supplied.</exception>
-    public static void VerifyGenericDataModelKeyType(Type recordType, bool customMapperSupplied, IEnumerable<Type> allowedKeyTypes)
-    {
-        // If we are not dealing with a generic data model, no need to check anything else.
-        if (!IsGenericDataModel(recordType))
-        {
-            return;
-        }
-
-        // If the key type is supported, we are good.
-        var keyType = recordType.GetGenericArguments()[0];
-        if (allowedKeyTypes.Contains(keyType))
-        {
-            return;
-        }
-
-        // If the key type is not supported out of the box, but a custom mapper was supplied, we are good.
-        if (customMapperSupplied)
-        {
-            return;
-        }
-
-        throw new ArgumentException($"The key type '{keyType.FullName}' of data model '{nameof(VectorStoreGenericDataModel<string>)}' is not supported by the default mappers. " +
-            $"Only the following key types are supported: {string.Join(", ", allowedKeyTypes)}. Please provide your own mapper to map to your chosen key type.");
-    }
-
-    /// <summary>
-    /// Checks that if the provided <paramref name="recordType"/> is a <see cref="VectorStoreGenericDataModel{T}"/> that a <see cref="VectorStoreRecordDefinition"/> is also provided.
-    /// </summary>
-    /// <param name="recordType">The type of the record data model used by the connector.</param>
-    /// <param name="recordDefinitionSupplied">A value indicating whether a record definition was supplied to the connector.</param>
-    /// <exception cref="ArgumentException">Thrown if a <see cref="VectorStoreRecordDefinition"/> is not provided when using <see cref="VectorStoreGenericDataModel{T}"/>.</exception>
-    public static void VerifyGenericDataModelDefinitionSupplied(Type recordType, bool recordDefinitionSupplied)
-    {
-        // If we are not dealing with a generic data model, no need to check anything else.
-        if (!recordType.IsGenericType || recordType.GetGenericTypeDefinition() != typeof(VectorStoreGenericDataModel<>))
-        {
-            return;
-        }
-
-        // If we are dealing with a generic data model, and a record definition was supplied, we are good.
-        if (recordDefinitionSupplied)
-        {
-            return;
-        }
-
-        throw new ArgumentException($"A {nameof(VectorStoreRecordDefinition)} must be provided when using '{nameof(VectorStoreGenericDataModel<string>)}'.");
-    }
-
 #if NET6_0_OR_GREATER
     private static readonly ConstructorInfo s_objectGetDefaultConstructorInfo = typeof(object).GetConstructor(Type.EmptyTypes)!;
 #endif

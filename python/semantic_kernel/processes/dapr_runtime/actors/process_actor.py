@@ -47,6 +47,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 class ProcessActor(StepActor, ProcessInterface):
     """A local process that contains a collection of steps."""
 
+    max_supersteps: int = 100
+
     def __init__(self, ctx: ActorRuntimeContext, actor_id: ActorId, kernel: Kernel, factories: dict[str, Callable]):
         """Initializes a new instance of ProcessActor.
 
@@ -85,9 +87,13 @@ class ProcessActor(StepActor, ProcessInterface):
 
         process_info_data = input.get("process_info")
         parent_process_id = input.get("parent_process_id")
+        max_supersteps = input.get("max_supersteps", None)
 
         if process_info_data is None:
             raise ValueError("The process info is not defined.")
+
+        if max_supersteps is not None:
+            self.max_supersteps = max_supersteps
 
         if isinstance(process_info_data, str):
             process_info_dict = json.loads(process_info_data)
@@ -130,7 +136,9 @@ class ProcessActor(StepActor, ProcessInterface):
 
         # Only create the task if it doesn't already exist or is not running
         if not self.process_task or self.process_task.done():
-            self.process_task = asyncio.create_task(self.internal_execute(keep_alive=keep_alive))
+            self.process_task = asyncio.create_task(
+                self.internal_execute(max_supersteps=self.max_supersteps, keep_alive=keep_alive)
+            )
 
     async def run_once(self, process_event: KernelProcessEvent | str | None) -> None:
         """Starts the process with an initial event and waits for it to finish.
@@ -220,7 +228,7 @@ class ProcessActor(StepActor, ProcessInterface):
         if self.process.inner_step_python_type is None:
             raise ValueError("The inner step type must be defined before converting to DaprProcessInfo.")
 
-        process_state = KernelProcessState(name=self.name, id=self.id.id)
+        process_state = KernelProcessState(name=self.name, version=self.process.state.version, id=self.id.id)
 
         step_tasks = [step.to_dapr_step_info() for step in self.steps]
         steps_as_dicts = await asyncio.gather(*step_tasks)
@@ -325,6 +333,8 @@ class ProcessActor(StepActor, ProcessInterface):
 
     async def internal_execute(self, max_supersteps: int = 100, keep_alive: bool = True):
         """Internal execution logic for the process."""
+        logger.debug(f"Running process for {max_supersteps} supersteps.")
+
         try:
             for _ in range(max_supersteps):
                 if await self._is_end_message_sent():

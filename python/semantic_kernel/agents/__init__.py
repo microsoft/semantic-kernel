@@ -16,6 +16,10 @@ _AGENTS = {
     "BedrockAgentThread": ".bedrock.bedrock_agent",
     "ChatCompletionAgent": ".chat_completion.chat_completion_agent",
     "ChatHistoryAgentThread": ".chat_completion.chat_completion_agent",
+    "CopilotStudioAgent": ".copilot_studio.copilot_studio_agent",
+    "CopilotStudioAgentAuthMode": ".copilot_studio.copilot_studio_agent_settings",
+    "CopilotStudioAgentSettings": ".copilot_studio.copilot_studio_agent_settings",
+    "CopilotStudioAgentThread": ".copilot_studio.copilot_studio_agent",
     "AgentChat": ".group_chat.agent_chat",
     "AgentGroupChat": ".group_chat.agent_group_chat",
     "AzureAssistantAgent": ".open_ai.azure_assistant_agent",
@@ -25,6 +29,7 @@ _AGENTS = {
     "AzureResponsesAgent": ".open_ai.azure_responses_agent",
     "ResponsesAgentThread": ".open_ai.openai_responses_agent",
     "RunPollingOptions": ".open_ai.run_polling_options",
+    "register_agent_type": ".agent",
 }
 
 

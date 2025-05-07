@@ -3,10 +3,11 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Connectors.Kusto</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Connectors.Kusto</RootNamespace>
-    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
     <!--NU5104: A stable release of a package should not have a prerelease dependency.-->
     <NoWarn>$(NoWarn);NU5104</NoWarn>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->

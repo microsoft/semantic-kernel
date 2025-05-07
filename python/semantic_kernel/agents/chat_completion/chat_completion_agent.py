@@ -6,10 +6,6 @@ import uuid
 from collections.abc import AsyncGenerator, AsyncIterable, Awaitable, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from semantic_kernel.agents.agent_registry import register_agent_type
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.function_result_content import FunctionResultContent
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -17,7 +13,7 @@ else:
 
 from pydantic import Field, model_validator
 
-from semantic_kernel.agents import Agent
+from semantic_kernel.agents import Agent, register_agent_type
 from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChannel
@@ -26,6 +22,8 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole

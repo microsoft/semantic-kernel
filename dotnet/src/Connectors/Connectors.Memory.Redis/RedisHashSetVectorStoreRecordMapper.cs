@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using StackExchange.Redis;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
@@ -13,55 +15,50 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// Class for mapping between a hashset stored in redis, and the consumer data model.
 /// </summary>
 /// <typeparam name="TConsumerDataModel">The consumer data model to map to or from.</typeparam>
-internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : IVectorStoreRecordMapper<TConsumerDataModel, (string Key, HashEntry[] HashEntries)>
+internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(VectorStoreRecordModel model)
 {
-    /// <summary>A helper to access property information for the current data model and record definition.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RedisHashSetVectorStoreRecordMapper{TConsumerDataModel}"/> class.
-    /// </summary>
-    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
-    public RedisHashSetVectorStoreRecordMapper(
-        VectorStoreRecordPropertyReader propertyReader)
-    {
-        Verify.NotNull(propertyReader);
-
-        propertyReader.VerifyHasParameterlessConstructor();
-
-        this._propertyReader = propertyReader;
-    }
-
     /// <inheritdoc />
-    public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(TConsumerDataModel dataModel)
+    public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(TConsumerDataModel dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
-        var keyValue = this._propertyReader.KeyPropertyInfo.GetValue(dataModel) as string ??
-            throw new VectorStoreRecordMappingException($"Missing key property {this._propertyReader.KeyPropertyName} on provided record of type {typeof(TConsumerDataModel).FullName}.");
+        var keyValue = model.KeyProperty.GetValueAsObject(dataModel!) as string ??
+            throw new VectorStoreRecordMappingException($"Missing key property {model.KeyProperty.ModelName} on provided record of type '{typeof(TConsumerDataModel).Name}'.");
 
         var hashEntries = new List<HashEntry>();
-        foreach (var property in this._propertyReader.DataPropertiesInfo)
+        foreach (var property in model.DataProperties)
         {
-            var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
-            var value = property.GetValue(dataModel);
-            hashEntries.Add(new HashEntry(storageName, RedisValue.Unbox(value)));
+            var value = property.GetValueAsObject(dataModel!);
+            hashEntries.Add(new HashEntry(property.StorageName, RedisValue.Unbox(value)));
         }
 
-        foreach (var property in this._propertyReader.VectorPropertiesInfo)
+        for (var i = 0; i < model.VectorProperties.Count; i++)
         {
-            var storageName = this._propertyReader.GetStoragePropertyName(property.Name);
-            var value = property.GetValue(dataModel);
+            var property = model.VectorProperties[i];
+
+            var value = generatedEmbeddings?[i]?[recordIndex] ?? property.GetValueAsObject(dataModel!);
+
             if (value is not null)
             {
                 // Convert the vector to a byte array and store it in the hash entry.
                 // We only support float and double vectors and we do checking in the
                 // collection constructor to ensure that the model has no other vector types.
-                if (value is ReadOnlyMemory<float> rom)
+                switch (value)
                 {
-                    hashEntries.Add(new HashEntry(storageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(rom)));
-                }
-                else if (value is ReadOnlyMemory<double> rod)
-                {
-                    hashEntries.Add(new HashEntry(storageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(rod)));
+                    case ReadOnlyMemory<float> rom:
+                        hashEntries.Add(new HashEntry(property.StorageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(rom)));
+                        continue;
+                    case ReadOnlyMemory<double> rod:
+                        hashEntries.Add(new HashEntry(property.StorageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(rod)));
+                        continue;
+
+                    case Embedding<float> embedding:
+                        hashEntries.Add(new HashEntry(property.StorageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(embedding.Vector)));
+                        continue;
+                    case Embedding<double> embedding:
+                        hashEntries.Add(new HashEntry(property.StorageName, RedisVectorStoreRecordFieldMapping.ConvertVectorToBytes(embedding.Vector)));
+                        continue;
+
+                    default:
+                        throw new VectorStoreRecordMappingException($"Unsupported vector type '{value.GetType()}'. Only float and double vectors are supported.");
                 }
             }
         }
@@ -75,49 +72,51 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel> : 
         var hashEntriesDictionary = storageModel.HashEntries.ToDictionary(x => (string)x.Name!, x => x.Value);
 
         // Construct the output record.
-        var outputRecord = (TConsumerDataModel)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
+        var outputRecord = model.CreateRecord<TConsumerDataModel>()!;
 
         // Set Key.
-        this._propertyReader.KeyPropertyInfo.SetValue(outputRecord, storageModel.Key);
+        model.KeyProperty.SetValueAsObject(outputRecord, storageModel.Key);
 
         // Set each vector property if embeddings should be returned.
         if (options?.IncludeVectors is true)
         {
-            VectorStoreRecordMapping.SetValuesOnProperties(
-                outputRecord,
-                this._propertyReader.VectorPropertiesInfo,
-                this._propertyReader.StoragePropertyNamesMap,
-                hashEntriesDictionary,
-                (RedisValue vector, Type targetType) =>
+            foreach (var property in model.VectorProperties)
+            {
+                if (hashEntriesDictionary.TryGetValue(property.StorageName, out var vector))
                 {
-                    if (targetType == typeof(ReadOnlyMemory<float>) || targetType == typeof(ReadOnlyMemory<float>?))
+                    if (vector.IsNull)
                     {
-                        var array = MemoryMarshal.Cast<byte, float>((byte[])vector!).ToArray();
-                        return new ReadOnlyMemory<float>(array);
+                        property.SetValueAsObject(outputRecord!, null);
+                        continue;
                     }
-                    else if (targetType == typeof(ReadOnlyMemory<double>) || targetType == typeof(ReadOnlyMemory<double>?))
+
+                    property.SetValueAsObject(outputRecord!, property.Type switch
                     {
-                        var array = MemoryMarshal.Cast<byte, double>((byte[])vector!).ToArray();
-                        return new ReadOnlyMemory<double>(array);
-                    }
-                    else
-                    {
-                        throw new VectorStoreRecordMappingException($"Unsupported vector type '{targetType}'. Only float and double vectors are supported.");
-                    }
-                });
+                        Type t when t == typeof(ReadOnlyMemory<float>) || t == typeof(ReadOnlyMemory<float>?)
+                            => new ReadOnlyMemory<float>(MemoryMarshal.Cast<byte, float>((byte[])vector!).ToArray()),
+                        Type t when t == typeof(ReadOnlyMemory<double>) || t == typeof(ReadOnlyMemory<double>?)
+                            => new ReadOnlyMemory<double>(MemoryMarshal.Cast<byte, double>((byte[])vector!).ToArray()),
+                        _ => throw new VectorStoreRecordMappingException($"Unsupported vector type '{property.Type}'. Only float and double vectors are supported.")
+                    });
+                }
+            }
         }
 
-        // Set each data property.
-        VectorStoreRecordMapping.SetValuesOnProperties(
-            outputRecord,
-            this._propertyReader.DataPropertiesInfo,
-            this._propertyReader.StoragePropertyNamesMap,
-            hashEntriesDictionary,
-            (RedisValue hashValue, Type targetType) =>
+        foreach (var property in model.DataProperties)
+        {
+            if (hashEntriesDictionary.TryGetValue(property.StorageName, out var hashValue))
             {
-                var typeOrNullableType = Nullable.GetUnderlyingType(targetType) ?? targetType;
-                return Convert.ChangeType(hashValue, typeOrNullableType);
-            });
+                if (hashValue.IsNull)
+                {
+                    property.SetValueAsObject(outputRecord!, null);
+                    continue;
+                }
+
+                var typeOrNullableType = Nullable.GetUnderlyingType(property.Type) ?? property.Type;
+                var value = Convert.ChangeType(hashValue, typeOrNullableType);
+                property.SetValueAsObject(outputRecord!, value);
+            }
+        }
 
         return outputRecord;
     }

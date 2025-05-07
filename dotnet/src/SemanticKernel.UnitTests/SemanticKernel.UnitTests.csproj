@@ -6,7 +6,7 @@
     <TargetFrameworks>net8.0</TargetFrameworks>    <!-- ;net48 -->
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <NoWarn>$(NoWarn);CA2007,CA1861,IDE1006,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0050,SKEXP0110,SKEXP0120</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1861,IDE1006,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0050,SKEXP0110,SKEXP0120,MEVD9000</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

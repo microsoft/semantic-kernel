@@ -3,6 +3,7 @@
 using System;
 using System.Text.Json;
 using Azure.Search.Documents.Indexes;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
@@ -12,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 public sealed class AzureAISearchVectorStoreOptions
 {
     /// <summary>
-    /// An optional factory to use for constructing <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
+    /// An optional factory to use for constructing <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> instances, if a custom record collection is required.
     /// </summary>
     [Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
     public IAzureAISearchVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
@@ -23,4 +24,9 @@ public sealed class AzureAISearchVectorStoreOptions
     /// to provide the same set of <see cref="System.Text.Json.JsonSerializerOptions"/> both here and when constructing the <see cref="SearchIndexClient"/>.
     /// </summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; init; } = null;
+
+    /// <summary>
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

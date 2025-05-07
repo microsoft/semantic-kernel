@@ -1,11 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from .agent import Agent, AgentRegistry, AgentResponseItem, AgentThread
+from .agent import Agent, AgentRegistry, AgentResponseItem, AgentThread, register_agent_type
 from .autogen.autogen_conversable_agent import AutoGenConversableAgent, AutoGenConversableAgentThread
 from .azure_ai.azure_ai_agent import AzureAIAgent, AzureAIAgentThread
 from .azure_ai.azure_ai_agent_settings import AzureAIAgentSettings
 from .bedrock.bedrock_agent import BedrockAgent, BedrockAgentThread
 from .chat_completion.chat_completion_agent import ChatCompletionAgent, ChatHistoryAgentThread
+from .copilot_studio.copilot_studio_agent import CopilotStudioAgent, CopilotStudioAgentThread
+from .copilot_studio.copilot_studio_agent_settings import CopilotStudioAgentAuthMode, CopilotStudioAgentSettings
 from .group_chat.agent_chat import AgentChat
 from .group_chat.agent_group_chat import AgentGroupChat
 from .open_ai.azure_assistant_agent import AzureAssistantAgent
@@ -33,8 +35,13 @@ __all__ = [
     "BedrockAgentThread",
     "ChatCompletionAgent",
     "ChatHistoryAgentThread",
+    "CopilotStudioAgent",
+    "CopilotStudioAgentAuthMode",
+    "CopilotStudioAgentSettings",
+    "CopilotStudioAgentThread",
     "OpenAIAssistantAgent",
     "OpenAIResponsesAgent",
     "ResponsesAgentThread",
     "RunPollingOptions",
+    "register_agent_type",
 ]

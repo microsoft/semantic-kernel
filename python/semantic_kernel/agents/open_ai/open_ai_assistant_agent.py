@@ -6,9 +6,7 @@ from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
-from typing_extensions import deprecated
-
-from semantic_kernel.agents.agent_registry import register_agent_type
+from semantic_kernel.agents import register_agent_type
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 if sys.version_info >= (3, 12):
@@ -60,7 +58,6 @@ if TYPE_CHECKING:
     from openai.types.beta.assistant_tool_param import AssistantToolParam
     from openai.types.beta.code_interpreter_tool_param import CodeInterpreterToolParam
     from openai.types.beta.thread_create_params import Message as ThreadCreateMessage
-    from openai.types.beta.threads.message import Message
     from openai.types.beta.threads.run_create_params import TruncationStrategy
 
     from semantic_kernel.kernel import Kernel
@@ -454,30 +451,6 @@ class OpenAIAssistantAgent(Agent):
         assert thread.id is not None  # nosec
 
         return OpenAIAssistantChannel(client=self.client, thread_id=thread.id)
-
-    # endregion
-
-    # region Message Handling
-
-    @deprecated(
-        "Pass messages directly to get_response(...)/invoke(...) instead. This method will be removed after May 1st 2025."  # noqa: E501
-    )
-    async def add_chat_message(
-        self, thread_id: str, message: "str | ChatMessageContent", **kwargs: Any
-    ) -> "Message | None":
-        """Add a chat message to the thread.
-
-        Args:
-            thread_id: The ID of the thread
-            message: The chat message to add
-            kwargs: Additional keyword arguments
-
-        Returns:
-            The thread message or None
-        """
-        return await AssistantThreadActions.create_message(
-            client=self.client, thread_id=thread_id, message=message, **kwargs
-        )
 
     # endregion
 

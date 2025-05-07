@@ -96,7 +96,6 @@ public class OpenApiFunctionExecutionParameters
     /// <summary>
     /// A custom REST API parameter filter.
     /// </summary>
-    [Experimental("SKEXP0040")]
     public RestApiParameterFilter? ParameterFilter { get; set; }
 
     /// <summary>
@@ -119,7 +118,6 @@ public class OpenApiFunctionExecutionParameters
     /// <param name="enablePayloadNamespacing">Determines whether payload parameter names are augmented with namespaces.
     /// Namespaces prevent naming conflicts by adding the parent parameter name as a prefix, separated by dots.</param>
     /// <param name="operationsToExclude">Optional list of operations not to import, e.g. in case they are not supported</param>
-    [Experimental("SKEXP0040")]
     public OpenApiFunctionExecutionParameters(
         HttpClient? httpClient = null,
         AuthenticateRequestAsyncCallback? authCallback = null,

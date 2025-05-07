@@ -3373,10 +3373,10 @@ vfile@^6.0.0:
     "@types/unist" "^3.0.0"
     vfile-message "^4.0.0"
 
-vite@^6.2.6:
-  version "6.2.6"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-6.2.6.tgz#7f0ccf2fdc0c1eda079ce258508728e2473d3f61"
-  integrity sha512-9xpjNl3kR4rVDZgPNdTL0/c6ao4km69a/2ihNQbcANz8RuCOK3hQBmLSJf3bRKVQjVMda+YvizNE8AwvogcPbw==
+vite@^6.2.7:
+  version "6.2.7"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-6.2.7.tgz#699fb6e4b3e65d749480e0087cdbe3f3f0de00fa"
+  integrity sha512-qg3LkeuinTrZoJHHF94coSaTfIPyBYoywp+ys4qu20oSJFbKMYoIJo0FWJT9q6Vp49l6z9IsJRbHdcGtiKbGoQ==
   dependencies:
     esbuild "^0.25.0"
     postcss "^8.5.3"

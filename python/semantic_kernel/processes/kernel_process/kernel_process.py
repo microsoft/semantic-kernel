@@ -8,10 +8,12 @@ from pydantic import Field
 from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
 from semantic_kernel.processes.kernel_process.kernel_process_state import KernelProcessState
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
+from semantic_kernel.processes.process_state_metadata_utils import kernel_process_to_process_state_metadata
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process_edge import KernelProcessEdge
+    from semantic_kernel.processes.kernel_process.kernel_process_step_state_metadata import KernelProcessStateMetadata
 
 
 @experimental
@@ -58,3 +60,7 @@ class KernelProcess(KernelProcessStepInfo):
             args["factories"] = factories
 
         super().__init__(**args)
+
+    def to_process_state_metadata(self) -> "KernelProcessStateMetadata":
+        """Converts a kernel process to process state metadata."""
+        return kernel_process_to_process_state_metadata(self)
