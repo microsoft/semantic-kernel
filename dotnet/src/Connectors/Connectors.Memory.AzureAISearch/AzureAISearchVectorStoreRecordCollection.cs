@@ -2,10 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,58 +15,28 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Azure AI Search as the underlying storage.
 /// </summary>
+/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class AzureAISearchVectorStoreRecordCollection<TRecord> :
-    IVectorStoreRecordCollection<string, TRecord>,
+#pragma warning disable CS0618 // IVectorizableTextSearch is obsolete
+public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
+    IVectorStoreRecordCollection<TKey, TRecord>,
     IVectorizableTextSearch<TRecord>,
     IKeywordHybridSearch<TRecord>
+    where TKey : notnull
+    where TRecord : notnull
+#pragma warning restore CS0618 // IVectorizableTextSearch is obsolete
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "AzureAISearch";
-
-    /// <summary>A set of types that a key on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedKeyTypes =
-    [
-        typeof(string)
-    ];
-
-    /// <summary>A set of types that data properties on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedDataTypes =
-    [
-        typeof(string),
-        typeof(int),
-        typeof(long),
-        typeof(double),
-        typeof(float),
-        typeof(bool),
-        typeof(DateTimeOffset),
-        typeof(int?),
-        typeof(long?),
-        typeof(double?),
-        typeof(float?),
-        typeof(bool?),
-        typeof(DateTimeOffset?),
-    ];
-
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    /// <remarks>
-    /// Azure AI Search is adding support for more types than just float32, but these are not available for use via the
-    /// SDK yet. We will update this list as the SDK is updated.
-    /// <see href="https://learn.microsoft.com/en-us/rest/api/searchservice/supported-data-types#edm-data-types-for-vector-fields"/>
-    /// </remarks>
-    private static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?)
-    ];
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -80,74 +50,68 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     /// <summary>Azure AI Search client that can be used to manage data in an Azure AI Search Service index.</summary>
     private readonly SearchClient _searchClient;
 
-    /// <summary>The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> will access.</summary>
+    /// <summary>The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> will access.</summary>
     private readonly string _collectionName;
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly AzureAISearchVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
-    private readonly IVectorStoreRecordMapper<TRecord, JsonObject>? _mapper;
+    private readonly AzureAISearchDynamicDataModelMapper? _dynamicMapper;
 
-    /// <summary>A helper to access property information for the current data model and record definition.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
+    /// <summary>The model for this collection.</summary>
+    private readonly VectorStoreRecordModel _model;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="searchIndexClient">Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="searchIndexClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when options are misconfigured.</exception>
-    public AzureAISearchVectorStoreRecordCollection(SearchIndexClient searchIndexClient, string collectionName, AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default)
+    public AzureAISearchVectorStoreRecordCollection(SearchIndexClient searchIndexClient, string name, AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(searchIndexClient);
-        Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.JsonObjectCustomMapper is not null, s_supportedKeyTypes);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
+        Verify.NotNullOrWhiteSpace(name);
+
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
+        {
+            throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
+        }
 
         // Assign.
         this._searchIndexClient = searchIndexClient;
-        this._collectionName = collectionName;
+        this._collectionName = name;
         this._options = options ?? new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>();
-        this._searchClient = this._searchIndexClient.GetSearchClient(collectionName);
-        this._propertyReader = new VectorStoreRecordPropertyReader(
-            typeof(TRecord),
-            this._options.VectorStoreRecordDefinition,
-            new()
-            {
-                RequiresAtLeastOneVector = false,
-                SupportsMultipleKeys = false,
-                SupportsMultipleVectors = true,
-                JsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default
-            });
+        this._searchClient = this._searchIndexClient.GetSearchClient(name);
 
-        // Validate property types.
-        this._propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
-        this._propertyReader.VerifyDataProperties(s_supportedDataTypes, supportEnumerable: true);
-        this._propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
+        this._model = typeof(TRecord) == typeof(Dictionary<string, object?>) ?
+            new AzureAISearchDynamicModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator) :
+            new AzureAISearchModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, this._options.JsonSerializerOptions);
 
         // Resolve mapper.
-        // First, if someone has provided a custom mapper, use that.
         // If they didn't provide a custom mapper, and the record type is the generic data model, use the built in mapper for that.
         // Otherwise, don't set the mapper, and we'll default to just using Azure AI Search's built in json serialization and deserialization.
-        if (this._options.JsonObjectCustomMapper is not null)
+        if (typeof(TRecord) == typeof(Dictionary<string, object?>))
         {
-            this._mapper = this._options.JsonObjectCustomMapper;
+            this._dynamicMapper = new AzureAISearchDynamicDataModelMapper(this._model);
         }
-        else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
+
+        this._collectionMetadata = new()
         {
-            this._mapper = new AzureAISearchGenericDataModelMapper(this._propertyReader.RecordDefinition) as IVectorStoreRecordMapper<TRecord, JsonObject>;
-        }
+            VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+            VectorStoreName = searchIndexClient.ServiceName,
+            CollectionName = name
+        };
     }
 
     /// <inheritdoc />
-    public string CollectionName => this._collectionName;
+    public string Name => this._collectionName;
 
     /// <inheritdoc />
-    public virtual async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -162,7 +126,8 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this._collectionName,
                 OperationName = "GetIndex"
             };
@@ -170,41 +135,35 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         var vectorSearchConfig = new VectorSearch();
         var searchFields = new List<SearchField>();
 
         // Loop through all properties and create the search fields.
-        foreach (var property in this._propertyReader.Properties)
+        foreach (var property in this._model.Properties)
         {
-            // Key property.
-            if (property is VectorStoreRecordKeyProperty keyProperty)
+            switch (property)
             {
-                searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapKeyField(
-                    keyProperty,
-                    this._propertyReader.KeyPropertyJsonName));
-            }
+                case VectorStoreRecordKeyPropertyModel p:
+                    searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapKeyField(p));
+                    break;
 
-            // Data property.
-            if (property is VectorStoreRecordDataProperty dataProperty)
-            {
-                searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(
-                    dataProperty,
-                    this._propertyReader.GetJsonPropertyName(dataProperty.DataModelPropertyName)));
-            }
+                case VectorStoreRecordDataPropertyModel p:
+                    searchFields.Add(AzureAISearchVectorStoreCollectionCreateMapping.MapDataField(p));
+                    break;
 
-            // Vector property.
-            if (property is VectorStoreRecordVectorProperty vectorProperty)
-            {
-                (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(
-                    vectorProperty,
-                    this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName));
+                case VectorStoreRecordVectorPropertyModel p:
+                    (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) = AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(p);
 
-                // Add the search field, plus its profile and algorithm configuration to the search config.
-                searchFields.Add(vectorSearchField);
-                vectorSearchConfig.Algorithms.Add(algorithmConfiguration);
-                vectorSearchConfig.Profiles.Add(vectorSearchProfile);
+                    // Add the search field, plus its profile and algorithm configuration to the search config.
+                    searchFields.Add(vectorSearchField);
+                    vectorSearchConfig.Algorithms.Add(algorithmConfiguration);
+                    vectorSearchConfig.Profiles.Add(vectorSearchProfile);
+                    break;
+
+                default:
+                    throw new UnreachableException();
             }
         }
 
@@ -218,7 +177,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -227,7 +186,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         return this.RunOperationAsync<Response>(
             "DeleteIndex",
@@ -245,10 +204,8 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task<TRecord?> GetAsync(string key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(key);
-
         // Create Options.
         var innerOptions = this.ConvertGetDocumentOptions(options);
         var includeVectors = options?.IncludeVectors ?? false;
@@ -258,7 +215,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<string> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -279,29 +236,35 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(key);
+        var stringKey = this.GetStringKey(key);
 
         // Remove record.
         return this.RunOperationAsync(
             "DeleteDocuments",
-            () => this._searchClient.DeleteDocumentsAsync(this._propertyReader.KeyPropertyJsonName, [key], new IndexDocumentsOptions(), cancellationToken));
+            () => this._searchClient.DeleteDocumentsAsync(this._model.KeyProperty.StorageName, [stringKey], new IndexDocumentsOptions(), cancellationToken));
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
+        if (!keys.Any())
+        {
+            return Task.CompletedTask;
+        }
+
+        var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
 
         // Remove records.
         return this.RunOperationAsync(
             "DeleteDocuments",
-            () => this._searchClient.DeleteDocumentsAsync(this._propertyReader.KeyPropertyJsonName, keys, new IndexDocumentsOptions(), cancellationToken));
+            () => this._searchClient.DeleteDocumentsAsync(this._model.KeyProperty.StorageName, stringKeys, new IndexDocumentsOptions(), cancellationToken));
     }
 
     /// <inheritdoc />
-    public virtual async Task<string> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -310,13 +273,18 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
 
         // Upsert record.
         var results = await this.MapToStorageModelAndUploadDocumentAsync([record], innerOptions, cancellationToken).ConfigureAwait(false);
-        return results.Value.Results[0].Key;
+
+        return (TKey)(object)results.Value.Results[0].Key;
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
+        if (!records.Any())
+        {
+            return [];
+        }
 
         // Create Options
         var innerOptions = new IndexDocumentsOptions { ThrowOnAnyError = true };
@@ -324,32 +292,36 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         // Upsert records
         var results = await this.MapToStorageModelAndUploadDocumentAsync(records, innerOptions, cancellationToken).ConfigureAwait(false);
 
-        // Get results
-        var resultKeys = results.Value.Results.Select(x => x.Key).ToList();
-        foreach (var resultKey in resultKeys) { yield return resultKey; }
+        return results.Value.Results.Select(x => (TKey)(object)x.Key).ToList();
     }
 
     /// <inheritdoc />
-    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorSearchOptions<TRecord>? options = null,
+        CancellationToken cancellationToken = default)
+        where TVector : notnull
     {
-        var floatVector = VerifyVectorParam(vector);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
-        // Resolve options.
-        var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
-        var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty!.DataModelPropertyName);
+        var floatVector = VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         // Configure search settings.
-        var vectorQueries = new List<VectorQuery>();
-        vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorPropertyName } });
+        var vectorQueries = new List<VectorQuery>
+        {
+            new VectorizedQuery(floatVector) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
+        };
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var filter = internalOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._propertyReader.JsonPropertyNamesMap),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._model),
             _ => null
         };
 #pragma warning restore CS0618
@@ -358,9 +330,8 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         var searchOptions = new SearchOptions
         {
             VectorSearch = new(),
-            Size = internalOptions.Top,
-            Skip = internalOptions.Skip,
-            IncludeTotalCount = internalOptions.IncludeTotalCount,
+            Size = top,
+            Skip = options.Skip,
         };
 
         if (filter is not null)
@@ -371,41 +342,112 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
 
         // Filter out vector fields if requested.
-        if (!internalOptions.IncludeVectors)
+        if (!options.IncludeVectors)
         {
-            searchOptions.Select.Add(this._propertyReader.KeyPropertyJsonName);
-            searchOptions.Select.AddRange(this._propertyReader.DataPropertyJsonNames);
+            searchOptions.Select.Add(this._model.KeyProperty.StorageName);
+
+            foreach (var dataProperty in this._model.DataProperties)
+            {
+                searchOptions.Select.Add(dataProperty.StorageName);
+            }
         }
 
-        return this.SearchAndMapToDataModelAsync(null, searchOptions, internalOptions.IncludeVectors, cancellationToken);
+        return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(searchText);
+    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        where TVector : notnull
+        => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
 
-        if (this._propertyReader.FirstVectorPropertyName is null)
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        SearchOptions searchOptions = new()
+        {
+            VectorSearch = new(),
+            Size = top,
+            Skip = options.Skip,
+            Filter = new AzureAISearchFilterTranslator().Translate(filter, this._model),
+        };
+
+        // Filter out vector fields if requested.
+        if (!options.IncludeVectors)
+        {
+            searchOptions.Select.Add(this._model.KeyProperty.StorageName);
+
+            foreach (var dataProperty in this._model.DataProperties)
+            {
+                searchOptions.Select.Add(dataProperty.StorageName);
+            }
+        }
+
+        foreach (var pair in options.OrderBy.Values)
+        {
+            VectorStoreRecordPropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
+            string name = property.StorageName;
+            // From https://learn.microsoft.com/dotnet/api/azure.search.documents.searchoptions.orderby:
+            // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".
+            // "The default is ascending order."
+            if (!pair.Ascending)
+            {
+                name += " desc";
+            }
+
+            searchOptions.OrderBy.Add(name);
+        }
+
+        return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken)
+            .SelectAsync(result => result.Record, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+        TInput value,
+        int top,
+        VectorSearchOptions<TRecord>? options = default,
+        CancellationToken cancellationToken = default)
+        where TInput : notnull
+    {
+        var searchText = value switch
+        {
+            string s => s,
+            null => throw new ArgumentNullException(nameof(value)),
+            _ => throw new ArgumentException($"The provided search type '{value?.GetType().Name}' is not supported by the Azure AI Search connector, pass a string.")
+        };
+
+        Verify.NotNull(searchText);
+        Verify.NotLessThan(top, 1);
+
+        if (this._model.VectorProperties.Count == 0)
         {
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
 
         // Resolve options.
-        var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
-        var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty!.DataModelPropertyName);
+        options ??= s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
         // Configure search settings.
-        var vectorQueries = new List<VectorQuery>();
-        vectorQueries.Add(new VectorizableTextQuery(searchText) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorPropertyName } });
+        var vectorQueries = new List<VectorQuery>
+        {
+            new VectorizableTextQuery(searchText) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
+        };
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var filter = internalOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._propertyReader.JsonPropertyNamesMap),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._model),
             _ => null
         };
 #pragma warning restore CS0618
@@ -414,9 +456,8 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         var searchOptions = new SearchOptions
         {
             VectorSearch = new(),
-            Size = internalOptions.Top,
-            Skip = internalOptions.Skip,
-            IncludeTotalCount = internalOptions.IncludeTotalCount,
+            Size = top,
+            Skip = options.Skip,
         };
 
         if (filter is not null)
@@ -427,39 +468,49 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
 
         // Filter out vector fields if requested.
-        if (!internalOptions.IncludeVectors)
+        if (!options.IncludeVectors)
         {
-            searchOptions.Select.Add(this._propertyReader.KeyPropertyJsonName);
-            searchOptions.Select.AddRange(this._propertyReader.DataPropertyJsonNames);
+            searchOptions.Select.Add(this._model.KeyProperty.StorageName);
+
+            foreach (var dataProperty in this._model.DataProperties)
+            {
+                searchOptions.Select.Add(dataProperty.StorageName);
+            }
         }
 
-        return this.SearchAndMapToDataModelAsync(null, searchOptions, internalOptions.IncludeVectors, cancellationToken);
+        return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    [Obsolete("Use SearchAsync")]
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        => this.SearchAsync(searchText, top, options, cancellationToken);
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keywords);
         var floatVector = VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         // Resolve options.
-        var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = internalOptions.VectorProperty });
-        var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName);
-        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(internalOptions.AdditionalProperty);
-        var textDataPropertyName = this._propertyReader.GetJsonPropertyName(textDataProperty.DataModelPropertyName);
+        options ??= s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
         // Configure search settings.
-        var vectorQueries = new List<VectorQuery>();
-        vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorPropertyName } });
+        var vectorQueries = new List<VectorQuery>
+        {
+            new VectorizedQuery(floatVector) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
+        };
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var filter = internalOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._propertyReader.JsonPropertyNamesMap),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._model),
             _ => null
         };
 #pragma warning restore CS0618
@@ -468,24 +519,42 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         var searchOptions = new SearchOptions
         {
             VectorSearch = new(),
-            Size = internalOptions.Top,
-            Skip = internalOptions.Skip,
+            Size = top,
+            Skip = options.Skip,
             Filter = filter,
-            IncludeTotalCount = internalOptions.IncludeTotalCount,
+            IncludeTotalCount = options.IncludeTotalCount,
         };
         searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
-        searchOptions.SearchFields.Add(textDataPropertyName);
+        searchOptions.SearchFields.Add(textDataProperty.StorageName);
 
         // Filter out vector fields if requested.
-        if (!internalOptions.IncludeVectors)
+        if (!options.IncludeVectors)
         {
-            searchOptions.Select.Add(this._propertyReader.KeyPropertyJsonName);
-            searchOptions.Select.AddRange(this._propertyReader.DataPropertyJsonNames);
+            searchOptions.Select.Add(this._model.KeyProperty.StorageName);
+
+            foreach (var dataProperty in this._model.DataProperties)
+            {
+                searchOptions.Select.Add(dataProperty.StorageName);
+            }
         }
 
         var keywordsCombined = string.Join(" ", keywords);
 
-        return this.SearchAndMapToDataModelAsync(keywordsCombined, searchOptions, internalOptions.IncludeVectors, cancellationToken);
+        return this.SearchAndMapToDataModelAsync(keywordsCombined, searchOptions, options.IncludeVectors, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(SearchIndexClient) ? this._searchIndexClient :
+            serviceType == typeof(SearchClient) ? this._searchClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     /// <summary>
@@ -497,19 +566,23 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The retrieved document, mapped to the consumer data model.</returns>
     private async Task<TRecord?> GetDocumentAndMapToDataModelAsync(
-        string key,
+        TKey key,
         bool includeVectors,
         GetDocumentOptions innerOptions,
         CancellationToken cancellationToken)
     {
         const string OperationName = "GetDocument";
 
+        var stringKey = this.GetStringKey(key);
+
         // Use the user provided mapper.
-        if (this._mapper is not null)
+        if (this._dynamicMapper is not null)
         {
+            Debug.Assert(typeof(TRecord) == typeof(Dictionary<string, object?>));
+
             var jsonObject = await this.RunOperationAsync(
                 OperationName,
-                () => GetDocumentWithNotFoundHandlingAsync<JsonObject>(this._searchClient, key, innerOptions, cancellationToken)).ConfigureAwait(false);
+                () => GetDocumentWithNotFoundHandlingAsync<JsonObject>(this._searchClient, stringKey, innerOptions, cancellationToken)).ConfigureAwait(false);
 
             if (jsonObject is null)
             {
@@ -517,16 +590,17 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
             }
 
             return VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                AzureAISearchConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 OperationName,
-                () => this._mapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
+                () => (TRecord)(object)this._dynamicMapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
         }
 
         // Use the built in Azure AI Search mapper.
         return await this.RunOperationAsync(
             OperationName,
-            () => GetDocumentWithNotFoundHandlingAsync<TRecord>(this._searchClient, key, innerOptions, cancellationToken)).ConfigureAwait(false);
+            () => GetDocumentWithNotFoundHandlingAsync<TRecord>(this._searchClient, stringKey, innerOptions, cancellationToken)).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -537,29 +611,37 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     /// <param name="includeVectors">A value indicating whether to include vectors in the result or not.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The mapped search results.</returns>
-    private async Task<VectorSearchResults<TRecord>> SearchAndMapToDataModelAsync(
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAndMapToDataModelAsync(
         string? searchText,
         SearchOptions searchOptions,
         bool includeVectors,
-        CancellationToken cancellationToken)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string OperationName = "Search";
 
         // Execute search and map using the user provided mapper.
-        if (this._options.JsonObjectCustomMapper is not null)
+        if (this._dynamicMapper is not null)
         {
+            Debug.Assert(typeof(TRecord) == typeof(Dictionary<string, object?>));
+
             var jsonObjectResults = await this.RunOperationAsync(
                 OperationName,
                 () => this._searchClient.SearchAsync<JsonObject>(searchText, searchOptions, cancellationToken)).ConfigureAwait(false);
 
-            var mappedJsonObjectResults = this.MapSearchResultsAsync(jsonObjectResults.Value.GetResultsAsync(), OperationName, includeVectors);
-            return new VectorSearchResults<TRecord>(mappedJsonObjectResults) { TotalCount = jsonObjectResults.Value.TotalCount };
+            await foreach (var result in this.MapSearchResultsAsync(jsonObjectResults.Value.GetResultsAsync(), OperationName, includeVectors).ConfigureAwait(false))
+            {
+                yield return result;
+            }
+
+            yield break;
         }
 
         // Execute search and map using the built in Azure AI Search mapper.
         Response<SearchResults<TRecord>> results = await this.RunOperationAsync(OperationName, () => this._searchClient.SearchAsync<TRecord>(searchText, searchOptions, cancellationToken)).ConfigureAwait(false);
-        var mappedResults = this.MapSearchResultsAsync(results.Value.GetResultsAsync());
-        return new VectorSearchResults<TRecord>(mappedResults) { TotalCount = results.Value.TotalCount };
+        await foreach (var result in this.MapSearchResultsAsync(results.Value.GetResultsAsync()).ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
     /// <summary>
@@ -577,13 +659,16 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         const string OperationName = "UploadDocuments";
 
         // Use the user provided mapper.
-        if (this._mapper is not null)
+        if (this._dynamicMapper is not null)
         {
+            Debug.Assert(typeof(TRecord) == typeof(Dictionary<string, object?>));
+
             var jsonObjects = VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                AzureAISearchConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 OperationName,
-                () => records.Select(this._mapper!.MapFromDataToStorageModel));
+                () => records.Select(r => this._dynamicMapper!.MapFromDataToStorageModel((Dictionary<string, object?>)(object)r)));
 
             return this.RunOperationAsync(
                 OperationName,
@@ -597,7 +682,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     }
 
     /// <summary>
-    /// Map the search results from <see cref="SearchResult{JsonObject}"/> to <see cref="VectorSearchResults{TRecord}"/> objects using the configured mapper type.
+    /// Map the search results from <see cref="SearchResult{JsonObject}"/> to <see cref="VectorSearchResult{TRecord}"/> objects using the configured mapper type.
     /// </summary>
     /// <param name="results">The search results to map.</param>
     /// <param name="operationName">The name of the current operation for telemetry purposes.</param>
@@ -608,16 +693,17 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         await foreach (var result in results.ConfigureAwait(false))
         {
             var document = VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                AzureAISearchConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 operationName,
-                () => this._options.JsonObjectCustomMapper!.MapFromStorageToDataModel(result.Document, new() { IncludeVectors = includeVectors }));
+                () => (TRecord)(object)this._dynamicMapper!.MapFromStorageToDataModel(result.Document, new() { IncludeVectors = includeVectors }));
             yield return new VectorSearchResult<TRecord>(document, result.Score);
         }
     }
 
     /// <summary>
-    /// Map the search results from <see cref="SearchResult{TRecord}"/> to <see cref="VectorSearchResults{TRecord}"/> objects.
+    /// Map the search results from <see cref="SearchResult{TRecord}"/> to <see cref="VectorSearchResult{TRecord}"/> objects.
     /// </summary>
     /// <param name="results">The search results to map.</param>
     /// <returns>The mapped results.</returns>
@@ -639,8 +725,12 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         var innerOptions = new GetDocumentOptions();
         if (options?.IncludeVectors is not true)
         {
-            innerOptions.SelectedFields.AddRange(this._propertyReader.KeyPropertyJsonNames);
-            innerOptions.SelectedFields.AddRange(this._propertyReader.DataPropertyJsonNames);
+            innerOptions.SelectedFields.Add(this._model.KeyProperty.StorageName);
+
+            foreach (var dataProperty in this._model.DataProperties)
+            {
+                innerOptions.SelectedFields.Add(dataProperty.StorageName);
+            }
         }
 
         return innerOptions;
@@ -688,7 +778,8 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };
@@ -697,7 +788,8 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };
@@ -714,5 +806,16 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         }
 
         return floatVector;
+    }
+
+    private string GetStringKey(TKey key)
+    {
+        Verify.NotNull(key);
+
+        var stringKey = key as string ?? throw new UnreachableException("string key should have been validated during model building");
+
+        Verify.NotNullOrWhiteSpace(stringKey, nameof(key));
+
+        return stringKey;
     }
 }

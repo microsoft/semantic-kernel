@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
@@ -114,9 +115,20 @@ public class ProcessStepEdgeBuilder
     }
 
     /// <summary>
+    /// Emit the SK step event as an external event with specific topic name
+    /// </summary>
+    /// <returns></returns>
+    public ProcessStepEdgeBuilder SentToAgentStep(ProcessAgentBuilder agentStep)
+    {
+        var targetBuilder = agentStep.GetInvokeAgentFunctionTargetBuilder();
+
+        return this.SendEventTo(targetBuilder);
+    }
+
+    /// <summary>
     /// Signals that the process should be stopped.
     /// </summary>
-    public void StopProcess()
+    public virtual void StopProcess()
     {
         if (this.Target is not null)
         {

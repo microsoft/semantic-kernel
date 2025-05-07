@@ -2,7 +2,6 @@
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.SqlServer;
 using SqlServerIntegrationTests.Support;
 using VectorDataSpecificationTests.Xunit;
 using Xunit;
@@ -82,18 +81,18 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             received = await collection.GetAsync(updated.Id, new() { IncludeVectors = true });
             AssertEquality(updated, received);
 
-            VectorSearchResult<TestModel> vectorSearchResult = await (await collection.VectorizedSearchAsync(inserted.Floats, new()
+            VectorSearchResult<TestModel> vectorSearchResult = await (collection.SearchEmbeddingAsync(inserted.Floats, top: 3, new()
             {
                 VectorProperty = r => r.Floats,
                 IncludeVectors = true
-            })).Results.SingleAsync();
+            })).SingleAsync();
             AssertEquality(updated, vectorSearchResult.Record);
 
-            vectorSearchResult = await (await collection.VectorizedSearchAsync(inserted.Floats, new()
+            vectorSearchResult = await (collection.SearchEmbeddingAsync(inserted.Floats, top: 3, new()
             {
                 VectorProperty = r => r.Floats,
                 IncludeVectors = false
-            })).Results.SingleAsync();
+            })).SingleAsync();
             // Make sure the vectors are not included in the result.
             Assert.Equal(0, vectorSearchResult.Record.Floats.Length);
 
@@ -151,58 +150,6 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
     }
 
     [ConditionalFact]
-    public async Task CustomMapper()
-    {
-        string collectionName = GetUniqueCollectionName();
-        TestModelMapper mapper = new();
-        SqlServerVectorStoreRecordCollectionOptions<TestModel> options = new()
-        {
-            Mapper = mapper
-        };
-        SqlServerVectorStoreRecordCollection<string, TestModel> collection = new(SqlServerTestEnvironment.ConnectionString!, collectionName, options);
-
-        try
-        {
-            await collection.CreateCollectionIfNotExistsAsync();
-
-            TestModel inserted = new()
-            {
-                Id = "MyId",
-                Number = 100,
-                Floats = Enumerable.Range(0, 10).Select(i => (float)i).ToArray()
-            };
-            string key = await collection.UpsertAsync(inserted);
-            Assert.Equal(inserted.Id, key);
-            Assert.True(mapper.MapFromDataToStorageModel_WasCalled);
-            Assert.False(mapper.MapFromStorageToDataModel_WasCalled);
-
-            TestModel? received = await collection.GetAsync(inserted.Id, new() { IncludeVectors = true });
-            AssertEquality(inserted, received);
-            Assert.True(mapper.MapFromStorageToDataModel_WasCalled);
-
-            TestModel updated = new()
-            {
-                Id = inserted.Id,
-                Number = inserted.Number + 200, // change one property
-                Floats = inserted.Floats
-            };
-            key = await collection.UpsertAsync(updated);
-            Assert.Equal(inserted.Id, key);
-
-            received = await collection.GetAsync(updated.Id, new() { IncludeVectors = true });
-            AssertEquality(updated, received);
-
-            await collection.DeleteAsync(inserted.Id);
-
-            Assert.Null(await collection.GetAsync(inserted.Id));
-        }
-        finally
-        {
-            await collection.DeleteCollectionAsync();
-        }
-    }
-
-    [ConditionalFact]
     public async Task BatchCRUD()
     {
         string collectionName = GetUniqueCollectionName();
@@ -220,13 +167,13 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Floats = Enumerable.Range(0, 10).Select(j => (float)(i + j)).ToArray()
             }).ToArray();
 
-            string[] keys = await collection.UpsertBatchAsync(inserted).ToArrayAsync();
+            var keys = await collection.UpsertAsync(inserted);
             for (int i = 0; i < inserted.Length; i++)
             {
                 Assert.Equal(inserted[i].Id, keys[i]);
             }
 
-            TestModel[] received = await collection.GetBatchAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
+            TestModel[] received = await collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
             for (int i = 0; i < inserted.Length; i++)
             {
                 AssertEquality(inserted[i], received[i]);
@@ -239,21 +186,21 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Floats = i.Floats
             }).ToArray();
 
-            keys = await collection.UpsertBatchAsync(updated).ToArrayAsync();
+            keys = await collection.UpsertAsync(updated);
             for (int i = 0; i < updated.Length; i++)
             {
                 Assert.Equal(updated[i].Id, keys[i]);
             }
 
-            received = await collection.GetBatchAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
+            received = await collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
             for (int i = 0; i < updated.Length; i++)
             {
                 AssertEquality(updated[i], received[i]);
             }
 
-            await collection.DeleteBatchAsync(keys);
+            await collection.DeleteAsync(keys);
 
-            Assert.False(await collection.GetBatchAsync(keys).AnyAsync());
+            Assert.False(await collection.GetAsync(keys).AnyAsync());
         }
         finally
         {
@@ -465,38 +412,5 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
         [VectorStoreRecordVector(Dimensions: 10, StoragePropertyName = "embedding")]
         public ReadOnlyMemory<float> Floats { get; set; }
-    }
-
-    private sealed class TestModelMapper : IVectorStoreRecordMapper<TestModel, IDictionary<string, object?>>
-    {
-        internal bool MapFromDataToStorageModel_WasCalled { get; set; }
-        internal bool MapFromStorageToDataModel_WasCalled { get; set; }
-
-        public IDictionary<string, object?> MapFromDataToStorageModel(TestModel dataModel)
-        {
-            this.MapFromDataToStorageModel_WasCalled = true;
-
-            return new Dictionary<string, object?>()
-            {
-                { "key", dataModel.Id },
-                { "text", dataModel.Text },
-                { "column", dataModel.Number },
-                // Please note that we are not dealing with JSON directly here.
-                { "embedding", dataModel.Floats }
-            };
-        }
-
-        public TestModel MapFromStorageToDataModel(IDictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
-        {
-            this.MapFromStorageToDataModel_WasCalled = true;
-
-            return new()
-            {
-                Id = (string)storageModel["key"]!,
-                Text = (string?)storageModel["text"],
-                Number = (int)storageModel["column"]!,
-                Floats = (ReadOnlyMemory<float>)storageModel["embedding"]!
-            };
-        }
     }
 }

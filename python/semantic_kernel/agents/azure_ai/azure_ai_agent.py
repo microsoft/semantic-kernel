@@ -5,8 +5,6 @@ import sys
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
-from typing_extensions import deprecated
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -18,7 +16,6 @@ from azure.ai.projects.models import (
     AgentsApiResponseFormat,
     AgentsApiResponseFormatMode,
     ResponseFormatJsonSchemaType,
-    ThreadMessage,
     ThreadMessageOptions,
     ToolDefinition,
     TruncationObject,
@@ -289,6 +286,7 @@ class AzureAIAgent(Agent):
         response_format: AgentsApiResponseFormatOption | None = None,
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent on a thread.
@@ -312,6 +310,7 @@ class AzureAIAgent(Agent):
             response_format: Response format for the agent.
             parallel_tool_calls: Whether to allow parallel tool calls.
             metadata: Metadata for the agent.
+            polling_options: The polling options for the agent.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -346,6 +345,7 @@ class AzureAIAgent(Agent):
             "truncation_strategy": truncation_strategy,
             "response_format": response_format,
             "parallel_tool_calls": parallel_tool_calls,
+            "polling_options": polling_options,
             "metadata": metadata,
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
@@ -391,6 +391,7 @@ class AzureAIAgent(Agent):
         response_format: AgentsApiResponseFormatOption | None = None,
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent on the specified thread.
@@ -414,6 +415,7 @@ class AzureAIAgent(Agent):
             truncation_strategy: Truncation strategy for the agent.
             response_format: Response format for the agent.
             parallel_tool_calls: Whether to allow parallel tool calls.
+            polling_options: The polling options for the agent.
             metadata: Metadata for the agent.
             **kwargs: Additional keyword arguments.
 
@@ -450,6 +452,7 @@ class AzureAIAgent(Agent):
             "response_format": response_format,
             "parallel_tool_calls": parallel_tool_calls,
             "metadata": metadata,
+            "polling_options": polling_options,
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 
@@ -607,18 +610,3 @@ class AzureAIAgent(Agent):
         assert thread.id is not None  # nosec
 
         return AzureAIChannel(client=self.client, thread_id=thread.id)
-
-    @deprecated(
-        "Pass messages directly to get_response(...)/invoke(...) instead. This method will be removed after May 1st 2025."  # noqa: E501
-    )
-    async def add_chat_message(self, thread_id: str, message: str | ChatMessageContent) -> "ThreadMessage | None":
-        """Add a chat message to the thread.
-
-        Args:
-            thread_id: The ID of the thread
-            message: The chat message to add
-
-        Returns:
-            ThreadMessage | None: The thread message
-        """
-        return await AgentThreadActions.create_message(client=self.client, thread_id=thread_id, message=message)

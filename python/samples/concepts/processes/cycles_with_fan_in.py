@@ -5,7 +5,7 @@ import logging
 from enum import Enum
 from typing import ClassVar
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
@@ -65,7 +65,7 @@ class BStep(KernelProcessStep):
 
 
 # Define a sample `CStepState` that will keep track of the current cycle.
-class CStepState:
+class CStepState(BaseModel):
     current_cycle: int = 0
 
 

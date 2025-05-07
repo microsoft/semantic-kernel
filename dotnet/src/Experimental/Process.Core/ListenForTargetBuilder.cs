@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
 
@@ -59,5 +60,26 @@ public sealed class ListenForTargetBuilder : ProcessStepEdgeBuilder
         }
 
         return new ListenForTargetBuilder(this._messageSources, this._processBuilder, edgeGroup: this.EdgeGroupBuilder);
+    }
+
+    /// <summary>
+    /// Signals that the process should be stopped.
+    /// </summary>
+    public override void StopProcess()
+    {
+        var target = new ProcessFunctionTargetBuilder(EndStep.Instance);
+
+        foreach (var messageSource in this._messageSources)
+        {
+            if (messageSource.Source == null)
+            {
+                throw new InvalidOperationException("Source step cannot be null.");
+            }
+
+            // Link all the source steps to the event listener
+            var onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
+            onEventBuilder.EdgeGroupBuilder = this.EdgeGroupBuilder;
+            onEventBuilder.SendEventTo(target);
+        }
     }
 }

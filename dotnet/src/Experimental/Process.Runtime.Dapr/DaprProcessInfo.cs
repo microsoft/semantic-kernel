@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Microsoft.SemanticKernel.Process;
 
 namespace Microsoft.SemanticKernel;
 
@@ -48,6 +49,10 @@ public sealed record DaprProcessInfo : DaprStepInfo
             {
                 steps.Add(proxyStep.ToKernelProcessProxy());
             }
+            else if (step is DaprAgentStepInfo agentStep)
+            {
+                steps.Add(agentStep.ToKernelProcessAgentStep());
+            }
             else
             {
                 steps.Add(step.ToKernelProcessStepInfo());
@@ -82,6 +87,10 @@ public sealed record DaprProcessInfo : DaprStepInfo
             else if (step is KernelProcessProxy proxyStep)
             {
                 daprSteps.Add(DaprProxyInfo.FromKernelProxyInfo(proxyStep));
+            }
+            else if (step is KernelProcessAgentStep agentStep)
+            {
+                daprSteps.Add(DaprAgentStepInfo.FromKernelProcessAgentStep(agentStep));
             }
             else
             {

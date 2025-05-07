@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Agents;
 using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -93,13 +94,6 @@ public class Workflow
     [YamlMember(Alias = "orchestration")]
     [JsonPropertyName("orchestration")]
     public List<OrchestrationStep>? Orchestration { get; set; }
-
-    /// <summary>
-    /// Gets or sets the upgrade strategies for the workflow.
-    /// </summary>
-    [YamlMember(Alias = "upgrade")]
-    [JsonPropertyName("upgrade")]
-    public List<UpgradeStrategy>? Upgrade { get; set; }
 
     /// <summary>
     /// Gets or sets the error handling steps for the workflow.
@@ -206,13 +200,13 @@ public class CloudEvent
     /// </summary>
     [YamlMember(Alias = "filters")]
     [JsonPropertyName("filters")]
-    public List<Filter>? Filters { get; set; }
+    public List<ProcessFilter>? Filters { get; set; }
 }
 
 /// <summary>
 /// Filter for the cloud event.
 /// </summary>
-public class Filter
+public class ProcessFilter
 {
     /// <summary>
     /// Gets or sets the filter expression.
@@ -388,14 +382,14 @@ public class Node
     /// </summary>
     [YamlMember(Alias = "agent")]
     [JsonPropertyName("agent")]
-    public WorkflowAgent? Agent { get; set; }
+    public AgentDefinition? Agent { get; set; }
 
     /// <summary>
     /// Gets or sets the inputs of the node.
     /// </summary>
     [YamlMember(Alias = "inputs")]
     [JsonPropertyName("inputs")]
-    public Dictionary<string, NodeInput>? Inputs { get; set; }
+    public NodeInputs? Inputs { get; set; }
 
     /// <summary>
     /// Gets or sets the agent input mapping of the node.
@@ -403,13 +397,6 @@ public class Node
     [YamlMember(Alias = "agent_input_mapping")]
     [JsonPropertyName("agent_input_mapping")]
     public Dictionary<string, string>? AgentInputMapping { get; set; }
-
-    /// <summary>
-    /// Gets or sets the on invoke hook of the node.
-    /// </summary>
-    [YamlMember(Alias = "on_invoke")]
-    [JsonPropertyName("on_invoke")]
-    public List<OnEventAction>? OnInvoke { get; set; }
 
     /// <summary>
     /// Gets or sets the on error hook of the node.
@@ -447,23 +434,46 @@ public class WorkflowAgent
 }
 
 /// <summary>
+/// Type of the agent input.
+/// </summary>
+public enum AgentInputType
+{
+    /// <summary>
+    /// Inputs are assumed to be in the thread and are not injected separately.
+    /// </summary>
+    Thread,
+
+    /// <summary>
+    /// The agent is expected structured inputs.
+    /// </summary>
+    Structured
+}
+
+/// <summary>
 /// Input of the node.
 /// </summary>
-public class NodeInput
+public class NodeInputs
 {
     /// <summary>
     /// Gets or sets the type of the node input.
     /// </summary>
     [YamlMember(Alias = "type")]
     [JsonPropertyName("type")]
-    public string? Type { get; set; }
+    public AgentInputType Type { get; set; }
+
+    /// <summary>
+    /// Gets or sets the inputs of the node.
+    /// </summary>
+    [YamlMember(Alias = "structured_input_schema")]
+    [JsonPropertyName("structured_input_schema")]
+    public string? StructuredInputSchema { get; set; }
 
     /// <summary>
     /// Gets or sets the schema of the node input.
     /// </summary>
-    [YamlMember(Alias = "schema")]
-    [JsonPropertyName("schema")]
-    public SchemaReference? Schema { get; set; }
+    [YamlMember(Alias = "default")]
+    [JsonPropertyName("default")]
+    public object? Default { get; set; }
 }
 
 /// <summary>
@@ -574,6 +584,77 @@ public class EventEmission
 }
 
 /// <summary>
+/// Condition expression for a condition or hook.
+/// </summary>
+public class ConditionExpression
+{
+    /// <summary>
+    /// Gets or sets the path to the variable.
+    /// </summary>
+    public string Path { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the operator for the condition.
+    /// </summary>
+    public ConditionOperator Operator { get; set; } = ConditionOperator.Equal;
+
+    /// <summary>
+    /// Gets or sets the value for the condition.
+    /// </summary>
+    public object Value { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Operator for a condition.
+/// </summary>
+public enum ConditionOperator
+{
+    /// <summary>
+    /// Equal operator.
+    /// </summary>
+    Equal,
+    /// <summary>
+    /// Not equal operator.
+    /// </summary>
+    NotEqual,
+    /// <summary>
+    /// Greater than operator.
+    /// </summary>
+    GreaterThan,
+    /// <summary>
+    /// Less than operator.
+    /// </summary>
+    LessThan,
+    /// <summary>
+    /// Greater than or equal operator.
+    /// </summary>
+    GreaterThanOrEqual,
+    /// <summary>
+    /// Less than or equal operator.
+    /// </summary>
+    LessThanOrEqual
+}
+
+/// <summary>
+/// Operations for updating the state.
+/// </summary>
+public enum StateUpdateOperations
+{
+    /// <summary>
+    /// Set operation.
+    /// </summary>
+    Set,
+    /// <summary>
+    /// Increment operation.
+    /// </summary>
+    Increment,
+    /// <summary>
+    /// Decrement operation.
+    /// </summary>
+    Decrement
+}
+
+/// <summary>
 /// Variable update for a condition or hook.
 /// </summary>
 public class VariableUpdate
@@ -583,21 +664,21 @@ public class VariableUpdate
     /// </summary>
     [YamlMember(Alias = "variable")]
     [JsonPropertyName("variable")]
-    public string Variable { get; set; } = string.Empty;
+    public string Path { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the operation to be performed on the variable.
     /// </summary>
     [YamlMember(Alias = "operation")]
     [JsonPropertyName("operation")]
-    public string Operation { get; set; } = string.Empty;
+    public StateUpdateOperations Operation { get; set; }
 
     /// <summary>
     /// Gets or sets the value to be assigned to the variable.
     /// </summary>
     [YamlMember(Alias = "value")]
     [JsonPropertyName("value")]
-    public string Value { get; set; } = string.Empty;
+    public object? Value { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -685,26 +766,6 @@ public class ThenAction
     [YamlMember(Alias = "inputs")]
     [JsonPropertyName("inputs")]
     public Dictionary<string, string>? Inputs { get; set; }
-}
-
-/// <summary>
-/// Represents an upgrade strategy for the workflow.
-/// </summary>
-public class UpgradeStrategy
-{
-    /// <summary>
-    /// Gets or sets the version range from which the upgrade is applicable.
-    /// </summary>
-    [YamlMember(Alias = "from_versions")]
-    [JsonPropertyName("from_versions")]
-    public VersionRange? FromVersions { get; set; }
-
-    /// <summary>
-    /// Gets or sets the strategy for the upgrade.
-    /// </summary>
-    [YamlMember(Alias = "strategy")]
-    [JsonPropertyName("strategy")]
-    public string Strategy { get; set; } = string.Empty;
 }
 
 /// <summary>

@@ -6,7 +6,7 @@ using Grpc.Core;
 using Microsoft.SemanticKernel;
 using Microsoft.VisualStudio.Threading;
 using ProcessWithCloudEvents.Grpc.Clients;
-using ProcessWithCloudEvents.Grpc.DocumentationGenerator;
+using ProcessWithCloudEvents.Grpc.Contract;
 using ProcessWithCloudEvents.Processes;
 using ProcessWithCloudEvents.Processes.Models;
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Xunit;
 
@@ -19,10 +20,12 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromDataToStorageModel()
     {
         // Arrange.
-        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("Key", JsonSerializerOptions.Default);
+        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
+            .Build(typeof(MultiPropsModel), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(model, JsonSerializerOptions.Default);
 
         // Act.
-        var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
+        var actual = sut.MapFromDataToStorageModel(CreateModel("test key"), recordIndex: 0, generatedEmbeddings: null);
 
         // Assert.
         Assert.NotNull(actual.Node);
@@ -38,10 +41,13 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromDataToStorageModelWithCustomSerializerOptions()
     {
         // Arrange.
-        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("key", new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
+            .Build(typeof(MultiPropsModel), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(model, jsonSerializerOptions);
 
         // Act.
-        var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
+        var actual = sut.MapFromDataToStorageModel(CreateModel("test key"), recordIndex: 0, generatedEmbeddings: null);
 
         // Assert.
         Assert.NotNull(actual.Node);
@@ -57,7 +63,9 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromStorageToDataModel()
     {
         // Arrange.
-        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("Key", JsonSerializerOptions.Default);
+        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
+            .Build(typeof(MultiPropsModel), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(model, JsonSerializerOptions.Default);
 
         // Act.
         var jsonObject = new JsonObject();
@@ -80,7 +88,10 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromStorageToDataModelWithCustomSerializerOptions()
     {
         // Arrange.
-        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("key", new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
+            .Build(typeof(MultiPropsModel), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(model, jsonSerializerOptions);
 
         // Act.
         var jsonObject = new JsonObject();
@@ -123,10 +134,10 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
         [VectorStoreRecordData]
         public string Data2 { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(10)]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(10)]
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;

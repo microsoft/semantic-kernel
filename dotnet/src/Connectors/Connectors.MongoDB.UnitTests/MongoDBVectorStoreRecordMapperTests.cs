@@ -28,11 +28,11 @@ public sealed class MongoDBVectorStoreRecordMapperTests
                 new VectorStoreRecordDataProperty("HotelName", typeof(string)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?))
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 10)
             ]
         };
 
-        this._sut = new(new VectorStoreRecordPropertyReader(typeof(MongoDBHotelModel), definition, null));
+        this._sut = new(new MongoDBModelBuilder().Build(typeof(MongoDBHotelModel), definition, defaultEmbeddingGenerator: null));
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public sealed class MongoDBVectorStoreRecordMapperTests
         };
 
         // Act
-        var document = this._sut.MapFromDataToStorageModel(hotel);
+        var document = this._sut.MapFromDataToStorageModel(hotel, generatedEmbeddings: null);
 
         // Assert
         Assert.NotNull(document);

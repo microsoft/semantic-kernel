@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
-/// Options when creating a <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="RedisJsonVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class RedisJsonVectorStoreRecordCollectionOptions<TRecord>
 {
@@ -27,6 +29,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionOptions<TRecord>
     /// <remarks>
     /// If not set, the default built in mapper will be used, which uses record attrigutes or the provided <see cref="VectorStoreRecordDefinition"/> to map the record.
     /// </remarks>
+    [Obsolete("Custom mappers are no longer supported.", error: true)]
     public IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)>? JsonNodeCustomMapper { get; init; } = null;
 
     /// <summary>
@@ -43,4 +46,9 @@ public sealed class RedisJsonVectorStoreRecordCollectionOptions<TRecord>
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Redis record.
     /// </summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; init; } = null;
+
+    /// <summary>
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

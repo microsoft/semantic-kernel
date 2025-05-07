@@ -1,18 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
-/// Options when creating a <see cref="MongoDBVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="MongoDBVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class MongoDBVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the MongoDB BSON object.
     /// </summary>
+    [Obsolete("Custom mappers are no longer supported.", error: true)]
     public IVectorStoreRecordMapper<TRecord, BsonDocument>? BsonDocumentCustomMapper { get; init; } = null;
 
     /// <summary>
@@ -24,6 +27,11 @@ public sealed class MongoDBVectorStoreRecordCollectionOptions<TRecord>
     /// See <see cref="VectorStoreRecordKeyAttribute"/>, <see cref="VectorStoreRecordDataAttribute"/> and <see cref="VectorStoreRecordVectorAttribute"/>.
     /// </remarks>
     public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+
+    /// <summary>
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 
     /// <summary>
     /// Vector index name to use. If null, the default "vector_index" name will be used.

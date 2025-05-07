@@ -12,15 +12,14 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal static class ExceptionWrapper
 {
-    internal const string VectorStoreType = "SqlServer";
-
     internal static async Task<T> WrapAsync<T>(
         SqlConnection connection,
         SqlCommand command,
         Func<SqlCommand, CancellationToken, Task<T>> func,
-        CancellationToken cancellationToken,
         string operationName,
-        string? collectionName = null)
+        string? vectorStoreName = null,
+        string? collectionName = null,
+        CancellationToken cancellationToken = default)
     {
         if (connection.State != System.Data.ConnectionState.Open)
         {
@@ -41,18 +40,20 @@ internal static class ExceptionWrapper
 
             throw new VectorStoreOperationException(ex.Message, ex)
             {
-                OperationName = operationName,
-                VectorStoreType = VectorStoreType,
-                CollectionName = collectionName
+                VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
+                VectorStoreName = vectorStoreName,
+                CollectionName = collectionName,
+                OperationName = operationName
             };
         }
     }
 
     internal static async Task<bool> WrapReadAsync(
         SqlDataReader reader,
-        CancellationToken cancellationToken,
         string operationName,
-        string? collectionName = null)
+        string? vectorStoreName = null,
+        string? collectionName = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -62,9 +63,10 @@ internal static class ExceptionWrapper
         {
             throw new VectorStoreOperationException(ex.Message, ex)
             {
-                OperationName = operationName,
-                VectorStoreType = VectorStoreType,
-                CollectionName = collectionName
+                VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
+                VectorStoreName = vectorStoreName,
+                CollectionName = collectionName,
+                OperationName = operationName
             };
         }
     }

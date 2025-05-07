@@ -10,18 +10,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit"/>
+    <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-    <PackageReference Include="Testcontainers.MongoDB"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Testcontainers.MongoDB" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj"/>
-    <ProjectReference Include="..\..\VectorDataIntegrationTests\VectorDataIntegrationTests\VectorDataIntegrationTests.csproj"/>
+    <ProjectReference Include="..\..\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj" />
+    <ProjectReference Include="..\..\VectorDataIntegrationTests\VectorDataIntegrationTests\VectorDataIntegrationTests.csproj" />
   </ItemGroup>
 
 </Project>

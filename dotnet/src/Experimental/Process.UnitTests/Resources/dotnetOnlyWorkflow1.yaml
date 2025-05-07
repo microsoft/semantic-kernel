@@ -70,8 +70,8 @@ workflow:
         topic: "inputs.input"
       on_complete:
         - on_condition:
-            type: state
-            expression: "$agent.outputs.results.articles.length > 0"
+            type: output_eval
+            expression: "results.articles.length > '0'"
             emits:
               - event_type: data_fetched
                 schema: 
@@ -113,8 +113,8 @@ workflow:
         id: b_step_agent
       on_complete:
         - on_condition:
-            type: state
-            expression: "$agent.outputs.report_feedback.passed == true"
+            type: output_eval
+            expression: "report_feedback.passed == 'true'"
             emits:
               - event_type: report_approved
                 schema: 
@@ -131,7 +131,7 @@ workflow:
                   $ref: "#/workflow/schemas/report_feedback"
                 payload: "$agent.outputs.report_feedback"
             updates:
-              - variable: $.variables.revision_count
+              - variable: revision_count
                 operation: increment
                 value: 1
               - variable: last_feedback
@@ -199,4 +199,8 @@ workflow:
       then:
         - node: kickoff
 
-        # TODO: Need to signal workflow end
+    - listen_for:
+        event: "ExitRequested"
+        from: c_step
+      then:
+        - node: End

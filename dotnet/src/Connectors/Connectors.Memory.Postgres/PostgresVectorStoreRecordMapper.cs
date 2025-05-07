@@ -2,7 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -10,52 +13,37 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// A mapper class that handles the conversion between data models and storage models for Postgres vector store.
 /// </summary>
 /// <typeparam name="TRecord">The type of the data model record.</typeparam>
-internal sealed class PostgresVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>
+internal sealed class PostgresVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model)
+    where TRecord : notnull
 {
-    /// <summary><see cref="VectorStoreRecordPropertyReader"/> with helpers for reading vector store model properties and their attributes.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PostgresVectorStoreRecordMapper{TRecord}"/> class.
-    /// </summary>
-    /// <param name="propertyReader">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
-    public PostgresVectorStoreRecordMapper(VectorStoreRecordPropertyReader propertyReader)
+    public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
-        Verify.NotNull(propertyReader);
+        var keyProperty = model.KeyProperty;
 
-        this._propertyReader = propertyReader;
-
-        this._propertyReader.VerifyHasParameterlessConstructor();
-
-        // Validate property types.
-        this._propertyReader.VerifyDataProperties(PostgresConstants.SupportedDataTypes, PostgresConstants.SupportedEnumerableDataElementTypes);
-        this._propertyReader.VerifyVectorProperties(PostgresConstants.SupportedVectorTypes);
-    }
-
-    public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
-    {
         var properties = new Dictionary<string, object?>
         {
-            // Add key property
-            { this._propertyReader.KeyPropertyStoragePropertyName, this._propertyReader.KeyPropertyInfo.GetValue(dataModel) }
+            { keyProperty.StorageName, keyProperty.GetValueAsObject(dataModel) }
         };
 
-        // Add data properties
-        foreach (var property in this._propertyReader.DataPropertiesInfo)
+        foreach (var property in model.DataProperties)
         {
-            properties.Add(
-                this._propertyReader.GetStoragePropertyName(property.Name),
-                property.GetValue(dataModel)
-            );
+            properties.Add(property.StorageName, property.GetValueAsObject(dataModel));
         }
 
-        // Add vector properties
-        foreach (var property in this._propertyReader.VectorPropertiesInfo)
+        for (var i = 0; i < model.VectorProperties.Count; i++)
         {
-            var propertyValue = property.GetValue(dataModel);
-            var result = PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(propertyValue);
+            var property = model.VectorProperties[i];
 
-            properties.Add(this._propertyReader.GetStoragePropertyName(property.Name), result);
+            properties.Add(
+                property.StorageName,
+                PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(
+                    generatedEmbeddings?[i] is IReadOnlyList<Embedding> e
+                        ? e[recordIndex] switch
+                        {
+                            Embedding<float> fe => fe.Vector,
+                            _ => throw new UnreachableException()
+                        }
+                        : (ReadOnlyMemory<float>?)property.GetValueAsObject(dataModel!)!));
         }
 
         return properties;
@@ -63,36 +51,38 @@ internal sealed class PostgresVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 
     public TRecord MapFromStorageToDataModel(Dictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
     {
-        var record = (TRecord)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
+        var record = model.CreateRecord<TRecord>()!;
 
-        // Set key.
-        var keyPropertyValue = Convert.ChangeType(
-            storageModel[this._propertyReader.KeyPropertyStoragePropertyName],
-            this._propertyReader.KeyProperty.PropertyType);
+        var keyProperty = model.KeyProperty;
+        var keyPropertyValue = Convert.ChangeType(storageModel[keyProperty.StorageName], keyProperty.Type);
+        keyProperty.SetValueAsObject(record, keyPropertyValue);
 
-        this._propertyReader.KeyPropertyInfo.SetValue(record, keyPropertyValue);
-
-        // Process data properties.
-        var dataPropertiesInfoWithValues = VectorStoreRecordMapping.BuildPropertiesInfoWithValues(
-            this._propertyReader.DataPropertiesInfo,
-            this._propertyReader.StoragePropertyNamesMap,
-            storageModel);
-
-        VectorStoreRecordMapping.SetPropertiesOnRecord(record, dataPropertiesInfoWithValues);
+        foreach (var dataProperty in model.DataProperties)
+        {
+            dataProperty.SetValueAsObject(record, storageModel[dataProperty.StorageName]);
+        }
 
         if (options.IncludeVectors)
         {
-            // Process vector properties.
-            var vectorPropertiesInfoWithValues = VectorStoreRecordMapping.BuildPropertiesInfoWithValues(
-                this._propertyReader.VectorPropertiesInfo,
-                this._propertyReader.StoragePropertyNamesMap,
-                storageModel,
-                (object? vector, Type type) =>
+            foreach (var vectorProperty in model.VectorProperties)
+            {
+                switch (storageModel[vectorProperty.StorageName])
                 {
-                    return PostgresVectorStoreRecordPropertyMapping.MapVectorForDataModel(vector);
-                });
+                    case Pgvector.Vector pgVector:
+                        vectorProperty.SetValueAsObject(record, pgVector.Memory);
+                        continue;
 
-            VectorStoreRecordMapping.SetPropertiesOnRecord(record, vectorPropertiesInfoWithValues);
+                    // TODO: Implement support for Half, binary, sparse embeddings (#11083)
+
+                    // TODO: We currently allow round-tripping null for the vector property; this is not supported for most (?) dedicated databases; think about it.
+                    case null:
+                        vectorProperty.SetValueAsObject(record, null);
+                        continue;
+
+                    case var value:
+                        throw new InvalidOperationException($"Embedding vector read back from PostgreSQL is of type '{value.GetType().Name}' instead of the expected Pgvector.Vector type for property '{vectorProperty.ModelName}'.");
+                }
+            }
         }
 
         return record;
