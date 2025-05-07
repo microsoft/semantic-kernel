@@ -62,8 +62,8 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
     public async Task UseBingGroundingToolWithStreaming()
     {
         // Access the BingGrounding connection
-        ConnectionsClient cxnClient = this.Client.GetConnectionsClient();
-        ConnectionResponse bingConnection = await cxnClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
+        ConnectionsClient connectionClient = this.Client.GetConnectionsClient();
+        ConnectionResponse bingConnection = await connectionClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
 
         // Define the agent
         ToolConnectionList tools = new()
@@ -72,7 +72,7 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
         };
         FoundryAgent definition = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
-            tools: [new BingGroundingToolDefinition(connectionList)]);
+            tools: [new BingGroundingToolDefinition(tools)]);
         AzureAIAgent agent = new(definition, this.AgentsClient);
 
         // Create a thread for the agent conversation.
