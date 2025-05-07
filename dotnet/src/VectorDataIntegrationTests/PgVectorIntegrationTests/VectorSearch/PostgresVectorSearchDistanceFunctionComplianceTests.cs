@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
 using PgVectorIntegrationTests.Support;
 using VectorDataSpecificationTests.VectorSearch;
 using Xunit;
@@ -10,7 +11,14 @@ public class PostgresVectorSearchDistanceFunctionComplianceTests(PostgresFixture
 {
     public override Task EuclideanSquaredDistance() => Assert.ThrowsAsync<NotSupportedException>(base.EuclideanSquaredDistance);
 
-    public override Task HammingDistance() => Assert.ThrowsAsync<NotSupportedException>(base.HammingDistance);
+    public override async Task HammingDistance()
+    {
+        // Hamming distance is supported by pgvector, but only on binaray vectors (bit(x)), and the test uses float32 vectors (vector(x)).
+        var exception = await Assert.ThrowsAsync<VectorStoreException>(base.HammingDistance);
+        var postgresException = Assert.IsType<Npgsql.PostgresException>(exception.InnerException);
+
+        Assert.Equal("42883", postgresException.SqlState);
+    }
 
     public override Task NegativeDotProductSimilarity() => Assert.ThrowsAsync<NotSupportedException>(base.NegativeDotProductSimilarity);
 }
