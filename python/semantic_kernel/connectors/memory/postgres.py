@@ -19,6 +19,7 @@ from pydantic_settings import SettingsConfigDict
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.record_definition import (
+    VectorStoreRecordDataField,
     VectorStoreRecordDefinition,
     VectorStoreRecordField,
     VectorStoreRecordKeyField,
@@ -159,7 +160,10 @@ def _convert_row_to_dict(
     return {field_name: _convert(value, field) for (field_name, field), value in zip(fields, row)}
 
 
-def _convert_dict_to_row(record: dict[str, Any], fields: list[VectorStoreRecordField]) -> tuple[Any, ...]:
+def _convert_dict_to_row(
+    record: dict[str, Any],
+    fields: list[VectorStoreRecordKeyField | VectorStoreRecordVectorField | VectorStoreRecordDataField],
+) -> tuple[Any, ...]:
     """Convert a dictionary to a row for a PostgreSQL query.
 
     Args:

@@ -538,11 +538,11 @@ class PineconeCollection(
                         if (
                             isinstance(operand, dict)
                             and len(operand) == 1
-                            and isinstance(next(operand.values()), dict)
-                            and "$in" in next(operand.values())
+                            and isinstance(next(operand.values()), dict)  # type: ignore
+                            and "$in" in next(operand.values())  # type: ignore
                         ):
-                            field = next(operand.keys())
-                            values = next(operand.values())["$in"]
+                            field = next(operand.keys())  # type: ignore
+                            values = next(operand.values())["$in"]  # type: ignore
                             return {field: {"$nin": values}}
                         raise NotImplementedError(
                             "$not is only supported over $in (i.e., for ![...].contains(field)). "
