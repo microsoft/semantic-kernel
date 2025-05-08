@@ -1,19 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.Orchestration;
 
 /// <summary>
 /// Demonstrates how to use the <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
 /// </summary>
-public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(output)
+public class Step03a_GroupChatWithHumanInTheLoop(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task AuthorCriticAsync()
+    public async Task GroupChatWithHumanAsync()
     {
         // Define the agents
         ChatCompletionAgent writer =
@@ -42,12 +44,29 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
                 """);
 
         // Define the orchestration
-        GroupChatOrchestration orchestration = new(new RoundRobinGroupChatManager() { MaximumInvocations = 5 }, writer, editor) { LoggerFactory = this.LoggerFactory };
+        GroupChatOrchestration orchestration =
+            new(
+                new CustomRoundRobinGroupChatManager()
+                {
+                    MaximumInvocations = 5,
+                    InteractiveCallback = () =>
+                    {
+                        ChatMessageContent input = new(AuthorRole.User, "I like it");
+                        Console.WriteLine($"\n# INPUT: {input.Content}\n");
+                        return ValueTask.FromResult(input);
+                    }
+                },
+                writer,
+                editor)
+            {
+                LoggerFactory = this.LoggerFactory
+            };
 
         // Start the runtime
         InProcessRuntime runtime = new();
         await runtime.StartAsync();
 
+        // Run the orchestration
         string input = "Create a slogon for a new eletric SUV that is affordable and fun to drive.";
         Console.WriteLine($"\n# INPUT: {input}\n");
         OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
@@ -55,5 +74,25 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
         Console.WriteLine($"\n# RESULT: {text}");
 
         await runtime.RunUntilIdleAsync();
+    }
+
+    private sealed class CustomRoundRobinGroupChatManager : RoundRobinGroupChatManager
+    {
+        public override ValueTask<GroupChatManagerResult<bool>> ShouldRequestUserInput(ChatHistory history, CancellationToken cancellationToken = default)
+        {
+            string? lastAgent = history.LastOrDefault()?.AuthorName;
+
+            if (lastAgent is null)
+            {
+                return ValueTask.FromResult(new GroupChatManagerResult<bool>(false) { Reason = "No agents have spoken yet." });
+            }
+
+            if (lastAgent == "Reviewer")
+            {
+                return ValueTask.FromResult(new GroupChatManagerResult<bool>(true) { Reason = "User input is needed after the reviewer's message." });
+            }
+
+            return ValueTask.FromResult(new GroupChatManagerResult<bool>(false) { Reason = "User input is not needed until the reviewer's message." });
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 /// An orchestration that provides the input message to the first agent
 /// and Handoffly passes each agent result to the next agent.
 /// </summary>
-public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, HandoffMessages.InputTask, HandoffMessages.Result, TOutput>
+public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, TOutput>
 {
     internal static readonly string OrchestrationName = typeof(HandoffOrchestration<,>).Name.Split('`').First();
 
@@ -23,52 +23,48 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandoffOrchestration{TInput, TOutput}"/> class.
     /// </summary>
-    /// <param name="runtime">The runtime associated with the orchestration.</param>
     /// <param name="handoffs">Defines the handoff connections for each agent.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
-    public HandoffOrchestration(IAgentRuntime runtime, Dictionary<string, HandoffConnections> handoffs, params OrchestrationTarget[] agents)
-        : base(OrchestrationName, runtime, agents)
+    public HandoffOrchestration(Dictionary<string, HandoffConnections> handoffs, params Agent[] agents)
+        : base(OrchestrationName, agents)
     {
         this._handoffs = handoffs;
     }
 
     /// <inheritdoc />
-    protected override async ValueTask StartAsync(TopicId topic, HandoffMessages.InputTask input, AgentType? entryAgent)
+    protected override async ValueTask StartAsync(IAgentRuntime runtime, TopicId topic, IEnumerable<ChatMessageContent> input, AgentType? entryAgent)
     {
         if (!entryAgent.HasValue)
         {
             throw new ArgumentException("Entry agent is not defined.", nameof(entryAgent));
         }
-        await this.Runtime.PublishMessageAsync(new HandoffMessages.Response { Message = input.Message }, topic).ConfigureAwait(false);
-        await this.Runtime.SendMessageAsync(new HandoffMessages.Request(), entryAgent.Value).ConfigureAwait(false);
+        await runtime.PublishMessageAsync(input.AsInputTaskMessage(), topic).ConfigureAwait(false);
+        await runtime.SendMessageAsync(new HandoffMessages.Request(), entryAgent.Value).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILoggerFactory loggerFactory, ILogger logger)
+    protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(IAgentRuntime runtime, OrchestrationContext context, RegistrationContext registrar, ILogger logger)
     {
+        AgentType outputType = await registrar.RegisterResultTypeAsync<HandoffMessages.Result>(response => response.Message).ConfigureAwait(false);
+
         // Each agent handsoff its result to the next agent.
         Dictionary<string, AgentType> agentMap = [];
         Dictionary<string, HandoffLookup> handoffMap = [];
-        AgentType nextAgent = orchestrationType;
+        AgentType agentType = outputType;
         for (int index = this.Members.Count - 1; index >= 0; --index)
         {
-            OrchestrationTarget member = this.Members[index];
+            Agent agent = this.Members[index];
+            HandoffLookup map = [];
+            handoffMap[agent.Name ?? agent.Id] = map;
+            agentType =
+                await runtime.RegisterAgentFactoryAsync(
+                    this.GetAgentType(context.Topic, index),
+                    (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new HandoffActor(agentId, runtime, context, agent, map, outputType, context.LoggerFactory.CreateLogger<HandoffActor>()))).ConfigureAwait(false);
+            agentMap[agent.Name ?? agent.Id] = agentType;
 
-            if (member.IsAgent(out Agent? agent))
-            {
-                HandoffLookup map = [];
-                handoffMap[agent.Name ?? agent.Id] = map;
-                nextAgent = await RegisterAgentAsync(topic, nextAgent, index, agent, map).ConfigureAwait(false);
-                agentMap[agent.Name ?? agent.Id] = nextAgent;
-            }
-            //else if (member.IsOrchestration(out Orchestratable? orchestration)) // TODO: IS POSSIBLE ?
-            //{
-            //    nextAgent = await orchestration.RegisterAsync(topic, nextAgent, loggerFactory).ConfigureAwait(false);
-            //}
+            await runtime.SubscribeAsync(agentType, context.Topic).ConfigureAwait(false);
 
-            await this.SubscribeAsync(nextAgent, topic).ConfigureAwait(false);
-
-            logger.LogRegisterActor(OrchestrationName, nextAgent, "MEMBER", index + 1);
+            logger.LogRegisterActor(OrchestrationName, agentType, "MEMBER", index + 1);
         }
 
         // Complete the handoff model
@@ -83,15 +79,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
             }
         }
 
-        return nextAgent;
-
-        ValueTask<AgentType> RegisterAgentAsync(TopicId topic, AgentType nextAgent, int index, Agent agent, HandoffLookup handoffs)
-        {
-            return
-                this.Runtime.RegisterAgentFactoryAsync(
-                    this.GetAgentType(topic, index),
-                    (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new HandoffActor(agentId, runtime, agent, handoffs, orchestrationType, topic, loggerFactory.CreateLogger<HandoffActor>())));
-        }
+        return agentType;
     }
 
     private AgentType GetAgentType(TopicId topic, int index) => this.FormatAgentType(topic, $"Agent_{index + 1}");

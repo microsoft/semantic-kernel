@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
@@ -13,91 +14,74 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 /// An orchestration that coordinates a group-chat.
 /// </summary>
 public class GroupChatOrchestration<TInput, TOutput> :
-    AgentOrchestration<TInput, ChatMessages.InputTask, ChatMessages.Result, TOutput>
+    AgentOrchestration<TInput, TOutput>
 {
     internal const string DefaultAgentDescription = "A helpful agent.";
 
-    internal static readonly string OrchestrationName = typeof(GroupChatOrchestration<,>).Name.Split('`').First();
+    internal static readonly string OrchestrationName = FormatOrchestrationName(typeof(GroupChatOrchestration<,>));
 
-    private readonly GroupChatStrategy _strategy;
+    private readonly GroupChatManager _manager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatOrchestration{TInput, TOutput}"/> class.
     /// </summary>
-    /// <param name="runtime">The runtime associated with the orchestration.</param>
-    /// <param name="strategy">The strategy that determines how the chat shall proceed.</param>
+    /// <param name="manager">The manages the flow of the group-chat.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
-    public GroupChatOrchestration(IAgentRuntime runtime, GroupChatStrategy strategy, params OrchestrationTarget[] agents)
-        : base(OrchestrationName, runtime, agents)
+    public GroupChatOrchestration(GroupChatManager manager, params Agent[] agents)
+        : base(OrchestrationName, agents)
     {
-        Verify.NotNull(strategy, nameof(strategy));
+        Verify.NotNull(manager, nameof(manager));
 
-        this._strategy = strategy;
-    }
-
-    /// <summary>
-    /// Defines how the group-chat is translated into the orchestration result (or handoff).
-    /// </summary>
-    public ChatHandoff Handoff { get; init; } = ChatHandoff.Default;
-
-    /// <inheritdoc />
-    protected override ValueTask StartAsync(TopicId topic, ChatMessages.InputTask input, AgentType? entryAgent)
-    {
-        return this.Runtime.SendMessageAsync(input, entryAgent!.Value);
+        this._manager = manager;
     }
 
     /// <inheritdoc />
-    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILoggerFactory loggerFactory, ILogger logger)
+    protected override ValueTask StartAsync(IAgentRuntime runtime, TopicId topic, IEnumerable<ChatMessageContent> input, AgentType? entryAgent)
     {
-        AgentType managerType = this.FormatAgentType(topic, "Manager");
+        if (!entryAgent.HasValue)
+        {
+            throw new ArgumentException("Entry agent is not defined.", nameof(entryAgent));
+        }
+        return runtime.SendMessageAsync(input.AsInputTaskMessage(), entryAgent.Value);
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(IAgentRuntime runtime, OrchestrationContext context, RegistrationContext registrar, ILogger logger)
+    {
+        AgentType outputType = await registrar.RegisterResultTypeAsync<GroupChatMessages.Result>(response => response.Message).ConfigureAwait(false);
 
         int agentCount = 0;
         ChatGroup team = [];
-        foreach (OrchestrationTarget member in this.Members)
+        foreach (Agent agent in this.Members)
         {
             ++agentCount;
+            AgentType agentType = await RegisterAgentAsync(agent, agentCount).ConfigureAwait(false);
+            string name = agent.Name ?? agent.Id ?? agentType;
+            string? description = agent.Description;
 
-            AgentType memberType = default;
-            string? name = null;
-            string? description = null;
-            if (member.IsAgent(out Agent? agent))
-            {
-                memberType = await RegisterAgentAsync(agent).ConfigureAwait(false);
-                description = agent.Description;
-                name = agent.Name ?? agent.Id;
-            }
-            else if (member.IsOrchestration(out Orchestratable? orchestration))
-            {
-                memberType = await orchestration.RegisterAsync(topic, managerType, loggerFactory).ConfigureAwait(false);
-                description = orchestration.Description;
-                name = orchestration.Name;
-            }
+            team[name] = (agentType, description ?? DefaultAgentDescription);
 
-            team[memberType] = (name ?? memberType, description ?? DefaultAgentDescription);
+            logger.LogRegisterActor(OrchestrationName, agentType, "MEMBER", agentCount);
 
-            logger.LogRegisterActor(OrchestrationName, memberType, "MEMBER", agentCount);
-
-            await this.SubscribeAsync(memberType, topic).ConfigureAwait(false);
+            await runtime.SubscribeAsync(agentType, context.Topic).ConfigureAwait(false);
         }
 
-        await this.Runtime.RegisterAgentFactoryAsync(
-            managerType,
-            (agentId, runtime) =>
-                ValueTask.FromResult<IHostableAgent>(
-                    new GroupChatManagerActor(agentId, runtime, team, orchestrationType, topic, this._strategy, this.Handoff, loggerFactory.CreateLogger<GroupChatManagerActor>()))).ConfigureAwait(false);
+        AgentType managerType =
+            await runtime.RegisterAgentFactoryAsync(
+                this.FormatAgentType(context.Topic, "Manager"),
+                (agentId, runtime) =>
+                    ValueTask.FromResult<IHostableAgent>(
+                        new GroupChatManagerActor(agentId, runtime, context, this._manager, team, outputType, context.LoggerFactory.CreateLogger<GroupChatManagerActor>()))).ConfigureAwait(false);
         logger.LogRegisterActor(OrchestrationName, managerType, "MANAGER");
 
-        await this.SubscribeAsync(managerType, topic).ConfigureAwait(false);
+        await runtime.SubscribeAsync(managerType, context.Topic).ConfigureAwait(false);
 
         return managerType;
 
-        ValueTask<AgentType> RegisterAgentAsync(Agent agent)
-        {
-            return
-                this.Runtime.RegisterAgentFactoryAsync(
-                    this.FormatAgentType(topic, $"Agent_{agentCount}"),
-                    (agentId, runtime) =>
-                        ValueTask.FromResult<IHostableAgent>(new ChatAgentActor(agentId, runtime, agent, topic, loggerFactory.CreateLogger<ChatAgentActor>())));
-        }
+        ValueTask<AgentType> RegisterAgentAsync(Agent agent, int agentCount) =>
+            runtime.RegisterAgentFactoryAsync(
+                this.FormatAgentType(context.Topic, $"Agent_{agentCount}"),
+                (agentId, runtime) =>
+                    ValueTask.FromResult<IHostableAgent>(new GroupChatAgentActor(agentId, runtime, context, agent, context.LoggerFactory.CreateLogger<GroupChatAgentActor>())));
     }
 }

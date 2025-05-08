@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Agents.Runtime;
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
 /// <summary>
-/// Extensions for logging <see cref="AgentOrchestration{TInput, TSource, TRequest, TOutput}"/>.
+/// Extensions for logging <see cref="AgentOrchestration{TInput, TOutput}"/>.
 /// </summary>
 /// <remarks>
 /// This extension uses the <see cref="LoggerMessageAttribute"/> to

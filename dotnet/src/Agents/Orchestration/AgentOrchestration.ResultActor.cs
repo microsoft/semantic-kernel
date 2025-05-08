@@ -3,43 +3,46 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.Orchestration.Transforms;
 using Microsoft.SemanticKernel.Agents.Runtime;
 using Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
-public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutput>
+public abstract partial class AgentOrchestration<TInput, TOutput>
 {
     /// <summary>
     /// Actor responsible for receiving the resultant message, transforming it, and handling further orchestration.
     /// </summary>
-    private sealed class ResultActor : PatternActor, IHandle<TResult>
+    private sealed class ResultActor<TResult> : OrchestrationActor, IHandle<TResult>
     {
-        private readonly TaskCompletionSource<TOutput>? _completionSource;
-        private readonly string _orchestrationRoot;
-        private readonly Func<TResult, ValueTask<TOutput>> _transform;
+        private readonly TaskCompletionSource<TOutput> _completionSource;
+        private readonly OrchestrationResultTransform<TResult> _transformResult;
+        private readonly OrchestrationOutputTransform<TOutput> _transform;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TSource, TResult, TOutput}.ResultActor"/> class.
+        /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TOutput}.ResultActor{TResult}"/> class.
         /// </summary>
         /// <param name="id">The unique identifier of the agent.</param>
         /// <param name="runtime">The runtime associated with the agent.</param>
-        /// <param name="orchestrationRoot">A descriptive root label for the orchestration.</param>
-        /// <param name="transform">A delegate that transforms a TResult instance into a TOutput instance.</param>
+        /// <param name="context">The orchestration context.</param>
+        /// <param name="transformResult">A delegate that transforms a TResult instance into a ChatMessageContent.</param>
+        /// <param name="transformOutput">A delegate that transforms a ChatMessageContent into a TOutput instance.</param>
         /// <param name="completionSource">Optional TaskCompletionSource to signal orchestration completion.</param>
         /// <param name="logger">The logger to use for the actor</param>
         public ResultActor(
             AgentId id,
             IAgentRuntime runtime,
-            string orchestrationRoot,
-            Func<TResult, ValueTask<TOutput>> transform,
-            TaskCompletionSource<TOutput>? completionSource = null,
-            ILogger<ResultActor>? logger = null)
-            : base(id, runtime, $"{id.Type}_Actor", logger)
+            OrchestrationContext context,
+            OrchestrationResultTransform<TResult> transformResult,
+            OrchestrationOutputTransform<TOutput> transformOutput,
+            TaskCompletionSource<TOutput> completionSource,
+            ILogger<ResultActor<TResult>>? logger = null)
+            : base(id, runtime, context, $"{id.Type}_Actor", logger)
         {
             this._completionSource = completionSource;
-            this._orchestrationRoot = orchestrationRoot;
-            this._transform = transform;
+            this._transformResult = transformResult;
+            this._transform = transformOutput;
         }
 
         /// <summary>
@@ -57,11 +60,12 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         /// <returns>A ValueTask representing asynchronous operation.</returns>
         public async ValueTask HandleAsync(TResult item, MessageContext messageContext)
         {
-            this.Logger.LogOrchestrationResultInvoke(this._orchestrationRoot, this.Id);
+            this.Logger.LogOrchestrationResultInvoke(this.Context.Orchestration, this.Id);
 
             try
             {
-                TOutput output = await this._transform.Invoke(item).ConfigureAwait(false);
+                ChatMessageContent result = this._transformResult.Invoke(item);
+                TOutput output = await this._transform.Invoke(result).ConfigureAwait(false);
 
                 if (this.CompletionTarget.HasValue)
                 {
@@ -73,7 +77,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
             catch (Exception exception)
             {
                 // Log exception details and fail orchestration as per design.
-                this.Logger.LogOrchestrationResultFailure(this._orchestrationRoot, this.Id, exception);
+                this.Logger.LogOrchestrationResultFailure(this.Context.Orchestration, this.Id, exception);
 
                 if (this._completionSource == null)
                 {

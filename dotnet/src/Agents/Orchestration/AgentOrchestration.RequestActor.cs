@@ -1,46 +1,46 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.Orchestration.Transforms;
 using Microsoft.SemanticKernel.Agents.Runtime;
 using Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
-public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutput>
+public abstract partial class AgentOrchestration<TInput, TOutput>
 {
     /// <summary>
     /// Actor responsible for receiving final message and transforming it into the output type.
     /// </summary>
-    private sealed class RequestActor : PatternActor, IHandle<TInput>
+    private sealed class RequestActor : OrchestrationActor, IHandle<TInput>
     {
-        private readonly string _orchestrationRoot;
-        private readonly Func<TInput, ValueTask<TSource>> _transform;
-        private readonly Func<TSource, ValueTask> _action;
-        private readonly TaskCompletionSource<TOutput>? _completionSource;
+        private readonly OrchestrationInputTransform<TInput> _transform;
+        private readonly Func<IEnumerable<ChatMessageContent>, ValueTask> _action;
+        private readonly TaskCompletionSource<TOutput> _completionSource;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TSource, TResult, TOutput}"/> class.
+        /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TOutput}"/> class.
         /// </summary>
         /// <param name="id">The unique identifier of the agent.</param>
         /// <param name="runtime">The runtime associated with the agent.</param>
-        /// <param name="orchestrationRoot">A descriptive root label for the orchestration.</param>
+        /// <param name="context">The orchestration context.</param>
         /// <param name="transform">A function that transforms an input of type TInput into a source type TSource.</param>
-        /// <param name="action">An asynchronous function that processes the resulting source.</param>
         /// <param name="completionSource">Optional TaskCompletionSource to signal orchestration completion.</param>
+        /// <param name="action">An asynchronous function that processes the resulting source.</param>
         /// <param name="logger">The logger to use for the actor</param>
         public RequestActor(
             AgentId id,
             IAgentRuntime runtime,
-            string orchestrationRoot,
-            Func<TInput, ValueTask<TSource>> transform,
-            Func<TSource, ValueTask> action,
-            TaskCompletionSource<TOutput>? completionSource = null,
+            OrchestrationContext context,
+            OrchestrationInputTransform<TInput> transform,
+            TaskCompletionSource<TOutput> completionSource,
+            Func<IEnumerable<ChatMessageContent>, ValueTask> action,
             ILogger<RequestActor>? logger = null)
-            : base(id, runtime, $"{id.Type}_Actor", logger)
+            : base(id, runtime, context, $"{id.Type}_Actor", logger)
         {
-            this._orchestrationRoot = orchestrationRoot;
             this._transform = transform;
             this._action = action;
             this._completionSource = completionSource;
@@ -54,22 +54,19 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         /// <returns>A ValueTask representing the asynchronous operation.</returns>
         public async ValueTask HandleAsync(TInput item, MessageContext messageContext)
         {
-            this.Logger.LogOrchestrationRequestInvoke(this._orchestrationRoot, this.Id);
+            this.Logger.LogOrchestrationRequestInvoke(this.Context.Orchestration, this.Id);
             try
             {
-                TSource source = await this._transform.Invoke(item).ConfigureAwait(false);
-                Task task = this._action.Invoke(source).AsTask();
-                this.Logger.LogOrchestrationStart(this._orchestrationRoot, this.Id);
+                IEnumerable<ChatMessageContent> input = await this._transform.Invoke(item).ConfigureAwait(false);
+                Task task = this._action.Invoke(input).AsTask();
+                this.Logger.LogOrchestrationStart(this.Context.Orchestration, this.Id);
                 await task.ConfigureAwait(false);
             }
             catch (Exception exception)
             {
                 // Log exception details and allow orchestration to fail
-                this.Logger.LogOrchestrationRequestFailure(this._orchestrationRoot, this.Id, exception);
-                if (this._completionSource != null)
-                {
-                    this._completionSource.SetException(exception);
-                }
+                this.Logger.LogOrchestrationRequestFailure(this.Context.Orchestration, this.Id, exception);
+                this._completionSource.SetException(exception);
                 throw;
             }
         }

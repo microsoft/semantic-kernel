@@ -8,51 +8,50 @@ using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="SequentialOrchestration{TInput, TOutput}"/>.
+/// Demonstrates how to use the <see cref="SequentialOrchestration"/>.
 /// </summary>
 public class Step02_Sequential(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task SimpleSequentialAsync()
+    public async Task SequentialTaskAsync()
     {
         // Define the agents
         ChatCompletionAgent agent1 =
             this.CreateAgent(
-                instructions:
-                """                
-                Analyze the previous message to determine count of words.
-
-                ALWAYS report the count using numeric digits formatted as: Words: <digits>                
+                """
+                You are a marketing analyst. Given a product description, identify:
+                - Key features
+                - Target audience
+                - Unique selling points
                 """,
-                description: "Able to count the number of words in a message");
+                description: "A agent that extracts key concepts from a product description.");
         ChatCompletionAgent agent2 =
             this.CreateAgent(
-                instructions:
-                """                
-                Analyze the previous message to determine count of vowels.
-
-                ALWAYS report the count using numeric digits formatted as: Vowels: <digits>                
+                """
+                You are a marketing copywriter. Given a block of text describing features, audience, and USPs,
+                compose a compelling marketing copy (like a newsletter section) that highlights these points.
+                Output should be short (around 150 words), output just the copy as a single text block.
                 """,
-                description: "Able to count the number of vowels in a message");
+                description: "An agent that writes a marketing copy based on the extracted concepts.");
         ChatCompletionAgent agent3 =
             this.CreateAgent(
-                instructions:
-                """                
-                Analyze the previous message to determine count of consonants.
-
-                ALWAYS report the count using numeric digits formatted as: Consonants: <digits>                
+                """
+                You are an editor. Given the draft copy, correct grammar, improve clarity, ensure consistent tone,
+                give format and make it polished. Output the final improved copy as a single text block.
                 """,
-                description: "Able to count the number of consonants in a message");
+                description: "An agent that formats and proofreads the marketing copy.");
 
-        // Define the pattern
-        InProcessRuntime runtime = new();
-        SequentialOrchestration orchestration = new(runtime, agent1, agent2, agent3) { LoggerFactory = this.LoggerFactory };
+        // Define the orchestration
+        SequentialOrchestration orchestration = new(agent1, agent2, agent3) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
+        InProcessRuntime runtime = new();
         await runtime.StartAsync();
-        string input = "The quick brown fox jumps over the lazy dog";
+
+        // Run the orchestration
+        string input = "An eco-friendly stainless steel water bottle that keeps drinks cold for 24 hours";
         Console.WriteLine($"\n# INPUT: {input}\n");
-        OrchestrationResult<string> result = await orchestration.InvokeAsync(input);
+        OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
         string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
         Console.WriteLine($"\n# RESULT: {text}");
 

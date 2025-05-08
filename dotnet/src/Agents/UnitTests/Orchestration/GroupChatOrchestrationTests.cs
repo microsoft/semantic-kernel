@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
@@ -53,34 +54,15 @@ public class GroupChatOrchestrationTests
         Assert.Equal(1, mockAgent3.InvokeCount);
     }
 
-    [Fact(Skip = "Not functional until root issue with nested protocol is fixed")]
-    public async Task GroupChatOrchestrationWithNestedMemberAsync()
-    {
-        // Arrange
-        await using InProcessRuntime runtime = new();
-
-        MockAgent mockAgentB = CreateMockAgent(2, "efg");
-        GroupChatOrchestration<ChatMessages.InputTask, ChatMessages.Result> orchestration = CreateNested(runtime, mockAgentB);
-        MockAgent mockAgent1 = CreateMockAgent(2, "xyz");
-
-        // Act: Create and execute the orchestration
-        string response = await ExecuteOrchestrationAsync(runtime, mockAgent1, orchestration);
-
-        // Assert
-        Assert.Equal("efg", response);
-        Assert.Equal(1, mockAgent1.InvokeCount);
-        Assert.Equal(1, mockAgentB.InvokeCount);
-    }
-
-    private static async Task<string> ExecuteOrchestrationAsync(InProcessRuntime runtime, params OrchestrationTarget[] mockAgents)
+    private static async Task<string> ExecuteOrchestrationAsync(InProcessRuntime runtime, params Agent[] mockAgents)
     {
         // Act
         await runtime.StartAsync();
 
-        GroupChatOrchestration orchestration = new(runtime, new SimpleGroupChatStrategy(), mockAgents);
+        GroupChatOrchestration orchestration = new(new RoundRobinGroupChatManager() { MaximumInvocations = mockAgents.Length }, mockAgents);
 
         const string InitialInput = "123";
-        OrchestrationResult<string> result = await orchestration.InvokeAsync(InitialInput);
+        OrchestrationResult<string> result = await orchestration.InvokeAsync(InitialInput, runtime);
 
         // Assert
         Assert.NotNull(result);
@@ -100,36 +82,5 @@ public class GroupChatOrchestrationTests
             Description = $"test {index}",
             Response = [new(AuthorRole.Assistant, response)]
         };
-    }
-
-    private static GroupChatOrchestration<ChatMessages.InputTask, ChatMessages.Result> CreateNested(InProcessRuntime runtime, params OrchestrationTarget[] targets)
-    {
-        return new(runtime, new SimpleGroupChatStrategy(), targets)
-        {
-            InputTransform = (ChatMessages.InputTask input) => ValueTask.FromResult(input),
-            ResultTransform = (ChatMessages.Result result) => ValueTask.FromResult(result),
-        };
-    }
-
-    private sealed class SimpleGroupChatStrategy : GroupChatStrategy
-    {
-        private int _count;
-
-        public override ValueTask SelectAsync(GroupChatContext context, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                if (this._count < context.Team.Count)
-                {
-                    context.SelectAgent(context.Team.Skip(this._count).First().Key);
-                }
-
-                return ValueTask.CompletedTask;
-            }
-            finally
-            {
-                ++this._count;
-            }
-        }
     }
 }

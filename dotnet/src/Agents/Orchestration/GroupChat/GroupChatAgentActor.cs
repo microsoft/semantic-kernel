@@ -3,55 +3,52 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.Agents.Runtime;
 using Microsoft.SemanticKernel.Agents.Runtime.Core;
 
-namespace Microsoft.SemanticKernel.Agents.Orchestration.Chat;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 
 /// <summary>
 /// An <see cref="AgentActor"/> used with the <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
 /// </summary>
-internal sealed class ChatAgentActor :
+internal sealed class GroupChatAgentActor :
     AgentActor,
-    IHandle<ChatMessages.Group>,
-    IHandle<ChatMessages.Reset>,
-    IHandle<ChatMessages.Speak>
+    IHandle<GroupChatMessages.Group>,
+    IHandle<GroupChatMessages.Reset>,
+    IHandle<GroupChatMessages.Speak>
 {
     private readonly List<ChatMessageContent> _cache;
-    private readonly TopicId _groupTopic;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChatAgentActor"/> class.
+    /// Initializes a new instance of the <see cref="GroupChatAgentActor"/> class.
     /// </summary>
     /// <param name="id">The unique identifier of the agent.</param>
     /// <param name="runtime">The runtime associated with the agent.</param>
+    /// <param name="context">The orchestration context.</param>
     /// <param name="agent">An <see cref="Agent"/>.</param>
-    /// <param name="groupTopic">The unique topic used to broadcast to the entire chat.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public ChatAgentActor(AgentId id, IAgentRuntime runtime, Agent agent, TopicId groupTopic, ILogger<ChatAgentActor>? logger = null)
-        : base(id, runtime, agent, noThread: false, logger)
+    public GroupChatAgentActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, Agent agent, ILogger<GroupChatAgentActor>? logger = null)
+        : base(id, runtime, context, agent, logger)
     {
         this._cache = [];
-        this._groupTopic = groupTopic;
     }
 
     /// <inheritdoc/>
-    public ValueTask HandleAsync(ChatMessages.Group item, MessageContext messageContext)
+    public ValueTask HandleAsync(GroupChatMessages.Group item, MessageContext messageContext)
     {
-        this._cache.Add(item.Message);
+        this._cache.AddRange(item.Messages);
 
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc/>
-    public async ValueTask HandleAsync(ChatMessages.Reset item, MessageContext messageContext)
+    public async ValueTask HandleAsync(GroupChatMessages.Reset item, MessageContext messageContext)
     {
         await this.DeleteThreadAsync(messageContext.CancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async ValueTask HandleAsync(ChatMessages.Speak item, MessageContext messageContext)
+    public async ValueTask HandleAsync(GroupChatMessages.Speak item, MessageContext messageContext)
     {
         this.Logger.LogChatAgentInvoke(this.Id);
 
@@ -60,6 +57,6 @@ internal sealed class ChatAgentActor :
         this.Logger.LogChatAgentResult(this.Id, response.Content);
 
         this._cache.Clear();
-        await this.PublishMessageAsync(response.ToGroup(), this._groupTopic).ConfigureAwait(false);
+        await this.PublishMessageAsync(response.AsGroupMessage(), this.Context.Topic).ConfigureAwait(false);
     }
 }

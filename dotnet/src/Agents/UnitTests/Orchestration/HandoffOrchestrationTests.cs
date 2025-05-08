@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
@@ -80,15 +81,15 @@ public class HandoffOrchestrationTests
         Assert.Equal(1, mockAgent3.InvokeCount);
     }
 
-    private static async Task<string> ExecuteOrchestrationAsync(InProcessRuntime runtime, Dictionary<string, HandoffConnections>? handoffs, params OrchestrationTarget[] mockAgents)
+    private static async Task<string> ExecuteOrchestrationAsync(InProcessRuntime runtime, Dictionary<string, HandoffConnections>? handoffs, params Agent[] mockAgents)
     {
         // Act
         await runtime.StartAsync();
 
-        HandoffOrchestration orchestration = new(runtime, handoffs ?? [], mockAgents);
+        HandoffOrchestration orchestration = new(handoffs ?? [], mockAgents);
 
         const string InitialInput = "123";
-        OrchestrationResult<string> result = await orchestration.InvokeAsync(InitialInput);
+        OrchestrationResult<string> result = await orchestration.InvokeAsync(InitialInput, runtime);
 
         // Assert
         Assert.NotNull(result);

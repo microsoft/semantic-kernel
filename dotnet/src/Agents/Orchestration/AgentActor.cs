@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Runtime;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -16,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 /// <summary>
 /// An actor that represents an <see cref="Agents.Agent"/>.
 /// </summary>
-public abstract class AgentActor : PatternActor
+public abstract class AgentActor : OrchestrationActor
 {
     private AgentInvokeOptions? _options;
 
@@ -25,29 +24,24 @@ public abstract class AgentActor : PatternActor
     /// </summary>
     /// <param name="id">The unique identifier of the agent.</param>
     /// <param name="runtime">The runtime associated with the agent.</param>
+    /// <param name="context">The orchestration context.</param>
     /// <param name="agent">An <see cref="Agents.Agent"/>.</param>
-    /// <param name="noThread">Option to automatically clean-up agent thread</param>
     /// <param name="logger">The logger to use for the actor</param>
-    protected AgentActor(AgentId id, IAgentRuntime runtime, Agent agent, bool noThread = false, ILogger? logger = null)
+    protected AgentActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, Agent agent, ILogger? logger = null)
         : base(
             id,
             runtime,
+            context,
             VerifyDescription(agent),
-            logger ?? GetLogger(agent))
+            logger)
     {
         this.Agent = agent;
-        this.NoThread = noThread;
     }
 
     /// <summary>
     /// Gets the associated agent.
     /// </summary>
     protected Agent Agent { get; }
-
-    /// <summary>
-    /// Gets a value indicating whether the agent thread should be removed after use.
-    /// </summary>
-    protected bool NoThread { get; }
 
     /// <summary>
     /// Gets or sets the current conversation thread used during agent communication.
@@ -65,8 +59,7 @@ public abstract class AgentActor : PatternActor
     /// <summary>
     /// Deletes the agent thread.
     /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     protected async ValueTask DeleteThreadAsync(CancellationToken cancellationToken)
     {
         if (this.Thread != null)
@@ -97,6 +90,8 @@ public abstract class AgentActor : PatternActor
     /// <returns>A task that returns the response <see cref="ChatMessageContent"/>.</returns>
     protected async ValueTask<ChatMessageContent> InvokeAsync(IList<ChatMessageContent> input, CancellationToken cancellationToken)
     {
+        this.Context.Cancellation.ThrowIfCancellationRequested();
+
         AgentResponseItem<ChatMessageContent>[] responses =
             await this.Agent.InvokeAsync(
                 input,
@@ -104,14 +99,21 @@ public abstract class AgentActor : PatternActor
                 this.GetInvokeOptions(),
                 cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
-        AgentResponseItem<ChatMessageContent> response = responses[0];
-        this.Thread ??= response.Thread;
+        AgentResponseItem<ChatMessageContent>? firstResponse = responses.FirstOrDefault();
+        this.Thread ??= firstResponse?.Thread;
 
         // The vast majority of responses will be a single message.  Responses with multiple messages will have their content merged.
-        return new ChatMessageContent(response.Message.Role, string.Join("\n\n", responses.Select(response => response.Message)))
+        ChatMessageContent response = new(firstResponse?.Message.Role ?? AuthorRole.Assistant, string.Join("\n\n", responses.Select(response => response.Message)))
         {
-            AuthorName = response.Message.AuthorName,
+            AuthorName = firstResponse?.Message.AuthorName,
         };
+
+        if (this.Context.ResponseCallback is not null)
+        {
+            await this.Context.ResponseCallback.Invoke(response).ConfigureAwait(false);
+        }
+
+        return response;
     }
 
     /// <summary>
@@ -123,18 +125,13 @@ public abstract class AgentActor : PatternActor
     /// <returns>An asynchronous stream of <see cref="StreamingChatMessageContent"/> responses.</returns>
     protected async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(ChatMessageContent input, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
+        this.Context.Cancellation.ThrowIfCancellationRequested();
+
         var responseStream = this.Agent.InvokeStreamingAsync([input], this.Thread, this.GetInvokeOptions(), cancellationToken);
 
         await foreach (AgentResponseItem<StreamingChatMessageContent> response in responseStream.ConfigureAwait(false))
         {
-            if (this.NoThread)
-            {
-                // Do not block on thread clean-up
-                Task task = this.DeleteThreadAsync(cancellationToken).AsTask();
-            }
-            {
-                this.Thread ??= response.Thread;
-            }
+            this.Thread ??= response.Thread;
             yield return response.Message;
         }
     }
@@ -144,11 +141,5 @@ public abstract class AgentActor : PatternActor
     private static string VerifyDescription(Agent agent)
     {
         return agent.Description ?? throw new ArgumentException($"Missing agent description: {agent.Name ?? agent.Id}", nameof(agent));
-    }
-
-    private static ILogger GetLogger(Agent agent)
-    {
-        ILoggerFactory loggerFactory = agent.LoggerFactory ?? NullLoggerFactory.Instance;
-        return loggerFactory.CreateLogger<AgentActor>();
     }
 }

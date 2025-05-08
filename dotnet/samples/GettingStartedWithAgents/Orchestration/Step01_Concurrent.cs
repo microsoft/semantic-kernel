@@ -8,51 +8,34 @@ using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="ConcurrentOrchestration{TInput, TOutput}"/>.
+/// Demonstrates how to use the <see cref="ConcurrentOrchestration"/>.
 /// </summary>
 public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task SimpleConcurrentAsync()
+    public async Task ConcurrentTaskAsync() // %%% TODO
     {
         // Define the agents
-        ChatCompletionAgent agent1 =
+        ChatCompletionAgent physicist =
             this.CreateAgent(
-                instructions:
-                """                
-                Analyze the previous message to determine count of words.
-
-                ALWAYS report the count using numeric digits formatted as: Words: <digits>                
-                """,
-                description: "Able to count the number of words in a message");
-        ChatCompletionAgent agent2 =
+                instructions: "You are an expert in physics. You answer questions from a physics perspective.",
+                description: "An expert in physics");
+        ChatCompletionAgent chemist =
             this.CreateAgent(
-                instructions:
-                """                
-                Analyze the previous message to determine count of vowels.
+                instructions: "You are an expert in chemistry. You answer questions from a chemistry perspective.",
+                description: "An expert in chemistry");
 
-                ALWAYS report the count using numeric digits formatted as: Vowels: <digits>                
-                """,
-                description: "Able to count the number of vowels in a message");
-        ChatCompletionAgent agent3 =
-            this.CreateAgent(
-                instructions:
-                """                
-                Analyze the previous message to determine count of consonants.
-
-                ALWAYS report the count using numeric digits formatted as: Consonants: <digits>                
-                """,
-                description: "Able to count the number of consonants in a message");
-
-        // Define the pattern
-        InProcessRuntime runtime = new();
-        ConcurrentOrchestration orchestration = new(runtime, agent1, agent2, agent3) { LoggerFactory = this.LoggerFactory };
+        // Define the orchestration
+        ConcurrentOrchestration orchestration = new(physicist, chemist) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
+        InProcessRuntime runtime = new();
         await runtime.StartAsync();
+
+        // Run the orchestration
         string input = "The quick brown fox jumps over the lazy dog";
         Console.WriteLine($"\n# INPUT: {input}\n");
-        OrchestrationResult<string[]> result = await orchestration.InvokeAsync(input);
+        OrchestrationResult<string[]> result = await orchestration.InvokeAsync(input, runtime);
 
         string[] output = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
         Console.WriteLine($"\n# RESULT:\n{string.Join("\n", output.Select(text => $"\t{text}"))}");

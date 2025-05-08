@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 /// Actor for capturing each <see cref="ConcurrentMessages.Result"/> message.
 /// </summary>
 internal sealed class ConcurrentResultActor :
-    PatternActor,
+    OrchestrationActor,
     IHandle<ConcurrentMessages.Result>
 {
     private readonly ConcurrentQueue<ConcurrentMessages.Result> _results;
@@ -26,16 +26,18 @@ internal sealed class ConcurrentResultActor :
     /// </summary>
     /// <param name="id">The unique identifier of the agent.</param>
     /// <param name="runtime">The runtime associated with the agent.</param>
+    /// <param name="context">The orchestration context.</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="expectedCount">The expected number of messages to be received.</param>
     /// <param name="logger">The logger to use for the actor</param>
     public ConcurrentResultActor(
         AgentId id,
         IAgentRuntime runtime,
+        OrchestrationContext context,
         AgentType orchestrationType,
         int expectedCount,
         ILogger logger)
-        : base(id, runtime, "Captures the results of the ConcurrentOrchestration", logger)
+        : base(id, runtime, context, "Captures the results of the ConcurrentOrchestration", logger)
     {
         this._orchestrationType = orchestrationType;
         this._expectedCount = expectedCount;

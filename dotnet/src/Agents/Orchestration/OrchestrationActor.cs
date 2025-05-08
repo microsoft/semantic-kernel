@@ -9,17 +9,23 @@ using Microsoft.SemanticKernel.Agents.Runtime.Core;
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
 /// <summary>
-/// An actor that represents an <see cref="Agents.Agent"/>.
+/// An actor that participates in an orchestration.
 /// </summary>
-public abstract class PatternActor : BaseAgent
+public abstract class OrchestrationActor : BaseAgent
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="PatternActor"/> class.
+    /// Initializes a new instance of the <see cref="OrchestrationActor"/> class.
     /// </summary>
-    protected PatternActor(AgentId id, IAgentRuntime runtime, string description, ILogger? logger = null)
+    protected OrchestrationActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, string description, ILogger? logger = null)
         : base(id, runtime, description, logger)
     {
+        this.Context = context;
     }
+
+    /// <summary>
+    /// The orchestration context.
+    /// </summary>
+    protected OrchestrationContext Context { get; }
 
     /// <summary>
     /// Sends a message to a specified recipient agent-type through the runtime.

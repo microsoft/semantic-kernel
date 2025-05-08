@@ -39,11 +39,9 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
                 description: "An agent that handles .NET related issues");
         dotnetAgent.Kernel.Plugins.Add(plugin);
 
-        // Define the pattern
-        InProcessRuntime runtime = new();
+        // Define the orchestration
         HandoffOrchestration orchestration =
-            new(runtime,
-                handoffs:
+            new(handoffs:
                     new()
                     {
                         {
@@ -73,8 +71,12 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
             """;
 
         // Start the runtime
+        InProcessRuntime runtime = new();
         await runtime.StartAsync();
-        OrchestrationResult<string> result = await orchestration.InvokeAsync(InputJson);
+
+        // Run the orchestration
+        Console.WriteLine($"\n# INPUT:\n{InputJson}\n");
+        OrchestrationResult<string> result = await orchestration.InvokeAsync(InputJson, runtime);
         string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
         Console.WriteLine($"\n# RESULT: {text}");
         Console.WriteLine($"\n# LABELS: {string.Join(",", githubPlugin.Labels["12345"])}");
@@ -100,8 +102,7 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         // Define the pattern
         InProcessRuntime runtime = new();
         HandoffOrchestration orchestration =
-            new(runtime,
-                handoffs: [],
+            new(handoffs: [],
                 agent1)
             {
                 LoggerFactory = this.LoggerFactory
@@ -109,9 +110,9 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
 
         // Start the runtime
         await runtime.StartAsync();
-        string input = "Tell me the count of words, vowels, and consonants in: The quick brown fox jumps over the lazy dog";
+        string input = "Tell me the count of words in: The quick brown fox jumps over the lazy dog";
         Console.WriteLine($"\n# INPUT: {input}\n");
-        OrchestrationResult<string> result = await orchestration.InvokeAsync(input);
+        OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
         string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
         Console.WriteLine($"\n# RESULT: {text}");
 

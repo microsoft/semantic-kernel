@@ -20,11 +20,10 @@ internal static partial class SequentialOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "REQUEST Sequential agent [{AgentId}]: {Message}")]
+        Message = "REQUEST Sequential agent [{AgentId}]")]
     public static partial void LogSequentialAgentInvoke(
         this ILogger logger,
-        AgentId agentId,
-        string? message);
+        AgentId agentId);
 
     [LoggerMessage(
         EventId = 0,

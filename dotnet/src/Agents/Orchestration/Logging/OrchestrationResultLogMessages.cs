@@ -29,7 +29,7 @@ internal static partial class OrchestrationResultLogMessages
         TopicId topic);
 
     /// <summary>
-    /// Logs <see cref="OrchestrationResult{TValue}"/> awaiting the orchestration.
+    /// Logs <see cref="OrchestrationResult{TValue}"/> timeout while awaiting the orchestration.
     /// </summary>
     [LoggerMessage(
         EventId = 0,
@@ -41,7 +41,19 @@ internal static partial class OrchestrationResultLogMessages
         TopicId topic);
 
     /// <summary>
-    /// Logs <see cref="OrchestrationResult{TValue}"/> awaiting the orchestration.
+    /// Logs <see cref="OrchestrationResult{TValue}"/> cancelled the orchestration.
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Error,
+        Message = "CANCELLED {Orchestration}: {Topic}")]
+    public static partial void LogOrchestrationResultCancelled(
+        this ILogger logger,
+        string orchestration,
+        TopicId topic);
+
+    /// <summary>
+    /// Logs <see cref="OrchestrationResult{TValue}"/> the awaited the orchestration has completed.
     /// </summary>
     [LoggerMessage(
         EventId = 0,

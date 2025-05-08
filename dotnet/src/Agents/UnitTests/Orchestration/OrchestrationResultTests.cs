@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Orchestration;
@@ -15,25 +16,26 @@ public class OrchestrationResultTests
     public void Constructor_InitializesPropertiesCorrectly()
     {
         // Arrange
-        string orchestrationName = "TestOrchestration";
-        TopicId topic = new("testTopic");
+        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, NullLoggerFactory.Instance, CancellationToken.None);
         TaskCompletionSource<string> tcs = new();
 
         // Act
-        OrchestrationResult<string> result = new(orchestrationName, topic, tcs, NullLogger.Instance);
+        using CancellationTokenSource cancelSource = new();
+        using OrchestrationResult<string> result = new(context, tcs, cancelSource, NullLogger.Instance);
 
         // Assert
-        Assert.Equal(topic, result.Topic);
+        Assert.Equal("TestOrchestration", result.Orchestration);
+        Assert.Equal(new TopicId("testTopic"), result.Topic);
     }
 
     [Fact]
     public async Task GetValueAsync_ReturnsCompletedValue_WhenTaskIsCompletedAsync()
     {
         // Arrange
-        string orchestrationName = "TestOrchestration";
-        TopicId topic = new("testTopic");
+        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, NullLoggerFactory.Instance, CancellationToken.None);
         TaskCompletionSource<string> tcs = new();
-        OrchestrationResult<string> result = new(orchestrationName, topic, tcs, NullLogger.Instance);
+        using CancellationTokenSource cancelSource = new();
+        using OrchestrationResult<string> result = new(context, tcs, cancelSource, NullLogger.Instance);
         string expectedValue = "Result value";
 
         // Act
@@ -48,10 +50,10 @@ public class OrchestrationResultTests
     public async Task GetValueAsync_WithTimeout_ReturnsCompletedValue_WhenTaskCompletesWithinTimeoutAsync()
     {
         // Arrange
-        string orchestrationName = "TestOrchestration";
-        TopicId topic = new("testTopic");
+        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, NullLoggerFactory.Instance, CancellationToken.None);
         TaskCompletionSource<string> tcs = new();
-        OrchestrationResult<string> result = new(orchestrationName, topic, tcs, NullLogger.Instance);
+        using CancellationTokenSource cancelSource = new();
+        using OrchestrationResult<string> result = new(context, tcs, cancelSource, NullLogger.Instance);
         string expectedValue = "Result value";
         TimeSpan timeout = TimeSpan.FromSeconds(1);
 
@@ -67,10 +69,10 @@ public class OrchestrationResultTests
     public async Task GetValueAsync_WithTimeout_ThrowsTimeoutException_WhenTaskDoesNotCompleteWithinTimeoutAsync()
     {
         // Arrange
-        string orchestrationName = "TestOrchestration";
-        TopicId topic = new("testTopic");
+        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, NullLoggerFactory.Instance, CancellationToken.None);
         TaskCompletionSource<string> tcs = new();
-        OrchestrationResult<string> result = new(orchestrationName, topic, tcs, NullLogger.Instance);
+        using CancellationTokenSource cancelSource = new();
+        using OrchestrationResult<string> result = new(context, tcs, cancelSource, NullLogger.Instance);
         TimeSpan timeout = TimeSpan.FromMilliseconds(50);
 
         // Act & Assert
@@ -82,10 +84,10 @@ public class OrchestrationResultTests
     public async Task GetValueAsync_ReturnsCompletedValue_WhenCompletionIsDelayedAsync()
     {
         // Arrange
-        string orchestrationName = "TestOrchestration";
-        TopicId topic = new("testTopic");
+        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, NullLoggerFactory.Instance, CancellationToken.None);
         TaskCompletionSource<int> tcs = new();
-        OrchestrationResult<int> result = new(orchestrationName, topic, tcs, NullLogger.Instance);
+        using CancellationTokenSource cancelSource = new();
+        using OrchestrationResult<int> result = new(context, tcs, cancelSource, NullLogger.Instance);
         int expectedValue = 42;
 
         // Act

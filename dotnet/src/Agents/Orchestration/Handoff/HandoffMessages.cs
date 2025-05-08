@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 
 /// <summary>
 /// A message that describes the input task and captures results for a <see cref="HandoffOrchestration{TInput,TOutput}"/>.
 /// </summary>
-public sealed class HandoffMessages
+internal static class HandoffMessages
 {
     /// <summary>
     /// An empty message instance as a default.
@@ -18,9 +20,9 @@ public sealed class HandoffMessages
     public sealed class InputTask
     {
         /// <summary>
-        /// The orchestration input message.
+        /// The orchestration input messages.
         /// </summary>
-        public ChatMessageContent Message { get; init; } = Empty;
+        public IList<ChatMessageContent> Messages { get; init; } = [];
     }
 
     /// <summary>
@@ -49,4 +51,14 @@ public sealed class HandoffMessages
         /// </summary>
         public ChatMessageContent Message { get; init; } = Empty;
     }
+
+    /// <summary>
+    /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Result"/>.
+    /// </summary>
+    public static InputTask AsInputTaskMessage(this IEnumerable<ChatMessageContent> messages) => new() { Messages = [.. messages] };
+
+    /// <summary>
+    /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Result"/>.
+    /// </summary>
+    public static Result AsResultMessage(this ChatMessageContent message) => new() { Message = message };
 }

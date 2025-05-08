@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
@@ -53,35 +54,15 @@ public class ConcurrentOrchestrationTests
         Assert.Equal(1, mockAgent3.InvokeCount);
     }
 
-    [Fact]
-    public async Task ConcurrentOrchestrationWithNestedMemberAsync()
-    {
-        // Arrange
-        await using InProcessRuntime runtime = new();
-
-        MockAgent mockAgentB = CreateMockAgent(2, "efg");
-        ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> orchestration = CreateNested(runtime, mockAgentB);
-        MockAgent mockAgent1 = CreateMockAgent(1, "xyz");
-
-        // Act: Create and execute the orchestration
-        string[] response = await ExecuteOrchestrationAsync(runtime, mockAgent1, orchestration);
-
-        // Assert
-        Assert.Contains("efg", response);
-        Assert.Contains("xyz", response);
-        Assert.Equal(1, mockAgent1.InvokeCount);
-        Assert.Equal(1, mockAgentB.InvokeCount);
-    }
-
-    private static async Task<string[]> ExecuteOrchestrationAsync(InProcessRuntime runtime, params OrchestrationTarget[] mockAgents)
+    private static async Task<string[]> ExecuteOrchestrationAsync(InProcessRuntime runtime, params Agent[] mockAgents)
     {
         // Act
         await runtime.StartAsync();
 
-        ConcurrentOrchestration orchestration = new(runtime, mockAgents);
+        ConcurrentOrchestration orchestration = new(mockAgents);
 
         const string InitialInput = "123";
-        OrchestrationResult<string[]> result = await orchestration.InvokeAsync(InitialInput);
+        OrchestrationResult<string[]> result = await orchestration.InvokeAsync(InitialInput, runtime);
 
         // Assert
         Assert.NotNull(result);
@@ -100,15 +81,6 @@ public class ConcurrentOrchestrationTests
         {
             Description = $"test {index}",
             Response = [new(AuthorRole.Assistant, response)]
-        };
-    }
-
-    private static ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> CreateNested(InProcessRuntime runtime, params OrchestrationTarget[] targets)
-    {
-        return new(runtime, targets)
-        {
-            InputTransform = (ConcurrentMessages.Request input) => ValueTask.FromResult(input),
-            ResultTransform = (ConcurrentMessages.Result[] results) => ValueTask.FromResult(string.Join("\n", results.Select(result => $"{result.Message}")).ToResult()),
         };
     }
 }

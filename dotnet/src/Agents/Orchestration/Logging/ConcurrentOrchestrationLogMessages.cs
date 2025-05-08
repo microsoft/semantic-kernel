@@ -20,11 +20,10 @@ internal static partial class ConcurrentOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "REQUEST Concurrent agent [{AgentId}]: {Message}")]
+        Message = "REQUEST Concurrent agent [{AgentId}]")]
     public static partial void LogConcurrentAgentInvoke(
         this ILogger logger,
-        AgentId agentId,
-        string? message);
+        AgentId agentId);
 
     [LoggerMessage(
         EventId = 0,

@@ -2,36 +2,67 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
+using Microsoft.SemanticKernel.Agents.Orchestration.Transforms;
 using Microsoft.SemanticKernel.Agents.Runtime;
-using Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
 /// <summary>
+/// Called for every response is produced by any agent.
+/// </summary>
+/// <param name="response">The agent response</param>
+public delegate ValueTask OrchestrationResponseCallback(ChatMessageContent response);
+
+/// <summary>
+/// Called when human interaction is requested.
+/// </summary>
+public delegate ValueTask<ChatMessageContent> OrchestrationInteractiveCallback();
+
+/// <summary>
 /// Base class for multi-agent agent orchestration patterns.
 /// </summary>
-public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutput> : Orchestratable
+public abstract partial class AgentOrchestration<TInput, TOutput>
 {
     private readonly string _orchestrationRoot;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TSource, TResult, TOutput}"/> class.
+    /// Provides a properly formatted name based on the orchestration type (removes generic parameters).
+    /// </summary>
+    /// <param name="orchestrationType">The orchestration type</param>
+    /// <remarks>
+    /// Need to respect naming restrictions around <see cref="AgentType"/> and <see cref="TopicId"/>.
+    /// </remarks>
+    protected static string FormatOrchestrationName(Type orchestrationType) => orchestrationType.Name.Split('`').First();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="orchestrationRoot">A descriptive root label for the orchestration.</param>
-    /// <param name="runtime">The runtime associated with the orchestration.</param>
     /// <param name="members">Specifies the member agents or orchestrations participating in this orchestration.</param>
-    protected AgentOrchestration(string orchestrationRoot, IAgentRuntime runtime, params OrchestrationTarget[] members)
+    protected AgentOrchestration(string orchestrationRoot, params Agent[] members)
     {
-        Verify.NotNull(runtime, nameof(runtime));
+        Verify.NotNullOrWhiteSpace(orchestrationRoot, nameof(orchestrationRoot));
 
-        this.Runtime = runtime;
-        this.Members = members;
         this._orchestrationRoot = orchestrationRoot;
+
+        this.Members = members;
     }
+
+    /// <summary>
+    /// Gets the description of the orchestration.
+    /// </summary>
+    public string Description { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the name of the orchestration.
+    /// </summary>
+    public string Name { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets the associated logger.
@@ -41,48 +72,77 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// <summary>
     /// Transforms the orchestration input into a source input suitable for processing.
     /// </summary>
-    public Func<TInput, ValueTask<TSource>>? InputTransform { get; init; }
+    public OrchestrationInputTransform<TInput> InputTransform { get; init; } = DefaultTransforms.FromInput<TInput>;
 
     /// <summary>
     /// Transforms the processed result into the final output form.
     /// </summary>
-    public Func<TResult, ValueTask<TOutput>>? ResultTransform { get; init; }
+    public OrchestrationOutputTransform<TOutput> ResultTransform { get; init; } = DefaultTransforms.ToOutput<TOutput>;
+
+    /// <summary>
+    /// Optional callback that is invoked for every agent response.
+    /// </summary>
+    public OrchestrationResponseCallback? ResponseCallback { get; init; }
 
     /// <summary>
     /// Gets the list of member targets involved in the orchestration.
     /// </summary>
-    protected IReadOnlyList<OrchestrationTarget> Members { get; }
-
-    /// <summary>
-    /// Gets the runtime associated with the orchestration.
-    /// </summary>
-    protected IAgentRuntime Runtime { get; }
+    protected IReadOnlyList<Agent> Members { get; }
 
     /// <summary>
     /// Initiates processing of the orchestration.
     /// </summary>
     /// <param name="input">The input message.</param>
-    /// <param name="timeout">Optional timeout for the orchestration process.</param>
-    public async ValueTask<OrchestrationResult<TOutput>> InvokeAsync(TInput input, TimeSpan? timeout = null)
+    /// <param name="runtime">The runtime associated with the orchestration.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    public async ValueTask<OrchestrationResult<TOutput>> InvokeAsync(
+        TInput input,
+        IAgentRuntime runtime,
+        CancellationToken cancellationToken = default)
     {
-        ILogger logger = this.LoggerFactory.CreateLogger(this.GetType());
-
         Verify.NotNull(input, nameof(input));
 
         TopicId topic = new($"ID_{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
 
+        CancellationTokenSource orchestrationCancelSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+        OrchestrationContext context = new(this._orchestrationRoot, topic, this.ResponseCallback, this.LoggerFactory, cancellationToken);
+
+        ILogger logger = this.LoggerFactory.CreateLogger(this.GetType());
+
         TaskCompletionSource<TOutput> completion = new();
 
-        AgentType orchestrationType = await this.RegisterAsync(topic, completion, handoff: null, this.LoggerFactory).ConfigureAwait(false);
+        AgentType orchestrationType = await this.RegisterAsync(runtime, context, completion, handoff: null).ConfigureAwait(false);
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         logger.LogOrchestrationInvoke(this._orchestrationRoot, topic);
 
-        Task task = this.Runtime.SendMessageAsync(input, orchestrationType).AsTask();
+        Task task = runtime.SendMessageAsync(input, orchestrationType, cancellationToken).AsTask();
 
         logger.LogOrchestrationYield(this._orchestrationRoot, topic);
 
-        return new OrchestrationResult<TOutput>(this._orchestrationRoot, topic, completion, logger);
+        return new OrchestrationResult<TOutput>(context, completion, orchestrationCancelSource, logger);
     }
+
+    /// <summary>
+    /// Initiates processing according to the orchestration pattern.
+    /// </summary>
+    /// <param name="runtime">The runtime associated with the orchestration.</param>
+    /// <param name="topic">The unique identifier for the orchestration session.</param>
+    /// <param name="input">The input to be transformed and processed.</param>
+    /// <param name="entryAgent">The initial agent type used for starting the orchestration.</param>
+    protected abstract ValueTask StartAsync(IAgentRuntime runtime, TopicId topic, IEnumerable<ChatMessageContent> input, AgentType? entryAgent);
+
+    /// <summary>
+    /// Orchestration specific registration, including members and returns an optional entry agent.
+    /// </summary>
+    /// <param name="runtime">The runtime targeted for registration.</param>
+    /// <param name="context">The orchestration context.</param>
+    /// <param name="registrar">A registration context.</param>
+    /// <param name="logger">The logger to use during registration</param>
+    /// <returns>The entry AgentType for the orchestration, if any.</returns>
+    protected abstract ValueTask<AgentType?> RegisterOrchestrationAsync(IAgentRuntime runtime, OrchestrationContext context, RegistrationContext registrar, ILogger logger);
 
     /// <summary>
     /// Formats and returns a unique AgentType based on the provided topic and suffix.
@@ -93,104 +153,68 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     protected AgentType FormatAgentType(TopicId topic, string suffix) => new($"{topic.Type}_{this._orchestrationRoot}_{suffix}");
 
     /// <summary>
-    /// Initiates processing according to the orchestration pattern.
-    /// </summary>
-    /// <param name="topic">The unique identifier for the orchestration session.</param>
-    /// <param name="input">The input message to be transformed and processed.</param>
-    /// <param name="entryAgent">The initial agent type used for starting the orchestration.</param>
-    protected abstract ValueTask StartAsync(TopicId topic, TSource input, AgentType? entryAgent);
-
-    /// <summary>
-    /// Registers additional orchestration members and returns the entry agent if available.
-    /// </summary>
-    /// <param name="topic">The topic identifier for the orchestration session.</param>
-    /// <param name="orchestrationType">The orchestration type used in registration.</param>
-    /// <returns>The entry AgentType for the orchestration, if any.</returns>
-    /// <param name="loggerFactory">The active logger factory.</param>
-    /// <param name="logger">The logger to use during registration</param>
-    protected abstract ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILoggerFactory loggerFactory, ILogger logger);
-
-    /// <summary>
-    /// Registers the orchestration with the runtime using an external topic and an optional target actor.
-    /// </summary>
-    /// <param name="externalTopic">The external topic identifier to register with.</param>
-    /// <param name="handoff">The actor type used for handoff.  Only defined for nested orchestrations.</param>
-    /// <param name="loggerFactory">The active logger factory.</param>
-    /// <returns>A ValueTask containing the AgentType that indicates the registered agent.</returns>
-    protected internal override ValueTask<AgentType> RegisterAsync(TopicId externalTopic, AgentType? handoff, ILoggerFactory loggerFactory)
-    {
-        TopicId orchestrationTopic = new($"{externalTopic.Type}_{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
-
-        return this.RegisterAsync(orchestrationTopic, completion: null, handoff, loggerFactory);
-    }
-
-    /// <summary>
-    /// Subscribes the specified agent type to the provided topics.
-    /// </summary>
-    /// <param name="agentType">The agent type to subscribe.</param>
-    /// <param name="topics">A variable list of topics for subscription.</param>
-    protected async Task SubscribeAsync(string agentType, params TopicId[] topics)
-    {
-        for (int index = 0; index < topics.Length; ++index)
-        {
-            await this.Runtime.AddSubscriptionAsync(new TypeSubscription(topics[index].Type, agentType)).ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>
     /// Registers the orchestration's root and boot agents, setting up completion and target routing.
     /// </summary>
-    /// <param name="topic">The unique topic for the orchestration session.</param>
-    /// <param name="completion">A TaskCompletionSource for the final result output, if applicable.</param>
+    /// <param name="runtime">The runtime targeted for registration.</param>
+    /// <param name="context">The orchestration context.</param>
+    /// <param name="completion">A TaskCompletionSource for the orchestration.</param>
     /// <param name="handoff">The actor type used for handoff.  Only defined for nested orchestrations.</param>
-    /// <param name="loggerFactory">The logger factory to use during initialization.</param>
     /// <returns>The AgentType representing the orchestration entry point.</returns>
-    private async ValueTask<AgentType> RegisterAsync(TopicId topic, TaskCompletionSource<TOutput>? completion, AgentType? handoff, ILoggerFactory loggerFactory)
+    private async ValueTask<AgentType> RegisterAsync(IAgentRuntime runtime, OrchestrationContext context, TaskCompletionSource<TOutput> completion, AgentType? handoff)
     {
-        // Use the orchestration's logger factory, if assigned; otherwise, use the provided factory.
-        if (this.LoggerFactory.GetType() != typeof(NullLoggerFactory))
-        {
-            loggerFactory = this.LoggerFactory;
-        }
         // Create a logger for the orchestration registration.
-        ILogger logger = loggerFactory.CreateLogger(this.GetType());
+        ILogger logger = context.LoggerFactory.CreateLogger(this.GetType());
+        logger.LogOrchestrationRegistrationStart(context.Orchestration, context.Topic);
 
-        logger.LogOrchestrationRegistrationStart(this._orchestrationRoot, topic);
-
-        if (this.InputTransform == null)
-        {
-            throw new InvalidOperationException("InputTransform must be set before invoking the orchestration.");
-        }
-        if (this.ResultTransform == null)
-        {
-            throw new InvalidOperationException("ResultTransform must be set before invoking the orchestration.");
-        }
-
-        // Register actor for final result
-        AgentType orchestrationFinal =
-            await this.Runtime.RegisterAgentFactoryAsync(
-                this.FormatAgentType(topic, "Root"),
-                (agentId, runtime) =>
-                    ValueTask.FromResult<IHostableAgent>(
-                        new ResultActor(agentId, runtime, this._orchestrationRoot, this.ResultTransform, completion, loggerFactory.CreateLogger<ResultActor>())
-                        {
-                            CompletionTarget = handoff,
-                        })).ConfigureAwait(false);
-
-        // Register orchestration members
-        AgentType? entryAgent = await this.RegisterMembersAsync(topic, orchestrationFinal, loggerFactory, logger).ConfigureAwait(false);
+        // Register orchestration
+        RegistrationContext registrar = new(this.FormatAgentType(context.Topic, "Root"), runtime, context, completion, this.ResultTransform);
+        AgentType? entryAgent = await this.RegisterOrchestrationAsync(runtime, context, registrar, logger).ConfigureAwait(false);
 
         // Register actor for orchestration entry-point
         AgentType orchestrationEntry =
-            await this.Runtime.RegisterAgentFactoryAsync(
-                this.FormatAgentType(topic, "Boot"),
+            await runtime.RegisterAgentFactoryAsync(
+                this.FormatAgentType(context.Topic, "Boot"),
                 (agentId, runtime) =>
                     ValueTask.FromResult<IHostableAgent>(
-                        new RequestActor(agentId, runtime, this._orchestrationRoot, this.InputTransform, (TSource source) => this.StartAsync(topic, source, entryAgent), completion, loggerFactory.CreateLogger<RequestActor>()))
+                        new RequestActor(agentId, runtime, context, this.InputTransform, completion, StartAsync, context.LoggerFactory.CreateLogger<RequestActor>()))
             ).ConfigureAwait(false);
 
-        logger.LogOrchestrationRegistrationDone(this._orchestrationRoot, topic);
+        logger.LogOrchestrationRegistrationDone(context.Orchestration, context.Topic);
 
         return orchestrationEntry;
+
+        ValueTask StartAsync(IEnumerable<ChatMessageContent> input) => this.StartAsync(runtime, context.Topic, input, entryAgent);
+    }
+
+    /// <summary>
+    /// A context used during registration (<see cref="RegisterAsync"/>).
+    /// </summary>
+    public sealed class RegistrationContext(
+        AgentType agentType,
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        TaskCompletionSource<TOutput> completion,
+        OrchestrationOutputTransform<TOutput> outputTransform)
+    {
+        /// <summary>
+        /// Register the final result type.
+        /// </summary>
+        public async ValueTask<AgentType> RegisterResultTypeAsync<TResult>(OrchestrationResultTransform<TResult> resultTransform)
+        {
+            // Register actor for final result
+            return
+                await runtime.RegisterAgentFactoryAsync(
+                    agentType,
+                    (agentId, runtime) =>
+                        ValueTask.FromResult<IHostableAgent>(
+                            new ResultActor<TResult>(
+                                agentId,
+                                runtime,
+                                context,
+                                resultTransform,
+                                outputTransform,
+                                completion,
+                                context.LoggerFactory.CreateLogger<ResultActor<TResult>>()))).ConfigureAwait(false);
+        }
     }
 }

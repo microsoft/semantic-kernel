@@ -19,11 +19,12 @@ internal sealed class ConcurrentActor : AgentActor, IHandle<ConcurrentMessages.R
     /// </summary>
     /// <param name="id">The unique identifier of the agent.</param>
     /// <param name="runtime">The runtime associated with the agent.</param>
+    /// <param name="context">The orchestration context.</param>
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="resultActor">Identifies the actor collecting results.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public ConcurrentActor(AgentId id, IAgentRuntime runtime, Agent agent, AgentType resultActor, ILogger<ConcurrentActor>? logger = null) :
-        base(id, runtime, agent, noThread: true, logger)
+    public ConcurrentActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, Agent agent, AgentType resultActor, ILogger<ConcurrentActor>? logger = null)
+        : base(id, runtime, context, agent, logger)
     {
         this._handoffActor = resultActor;
     }
@@ -31,12 +32,12 @@ internal sealed class ConcurrentActor : AgentActor, IHandle<ConcurrentMessages.R
     /// <inheritdoc/>
     public async ValueTask HandleAsync(ConcurrentMessages.Request item, MessageContext messageContext)
     {
-        this.Logger.LogConcurrentAgentInvoke(this.Id, item.Message.Content);
+        this.Logger.LogConcurrentAgentInvoke(this.Id);
 
-        ChatMessageContent response = await this.InvokeAsync(item.Message, messageContext.CancellationToken).ConfigureAwait(false);
+        ChatMessageContent response = await this.InvokeAsync(item.Messages, messageContext.CancellationToken).ConfigureAwait(false);
 
         this.Logger.LogConcurrentAgentResult(this.Id, response.Content);
 
-        await this.SendMessageAsync(response.ToResult(), this._handoffActor, messageContext.CancellationToken).ConfigureAwait(false);
+        await this.SendMessageAsync(response.AsResultMessage(), this._handoffActor, messageContext.CancellationToken).ConfigureAwait(false);
     }
 }
