@@ -44,9 +44,46 @@ internal static class ModelDiagnostics
         string modelName,
         string modelProvider,
         string prompt,
-        TPromptExecutionSettings? executionSettings
-    ) where TPromptExecutionSettings : PromptExecutionSettings
-        => StartCompletionActivity(endpoint, modelName, modelProvider, prompt, executionSettings, prompt => prompt);
+        TPromptExecutionSettings? executionSettings) where TPromptExecutionSettings : PromptExecutionSettings
+    {
+        if (!IsModelDiagnosticsEnabled())
+        {
+            return null;
+        }
+
+        const string OperationName = "text.completions";
+        var activity = s_activitySource.StartActivityWithTags(
+            $"{OperationName} {modelName}",
+            [
+                new(ModelDiagnosticsTags.Operation, OperationName),
+                new(ModelDiagnosticsTags.System, modelProvider),
+                new(ModelDiagnosticsTags.Model, modelName),
+            ],
+            ActivityKind.Client);
+
+        if (endpoint is not null)
+        {
+            activity?.SetTags([
+                // Skip the query string in the uri as it may contain keys
+                new(ModelDiagnosticsTags.Address, endpoint.GetLeftPart(UriPartial.Path)),
+                new(ModelDiagnosticsTags.Port, endpoint.Port),
+            ]);
+        }
+
+        AddOptionalTags(activity, executionSettings);
+
+        if (s_enableSensitiveEvents)
+        {
+            activity?.AttachSensitiveDataAsEvent(
+                ModelDiagnosticsTags.UserMessage,
+                [
+                    new(ModelDiagnosticsTags.EventName, prompt),
+                    new(ModelDiagnosticsTags.System, modelProvider),
+                ]);
+        }
+
+        return activity;
+    }
 
     /// <summary>
     /// Start a chat completion activity for a given model.
@@ -57,9 +94,50 @@ internal static class ModelDiagnostics
         string modelName,
         string modelProvider,
         ChatHistory chatHistory,
-        TPromptExecutionSettings? executionSettings
-    ) where TPromptExecutionSettings : PromptExecutionSettings
-        => StartCompletionActivity(endpoint, modelName, modelProvider, chatHistory, executionSettings, ToOpenAIFormat);
+        TPromptExecutionSettings? executionSettings) where TPromptExecutionSettings : PromptExecutionSettings
+    {
+        if (!IsModelDiagnosticsEnabled())
+        {
+            return null;
+        }
+
+        const string OperationName = "chat.completions";
+        var activity = s_activitySource.StartActivityWithTags(
+            $"{OperationName} {modelName}",
+            [
+                new(ModelDiagnosticsTags.Operation, OperationName),
+                new(ModelDiagnosticsTags.System, modelProvider),
+                new(ModelDiagnosticsTags.Model, modelName),
+            ],
+            ActivityKind.Client);
+
+        if (endpoint is not null)
+        {
+            activity?.SetTags([
+                // Skip the query string in the uri as it may contain keys
+                new(ModelDiagnosticsTags.Address, endpoint.GetLeftPart(UriPartial.Path)),
+                new(ModelDiagnosticsTags.Port, endpoint.Port),
+            ]);
+        }
+
+        AddOptionalTags(activity, executionSettings);
+
+        if (s_enableSensitiveEvents)
+        {
+            foreach (var message in chatHistory)
+            {
+                var formattedContent = ToGenAIConventionsFormat(message);
+                activity?.AttachSensitiveDataAsEvent(
+                    ModelDiagnosticsTags.RoleToEventMap[message.Role],
+                    [
+                        new(ModelDiagnosticsTags.EventName, formattedContent),
+                        new(ModelDiagnosticsTags.System, modelProvider),
+                    ]);
+            }
+        }
+
+        return activity;
+    }
 
     /// <summary>
     /// Start an agent invocation activity and return the activity.
@@ -98,14 +176,14 @@ internal static class ModelDiagnostics
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
     /// </summary>
     internal static void SetCompletionResponse(this Activity activity, IEnumerable<TextContent> completions, int? promptTokens = null, int? completionTokens = null)
-        => SetCompletionResponse(activity, completions, promptTokens, completionTokens, completions => $"[{string.Join(", ", completions)}]");
+        => SetCompletionResponse(activity, completions, promptTokens, completionTokens, ToGenAIConventionsChoiceFormat);
 
     /// <summary>
     /// Set the chat completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
     /// </summary>
     internal static void SetCompletionResponse(this Activity activity, IEnumerable<ChatMessageContent> completions, int? promptTokens = null, int? completionTokens = null)
-        => SetCompletionResponse(activity, completions, promptTokens, completionTokens, ToOpenAIFormat);
+        => SetCompletionResponse(activity, completions, promptTokens, completionTokens, ToGenAIConventionsChoiceFormat);
 
     /// <summary>
     /// Notify the end of streaming for a given activity.
@@ -195,45 +273,33 @@ internal static class ModelDiagnostics
     }
 
     /// <summary>
-    /// Convert chat history to a string aligned with the OpenAI format
+    /// Convert a chat message to a string aligned with the OTel GenAI Semantic Conventions format
     /// </summary>
-    private static string ToOpenAIFormat(IEnumerable<ChatMessageContent> chatHistory)
+    private static string ToGenAIConventionsFormat(ChatMessageContent chatMessage, StringBuilder? sb = null)
     {
-        var sb = new StringBuilder();
-        sb.Append('[');
-        var isFirst = true;
-        foreach (var message in chatHistory)
+        sb ??= new StringBuilder();
+
+        sb.Append("{\"role\": \"");
+        sb.Append(chatMessage.Role);
+        sb.Append("\", \"content\": ");
+        sb.Append(JsonSerializer.Serialize(chatMessage.Content));
+        if (chatMessage.Items.OfType<FunctionCallContent>().Any())
         {
-            if (!isFirst)
-            {
-                // Append a comma and a newline to separate the elements after the previous one.
-                // This can avoid adding an unnecessary comma after the last element.
-                sb.Append(", \n");
-            }
-
-            sb.Append("{\"role\": \"");
-            sb.Append(message.Role);
-            sb.Append("\", \"content\": ");
-            sb.Append(JsonSerializer.Serialize(message.Content));
-            if (message.Items.OfType<FunctionCallContent>().Any())
-            {
-                sb.Append(", \"tool_calls\": ");
-                ToOpenAIFormat(sb, message.Items);
-            }
-            sb.Append('}');
-
-            isFirst = false;
+            sb.Append(", \"tool_calls\": ");
+            ToGenAIConventionsFormat(chatMessage.Items, sb);
         }
-        sb.Append(']');
+        sb.Append('}');
 
         return sb.ToString();
     }
 
     /// <summary>
-    /// Helper method to convert tool calls to a string aligned with the OpenAI format
+    /// Helper method to convert tool calls to a string aligned with the OTel GenAI Semantic Conventions format
     /// </summary>
-    private static void ToOpenAIFormat(StringBuilder sb, ChatMessageContentItemCollection chatMessageContentItems)
+    private static void ToGenAIConventionsFormat(ChatMessageContentItemCollection chatMessageContentItems, StringBuilder? sb = null)
     {
+        sb ??= new StringBuilder();
+
         sb.Append('[');
         var isFirst = true;
         foreach (var functionCall in chatMessageContentItems.OfType<FunctionCallContent>())
@@ -259,54 +325,47 @@ internal static class ModelDiagnostics
     }
 
     /// <summary>
-    /// Start a completion activity and return the activity.
-    /// The `formatPrompt` delegate won't be invoked if events are disabled.
+    /// Convert a chat model response to a string aligned with the OTel GenAI Semantic Conventions format
     /// </summary>
-    private static Activity? StartCompletionActivity<TPrompt, TPromptExecutionSettings>(
-        Uri? endpoint,
-        string modelName,
-        string modelProvider,
-        TPrompt prompt,
-        TPromptExecutionSettings? executionSettings,
-        Func<TPrompt, string> formatPrompt) where TPromptExecutionSettings : PromptExecutionSettings
+    private static string ToGenAIConventionsChoiceFormat(ChatMessageContent chatMessage, int index)
     {
-        if (!IsModelDiagnosticsEnabled())
+        var sb = new StringBuilder();
+
+        sb.Append("{\"index\": ");
+        sb.Append(index);
+        sb.Append(", \"message\": ");
+        ToGenAIConventionsFormat(chatMessage, sb);
+        sb.Append(", \"tool_calls\": ");
+        ToGenAIConventionsFormat(chatMessage.Items, sb);
+        if (chatMessage.Metadata?.TryGetValue("FinishReason", out var finishReason) == true)
         {
-            return null;
+            sb.Append(", \"finish_reason\": ");
+            sb.Append(JsonSerializer.Serialize(finishReason));
         }
+        sb.Append('}');
 
-        string operationName = prompt is ChatHistory ? "chat.completions" : "text.completions";
-        var activity = s_activitySource.StartActivityWithTags(
-            $"{operationName} {modelName}",
-            [
-                new(ModelDiagnosticsTags.Operation, operationName),
-                new(ModelDiagnosticsTags.System, modelProvider),
-                new(ModelDiagnosticsTags.Model, modelName),
-            ],
-            ActivityKind.Client);
+        return sb.ToString();
+    }
 
-        if (endpoint is not null)
+    /// <summary>
+    /// Convert a text model response to a string aligned with the OTel GenAI Semantic Conventions format
+    /// </summary>
+    private static string ToGenAIConventionsChoiceFormat(TextContent textContent, int index)
+    {
+        var sb = new StringBuilder();
+
+        sb.Append("{\"index\": ");
+        sb.Append(index);
+        sb.Append(", \"message\": ");
+        sb.Append(JsonSerializer.Serialize(textContent.Text));
+        if (textContent.Metadata?.TryGetValue("FinishReason", out var finishReason) == true)
         {
-            activity?.SetTags([
-                // Skip the query string in the uri as it may contain keys
-                new(ModelDiagnosticsTags.Address, endpoint.GetLeftPart(UriPartial.Path)),
-                new(ModelDiagnosticsTags.Port, endpoint.Port),
-            ]);
+            sb.Append(", \"finish_reason\": ");
+            sb.Append(JsonSerializer.Serialize(finishReason));
         }
+        sb.Append('}');
 
-        AddOptionalTags(activity, executionSettings);
-
-        if (s_enableSensitiveEvents)
-        {
-            var formattedContent = formatPrompt(prompt);
-            activity?.AttachSensitiveDataAsEvent(
-                ModelDiagnosticsTags.PromptEvent,
-                [
-                    new(ModelDiagnosticsTags.PromptEventPrompt, formattedContent),
-                ]);
-        }
-
-        return activity;
+        return sb.ToString();
     }
 
     /// <summary>
@@ -315,10 +374,10 @@ internal static class ModelDiagnostics
     /// </summary>
     private static void SetCompletionResponse<T>(
         Activity activity,
-        T completions,
+        IEnumerable<T> completions,
         int? inputTokens,
         int? outputTokens,
-        Func<T, string> formatCompletions) where T : IEnumerable<KernelContent>
+        Func<T, int, string> formatCompletion) where T : KernelContent
     {
         if (!IsModelDiagnosticsEnabled())
         {
@@ -335,17 +394,31 @@ internal static class ModelDiagnostics
             activity.SetTag(ModelDiagnosticsTags.OutputTokens, outputTokens);
         }
 
-        activity
-            .SetFinishReasons(completions)
-            .SetResponseId(completions.FirstOrDefault());
+        activity.SetFinishReasons(completions);
 
         if (s_enableSensitiveEvents)
         {
-            activity.AttachSensitiveDataAsEvent(
-                ModelDiagnosticsTags.CompletionEvent,
-                [
-                    new(ModelDiagnosticsTags.CompletionEventCompletion, formatCompletions(completions)),
-                ]);
+            bool responseIdSet = false;
+            int index = 0;
+            foreach (var completion in completions)
+            {
+                if (!responseIdSet)
+                {
+                    activity.SetResponseId(completion);
+                    responseIdSet = true;
+                }
+
+                var formattedContent = formatCompletion(completion, index++);
+                activity.AttachSensitiveDataAsEvent(
+                    ModelDiagnosticsTags.Choice,
+                    [
+                        new(ModelDiagnosticsTags.EventName, formattedContent),
+                    ]);
+            }
+        }
+        else
+        {
+            activity.SetResponseId(completions.FirstOrDefault());
         }
     }
 
@@ -374,22 +447,22 @@ internal static class ModelDiagnostics
                         var text = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
                         return new TextContent(text, metadata: lastContent.Metadata);
                     }).ToList();
-                SetCompletionResponse(activity, textCompletions, promptTokens, completionTokens, completions => $"[{string.Join(", ", completions)}");
+                SetCompletionResponse(activity, textCompletions, promptTokens, completionTokens);
                 break;
             case StreamingChatMessageContent:
                 var chatCompletions = choices.Select(choiceContents =>
-                 {
-                     var lastContent = (StreamingChatMessageContent)choiceContents.Value.Last();
-                     var chatMessage = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
-                     return new ChatMessageContent(lastContent.Role ?? AuthorRole.Assistant, chatMessage, metadata: lastContent.Metadata);
-                 }).ToList();
+                {
+                    var lastContent = (StreamingChatMessageContent)choiceContents.Value.Last();
+                    var chatMessage = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
+                    return new ChatMessageContent(lastContent.Role ?? AuthorRole.Assistant, chatMessage, metadata: lastContent.Metadata);
+                }).ToList();
                 // It's currently not allowed to request multiple results per prompt while auto-invoke is enabled.
                 // Therefore, we can assume that there is only one completion per prompt when tool calls are present.
                 foreach (var functionCall in toolCalls ?? [])
                 {
                     chatCompletions.FirstOrDefault()?.Items.Add(functionCall);
                 }
-                SetCompletionResponse(activity, chatCompletions, promptTokens, completionTokens, ToOpenAIFormat);
+                SetCompletionResponse(activity, chatCompletions, promptTokens, completionTokens);
                 break;
         }
     }
@@ -476,10 +549,19 @@ internal static class ModelDiagnostics
         public const string AgentDescription = "gen_ai.agent.description";
 
         // Activity events
-        public const string PromptEvent = "gen_ai.content.prompt";
-        public const string PromptEventPrompt = "gen_ai.prompt";
-        public const string CompletionEvent = "gen_ai.content.completion";
-        public const string CompletionEventCompletion = "gen_ai.completion";
+        public const string EventName = "gen_ai.event.content";
+        public const string SystemMessage = "gen_ai.system.message";
+        public const string UserMessage = "gen_ai.user.message";
+        public const string AssistantMessage = "gen_ai.assistant.message";
+        public const string ToolMessage = "gen_ai.tool.message";
+        public const string Choice = "gen_ai.choice";
+        public static readonly Dictionary<AuthorRole, string> RoleToEventMap = new()
+            {
+                { AuthorRole.System, SystemMessage },
+                { AuthorRole.User, UserMessage },
+                { AuthorRole.Assistant, AssistantMessage },
+                { AuthorRole.Tool, ToolMessage }
+            };
     }
     # endregion
 }
