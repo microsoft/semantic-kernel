@@ -20,7 +20,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
         using var embeddingGenerator = new MockTextEmbeddingGenerator();
 
         var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+        using var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
         var collection = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
@@ -44,7 +44,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
         using var embeddingGenerator = new MockTextEmbeddingGenerator();
 
         var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+        using var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
         var collection = vectorStore.GetCollection<Guid, DataModel>("records");
 
         // Act
@@ -64,7 +64,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
         using var embeddingGenerator = new MockTextEmbeddingGenerator();
 
         var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+        using var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
         var collection = vectorStore.GetCollection<Guid, DataModel>("records");
 
         // Act
@@ -84,7 +84,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
         using var embeddingGenerator = new MockTextEmbeddingGenerator();
 
         var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+        using var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
         var collection = vectorStore.GetCollection<Guid, DataModel>("records");
 
         // Act
@@ -102,7 +102,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     {
         // Arrange
         var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore();
+        using var vectorStore = new InMemoryVectorStore();
         var collection = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
         using var generator = new MockTextEmbeddingGenerator();
 
@@ -123,7 +123,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     {
         // Arrange
         var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore();
+        using var vectorStore = new InMemoryVectorStore();
         var collection = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
         using var textGeneration = new MockTextEmbeddingGenerator();
 
@@ -143,7 +143,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     {
         // Arrange
         var services = new ServiceCollection();
-        var vectorStore = new InMemoryVectorStore();
+        using var vectorStore = new InMemoryVectorStore();
         var vectorSearch = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
         using var textGeneration = new MockTextEmbeddingGenerator();
 

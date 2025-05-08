@@ -18,14 +18,19 @@ internal sealed class QdrantTestStore : TestStore
     // Qdrant doesn't support the default Flat index kind
     public override string DefaultIndexKind => IndexKind.Hnsw;
 
+#pragma warning disable CA2213 // Disposable fields should be disposed
     private readonly QdrantContainer _container = new QdrantBuilder().Build();
+#pragma warning restore CA2213 // Disposable fields should be disposed
     private readonly bool _hasNamedVectors;
     private QdrantClient? _client;
-    private QdrantVectorStore? _defaultVectorStore;
 
     public QdrantClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
 
-    public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    protected override void Dispose(bool disposing)
+    {
+        this._client?.Dispose();
+        base.Dispose(disposing);
+    }
 
     public QdrantVectorStore GetVectorStore(QdrantVectorStoreOptions options)
         => new(this.Client, new()
@@ -50,7 +55,7 @@ internal sealed class QdrantTestStore : TestStore
         await this._container.StartAsync();
         this._client = new QdrantClient(this._container.Hostname, this._container.GetMappedPublicPort(QdrantBuilder.QdrantGrpcPort));
         // The client is shared, it's not owned by the vector store.
-        this._defaultVectorStore = new(this._client, new() { HasNamedVectors = this._hasNamedVectors, OwnsClient = false });
+        this.DefaultVectorStore = new QdrantVectorStore(this._client, new() { HasNamedVectors = this._hasNamedVectors, OwnsClient = false });
     }
 
     protected override Task StopAsync()

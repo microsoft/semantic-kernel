@@ -15,13 +15,9 @@ internal sealed class AzureAISearchTestStore : TestStore
     public static AzureAISearchTestStore Instance { get; } = new();
 
     private SearchIndexClient? _client;
-    private AzureAISearchVectorStore? _defaultVectorStore;
 
     public SearchIndexClient Client
         => this._client ?? throw new InvalidOperationException("Call InitializeAsync() first");
-
-    public override VectorStore DefaultVectorStore
-        => this._defaultVectorStore ?? throw new InvalidOperationException("Call InitializeAsync() first");
 
     public AzureAISearchVectorStore GetVectorStore(AzureAISearchVectorStoreOptions options)
         => new(this.Client, options);
@@ -43,7 +39,7 @@ internal sealed class AzureAISearchTestStore : TestStore
             ? new SearchIndexClient(new Uri(serviceUrl), new DefaultAzureCredential())
             : new SearchIndexClient(new Uri(serviceUrl), new AzureKeyCredential(apiKey));
 
-        this._defaultVectorStore = new(this._client);
+        this.DefaultVectorStore = new AzureAISearchVectorStore(this._client);
 
         return Task.CompletedTask;
     }

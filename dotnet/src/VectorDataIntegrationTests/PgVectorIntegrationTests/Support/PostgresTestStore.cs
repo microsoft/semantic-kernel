@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.PgVector;
 using Npgsql;
 using Testcontainers.PostgreSql;
@@ -19,11 +18,14 @@ internal sealed class PostgresTestStore : TestStore
         .Build();
 
     private NpgsqlDataSource? _dataSource;
-    private PostgresVectorStore? _defaultVectorStore;
 
     public NpgsqlDataSource DataSource => this._dataSource ?? throw new InvalidOperationException("Not initialized");
 
-    public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    protected override void Dispose(bool disposing)
+    {
+        this._dataSource?.Dispose();
+        base.Dispose(disposing);
+    }
 
     public PostgresVectorStore GetVectorStore(PostgresVectorStoreOptions options)
     {
@@ -63,12 +65,11 @@ internal sealed class PostgresTestStore : TestStore
         await connection.ReloadTypesAsync();
 
         // It's a shared static instance, we don't want any of the tests to dispose it.
-        this._defaultVectorStore = new(this._dataSource, new() { OwnsDataSource = false });
+        this.DefaultVectorStore = new PostgresVectorStore(this._dataSource, new() { OwnsDataSource = false });
     }
 
     protected override async Task StopAsync()
     {
-        this._defaultVectorStore!.Dispose();
         await this._dataSource!.DisposeAsync();
         await s_container.StopAsync();
     }

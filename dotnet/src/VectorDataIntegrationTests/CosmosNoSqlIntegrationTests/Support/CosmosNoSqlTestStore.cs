@@ -5,7 +5,6 @@ using System.Net.Http;
 #endif
 using System.Text.Json;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 using VectorDataSpecificationTests.Support;
 
@@ -19,7 +18,6 @@ internal sealed class CosmosNoSqlTestStore : TestStore
 
     private CosmosClient? _client;
     private Database? _database;
-    private CosmosNoSqlVectorStore? _defaultVectorStore;
 
     public override string DefaultIndexKind => Microsoft.Extensions.VectorData.IndexKind.Flat;
 
@@ -29,14 +27,17 @@ internal sealed class CosmosNoSqlTestStore : TestStore
     public Database Database
         => this._database ?? throw new InvalidOperationException("Call InitializeAsync() first");
 
-    public override VectorStore DefaultVectorStore
-        => this._defaultVectorStore ?? throw new InvalidOperationException("Call InitializeAsync() first");
-
     public CosmosNoSqlVectorStore GetVectorStore(CosmosNoSqlVectorStoreOptions options)
         => new(this.Database, options);
 
     private CosmosNoSqlTestStore()
     {
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        this._client?.Dispose();
+        base.Dispose(disposing);
     }
 
 #pragma warning disable CA5400 // HttpClient may be created without enabling CheckCertificateRevocationList
@@ -59,7 +60,7 @@ internal sealed class CosmosNoSqlTestStore : TestStore
         this._client = new CosmosClient(connectionString, options);
         this._database = this._client.GetDatabase("VectorDataIntegrationTests");
         await this._client.CreateDatabaseIfNotExistsAsync("VectorDataIntegrationTests");
-        this._defaultVectorStore = new(this._database);
+        this.DefaultVectorStore = new CosmosNoSqlVectorStore(this._database);
     }
 #pragma warning restore CA5400
 }

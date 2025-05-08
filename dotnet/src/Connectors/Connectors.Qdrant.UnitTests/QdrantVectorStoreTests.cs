@@ -30,7 +30,7 @@ public class QdrantVectorStoreTests
     public void GetCollectionReturnsCollection()
     {
         // Arrange.
-        var sut = new QdrantVectorStore(this._qdrantClientMock.Object);
+        using var sut = new QdrantVectorStore(this._qdrantClientMock.Object);
 
         // Act.
         var actual = sut.GetCollection<ulong, SinglePropsModel<ulong>>(TestCollectionName);
@@ -44,7 +44,7 @@ public class QdrantVectorStoreTests
     public void GetCollectionThrowsForInvalidKeyType()
     {
         // Arrange.
-        var sut = new QdrantVectorStore(this._qdrantClientMock.Object);
+        using var sut = new QdrantVectorStore(this._qdrantClientMock.Object);
 
         // Act & Assert.
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName));
@@ -57,7 +57,7 @@ public class QdrantVectorStoreTests
         this._qdrantClientMock
             .Setup(x => x.ListCollectionsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { "collection1", "collection2" });
-        var sut = new QdrantVectorStore(this._qdrantClientMock.Object);
+        using var sut = new QdrantVectorStore(this._qdrantClientMock.Object);
 
         // Act.
         var collectionNames = sut.ListCollectionNamesAsync(this._testCancellationToken);

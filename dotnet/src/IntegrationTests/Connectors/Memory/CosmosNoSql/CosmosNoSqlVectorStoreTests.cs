@@ -11,6 +11,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.CosmosNoSql;
 [Collection("CosmosNoSqlVectorStoreCollection")]
 [CosmosNoSqlConnectionStringSetCondition]
 public sealed class CosmosNoSqlVectorStoreTests(CosmosNoSqlVectorStoreFixture fixture)
+#pragma warning disable CA2000 // Dispose objects before losing scope
     : BaseVectorStoreTests<string, CosmosNoSqlHotel>(new CosmosNoSqlVectorStore(fixture.Database!))
+#pragma warning restore CA2000 // Dispose objects before losing scope
 {
 }

@@ -29,7 +29,7 @@ public sealed class WeaviateVectorStoreTests : IDisposable
     public void GetCollectionWithNotSupportedKeyThrowsException()
     {
         // Arrange
-        var sut = new WeaviateVectorStore(this._mockHttpClient);
+        using var sut = new WeaviateVectorStore(this._mockHttpClient);
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<string, WeaviateHotel>("Collection"));
@@ -39,7 +39,7 @@ public sealed class WeaviateVectorStoreTests : IDisposable
     public void GetCollectionWithSupportedKeyReturnsCollection()
     {
         // Arrange
-        var sut = new WeaviateVectorStore(this._mockHttpClient);
+        using var sut = new WeaviateVectorStore(this._mockHttpClient);
 
         // Act
         var collection = sut.GetCollection<Guid, WeaviateHotel>("Collection1");
@@ -63,7 +63,7 @@ public sealed class WeaviateVectorStoreTests : IDisposable
             Content = new StringContent(JsonSerializer.Serialize(response))
         };
 
-        var sut = new WeaviateVectorStore(this._mockHttpClient);
+        using var sut = new WeaviateVectorStore(this._mockHttpClient);
 
         // Act
         var actualCollectionNames = await sut.ListCollectionNamesAsync().ToListAsync();

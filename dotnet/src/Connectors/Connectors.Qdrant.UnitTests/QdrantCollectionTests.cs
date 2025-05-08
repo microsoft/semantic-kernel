@@ -39,7 +39,7 @@ public class QdrantCollectionTests
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange.
-        var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, collectionName);
+        using var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, collectionName);
 
         this._qdrantClientMock
             .Setup(x => x.CollectionExistsAsync(
@@ -58,7 +58,7 @@ public class QdrantCollectionTests
     public async Task CanCreateCollectionAsync()
     {
         // Arrange.
-        var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
+        using var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
 
         this._qdrantClientMock
             .Setup(x => x.CollectionExistsAsync(
@@ -125,7 +125,7 @@ public class QdrantCollectionTests
     public async Task CanDeleteCollectionAsync()
     {
         // Arrange.
-        var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
+        using var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
 
         this._qdrantClientMock
             .Setup(x => x.DeleteCollectionAsync(
@@ -152,7 +152,7 @@ public class QdrantCollectionTests
     public async Task CanGetRecordWithVectorsAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
         where TKey : notnull
     {
-        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
+        using var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
 
         // Arrange.
         var retrievedPoint = CreateRetrievedPoint(hasNamedVectors, testRecordKey);
@@ -190,7 +190,7 @@ public class QdrantCollectionTests
         where TKey : notnull
     {
         // Arrange.
-        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
+        using var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
         var retrievedPoint = CreateRetrievedPoint(hasNamedVectors, testRecordKey);
         this.SetupRetrieveMock([retrievedPoint]);
 
@@ -226,7 +226,7 @@ public class QdrantCollectionTests
         where TKey : notnull
     {
         // Arrange.
-        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
+        using var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
         var retrievedPoint1 = CreateRetrievedPoint(hasNamedVectors, UlongTestRecordKey1);
         var retrievedPoint2 = CreateRetrievedPoint(hasNamedVectors, UlongTestRecordKey2);
         this.SetupRetrieveMock(testRecordKeys.Select(x => CreateRetrievedPoint(hasNamedVectors, x)).ToList());
@@ -267,7 +267,7 @@ public class QdrantCollectionTests
     public async Task CanDeleteUlongRecordAsync(bool useDefinition, bool hasNamedVectors)
     {
         // Arrange
-        var sut = this.CreateRecordCollection<ulong>(useDefinition, hasNamedVectors);
+        using var sut = this.CreateRecordCollection<ulong>(useDefinition, hasNamedVectors);
         this.SetupDeleteMocks();
 
         // Act
@@ -296,7 +296,7 @@ public class QdrantCollectionTests
     public async Task CanDeleteGuidRecordAsync(bool useDefinition, bool hasNamedVectors)
     {
         // Arrange
-        var sut = this.CreateRecordCollection<Guid>(useDefinition, hasNamedVectors);
+        using var sut = this.CreateRecordCollection<Guid>(useDefinition, hasNamedVectors);
         this.SetupDeleteMocks();
 
         // Act
@@ -325,7 +325,7 @@ public class QdrantCollectionTests
     public async Task CanDeleteManyUlongRecordsAsync(bool useDefinition, bool hasNamedVectors)
     {
         // Arrange
-        var sut = this.CreateRecordCollection<ulong>(useDefinition, hasNamedVectors);
+        using var sut = this.CreateRecordCollection<ulong>(useDefinition, hasNamedVectors);
         this.SetupDeleteMocks();
 
         // Act
@@ -354,7 +354,7 @@ public class QdrantCollectionTests
     public async Task CanDeleteManyGuidRecordsAsync(bool useDefinition, bool hasNamedVectors)
     {
         // Arrange
-        var sut = this.CreateRecordCollection<Guid>(useDefinition, hasNamedVectors);
+        using var sut = this.CreateRecordCollection<Guid>(useDefinition, hasNamedVectors);
         this.SetupDeleteMocks();
 
         // Act
@@ -381,7 +381,7 @@ public class QdrantCollectionTests
         where TKey : notnull
     {
         // Arrange
-        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
+        using var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
         this.SetupUpsertMock();
 
         // Act
@@ -408,7 +408,7 @@ public class QdrantCollectionTests
         where TKey : notnull
     {
         // Arrange
-        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
+        using var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
         this.SetupUpsertMock();
 
         var models = testRecordKeys.Select(x => CreateModel(x, true));
@@ -454,7 +454,7 @@ public class QdrantCollectionTests
         };
 
         // Act.
-        var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(
+        using var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(
             this._qdrantClientMock.Object,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition });
@@ -466,7 +466,7 @@ public class QdrantCollectionTests
     public async Task CanSearchWithVectorAndFilterAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
         where TKey : notnull
     {
-        var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
+        using var sut = this.CreateRecordCollection<TKey>(useDefinition, hasNamedVectors);
 
         // Arrange.
         var scoredPoint = CreateScoredPoint(hasNamedVectors, testRecordKey);

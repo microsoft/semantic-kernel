@@ -19,7 +19,7 @@ public class InMemoryVectorStoreTests
     public void GetCollectionReturnsCollection()
     {
         // Arrange.
-        var sut = new InMemoryVectorStore();
+        using var sut = new InMemoryVectorStore();
 
         // Act.
         var actual = sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName);
@@ -33,7 +33,7 @@ public class InMemoryVectorStoreTests
     public void GetCollectionReturnsCollectionWithNonStringKey()
     {
         // Arrange.
-        var sut = new InMemoryVectorStore();
+        using var sut = new InMemoryVectorStore();
 
         // Act.
         var actual = sut.GetCollection<int, SinglePropsModel<int>>(TestCollectionName);
@@ -47,7 +47,7 @@ public class InMemoryVectorStoreTests
     public async Task GetCollectionDoesNotAllowADifferentDataTypeThanPreviouslyUsedAsync()
     {
         // Arrange.
-        var sut = new InMemoryVectorStore();
+        using var sut = new InMemoryVectorStore();
         var stringKeyCollection = sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName);
         await stringKeyCollection.EnsureCollectionExistsAsync();
 

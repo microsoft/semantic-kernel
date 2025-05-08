@@ -8,10 +8,11 @@ namespace VectorDataSpecificationTests.Support;
 
 #pragma warning disable CA1001 // Type owns disposable fields but is not disposable
 
-public abstract class TestStore
+public abstract class TestStore : IDisposable
 {
     private readonly SemaphoreSlim _lock = new(1, 1);
     private int _referenceCount;
+    private VectorStore? _defaultVectorStore;
 
     /// <summary>
     /// Some databases modify vectors on upsert, e.g. normalizing them, so vectors
@@ -26,7 +27,24 @@ public abstract class TestStore
     protected virtual Task StopAsync()
         => Task.CompletedTask;
 
-    public abstract VectorStore DefaultVectorStore { get; }
+    public VectorStore DefaultVectorStore
+    {
+        get => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+        set => this._defaultVectorStore = value;
+    }
+
+#pragma warning disable CA1816, CA1063 // Dispose methods should call SuppressFinalize: no finalizer
+    public void Dispose() => this.Dispose(true);
+#pragma warning restore CA1063, CA1063
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._lock.Dispose();
+            this._defaultVectorStore?.Dispose();
+        }
+    }
 
     public virtual async Task ReferenceCountingStartAsync()
     {

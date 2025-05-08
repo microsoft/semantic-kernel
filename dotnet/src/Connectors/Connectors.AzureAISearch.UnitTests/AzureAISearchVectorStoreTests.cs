@@ -39,7 +39,7 @@ public class AzureAISearchVectorStoreTests
     public void GetCollectionReturnsCollection()
     {
         // Arrange.
-        var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object);
+        using var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object);
 
         // Act.
         var actual = sut.GetCollection<string, SinglePropsModel>(TestCollectionName);
@@ -53,7 +53,7 @@ public class AzureAISearchVectorStoreTests
     public void GetCollectionThrowsForInvalidKeyType()
     {
         // Arrange.
-        var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object);
+        using var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object);
 
         // Act & Assert.
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<int, SinglePropsModel>(TestCollectionName));
@@ -76,7 +76,7 @@ public class AzureAISearchVectorStoreTests
         this._searchIndexClientMock
             .Setup(x => x.GetIndexNamesAsync(this._testCancellationToken))
             .Returns(pageableMock.Object);
-        var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object);
+        using var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object);
 
         // Act.
         var actual = sut.ListCollectionNamesAsync(this._testCancellationToken);

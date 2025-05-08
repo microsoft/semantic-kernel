@@ -3,7 +3,6 @@
 #if NET472
 using System.Net.Http;
 #endif
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using VectorDataSpecificationTests.Support;
 using WeaviateIntegrationTests.Support.TestContainer;
@@ -17,14 +16,13 @@ public sealed class WeaviateTestStore : TestStore
 
     public override string DefaultDistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
 
+#pragma warning disable CA2213 // Disposable fields should be disposed
     private readonly WeaviateContainer _container = new WeaviateBuilder().Build();
+#pragma warning restore CA2213 // Disposable fields should be disposed
     private readonly bool _hasNamedVectors;
     public HttpClient? _httpClient { get; private set; }
-    private WeaviateVectorStore? _defaultVectorStore;
 
     public HttpClient Client => this._httpClient ?? throw new InvalidOperationException("Not initialized");
-
-    public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public WeaviateVectorStore GetVectorStore(WeaviateVectorStoreOptions options)
         => new(this.Client, options);
@@ -35,7 +33,7 @@ public sealed class WeaviateTestStore : TestStore
     {
         await this._container.StartAsync();
         this._httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{this._container.GetMappedPublicPort(WeaviateBuilder.WeaviateHttpPort)}/v1/") };
-        this._defaultVectorStore = new(this._httpClient, new() { HasNamedVectors = this._hasNamedVectors });
+        this.DefaultVectorStore = new WeaviateVectorStore(this._httpClient, new() { HasNamedVectors = this._hasNamedVectors });
     }
 
     protected override Task StopAsync()
