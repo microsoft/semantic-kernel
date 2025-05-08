@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
@@ -27,17 +27,13 @@ public sealed class SessionsPythonCodeExecutionResult
     /// </summary>
     public override string ToString()
     {
-        StringBuilder sb = new();
-
-        sb.AppendLine($"Status: {this.Status}");
-        if (this.Result is not null)
+        return JsonSerializer.Serialize(new
         {
-            sb.AppendLine($"Result: {this.Result.ExecutionResult}");
-            sb.AppendLine($"Stdout: {this.Result.StdOut}");
-            sb.AppendLine($"Stderr: {this.Result.StdErr}");
-        }
-
-        return sb.ToString();
+            status = this.Status,
+            result = this.Result?.ExecutionResult,
+            stdOut = this.Result?.StdOut,
+            stdErr = this.Result?.StdErr
+        });
     }
 
     /// <summary>
