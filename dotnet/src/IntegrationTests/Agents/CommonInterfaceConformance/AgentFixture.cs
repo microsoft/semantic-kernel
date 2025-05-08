@@ -23,6 +23,8 @@ public abstract class AgentFixture : IAsyncLifetime
 
     public abstract AgentThread CreatedServiceFailingAgentThread { get; }
 
+    public abstract AgentThread GetNewThread();
+
     public abstract Task<ChatHistory> GetChatHistory();
 
     public abstract Task DeleteThread(AgentThread thread);

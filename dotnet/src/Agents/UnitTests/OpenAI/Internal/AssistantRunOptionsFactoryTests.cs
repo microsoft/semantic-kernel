@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
@@ -29,7 +30,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, null);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, null, threadExtensionsContext: null);
 
         // Assert
         Assert.NotNull(options);
@@ -62,7 +63,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, "test", invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, "test", invocationOptions, threadExtensionsContext: null);
 
         // Assert
         Assert.NotNull(options);
@@ -97,7 +98,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions, threadExtensionsContext: null);
 
         // Assert
         Assert.NotNull(options);
@@ -134,7 +135,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions, threadExtensionsContext: null);
 
         // Assert
         Assert.Equal(2, options.Metadata.Count);
@@ -163,7 +164,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions, threadExtensionsContext: null);
 
         // Assert
         Assert.Single(options.AdditionalMessages);
@@ -186,10 +187,42 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, null);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, null, threadExtensionsContext: null);
 
         // Assert
         Assert.Equal(1024, options.MaxInputTokenCount);
         Assert.Equal(4096, options.MaxOutputTokenCount);
+    }
+
+    /// <summary>
+    /// Verify run options generation with <see cref="OpenAIAssistantInvocationOptions"/> metadata.
+    /// </summary>
+    [Fact]
+    public void AssistantRunOptionsFactoryAdditionalInstructionsTest()
+    {
+        // Arrange
+        RunCreationOptions defaultOptions =
+            new()
+            {
+                ModelOverride = "gpt-anything",
+                Temperature = 0.5F,
+                MaxOutputTokenCount = 4096,
+                MaxInputTokenCount = 1024,
+                AdditionalInstructions = "DefaultInstructions"
+            };
+
+        RunCreationOptions invocationOptions =
+            new()
+            {
+                AdditionalInstructions = "OverrideInstructions",
+            };
+
+        // Act
+        RunCreationOptions optionsWithOverride = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions, threadExtensionsContext: "Context");
+        RunCreationOptions optionsWithoutOverride = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, null, threadExtensionsContext: "Context");
+
+        // Assert
+        Assert.Equal($"OverrideInstructions{Environment.NewLine}{Environment.NewLine}Context", optionsWithOverride.AdditionalInstructions);
+        Assert.Equal($"DefaultInstructions{Environment.NewLine}{Environment.NewLine}Context", optionsWithoutOverride.AdditionalInstructions);
     }
 }
