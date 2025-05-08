@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -51,9 +51,9 @@ public sealed class BedrockEmbeddingGenerator : IEmbeddingGenerator<string, Embe
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is null ? null :
+            serviceKey is not null ? null :
+            serviceType == typeof(EmbeddingGeneratorMetadata) ? this._metadata :
             serviceType.IsInstanceOfType(this) ? this :
-            serviceType.IsInstanceOfType(typeof(EmbeddingGeneratorMetadata)) ? this._metadata :
             null;
     }
 }

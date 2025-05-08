@@ -45,15 +45,15 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         Verify.NotNull(services);
 
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGenerationService(
+            new AzureOpenAIEmbeddingGenerator(
                 deploymentName,
                 endpoint,
                 apiKey,
                 modelId,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>(),
                 dimensions,
-                apiVersion));
+                apiVersion,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
     }
 
     /// <summary>
@@ -85,15 +85,15 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         Verify.NotNull(credential);
 
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGenerationService(
+            new AzureOpenAIEmbeddingGenerator(
                 deploymentName,
                 endpoint,
                 credential,
                 modelId,
-                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>(),
                 dimensions,
-                apiVersion));
+                apiVersion,
+                HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                serviceProvider.GetService<ILoggerFactory>()));
     }
 
     /// <summary>
@@ -118,11 +118,11 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         Verify.NotNull(services);
 
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGenerationService(
+            new AzureOpenAIEmbeddingGenerator(
                 deploymentName,
                 azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
                 modelId,
-                serviceProvider.GetService<ILoggerFactory>(),
-                dimensions));
+                dimensions,
+                serviceProvider.GetService<ILoggerFactory>()));
     }
 }

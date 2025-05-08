@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,6 @@ using Amazon.BedrockRuntime;
 using Amazon.Runtime;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -32,7 +31,7 @@ public sealed class BedrockEmbeddingGeneratorTests
 
         // Assert
         Assert.IsType<BedrockEmbeddingGenerator>(service);
-        Assert.Equal(modelId, ((BedrockEmbeddingGenerator)service).GetService(typeof(EmbeddingGeneratorMetadata), "metadata") is EmbeddingGeneratorMetadata metadata ? metadata.DefaultModelId : null);
+        Assert.Equal(modelId, service.GetService<EmbeddingGeneratorMetadata>()!.DefaultModelId);
     }
 
     /// <summary>
