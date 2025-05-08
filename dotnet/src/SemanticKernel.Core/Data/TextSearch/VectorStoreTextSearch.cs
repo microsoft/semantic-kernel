@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Embeddings;
 
@@ -24,11 +25,63 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
     /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the search.</param>
+    /// <param name="embeddingGenerator"><see cref="IEmbeddingGenerator"/> instance used to create a vector from the text query. Only FLOAT32 vector generation is currently supported by <see cref="VectorStoreTextSearch{TRecord}"/>. If you required a different type of vector use the built in vector generation in the vector store.</param>
+    /// <param name="stringMapper"><see cref="MapFromResultToString" /> instance that can map a TRecord to a <see cref="string"/></param>
+    /// <param name="resultMapper"><see cref="MapFromResultToTextSearchResult" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
+    /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
+    public VectorStoreTextSearch(
+        IVectorSearch<TRecord> vectorSearch,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        MapFromResultToString stringMapper,
+        MapFromResultToTextSearchResult resultMapper,
+        VectorStoreTextSearchOptions? options = null) :
+        this(
+            vectorSearch,
+            embeddingGenerator,
+            stringMapper is null ? null : new TextSearchStringMapper(stringMapper),
+            resultMapper is null ? null : new TextSearchResultMapper(resultMapper),
+            options)
+    {
+    }
+
+    /// <summary>
+    /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
+    /// provided <see cref="IVectorSearch{TRecord}"/> for performing searches and
+    /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
+    /// </summary>
+    /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the search.</param>
+    /// <param name="embeddingGenerator"><see cref="IEmbeddingGenerator"/> instance used to create a vector from the text query. Only FLOAT32 vector generation is currently supported by <see cref="VectorStoreTextSearch{TRecord}"/>. If you required a different type of vector use the built in vector generation in the vector store.</param>
+    /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
+    /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
+    /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
+    public VectorStoreTextSearch(
+        IVectorSearch<TRecord> vectorSearch,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        ITextSearchStringMapper? stringMapper = null,
+        ITextSearchResultMapper? resultMapper = null,
+#pragma warning disable CS0618 // Type or member is obsolete
+        VectorStoreTextSearchOptions? options = null) :
+        this(
+            vectorSearch,
+            embeddingGenerator.AsTextEmbeddingGenerationService(),
+            stringMapper,
+            resultMapper,
+            options)
+#pragma warning restore CS0618 // Type or member is obsolete
+    {
+    }
+
+    /// <summary>
+    /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
+    /// provided <see cref="IVectorSearch{TRecord}"/> for performing searches and
+    /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
+    /// </summary>
+    /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the search.</param>
     /// <param name="textEmbeddingGeneration"><see cref="ITextEmbeddingGenerationService"/> instance used to create a vector from the text query.</param>
     /// <param name="stringMapper"><see cref="MapFromResultToString" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="MapFromResultToTextSearchResult" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
-    [Obsolete("Use the constructor without an ITextEmbeddingGenerationService and pass a vectorSearch configured to perform embedding generation with IEmbeddingGenerator")]
+    [Obsolete("Use the constructor with IEmbeddingGenerator or use the constructor without an ITextEmbeddingGenerationService and pass a vectorSearch configured to perform embedding generation with IEmbeddingGenerator")]
     public VectorStoreTextSearch(
         IVectorSearch<TRecord> vectorSearch,
         ITextEmbeddingGenerationService textEmbeddingGeneration,
@@ -54,7 +107,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
-    [Obsolete("Use the constructor without an ITextEmbeddingGenerationService and pass a vectorSearch configured to perform embedding generation with IEmbeddingGenerator")]
+    [Obsolete("Use the constructor with IEmbeddingGenerator or use the constructor without an ITextEmbeddingGenerationService and pass a vectorSearch configured to perform embedding generation with IEmbeddingGenerator")]
     public VectorStoreTextSearch(
         IVectorSearch<TRecord> vectorSearch,
         ITextEmbeddingGenerationService textEmbeddingGeneration,

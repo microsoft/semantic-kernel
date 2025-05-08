@@ -21,7 +21,7 @@ public class VectorStoreTextSearchTestBase
 #pragma warning restore CA1052 // Static holder types should be Static or NotInheritable
 {
     /// <summary>
-    /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorSearch{TRecord}"/>.
     /// </summary>
     [Obsolete("VectorStoreTextSearch Ctor with ITextEmbeddingGenerationService is obsolete")]
     public static async Task<VectorStoreTextSearch<DataModelWithRawEmbedding>> CreateVectorStoreTextSearchWithEmbeddingGenerationServiceAsync()
@@ -33,12 +33,27 @@ public class VectorStoreTextSearchTestBase
         var embeddingService = new MockTextEmbeddingGenerationService();
         using var embeddingGenerator = new MockEmbeddingGenerator();
         await AddRecordsAsync(vectorSearch, embeddingGenerator);
-        var sut = new VectorStoreTextSearch<DataModelWithRawEmbedding>(vectorSearch, embeddingService, stringMapper, resultMapper);
+        var sut = new VectorStoreTextSearch<DataModelWithRawEmbedding>(vectorSearch, (ITextEmbeddingGenerationService)embeddingService, stringMapper, resultMapper);
         return sut;
     }
 
     /// <summary>
-    /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorSearch{TRecord}"/>.
+    /// </summary>
+    public static async Task<VectorStoreTextSearch<DataModelWithRawEmbedding>> CreateVectorStoreTextSearchWithEmbeddingGeneratorAsync()
+    {
+        var vectorStore = new InMemoryVectorStore();
+        var vectorSearch = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
+        var stringMapper = new DataModelTextSearchStringMapper();
+        var resultMapper = new DataModelTextSearchResultMapper();
+        using var embeddingService = new MockTextEmbeddingGenerator();
+        await AddRecordsAsync(vectorSearch, embeddingService);
+        var sut = new VectorStoreTextSearch<DataModelWithRawEmbedding>(vectorSearch, (IEmbeddingGenerator<string, Embedding<float>>)embeddingService, stringMapper, resultMapper);
+        return sut;
+    }
+
+    /// <summary>
+    /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorSearch{TRecord}"/>.
     /// </summary>
     public static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchAsync()
     {
