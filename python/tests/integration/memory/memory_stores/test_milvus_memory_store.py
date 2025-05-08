@@ -4,8 +4,16 @@
 import numpy as np
 import pytest
 
-from semantic_kernel.connectors.memory.milvus import MilvusMemoryStore
-from semantic_kernel.memory.memory_record import MemoryRecord
+pytest.skip(
+    (
+        "Temporarily disabling this test module due to import error from milvus: "
+        "AttributeError: module 'marshmallow' has no attribute '__version_info__'"
+    ),
+    allow_module_level=True,
+)
+
+from semantic_kernel.connectors.memory.milvus import MilvusMemoryStore  # noqa: E402
+from semantic_kernel.memory.memory_record import MemoryRecord  # noqa: E402
 
 try:
     from milvus import default_server
