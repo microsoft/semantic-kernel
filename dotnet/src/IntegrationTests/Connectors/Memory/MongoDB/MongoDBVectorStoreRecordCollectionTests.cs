@@ -161,6 +161,8 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         var record2 = this.CreateTestHotel(HotelId2);
         var record3 = this.CreateTestHotel(HotelId3);
 
+        await sut.UpsertAsync([record1, record2, record3]);
+
         var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId1));

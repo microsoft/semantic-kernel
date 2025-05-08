@@ -7,7 +7,7 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.CosmosMongoDB;
 
-[Collection("CosmosMongoVectorStoreCollection")]
+[Collection("CosmosMongoCollection")]
 [DisableVectorStoreTests(Skip = "Azure CosmosDB MongoDB cluster is required")]
 public class CosmosMongoVectorStoreTests(CosmosMongoVectorStoreFixture fixture)
     : BaseVectorStoreTests<string, CosmosMongoHotel>(new CosmosMongoVectorStore(fixture.MongoDatabase))
