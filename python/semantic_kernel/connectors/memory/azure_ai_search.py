@@ -488,7 +488,7 @@ class AzureAISearchCollection(
         match search_type:
             case SearchType.VECTOR:
                 if vector is not None:
-                    vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+                    vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
                     search_args["vector_queries"] = [
                         VectorizedQuery(
                             vector=vector,  # type: ignore
@@ -497,7 +497,7 @@ class AzureAISearchCollection(
                     ]
                 elif values is not None:
                     generated_vector = await self._generate_vector_from_values(values, options)
-                    vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+                    vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
                     if generated_vector is not None:
                         search_args["vector_queries"] = [
                             VectorizedQuery(
@@ -517,10 +517,10 @@ class AzureAISearchCollection(
             case SearchType.KEYWORD_HYBRID:
                 if values is None:
                     raise VectorStoreOperationException("No vector and/or keywords provided for search.")
-                vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+                vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
                 search_args["search_fields"] = (
-                    [options.keyword_field_name]
-                    if options.keyword_field_name is not None
+                    [options.additional_property_name]
+                    if options.additional_property_name is not None
                     else [
                         field.name
                         for field in self.data_model_definition.fields

@@ -109,7 +109,7 @@ async def main():
         # The other options are optional, but can be useful
         # The filter option is used to filter the results based on the tag field
         options = VectorSearchOptions(
-            vector_field_name="vector",
+            vector_property_name="vector",
             filter=lambda x: x.tag == "general",
         )
         query = "python"

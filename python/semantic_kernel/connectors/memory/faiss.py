@@ -209,10 +209,10 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
         """Inner search method."""
         if not vector:
             vector = await self._generate_vector_from_values(values, options)
-        field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
         if not field:
             raise VectorStoreModelException(
-                f"Vector field '{options.vector_field_name}' not found in the data model definition."
+                f"Vector field '{options.vector_property_name}' not found in the data model definition."
             )
 
         return_list = []

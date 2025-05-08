@@ -12,13 +12,7 @@ from typing import Annotated, Any, ClassVar, Generic, TypeVar, overload
 from pydantic import Field
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.data.text_search import (
-    KernelSearchResults,
-    SearchOptions,
-    TextSearch,
-    TextSearchResult,
-    create_options,
-)
+from semantic_kernel.data.text_search import KernelSearchResults, SearchOptions, TextSearch, TextSearchResult
 from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordHandler
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
@@ -30,7 +24,7 @@ from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreOperationNotSupportedException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.kernel_types import OptionalOneOrMany
+from semantic_kernel.kernel_types import OptionalOneOrList, OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.list_handler import desync_list
 
@@ -78,8 +72,8 @@ class VectorSearchOptions(SearchOptions):
     When multiple filters are used, they are combined with an AND operator.
     """
 
-    vector_field_name: str | None = None
-    keyword_field_name: str | None = None
+    vector_property_name: str | None = None
+    additional_property_name: str | None = None
     top: Annotated[int, Field(gt=0)] = 3
     include_vectors: bool = False
 
@@ -216,7 +210,13 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
     async def search(
         self,
         values: Any,
-        options: SearchOptions | None = None,
+        *,
+        vector_field_name: str | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 3,
+        skip: int = 0,
+        include_total_count: bool = False,
+        include_vectors: bool = False,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Search the vector store with Vector search for records that match the given value and filter.
@@ -224,7 +224,12 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         Args:
             values: The values to search for. These will be vectorized,
                 either by the store or using the provided generator.
-            options: The options to use for the search.
+            vector_field_name: The name of the vector field to use for the search.
+            filter: The filter to apply to the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
+            include_vectors: Whether to include the vectors in the results.
             kwargs: If options are not set, this is used to create them.
                 they are passed on to the inner search method.
 
@@ -240,16 +245,26 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
     @overload
     async def search(
         self,
-        options: SearchOptions | None = None,
         *,
         vector: Sequence[float | int],
+        vector_field_name: str | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 3,
+        skip: int = 0,
+        include_total_count: bool = False,
+        include_vectors: bool = False,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Search the vector store with Vector search for records that match the given vector and filter.
 
         Args:
-            options: The options to use for the search.
             vector: The vector to search for
+            vector_field_name: The name of the vector field to use for the search.
+            filter: The filter to apply to the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
+            include_vectors: Whether to include the vectors in the results.
             kwargs: If options are not set, this is used to create them.
                 they are passed on to the inner search method.
 
@@ -265,17 +280,27 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
     async def search(
         self,
         values=None,
-        options=None,
         *,
         vector=None,
+        vector_property_name=None,
+        filter=None,
+        top=3,
+        skip=0,
+        include_total_count=False,
+        include_vectors=False,
         **kwargs,
     ):
         """Search the vector store for records that match the given value and filter.
 
         Args:
             values: The values to search for.
-            options: The options to use for the search.
             vector: The vector to search for, if not provided, the values will be used to generate a vector.
+            vector_property_name: The name of the vector property to use for the search.
+            filter: The filter to apply to the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
+            include_vectors: Whether to include the vectors in the results.
             kwargs: If options are not set, this is used to create them.
                 they are passed on to the inner search method.
 
@@ -290,8 +315,14 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
             raise VectorStoreOperationNotSupportedException(
                 f"Vector search is not supported by this vector store: {self.__class__.__name__}"
             )
-        options = create_options(self.options_class, options, **kwargs)
-        assert isinstance(options, VectorSearchOptions)  # nosec
+        options = VectorSearchOptions(
+            filter=filter,
+            vector_property_name=vector_property_name,
+            top=top,
+            skip=skip,
+            include_total_count=include_total_count,
+            include_vectors=include_vectors,
+        )
         try:
             return await self._inner_search(
                 search_type=SearchType.VECTOR,
@@ -313,17 +344,29 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
     async def hybrid_search(
         self,
         values: Any,
-        options: SearchOptions | None = None,
         *,
         vector: list[float | int] | None = None,
+        vector_property_name: str | None = None,
+        additional_property_name: str | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 3,
+        skip: int = 0,
+        include_total_count: bool = False,
+        include_vectors: bool = False,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Search the vector store for records that match the given values and filter.
 
         Args:
             values: The values to search for.
-            options: The options to use for the search.
             vector: The vector to search for, if not provided, the values will be used to generate a vector.
+            vector_property_name: The name of the vector field to use for the search.
+            additional_property_name: The name of the additional property field to use for the search.
+            filter: The filter to apply to the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
+            include_vectors: Whether to include the vectors in the results.
             kwargs: If options are not set, this is used to create them.
                 they are passed on to the inner search method.
 
@@ -338,8 +381,15 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
             raise VectorStoreOperationNotSupportedException(
                 f"Keyword hybrid search is not supported by this vector store: {self.__class__.__name__}"
             )
-        options = create_options(self.options_class, options, **kwargs)
-        assert isinstance(options, VectorSearchOptions)  # nosec
+        options = VectorSearchOptions(
+            filter=filter,
+            vector_property_name=vector_property_name,
+            additional_property_name=additional_property_name,
+            top=top,
+            skip=skip,
+            include_total_count=include_total_count,
+            include_vectors=include_vectors,
+        )
         try:
             return await self._inner_search(
                 search_type=SearchType.KEYWORD_HYBRID,
@@ -366,17 +416,17 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         """Generate a vector from the given keywords."""
         if not values:
             return None
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorSearchOptionsException(
-                f"Vector field '{options.vector_field_name}' not found in data model definition."
+                f"Vector field '{options.vector_property_name}' not found in data model definition."
             )
         embedding_generator = (
             vector_field.embedding_generator if vector_field.embedding_generator else self.embedding_generator
         )
         if not embedding_generator:
             raise VectorSearchOptionsException(
-                f"Embedding generator not found for vector field '{options.vector_field_name}'."
+                f"Embedding generator not found for vector field '{options.vector_property_name}'."
             )
 
         return (

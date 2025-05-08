@@ -627,6 +627,7 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
             raise
 
         try:
+            # fix this!
             data = await self._add_vectors_to_records(data)
         except (VectorStoreModelException, VectorStoreOperationException):
             raise

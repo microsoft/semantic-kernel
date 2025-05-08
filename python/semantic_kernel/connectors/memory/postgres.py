@@ -772,10 +772,10 @@ class PostgresCollection(
         """
         # Get the vector field we will be searching against,
         # defaulting to the first vector field if not specified
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreOperationException(
-                f"Vector field '{options.vector_field_name}' not found in the data model."
+                f"Vector field '{options.vector_property_name}' not found in the data model."
             )
 
         if vector_field.distance_function not in DISTANCE_FUNCTION_MAP_OPS:

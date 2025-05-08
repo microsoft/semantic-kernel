@@ -333,7 +333,7 @@ class RedisCollection(
     def _construct_vector_query(
         self, vector: Sequence[float | int], options: VectorSearchOptions, **kwargs: Any
     ) -> VectorQuery:
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorSearchOptionsException("Vector field not found.")
 

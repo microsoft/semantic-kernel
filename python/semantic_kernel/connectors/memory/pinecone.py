@@ -441,10 +441,10 @@ class PineconeCollection(
             raise VectorStoreOperationException(f"Search type {search_type} is not supported by Pinecone.")
         if "namespace" not in kwargs:
             kwargs["namespace"] = self.namespace
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreModelException(
-                f"Vector field '{options.vector_field_name}' not found in the data model definition."
+                f"Vector field '{options.vector_property_name}' not found in the data model definition."
             )
         filter = self._build_filter(options.filter)
         # is embedded mode

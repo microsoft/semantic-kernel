@@ -300,7 +300,7 @@ async def test_search(collection, mock_search):
 async def test_search_named_vectors(collection, mock_search):
     collection.named_vectors = True
     results = await collection.search(
-        vector=[1.0, 2.0, 3.0], options=VectorSearchOptions(vector_field_name="vector", include_vectors=False)
+        vector=[1.0, 2.0, 3.0], options=VectorSearchOptions(vector_property_name="vector", include_vectors=False)
     )
     async for result in results.results:
         assert result.record["id"] == "id1"

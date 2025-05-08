@@ -228,7 +228,7 @@ class TestQueryBuildFunctions:
         ]
         vector = [0.1, 0.2, 0.3, 0.4, 0.5]
         options = VectorSearchOptions(
-            vector_field_name="embedding",
+            vector_property_name="embedding",
         )
 
         cmd = _build_search_query(schema, table, key_field, data_fields, vector_fields, vector, options)
@@ -466,7 +466,7 @@ class TestSqlServerCollection:
         )
         vector = [0.1, 0.2, 0.3, 0.4, 0.5]
         options = VectorSearchOptions(
-            vector_field_name="vector",
+            vector_property_name="vector",
             filter=lambda x: x.content == "test",
         )
 

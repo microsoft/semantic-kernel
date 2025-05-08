@@ -377,7 +377,7 @@ async def test_search_vectorizable_search(collection, mock_search, include_vecto
 @mark.parametrize("include_vectors", [True, False])
 @mark.parametrize("keywords", ["test", ["test1", "test2"]], ids=["single", "multiple"])
 async def test_search_keyword_hybrid_search(collection, mock_search, include_vectors, keywords):
-    options = VectorSearchOptions(include_vectors=include_vectors, keyword_field_name="content")
+    options = VectorSearchOptions(include_vectors=include_vectors, additional_property_name="content")
     results = await collection.hybrid_search(values=keywords, vector=[0.1, 0.2, 0.3], options=options)
     assert results is not None
     async for result in results.results:

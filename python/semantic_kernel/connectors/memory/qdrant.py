@@ -278,10 +278,10 @@ class QdrantCollection(
         if not vector:
             raise VectorSearchExecutionException("Search requires a vector.")
 
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreOperationException(
-                f"Vector field {options.vector_field_name} not found in data model definition."
+                f"Vector field {options.vector_property_name} not found in data model definition."
             )
         if self.named_vectors:
             query_vector = (vector_field.storage_property_name or vector_field.name, vector)
@@ -304,16 +304,17 @@ class QdrantCollection(
             # 1. Get keywords and text field
             if not values:
                 raise VectorSearchExecutionException("Hybrid search requires non-empty keywords in values.")
-            if not options.keyword_field_name:
+            if not options.additional_property_name:
                 raise VectorSearchExecutionException("Hybrid search requires a keyword field name.")
             text_field = next(
                 field
                 for field in self.data_model_definition.fields
-                if field.name == options.keyword_field_name or field.storage_property_name == options.keyword_field_name
+                if field.name == options.additional_property_name
+                or field.storage_property_name == options.additional_property_name
             )
             if not text_field:
                 raise VectorStoreOperationException(
-                    f"Keyword field {options.keyword_field_name} not found in data model definition."
+                    f"Keyword field {options.additional_property_name} not found in data model definition."
                 )
             keyword_filter = deepcopy(filter) if filter else Filter()
             keyword_sub_filter = Filter(
