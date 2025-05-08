@@ -97,6 +97,25 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     }
 
     /// <summary>
+    /// Starts the process with an initial event and then waits for the process to finish. In this case the process will not
+    /// keep alive waiting for external events after the internal messages have stopped.
+    /// </summary>
+    /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
+    /// <param name="kernel">Optional. A <see cref="Kernel"/> to use when executing the process.</param>
+    /// <param name="timeout">Optional. A <see cref="TimeSpan"/> to wait for the process to finish.</param>
+    /// <returns>A <see cref="Task"/></returns>
+    internal async Task RunUntilEndAsync(KernelProcessEvent processEvent, Kernel? kernel = null, TimeSpan? timeout = null)
+    {
+        Verify.NotNull(processEvent, nameof(processEvent));
+        Verify.NotNullOrWhiteSpace(processEvent.Id, $"{nameof(processEvent)}.{nameof(KernelProcessEvent.Id)}");
+
+        await Task.Yield(); // Ensure that the process has an opportunity to run in a different synchronization context.
+        await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
+        await this.StartAsync(kernel, keepAlive: true).ConfigureAwait(false);
+        await this._processTask!.JoinAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Stops a running process. This will cancel the process and wait for it to complete before returning.
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
@@ -302,7 +321,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         return default;
     }
 
-    private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
+    private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
         Kernel localKernel = kernel ?? this._kernel;
         Queue<ProcessMessage> messageChannel = new();
@@ -319,7 +338,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                 // Get all of the messages that have been sent to the steps within the process and queue them up for processing.
                 foreach (var step in this._steps)
                 {
-                    this.EnqueueStepMessages(step, messageChannel);
+                    await this.EnqueueStepMessagesAsync(step, messageChannel).ConfigureAwait(false);
                 }
 
                 // Complete the writing side, indicating no more messages in this superstep.
@@ -396,7 +415,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     /// </summary>
     /// <param name="step">The step containing outgoing events to process.</param>
     /// <param name="messageChannel">The message channel where messages should be enqueued.</param>
-    private void EnqueueStepMessages(LocalStep step, Queue<ProcessMessage> messageChannel)
+    private async Task EnqueueStepMessagesAsync(LocalStep step, Queue<ProcessMessage> messageChannel)
     {
         var allStepEvents = step.GetAllEvents();
         foreach (ProcessEvent stepEvent in allStepEvents)
@@ -411,7 +430,13 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             bool foundEdge = false;
             foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
             {
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data);
+                bool isConditionMet = await edge.Condition.Callback(stepEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
+                if (!isConditionMet)
+                {
+                    continue;
+                }
+
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
                 messageChannel.Enqueue(message);
                 foundEdge = true;
             }

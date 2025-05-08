@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel.Process;
@@ -45,7 +46,7 @@ internal class LocalAgentStep : LocalStep
         await this._initializeTask.Value.ConfigureAwait(false);
 
         string targetFunction = "Invoke";
-        KernelArguments arguments = new() { { "message", message.TargetEventData } };
+        KernelArguments arguments = new() { { "message", message.TargetEventData }, { "writtenToThread", message.writtenToThread == this._agentThread.ThreadId } };
         if (!this._functions.TryGetValue(targetFunction, out KernelFunction? function) || function == null)
         {
             throw new ArgumentException($"Function Invoke not found in plugin {this.Name}");
@@ -64,7 +65,8 @@ internal class LocalAgentStep : LocalStep
                     result,
                     this._eventNamespace,
                     sourceId: $"{targetFunction}.OnResult",
-                    eventVisibility: KernelProcessEventVisibility.Public));
+                    eventVisibility: KernelProcessEventVisibility.Public,
+                    writtenToThread: this._agentThread.ThreadId)); // TODO: This is keeping track of the thread the message has been written to, clean it up, name it better, etc. 
         }
         catch (Exception ex)
         {

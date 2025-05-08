@@ -2,17 +2,16 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Builder class for defining targets to listen for in a process.
 /// </summary>
-public sealed class ListenForTargetBuilder : ProcessStepEdgeBuilder
+public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
 {
     private readonly ProcessBuilder _processBuilder;
-    private readonly List<MessageSourceBuilder> _messageSources = new();
+    private readonly List<MessageSourceBuilder> _messageSources = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ListenForTargetBuilder"/> class.
@@ -56,6 +55,11 @@ public sealed class ListenForTargetBuilder : ProcessStepEdgeBuilder
             // Link all the source steps to the event listener
             var onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
             onEventBuilder.EdgeGroupBuilder = this.EdgeGroupBuilder;
+
+            if (messageSource.Condition != null)
+            {
+                onEventBuilder.Condition = messageSource.Condition;
+            }
             onEventBuilder.SendEventTo(target);
         }
 

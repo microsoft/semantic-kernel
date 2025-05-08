@@ -9,12 +9,12 @@ namespace ProcessWithDapr.ProcessSteps;
 /// </summary>
 internal sealed class KickoffStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessFunctions
     {
         public const string KickOff = nameof(KickOff);
     }
 
-    [KernelFunction(Functions.KickOff)]
+    [KernelFunction(ProcessFunctions.KickOff)]
     public async ValueTask PrintWelcomeMessageAsync(KernelProcessStepContext context)
     {
         Console.WriteLine("##### Kickoff ran.");
