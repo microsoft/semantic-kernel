@@ -294,11 +294,6 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
             }
-            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<double>, ReadOnlyMemory<float>>(records, cancellationToken, out var doubleTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = await doubleTask.ConfigureAwait(false);
-            }
             else
             {
                 throw new InvalidOperationException(
@@ -333,18 +328,6 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
         switch (vectorProperty.EmbeddingGenerator)
         {
             case IEmbeddingGenerator<TInput, Embedding<float>> generator:
-            {
-                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
-
-                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
-                {
-                    yield return record;
-                }
-
-                yield break;
-            }
-
-            case IEmbeddingGenerator<TInput, Embedding<double>> generator:
             {
                 var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
 

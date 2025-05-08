@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.SemanticKernel.Connectors.PgVector;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
 using NRedisStack.Search.Literals.Enums;
@@ -112,7 +113,7 @@ public sealed class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollectio
         options ??= RedisHashSetCollectionOptions.Default;
         this._prefixCollectionNameToKeyNames = options.PrefixCollectionNameToKeyNames;
 
-        this._model = new CollectionModelBuilder(ModelBuildingOptions)
+        this._model = new RedisModelBuilder(ModelBuildingOptions)
             .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
 
         // Lookup storage property names.

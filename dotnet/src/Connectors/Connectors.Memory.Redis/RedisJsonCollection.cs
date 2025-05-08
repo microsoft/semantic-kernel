@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.SemanticKernel.Connectors.PgVector;
 using NRedisStack.Json.DataTypes;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
@@ -107,8 +108,8 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
         this._jsonSerializerOptions = options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
 
         this._model = isDynamic ?
-            new CollectionModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator) :
-            new CollectionJsonModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, this._jsonSerializerOptions);
+            new RedisModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator) :
+            new RedisJsonModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, this._jsonSerializerOptions);
 
         // Lookup storage property names.
         this._dataStoragePropertyNames = this._model.DataProperties.Select(p => p.StorageName).ToArray();

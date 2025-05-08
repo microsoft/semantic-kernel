@@ -59,8 +59,6 @@ internal static class MongoConstants
     internal static readonly HashSet<Type> SupportedVectorTypes =
     [
         typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-        typeof(ReadOnlyMemory<double>),
-        typeof(ReadOnlyMemory<double>?)
+        typeof(ReadOnlyMemory<float>?)
     ];
 }
