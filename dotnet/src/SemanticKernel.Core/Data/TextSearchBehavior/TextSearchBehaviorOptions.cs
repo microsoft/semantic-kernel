@@ -90,7 +90,7 @@ public sealed class TextSearchBehaviorOptions
     /// will not be used if providing this delegate.
     /// </para>
     /// </remarks>
-    public ContextFormatterType? ContextFormatter { get; init; }
+    public Func<List<TextSearchResult>, string>? ContextFormatter { get; init; }
 
     /// <summary>
     /// Choices for controlling the behavior of the <see cref="TextSearchBehavior"/>.
@@ -108,11 +108,4 @@ public sealed class TextSearchBehaviorOptions
         /// </summary>
         ViaPlugin
     }
-
-    /// <summary>
-    /// Delegate type for formatting the output context for the component.
-    /// </summary>
-    /// <param name="results">The results returned by the text search.</param>
-    /// <returns>The formatted context.</returns>
-    public delegate string ContextFormatterType(List<TextSearchResult> results);
 }
