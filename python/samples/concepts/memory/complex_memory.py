@@ -28,7 +28,6 @@ from semantic_kernel.connectors.memory import (
 )
 from semantic_kernel.data import (
     VectorSearch,
-    VectorSearchOptions,
     VectorStoreRecordCollection,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -179,11 +178,12 @@ async def main(collection: str, use_azure_openai: bool):
             [print_record(record=result) for result in results]
         else:
             print("Nothing found...")
-        options = VectorSearchOptions(
-            vector_field_name="embedding",
-            keyword_field_name="content",
-            filter=lambda x: x.tag == "general",
-        )
+        options = {
+            "vector_property_name": "embedding",
+            "additional_property_name": "content",
+            "filter": lambda x: x.tag == "general",
+        }
+
         print("-" * 30)
         print_with_color("Now we can start searching.", Colors.CBLUE)
         print_with_color("  For each type of search, enter a search term, for instance `python`.", Colors.CBLUE)
@@ -206,7 +206,7 @@ async def main(collection: str, use_azure_openai: bool):
                     "Using hybrid text search: ",
                     Colors.CBLUE,
                 )
-                search_results = await record_collection.hybrid_search(values=search_text, options=options)
+                search_results = await record_collection.hybrid_search(values=search_text, **options)
                 if search_results.total_count == 0:
                     print("\nNothing found...\n")
                 else:
@@ -224,7 +224,7 @@ async def main(collection: str, use_azure_openai: bool):
                     "Using vector search: ",
                     Colors.CBLUE,
                 )
-                search_results = await record_collection.search(search_text, options)
+                search_results = await record_collection.search(search_text, **options)
                 if search_results.total_count == 0:
                     print("\nNothing found...\n")
                 else:

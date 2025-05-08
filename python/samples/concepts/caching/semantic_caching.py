@@ -67,7 +67,7 @@ class PromptCacheFilter:
         await next(context)
         await self.collection.create_collection_if_not_exists()
         results = await self.collection.search(
-            context.rendered_prompt, options=VectorSearchOptions(vector_field_name="prompt", top=1)
+            context.rendered_prompt, options=VectorSearchOptions(vector_property_name="prompt", top=1)
         )
         async for result in results.results:
             if result.score and result.score < self.score_threshold:

@@ -88,7 +88,7 @@ async def main(query: str, first_run: bool = False):
     # Use vectorized search to search using the vector.
     results = await collection.vectorized_search(
         vector=query_vector,
-        options=VectorSearchOptions(vector_field_name="description_vector"),
+        options=VectorSearchOptions(vector_property_name="description_vector"),
     )
     async for result in results.results:
         print(

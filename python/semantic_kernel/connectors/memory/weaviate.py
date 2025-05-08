@@ -350,7 +350,7 @@ class WeaviateCollection(
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
         args = {
             "include_vector": options.include_vectors,
             "limit": options.top,

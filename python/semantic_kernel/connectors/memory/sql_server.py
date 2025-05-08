@@ -1081,9 +1081,9 @@ def _build_search_query(
     _add_field_names(command, key_field, data_fields, vector_fields if options.include_vectors else None)
     # add the vector search clause
     vector_field: VectorStoreRecordVectorField | None = None
-    if options.vector_field_name:
+    if options.vector_property_name:
         vector_field = next(
-            (field for field in vector_fields if field.name == options.vector_field_name),
+            (field for field in vector_fields if field.name == options.vector_property_name),
             None,
         )
     elif len(vector_fields) == 1:

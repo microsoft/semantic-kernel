@@ -180,7 +180,7 @@ async def test_create_collection_and_search(faiss_collection, dist):
     await faiss_collection.upsert([record1, record2])
     results = await faiss_collection.search(
         vector=[0.9, 0.9, 0.9, 0.9, 0.9],
-        options=VectorSearchOptions(vector_field_name="vector", include_total_count=True, include_vectors=True),
+        options=VectorSearchOptions(vector_property_name="vector", include_total_count=True, include_vectors=True),
     )
     assert results.total_count == 2
     idx = 0

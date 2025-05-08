@@ -356,10 +356,10 @@ class MongoDBAtlasCollection(
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         collection = self._get_collection()
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreModelException(
-                f"Vector field '{options.vector_field_name}' not found in the data model definition."
+                f"Vector field '{options.vector_property_name}' not found in the data model definition."
             )
         if not vector:
             vector = await self._generate_vector_from_values(values, options)
@@ -400,10 +400,10 @@ class MongoDBAtlasCollection(
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         collection = self._get_collection()
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreModelException(
-                f"Vector field '{options.vector_field_name}' not found in the data model definition."
+                f"Vector field '{options.vector_property_name}' not found in the data model definition."
             )
         if not vector:
             vector = await self._generate_vector_from_values(values, options)

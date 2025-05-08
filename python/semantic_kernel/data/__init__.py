@@ -18,19 +18,12 @@ from semantic_kernel.data.record_definition import (
 from semantic_kernel.data.text_search import (
     KernelSearchResults,
     OptionsUpdateFunctionType,
-    SearchOptions,
     TextSearch,
-    TextSearchOptions,
     TextSearchResult,
     create_options,
     default_options_update_function,
 )
-from semantic_kernel.data.vector_search import (
-    VectorSearch,
-    VectorSearchOptions,
-    VectorSearchResult,
-    VectorStoreTextSearch,
-)
+from semantic_kernel.data.vector_search import VectorSearch, VectorSearchResult, VectorStoreTextSearch
 from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
 
 __all__ = [
@@ -41,12 +34,9 @@ __all__ = [
     "IndexKind",
     "KernelSearchResults",
     "OptionsUpdateFunctionType",
-    "SearchOptions",
     "TextSearch",
-    "TextSearchOptions",
     "TextSearchResult",
     "VectorSearch",
-    "VectorSearchOptions",
     "VectorSearchResult",
     "VectorStore",
     "VectorStoreRecordCollection",

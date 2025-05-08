@@ -437,10 +437,10 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         collection = self._get_collection()
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreModelException(
-                f"Vector field '{options.vector_field_name}' not found in the data model definition."
+                f"Vector field '{options.vector_property_name}' not found in the data model definition."
             )
         if not vector:
             vector = await self._generate_vector_from_values(values, options)
@@ -775,10 +775,10 @@ class AzureCosmosDBNoSQLCollection(
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         params = [{"name": "@top", "value": options.top}]
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreModelException(
-                f"Vector field '{options.vector_field_name}' not found in the data model definition."
+                f"Vector field '{options.vector_property_name}' not found in the data model definition."
             )
         if not vector:
             vector = await self._generate_vector_from_values(values, options)
@@ -802,7 +802,7 @@ class AzureCosmosDBNoSQLCollection(
         elif search_type == SearchType.KEYWORD_HYBRID:
             # Hybrid search: requires both a vector and keywords
             params.append({"name": "@keywords", "value": values})
-            text_field = options.keyword_field_name
+            text_field = options.additional_property_name
             if not text_field:
                 raise VectorStoreModelException("Hybrid search requires 'keyword_field_name' in options.")
             distance_clause = f"RRF(VectorDistance(c.{vector_field_name}, @vector, false, {distance_obj}), "

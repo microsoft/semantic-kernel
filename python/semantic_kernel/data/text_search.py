@@ -7,7 +7,7 @@ from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from copy import deepcopy
 from typing import Annotated, Any, Generic, Protocol, TypeVar
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME, TextSearchFunctions
 from semantic_kernel.exceptions import TextSearchException
@@ -37,17 +37,12 @@ class SearchOptions(ABC, KernelBaseModel):
 
     filter: OptionalOneOrList[Callable | str] = None
     skip: Annotated[int, Field(ge=0)] = 0
+    top: Annotated[int, Field(gt=0)] = 5
     include_total_count: bool = False
 
-
-@release_candidate
-class TextSearchOptions(SearchOptions):
-    """Options for a text search.
-
-    When multiple filters are used, they are combined with an AND operator.
-    """
-
-    top: Annotated[int, Field(gt=0)] = 5
+    model_config = ConfigDict(
+        extra="allow", populate_by_name=True, arbitrary_types_allowed=True, validate_assignment=True
+    )
 
 
 # region: Results
@@ -135,7 +130,10 @@ def create_options(
 
 
 def default_options_update_function(
-    query: str, options: "SearchOptions", parameters: list["KernelParameterMetadata"] | None = None, **kwargs: Any
+    query: str,
+    options: "SearchOptions",
+    parameters: list["KernelParameterMetadata"] | None = None,
+    **kwargs: Any,
 ) -> tuple[str, "SearchOptions"]:
     """The default options update function.
 
@@ -183,7 +181,7 @@ class TextSearch:
     @property
     def options_class(self) -> type["SearchOptions"]:
         """The options class for the search."""
-        return TextSearchOptions
+        return SearchOptions
 
     @staticmethod
     def _default_parameter_metadata() -> list[KernelParameterMetadata]:
@@ -235,18 +233,26 @@ class TextSearch:
 
     def create_search(
         self,
-        options: SearchOptions | None = None,
-        parameters: list[KernelParameterMetadata] | None = None,
-        options_update_function: OptionsUpdateFunctionType | None = None,
-        return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
+        *,
+        parameters: list[KernelParameterMetadata] | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 5,
+        skip: int = 0,
+        include_total_count: bool = False,
+        options_update_function: OptionsUpdateFunctionType | None = None,
         string_mapper: Callable[[TMapInput], str] | None = None,
+        **kwargs: Any,
     ) -> KernelFunction:
         """Create a kernel function from a search function.
 
         Args:
-            options: The search options.
+            filter: The filter to use for the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
             parameters: The parameters for the function, a list of KernelParameterMetadata.
             options_update_function: A function to update the search options.
                 The function should return the updated query and options.
@@ -258,11 +264,19 @@ class TextSearch:
             function_name: The name of the function, to be used in the kernel, default is "search".
             description: The description of the function, a default is provided.
             string_mapper: The function to map the search results to strings.
+            kwargs: The keyword arguments to use to create the options.
 
         Returns:
             KernelFunction: The kernel function.
 
         """
+        options = self.options_class(
+            filter=filter,
+            skip=skip,
+            top=top,
+            include_total_count=include_total_count,
+            **kwargs,
+        )
         return self._create_kernel_function(
             search_function=TextSearchFunctions.SEARCH,
             options=options,
@@ -276,18 +290,26 @@ class TextSearch:
 
     def create_get_text_search_results(
         self,
-        options: SearchOptions | None = None,
-        parameters: list[KernelParameterMetadata] | None = None,
-        options_update_function: OptionsUpdateFunctionType | None = None,
-        return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
+        *,
+        parameters: list[KernelParameterMetadata] | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 5,
+        skip: int = 0,
+        include_total_count: bool = False,
+        options_update_function: OptionsUpdateFunctionType | None = None,
         string_mapper: Callable[[TMapInput], str] | None = None,
+        **kwargs: Any,
     ) -> KernelFunction:
         """Create a kernel function from a get_text_search_results function.
 
         Args:
-            options: The search options.
+            filter: The filter to use for the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
             parameters: The parameters for the function, a list of KernelParameterMetadata.
             options_update_function: A function to update the search options.
                 The function should return the updated query and options.
@@ -299,10 +321,18 @@ class TextSearch:
             function_name: The name of the function, to be used in the kernel, default is "search".
             description: The description of the function, a default is provided.
             string_mapper: The function to map the search results to strings.
+            kwargs: The keyword arguments to use to create the options.
 
         Returns:
             KernelFunction: The kernel function.
         """
+        options = self.options_class(
+            filter=filter,
+            skip=skip,
+            top=top,
+            include_total_count=include_total_count,
+            **kwargs,
+        )
         return self._create_kernel_function(
             search_function=TextSearchFunctions.GET_TEXT_SEARCH_RESULT,
             options=options,
@@ -316,18 +346,26 @@ class TextSearch:
 
     def create_get_search_results(
         self,
-        options: SearchOptions | None = None,
-        parameters: list[KernelParameterMetadata] | None = None,
-        options_update_function: OptionsUpdateFunctionType | None = None,
-        return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
+        *,
+        parameters: list[KernelParameterMetadata] | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 5,
+        skip: int = 0,
+        include_total_count: bool = False,
+        options_update_function: OptionsUpdateFunctionType | None = None,
         string_mapper: Callable[[TMapInput], str] | None = None,
+        **kwargs: Any,
     ) -> KernelFunction:
         """Create a kernel function from a get_search_results function.
 
         Args:
-            options: The search options.
+            filter: The filter to use for the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
             parameters: The parameters for the function, a list of KernelParameterMetadata.
             options_update_function: A function to update the search options.
                 The function should return the updated query and options.
@@ -339,10 +377,18 @@ class TextSearch:
             function_name: The name of the function, to be used in the kernel, default is "search".
             description: The description of the function, a default is provided.
             string_mapper: The function to map the search results to strings.
+            kwargs: The keyword arguments to use to create the options.
 
         Returns:
             KernelFunction: The kernel function.
         """
+        options = self.options_class(
+            filter=filter,
+            skip=skip,
+            top=top,
+            include_total_count=include_total_count,
+            **kwargs,
+        )
         return self._create_kernel_function(
             search_function=TextSearchFunctions.GET_SEARCH_RESULT,
             options=options,
