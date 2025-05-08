@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
+using Json.More;
 using Json.Schema;
+using Json.Schema.Generation;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process.Models;
-using Json.Schema.Generation;
-using Json.More;
 
 namespace Microsoft.SemanticKernel;
 
