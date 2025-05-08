@@ -26,9 +26,6 @@ public class SessionsPythonCodeExecutionResultTests
         string resultString = result.ToString();
 
         // Assert
-        Assert.Contains("Status: Succeeded", resultString);
-        Assert.Contains("Result: 42", resultString);
-        Assert.Contains("Stdout: Hello World", resultString);
-        Assert.Contains("Stderr: Error", resultString);
+        Assert.Equal("{\"status\":\"Succeeded\",\"result\":\"42\",\"stdOut\":\"Hello World\",\"stdErr\":\"Error\"}", resultString);
     }
 }
