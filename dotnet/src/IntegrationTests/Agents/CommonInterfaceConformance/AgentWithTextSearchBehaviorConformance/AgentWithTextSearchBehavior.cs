@@ -58,7 +58,7 @@ public abstract class AgentWithTextSearchBehavior<TFixture>(Func<TFixture> creat
 
         try
         {
-            agentThread.StateParts.Add(textSearchBehavior);
+            agentThread.AIContextBehaviors.Add(textSearchBehavior);
 
             // Act
             var inputMessage = question;

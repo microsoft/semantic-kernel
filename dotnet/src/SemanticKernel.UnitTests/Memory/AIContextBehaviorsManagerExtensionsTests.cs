@@ -12,16 +12,16 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
-/// Tests for the ConversationStatePartsManagerExtensions class.
+/// Tests for the AIContextBehaviorsManagerExtensions class.
 /// </summary>
-public class ConversationStatePartsManagerExtensionsTests
+public class AIContextBehaviorsManagerExtensionsTests
 {
     [Fact]
     public async Task OnNewMessageShouldConvertMessageAndInvokeRegisteredPartsAsync()
     {
         // Arrange
-        var manager = new ConversationStatePartsManager();
-        var partMock = new Mock<ConversationStatePart>();
+        var manager = new AIContextBehaviorsManager();
+        var partMock = new Mock<AIContextBehavior>();
         manager.Add(partMock.Object);
 
         var newMessage = new ChatMessageContent(AuthorRole.User, "Test Message");
@@ -37,8 +37,8 @@ public class ConversationStatePartsManagerExtensionsTests
     public async Task OnAIInvocationShouldConvertMessagesInvokeRegisteredPartsAsync()
     {
         // Arrange
-        var manager = new ConversationStatePartsManager();
-        var partMock = new Mock<ConversationStatePart>();
+        var manager = new AIContextBehaviorsManager();
+        var partMock = new Mock<AIContextBehavior>();
         manager.Add(partMock.Object);
 
         var messages = new List<ChatMessageContent>
@@ -64,8 +64,8 @@ public class ConversationStatePartsManagerExtensionsTests
     {
         // Arrange
         var kernel = new Kernel();
-        var manager = new ConversationStatePartsManager();
-        var partMock = new Mock<ConversationStatePart>();
+        var manager = new AIContextBehaviorsManager();
+        var partMock = new Mock<AIContextBehavior>();
         var aiFunctionMock = AIFunctionFactory.Create(() => "Hello", "TestFunction");
         partMock
             .Setup(x => x.AIFunctions)

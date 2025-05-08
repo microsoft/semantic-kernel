@@ -35,7 +35,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// </para>
 /// </remarks>
 [Experimental("SKEXP0130")]
-public sealed class Mem0Behavior : ConversationStatePart
+public sealed class Mem0Behavior : AIContextBehavior
 {
     private const string DefaultContextPrompt = "Consider the following memories when answering user questions:";
 

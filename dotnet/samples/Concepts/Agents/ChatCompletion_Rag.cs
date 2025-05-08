@@ -76,7 +76,7 @@ public class ChatCompletion_Rag(ITestOutputHelper output) : BaseTest(output)
         // Create a text search behavior that can automatically search the vector store
         // for documents that match the user's query and inject them into the agent's prompt.
         var textSearchBehavior = new TextSearchBehavior(textSearchStore);
-        agentThread.StateParts.Add(textSearchBehavior);
+        agentThread.AIContextBehaviors.Add(textSearchBehavior);
 
         // Invoke and display assistant response
         ChatMessageContent message = await agent.InvokeAsync("Where is Contoso based?", agentThread).FirstAsync();
@@ -128,7 +128,7 @@ public class ChatCompletion_Rag(ITestOutputHelper output) : BaseTest(output)
         // Create a text search behavior that can automatically search the vector store
         // for documents that match the user's query and inject them into the agent's prompt.
         var textSearchBehavior = new TextSearchBehavior(textSearchStore);
-        agentThread.StateParts.Add(textSearchBehavior);
+        agentThread.AIContextBehaviors.Add(textSearchBehavior);
 
         // Invoke and display assistant response
         ChatMessageContent message = await agent.InvokeAsync("What was the income of Contoso for 2023", agentThread).FirstAsync();

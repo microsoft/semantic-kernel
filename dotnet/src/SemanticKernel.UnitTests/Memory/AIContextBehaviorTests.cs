@@ -10,15 +10,15 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
-/// Contains tests for the <see cref="ConversationStatePart"/> class.
+/// Contains tests for the <see cref="AIContextBehavior"/> class.
 /// </summary>
-public class ConversationStatePartTests
+public class AIContextBehaviorTests
 {
     [Fact]
     public void AIFunctionsBaseImplementationIsEmpty()
     {
         // Arrange.
-        var mockPart = new Mock<ConversationStatePart>() { CallBase = true };
+        var mockPart = new Mock<AIContextBehavior>() { CallBase = true };
 
         // Act.
         var functions = mockPart.Object.AIFunctions;
@@ -32,7 +32,7 @@ public class ConversationStatePartTests
     public async Task OnThreadCreatedBaseImplementationSucceeds()
     {
         // Arrange.
-        var mockPart = new Mock<ConversationStatePart>() { CallBase = true };
+        var mockPart = new Mock<AIContextBehavior>() { CallBase = true };
 
         // Act & Assert.
         await mockPart.Object.OnThreadCreatedAsync("threadId", CancellationToken.None);
@@ -42,7 +42,7 @@ public class ConversationStatePartTests
     public async Task OnNewMessageBaseImplementationSucceeds()
     {
         // Arrange.
-        var mockPart = new Mock<ConversationStatePart>() { CallBase = true };
+        var mockPart = new Mock<AIContextBehavior>() { CallBase = true };
         var newMessage = new ChatMessage(ChatRole.User, "Hello");
 
         // Act & Assert.
@@ -53,7 +53,7 @@ public class ConversationStatePartTests
     public async Task OnThreadDeleteBaseImplementationSucceeds()
     {
         // Arrange.
-        var mockPart = new Mock<ConversationStatePart>() { CallBase = true };
+        var mockPart = new Mock<AIContextBehavior>() { CallBase = true };
 
         // Act & Assert.
         await mockPart.Object.OnThreadDeleteAsync("threadId", CancellationToken.None);
@@ -63,7 +63,7 @@ public class ConversationStatePartTests
     public async Task OnSuspendBaseImplementationSucceeds()
     {
         // Arrange.
-        var mockPart = new Mock<ConversationStatePart>() { CallBase = true };
+        var mockPart = new Mock<AIContextBehavior>() { CallBase = true };
 
         // Act & Assert.
         await mockPart.Object.OnSuspendAsync("threadId", CancellationToken.None);
@@ -73,7 +73,7 @@ public class ConversationStatePartTests
     public async Task OnResumeBaseImplementationSucceeds()
     {
         // Arrange.
-        var mockPart = new Mock<ConversationStatePart>() { CallBase = true };
+        var mockPart = new Mock<AIContextBehavior>() { CallBase = true };
 
         // Act & Assert.
         await mockPart.Object.OnResumeAsync("threadId", CancellationToken.None);

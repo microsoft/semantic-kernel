@@ -12,34 +12,34 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// A container class for <see cref="ConversationStatePart"/> objects that manages their lifecycle and interactions.
+/// A container class for <see cref="AIContextBehavior"/> objects that manages their lifecycle and interactions.
 /// </summary>
 [Experimental("SKEXP0130")]
-public sealed class ConversationStatePartsManager
+public sealed class AIContextBehaviorsManager
 {
-    private readonly List<ConversationStatePart> _parts = new();
+    private readonly List<AIContextBehavior> _behaviors = new();
 
     private List<AIFunction>? _currentAIFunctions = null;
 
     /// <summary>
-    /// Gets the list of registered conversation state parts.
+    /// Gets the list of registered <see cref="AIContextBehavior"/> objects.
     /// </summary>
-    public IReadOnlyList<ConversationStatePart> Parts => this._parts;
+    public IReadOnlyList<AIContextBehavior> Behaviors => this._behaviors;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ConversationStatePartsManager"/> class.
+    /// Initializes a new instance of the <see cref="AIContextBehaviorsManager"/> class.
     /// </summary>
-    public ConversationStatePartsManager()
+    public AIContextBehaviorsManager()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ConversationStatePartsManager"/> class with the specified conversation state parts.
+    /// Initializes a new instance of the <see cref="AIContextBehaviorsManager"/> class with the specified <see cref="AIContextBehavior"/> objects.
     /// </summary>
-    /// <param name="conversationtStateExtensions">The conversation state parts to add to the manager.</param>
-    public ConversationStatePartsManager(IEnumerable<ConversationStatePart> conversationtStateExtensions)
+    /// <param name="aiContextBehaviors">The <see cref="AIContextBehavior"/> objects to add to the manager.</param>
+    public AIContextBehaviorsManager(IEnumerable<AIContextBehavior> aiContextBehaviors)
     {
-        this._parts.AddRange(conversationtStateExtensions);
+        this._behaviors.AddRange(aiContextBehaviors);
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ public sealed class ConversationStatePartsManager
         {
             if (this._currentAIFunctions == null)
             {
-                this._currentAIFunctions = this.Parts.SelectMany(conversationStateParts => conversationStateParts.AIFunctions).ToList();
+                this._currentAIFunctions = this.Behaviors.SelectMany(x => x.AIFunctions).ToList();
             }
 
             return this._currentAIFunctions;
@@ -60,24 +60,24 @@ public sealed class ConversationStatePartsManager
     }
 
     /// <summary>
-    /// Adds a new conversation state part.
+    /// Adds a new <see cref="AIContextBehavior"/> objects.
     /// </summary>
-    /// <param name="conversationtStatePart">The conversation state part to register.</param>
-    public void Add(ConversationStatePart conversationtStatePart)
+    /// <param name="aiContextBehavior">The <see cref="AIContextBehavior"/> object to register.</param>
+    public void Add(AIContextBehavior aiContextBehavior)
     {
-        this._parts.Add(conversationtStatePart);
+        this._behaviors.Add(aiContextBehavior);
         this._currentAIFunctions = null;
     }
 
     /// <summary>
-    /// Adds all conversation state parts registered on the provided dependency injection service provider.
+    /// Adds all <see cref="AIContextBehavior"/> objects registered on the provided dependency injection service provider.
     /// </summary>
-    /// <param name="serviceProvider">The dependency injection service provider to read conversation state parts from.</param>
+    /// <param name="serviceProvider">The dependency injection service provider to read <see cref="AIContextBehavior"/> objects from.</param>
     public void AddFromServiceProvider(IServiceProvider serviceProvider)
     {
-        foreach (var part in serviceProvider.GetServices<ConversationStatePart>())
+        foreach (var behavior in serviceProvider.GetServices<AIContextBehavior>())
         {
-            this.Add(part);
+            this.Add(behavior);
         }
         this._currentAIFunctions = null;
     }
@@ -90,7 +90,7 @@ public sealed class ConversationStatePartsManager
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(this.Parts.Select(x => x.OnThreadCreatedAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
+        await Task.WhenAll(this.Behaviors.Select(x => x.OnThreadCreatedAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -101,7 +101,7 @@ public sealed class ConversationStatePartsManager
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task OnThreadDeleteAsync(string threadId, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(this.Parts.Select(x => x.OnThreadDeleteAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
+        await Task.WhenAll(this.Behaviors.Select(x => x.OnThreadDeleteAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ public sealed class ConversationStatePartsManager
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task OnNewMessageAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(this.Parts.Select(x => x.OnNewMessageAsync(threadId, newMessage, cancellationToken)).ToList()).ConfigureAwait(false);
+        await Task.WhenAll(this.Behaviors.Select(x => x.OnNewMessageAsync(threadId, newMessage, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -121,10 +121,10 @@ public sealed class ConversationStatePartsManager
     /// </summary>
     /// <param name="newMessages">The most recent messages that the Model/Agent/etc. is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous operation, containing the combined context from all conversation state parts.</returns>
+    /// <returns>A task that represents the asynchronous operation, containing the combined context from all <see cref="AIContextBehavior"/> objects.</returns>
     public async Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
-        var subContexts = await Task.WhenAll(this.Parts.Select(x => x.OnModelInvokeAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
+        var subContexts = await Task.WhenAll(this.Behaviors.Select(x => x.OnModelInvokeAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
         return string.Join("\n", subContexts);
     }
 
@@ -140,7 +140,7 @@ public sealed class ConversationStatePartsManager
     /// </remarks>
     public async Task OnSuspendAsync(string? threadId, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(this.Parts.Select(x => x.OnSuspendAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
+        await Task.WhenAll(this.Behaviors.Select(x => x.OnSuspendAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -155,6 +155,6 @@ public sealed class ConversationStatePartsManager
     /// </remarks>
     public async Task OnResumeAsync(string? threadId, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(this.Parts.Select(x => x.OnResumeAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
+        await Task.WhenAll(this.Behaviors.Select(x => x.OnResumeAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 }
