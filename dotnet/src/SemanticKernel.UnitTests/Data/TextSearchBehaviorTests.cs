@@ -205,14 +205,11 @@ public class TextSearchBehaviorTests
             It.IsAny<CancellationToken>()))
             .ReturnsAsync(new KernelSearchResults<TextSearchResult>(searchResults.Object));
 
-        var customFormatter = new TextSearchBehaviorOptions.ContextFormatterType(results =>
-            $"Custom formatted context with {results.Count} results.");
-
         var options = new TextSearchBehaviorOptions
         {
             SearchTime = TextSearchBehaviorOptions.RagBehavior.BeforeAIInvoke,
             Top = 2,
-            ContextFormatter = customFormatter
+            ContextFormatter = results => $"Custom formatted context with {results.Count} results."
         };
 
         var component = new TextSearchBehavior(mockTextSearch.Object, options);
