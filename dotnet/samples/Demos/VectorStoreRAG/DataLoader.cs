@@ -30,11 +30,12 @@ internal sealed class DataLoader<TKey>(
 
         // Load the text and images from the PDF file and split them into batches.
         var sections = LoadTextAndImages(pdfPath, cancellationToken);
-        var batches = sections.Chunk(batchSize);
-
+        var batches = sections.Chunk(batchSize).ToArray();
+        var currentBatch = 0;
         // Process each batch of content items.
         foreach (var batch in batches)
         {
+            currentBatch++;
             // Convert any images to text.
             var textContentTasks = batch.Select(async content =>
             {
@@ -60,17 +61,30 @@ internal sealed class DataLoader<TKey>(
                 Text = content.Text,
                 ReferenceDescription = $"{new FileInfo(pdfPath).Name}#page={content.PageNumber}",
                 ReferenceLink = $"{new Uri(new FileInfo(pdfPath).FullName).AbsoluteUri}#page={content.PageNumber}",
-            });
+            }).ToArray();
 
             // Upsert the records into the vector store.
             var upsertedKeys = await vectorStoreRecordCollection.UpsertAsync(records, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var currentRecord = 0;
             foreach (var key in upsertedKeys)
             {
-                Console.WriteLine($"Upserted record '{key}' into VectorDB");
+                currentRecord++;
+                Console.WriteLine($"Upserted record '{key}' into VectorDB - %{CalculateBatchProgress(batches.Length, currentBatch, records.Length, currentRecord)}");
             }
 
             await Task.Delay(betweenBatchDelayInMs, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    // Calculate the progress percentage based on the current batch and record.
+    private static decimal CalculateBatchProgress(int totalBatches, int currentBatch, int totalRecords, int currentRecord)
+    {
+        decimal batchPercent = (decimal)currentBatch / totalBatches;
+        decimal recordsPercent = (decimal)currentRecord / totalRecords;
+        decimal totalPercent = batchPercent + (recordsPercent / totalBatches);
+
+        if (totalPercent > 1) { totalPercent = 1; }
+        return (decimal)Math.Round(totalPercent * 100, 1);
     }
 
     /// <summary>
