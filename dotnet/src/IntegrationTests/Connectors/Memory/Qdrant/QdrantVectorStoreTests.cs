@@ -18,7 +18,7 @@ public class QdrantVectorStoreTests(QdrantVectorStoreFixture fixture)
 
         // Act
         var collectionFromVS = sut.GetCollection<ulong, QdrantVectorStoreFixture.HotelInfo>("SettingsPassedCollection");
-        await collectionFromVS.CreateCollectionIfNotExistsAsync();
+        await collectionFromVS.EnsureCollectionExistsAsync();
 
         var directCollection = new QdrantCollection<ulong, QdrantVectorStoreFixture.HotelInfo>(fixture.QdrantClient, "SettingsPassedCollection", new() { HasNamedVectors = true });
         await directCollection.UpsertAsync(new QdrantVectorStoreFixture.HotelInfo

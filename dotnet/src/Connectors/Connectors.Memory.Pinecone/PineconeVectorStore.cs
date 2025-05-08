@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Pinecone;
 
@@ -19,13 +20,14 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 public sealed class PineconeVectorStore : VectorStore
 {
     private readonly PineconeClient _pineconeClient;
-    private readonly PineconeVectorStoreOptions _options;
 
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string)), new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 1)] };
+
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStore"/> class.
@@ -37,7 +39,7 @@ public sealed class PineconeVectorStore : VectorStore
         Verify.NotNull(pineconeClient);
 
         this._pineconeClient = pineconeClient;
-        this._options = options ?? new PineconeVectorStoreOptions();
+        this._embeddingGenerator = options?.EmbeddingGenerator;
 
         this._metadata = new()
         {
@@ -58,7 +60,7 @@ public sealed class PineconeVectorStore : VectorStore
             new PineconeCollectionOptions()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
+                EmbeddingGenerator = this._embeddingGenerator
             });
 #pragma warning restore IDE0090
 

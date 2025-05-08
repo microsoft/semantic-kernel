@@ -78,34 +78,7 @@ public class AzureAISearchCollectionTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
-    public async Task CreateCollectionCallsSDKAsync(bool useDefinition, bool useCustomJsonSerializerOptions)
-    {
-        // Arrange.
-        this._searchIndexClientMock
-            .Setup(x => x.CreateIndexAsync(It.IsAny<SearchIndex>(), this._testCancellationToken))
-            .ReturnsAsync(Response.FromValue(new SearchIndex(TestCollectionName), Mock.Of<Response>()));
-
-        var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
-
-        // Act.
-        await sut.CreateCollectionAsync();
-
-        // Assert.
-        var expectedFieldNames = useCustomJsonSerializerOptions ? new[] { "key", "storage_data1", "data2", "storage_vector1", "vector2" } : new[] { "Key", "storage_data1", "Data2", "storage_vector1", "Vector2" };
-        this._searchIndexClientMock
-            .Verify(
-                x => x.CreateIndexAsync(
-                    It.Is<SearchIndex>(si => si.Fields.Count == 5 && si.Fields.Select(f => f.Name).SequenceEqual(expectedFieldNames) && si.Name == TestCollectionName && si.VectorSearch.Profiles.Count == 2 && si.VectorSearch.Algorithms.Count == 2),
-                    this._testCancellationToken),
-                Times.Once);
-    }
-
-    [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public async Task CreateCollectionIfNotExistsSDKAsync(bool useDefinition, bool expectedExists)
+    public async Task EnsureCollectionExistsInvokesSDKAsync(bool useDefinition, bool expectedExists)
     {
         // Arrange.
         if (expectedExists)
@@ -128,7 +101,7 @@ public class AzureAISearchCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert.
         if (expectedExists)

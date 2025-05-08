@@ -45,9 +45,6 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
     /// <summary>Azure AI Search client that can be used to manage data in an Azure AI Search Service index.</summary>
     private readonly SearchClient _searchClient;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly AzureAISearchCollectionOptions _options;
-
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
     private readonly AzureAISearchDynamicMapper? _dynamicMapper;
 
@@ -74,14 +71,15 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
         }
 
         // Assign.
-        this._searchIndexClient = searchIndexClient;
         this.Name = name;
-        this._options = options ?? new AzureAISearchCollectionOptions();
+        this._searchIndexClient = searchIndexClient;
         this._searchClient = this._searchIndexClient.GetSearchClient(name);
 
+        options ??= AzureAISearchCollectionOptions.Default;
+
         this._model = typeof(TRecord) == typeof(Dictionary<string, object?>) ?
-            new AzureAISearchDynamicModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator) :
-            new AzureAISearchModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, this._options.JsonSerializerOptions);
+            new AzureAISearchDynamicModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator) :
+            new AzureAISearchModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, options.JsonSerializerOptions);
 
         // Resolve mapper.
         // If they didn't provide a custom mapper, and the record type is the generic data model, use the built in mapper for that.
@@ -127,8 +125,16 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
     }
 
     /// <inheritdoc />
-    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
+        const string OperationName = "CreateIndex";
+
+        // Don't even try to create if the collection already exists.
+        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return;
+        }
+
         var vectorSearchConfig = new VectorSearch();
         var searchFields = new List<SearchField>();
 
@@ -159,21 +165,37 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
             }
         }
 
-        // Create the index.
+        // Create the index definition.
         var searchIndex = new SearchIndex(this.Name, searchFields);
         searchIndex.VectorSearch = vectorSearchConfig;
 
-        return this.RunOperationAsync(
-            "CreateIndex",
-            () => this._searchIndexClient.CreateIndexAsync(searchIndex, cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        try
         {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+            await this._searchIndexClient.CreateIndexAsync(searchIndex, cancellationToken).ConfigureAwait(false);
+        }
+        catch (RequestFailedException ex) when (ex.ErrorCode == "ResourceNameAlreadyInUse")
+        {
+            // Index already exists, ignore.
+        }
+        catch (RequestFailedException ex)
+        {
+            throw new VectorStoreException("Call to vector store failed.", ex)
+            {
+                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
+                OperationName = OperationName
+            };
+        }
+        catch (AggregateException ex) when (ex.InnerException is RequestFailedException innerEx)
+        {
+            throw new VectorStoreException("Call to vector store failed.", ex)
+            {
+                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
+                OperationName = OperationName
+            };
         }
     }
 
@@ -369,19 +391,22 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
             }
         }
 
-        foreach (var pair in options.OrderBy.Values)
+        if (options.OrderBy is not null)
         {
-            PropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
-            string name = property.StorageName;
-            // From https://learn.microsoft.com/dotnet/api/azure.search.documents.searchoptions.orderby:
-            // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".
-            // "The default is ascending order."
-            if (!pair.Ascending)
+            foreach (var pair in options.OrderBy(new()).Values)
             {
-                name += " desc";
-            }
+                PropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
+                string name = property.StorageName;
+                // From https://learn.microsoft.com/dotnet/api/azure.search.documents.searchoptions.orderby:
+                // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".
+                // "The default is ascending order."
+                if (!pair.Ascending)
+                {
+                    name += " desc";
+                }
 
-            searchOptions.OrderBy.Add(name);
+                searchOptions.OrderBy.Add(name);
+            }
         }
 
         return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken)

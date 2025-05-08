@@ -48,9 +48,6 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     /// <summary>MongoDB collection to perform record operations.</summary>
     private readonly IMongoCollection<BsonDocument> _mongoCollection;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly MongoCollectionOptions _options;
-
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
     private readonly IMongoMapper<TRecord> _mapper;
 
@@ -59,6 +56,21 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
 
     /// <inheritdoc />
     public override string Name { get; }
+
+    /// <summary>Vector index name to use.</summary>
+    private readonly string _vectorIndexName;
+
+    /// <summary>Full text search index name to use.</summary>
+    private readonly string _fullTextSearchIndexName;
+
+    /// <summary>Number of max retries for vector collection operation.</summary>
+    private readonly int _maxRetries;
+
+    /// <summary>Delay in milliseconds between retries for vector collection operation.</summary>
+    private readonly int _delayInMilliseconds;
+
+    /// <summary>Number of nearest neighbors to use during the vector search.</summary>
+    private readonly int? _numCandidates;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoCollection{TKey, TRecord}"/> class.
@@ -84,8 +96,15 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
         this.Name = name;
-        this._options = options ?? new MongoCollectionOptions();
-        this._model = new MongoModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
+
+        options ??= MongoCollectionOptions.Default;
+        this._vectorIndexName = options.VectorIndexName;
+        this._fullTextSearchIndexName = options.FullTextSearchIndexName;
+        this._maxRetries = options.MaxRetries;
+        this._delayInMilliseconds = options.DelayInMilliseconds;
+        this._numCandidates = options.NumCandidates;
+
+        this._model = new MongoModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? (new MongoDynamicMapper(this._model) as IMongoMapper<TRecord>)!
             : new MongoMapper<TRecord>(this._model);
@@ -103,36 +122,17 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         => this.RunOperationAsync("ListCollectionNames", () => this.InternalCollectionExistsAsync(cancellationToken));
 
     /// <inheritdoc />
-    public override async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         // The IMongoDatabase.CreateCollectionAsync "Creates a new collection if not already available".
-        // To make sure that all the connectors are consistent, we throw when the collection exists.
-        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
-        {
-            throw new VectorStoreException("Collection already exists.")
-            {
-                VectorStoreSystemName = MongoConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
-                OperationName = "CreateCollection"
-            };
-        }
-
-        await this.CreateCollectionIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        // The IMongoDatabase.CreateCollectionAsync "Creates a new collection if not already available".
-        // So for CreateCollectionIfNotExistsAsync, we don't perform an additional check.
+        // So for EnsureCollectionExistsAsync, we don't perform an additional check.
         await this.RunOperationAsync("CreateCollection",
             () => this._mongoDatabase.CreateCollectionAsync(this.Name, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         await this.RunOperationWithRetryAsync(
             "CreateIndexes",
-            this._options.MaxRetries,
-            this._options.DelayInMilliseconds,
+            this._maxRetries,
+            this._delayInMilliseconds,
             () => this.CreateIndexesAsync(this.Name, cancellationToken),
             cancellationToken).ConfigureAwait(false);
     }
@@ -406,11 +406,11 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         // to perform skip logic locally, since skip option is not part of API.
         var itemsAmount = options.Skip + top;
 
-        var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoConstants.DefaultNumCandidatesRatio;
+        var numCandidates = this._numCandidates ?? itemsAmount * MongoConstants.DefaultNumCandidatesRatio;
 
         var searchQuery = MongoCollectionSearchMapping.GetSearchQuery(
             vectorArray,
-            this._options.VectorIndexName,
+            this._vectorIndexName,
             vectorProperty.StorageName,
             itemsAmount,
             numCandidates,
@@ -425,8 +425,8 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         const string OperationName = "Aggregate";
         using var cursor = await this.RunOperationWithRetryAsync(
             OperationName,
-            this._options.MaxRetries,
-            this._options.DelayInMilliseconds,
+            this._maxRetries,
+            this._delayInMilliseconds,
             () => this._mongoCollection.AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken),
             cancellationToken).ConfigureAwait(false);
 
@@ -456,10 +456,11 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         // Translate the filter now, so if it fails, we throw immediately.
         var translatedFilter = new MongoFilterTranslator().Translate(filter, this._model);
         SortDefinition<BsonDocument>? sortDefinition = null;
-        if (options.OrderBy.Values.Count > 0)
+        var orderBy = options.OrderBy?.Invoke(new()).Values;
+        if (orderBy is { Count: > 0 })
         {
             sortDefinition = Builders<BsonDocument>.Sort.Combine(
-                options.OrderBy.Values.Select(pair =>
+                orderBy.Select(pair =>
                 {
                     var storageName = this._model.GetDataOrKeyProperty(pair.PropertySelector).StorageName;
 
@@ -512,14 +513,14 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         // to perform skip logic locally, since skip option is not part of API.
         var itemsAmount = options.Skip + top;
 
-        var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoConstants.DefaultNumCandidatesRatio;
+        var numCandidates = this._numCandidates ?? itemsAmount * MongoConstants.DefaultNumCandidatesRatio;
 
         BsonDocument[] pipeline = MongoCollectionSearchMapping.GetHybridSearchPipeline(
             vectorArray,
             keywords,
             this.Name,
-            this._options.VectorIndexName,
-            this._options.FullTextSearchIndexName,
+            this._vectorIndexName,
+            this._fullTextSearchIndexName,
             vectorProperty.StorageName,
             textDataProperty.StorageName,
             ScorePropertyName,
@@ -530,8 +531,8 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
 
         var results = await this.RunOperationWithRetryAsync(
             "KeywordVectorizedHybridSearch",
-            this._options.MaxRetries,
-            this._options.DelayInMilliseconds,
+            this._maxRetries,
+            this._delayInMilliseconds,
             async () =>
             {
                 var cursor = await this._mongoCollection
@@ -572,7 +573,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         var indexArray = new BsonArray();
 
         // Create the vector index config if the index does not exist
-        if (!indexes.Contains(this._options.VectorIndexName))
+        if (!indexes.Contains(this._vectorIndexName))
         {
             var fieldsArray = new BsonArray();
 
@@ -583,7 +584,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             {
                 indexArray.Add(new BsonDocument
                 {
-                    { "name", this._options.VectorIndexName },
+                    { "name", this._vectorIndexName },
                     { "type", "vectorSearch" },
                     { "definition", new BsonDocument { ["fields"] = fieldsArray } },
                 });
@@ -591,7 +592,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         }
 
         // Create the full text search index config if the index does not exist
-        if (!indexes.Contains(this._options.FullTextSearchIndexName))
+        if (!indexes.Contains(this._fullTextSearchIndexName))
         {
             var fieldsDocument = new BsonDocument();
 
@@ -601,7 +602,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             {
                 indexArray.Add(new BsonDocument
                 {
-                    { "name", this._options.FullTextSearchIndexName },
+                    { "name", this._fullTextSearchIndexName },
                     { "type", "search" },
                     {
                         "definition", new BsonDocument

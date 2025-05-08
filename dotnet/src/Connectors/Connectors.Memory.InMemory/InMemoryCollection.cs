@@ -38,17 +38,8 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <summary>The data type of each collection, to enforce a single type per collection.</summary>
     private readonly ConcurrentDictionary<string, Type> _internalCollectionTypes;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly InMemoryCollectionOptions<TKey, TRecord> _options;
-
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
-
-    /// <summary>An function to look up vectors from the records.</summary>
-    private readonly InMemoryVectorResolver<TRecord> _vectorResolver;
-
-    /// <summary>An function to look up keys from the records.</summary>
-    private readonly InMemoryKeyResolver<TKey, TRecord> _keyResolver;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryCollection{TKey,TRecord}"/> class.
@@ -64,35 +55,10 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
         this.Name = name;
         this._internalCollections = new();
         this._internalCollectionTypes = new();
-        this._options = options ?? new InMemoryCollectionOptions<TKey, TRecord>();
+        options ??= new InMemoryCollectionOptions<TKey, TRecord>();
 
         this._model = new InMemoryModelBuilder()
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
-
-        // Assign resolvers.
-        // TODO: Make generic to avoid boxing
-#pragma warning disable MEVD9000 // KeyResolver and VectorResolver are experimental
-        this._keyResolver = this._options.KeyResolver is null
-            ? record => (TKey)this._model.KeyProperty.GetValueAsObject(record)!
-            : this._options.KeyResolver;
-
-        this._vectorResolver = this._options.VectorResolver is not null
-            ? this._options.VectorResolver
-            : (vectorPropertyName, record) =>
-            {
-                if (!this._model.PropertyMap.TryGetValue(vectorPropertyName, out var property))
-                {
-                    throw new InvalidOperationException($"The collection does not have a vector field named '{vectorPropertyName}', so vector search is not possible.");
-                }
-
-                if (property is not VectorPropertyModel vectorProperty)
-                {
-                    throw new InvalidOperationException($"The property '{vectorPropertyName}' isn't a vector property.");
-                }
-
-                return property.GetValueAsObject(record);
-            };
-#pragma warning restore MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
 
         this._collectionMetadata = new()
         {
@@ -129,30 +95,15 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
     }
 
     /// <inheritdoc />
-    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        if (!this._internalCollections.ContainsKey(this.Name)
-            && this._internalCollections.TryAdd(this.Name, new ConcurrentDictionary<object, object>())
-            && this._internalCollectionTypes.TryAdd(this.Name, typeof(TRecord)))
+        if (!this._internalCollections.ContainsKey(this.Name))
         {
-            return Task.CompletedTask;
+            this._internalCollections.TryAdd(this.Name, new ConcurrentDictionary<object, object>());
+            this._internalCollectionTypes.TryAdd(this.Name, typeof(TRecord));
         }
 
-        return Task.FromException(new VectorStoreException("Collection already exists.")
-        {
-            VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
-            CollectionName = this.Name,
-            OperationName = "CreateCollection"
-        });
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
-        {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
-        }
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -247,7 +198,7 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
         var recordIndex = 0;
         foreach (var record in records)
         {
-            var key = (TKey)this._keyResolver(record)!;
+            var key = (TKey)this._model.KeyProperty.GetValueAsObject(record)!;
             var wrappedRecord = new InMemoryRecordWrapper<TRecord>(record);
 
             if (generatedEmbeddings is not null)
@@ -364,8 +315,7 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
 
             if (vectorProperty.EmbeddingGenerator is null)
             {
-                var vectorObject = this._vectorResolver(vectorProperty.ModelName!, wrapper.Record);
-                if (vectorObject is not ReadOnlyMemory<float> dbVector)
+                if (vectorProperty.GetValueAsObject(wrapper.Record) is not ReadOnlyMemory<float> dbVector)
                 {
                     return null;
                 }
@@ -430,16 +380,17 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
             .AsQueryable()
             .Where(filter);
 
-        if (options.OrderBy.Values.Count > 0)
+        var orderBy = options.OrderBy?.Invoke(new()).Values;
+        if (orderBy is { Count: > 0 })
         {
-            var first = options.OrderBy.Values[0];
+            var first = orderBy[0];
             var sorted = first.Ascending
                     ? records.OrderBy(first.PropertySelector)
                     : records.OrderByDescending(first.PropertySelector);
 
-            for (int i = 1; i < options.OrderBy.Values.Count; i++)
+            for (int i = 1; i < orderBy.Count; i++)
             {
-                var next = options.OrderBy.Values[i];
+                var next = orderBy[i];
                 sorted = next.Ascending
                     ? sorted.ThenBy(next.PropertySelector)
                     : sorted.ThenByDescending(next.PropertySelector);

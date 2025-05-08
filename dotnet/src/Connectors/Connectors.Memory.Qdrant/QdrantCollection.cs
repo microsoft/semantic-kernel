@@ -47,14 +47,14 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <summary>Qdrant client that can be used to manage the collections and points in a Qdrant store.</summary>
     private readonly MockableQdrantClient _qdrantClient;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly QdrantCollectionOptions _options;
-
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
 
     /// <summary>A mapper to use for converting between qdrant point and consumer models.</summary>
     private readonly QdrantMapper<TRecord> _mapper;
+
+    /// <summary>Whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector per qdrant point.</summary>
+    private readonly bool _hasNamedVectors;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantCollection{TKey, TRecord}"/> class.
@@ -91,12 +91,14 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
         // Assign.
         this._qdrantClient = qdrantClient;
         this.Name = name;
-        this._options = options ?? new QdrantCollectionOptions();
 
-        this._model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(this._options.HasNamedVectors))
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
+        options ??= QdrantCollectionOptions.Default;
+        this._hasNamedVectors = options.HasNamedVectors;
 
-        this._mapper = new QdrantMapper<TRecord>(this._model, this._options.HasNamedVectors);
+        this._model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(options.HasNamedVectors))
+            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
+
+        this._mapper = new QdrantMapper<TRecord>(this._model, options.HasNamedVectors);
 
         this._collectionMetadata = new()
         {
@@ -117,95 +119,101 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     }
 
     /// <inheritdoc />
-    public override async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        if (!this._options.HasNamedVectors)
+        // Don't even try to create if the collection already exists.
+        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            // If we are not using named vectors, we can only have one vector property. We can assume we have exactly one, since this is already verified in the constructor.
-            var singleVectorProperty = this._model.VectorProperty;
+            return;
+        }
 
-            // Map the single vector property to the qdrant config.
-            var vectorParams = QdrantCollectionCreateMapping.MapSingleVector(singleVectorProperty!);
+        try
+        {
+            if (!this._hasNamedVectors)
+            {
+                // If we are not using named vectors, we can only have one vector property. We can assume we have exactly one, since this is already verified in the constructor.
+                var singleVectorProperty = this._model.VectorProperty;
 
-            // Create the collection with the single unnamed vector.
-            await this.RunOperationAsync(
-                "CreateCollection",
-                () => this._qdrantClient.CreateCollectionAsync(
+                // Map the single vector property to the qdrant config.
+                var vectorParams = QdrantCollectionCreateMapping.MapSingleVector(singleVectorProperty!);
+
+                // Create the collection with the single unnamed vector.
+                await this._qdrantClient.CreateCollectionAsync(
                     this.Name,
                     vectorParams,
-                    cancellationToken: cancellationToken)).ConfigureAwait(false);
-        }
-        else
-        {
-            // Since we are using named vectors, iterate over all vector properties.
-            var vectorProperties = this._model.VectorProperties;
-
-            // Map the named vectors to the qdrant config.
-            var vectorParamsMap = QdrantCollectionCreateMapping.MapNamedVectors(vectorProperties);
-
-            // Create the collection with named vectors.
-            await this.RunOperationAsync(
-                "CreateCollection",
-                () => this._qdrantClient.CreateCollectionAsync(
-                    this.Name,
-                    vectorParamsMap,
-                    cancellationToken: cancellationToken)).ConfigureAwait(false);
-        }
-
-        // Add indexes for each of the data properties that require filtering.
-        var dataProperties = this._model.DataProperties.Where(x => x.IsIndexed);
-        foreach (var dataProperty in dataProperties)
-        {
-            if (QdrantCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type, out PayloadSchemaType schemaType))
-            {
-                // Do nothing since schemaType is already set.
-            }
-            else if (VectorStoreRecordPropertyVerification.IsSupportedEnumerableType(dataProperty.Type) && VectorStoreRecordPropertyVerification.GetCollectionElementType(dataProperty.Type) == typeof(string))
-            {
-                // For enumerable of strings, use keyword schema type, since this allows tag filtering.
-                schemaType = PayloadSchemaType.Keyword;
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                // TODO: This should move to model validation
-                throw new InvalidOperationException($"Property {nameof(VectorStoreDataProperty.IsIndexed)} on {nameof(VectorStoreDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
+                // Since we are using named vectors, iterate over all vector properties.
+                var vectorProperties = this._model.VectorProperties;
+
+                // Map the named vectors to the qdrant config.
+                var vectorParamsMap = QdrantCollectionCreateMapping.MapNamedVectors(vectorProperties);
+
+                // Create the collection with named vectors.
+                await this._qdrantClient.CreateCollectionAsync(
+                    this.Name,
+                    vectorParamsMap,
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
             }
 
-            await this.RunOperationAsync(
-                "CreatePayloadIndex",
-                () => this._qdrantClient.CreatePayloadIndexAsync(
+            // Add indexes for each of the data properties that require filtering.
+            var dataProperties = this._model.DataProperties.Where(x => x.IsIndexed);
+            foreach (var dataProperty in dataProperties)
+            {
+                if (QdrantCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type, out PayloadSchemaType schemaType))
+                {
+                    // Do nothing since schemaType is already set.
+                }
+                else if (VectorStoreRecordPropertyVerification.IsSupportedEnumerableType(dataProperty.Type) && VectorStoreRecordPropertyVerification.GetCollectionElementType(dataProperty.Type) == typeof(string))
+                {
+                    // For enumerable of strings, use keyword schema type, since this allows tag filtering.
+                    schemaType = PayloadSchemaType.Keyword;
+                }
+                else
+                {
+                    // TODO: This should move to model validation
+                    throw new InvalidOperationException($"Property {nameof(VectorStoreDataProperty.IsIndexed)} on {nameof(VectorStoreDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
+                }
+
+                await this._qdrantClient.CreatePayloadIndexAsync(
                     this.Name,
                     dataProperty.StorageName,
                     schemaType,
-                    cancellationToken: cancellationToken)).ConfigureAwait(false);
-        }
-
-        // Add indexes for each of the data properties that require full text search.
-        dataProperties = this._model.DataProperties.Where(x => x.IsFullTextIndexed);
-        foreach (var dataProperty in dataProperties)
-        {
-            // TODO: This should move to model validation
-            if (dataProperty.Type != typeof(string))
-            {
-                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextIndexed)} on {nameof(VectorStoreDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string. The Qdrant VectorStore supports {nameof(dataProperty.IsFullTextIndexed)} on string properties only.");
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
             }
 
-            await this.RunOperationAsync(
-                "CreatePayloadIndex",
-                () => this._qdrantClient.CreatePayloadIndexAsync(
+            // Add indexes for each of the data properties that require full text search.
+            dataProperties = this._model.DataProperties.Where(x => x.IsFullTextIndexed);
+            foreach (var dataProperty in dataProperties)
+            {
+                // TODO: This should move to model validation
+                if (dataProperty.Type != typeof(string))
+                {
+                    throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextIndexed)} on {nameof(VectorStoreDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string. The Qdrant VectorStore supports {nameof(dataProperty.IsFullTextIndexed)} on string properties only.");
+                }
+
+                await this._qdrantClient.CreatePayloadIndexAsync(
                     this.Name,
                     dataProperty.StorageName,
                     PayloadSchemaType.Text,
-                    cancellationToken: cancellationToken)).ConfigureAwait(false);
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
         }
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.AlreadyExists)
         {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+            // Do nothing, since the collection is already created.
+        }
+        catch (RpcException ex)
+        {
+            throw new VectorStoreException("Call to vector store failed.", ex)
+            {
+                VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
+                OperationName = "EnsureCollectionExists"
+            };
         }
     }
 
@@ -572,7 +580,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
             () => this._qdrantClient.QueryAsync(
                 this.Name,
                 query: query,
-                usingVector: this._options.HasNamedVectors ? vectorProperty.StorageName : null,
+                usingVector: this._hasNamedVectors ? vectorProperty.StorageName : null,
                 filter: filter,
                 limit: (ulong)top,
                 offset: (ulong)options.Skip,
@@ -611,10 +619,11 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
         // Specify whether to include vectors in the search results.
         WithVectorsSelector vectorsSelector = new() { Enable = options.IncludeVectors };
 
-        var sortInfo = options.OrderBy.Values.Count switch
+        var orderByValues = options.OrderBy?.Invoke(new()).Values;
+        var sortInfo = orderByValues switch
         {
-            0 => null,
-            1 => options.OrderBy.Values[0],
+            null => null,
+            _ when orderByValues.Count == 1 => orderByValues[0],
             _ => throw new NotSupportedException("Qdrant does not support ordering by more than one property.")
         };
 
@@ -690,9 +699,9 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
             },
         };
 
-        if (this._options.HasNamedVectors)
+        if (this._hasNamedVectors)
         {
-            vectorQuery.Using = this._options.HasNamedVectors ? vectorProperty.StorageName : null;
+            vectorQuery.Using = this._hasNamedVectors ? vectorProperty.StorageName : null;
         }
 
         // Build the keyword query.

@@ -58,7 +58,7 @@ public class VectorStoreTextSearchTestBase
         VectorStoreCollection<Guid, DataModel> recordCollection,
         int? count = 10)
     {
-        await recordCollection.CreateCollectionIfNotExistsAsync();
+        await recordCollection.EnsureCollectionExistsAsync();
         for (var i = 0; i < count; i++)
         {
             DataModel dataModel = new()
@@ -80,7 +80,7 @@ public class VectorStoreTextSearchTestBase
         ITextEmbeddingGenerationService embeddingService,
         int? count = 10)
     {
-        await recordCollection.CreateCollectionIfNotExistsAsync();
+        await recordCollection.EnsureCollectionExistsAsync();
         for (var i = 0; i < count; i++)
         {
             DataModelWithRawEmbedding dataModel = new()

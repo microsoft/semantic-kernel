@@ -67,14 +67,15 @@ public class RedisHashSetCollectionTests
     }
 
     [Fact]
-    public async Task CanCreateCollectionAsync()
+    public async Task CanEnsureCollectionExistsAsync()
     {
         // Arrange.
-        SetupExecuteMock(this._redisDatabaseMock, string.Empty);
+        SetupExecuteMock(this._redisDatabaseMock, "FT.INFO", new RedisServerException("Unknown index name"));
+        SetupExecuteMock(this._redisDatabaseMock, "FT.CREATE", string.Empty);
         var sut = new RedisHashSetCollection<string, SinglePropsModel>(this._redisDatabaseMock.Object, TestCollectionName);
 
         // Act.
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert.
         var expectedArgs = new object[] {
@@ -465,6 +466,16 @@ public class RedisHashSetCollectionTests
             .ThrowsAsync(exception);
     }
 
+    private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, string command, Exception exception)
+    {
+        redisDatabaseMock
+            .Setup(
+                x => x.ExecuteAsync(
+                    command,
+                    It.IsAny<object[]>()))
+            .ThrowsAsync(exception);
+    }
+
     private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, IEnumerable<string> redisResultStrings)
     {
         var results = redisResultStrings
@@ -497,6 +508,20 @@ public class RedisHashSetCollectionTests
             .Setup(
                 x => x.ExecuteAsync(
                     It.IsAny<string>(),
+                    It.IsAny<object[]>()))
+            .Callback((string command, object[] args) =>
+            {
+                Console.WriteLine(args);
+            })
+            .ReturnsAsync(RedisResult.Create(new RedisValue(redisResultString)));
+    }
+
+    private static void SetupExecuteMock(Mock<IDatabase> redisDatabaseMock, string command, string redisResultString)
+    {
+        redisDatabaseMock
+            .Setup(
+                x => x.ExecuteAsync(
+                    command,
                     It.IsAny<object[]>()))
             .Callback((string command, object[] args) =>
             {

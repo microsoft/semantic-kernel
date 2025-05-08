@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
@@ -22,32 +21,10 @@ public sealed class InMemoryCollectionOptions<TKey, TRecord>
     /// In this case, the record model properties must be annotated with the appropriate attributes to indicate their usage.
     /// See <see cref="VectorStoreKeyAttribute"/>, <see cref="VectorStoreDataAttribute"/> and <see cref="VectorStoreVectorAttribute"/>.
     /// </remarks>
-    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; init; } = null;
+    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; set; }
 
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
-
-    /// <summary>
-    /// An optional function that can be used to look up vectors from a record.
-    /// </summary>
-    /// <remarks>
-    /// If not provided, the default behavior is to look for direct properties of the record
-    /// using reflection. This delegate can be used to provide a custom implementation if
-    /// the vector properties are located somewhere else on the record.
-    /// </remarks>
-    [Experimental("MEVD9000")]
-    public InMemoryVectorResolver<TRecord>? VectorResolver { get; init; } = null;
-
-    /// <summary>
-    /// An optional function that can be used to look up record keys.
-    /// </summary>
-    /// <remarks>
-    /// If not provided, the default behavior is to look for a direct property of the record
-    /// using reflection. This delegate can be used to provide a custom implementation if
-    /// the key property is located somewhere else on the record.
-    /// </remarks>
-    [Experimental("MEVD9000")]
-    public InMemoryKeyResolver<TKey, TRecord>? KeyResolver { get; init; } = null;
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

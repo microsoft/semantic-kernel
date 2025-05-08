@@ -10,10 +10,26 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// </summary>
 public sealed class SqlServerCollectionOptions
 {
+    internal static readonly SqlServerCollectionOptions Default = new();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqlServerCollectionOptions"/> class.
+    /// </summary>
+    public SqlServerCollectionOptions()
+    {
+    }
+
+    internal SqlServerCollectionOptions(SqlServerCollectionOptions? source, IEmbeddingGenerator embeddingGenerator)
+    {
+        this.Schema = source?.Schema;
+        this.RecordDefinition = source?.RecordDefinition;
+        this.EmbeddingGenerator = embeddingGenerator;
+    }
+
     /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
-    public string? Schema { get; init; }
+    public string? Schema { get; set; }
 
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
@@ -23,10 +39,10 @@ public sealed class SqlServerCollectionOptions
     /// In this case, the record model properties must be annotated with the appropriate attributes to indicate their usage.
     /// See <see cref="VectorStoreKeyAttribute"/>, <see cref="VectorStoreDataAttribute"/> and <see cref="VectorStoreVectorAttribute"/>.
     /// </remarks>
-    public VectorStoreRecordDefinition? RecordDefinition { get; init; }
+    public VectorStoreRecordDefinition? RecordDefinition { get; set; }
 
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

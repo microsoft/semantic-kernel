@@ -295,7 +295,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             var requestEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(request, cancellationToken: cancellationToken);
 
             var collection = vectorStore.GetCollection<string, FunctionRecord>(collectionName);
-            await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
+            await collection.EnsureCollectionExistsAsync(cancellationToken);
 
             // Find best functions to call for original request.
             var recordKeys = (await collection.SearchEmbeddingAsync(requestEmbedding, top: numberOfBestFunctions, cancellationToken: cancellationToken)
@@ -339,7 +339,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             // Create collection and upsert all vector store records for search.
             // It's possible to do it only once and re-use the same functions for future requests.
             var collection = vectorStore.GetCollection<string, FunctionRecord>(collectionName);
-            await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
+            await collection.EnsureCollectionExistsAsync(cancellationToken);
 
             await collection.UpsertAsync(functionRecords, cancellationToken: cancellationToken);
         }

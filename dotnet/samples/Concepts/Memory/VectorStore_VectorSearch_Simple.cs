@@ -33,7 +33,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<ulong, Glossary>("skglossary");
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateGlossaryEntries().ToList();

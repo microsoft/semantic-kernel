@@ -18,13 +18,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
     private const string SkipReason = "Weaviate tests are failing on the build server with connection reset errors, but passing locally.";
 
     [Fact(Skip = SkipReason)]
-    public async Task ItCanCreateCollectionAsync()
+    public async Task ItCanEnsureCollectionExistsAsync()
     {
         // Arrange
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "TestCreateCollection");
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
@@ -40,7 +40,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         if (collectionExists)
         {
-            await sut.CreateCollectionAsync();
+            await sut.EnsureCollectionExistsAsync();
         }
 
         // Act
@@ -70,7 +70,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         var record = this.CreateTestHotel(hotelId);
 
         // Act && Assert
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync(record);
 
@@ -106,7 +106,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, CollectionName);
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         Assert.True(await sut.CollectionExistsAsync());
 
@@ -125,7 +125,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "TestDeleteRecord");
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var record = this.CreateTestHotel(hotelId);
 
@@ -153,7 +153,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "TestBatch");
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var record1 = this.CreateTestHotel(hotelId1);
         var record2 = this.CreateTestHotel(hotelId2);
@@ -182,7 +182,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         var hotelId = new Guid("55555555-5555-5555-5555-555555555555");
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "TestUpsert");
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var record = this.CreateTestHotel(hotelId);
 
@@ -217,7 +217,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "VectorSearchDefault");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -254,7 +254,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "VectorSearchWithOffset");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -286,7 +286,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "VectorSearchWithFilter");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
@@ -329,7 +329,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, "VectorSearchWithFilterAndDataTypes");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel5, hotel3, hotel1]);
 
@@ -359,7 +359,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         var sut = new WeaviateCollection<object, Dictionary<string, object?>>(fixture.HttpClient!, "TestDynamicMapper", options);
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Act
         await sut.UpsertAsync(new Dictionary<string, object?>

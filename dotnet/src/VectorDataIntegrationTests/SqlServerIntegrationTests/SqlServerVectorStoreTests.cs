@@ -26,12 +26,12 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
             Assert.False(await testStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionName));
 
-            await collection.CreateCollectionAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             Assert.True(await collection.CollectionExistsAsync());
             Assert.True(await testStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionName));
 
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             Assert.True(await collection.CollectionExistsAsync());
 
@@ -55,7 +55,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
         try
         {
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             TestModel inserted = new()
             {
@@ -113,7 +113,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
         try
         {
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             TestModel inserted = new()
             {
@@ -156,7 +156,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
         try
         {
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             var keys = Enumerable.Range(0, 10).Select(i => $"MyId{i}").ToArray();
             TestModel[] inserted = Enumerable.Range(0, 10).Select(i => new TestModel()
@@ -276,7 +276,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
         try
         {
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             TimeModel inserted = new()
             {
@@ -326,7 +326,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
         try
         {
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             var key = testStore.GenerateKey<TKey>(1);
             FancyTestModel<TKey> inserted = new()

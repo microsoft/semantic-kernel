@@ -16,23 +16,23 @@ public class CosmosMongoEmbeddingGenerationTests(CosmosMongoEmbeddingGenerationT
 {
     public new class Fixture : EmbeddingGenerationTests<string>.Fixture
     {
-        public override TestStore TestStore => CosmosMongoDBTestStore.Instance;
+        public override TestStore TestStore => CosmosMongoTestStore.Instance;
 
         public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
-            => CosmosMongoDBTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+            => CosmosMongoTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
         [
             services => services
-                .AddSingleton(CosmosMongoDBTestStore.Instance.Database)
-                .AddAzureCosmosDBMongoDBVectorStore()
+                .AddSingleton(CosmosMongoTestStore.Instance.Database)
+                .AddCosmosMongoVectorStore()
         ];
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
         [
             services => services
-                .AddSingleton(CosmosMongoDBTestStore.Instance.Database)
-                .AddAzureCosmosDBMongoDBVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddSingleton(CosmosMongoTestStore.Instance.Database)
+                .AddCosmosMongoVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 }

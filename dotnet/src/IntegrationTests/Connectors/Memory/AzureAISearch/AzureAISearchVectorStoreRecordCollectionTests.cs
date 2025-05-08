@@ -58,7 +58,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         await sut.DeleteCollectionAsync();
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
         await sut.UpsertAsync(hotel);
         var getResult = await sut.GetAsync("Upsert-1", new() { IncludeVectors = true });
         var embedding = fixture.Embedding;

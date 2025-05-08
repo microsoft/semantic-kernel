@@ -5,7 +5,7 @@ using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Connectors.Postgres;
+using Microsoft.SemanticKernel.Connectors.PgVector;
 
 namespace Memory;
 

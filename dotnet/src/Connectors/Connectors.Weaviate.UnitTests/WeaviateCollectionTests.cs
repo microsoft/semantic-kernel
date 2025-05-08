@@ -117,14 +117,20 @@ public sealed class WeaviateCollectionTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateCollectionUsesValidCollectionSchemaAsync()
+    public async Task EnsureCollectionExistsUsesValidCollectionSchemaAsync()
     {
         // Arrange
         const string CollectionName = "Collection";
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName);
 
+        using var collectionExistsResponse = new HttpResponseMessage(HttpStatusCode.NotFound);
+        this._messageHandlerStub.ResponseQueue.Enqueue(collectionExistsResponse);
+
+        using var createCollectionResponse = new HttpResponseMessage(HttpStatusCode.OK);
+        this._messageHandlerStub.ResponseQueue.Enqueue(createCollectionResponse);
+
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert
         var schemaRequest = JsonSerializer.Deserialize<WeaviateCreateCollectionSchemaRequest>(this._messageHandlerStub.RequestContent);
@@ -355,10 +361,16 @@ public sealed class WeaviateCollectionTests : IDisposable
             new WeaviateCollectionOptions() { Endpoint = new Uri("http://test-endpoint"), ApiKey = "fake-key" } :
             null;
 
+        using var collectionExistsResponse = new HttpResponseMessage(HttpStatusCode.NotFound);
+        this._messageHandlerStub.ResponseQueue.Enqueue(collectionExistsResponse);
+
+        using var createCollectionResponse = new HttpResponseMessage(HttpStatusCode.OK);
+        this._messageHandlerStub.ResponseQueue.Enqueue(createCollectionResponse);
+
         var sut = new WeaviateCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName, options);
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         var headers = this._messageHandlerStub.RequestHeaders;
         var endpoint = this._messageHandlerStub.RequestUri;

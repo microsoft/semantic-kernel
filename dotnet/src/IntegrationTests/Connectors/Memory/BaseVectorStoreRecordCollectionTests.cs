@@ -36,7 +36,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
     [InlineData(DistanceFunction.DotProductSimilarity, 1, -1, 0, new int[] { 0, 2, 1 })]
     [InlineData(DistanceFunction.EuclideanDistance, 0, 2, 1.73, new int[] { 0, 2, 1 })]
     [InlineData(DistanceFunction.EuclideanSquaredDistance, 0, 4, 3, new int[] { 0, 2, 1 })]
-    [InlineData(DistanceFunction.Hamming, 0, 1, 3, new int[] { 0, 1, 2 })]
+    [InlineData(DistanceFunction.HammingDistance, 0, 1, 3, new int[] { 0, 1, 2 })]
     [InlineData(DistanceFunction.ManhattanDistance, 0, 2, 3, new int[] { 0, 1, 2 })]
     public async Task VectorSearchShouldReturnExpectedScoresAsync(string distanceFunction, double expectedExactMatchScore, double expectedOppositeScore, double expectedOrthogonalScore, int[] resultOrder)
     {
@@ -66,7 +66,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
             $"scorebydf{distanceFunction}",
             definition);
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
         await Task.Delay(this.DelayAfterIndexCreateInMilliseconds);
 
         // Create two vectors that are opposite to each other and records that use these

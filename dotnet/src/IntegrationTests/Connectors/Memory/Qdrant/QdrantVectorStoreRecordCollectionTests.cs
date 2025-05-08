@@ -62,7 +62,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var record = await this.CreateTestHotelAsync(30, fixture.EmbeddingGenerator);
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
         await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(30, new RecordRetrievalOptions { IncludeVectors = true });
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");

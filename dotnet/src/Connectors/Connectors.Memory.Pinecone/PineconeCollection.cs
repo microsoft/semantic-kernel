@@ -32,13 +32,21 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     private readonly PineconeClient _pineconeClient;
-    private readonly PineconeCollectionOptions _options;
     private readonly Extensions.VectorData.ProviderServices.CollectionModel _model;
     private readonly PineconeMapper<TRecord> _mapper;
     private IndexClient? _indexClient;
 
     /// <inheritdoc />
     public override string Name { get; }
+
+    /// <summary>The namespace within the Pinecone index that will be used for operations involving records (Get, Upsert, Delete).</summary>
+    private readonly string? _indexNamespace;
+
+    /// <summary>The public cloud where the serverless index is hosted.</summary>
+    private readonly string _serverlessIndexCloud;
+
+    /// <summary>The region where the serverless index is created.</summary>
+    private readonly string _serverlessIndexRegion;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeCollection{TKey, TRecord}"/> class.
@@ -60,9 +68,14 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         this._pineconeClient = pineconeClient;
         this.Name = name;
-        this._options = options ?? new PineconeCollectionOptions();
+
+        options ??= PineconeCollectionOptions.Default;
+        this._indexNamespace = options.IndexNamespace;
+        this._serverlessIndexCloud = options.ServerlessIndexCloud;
+        this._serverlessIndexRegion = options.ServerlessIndexRegion;
+
         this._model = new CollectionModelBuilder(PineconeFieldMapping.ModelBuildingOptions)
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
+            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
         this._mapper = new PineconeMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
@@ -84,8 +97,14 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             });
 
     /// <inheritdoc />
-    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
+        // Don't even try to create if the collection already exists.
+        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return;
+        }
+
         // we already run through record property validation, so a single VectorStoreRecordVectorProperty is guaranteed.
         var vectorProperty = this._model.VectorProperty!;
 
@@ -104,29 +123,29 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             {
                 Serverless = new ServerlessSpec
                 {
-                    Cloud = MapCloud(this._options.ServerlessIndexCloud),
-                    Region = this._options.ServerlessIndexRegion,
+                    Cloud = MapCloud(this._serverlessIndexCloud),
+                    Region = this._serverlessIndexRegion,
                 }
             },
         };
 
-        return this.RunCollectionOperationAsync("CreateCollection",
-            () => this._pineconeClient.CreateIndexAsync(request, cancellationToken: cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        try
         {
-            try
+            await this._pineconeClient.CreateIndexAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (ConflictError)
+        {
+            // Do nothing, since the index is already created.
+        }
+        catch (PineconeApiException other)
+        {
+            throw new VectorStoreException("Call to vector store failed.", other)
             {
-                await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (VectorStoreException ex) when (ex.InnerException is PineconeApiException apiEx && apiEx.InnerException is ConflictError)
-            {
-                // If the collection got created in the meantime, we should ignore the exception.
-            }
+                VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
+                OperationName = "EnsureCollectionExists"
+            };
         }
     }
 
@@ -164,7 +183,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         FetchRequest request = new()
         {
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             Ids = [this.GetStringKey(key)]
         };
 
@@ -211,7 +230,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         FetchRequest request = new()
         {
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             Ids = keysList
         };
 
@@ -236,7 +255,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     {
         DeleteRequest request = new()
         {
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             Ids = [this.GetStringKey(key)]
         };
 
@@ -264,7 +283,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         DeleteRequest request = new()
         {
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             Ids = keysList
         };
 
@@ -299,7 +318,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         UpsertRequest request = new()
         {
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             Vectors = [vector],
         };
 
@@ -349,7 +368,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         UpsertRequest request = new()
         {
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             Vectors = vectors,
         };
 
@@ -442,7 +461,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         QueryRequest request = new()
         {
             TopK = (uint)(top + options.Skip),
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             IncludeValues = options.IncludeVectors,
             IncludeMetadata = true,
             Vector = floatVector,
@@ -489,7 +508,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
-        if (options?.OrderBy.Values.Count > 0)
+        if (options?.OrderBy is not null)
         {
             throw new NotSupportedException("Pinecone does not support ordering.");
         }
@@ -504,7 +523,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
         QueryRequest request = new()
         {
             TopK = (uint)(top + options.Skip),
-            Namespace = this._options.IndexNamespace,
+            Namespace = this._indexNamespace,
             IncludeValues = options.IncludeVectors,
             IncludeMetadata = true,
             // "Either 'vector' or 'ID' must be provided"

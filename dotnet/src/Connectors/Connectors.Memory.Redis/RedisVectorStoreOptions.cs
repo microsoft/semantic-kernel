@@ -9,13 +9,15 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </summary>
 public sealed class RedisVectorStoreOptions
 {
+    internal static readonly RedisVectorStoreOptions Default = new();
+
     /// <summary>
     /// Indicates the way in which data should be stored in redis. Default is <see cref="RedisStorageType.Json"/>.
     /// </summary>
-    public RedisStorageType? StorageType { get; init; } = RedisStorageType.Json;
+    public RedisStorageType? StorageType { get; set; } = RedisStorageType.Json;
 
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

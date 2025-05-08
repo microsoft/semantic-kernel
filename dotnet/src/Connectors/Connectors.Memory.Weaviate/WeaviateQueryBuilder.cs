@@ -81,7 +81,8 @@ internal static class WeaviateQueryBuilder
     {
         var vectorsQuery = GetVectorsPropertyQuery(queryOptions.IncludeVectors, hasNamedVectors, model);
 
-        var sortPaths = string.Join(",", queryOptions.OrderBy.Values.Select(sortInfo =>
+        var orderBy = queryOptions.OrderBy?.Invoke(new()).Values;
+        var sortPaths = orderBy is not { Count: > 0 } ? "" : string.Join(",", orderBy.Select(sortInfo =>
         {
             string sortPath = model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
 

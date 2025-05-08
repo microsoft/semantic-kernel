@@ -36,18 +36,11 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     public abstract Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Creates this collection in the vector store.
-    /// </summary>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A <see cref="Task"/> that completes when the collection has been created.</returns>
-    public abstract Task CreateCollectionAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Creates this collection in the vector store if it doesn't already exist.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> that completes when the collection has been created.</returns>
-    public abstract Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default);
+    public abstract Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes the collection from the vector store.

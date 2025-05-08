@@ -35,8 +35,8 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
         => this.SimpleSearch(DistanceFunction.EuclideanSquaredDistance, 0, 4, 3, [0, 2, 1]);
 
     [ConditionalFact]
-    public virtual Task Hamming()
-        => this.SimpleSearch(DistanceFunction.Hamming, 0, 1, 3, [0, 1, 2]);
+    public virtual Task HammingDistance()
+        => this.SimpleSearch(DistanceFunction.HammingDistance, 0, 1, 3, [0, 1, 2]);
 
     [ConditionalFact]
     public virtual Task ManhattanDistance()
@@ -95,9 +95,7 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
         var collection = fixture.TestStore.DefaultVectorStore.GetCollection<TKey, SearchRecord>(
             uniqueCollectionName, this.GetRecordDefinition(distanceFunction));
 
-        await collection.CreateCollectionAsync();
-
-        await collection.CreateCollectionIfNotExistsAsync(); // just to make sure it's idempotent
+        await collection.EnsureCollectionExistsAsync();
 
         try
         {

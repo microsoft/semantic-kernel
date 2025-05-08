@@ -53,9 +53,6 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <summary><see cref="HttpClient"/> that is used to interact with Weaviate API.</summary>
     private readonly HttpClient _httpClient;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly WeaviateCollectionOptions _options;
-
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
 
@@ -70,6 +67,9 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
 
     /// <inheritdoc />
     public override string Name { get; }
+
+    /// <summary>Whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector in Weaviate collection.</summary>
+    private readonly bool _hasNamedVectors;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateCollection{TKey, TRecord}"/> class.
@@ -102,15 +102,18 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
         this._httpClient = httpClient;
         this._endpoint = endpoint;
         this.Name = name;
-        this._options = options ?? new();
-        this._apiKey = this._options.ApiKey;
-        this._model = new WeaviateModelBuilder(this._options.HasNamedVectors)
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, s_jsonSerializerOptions);
+
+        options ??= WeaviateCollectionOptions.Default;
+        this._apiKey = options.ApiKey;
+        this._hasNamedVectors = options.HasNamedVectors;
+
+        this._model = new WeaviateModelBuilder(options.HasNamedVectors)
+            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, s_jsonSerializerOptions);
 
         // Assign mapper.
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
-            ? (new WeaviateDynamicMapper(this.Name, this._options.HasNamedVectors, this._model, s_jsonSerializerOptions) as IWeaviateMapper<TRecord>)!
-            : new WeaviateMapper<TRecord>(this.Name, this._options.HasNamedVectors, this._model, s_jsonSerializerOptions);
+            ? (new WeaviateDynamicMapper(this.Name, options.HasNamedVectors, this._model, s_jsonSerializerOptions) as IWeaviateMapper<TRecord>)!
+            : new WeaviateMapper<TRecord>(this.Name, options.HasNamedVectors, this._model, s_jsonSerializerOptions);
 
         this._collectionMetadata = new()
         {
@@ -132,24 +135,43 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     }
 
     /// <inheritdoc />
-    public override async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
+        // Don't even try to create if the collection already exists.
+        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return;
+        }
+
         var schema = WeaviateCollectionCreateMapping.MapToSchema(
             this.Name,
-            this._options.HasNamedVectors,
+            this._hasNamedVectors,
             this._model);
 
         using var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
 
-        await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        try
         {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+            await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (VectorStoreException)
+        {
+            // Since weaviate error info is ambiguous, we can check here if the index already exists.
+            // If it does, we can ignore the error.
+#pragma warning disable CA1031 // Do not catch general exception types
+            try
+            {
+                if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    return;
+                }
+            }
+            catch
+            {
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+            throw;
         }
     }
 
@@ -385,7 +407,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
             top,
             options,
             this._model,
-            this._options.HasNamedVectors);
+            this._hasNamedVectors);
 
         return this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken);
     }
@@ -407,7 +429,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
             options,
             this.Name,
             this._model,
-            this._options.HasNamedVectors);
+            this._hasNamedVectors);
 
         return this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "GetAsync", cancellationToken)
             .SelectAsync(result => result.Record, cancellationToken: cancellationToken);
@@ -435,7 +457,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
             textDataProperty,
             s_jsonSerializerOptions,
             options,
-            this._options.HasNamedVectors);
+            this._hasNamedVectors);
 
         return this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken);
     }
@@ -478,7 +500,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
         {
             if (result is not null)
             {
-                var (storageModel, score) = WeaviateCollectionSearchMapping.MapSearchResult(result, scorePropertyName, this._options.HasNamedVectors);
+                var (storageModel, score) = WeaviateCollectionSearchMapping.MapSearchResult(result, scorePropertyName, this._hasNamedVectors);
 
                 var record = this._mapper.MapFromStorageToDataModel(storageModel, includeVectors);
 

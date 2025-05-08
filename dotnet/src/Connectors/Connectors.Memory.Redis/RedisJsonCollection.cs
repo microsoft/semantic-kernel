@@ -63,9 +63,6 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly RedisJsonCollectionOptions _options;
-
     /// <summary>The model.</summary>
     private readonly CollectionModel _model;
 
@@ -77,6 +74,9 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
 
     /// <summary>The JSON serializer options to use when converting between the data model and the Redis record.</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;
+
+    /// <summary>whether the collection name should be prefixed to the key names before reading or writing to the Redis store.</summary>
+    private readonly bool _prefixCollectionNameToKeyNames;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisJsonCollection{TKey, TRecord}"/> class.
@@ -101,11 +101,14 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
         // Assign.
         this._database = database;
         this.Name = name;
-        this._options = options ?? new RedisJsonCollectionOptions();
-        this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
+
+        options ??= RedisJsonCollectionOptions.Default;
+        this._prefixCollectionNameToKeyNames = options.PrefixCollectionNameToKeyNames;
+        this._jsonSerializerOptions = options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
+
         this._model = isDynamic ?
-            new CollectionModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator) :
-            new CollectionJsonModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator, this._jsonSerializerOptions);
+            new CollectionModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator) :
+            new CollectionJsonModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, this._jsonSerializerOptions);
 
         // Lookup storage property names.
         this._dataStoragePropertyNames = this._model.DataProperties.Select(p => p.StorageName).ToArray();
@@ -151,27 +154,54 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     }
 
     /// <inheritdoc />
-    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        // Map the record definition to a schema.
-        var schema = RedisCollectionCreateMapping.MapToSchema(this._model.Properties, useDollarPrefix: true);
+        const string OperationName = "FT.CREATE";
 
-        // Create the index creation params.
-        // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
-        var createParams = new FTCreateParams()
-            .AddPrefix($"{this.Name}:")
-            .On(IndexDataType.JSON);
-
-        // Create the index.
-        return this.RunOperationAsync("FT.CREATE", () => this._database.FT().CreateAsync(this.Name, createParams, schema));
-    }
-
-    /// <inheritdoc />
-    public override async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
-    {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        // Don't even try to create if the collection already exists.
+        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        try
+        {
+            // Map the record definition to a schema.
+            var schema = RedisCollectionCreateMapping.MapToSchema(this._model.Properties, useDollarPrefix: true);
+
+            // Create the index creation params.
+            // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
+            var createParams = new FTCreateParams()
+                .AddPrefix($"{this.Name}:")
+                .On(IndexDataType.JSON);
+
+            // Create the index.
+            await this._database.FT().CreateAsync(this.Name, createParams, schema).ConfigureAwait(false);
+        }
+        catch (RedisException ex)
+        {
+            // Since redis only returns textual error messages, we can check here if the index already exists.
+            // If it does, we can ignore the error.
+#pragma warning disable CA1031 // Do not catch general exception types
+            try
+            {
+                if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    return;
+                }
+            }
+            catch
+            {
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+            throw new VectorStoreException("Call to vector store failed.", ex)
+            {
+                VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
+                OperationName = OperationName
+            };
         }
     }
 
@@ -535,7 +565,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     /// <returns>The updated key if updating is required, otherwise the input key.</returns>
     private string PrefixKeyIfNeeded(string key)
     {
-        if (this._options.PrefixCollectionNameToKeyNames)
+        if (this._prefixCollectionNameToKeyNames)
         {
             return $"{this.Name}:{key}";
         }
@@ -552,7 +582,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     {
         var prefixLength = this.Name.Length + 1;
 
-        if (this._options.PrefixCollectionNameToKeyNames && key.Length > prefixLength)
+        if (this._prefixCollectionNameToKeyNames && key.Length > prefixLength)
         {
             return key.Substring(prefixLength);
         }

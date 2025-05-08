@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.InMemory;
@@ -15,8 +16,6 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 /// </summary>
 public sealed class InMemoryVectorStore : VectorStore
 {
-    private readonly InMemoryVectorStoreOptions _options;
-
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
 
@@ -26,14 +25,16 @@ public sealed class InMemoryVectorStore : VectorStore
     /// <summary>The data type of each collection, to enforce a single type per collection.</summary>
     private readonly ConcurrentDictionary<string, Type> _internalCollectionTypes = new();
 
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryVectorStore"/> class.
     /// </summary>
     /// <param name="options">Optional configuration options for this class</param>
     public InMemoryVectorStore(InMemoryVectorStoreOptions? options = default)
     {
-        this._options = options ?? new InMemoryVectorStoreOptions();
         this._internalCollections = new();
+        this._embeddingGenerator = options?.EmbeddingGenerator;
 
         this._metadata = new()
         {
@@ -61,7 +62,7 @@ public sealed class InMemoryVectorStore : VectorStore
             new()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
+                EmbeddingGenerator = this._embeddingGenerator
             });
         return collection!;
     }

@@ -208,7 +208,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
                 // Create collection and upsert all vector store records for search.
                 // It's possible to do it only once and re-use the same examples for future requests.
                 var collection = vectorStore.GetCollection<string, ExampleRecord>(CollectionName);
-                await collection.CreateCollectionIfNotExistsAsync(context.CancellationToken);
+                await collection.EnsureCollectionExistsAsync(context.CancellationToken);
 
                 await collection.UpsertAsync(exampleRecords, cancellationToken: context.CancellationToken);
 
