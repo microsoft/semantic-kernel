@@ -282,11 +282,6 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
             }
-            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<double>, ReadOnlyMemory<double>>(records, cancellationToken, out var doubleTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = await doubleTask.ConfigureAwait(false);
-            }
             else
             {
                 throw new InvalidOperationException(
@@ -312,18 +307,6 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
         switch (vectorProperty.EmbeddingGenerator)
         {
             case IEmbeddingGenerator<TInput, Embedding<float>> generator:
-            {
-                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
-
-                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
-                {
-                    yield return record;
-                }
-
-                yield break;
-            }
-
-            case IEmbeddingGenerator<TInput, Embedding<double>> generator:
             {
                 var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
 
@@ -374,12 +357,9 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
         Array vectorArray = vector switch
         {
             ReadOnlyMemory<float> memoryFloat => memoryFloat.ToArray(),
-            ReadOnlyMemory<double> memoryDouble => memoryDouble.ToArray(),
             _ => throw new NotSupportedException(
                 $"The provided vector type {vector.GetType().FullName} is not supported by the Azure CosmosDB for MongoDB connector. " +
-                $"Supported types are: {string.Join(", ", [
-                    typeof(ReadOnlyMemory<float>).FullName,
-                    typeof(ReadOnlyMemory<double>).FullName])}")
+                $"Supported types are: {typeof(ReadOnlyMemory<float>).FullName}")
         };
 
         if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))

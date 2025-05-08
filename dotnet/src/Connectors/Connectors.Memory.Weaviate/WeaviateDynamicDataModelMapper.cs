@@ -85,7 +85,6 @@ internal sealed class WeaviateDynamicMapper : IWeaviateMapper<Dictionary<string,
                 var vectorValue = generatedEmbeddings?[i] switch
                 {
                     IReadOnlyList<Embedding<float>> e => e[recordIndex].Vector,
-                    IReadOnlyList<Embedding<double>> e => e[recordIndex].Vector,
                     null => dataModel.TryGetValue(property.ModelName, out var v) ? v : null,
                     _ => throw new NotSupportedException($"Unsupported embedding type '{generatedEmbeddings?[i]?.GetType().Name}' for property '{property.ModelName}'.")
                 };

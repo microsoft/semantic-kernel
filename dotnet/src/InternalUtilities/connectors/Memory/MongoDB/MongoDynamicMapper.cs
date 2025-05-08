@@ -56,7 +56,6 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
                 document[property.StorageName] = embedding switch
                 {
                     Embedding<float> e => BsonArray.Create(e.Vector.ToArray()),
-                    Embedding<double> e => BsonArray.Create(e.Vector.ToArray()),
                     _ => throw new UnreachableException()
                 };
             }
@@ -145,7 +144,7 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
         };
     }
 
-    private static object? GetVectorPropertyValue(string propertyName, Type propertyType, BsonValue value)
+    private static ReadOnlyMemory<float>? GetVectorPropertyValue(string propertyName, Type propertyType, BsonValue value)
     {
         if (value.IsBsonNull)
         {
@@ -156,8 +155,6 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
         {
             Type t when t == typeof(ReadOnlyMemory<float>) || t == typeof(ReadOnlyMemory<float>?) =>
                 new ReadOnlyMemory<float>(value.AsBsonArray.Select(item => (float)item.AsDouble).ToArray()),
-            Type t when t == typeof(ReadOnlyMemory<double>) || t == typeof(ReadOnlyMemory<double>?) =>
-                new ReadOnlyMemory<double>(value.AsBsonArray.Select(item => item.AsDouble).ToArray()),
             _ => throw new NotSupportedException($"Mapping for property {propertyName} with type {propertyType.FullName} is not supported in dynamic data model.")
         };
     }
@@ -172,7 +169,6 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
         return vector switch
         {
             ReadOnlyMemory<float> memoryFloat => memoryFloat.ToArray(),
-            ReadOnlyMemory<double> memoryDouble => memoryDouble.ToArray(),
             _ => throw new NotSupportedException($"Mapping for type {vector.GetType().FullName} is not supported in dynamic data model.")
         };
     }

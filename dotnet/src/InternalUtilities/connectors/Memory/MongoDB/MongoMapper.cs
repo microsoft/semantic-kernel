@@ -77,7 +77,6 @@ internal sealed class MongoMapper<TRecord> : IMongoMapper<TRecord>
                     document[property.StorageName] = embedding switch
                     {
                         Embedding<float> e => BsonArray.Create(e.Vector.ToArray()),
-                        Embedding<double> e => BsonArray.Create(e.Vector.ToArray()),
                         _ => throw new UnreachableException()
                     };
                 }
