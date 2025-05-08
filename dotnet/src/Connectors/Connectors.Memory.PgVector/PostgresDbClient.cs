@@ -21,13 +21,15 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// </remarks>
 /// <param name="dataSource">Postgres data source.</param>
 /// <param name="schema">Schema of collection tables.</param>
+/// <param name="ownsDataSource">A value indicating whether the data source should be disposed after the collection is disposed.</param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
-internal sealed class PostgresDbClient(NpgsqlDataSource dataSource, string schema = PostgresConstants.DefaultSchema) : IDisposable
+internal sealed class PostgresDbClient(NpgsqlDataSource dataSource, string? schema, bool ownsDataSource) : IDisposable
 {
-    private readonly string _schema = schema;
+    private readonly string _schema = schema ?? PostgresVectorStoreOptions.Default.Schema;
     private int _referenceCount = 1;
 
     private readonly NpgsqlConnectionStringBuilder _connectionStringBuilder = new(dataSource.ConnectionString);
+    private readonly bool _ownsDataSource = ownsDataSource;
 
     public NpgsqlDataSource DataSource { get; } = dataSource;
 
@@ -40,7 +42,10 @@ internal sealed class PostgresDbClient(NpgsqlDataSource dataSource, string schem
         // When the number gets to zero, the DataSource is getting disposed.
         if (Interlocked.Decrement(ref this._referenceCount) == 0)
         {
-            this.DataSource.Dispose();
+            if (this._ownsDataSource)
+            {
+                this.DataSource.Dispose();
+            }
         }
     }
 

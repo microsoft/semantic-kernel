@@ -38,11 +38,9 @@ public sealed class PostgresVectorStore : VectorStore, IDisposable
     {
         Verify.NotNull(dataSource);
 
-        options ??= new();
-        this._options.OwnsDataSource = ownsDataSource
-        this._schema = options.Schema;
-        this._embeddingGenerator = options.EmbeddingGenerator;
-        this._postgresClient = new PostgresDbClient(dataSource, this._schema);
+        this._schema = options?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
+        this._embeddingGenerator = options?.EmbeddingGenerator;
+        this._client = new PostgresDbClient(dataSource, this._schema, ownsDataSource);
 
         this._metadata = new()
         {
@@ -64,13 +62,7 @@ public sealed class PostgresVectorStore : VectorStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public void Dispose()
-    {
-        if (this._options.OwnsDataSource)
-        {
-            this._client.Dispose();
-        }
-    }
+    public void Dispose() => this._client.Dispose();
 
     /// <inheritdoc />
     public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
@@ -97,7 +89,6 @@ public sealed class PostgresVectorStore : VectorStore, IDisposable
                 Schema = this._schema,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator,
-                OwnsDataSource = this._options.OwnsDataSource
             }
         );
 #pragma warning restore IDE0090

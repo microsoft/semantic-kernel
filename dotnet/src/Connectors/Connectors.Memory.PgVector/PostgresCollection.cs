@@ -51,11 +51,9 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <param name="ownsDataSource">A value indicating whether the data source should be disposed after the collection is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public PostgresCollection(NpgsqlDataSource dataSource, string name, bool ownsDataSource, PostgresCollectionOptions? options = default)
-        : this(new PostgresDbClient(dataSource), name, options)
+        : this(new PostgresDbClient(dataSource, options?.Schema, ownsDataSource), name, options)
     {
         Verify.NotNull(dataSource);
-
-        this._options.OwnsDataSource = ownsDataSource;
     }
 
     /// <summary>
@@ -104,13 +102,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     }
 
     /// <inheritdoc/>
-    public void Dispose()
-    {
-        if (this._options.OwnsDataSource)
-        {
-            this._client.Dispose();
-        }
-    }
+    public void Dispose() => this._client.Dispose();
 
     /// <inheritdoc/>
     public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
