@@ -14,8 +14,10 @@ namespace Microsoft.Extensions.VectorData;
 /// <para>This type can be used with collections of any schema type, but requires you to provide schema information when getting a collection.</para>
 /// <para>Unless otherwise documented, implementations of this abstract base class can be expected to be thread-safe, and can be used concurrently from multiple threads.</para>
 /// </remarks>
-public abstract class VectorStore
+public abstract class VectorStore : IDisposable
 {
+    private bool _disposed;
+
     /// <summary>
     /// Gets a collection from the vector store.
     /// </summary>
@@ -69,4 +71,26 @@ public abstract class VectorStore
     /// <see cref="GetService"/> may be used to request it.
     /// </remarks>
     public abstract object? GetService(Type serviceType, object? serviceKey = null);
+
+    /// <summary>
+    /// Disposes the <see cref="VectorStore"/> and releases any resources it holds.
+    /// </summary>
+    /// <param name="disposing">True if called from <see cref="Dispose()"/>, false if called from a finalizer.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+    }
+
+    /// <inheritdoc/>
+#pragma warning disable CA1063 // Implement IDisposable Correctly
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize: This base class does not have a finalizer.
+    public void Dispose()
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+#pragma warning restore CA1063 // Implement IDisposable Correctly
+    {
+        if (!this._disposed)
+        {
+            this.Dispose(disposing: true);
+            this._disposed = true;
+        }
+    }
 }

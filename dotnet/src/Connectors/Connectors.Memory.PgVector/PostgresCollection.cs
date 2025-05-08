@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// <typeparam name="TKey">The type of the key.</typeparam>
 /// <typeparam name="TRecord">The type of the record.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IDisposable
+public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : class
@@ -103,8 +103,12 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
         };
     }
 
-    /// <inheritdoc/>
-    public void Dispose() => this._client.Dispose();
+    /// <inheritdoc />
+    protected override void Dispose(bool disposing)
+    {
+        this._client.Dispose();
+        base.Dispose(disposing);
+    }
 
     /// <inheritdoc/>
     public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)

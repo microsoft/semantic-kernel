@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// <summary>
 /// Represents a vector store implementation using PostgreSQL.
 /// </summary>
-public sealed class PostgresVectorStore : VectorStore, IDisposable
+public sealed class PostgresVectorStore : VectorStore
 {
     private readonly PostgresDbClient _client;
 
@@ -64,7 +64,11 @@ public sealed class PostgresVectorStore : VectorStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public void Dispose() => this._client.Dispose();
+    protected override void Dispose(bool disposing)
+    {
+        this._client.Dispose();
+        base.Dispose(disposing);
+    }
 
     /// <inheritdoc />
     public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)

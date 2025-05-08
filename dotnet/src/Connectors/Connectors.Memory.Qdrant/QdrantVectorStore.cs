@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public sealed class QdrantVectorStore : VectorStore, IDisposable
+public sealed class QdrantVectorStore : VectorStore
 {
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
@@ -66,7 +66,11 @@ public sealed class QdrantVectorStore : VectorStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public void Dispose() => this._qdrantClient.Dispose();
+    protected override void Dispose(bool disposing)
+    {
+        this._qdrantClient.Dispose();
+        base.Dispose(disposing);
+    }
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />

@@ -18,11 +18,13 @@ namespace Microsoft.Extensions.VectorData;
 /// <para>Unless otherwise documented, implementations of this abstract base class can be expected to be thread-safe, and can be used concurrently from multiple threads.</para>
 /// </remarks>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
-public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<TRecord>
+public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<TRecord>, IDisposable
 #pragma warning restore CA1711
     where TKey : notnull
     where TRecord : class
 {
+    private bool _disposed;
+
     /// <summary>
     /// Gets the name of the collection.
     /// </summary>
@@ -183,4 +185,26 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
 
     /// <inheritdoc />
     public abstract object? GetService(Type serviceType, object? serviceKey = null);
+
+    /// <summary>
+    /// Disposes the <see cref="VectorStore"/> and releases any resources it holds.
+    /// </summary>
+    /// <param name="disposing">True if called from <see cref="Dispose()"/>, false if called from a finalizer.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+    }
+
+    /// <inheritdoc/>
+#pragma warning disable CA1063 // Implement IDisposable Correctly
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize: This base class does not have a finalizer.
+    public void Dispose()
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+#pragma warning restore CA1063 // Implement IDisposable Correctly
+    {
+        if (!this._disposed)
+        {
+            this.Dispose(disposing: true);
+            this._disposed = true;
+        }
+    }
 }
