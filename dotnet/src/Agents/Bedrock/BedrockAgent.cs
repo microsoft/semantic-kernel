@@ -23,12 +23,12 @@ public sealed class BedrockAgent : Agent
     /// <summary>
     /// The client used to interact with the Bedrock Agent service.
     /// </summary>
-    public AmazonBedrockAgentClient Client { get; }
+    public IAmazonBedrockAgent Client { get; }
 
     /// <summary>
     /// The client used to interact with the Bedrock Agent runtime service.
     /// </summary>
-    public AmazonBedrockAgentRuntimeClient RuntimeClient { get; }
+    public IAmazonBedrockAgentRuntime RuntimeClient { get; }
 
     internal readonly Amazon.BedrockAgent.Model.Agent AgentModel;
 
@@ -48,8 +48,8 @@ public sealed class BedrockAgent : Agent
     /// <param name="runtimeClient">A client used to interact with the Bedrock Agent runtime service.</param>
     public BedrockAgent(
         Amazon.BedrockAgent.Model.Agent agentModel,
-        AmazonBedrockAgentClient client,
-        AmazonBedrockAgentRuntimeClient runtimeClient)
+        IAmazonBedrockAgent client,
+        IAmazonBedrockAgentRuntime runtimeClient)
     {
         this.AgentModel = agentModel;
         this.Client = client;

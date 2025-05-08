@@ -396,7 +396,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         Microsoft.SemanticKernel.Agents.AgentThread? agentThread = null;
         try
         {
-            await foreach (var response in agent!.InvokeAsync([], agentThread, options))
+            await foreach (var response in agent!.InvokeAsync(Array.Empty<ChatMessageContent>(), agentThread, options))
             {
                 agentThread = response.Thread;
                 this.WriteAgentChatMessage(response);
