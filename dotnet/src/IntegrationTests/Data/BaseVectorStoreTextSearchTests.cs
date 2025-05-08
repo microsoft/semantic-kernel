@@ -23,6 +23,7 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
 {
     protected IVectorStore? VectorStore { get; set; }
 
+    [Obsolete("Temporary for Obsoleted AzureAISearchVectorStore Ctor")]
     protected ITextEmbeddingGenerationService? EmbeddingGenerator { get; set; }
 
     protected new IConfigurationRoot Configuration { get; } = new ConfigurationBuilder()
