@@ -21,16 +21,39 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// </remarks>
 /// <param name="dataSource">Postgres data source.</param>
 /// <param name="schema">Schema of collection tables.</param>
+/// <param name="ownsDataSource">A value indicating whether the data source should be disposed after the collection is disposed.</param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
-internal class PostgresDbClient(NpgsqlDataSource dataSource, string schema = PostgresConstants.DefaultSchema) : IPostgresVectorStoreDbClient
+internal sealed class PostgresDbClient(NpgsqlDataSource dataSource, string? schema, bool ownsDataSource) : IDisposable
 {
-    private readonly string _schema = schema;
+    private readonly string _schema = schema ?? PostgresVectorStoreOptions.Default.Schema;
+    private int _referenceCount = 1;
 
     private readonly NpgsqlConnectionStringBuilder _connectionStringBuilder = new(dataSource.ConnectionString);
+    private readonly bool _ownsDataSource = ownsDataSource;
 
     public NpgsqlDataSource DataSource { get; } = dataSource;
 
     public string? DatabaseName => this._connectionStringBuilder.Database;
+
+    public void Dispose()
+    {
+        // An instance of PostgresDbClient can be shared between a single store and multiple collections.
+        // The reference count is used to track how many collections are using this instance.
+        // When the number gets to zero, the DataSource is getting disposed.
+        if (Interlocked.Decrement(ref this._referenceCount) == 0)
+        {
+            if (this._ownsDataSource)
+            {
+                this.DataSource.Dispose();
+            }
+        }
+    }
+
+    internal PostgresDbClient IncreaseReferenceCount()
+    {
+        Interlocked.Increment(ref this._referenceCount);
+        return this;
+    }
 
     /// <inheritdoc />
     public async Task<bool> DoesTableExistsAsync(string tableName, CancellationToken cancellationToken = default)

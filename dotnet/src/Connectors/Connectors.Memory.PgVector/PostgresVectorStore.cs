@@ -13,10 +13,9 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// <summary>
 /// Represents a vector store implementation using PostgreSQL.
 /// </summary>
-public sealed class PostgresVectorStore : VectorStore
+public sealed class PostgresVectorStore : VectorStore, IDisposable
 {
-    private readonly IPostgresVectorStoreDbClient _postgresClient;
-    private readonly NpgsqlDataSource? _dataSource;
+    private readonly PostgresDbClient _client;
 
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
@@ -33,48 +32,43 @@ public sealed class PostgresVectorStore : VectorStore
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
     /// </summary>
     /// <param name="dataSource">Postgres data source.</param>
+    /// <param name="ownsDataSource">A value indicating whether the data source should be disposed after the vector store is disposed.</param>
     /// <param name="options">Optional configuration options for this class</param>
-    public PostgresVectorStore(NpgsqlDataSource dataSource, PostgresVectorStoreOptions? options = default)
+    public PostgresVectorStore(NpgsqlDataSource dataSource, bool ownsDataSource, PostgresVectorStoreOptions? options = default)
     {
-        this._dataSource = dataSource;
+        Verify.NotNull(dataSource);
 
-        options ??= new();
-        this._schema = options.Schema;
-        this._embeddingGenerator = options.EmbeddingGenerator;
-        this._postgresClient = new PostgresDbClient(this._dataSource, this._schema);
+        this._schema = options?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
+        this._embeddingGenerator = options?.EmbeddingGenerator;
+        this._client = new PostgresDbClient(dataSource, this._schema, ownsDataSource);
 
         this._metadata = new()
         {
             VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
-            VectorStoreName = this._postgresClient.DatabaseName
+            VectorStoreName = this._client.DatabaseName
         };
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
     /// </summary>
-    /// <param name="postgresDbClient">An instance of <see cref="IPostgresVectorStoreDbClient"/>.</param>
-    /// <param name="options">Optional configuration options for this class</param>
-    internal PostgresVectorStore(IPostgresVectorStoreDbClient postgresDbClient, PostgresVectorStoreOptions? options = default)
+    /// <param name="connectionString">Postgres database connection string.</param>
+    /// <param name="options">Optional configuration options for this class.</param>
+    public PostgresVectorStore(string connectionString, PostgresVectorStoreOptions? options = default)
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        : this(PostgresUtils.CreateDataSource(connectionString), ownsDataSource: true, options)
+#pragma warning restore CA2000 // Dispose objects before losing scope
     {
-        this._postgresClient = postgresDbClient;
-
-        options ??= PostgresVectorStoreOptions.Default;
-        this._schema = options.Schema;
-        this._embeddingGenerator = options.EmbeddingGenerator;
-
-        this._metadata = new()
-        {
-            VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
-            VectorStoreName = this._postgresClient.DatabaseName
-        };
     }
+
+    /// <inheritdoc/>
+    public void Dispose() => this._client.Dispose();
 
     /// <inheritdoc />
     public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
         return PostgresUtils.WrapAsyncEnumerableAsync(
-            this._postgresClient.GetTablesAsync(cancellationToken),
+            this._client.GetTablesAsync(cancellationToken),
             "ListCollectionNames",
             this._metadata
         );
@@ -88,7 +82,7 @@ public sealed class PostgresVectorStore : VectorStore
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
         => new PostgresCollection<TKey, TRecord>(
-            this._postgresClient,
+            this._client.IncreaseReferenceCount(),
             name,
             new PostgresCollectionOptions()
             {
@@ -121,7 +115,7 @@ public sealed class PostgresVectorStore : VectorStore
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(NpgsqlDataSource) ? this._dataSource :
+            serviceType == typeof(NpgsqlDataSource) ? this._client.DataSource :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }

@@ -8,7 +8,9 @@ using VectorDataSpecificationTests.Support;
 
 namespace PgVectorIntegrationTests.Support;
 
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable
 internal sealed class PostgresTestStore : TestStore
+#pragma warning restore CA1001 // Types that own disposable fields should be disposable
 {
     public static PostgresTestStore Instance { get; } = new();
 
@@ -24,7 +26,11 @@ internal sealed class PostgresTestStore : TestStore
     public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public PostgresVectorStore GetVectorStore(PostgresVectorStoreOptions options)
-        => new(this.DataSource, options);
+    {
+        // The DataSource is shared with the static instance, we don't want any of the tests to dispose it.
+        bool ownsDataSource = false;
+        return new(this.DataSource, ownsDataSource, options);
+    }
 
     private PostgresTestStore()
     {
@@ -56,11 +62,14 @@ internal sealed class PostgresTestStore : TestStore
         await command.ExecuteNonQueryAsync();
         await connection.ReloadTypesAsync();
 
-        this._defaultVectorStore = new(this._dataSource);
+        // It's a shared static instance, we don't want any of the tests to dispose it.
+        bool ownsDataSource = false;
+        this._defaultVectorStore = new(this._dataSource, ownsDataSource);
     }
 
     protected override async Task StopAsync()
     {
+        this._defaultVectorStore!.Dispose();
         await this._dataSource!.DisposeAsync();
         await s_container.StopAsync();
     }
