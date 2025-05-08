@@ -224,7 +224,7 @@ class ChromaCollection(
         # replace back the name of the vector, content and id fields
         for record in records:
             record[self.data_model_definition.key_field_name] = record.pop("id")
-            record[vector_field.name] = record.pop("document" if self.embedding_func else "embedding")
+            record[vector_field.name] = record.pop("document", None) or record.pop("embedding", None)
         return records
 
     @override
@@ -285,61 +285,29 @@ class ChromaCollection(
             return []
         records: MutableSequence[dict[str, Any]] = []
 
-        if include_vectors and include_distances:
-            for id, vector_field, metadata, distance in zip(
-                results["ids"][0],
-                results["documents" if self.embedding_func else "embeddings"][0],  # type: ignore
-                results["metadatas"][0],  # type: ignore
-                results["distances"][0],  # type: ignore
-            ):
-                record: dict[str, Any] = (
-                    {"id": id, "document": vector_field, "distance": distance}
-                    if self.embedding_func
-                    else {"id": id, "embedding": vector_field, "distance": distance}
-                )
+        # Determine available fields
+        ids = results["ids"][0] if "ids" in results else []
+        metadatas = results.get("metadatas")
+        distances = results.get("distances")
+        documents = results.get("documents")
+        embeddings = results.get("embeddings")
+
+        # Build records dynamically based on available fields
+        for idx, id in enumerate(ids):
+            record = {"id": id}
+            # Add vector field if present
+            if documents is not None and idx < len(documents[0]):
+                record["document"] = documents[0][idx]
+            elif embeddings is not None and idx < len(embeddings[0]):
+                record["embedding"] = embeddings[0][idx]
+            # Add distance if present
+            if distances is not None and idx < len(distances[0]):
+                record["distance"] = distances[0][idx]
+            # Add metadata if present
+            if metadatas is not None and idx < len(metadatas[0]):
+                metadata = metadatas[0][idx]
                 if metadata:
                     record.update(metadata)  # type: ignore
-                records.append(record)
-            return records
-        if include_vectors and not include_distances:
-            for id, vector_field, metadata in zip(
-                results["ids"][0],
-                results["documents" if self.embedding_func else "embeddings"][0],  # type: ignore
-                results["metadatas"][0],  # type: ignore
-            ):
-                record = (
-                    {"id": id, "document": vector_field}
-                    if self.embedding_func
-                    else {"id": id, "embedding": vector_field}
-                )
-                if metadata:
-                    record.update(metadata)  # type: ignore
-                records.append(record)
-            return records
-        if not include_vectors and include_distances:
-            for id, document, metadata, distance in zip(
-                results["ids"][0],
-                results["documents"][0],  # type: ignore
-                results["metadatas"][0],  # type: ignore
-                results["distances"][0],  # type: ignore
-            ):
-                record = (
-                    {"id": id, "document": document, "distance": distance}
-                    if self.embedding_func
-                    else {"id": id, "distance": distance}
-                )
-                if metadata:
-                    record.update(metadata)  # type: ignore
-                records.append(record)
-            return records
-        for id, document, metadata in zip(
-            results["ids"][0],
-            results["documents"][0],  # type: ignore
-            results["metadatas"][0],  # type: ignore
-        ):
-            record = {"id": id, "document": document} if self.embedding_func else {"id": id}
-            if metadata:
-                record.update(metadata)  # type: ignore
             records.append(record)
         return records
 

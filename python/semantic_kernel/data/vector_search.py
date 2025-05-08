@@ -479,7 +479,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
             search_args["filter"] = filter if isinstance(filter, str) else " and ".join(filter)
         ```
         """
-        if search_filter is None:
+        if not search_filter:
             return None
 
         filters = search_filter if isinstance(search_filter, list) else [search_filter]
@@ -576,9 +576,11 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
     ) -> "KernelSearchResults[VectorSearchResult[TModel]]":
         """Internal method to execute the search."""
         if self.search_type == SearchType.VECTOR:
-            return await self.vector_search.search(values=query, options=options, **kwargs)
+            return await self.vector_search.search(values=query, **(options.model_dump() if options else {}), **kwargs)
         if self.search_type == SearchType.KEYWORD_HYBRID:
-            return await self.vector_search.hybrid_search(values=query, options=options, **kwargs)
+            return await self.vector_search.hybrid_search(
+                values=query, **(options.model_dump() if options else {}), **kwargs
+            )
         raise VectorSearchExecutionException("No search method available.")  # pragma: no cover
 
     async def _get_results_as_strings(self, results: AsyncIterable[VectorSearchResult[TModel]]) -> AsyncIterable[str]:
