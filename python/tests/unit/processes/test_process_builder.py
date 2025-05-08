@@ -157,6 +157,7 @@ def test_build_with_simple_step_yields_kernel_process() -> None:
     assert process.factories == {}
 
 
+# It is making steps empty
 # def test_build_includes_factories_and_parent_id() -> None:
 #     """Test that build includes factories and respects has_parent_process flag."""
 #     parent = _create_builder("parentProc")
@@ -238,6 +239,7 @@ def test_resolve_function_target_success() -> None:
     assert result.parameter_name == "myParam"
 
 
+# same steps empty error as above
 # def test_build_step_returns_kernel_process() -> None:
 #     """Test that build_step returns a KernelProcess instance."""
 #     builder = _create_builder("stepProc")

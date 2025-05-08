@@ -289,7 +289,6 @@ def test_scoped_event_sets_namespace(mock_actor_context):
     assert result.namespace == f"StepName_{mock_actor_context.id.id}"
 
 
-@pytest.mark.asyncio
 async def test_invoke_function_calls_kernel_invoke(mock_actor_context):
     """invoke_function delegates to kernel.invoke with correct args"""
     fake_fn = MagicMock(name="f")
@@ -300,7 +299,6 @@ async def test_invoke_function_calls_kernel_invoke(mock_actor_context):
     assert res == "result"
 
 
-@pytest.mark.asyncio
 async def test_emit_event_without_namespace_raises(mock_actor_context):
     """emit_event without setting event_namespace raises ValueError"""
     mock_actor_context.event_namespace = None
@@ -308,7 +306,6 @@ async def test_emit_event_without_namespace_raises(mock_actor_context):
         await mock_actor_context.emit_event(KernelProcessEvent(id="e", data="d"))
 
 
-@pytest.mark.asyncio
 async def test_emit_process_event_public_and_edge(mock_actor_context):
     """emit_process_event enqueues event to parent buffer and sends messages to targets"""
     # setup event as public and parent process id
@@ -345,7 +342,6 @@ async def test_emit_process_event_public_and_edge(mock_actor_context):
 
 
 @patch.object(StepActor, "activate_step", AsyncMock())
-@pytest.mark.asyncio
 async def test_to_dapr_step_info_errors(mock_actor_context):
     """to_dapr_step_info raises if uninitialized"""
     # case: step_info not set
@@ -366,7 +362,6 @@ async def test_to_dapr_step_info_errors(mock_actor_context):
         await mock_actor_context.to_dapr_step_info()
 
 
-@pytest.mark.asyncio
 async def test_to_dapr_step_info_success(mock_actor_context):
     """to_dapr_step_info returns correct model_dump"""
     # setup valid step_info and inner_step_type
@@ -384,14 +379,12 @@ async def test_to_dapr_step_info_success(mock_actor_context):
     assert result["edges"] == {"e": []}
 
 
-@pytest.mark.asyncio
 async def test_handle_message_none_raises(mock_actor_context):
     """handle_message with None raises ValueError"""
     with pytest.raises(ValueError):
         await mock_actor_context.handle_message(None)
 
 
-@pytest.mark.asyncio
 async def test_handle_message_no_function_found_raises(mock_actor_context):
     """handle_message raises when function exists in inputs but not in functions dict"""
     # prepare actor state
@@ -411,7 +404,6 @@ async def test_handle_message_no_function_found_raises(mock_actor_context):
         await mock_actor_context.handle_message(msg)
 
 
-@pytest.mark.asyncio
 async def test_handle_message_function_returns_none_emits_error(mock_actor_context):
     """handle_message when invoke_function returns None emits an error event"""
     mock_actor_context.step_activated = True
@@ -440,7 +432,6 @@ async def test_handle_message_function_returns_none_emits_error(mock_actor_conte
     assert emitted.id == "f1.OnError"
 
 
-@pytest.mark.asyncio
 async def test_handle_message_success_emits_result_and_resets_inputs(mock_actor_context):
     """handle_message successfully invokes function and emits result event"""
     # setup valid step_info and activation
