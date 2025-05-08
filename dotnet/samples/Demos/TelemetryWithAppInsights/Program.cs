@@ -317,12 +317,24 @@ public sealed class Program
 
         if (TestConfiguration.AzureOpenAI is not null)
         {
-            builder.AddAzureOpenAIChatCompletion(
-                deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId,
-                endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-                apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                serviceId: AzureOpenAIServiceKey);
+            if (TestConfiguration.AzureOpenAI.ApiKey is not null)
+            {
+                builder.AddAzureOpenAIChatCompletion(
+                    deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    modelId: TestConfiguration.AzureOpenAI.ChatModelId,
+                    endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                    apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                    serviceId: AzureOpenAIServiceKey);
+            }
+            else
+            {
+                builder.AddAzureOpenAIChatCompletion(
+                    deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    modelId: TestConfiguration.AzureOpenAI.ChatModelId,
+                    endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                    credentials: new AzureCliCredential(),
+                    serviceId: AzureOpenAIServiceKey);
+            }
         }
 
         if (TestConfiguration.GoogleAI is not null)
