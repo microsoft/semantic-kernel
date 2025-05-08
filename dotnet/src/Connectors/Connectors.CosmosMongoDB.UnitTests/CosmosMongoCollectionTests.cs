@@ -554,9 +554,7 @@ public sealed class CosmosMongoCollectionTests
     public static TheoryData<object, bool> SearchEmbeddingVectorTypeData => new()
     {
         { new ReadOnlyMemory<float>([1f, 2f, 3f]), false },
-        { new ReadOnlyMemory<double>([1f, 2f, 3f]), false },
         { new ReadOnlyMemory<float>?(new([1f, 2f, 3f])), false },
-        { new ReadOnlyMemory<double>?(new([1f, 2f, 3f])), false },
         { new List<float>([1f, 2f, 3f]), true },
     };
 

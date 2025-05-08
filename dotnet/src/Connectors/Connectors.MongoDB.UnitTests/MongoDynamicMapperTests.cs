@@ -36,13 +36,10 @@ public sealed class MongoDynamicMapperTests
         new VectorStoreDataProperty("NullableDateTimeDataProp", typeof(DateTime?)),
         new VectorStoreDataProperty("TagListDataProp", typeof(List<string>)),
         new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
-        new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
-        new VectorStoreVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>), 10),
-        new VectorStoreVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?), 10)
+        new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10)
     ]);
 
     private static readonly float[] s_floatVector = [1.0f, 2.0f, 3.0f];
-    private static readonly double[] s_doubleVector = [1.0f, 2.0f, 3.0f];
     private static readonly List<string> s_taglist = ["tag1", "tag2"];
 
     [Fact]
@@ -73,8 +70,6 @@ public sealed class MongoDynamicMapperTests
 
             ["FloatVector"] = new ReadOnlyMemory<float>(s_floatVector),
             ["NullableFloatVector"] = new ReadOnlyMemory<float>(s_floatVector),
-            ["DoubleVector"] = new ReadOnlyMemory<double>(s_doubleVector),
-            ["NullableDoubleVector"] = new ReadOnlyMemory<double>(s_doubleVector),
         };
 
         // Act
@@ -100,8 +95,6 @@ public sealed class MongoDynamicMapperTests
         Assert.Equal(s_taglist, storageModel["TagListDataProp"]!.AsBsonArray.Select(x => (string)x!).ToArray());
         Assert.Equal(s_floatVector, storageModel["FloatVector"]!.AsBsonArray.Select(x => (float)x.AsDouble!).ToArray());
         Assert.Equal(s_floatVector, storageModel["NullableFloatVector"]!.AsBsonArray.Select(x => (float)x.AsNullableDouble!).ToArray());
-        Assert.Equal(s_doubleVector, storageModel["DoubleVector"]!.AsBsonArray.Select(x => (double)x!).ToArray());
-        Assert.Equal(s_doubleVector, storageModel["NullableDoubleVector"]!.AsBsonArray.Select(x => (double)x!).ToArray());
     }
 
     [Fact]
@@ -161,8 +154,6 @@ public sealed class MongoDynamicMapperTests
             ["TagListDataProp"] = BsonArray.Create(s_taglist),
             ["FloatVector"] = BsonArray.Create(s_floatVector),
             ["NullableFloatVector"] = BsonArray.Create(s_floatVector),
-            ["DoubleVector"] = BsonArray.Create(s_doubleVector),
-            ["NullableDoubleVector"] = BsonArray.Create(s_doubleVector)
         };
 
         // Act
@@ -188,8 +179,6 @@ public sealed class MongoDynamicMapperTests
         Assert.Equal(s_taglist, dataModel["TagListDataProp"]);
         Assert.Equal(s_floatVector, ((ReadOnlyMemory<float>)dataModel["FloatVector"]!).ToArray());
         Assert.Equal(s_floatVector, ((ReadOnlyMemory<float>)dataModel["NullableFloatVector"]!)!.ToArray());
-        Assert.Equal(s_doubleVector, ((ReadOnlyMemory<double>)dataModel["DoubleVector"]!).ToArray());
-        Assert.Equal(s_doubleVector, ((ReadOnlyMemory<double>)dataModel["NullableDoubleVector"]!)!.ToArray());
     }
 
     [Fact]

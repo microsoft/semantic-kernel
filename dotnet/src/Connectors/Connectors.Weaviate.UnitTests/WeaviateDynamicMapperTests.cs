@@ -66,16 +66,13 @@ public sealed class WeaviateDynamicMapperTests
                     new VectorStoreDataProperty("TagListDataProp", typeof(List<string>)),
 
                     new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
-                    new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
-                    new VectorStoreVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>), 10),
-                    new VectorStoreVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?), 10)
+                    new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10)
                 ]
             },
             defaultEmbeddingGenerator: null,
             s_jsonSerializerOptions);
 
     private static readonly float[] s_floatVector = [1.0f, 2.0f, 3.0f];
-    private static readonly double[] s_doubleVector = [1.0f, 2.0f, 3.0f];
     private static readonly List<string> s_taglist = ["tag1", "tag2"];
 
     [Fact]
@@ -116,8 +113,6 @@ public sealed class WeaviateDynamicMapperTests
 
             ["FloatVector"] = new ReadOnlyMemory<float>(s_floatVector),
             ["NullableFloatVector"] = new ReadOnlyMemory<float>(s_floatVector),
-            ["DoubleVector"] = new ReadOnlyMemory<double>(s_doubleVector),
-            ["NullableDoubleVector"] = new ReadOnlyMemory<double>(s_doubleVector),
         }
         ;
 
@@ -153,8 +148,6 @@ public sealed class WeaviateDynamicMapperTests
         Assert.Equal(s_taglist, storageModel["properties"]?["tagListDataProp"]!.AsArray().GetValues<string>().ToArray());
         Assert.Equal(s_floatVector, storageModel["vectors"]?["floatVector"]!.AsArray().GetValues<float>().ToArray());
         Assert.Equal(s_floatVector, storageModel["vectors"]?["nullableFloatVector"]!.AsArray().GetValues<float>().ToArray());
-        Assert.Equal(s_doubleVector, storageModel["vectors"]?["doubleVector"]!.AsArray().GetValues<double>().ToArray());
-        Assert.Equal(s_doubleVector, storageModel["vectors"]?["nullableDoubleVector"]!.AsArray().GetValues<double>().ToArray());
     }
 
     [Fact]
@@ -237,8 +230,6 @@ public sealed class WeaviateDynamicMapperTests
             {
                 ["floatVector"] = new JsonArray(s_floatVector.Select(l => (JsonValue)l).ToArray()),
                 ["nullableFloatVector"] = new JsonArray(s_floatVector.Select(l => (JsonValue)l).ToArray()),
-                ["doubleVector"] = new JsonArray(s_doubleVector.Select(l => (JsonValue)l).ToArray()),
-                ["nullableDoubleVector"] = new JsonArray(s_doubleVector.Select(l => (JsonValue)l).ToArray()),
             }
         };
 
@@ -273,8 +264,6 @@ public sealed class WeaviateDynamicMapperTests
         Assert.Equal(s_taglist, dataModel["TagListDataProp"]);
         Assert.Equal(s_floatVector, ((ReadOnlyMemory<float>)dataModel["FloatVector"]!).ToArray());
         Assert.Equal(s_floatVector, ((ReadOnlyMemory<float>)dataModel["NullableFloatVector"]!)!.ToArray());
-        Assert.Equal(s_doubleVector, ((ReadOnlyMemory<double>)dataModel["DoubleVector"]!).ToArray());
-        Assert.Equal(s_doubleVector, ((ReadOnlyMemory<double>)dataModel["NullableDoubleVector"]!)!.ToArray());
     }
 
     [Fact]
