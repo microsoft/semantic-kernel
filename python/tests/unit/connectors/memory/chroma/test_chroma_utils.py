@@ -12,6 +12,7 @@ from semantic_kernel.connectors.memory.chroma.utils import (
     query_results_to_records,
 )
 
+# Possible bug found: the function camel_to_snake is not doing correctly the conversion.
 # def test_camel_to_snake_basic_cases() -> None:
 #     """
 #     Test converting various camelCase strings to snake_case.

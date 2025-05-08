@@ -269,7 +269,6 @@ async def test_prepare_chat_history_for_request(setup_ollama_chat_completion):
     assert prepared_history == []
 
 
-@pytest.mark.asyncio
 async def test_service_url_with_httpx_client(model_id: str) -> None:
     """
     Test that service_url returns the base_url of the underlying httpx.AsyncClient.
@@ -284,7 +283,6 @@ async def test_service_url_with_httpx_client(model_id: str) -> None:
     assert ollama.service_url() == "http://example.com:8000"
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.chat", new_callable=AsyncMock)
 async def test_chat_response_branch(
     mock_chat: AsyncMock,
@@ -369,7 +367,6 @@ async def test_chat_response_branch(
     assert usage.prompt_tokens == 2 and usage.completion_tokens == 3
 
 
-@pytest.mark.asyncio
 @patch("ollama.AsyncClient.chat", new_callable=AsyncMock)
 async def test_streaming_chat_response_branch(
     mock_chat: AsyncMock,
