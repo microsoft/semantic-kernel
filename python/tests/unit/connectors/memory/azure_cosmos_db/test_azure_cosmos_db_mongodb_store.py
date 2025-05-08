@@ -112,6 +112,8 @@ def test_init_missing_connection_string_raises(monkeypatch) -> None:
     assert "The connection string is missing." in str(excinfo.value)
 
 
+# seems like something inside the tests is breaking the debugger, but I have checked the code and I can't see it
+# the test works fine, but seems like any kind of lint hidden error is breaking the debugger
 # def test_get_collection_creates_and_caches(monkeypatch) -> None:
 #     """Test that get_collection creates a collection instance and caches it for subsequent calls."""
 #     # Arrange: dummy mongo_client and store, cast for type checking
