@@ -43,10 +43,9 @@ public class FunctionCalling_SharedState(ITestOutputHelper output) : BaseTest(ou
         // Enable function calling
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
-        // Load the text to summarize and translate
+        // Call the AI model to summarize, translate, and print the translation
         string textToSummarizeAndTranslate = EmbeddedResource.Read("travel-destination-overview.txt");
 
-        // Call the AI model to summarize the text and store the summary in state
         FunctionResult result = await kernel.InvokePromptAsync($"Summarize the text, translate to English and display the result: {textToSummarizeAndTranslate}", new(settings));
 
         Console.WriteLine(result);
