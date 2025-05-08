@@ -69,9 +69,9 @@ public class FoundryProcessBuilder
     /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
     /// </summary>
     /// <returns></returns>
-    public ListenForBuilder ListenFor()
+    public FoundryListenForBuilder ListenFor()
     {
-        return this._processBuilder.ListenFor();
+        return new FoundryListenForBuilder(this._processBuilder);
     }
 
     /// <summary>

@@ -248,7 +248,8 @@ public class WorkflowBuilder
                     return new MessageSourceBuilder
                     (
                         messageType: listenEvent.Event,
-                        source: this._stepBuilders[listenEvent.From]
+                        source: this._stepBuilders[listenEvent.From],
+                        null // TODO: Pass through condition.
                     );
                 }
 
@@ -270,7 +271,7 @@ public class WorkflowBuilder
                 }
                 else
                 {
-                    throw new ArgumentException($"An orchestration is referencing a node with Id {listenCondition.From} that does not exist.");
+                    throw new ArgumentException($"An orchestration is referencing a node with Id `{listenCondition.From}` that does not exist.");
                 }
             }
             else
@@ -288,7 +289,13 @@ public class WorkflowBuilder
 
                 if (!this._stepBuilders.TryGetValue(action.Node, out ProcessStepBuilder? destinationStepBuilder))
                 {
-                    throw new ArgumentException($"An orchestration is referencing a node with Id {action.Node} that does not exist.");
+                    if (action.Node.Equals("End", StringComparison.OrdinalIgnoreCase))
+                    {
+                        edgeBuilder.StopProcess();
+                        continue;
+                    }
+
+                    throw new ArgumentException($"An orchestration is referencing a node with Id `{action.Node}` that does not exist.");
                 }
 
                 // Add the edge to the node
@@ -399,7 +406,8 @@ public class WorkflowBuilder
                 ListenFor = new ListenCondition()
                 {
                     From = step.State.Id,
-                    Event = edge.Key
+                    Event = edge.Key,
+                    Condition = edge.Value.FirstOrDefault()?.Condition.DeclarativeDefinition
                 },
                 Then = [.. edge.Value.Select(e => new ThenAction()
                 {
@@ -436,18 +444,25 @@ public class WorkflowBuilder
             Inputs = agentStep.Inputs
         };
 
-        foreach (var edge in agentStep.Edges)
+        // re-group the edges to account for different conditions
+        var conditionGroupedEdges = agentStep.Edges
+            .SelectMany(kvp => kvp.Value, (kvp, k) => new { key = kvp.Key, edge = k })
+            .GroupBy(e => new { e.key, e.edge.Condition?.DeclarativeDefinition })
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        foreach (var edge in conditionGroupedEdges)
         {
             OrchestrationStep orchestrationStep = new()
             {
                 ListenFor = new ListenCondition()
                 {
                     From = agentStep.State.Id,
-                    Event = edge.Key
+                    Event = edge.Key.key,
+                    Condition = edge.Key.DeclarativeDefinition
                 },
                 Then = [.. edge.Value.Select(e => new ThenAction()
                 {
-                    Node = e.OutputTarget.StepId
+                    Node = e.edge.OutputTarget.StepId == ProcessConstants.EndStepName ? "End" : e.edge.OutputTarget.StepId
                 })]
             };
 
@@ -473,7 +488,7 @@ public class WorkflowBuilder
                 {
                     OnCondition = new DeclarativeProcessCondition
                     {
-                        Type = "state",
+                        Type = DeclarativeProcessConditionType.State,
                         Expression = h.Expression,
                         Emits = h.Emits,
                         Updates = h.Updates
@@ -490,7 +505,7 @@ public class WorkflowBuilder
                 {
                     OnCondition = new DeclarativeProcessCondition
                     {
-                        Type = "semantic",
+                        Type = DeclarativeProcessConditionType.Semantic,
                         Expression = h.Expression,
                         Emits = h.Emits,
                         Updates = h.Updates
@@ -506,7 +521,7 @@ public class WorkflowBuilder
                 {
                     OnCondition = new DeclarativeProcessCondition
                     {
-                        Type = "default",
+                        Type = DeclarativeProcessConditionType.Default,
                         Expression = handler.Default.Expression,
                         Emits = handler.Default.Emits,
                         Updates = handler.Default.Updates
@@ -543,7 +558,7 @@ public class WorkflowBuilder
         }
         else
         {
-            throw new ArgumentException($"An orchestration is referencing a node with Id {listenCondition.From} that does not exist.");
+            throw new ArgumentException($"An orchestration is referencing a node with Id `{listenCondition.From}` that does not exist.");
         }
 
         return edgeBuilder;

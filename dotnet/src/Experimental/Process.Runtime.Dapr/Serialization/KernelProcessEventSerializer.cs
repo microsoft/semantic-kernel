@@ -18,8 +18,8 @@ internal static class KernelProcessEventSerializer
     /// </summary>
     public static string ToJson(this KernelProcessEvent processEvent)
     {
-        var wrappedEvent = processEvent with { Data = KernelProcessEventData.FromObject(processEvent.Data) };
-        EventContainer<KernelProcessEvent> containedEvents = new(TypeInfo.GetAssemblyQualifiedType(wrappedEvent.Data), wrappedEvent);
+        //var wrappedEvent = processEvent with { Data = KernelProcessEventData.FromObject(processEvent.Data) }; // TODO: Is this needed for Map Step?
+        EventContainer<KernelProcessEvent> containedEvents = new(TypeInfo.GetAssemblyQualifiedType(processEvent.Data), processEvent);
         return JsonSerializer.Serialize(containedEvents);
     }
 

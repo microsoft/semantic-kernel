@@ -14,13 +14,14 @@ namespace Microsoft.SemanticKernel.Process.Runtime;
 /// <param name="DestinationId">The destination identifier of the message.</param>
 /// <param name="FunctionName">The name of the function associated with the message.</param>
 /// <param name="Values">The dictionary of values associated with the message.</param>
+/// <param name="writtenToThread"></param>
 [KnownType(typeof(KernelProcessError))]
 [KnownType(typeof(KernelProcessProxyMessage))]
 public record ProcessMessage(
     string SourceId,
     string DestinationId,
     string FunctionName,
-    Dictionary<string, object?> Values)
+    Dictionary<string, object?> Values, string? writtenToThread = null)
 {
     /// <summary>
     /// Id of the the event that triggered the process message

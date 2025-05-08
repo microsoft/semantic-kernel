@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
 
@@ -30,9 +31,14 @@ public sealed class KernelProcessEdge
     public string? GroupId { get; init; }
 
     /// <summary>
+    /// The condition that must be met for the edge to be activated.
+    /// </summary>
+    public KernelProcessEdgeCondition Condition { get; init; }
+
+    /// <summary>
     /// Creates a new instance of the <see cref="KernelProcessEdge"/> class.
     /// </summary>
-    public KernelProcessEdge(string sourceStepId, KernelProcessFunctionTarget outputTarget, string? groupId = null)
+    public KernelProcessEdge(string sourceStepId, KernelProcessFunctionTarget outputTarget, string? groupId = null, KernelProcessEdgeCondition? condition = null)
     {
         Verify.NotNullOrWhiteSpace(sourceStepId);
         Verify.NotNull(outputTarget);
@@ -40,5 +46,6 @@ public sealed class KernelProcessEdge
         this.SourceStepId = sourceStepId;
         this.OutputTarget = outputTarget;
         this.GroupId = groupId;
+        this.Condition = condition ?? new KernelProcessEdgeCondition(callback: (_, _) => Task.FromResult(true));
     }
 }
