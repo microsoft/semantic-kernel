@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Resources;
 
 namespace FunctionCalling;
 
@@ -42,23 +43,10 @@ public class FunctionCalling_SharedState(ITestOutputHelper output) : BaseTest(ou
         // Enable function calling
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
-        /// English translation of the text below:
-        /// Ireland is a popular travel destination for tourists from all over the world, known for its breathtaking landscapes, rich culture, and warm hospitality. The green island offers a variety of attractions,
-        /// including historic castles, picturesque coastlines, and vibrant cities. Dublin, the capital, is a bustling center with a mix of history and modern life. Tourists can visit the famous Trinity College,
-        /// admire the Book of Kells, or explore the Guinness Storehouse, where they can learn more about the world-famous Irish beer.
-        ///
-        ///In addition to urban attractions, Ireland also offers numerous opportunities for nature and outdoor enthusiasts.The Ring of Kerry is one of the country's most well-known scenic routes, leading through
-        ///stunning landscapes, past charming villages, and historic sites. The Cliffs of Moher, rising majestically over the Atlantic Ocean, are another highlight that shouldn't be missed.Hikers and cyclists will
-        ///find ideal conditions to experience Ireland's natural beauty in the many national parks and on the hiking trails, such as the Wicklow Way.
-        string textToSummarizeAndTranslate =
-            "Irland ist ein beliebtes Reiseziel für Touristen aus aller Welt, bekannt für seine atemberaubende Landschaft, reiche Kultur und herzliche Gastfreundschaft. Die grüne Insel bietet eine Vielzahl von" +
-            " Sehenswürdigkeiten, darunter historische Schlösser, malerische Küstenlinien und lebendige Städte. Dublin, die Hauptstadt, ist ein pulsierendes Zentrum mit einer Mischung aus Geschichte und modernem Leben. " +
-            "Touristen können das berühmte Trinity College besuchen, das Book of Kells bewundern oder das Guinness Storehouse erkunden, wo sie mehr über das weltberühmte irische Bier erfahren können." +
-            "\n\n" +
-            "Neben den städtischen Attraktionen bietet Irland auch zahlreiche Möglichkeiten für Natur- und Outdoor-Enthusiasten. Der Ring of Kerry ist eine der bekanntesten Panoramarouten des Landes und führt durch " +
-            "atemberaubende Landschaften, vorbei an malerischen Dörfern und historischen Stätten. Die Cliffs of Moher, die sich majestätisch über den Atlantischen Ozean erheben, sind ein weiteres Highlight, das man " +
-            "nicht verpassen sollte. Wanderer und Radfahrer finden in den vielen Nationalparks und auf den Wanderwegen, wie dem Wicklow Way, ideale Bedingungen, um die natürliche Schönheit Irlands zu erleben.";
+        // Load the text to summarize and translate
+        string textToSummarizeAndTranslate = EmbeddedResource.Read("travel-destination-overview.txt");
 
+        // Call the AI model to summarize the text and store the summary in state
         FunctionResult result = await kernel.InvokePromptAsync($"Summarize the text, translate to English and display the result: {textToSummarizeAndTranslate}", new(settings));
 
         Console.WriteLine(result);
