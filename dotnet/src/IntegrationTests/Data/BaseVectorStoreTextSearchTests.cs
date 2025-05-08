@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -23,14 +24,16 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
 {
     protected IVectorStore? VectorStore { get; set; }
 
-    [Obsolete("Temporary for Obsoleted AzureAISearchVectorStore Ctor")]
-    protected ITextEmbeddingGenerationService? EmbeddingGenerator { get; set; }
+    [Obsolete("Temporary for Obsoleted TextEmbeddingGenerationService AzureAISearchVectorStore Ctor")]
+    protected ITextEmbeddingGenerationService? TextEmbeddingGenerationService { get; set; }
+
+    protected IEmbeddingGenerator<string, Embedding<float>>? EmbeddingGenerator { get; set; }
 
     protected new IConfigurationRoot Configuration { get; } = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<OpenAITextEmbeddingTests>()
+        .AddUserSecrets<BaseVectorStoreTextSearchTests>()
         .Build();
 
     /// <summary>
@@ -48,6 +51,23 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
 
         return await vectorStore.CreateCollectionFromListAsync<TKey, TRecord>(
                 collectionName, lines, embeddingGenerationService, createRecord);
+    }
+
+    /// <summary>
+    /// Add sample records to the vector store record collection.
+    /// </summary>
+    public static async Task<IVectorStoreRecordCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
+        IVectorStore vectorStore,
+        string collectionName,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        CreateRecordFromString<TKey, TRecord> createRecord)
+        where TKey : notnull
+        where TRecord : notnull
+    {
+        var lines = await File.ReadAllLinesAsync("./TestData/semantic-kernel-info.txt");
+
+        return await vectorStore.CreateCollectionFromListAsync<TKey, TRecord>(
+                collectionName, lines, embeddingGenerator, createRecord);
     }
 
     /// <summary>

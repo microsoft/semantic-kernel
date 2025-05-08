@@ -4,18 +4,15 @@ using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.Extensions.AI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using System;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
-[Obsolete("Temporary Tests for Obsolete AzureOpenAITextEmbeddingGenerationService")]
-public sealed class AzureOpenAITextEmbeddingTests
+public sealed class AzureOpenAIEmbeddingGeneratorTests
 {
-    public AzureOpenAITextEmbeddingTests()
+    public AzureOpenAIEmbeddingGeneratorTests()
     {
         var config = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(config);
@@ -27,17 +24,17 @@ public sealed class AzureOpenAITextEmbeddingTests
     public async Task AzureOpenAITestAsync(string testInputString)
     {
         // Arrange
-        var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
+        using var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
             deploymentName: this._azureOpenAIConfiguration.DeploymentName,
             endpoint: this._azureOpenAIConfiguration.Endpoint,
             credential: new AzureCliCredential());
 
         // Act
-        var singleResult = await embeddingGenerator.GenerateEmbeddingAsync(testInputString);
-        var batchResult = await embeddingGenerator.GenerateEmbeddingsAsync([testInputString]);
+        var singleResult = await embeddingGenerator.GenerateAsync(testInputString);
+        var batchResult = await embeddingGenerator.GenerateAsync([testInputString]);
 
         // Assert
-        Assert.Equal(AdaVectorLength, singleResult.Length);
+        Assert.Equal(AdaVectorLength, singleResult.Vector.Length);
         Assert.Single(batchResult);
     }
 
@@ -49,17 +46,38 @@ public sealed class AzureOpenAITextEmbeddingTests
         // Arrange
         const string TestInputString = "test sentence";
 
-        var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
+        using var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
             deploymentName: "text-embedding-3-large",
             endpoint: this._azureOpenAIConfiguration.Endpoint,
             credential: new AzureCliCredential(),
             dimensions: dimensions);
 
         // Act
-        var result = await embeddingGenerator.GenerateEmbeddingAsync(TestInputString);
+        var result = await embeddingGenerator.GenerateAsync(TestInputString);
 
         // Assert
-        Assert.Equal(expectedVectorLength, result.Length);
+        Assert.Equal(expectedVectorLength, result.Vector.Length);
+    }
+
+    [Theory]
+    [InlineData(null, 3072)]
+    [InlineData(1024, 1024)]
+    public async Task AzureOpenAIEmbeddingGeneratorWithDimensionsAsync(int? dimensions, int expectedVectorLength)
+    {
+        // Arrange
+        const string TestInputString = "test sentence";
+
+        using var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
+            deploymentName: "text-embedding-3-large",
+            endpoint: this._azureOpenAIConfiguration.Endpoint,
+            credential: new AzureCliCredential(),
+            dimensions: dimensions);
+
+        // Act
+        var result = await embeddingGenerator.GenerateAsync(TestInputString);
+
+        // Assert
+        Assert.Equal(expectedVectorLength, result.Vector.Length);
     }
 
     private readonly AzureOpenAIConfiguration _azureOpenAIConfiguration;
@@ -70,6 +88,6 @@ public sealed class AzureOpenAITextEmbeddingTests
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<AzureOpenAITextEmbeddingTests>()
+        .AddUserSecrets<AzureOpenAIEmbeddingGeneratorTests>()
         .Build();
 }

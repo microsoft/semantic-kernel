@@ -103,7 +103,7 @@ public static class OnnxServiceCollectionExtensions
 
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(
             serviceId,
-            BertOnnxTextEmbeddingGenerationService.Create(onnxModelPath, vocabPath, options));
+            BertOnnxEmbeddingGenerator.Create(onnxModelPath, vocabPath, options));
     }
 
     /// <summary>Adds a text embedding generation service using a BERT ONNX model.</summary>
@@ -124,6 +124,6 @@ public static class OnnxServiceCollectionExtensions
 
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(
             serviceId,
-            BertOnnxTextEmbeddingGenerationService.Create(onnxModelStream, vocabStream, options));
+            BertOnnxEmbeddingGenerator.Create(onnxModelStream, vocabStream, options));
     }
 }
