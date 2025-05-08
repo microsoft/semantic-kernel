@@ -42,7 +42,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// Gets a vector store to use for tests.
     /// </summary>
-    public VectorStore VectorStore => new PostgresVectorStore(this.DataSource!, ownsDataSource: false);
+    public VectorStore VectorStore => new PostgresVectorStore(this.DataSource!, new() { OwnsDataSource = false });
 
     /// <summary>
     /// Get a database connection

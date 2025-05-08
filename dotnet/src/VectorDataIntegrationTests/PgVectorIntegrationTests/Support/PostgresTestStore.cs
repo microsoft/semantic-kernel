@@ -28,8 +28,8 @@ internal sealed class PostgresTestStore : TestStore
     public PostgresVectorStore GetVectorStore(PostgresVectorStoreOptions options)
     {
         // The DataSource is shared with the static instance, we don't want any of the tests to dispose it.
-        bool ownsDataSource = false;
-        return new(this.DataSource, ownsDataSource, options);
+        options.OwnsDataSource = false;
+        return new(this.DataSource, options);
     }
 
     private PostgresTestStore()
@@ -63,8 +63,7 @@ internal sealed class PostgresTestStore : TestStore
         await connection.ReloadTypesAsync();
 
         // It's a shared static instance, we don't want any of the tests to dispose it.
-        bool ownsDataSource = false;
-        this._defaultVectorStore = new(this._dataSource, ownsDataSource);
+        this._defaultVectorStore = new(this._dataSource, new() { OwnsDataSource = false });
     }
 
     protected override async Task StopAsync()
