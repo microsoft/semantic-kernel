@@ -25,19 +25,19 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
     /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the search.</param>
-    /// <param name="float32EmbeddingGenerator"><see cref="IEmbeddingGenerator"/> instance used to create a vector from the text query. Only FLOAT32 vector generation is currently supported by <see cref="VectorStoreTextSearch{TRecord}"/>. If you required a different type of vector use the built in vector generation in the vector store.</param>
+    /// <param name="embeddingGenerator"><see cref="IEmbeddingGenerator"/> instance used to create a vector from the text query. Only FLOAT32 vector generation is currently supported by <see cref="VectorStoreTextSearch{TRecord}"/>. If you required a different type of vector use the built in vector generation in the vector store.</param>
     /// <param name="stringMapper"><see cref="MapFromResultToString" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="MapFromResultToTextSearchResult" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     public VectorStoreTextSearch(
         IVectorSearch<TRecord> vectorSearch,
-        IEmbeddingGenerator<string, Embedding<float>> float32EmbeddingGenerator,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         MapFromResultToString stringMapper,
         MapFromResultToTextSearchResult resultMapper,
         VectorStoreTextSearchOptions? options = null) :
         this(
             vectorSearch,
-            float32EmbeddingGenerator,
+            embeddingGenerator,
             stringMapper is null ? null : new TextSearchStringMapper(stringMapper),
             resultMapper is null ? null : new TextSearchResultMapper(resultMapper),
             options)
@@ -50,20 +50,20 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
     /// </summary>
     /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the search.</param>
-    /// <param name="float32EmbeddingGenerator"><see cref="IEmbeddingGenerator"/> instance used to create a vector from the text query. Only FLOAT32 vector generation is currently supported by <see cref="VectorStoreTextSearch{TRecord}"/>. If you required a different type of vector use the built in vector generation in the vector store.</param>
+    /// <param name="embeddingGenerator"><see cref="IEmbeddingGenerator"/> instance used to create a vector from the text query. Only FLOAT32 vector generation is currently supported by <see cref="VectorStoreTextSearch{TRecord}"/>. If you required a different type of vector use the built in vector generation in the vector store.</param>
     /// <param name="stringMapper"><see cref="ITextSearchStringMapper" /> instance that can map a TRecord to a <see cref="string"/></param>
     /// <param name="resultMapper"><see cref="ITextSearchResultMapper" /> instance that can map a TRecord to a <see cref="TextSearchResult"/></param>
     /// <param name="options">Options used to construct an instance of <see cref="VectorStoreTextSearch{TRecord}"/></param>
     public VectorStoreTextSearch(
         IVectorSearch<TRecord> vectorSearch,
-        IEmbeddingGenerator<string, Embedding<float>> float32EmbeddingGenerator,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         ITextSearchStringMapper? stringMapper = null,
         ITextSearchResultMapper? resultMapper = null,
 #pragma warning disable CS0618 // Type or member is obsolete
         VectorStoreTextSearchOptions? options = null) :
         this(
             vectorSearch,
-            float32EmbeddingGenerator.AsTextEmbeddingGenerationService(),
+            embeddingGenerator.AsTextEmbeddingGenerationService(),
             stringMapper,
             resultMapper,
             options)
