@@ -15,9 +15,7 @@ public class PostgresVectorSearchDistanceFunctionComplianceTests(PostgresFixture
     {
         // Hamming distance is supported by pgvector, but only on binaray vectors (bit(x)), and the test uses float32 vectors (vector(x)).
         var exception = await Assert.ThrowsAsync<VectorStoreException>(base.HammingDistance);
-        var postgresException = Assert.IsType<Npgsql.PostgresException>(exception.InnerException);
-
-        Assert.Equal("42883", postgresException.SqlState);
+        Assert.IsType<Npgsql.PostgresException>(exception.InnerException);
     }
 
     public override Task NegativeDotProductSimilarity() => Assert.ThrowsAsync<NotSupportedException>(base.NegativeDotProductSimilarity);

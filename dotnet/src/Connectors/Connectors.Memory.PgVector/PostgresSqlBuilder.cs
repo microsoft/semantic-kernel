@@ -116,6 +116,8 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
             DistanceFunction.DotProductSimilarity => "vector_ip_ops",
             DistanceFunction.EuclideanDistance => "vector_l2_ops",
             DistanceFunction.ManhattanDistance => "vector_l1_ops",
+            DistanceFunction.HammingDistance => "bit_hamming_ops",
+
             _ => throw new NotSupportedException($"Distance function {distanceFunction} is not supported.")
         };
 
