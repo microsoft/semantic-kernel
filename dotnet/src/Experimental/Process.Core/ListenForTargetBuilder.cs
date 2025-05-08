@@ -2,18 +2,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Builder class for defining targets to listen for in a process.
 /// </summary>
-public sealed class ListenForTargetBuilder : ProcessStepEdgeBuilder
+public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
 {
     private readonly ProcessBuilder _processBuilder;
-    private readonly List<MessageSourceBuilder> _messageSources = new();
+    private readonly List<MessageSourceBuilder> _messageSources = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ListenForTargetBuilder"/> class.
@@ -39,40 +37,6 @@ public sealed class ListenForTargetBuilder : ProcessStepEdgeBuilder
     }
 
     /// <summary>
-    /// Sets the condition for the edge.
-    /// </summary>
-    /// <param name="expression"></param>
-    /// <returns></returns>
-    public ProcessStepEdgeBuilder OnEventCondition(string expression)
-    {
-        Verify.NotNullOrWhiteSpace(expression, nameof(expression));
-
-        return this.OnCondition(new KernelProcessEdgeCondition(
-            (e, s) =>
-            {
-                var result = JMESPathConditionEvaluator.EvaluateCondition(e.Data, expression);
-                return Task.FromResult(result);
-            }));
-    }
-
-    /// <summary>
-    /// Sets the condition for the edge.
-    /// </summary>
-    /// <param name="expression"></param>
-    /// <returns></returns>
-    public ProcessStepEdgeBuilder OnStateCondition(string expression)
-    {
-        Verify.NotNullOrWhiteSpace(expression, nameof(expression));
-
-        return this.OnCondition(new KernelProcessEdgeCondition(
-            (e, s) =>
-            {
-                var result = JMESPathConditionEvaluator.EvaluateCondition(s, expression);
-                return Task.FromResult(result);
-            }));
-    }
-
-    /// <summary>
     /// Sends the event to the specified target.
     /// </summary>
     /// <param name="target">The target to send the event to.</param>
@@ -92,14 +56,14 @@ public sealed class ListenForTargetBuilder : ProcessStepEdgeBuilder
             var onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
             onEventBuilder.EdgeGroupBuilder = this.EdgeGroupBuilder;
 
-            if (this.Condition != null)
+            if (messageSource.Condition != null)
             {
-                onEventBuilder.Condition = this.Condition;
+                onEventBuilder.Condition = messageSource.Condition;
             }
             onEventBuilder.SendEventTo(target);
         }
 
-        return this; // new ListenForTargetBuilder(this._messageSources, this._processBuilder, edgeGroup: this.EdgeGroupBuilder);
+        return new ListenForTargetBuilder(this._messageSources, this._processBuilder, edgeGroup: this.EdgeGroupBuilder);
     }
 
     /// <summary>

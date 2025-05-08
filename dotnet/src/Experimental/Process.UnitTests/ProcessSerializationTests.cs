@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Process.Internal;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.UnitTests;
@@ -79,12 +80,18 @@ public class ProcessSerializationTests
         Assert.Equal("c_step_agent", bStepDoneEdge.OutputTarget.StepId);
         Assert.NotEmpty(bStepDoneEdge.GroupId ?? "");
 
-        Assert.Single(stepC.Edges);
+        // cStep has outgoing edge to kickoff step on event cStepDone and one to end the process on event exitRequested
+        Assert.Equal(2, stepC.Edges.Count);
         var cStepDoneEdges = stepC.Edges["c_step_agent.CStepDone"];
         Assert.Single(cStepDoneEdges);
         var cStepDoneEdge = cStepDoneEdges.First();
         Assert.Equal("kickoff_agent", cStepDoneEdge.OutputTarget.StepId);
         Assert.Null(cStepDoneEdge.GroupId);
+
+        var exitRequestedEdges = stepC.Edges["Microsoft.SemanticKernel.Process.EndStep"];
+        Assert.Single(exitRequestedEdges);
+        var exitRequestedEdge = exitRequestedEdges.First();
+        Assert.Equal("Microsoft.SemanticKernel.Process.EndStep", exitRequestedEdge.OutputTarget.StepId);
 
         // edges to cStep are in the same group
         Assert.Equal(aStepDoneEdge.GroupId, bStepDoneEdge.GroupId);

@@ -66,7 +66,7 @@ internal class LocalAgentStep : LocalStep
                     this._eventNamespace,
                     sourceId: $"{targetFunction}.OnResult",
                     eventVisibility: KernelProcessEventVisibility.Public,
-                    writtenToThread: this._agentThread.ThreadId));
+                    writtenToThread: this._agentThread.ThreadId)); // TODO: This is keeping track of the thread the message has been written to, clean it up, name it better, etc. 
         }
         catch (Exception ex)
         {

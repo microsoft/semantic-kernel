@@ -184,10 +184,10 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.OnInputEvent("start").SendEventTo(new(agent1));
 
         // Agent1 should run as long as the Counter is less than 3
-        processBuilder.ListenFor().OnResult(agent1).OnStateCondition("Counter < `3`").SendEventTo(new(agent1));
+        processBuilder.ListenFor().OnResult(agent1, condition: "_state_.Counter < `3`").SendEventTo(new(agent1));
 
         // When the Counter is 3, Agent1 should stop and Agent2 should start
-        processBuilder.ListenFor().OnResult(agent1).OnStateCondition("Counter >= `3`").SendEventTo(new(agent2));
+        processBuilder.ListenFor().OnResult(agent1, condition: "_state_.Counter >= `3`").SendEventTo(new(agent2));
 
         // When Agent2 is done, the process should stop
         processBuilder.ListenFor().OnResult(agent2).StopProcess();
@@ -315,16 +315,16 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.ListenFor().OnResult(progressManagerStep).SendEventTo(new(routerStep));
 
         //Router -> Progress Manager
-        processBuilder.ListenFor().OnResult(routerStep).OnEventCondition("[?contains(NextAgentId, 'UnknownAgent')]").SendEventTo(new(progressManagerStep));
+        processBuilder.ListenFor().OnResult(routerStep, condition: "_event_.[?contains(NextAgentId, 'UnknownAgent')]").SendEventTo(new(progressManagerStep));
 
         //Router -> Facts Update
-        processBuilder.ListenFor().OnResult(routerStep).OnEventCondition("[?contains(NextAgentId, 'LedgerFactsUpdate')]").SendEventTo(new(factUpdateStep));
+        processBuilder.ListenFor().OnResult(routerStep, condition: "_event_.[?contains(NextAgentId, 'LedgerFactsUpdate')]").SendEventTo(new(factUpdateStep));
 
         //Router -> User Agent
         //processBuilder.ListenFor().OnResult(routerStep).OnCondition(new DeclarativeProcessCondition { Type = DeclarativeProcessConditionType.State, Expression = "[?contains(NextAgentId, 'UserAgent')]" }).SendEventTo(new(userAgentId));
 
         //Router -> Summarizer
-        processBuilder.ListenFor().OnResult(routerStep).OnEventCondition("[?contains(NextAgentId, 'Summarizer')]").SendEventTo(new(summarizerStep));
+        processBuilder.ListenFor().OnResult(routerStep, condition: "_event_.[?contains(NextAgentId, 'Summarizer')]").SendEventTo(new(summarizerStep));
     }
 
     public class DeepResearchState

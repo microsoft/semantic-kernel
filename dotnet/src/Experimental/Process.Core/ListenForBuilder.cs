@@ -30,13 +30,14 @@ public sealed class ListenForBuilder
     /// </summary>
     /// <param name="messageType">The type of the message.</param>
     /// <param name="from">The process step from which the message originates.</param>
+    /// <param name="condition">Condition that must be met for the message to be processed</param>
     /// <returns>A builder for defining the target of the message.</returns>
-    public ListenForTargetBuilder Message(string messageType, ProcessStepBuilder from)
+    public ListenForTargetBuilder Message(string messageType, ProcessStepBuilder from, KernelProcessEdgeCondition? condition = null)
     {
         Verify.NotNullOrWhiteSpace(messageType, nameof(messageType));
         Verify.NotNull(from, nameof(from));
 
-        this._targetBuilder = new ListenForTargetBuilder([new(messageType, from)], this._processBuilder);
+        this._targetBuilder = new ListenForTargetBuilder([new(messageType, from, condition)], this._processBuilder);
         return this._targetBuilder;
     }
 
@@ -44,12 +45,13 @@ public sealed class ListenForBuilder
     /// Defines a message to listen for from a specific process step.
     /// </summary>
     /// <param name="from">The process step from which the message originates.</param>
+    /// <param name="condition">Condition that must be met for the message to be processed</param>
     /// <returns>A builder for defining the target of the message.</returns>
-    public ListenForTargetBuilder OnResult(ProcessStepBuilder from)
+    public ListenForTargetBuilder OnResult(ProcessStepBuilder from, KernelProcessEdgeCondition? condition = null)
     {
         Verify.NotNull(from, nameof(from));
 
-        this._targetBuilder = new ListenForTargetBuilder([new("Invoke.OnResult", from)], this._processBuilder);
+        this._targetBuilder = new ListenForTargetBuilder([new("Invoke.OnResult", from, condition)], this._processBuilder);
         return this._targetBuilder;
     }
 

@@ -248,7 +248,8 @@ public class WorkflowBuilder
                     return new MessageSourceBuilder
                     (
                         messageType: listenEvent.Event,
-                        source: this._stepBuilders[listenEvent.From]
+                        source: this._stepBuilders[listenEvent.From],
+                        null // TODO: Pass through condition.
                     );
                 }
 
@@ -270,7 +271,7 @@ public class WorkflowBuilder
                 }
                 else
                 {
-                    throw new ArgumentException($"An orchestration is referencing a node with Id {listenCondition.From} that does not exist.");
+                    throw new ArgumentException($"An orchestration is referencing a node with Id `{listenCondition.From}` that does not exist.");
                 }
             }
             else
@@ -288,7 +289,13 @@ public class WorkflowBuilder
 
                 if (!this._stepBuilders.TryGetValue(action.Node, out ProcessStepBuilder? destinationStepBuilder))
                 {
-                    throw new ArgumentException($"An orchestration is referencing a node with Id {action.Node} that does not exist.");
+                    if (action.Node.Equals("End", StringComparison.OrdinalIgnoreCase))
+                    {
+                        edgeBuilder.StopProcess();
+                        continue;
+                    }
+
+                    throw new ArgumentException($"An orchestration is referencing a node with Id `{action.Node}` that does not exist.");
                 }
 
                 // Add the edge to the node
@@ -543,7 +550,7 @@ public class WorkflowBuilder
         }
         else
         {
-            throw new ArgumentException($"An orchestration is referencing a node with Id {listenCondition.From} that does not exist.");
+            throw new ArgumentException($"An orchestration is referencing a node with Id `{listenCondition.From}` that does not exist.");
         }
 
         return edgeBuilder;
