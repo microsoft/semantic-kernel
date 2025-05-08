@@ -406,7 +406,8 @@ public class WorkflowBuilder
                 ListenFor = new ListenCondition()
                 {
                     From = step.State.Id,
-                    Event = edge.Key
+                    Event = edge.Key,
+                    Condition = edge.Value.FirstOrDefault()?.Condition.DeclarativeDefinition
                 },
                 Then = [.. edge.Value.Select(e => new ThenAction()
                 {
@@ -443,18 +444,25 @@ public class WorkflowBuilder
             Inputs = agentStep.Inputs
         };
 
-        foreach (var edge in agentStep.Edges)
+        // re-group the edges to account for different conditions
+        var conditionGroupedEdges = agentStep.Edges
+            .SelectMany(kvp => kvp.Value, (kvp, k) => new { key = kvp.Key, edge = k })
+            .GroupBy(e => new { e.key, e.edge.Condition?.DeclarativeDefinition })
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        foreach (var edge in conditionGroupedEdges)
         {
             OrchestrationStep orchestrationStep = new()
             {
                 ListenFor = new ListenCondition()
                 {
                     From = agentStep.State.Id,
-                    Event = edge.Key
+                    Event = edge.Key.key,
+                    Condition = edge.Key.DeclarativeDefinition
                 },
                 Then = [.. edge.Value.Select(e => new ThenAction()
                 {
-                    Node = e.OutputTarget.StepId
+                    Node = e.edge.OutputTarget.StepId == ProcessConstants.EndStepName ? "End" : e.edge.OutputTarget.StepId
                 })]
             };
 

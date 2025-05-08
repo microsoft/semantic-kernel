@@ -747,6 +747,13 @@ public class ListenCondition
     public string? From { get; set; }
 
     /// <summary>
+    /// Gets or sets the condition expression.
+    /// </summary>
+    [YamlMember(Alias = "condition")]
+    [JsonPropertyName("condition")]
+    public string? Condition { get; set; }
+
+    /// <summary>
     /// Gets or sets the filters for the event.
     /// </summary>
     [YamlMember(Alias = "all_of")]

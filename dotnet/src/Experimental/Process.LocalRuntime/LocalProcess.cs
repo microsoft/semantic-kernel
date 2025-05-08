@@ -430,7 +430,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             bool foundEdge = false;
             foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
             {
-                bool isConditionMet = await edge.Condition(stepEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
+                bool isConditionMet = await edge.Condition.Callback(stepEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
                 if (!isConditionMet)
                 {
                     continue;

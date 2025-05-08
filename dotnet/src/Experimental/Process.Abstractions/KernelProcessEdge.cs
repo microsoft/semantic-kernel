@@ -6,14 +6,6 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Delegate that represents a condition that must be met for a <see cref="KernelProcessEdge"/> to be activated.
-/// </summary>
-/// <param name="processEvent">The event associated with the edge.</param>
-/// <param name="processState">The readonly process state.</param>
-/// <returns></returns>
-public delegate Task<bool> KernelProcessEdgeCondition(KernelProcessEvent processEvent, object? processState);
-
-/// <summary>
 /// A serializable representation of an edge between a source <see cref="KernelProcessStep"/> and a <see cref="KernelProcessFunctionTarget"/>.
 /// </summary>
 [DataContract]
@@ -54,6 +46,6 @@ public sealed class KernelProcessEdge
         this.SourceStepId = sourceStepId;
         this.OutputTarget = outputTarget;
         this.GroupId = groupId;
-        this.Condition = condition ?? ((_, _) => Task.FromResult(true));
+        this.Condition = condition ?? new KernelProcessEdgeCondition(callback: (_, _) => Task.FromResult(true));
     }
 }

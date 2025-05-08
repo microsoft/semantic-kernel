@@ -46,7 +46,7 @@ public class FoundryListenForBuilder
 
                 var result = JMESPathConditionEvaluator.EvaluateCondition(wrapper, condition);
                 return Task.FromResult(result);
-            });
+            }, condition);
         }
 
         return this._listenForBuilder.Message(messageType, from, edgeCondition);
@@ -74,7 +74,7 @@ public class FoundryListenForBuilder
 
                 var result = JMESPathConditionEvaluator.EvaluateCondition(wrapper, condition);
                 return Task.FromResult(result);
-            });
+            }, condition);
         }
 
         return this._listenForBuilder.OnResult(from, edgeCondition);

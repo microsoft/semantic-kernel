@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Process.Internal;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.UnitTests;
@@ -217,12 +216,12 @@ public class ProcessSerializationTests
     /// </summary>
     private sealed class KickoffStep : KernelProcessStep
     {
-        public static class Functions
+        public static class ProcessFunctions
         {
             public const string KickOff = nameof(KickOff);
         }
 
-        [KernelFunction(Functions.KickOff)]
+        [KernelFunction(ProcessFunctions.KickOff)]
         public async ValueTask PrintWelcomeMessageAsync(KernelProcessStepContext context)
         {
             Console.WriteLine("##### Kickoff ran.");
