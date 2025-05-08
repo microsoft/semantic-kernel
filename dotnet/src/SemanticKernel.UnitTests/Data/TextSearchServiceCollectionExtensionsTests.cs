@@ -17,7 +17,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     public void AddVectorStoreTextSearch()
     {
         // Arrange
-        using var embeddingGenerator = new MockTextEmbeddingGenerator();
+        using var embeddingGenerator = new MockEmbeddingGenerator();
 
         var services = new ServiceCollection();
         var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
@@ -41,7 +41,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     public void AddVectorStoreTextSearchWithNoMappers()
     {
         // Arrange
-        using var embeddingGenerator = new MockTextEmbeddingGenerator();
+        using var embeddingGenerator = new MockEmbeddingGenerator();
 
         var services = new ServiceCollection();
         var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
@@ -61,7 +61,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     public void AddVectorStoreTextSearchWithKeyedIVectorSearch()
     {
         // Arrange
-        using var embeddingGenerator = new MockTextEmbeddingGenerator();
+        using var embeddingGenerator = new MockEmbeddingGenerator();
 
         var services = new ServiceCollection();
         var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
@@ -81,7 +81,7 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     public void AddVectorStoreTextSearchFailsMissingKeyedIVectorSearch()
     {
         // Arrange
-        using var embeddingGenerator = new MockTextEmbeddingGenerator();
+        using var embeddingGenerator = new MockEmbeddingGenerator();
 
         var services = new ServiceCollection();
         var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
@@ -98,13 +98,14 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
 
 #pragma warning disable CS0618 // Type or member is obsolete
     [Fact]
+    [Obsolete("VectorStoreTextSearch Ctor with ITextEmbeddingGenerationService is obsolete")]
     public void AddVectorStoreTextSearchWithKeyedVectorSearchAndEmbeddingGenerationService()
     {
         // Arrange
         var services = new ServiceCollection();
         var vectorStore = new InMemoryVectorStore();
         var collection = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
-        using var generator = new MockTextEmbeddingGenerator();
+        var generator = new MockTextEmbeddingGenerationService();
 
         // Act
         services.AddKeyedSingleton<IVectorSearch<DataModelWithRawEmbedding>>("vs1", collection);
@@ -119,13 +120,14 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     }
 
     [Fact]
+    [Obsolete("VectorStoreTextSearch Ctor with ITextEmbeddingGenerationService is obsolete")]
     public void AddVectorStoreTextSearchFailsMissingKeyedVectorSearch()
     {
         // Arrange
         var services = new ServiceCollection();
         var vectorStore = new InMemoryVectorStore();
         var collection = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
-        using var textGeneration = new MockTextEmbeddingGenerator();
+        var textGeneration = new MockTextEmbeddingGenerationService();
 
         // Act
         services.AddKeyedSingleton<IVectorSearch<DataModelWithRawEmbedding>>("vs1", collection);
@@ -139,13 +141,14 @@ public class TextSearchServiceCollectionExtensionsTests : VectorStoreTextSearchT
     }
 
     [Fact]
+    [Obsolete("VectorStoreTextSearch Ctor with ITextEmbeddingGenerationService is obsolete")]
     public void AddVectorStoreTextSearchFailsMissingKeyedTextEmbeddingGenerationService()
     {
         // Arrange
         var services = new ServiceCollection();
         var vectorStore = new InMemoryVectorStore();
         var vectorSearch = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
-        using var textGeneration = new MockTextEmbeddingGenerator();
+        var textGeneration = new MockTextEmbeddingGenerationService();
 
         // Act
         services.AddKeyedSingleton<IVectorSearch<DataModelWithRawEmbedding>>("vs1", vectorSearch);

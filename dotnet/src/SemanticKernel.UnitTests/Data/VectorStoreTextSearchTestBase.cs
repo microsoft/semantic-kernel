@@ -23,15 +23,16 @@ public class VectorStoreTextSearchTestBase
     /// <summary>
     /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorizedSearch{TRecord}"/>.
     /// </summary>
-    [Obsolete("VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete")]
+    [Obsolete("VectorStoreTextSearch Ctor with ITextEmbeddingGenerationService is obsolete")]
     public static async Task<VectorStoreTextSearch<DataModelWithRawEmbedding>> CreateVectorStoreTextSearchWithEmbeddingGenerationServiceAsync()
     {
         var vectorStore = new InMemoryVectorStore();
         var vectorSearch = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
-        using var embeddingService = new MockTextEmbeddingGenerator();
-        await AddRecordsAsync(vectorSearch, embeddingService);
+        var embeddingService = new MockTextEmbeddingGenerationService();
+        using var embeddingGenerator = new MockEmbeddingGenerator();
+        await AddRecordsAsync(vectorSearch, embeddingGenerator);
         var sut = new VectorStoreTextSearch<DataModelWithRawEmbedding>(vectorSearch, embeddingService, stringMapper, resultMapper);
         return sut;
     }
@@ -39,10 +40,9 @@ public class VectorStoreTextSearchTestBase
     /// <summary>
     /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorizedSearch{TRecord}"/>.
     /// </summary>
-    [Obsolete("VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete")]
     public static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchAsync()
     {
-        using var embeddingGenerator = new MockTextEmbeddingGenerator();
+        var embeddingGenerator = new MockEmbeddingGenerator();
         var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
@@ -129,7 +129,7 @@ public class VectorStoreTextSearchTestBase
     /// Mock implementation of <see cref="ITextEmbeddingGenerationService"/>.
     /// </summary>
     [Obsolete("ITextEmbeddingGenerationService is obsolete")]
-    public sealed class MockTextEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>, ITextEmbeddingGenerationService
+    public sealed class MockTextEmbeddingGenerationService : ITextEmbeddingGenerationService
     {
         public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
             => Task.FromResult(new GeneratedEmbeddings<Embedding<float>>([new(new float[] { 0, 1, 2, 3 })]));
@@ -147,6 +147,19 @@ public class VectorStoreTextSearchTestBase
             IList<ReadOnlyMemory<float>> result = [new float[] { 0, 1, 2, 3 }];
             return Task.FromResult(result);
         }
+    }
+
+    /// <summary>
+    /// Mock implementation of <see cref="IEmbeddingGenerator{String, Embedding}"/>.
+    /// </summary>
+    public sealed class MockEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
+    {
+        public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(new GeneratedEmbeddings<Embedding<float>>([new(new float[] { 0, 1, 2, 3 })]));
+
+        public void Dispose() { }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
     }
 
     /// <summary>

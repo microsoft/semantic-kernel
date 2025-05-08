@@ -12,6 +12,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 {
 #pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
     [Fact]
+    [Obsolete("Temporary Tests for Obsolete Ctor of VectorStoreTextSearch")]
     public void CanCreateVectorStoreTextSearchWithEmbeddingGenerationService()
     {
         // Arrange.
@@ -19,7 +20,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         var vectorSearch = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
-        using var embeddingGenerationService = new MockTextEmbeddingGenerator();
+        var embeddingGenerationService = new MockTextEmbeddingGenerationService();
 
         // Act.
         var sut = new VectorStoreTextSearch<DataModelWithRawEmbedding>(vectorSearch, embeddingGenerationService, stringMapper, resultMapper);
@@ -33,7 +34,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
     public void CanCreateVectorStoreTextSearchWithIVectorSearch()
     {
         // Arrange.
-        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = new MockTextEmbeddingGenerator() });
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = new MockEmbeddingGenerator() });
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
@@ -86,6 +87,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
 
 #pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
     [Fact]
+    [Obsolete("VectorStoreTextSearch Ctor with ITextEmbeddingGenerationService is obsolete")]
     public async Task CanSearchWithEmbeddingGenerationServiceAsync()
     {
         // Arrange.
@@ -99,6 +101,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
     }
 
     [Fact]
+    [Obsolete("VectorStoreTextSearch Ctor with ITextEmbeddingGenerationService is obsolete")]
     public async Task CanGetTextSearchResultsWithEmbeddingGenerationServiceAsync()
     {
         // Arrange.
@@ -112,6 +115,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
     }
 
     [Fact]
+    [Obsolete("VectorStoreTextSearch Ctor with ITextEmbeddingGenerationService is obsolete")]
     public async Task CanGetSearchResultsWithEmbeddingGenerationServiceAsync()
     {
         // Arrange.
