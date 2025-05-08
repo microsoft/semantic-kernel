@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="Guid"/> or <see cref="ulong"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
+public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>, IDisposable
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -65,7 +65,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
     public QdrantCollection(QdrantClient qdrantClient, string name, QdrantCollectionOptions? options = null)
-        : this(new MockableQdrantClient(qdrantClient), name, options)
+        : this(new MockableQdrantClient(qdrantClient, ownsClient: options?.OwnsClient ?? QdrantVectorStoreOptions.Default.OwnsClient), name, options)
     {
     }
 
@@ -106,6 +106,9 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
             CollectionName = name
         };
     }
+
+    /// <inheritdoc />
+    public void Dispose() => this._qdrantClient.Dispose();
 
     /// <inheritdoc />
     public override string Name { get; }

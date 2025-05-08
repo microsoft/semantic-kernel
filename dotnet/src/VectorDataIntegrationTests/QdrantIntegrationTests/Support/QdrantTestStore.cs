@@ -28,7 +28,12 @@ internal sealed class QdrantTestStore : TestStore
     public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public QdrantVectorStore GetVectorStore(QdrantVectorStoreOptions options)
-        => new(this.Client, options);
+        => new(this.Client, new()
+        {
+            OwnsClient = false, // The client is shared, it's not owned by the vector store.
+            HasNamedVectors = options.HasNamedVectors,
+            EmbeddingGenerator = options.EmbeddingGenerator
+        });
 
     private QdrantTestStore(bool hasNamedVectors) => this._hasNamedVectors = hasNamedVectors;
 
@@ -44,7 +49,8 @@ internal sealed class QdrantTestStore : TestStore
     {
         await this._container.StartAsync();
         this._client = new QdrantClient(this._container.Hostname, this._container.GetMappedPublicPort(QdrantBuilder.QdrantGrpcPort));
-        this._defaultVectorStore = new(this._client, new() { HasNamedVectors = this._hasNamedVectors });
+        // The client is shared, it's not owned by the vector store.
+        this._defaultVectorStore = new(this._client, new() { HasNamedVectors = this._hasNamedVectors, OwnsClient = false });
     }
 
     protected override Task StopAsync()

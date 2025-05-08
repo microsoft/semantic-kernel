@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public sealed class QdrantVectorStore : VectorStore
+public sealed class QdrantVectorStore : VectorStore, IDisposable
 {
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
@@ -40,7 +40,7 @@ public sealed class QdrantVectorStore : VectorStore
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public QdrantVectorStore(QdrantClient qdrantClient, QdrantVectorStoreOptions? options = default)
-        : this(new MockableQdrantClient(qdrantClient), options)
+        : this(new MockableQdrantClient(qdrantClient, options?.OwnsClient ?? QdrantVectorStoreOptions.Default.OwnsClient), options)
     {
     }
 
@@ -65,6 +65,9 @@ public sealed class QdrantVectorStore : VectorStore
         };
     }
 
+    /// <inheritdoc/>
+    public void Dispose() => this._qdrantClient.Dispose();
+
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
 #if NET8_0_OR_GREATER
@@ -72,7 +75,7 @@ public sealed class QdrantVectorStore : VectorStore
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new QdrantCollection<TKey, TRecord>(this._qdrantClient, name, new QdrantCollectionOptions()
+        => new QdrantCollection<TKey, TRecord>(this._qdrantClient.IncreaseReferenceCount(), name, new()
         {
             HasNamedVectors = this._hasNamedVectors,
             VectorStoreRecordDefinition = vectorStoreRecordDefinition,
