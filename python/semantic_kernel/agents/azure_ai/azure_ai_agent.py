@@ -5,8 +5,6 @@ import sys
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
-from typing_extensions import deprecated
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -18,7 +16,6 @@ from azure.ai.projects.models import (
     AgentsApiResponseFormat,
     AgentsApiResponseFormatMode,
     ResponseFormatJsonSchemaType,
-    ThreadMessage,
     ThreadMessageOptions,
     ToolDefinition,
     TruncationObject,
@@ -613,18 +610,3 @@ class AzureAIAgent(Agent):
         assert thread.id is not None  # nosec
 
         return AzureAIChannel(client=self.client, thread_id=thread.id)
-
-    @deprecated(
-        "Pass messages directly to get_response(...)/invoke(...) instead. This method will be removed after May 1st 2025."  # noqa: E501
-    )
-    async def add_chat_message(self, thread_id: str, message: str | ChatMessageContent) -> "ThreadMessage | None":
-        """Add a chat message to the thread.
-
-        Args:
-            thread_id: The ID of the thread
-            message: The chat message to add
-
-        Returns:
-            ThreadMessage | None: The thread message
-        """
-        return await AgentThreadActions.create_message(client=self.client, thread_id=thread_id, message=message)
