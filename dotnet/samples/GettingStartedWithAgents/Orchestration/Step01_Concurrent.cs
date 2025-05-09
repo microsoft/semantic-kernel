@@ -40,7 +40,7 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
         await runtime.StartAsync();
 
         // Run the orchestration
-        string input = "The quick brown fox jumps over the lazy dog";
+        string input = "What is temperature?";
         Console.WriteLine($"\n# INPUT: {input}\n");
         OrchestrationResult<string[]> result = await orchestration.InvokeAsync(input, runtime);
 
