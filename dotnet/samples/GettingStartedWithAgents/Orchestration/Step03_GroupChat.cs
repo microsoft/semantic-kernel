@@ -56,7 +56,6 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
                 LoggerFactory = this.LoggerFactory,
             };
 
-
         // Start the runtime
         InProcessRuntime runtime = new();
         await runtime.StartAsync();
