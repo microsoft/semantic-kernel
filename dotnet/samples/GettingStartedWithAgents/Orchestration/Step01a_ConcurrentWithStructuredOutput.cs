@@ -21,7 +21,7 @@ public class Step01a_ConcurrentWithStructuredOutput(ITestOutputHelper output) : 
     private static readonly JsonSerializerOptions s_options = new() { WriteIndented = true };
 
     [Fact]
-    public async Task ConcurrentStructuredOutputAsync() // %%% TODO
+    public async Task ConcurrentStructuredOutputAsync()
     {
         // Define the agents
         ChatCompletionAgent agent1 =

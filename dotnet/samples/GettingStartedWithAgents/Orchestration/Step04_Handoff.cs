@@ -9,12 +9,12 @@ using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="HandoffOrchestration{TInput, TOutput}"/>.
+/// Demonstrates how to use the <see cref="HandoffOrchestration"/>.
 /// </summary>
 public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task SimpleHandoffAsync()
+    public async Task TriageAsync()
     {
         // Initialize plugin
         GithubPlugin githubPlugin = new();
@@ -40,6 +40,7 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         dotnetAgent.Kernel.Plugins.Add(plugin);
 
         // Define the orchestration
+        OrchestrationMonitor monitor = new();
         HandoffOrchestration orchestration =
             new(handoffs:
                     new()
@@ -57,6 +58,7 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
                 pythonAgent,
                 dotnetAgent)
             {
+                ResponseCallback = monitor.ResponseCallback,
                 LoggerFactory = this.LoggerFactory
             };
 
@@ -79,13 +81,19 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         OrchestrationResult<string> result = await orchestration.InvokeAsync(InputJson, runtime);
         string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
         Console.WriteLine($"\n# RESULT: {text}");
-        Console.WriteLine($"\n# LABELS: {string.Join(",", githubPlugin.Labels["12345"])}");
+        Console.WriteLine($"\n# LABELS: {string.Join(",", githubPlugin.Labels["12345"])}\n");
 
         await runtime.RunUntilIdleAsync();
+
+        Console.WriteLine("\n\nORCHESTRATION HISTORY");
+        foreach (ChatMessageContent message in monitor.History)
+        {
+            this.WriteAgentChatMessage(message);
+        }
     }
 
     [Fact]
-    public async Task SingleHandoffAsync()
+    public async Task NoHandoffAsync()
     {
         // Define the agents
         ChatCompletionAgent agent1 =

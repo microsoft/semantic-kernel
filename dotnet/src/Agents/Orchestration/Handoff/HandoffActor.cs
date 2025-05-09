@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +23,9 @@ internal sealed class HandoffActor :
     private readonly AgentType _resultHandoff;
     private readonly List<ChatMessageContent> _cache;
 
+    private AgentType? _handoffAgentType;
+    private string? _taskSummary;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HandoffActor"/> class.
     /// </summary>
@@ -41,6 +43,14 @@ internal sealed class HandoffActor :
         this._handoffs = handoffs;
         this._resultHandoff = resultHandoff;
     }
+
+    /// <summary>
+    /// Gets or sets the callback to be invoked for interactive input.
+    /// </summary>
+    public OrchestrationInteractiveCallback? InteractiveCallback { get; init; }
+
+    /// <inheritdoc/>
+    protected override bool ResponseCallbackFilter(ChatMessageContent response) => response.Role == AuthorRole.Tool;
 
     /// <inheritdoc/>
     protected override AgentInvokeOptions? CreateInvokeOptions()
@@ -64,13 +74,10 @@ internal sealed class HandoffActor :
     /// <inheritdoc/>
     public ValueTask HandleAsync(HandoffMessages.InputTask item, MessageContext messageContext)
     {
+        this._taskSummary = null;
         this._cache.AddRange(item.Messages);
-
-        return this.HandleAsync(messageContext.CancellationToken);
+        return ValueTask.CompletedTask;
     }
-
-    /// <inheritdoc/>
-    public ValueTask HandleAsync(HandoffMessages.Request item, MessageContext messageContext) => this.HandleAsync(messageContext.CancellationToken);
 
     /// <inheritdoc/>
     public ValueTask HandleAsync(HandoffMessages.Response item, MessageContext messageContext)
@@ -80,16 +87,43 @@ internal sealed class HandoffActor :
         return ValueTask.CompletedTask;
     }
 
-    private async ValueTask HandleAsync(CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public async ValueTask HandleAsync(HandoffMessages.Request item, MessageContext messageContext)
     {
         this.Logger.LogHandoffAgentInvoke(this.Id);
 
-        ChatMessageContent response = await this.InvokeAsync(this._cache, cancellationToken).ConfigureAwait(false);
-        this._cache.Clear();
+        while (this._taskSummary == null)
+        {
+            ChatMessageContent response = await this.InvokeAsync(this._cache, messageContext.CancellationToken).ConfigureAwait(false);
+            this._cache.Clear();
 
-        this.Logger.LogHandoffAgentResult(this.Id, response.Content);
+            this.Logger.LogHandoffAgentResult(this.Id, response.Content);
 
-        await this.PublishMessageAsync(new HandoffMessages.Response { Message = response }, this.Context.Topic, messageId: null, cancellationToken).ConfigureAwait(false);
+            // The response can potentially be a TOOL message from the Handoff plugin since we have added
+            // a filter which will terminate the conversation when a function from the handoff plugin is called
+            // nd we don't want to publish that message, so we only publish if the response is an ASSISTANT message.
+            if (response.Role == AuthorRole.Assistant)
+            {
+                await this.PublishMessageAsync(new HandoffMessages.Response { Message = response }, this.Context.Topic, messageId: null, messageContext.CancellationToken).ConfigureAwait(false);
+            }
+
+            if (this._handoffAgentType != null)
+            {
+                await this.SendMessageAsync(new HandoffMessages.Request(), this._handoffAgentType.Value, messageContext.CancellationToken).ConfigureAwait(false);
+
+                this._handoffAgentType = null;
+                break;
+            }
+
+            if (this.InteractiveCallback != null)
+            {
+                ChatMessageContent input = await this.InteractiveCallback().ConfigureAwait(false);
+                this._cache.Add(input);
+                continue;
+            }
+
+            await this.EndAsync(response.Content ?? "No handoff or human response function requested. Ending task.", messageContext.CancellationToken).ConfigureAwait(false);
+        }
     }
 
     private KernelPlugin CreateHandoffPlugin()
@@ -116,32 +150,17 @@ internal sealed class HandoffActor :
         }
     }
 
-    private async ValueTask HandoffAsync(AgentType agentType, CancellationToken cancellationToken = default)
+    private ValueTask HandoffAsync(AgentType agentType, CancellationToken cancellationToken = default)
     {
         this.Logger.LogHandoffFunctionCall(this.Id, agentType);
-        await this.SendMessageAsync(new HandoffMessages.Request(), agentType, cancellationToken).ConfigureAwait(false);
+        this._handoffAgentType = agentType;
+        return ValueTask.CompletedTask;
     }
 
     private async ValueTask EndAsync(string summary, CancellationToken cancellationToken)
     {
         this.Logger.LogHandoffSummary(this.Id, summary);
-        await this.SendMessageAsync(new HandoffMessages.Result { Message = new ChatMessageContent(AuthorRole.User, summary) }, this._resultHandoff, cancellationToken).ConfigureAwait(false);
-    }
-}
-
-internal sealed class HandoffInvocationFilter() : IAutoFunctionInvocationFilter
-{
-    public const string HandoffPlugin = nameof(HandoffPlugin);
-
-    public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
-    {
-        // Execution the function
-        await next(context).ConfigureAwait(false);
-
-        // Signal termination if the function is part of the handoff plugin
-        if (context.Function.PluginName == HandoffPlugin)
-        {
-            context.Terminate = true;
-        }
+        this._taskSummary = summary;
+        await this.SendMessageAsync(new HandoffMessages.Result { Message = new ChatMessageContent(AuthorRole.Assistant, summary) }, this._resultHandoff, cancellationToken).ConfigureAwait(false);
     }
 }

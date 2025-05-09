@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
@@ -13,7 +14,7 @@ namespace GettingStarted.Orchestration;
 public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task ConcurrentTaskAsync() // %%% TODO
+    public async Task ConcurrentTaskAsync()
     {
         // Define the agents
         ChatCompletionAgent physicist =
@@ -26,7 +27,13 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
                 description: "An expert in chemistry");
 
         // Define the orchestration
-        ConcurrentOrchestration orchestration = new(physicist, chemist) { LoggerFactory = this.LoggerFactory };
+        OrchestrationMonitor monitor = new();
+        ConcurrentOrchestration orchestration =
+            new(physicist, chemist)
+            {
+                ResponseCallback = monitor.ResponseCallback,
+                LoggerFactory = this.LoggerFactory
+            };
 
         // Start the runtime
         InProcessRuntime runtime = new();
@@ -41,5 +48,11 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
         Console.WriteLine($"\n# RESULT:\n{string.Join("\n", output.Select(text => $"\t{text}"))}");
 
         await runtime.RunUntilIdleAsync();
+
+        Console.WriteLine("\n\nORCHESTRATION HISTORY");
+        foreach (ChatMessageContent message in monitor.History)
+        {
+            this.WriteAgentChatMessage(message);
+        }
     }
 }

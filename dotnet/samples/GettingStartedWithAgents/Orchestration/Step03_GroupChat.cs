@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
@@ -8,7 +9,7 @@ using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
+/// Demonstrates how to use the <see cref="GroupChatOrchestration"/>.
 /// </summary>
 public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
@@ -42,7 +43,19 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
                 """);
 
         // Define the orchestration
-        GroupChatOrchestration orchestration = new(new RoundRobinGroupChatManager() { MaximumInvocations = 5 }, writer, editor) { LoggerFactory = this.LoggerFactory };
+        OrchestrationMonitor monitor = new();
+        GroupChatOrchestration orchestration =
+            new(new RoundRobinGroupChatManager()
+            {
+                MaximumInvocations = 5
+            },
+            writer,
+            editor)
+            {
+                ResponseCallback = monitor.ResponseCallback,
+                LoggerFactory = this.LoggerFactory,
+            };
+
 
         // Start the runtime
         InProcessRuntime runtime = new();
@@ -55,5 +68,11 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
         Console.WriteLine($"\n# RESULT: {text}");
 
         await runtime.RunUntilIdleAsync();
+
+        Console.WriteLine("\n\nORCHESTRATION HISTORY");
+        foreach (ChatMessageContent message in monitor.History)
+        {
+            this.WriteAgentChatMessage(message);
+        }
     }
 }

@@ -24,7 +24,6 @@ public class ConcurrentOrchestration<TInput, TOutput>
     public ConcurrentOrchestration(params Agent[] agents)
         : base(OrchestrationName, agents)
     {
-        //this.OutputTransform=  (message) =>  // %%% ???
     }
 
     /// <inheritdoc />

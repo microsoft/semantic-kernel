@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.Sequential;
@@ -16,8 +17,10 @@ public class Step02_Sequential(ITestOutputHelper output) : BaseOrchestrationTest
     public async Task SequentialTaskAsync()
     {
         // Define the agents
-        ChatCompletionAgent agent1 =
+        ChatCompletionAgent analystAgent =
             this.CreateAgent(
+                name: "Analyst",
+                instructions:
                 """
                 You are a marketing analyst. Given a product description, identify:
                 - Key features
@@ -25,16 +28,20 @@ public class Step02_Sequential(ITestOutputHelper output) : BaseOrchestrationTest
                 - Unique selling points
                 """,
                 description: "A agent that extracts key concepts from a product description.");
-        ChatCompletionAgent agent2 =
+        ChatCompletionAgent writerAgent =
             this.CreateAgent(
+                name: "copywriter",
+                instructions:
                 """
                 You are a marketing copywriter. Given a block of text describing features, audience, and USPs,
                 compose a compelling marketing copy (like a newsletter section) that highlights these points.
                 Output should be short (around 150 words), output just the copy as a single text block.
                 """,
                 description: "An agent that writes a marketing copy based on the extracted concepts.");
-        ChatCompletionAgent agent3 =
+        ChatCompletionAgent editorAgent =
             this.CreateAgent(
+                name: "editor",
+                instructions:
                 """
                 You are an editor. Given the draft copy, correct grammar, improve clarity, ensure consistent tone,
                 give format and make it polished. Output the final improved copy as a single text block.
@@ -42,7 +49,13 @@ public class Step02_Sequential(ITestOutputHelper output) : BaseOrchestrationTest
                 description: "An agent that formats and proofreads the marketing copy.");
 
         // Define the orchestration
-        SequentialOrchestration orchestration = new(agent1, agent2, agent3) { LoggerFactory = this.LoggerFactory };
+        OrchestrationMonitor monitor = new();
+        SequentialOrchestration orchestration =
+            new(analystAgent, writerAgent, editorAgent)
+            {
+                ResponseCallback = monitor.ResponseCallback,
+                LoggerFactory = this.LoggerFactory
+            };
 
         // Start the runtime
         InProcessRuntime runtime = new();
@@ -56,5 +69,11 @@ public class Step02_Sequential(ITestOutputHelper output) : BaseOrchestrationTest
         Console.WriteLine($"\n# RESULT: {text}");
 
         await runtime.RunUntilIdleAsync();
+
+        Console.WriteLine("\n\nORCHESTRATION HISTORY");
+        foreach (ChatMessageContent message in monitor.History)
+        {
+            this.WriteAgentChatMessage(message);
+        }
     }
 }

@@ -48,7 +48,7 @@ public abstract class GroupChatManager
     public int MaximumInvocations { get; init; } = int.MaxValue;
 
     /// <summary>
-    /// Gets or sets the callback to be invoked for interactive operations.
+    /// Gets or sets the callback to be invoked for interactive input.
     /// </summary>
     public OrchestrationInteractiveCallback? InteractiveCallback { get; init; }
 

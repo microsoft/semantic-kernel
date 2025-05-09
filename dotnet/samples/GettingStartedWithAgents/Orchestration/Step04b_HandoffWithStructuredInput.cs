@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="HandoffOrchestration{TInput, TOutput}"/>.
+/// Demonstrates how to use the <see cref="HandoffOrchestration"/>.
 /// </summary>
 public class Step04b_HandoffWithStructuredInput(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
@@ -95,7 +95,7 @@ public class Step04b_HandoffWithStructuredInput(ITestOutputHelper output) : Base
         OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
         string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
         Console.WriteLine($"\n# RESULT: {text}");
-        Console.WriteLine($"\n# LABELS: {string.Join(",", githubPlugin.Labels["12345"])}");
+        Console.WriteLine($"\n# LABELS: {string.Join(",", githubPlugin.Labels["12345"])}\n");
 
         await runtime.RunUntilIdleAsync();
     }

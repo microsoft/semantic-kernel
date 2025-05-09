@@ -31,6 +31,11 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
         this._handoffs = handoffs;
     }
 
+    /// <summary>
+    /// Gets or sets the callback to be invoked for interactive input.
+    /// </summary>
+    public OrchestrationInteractiveCallback? InteractiveCallback { get; init; }
+
     /// <inheritdoc />
     protected override async ValueTask StartAsync(IAgentRuntime runtime, TopicId topic, IEnumerable<ChatMessageContent> input, AgentType? entryAgent)
     {
@@ -59,7 +64,12 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
             agentType =
                 await runtime.RegisterAgentFactoryAsync(
                     this.GetAgentType(context.Topic, index),
-                    (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new HandoffActor(agentId, runtime, context, agent, map, outputType, context.LoggerFactory.CreateLogger<HandoffActor>()))).ConfigureAwait(false);
+                    (agentId, runtime) =>
+                        ValueTask.FromResult<IHostableAgent>(
+                            new HandoffActor(agentId, runtime, context, agent, map, outputType, context.LoggerFactory.CreateLogger<HandoffActor>())
+                            {
+                                InteractiveCallback = this.InteractiveCallback
+                            })).ConfigureAwait(false);
             agentMap[agent.Name ?? agent.Id] = agentType;
 
             await runtime.SubscribeAsync(agentType, context.Topic).ConfigureAwait(false);

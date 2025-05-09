@@ -57,6 +57,13 @@ public abstract class AgentActor : OrchestrationActor
     }
 
     /// <summary>
+    /// Optionally overridden to introduce customer filtering logic for the response callback.
+    /// </summary>
+    /// <param name="response">The agent response</param>
+    /// <returns>true if the response should be filtered (hidden)</returns>
+    protected virtual bool ResponseCallbackFilter(ChatMessageContent response) => false;
+
+    /// <summary>
     /// Deletes the agent thread.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
@@ -108,7 +115,7 @@ public abstract class AgentActor : OrchestrationActor
             AuthorName = firstResponse?.Message.AuthorName,
         };
 
-        if (this.Context.ResponseCallback is not null)
+        if (this.Context.ResponseCallback is not null && !this.ResponseCallbackFilter(response))
         {
             await this.Context.ResponseCallback.Invoke(response).ConfigureAwait(false);
         }
