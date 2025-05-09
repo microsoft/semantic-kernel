@@ -55,7 +55,7 @@
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.8" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="5.3.2" />
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.4" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.Bcl.Numerics" Version="8.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.13.0" />
@@ -154,7 +154,7 @@
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.48.0-preview.0" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
-    <PackageVersion Include="NRedisStack" Version="0.12.0" />
+    <PackageVersion Include="NRedisStack" Version="1.0.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
     <PackageVersion Include="Testcontainers" Version="4.4.0" />
     <PackageVersion Include="Testcontainers.Milvus" Version="4.4.0" />
