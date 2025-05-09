@@ -25,8 +25,9 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// <param name="agentDefinition"></param>
     /// <param name="threadName"></param>
     /// <param name="nodeInputs"></param>
+    /// <param name="stepId">Id of the step. If not provided, the Id will come from the agent Id.</param>
     /// <exception cref="KernelException"></exception>
-    public ProcessAgentBuilder(AgentDefinition agentDefinition, string threadName, NodeInputs nodeInputs) : base(id: agentDefinition.Id ?? agentDefinition.Name ?? throw new KernelException("All declarative agents must have an Id or a Name assigned."))
+    public ProcessAgentBuilder(AgentDefinition agentDefinition, string threadName, NodeInputs nodeInputs, string? stepId = null) : base(id: stepId ?? agentDefinition.Id ?? agentDefinition.Name ?? throw new KernelException("All declarative agents must have an Id or a Name assigned."))
     {
         Verify.NotNull(agentDefinition);
         this._agentDefinition = agentDefinition;

@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a step in a process that executes an agent.
 /// </summary>
-internal class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProcessAgentExecutorState>
+internal sealed class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProcessAgentExecutorState>
 {
     private readonly KernelProcessAgentStep _agentStep;
     private readonly KernelProcessAgentThread _processThread;
