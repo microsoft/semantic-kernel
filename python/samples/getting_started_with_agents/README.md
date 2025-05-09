@@ -22,16 +22,17 @@ The getting started with agents examples include:
 
 Example|Description
 ---|---
-[step1_chat_completion_agent_simple](../getting_started_with_agents/chat_completion/step1_chat_completion_agent_simple.py)|How to create and use a simple chat completion agent.
-[step2_chat_completion_agent_thread_management](../getting_started_with_agents/chat_completion/step2_chat_completion_agent_thread_management.py)|How to create and use a chat completion with a thread.
-[step3_chat_completion_agent_with_kernel](../getting_started_with_agents/chat_completion/step3_chat_completion_agent_with_kernel.py)|How to create and use a a chat completion agent with the AI service created on the kernel.
-[step4_chat_completion_agent_plugin_simple](../getting_started_with_agents/chat_completion/step4_chat_completion_agent_plugin_simple.py)|How to create a simple chat completion agent and specify plugins via the constructor with a kernel.
-[step5_chat_completion_agent_plugin_with_kernel](../getting_started_with_agents/chat_completion/step5_chat_completion_agent_plugin_with_kernel.py)|How to create and use a chat completion agent by registering plugins on the kernel.
-[step6_chat_completion_agent_group_chat](../getting_started_with_agents/chat_completion/step6_chat_completion_agent_group_chat.py)|How to create a conversation between agents.
-[step7_kernel_function_strategies](../getting_started_with_agents/chat_completion/step7_kernel_function_strategies.py)|How to utilize a `KernelFunction` as a chat strategy.
-[step8_chat_completion_agent_json_result](../getting_started_with_agents/chat_completion/step8_chat_completion_agent_json_result.py)|How to have an agent produce JSON.
-[step9_chat_completion_agent_logging](../getting_started_with_agents/chat_completion/step9_chat_completion_agent_logging.py)|How to enable logging for agents.
+[step01_chat_completion_agent_simple](../getting_started_with_agents/chat_completion/step01_chat_completion_agent_simple.py)|How to create and use a simple chat completion agent.
+[step02_chat_completion_agent_thread_management](../getting_started_with_agents/chat_completion/step02_chat_completion_agent_thread_management.py)|How to create and use a chat completion with a thread.
+[step03_chat_completion_agent_with_kernel](../getting_started_with_agents/chat_completion/step03_chat_completion_agent_with_kernel.py)|How to create and use a a chat completion agent with the AI service created on the kernel.
+[step04_chat_completion_agent_plugin_simple](../getting_started_with_agents/chat_completion/step04_chat_completion_agent_plugin_simple.py)|How to create a simple chat completion agent and specify plugins via the constructor with a kernel.
+[step05_chat_completion_agent_plugin_with_kernel](../getting_started_with_agents/chat_completion/step05_chat_completion_agent_plugin_with_kernel.py)|How to create and use a chat completion agent by registering plugins on the kernel.
+[step06_chat_completion_agent_group_chat](../getting_started_with_agents/chat_completion/step06_chat_completion_agent_group_chat.py)|How to create a conversation between agents.
+[step07_kernel_function_strategies](../getting_started_with_agents/chat_completion/step07_kernel_function_strategies.py)|How to utilize a `KernelFunction` as a chat strategy.
+[step08_chat_completion_agent_json_result](../getting_started_with_agents/chat_completion/step08_chat_completion_agent_json_result.py)|How to have an agent produce JSON.
+[step09_chat_completion_agent_logging](../getting_started_with_agents/chat_completion/step09_chat_completion_agent_logging.py)|How to enable logging for agents.
 [step10_chat_completion_agent_structured_outputs](../getting_started_with_agents/chat_completion/step10_chat_completion_agent_structured_outputs.py)|How to use have a chat completion agent use structured outputs
+[step11_chat_completion_agent_declarative](../getting_started_with_agents/chat_completion/step11_chat_completion_agent_declarative.py)|How to create a chat compltion agent from a declarative spec.
 
 ## Azure AI Agent
 
@@ -42,7 +43,9 @@ Example|Description
 [step3_azure_ai_agent_group_chat](../getting_started_with_agents/azure_ai_agent/step3_azure_ai_agent_group_chat.py)|How to create an agent group chat with Azure AI Agents.
 [step4_azure_ai_agent_code_interpreter](../getting_started_with_agents/azure_ai_agent/step4_azure_ai_agent_code_interpreter.py)|How to use the code-interpreter tool for an Azure AI agent.
 [step5_azure_ai_agent_file_search](../getting_started_with_agents/azure_ai_agent/step5_azure_ai_agent_file_search.py)|How to use the file-search tool for an Azure AI agent.
-[step6_azure_ai_agent_openapi](../getting_started_with_agents/azure_ai_agent/step6_azure_ai_agent_openapi.py)|How to use the Open API tool for an Azure AI  agent.
+[step6_azure_ai_agent_openapi](../getting_started_with_agents/azure_ai_agent/step6_azure_ai_agent_openapi.py)|How to use the Open API tool for an Azure AI agent.
+[step7_azure_ai_agent_retrieval](../getting_started_with_agents/azure_ai_agent/step7_azure_ai_agent_retrieval.py)|How to reference an existing Azure AI Agent.
+[step8_azure_ai_agent_declarative](../getting_started_with_agents/azure_ai_agent/step8_azure_ai_agent_declarative.py)|How to create an Azure AI Agent from a declarative spec.
 
 _Note: For details on configuring an Azure AI Agent, please see [here](../getting_started_with_agents/azure_ai_agent/README.md)._
 

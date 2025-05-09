@@ -8,7 +8,7 @@ from typing import Any
 from openai import AsyncAzureOpenAI
 from pydantic import ValidationError
 
-from semantic_kernel.agents.open_ai.openai_responses_agent import OpenAIResponsesAgent
+from semantic_kernel.agents import OpenAIResponsesAgent
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.agent_exceptions import (
     AgentInitializationException,
