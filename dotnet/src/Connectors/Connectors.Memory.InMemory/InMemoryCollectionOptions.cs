@@ -8,10 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 /// <summary>
 /// Options when creating a <see cref="InMemoryCollection{TKey,TRecord}"/>.
 /// </summary>
-/// <typeparam name="TKey">The data type of the record key of the collection that this options will be used with.</typeparam>
-/// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data on the collection that this options will be used with.</typeparam>
-public sealed class InMemoryCollectionOptions<TKey, TRecord>
-    where TKey : notnull
+public sealed class InMemoryCollectionOptions
 {
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

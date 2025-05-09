@@ -46,7 +46,7 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// </summary>
     /// <param name="name">The name of the collection that this <see cref="InMemoryCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public InMemoryCollection(string name, InMemoryCollectionOptions<TKey, TRecord>? options = default)
+    public InMemoryCollection(string name, InMemoryCollectionOptions? options = default)
     {
         // Verify.
         Verify.NotNullOrWhiteSpace(name);
@@ -55,7 +55,7 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
         this.Name = name;
         this._internalCollections = new();
         this._internalCollectionTypes = new();
-        options ??= new InMemoryCollectionOptions<TKey, TRecord>();
+        options ??= new InMemoryCollectionOptions();
 
         this._model = new InMemoryModelBuilder()
             .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
@@ -78,7 +78,7 @@ public sealed class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TK
         ConcurrentDictionary<string, ConcurrentDictionary<object, object>> internalCollection,
         ConcurrentDictionary<string, Type> internalCollectionTypes,
         string collectionName,
-        InMemoryCollectionOptions<TKey, TRecord>? options = default)
+        InMemoryCollectionOptions? options = default)
         : this(collectionName, options)
     {
         this._internalCollections = internalCollection;

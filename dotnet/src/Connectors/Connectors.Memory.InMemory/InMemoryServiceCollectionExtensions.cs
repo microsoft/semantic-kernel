@@ -53,7 +53,7 @@ public static class InMemoryServiceCollectionExtensions
     public static IServiceCollection AddInMemoryVectorStoreRecordCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
-        InMemoryCollectionOptions<TKey, TRecord>? options = default,
+        InMemoryCollectionOptions? options = default,
         string? serviceId = default)
         where TKey : notnull
         where TRecord : class
@@ -62,7 +62,7 @@ public static class InMemoryServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                options ??= sp.GetService<InMemoryCollectionOptions<TKey, TRecord>>() ?? new()
+                options ??= sp.GetService<InMemoryCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
