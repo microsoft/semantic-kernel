@@ -2,8 +2,8 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.Embeddings;
 using Xunit;
 using Xunit.Abstractions;
 
