@@ -69,12 +69,11 @@ internal static class SqliteCommandBuilder
         SqliteConnection connection,
         string tableName,
         IReadOnlyList<SqliteColumn> columns,
-        bool ifNotExists,
-        string extensionName)
+        bool ifNotExists)
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine($"CREATE VIRTUAL TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}\"{tableName}\" USING {extensionName}(");
+        builder.AppendLine($"CREATE VIRTUAL TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}\"{tableName}\" USING vec0(");
 
         // The vector extension is currently uncapable of handling quoted identifiers.
         builder.AppendLine(string.Join(",\n", columns.Select(column => GetColumnDefinition(column, quote: false))));

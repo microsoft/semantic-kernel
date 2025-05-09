@@ -53,9 +53,6 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <summary>Table name in SQLite for vector properties.</summary>
     private readonly string _vectorTableName;
 
-    /// <summary>The sqlite_vec extension name to use.</summary>
-    private readonly string _vectorSearchExtensionName;
-
     /// <inheritdoc />
     public override string Name { get; }
 
@@ -84,7 +81,6 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
         this.Name = name;
 
         options ??= SqliteCollectionOptions.Default;
-        this._vectorSearchExtensionName = options.VectorSearchExtensionName ?? SqliteConstants.VectorSearchExtensionName;
 
         // Escape both table names before exposing them to anything that may build SQL commands.
         this._dataTableName = name.EscapeIdentifier();
@@ -543,7 +539,7 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
     {
         var connection = new SqliteConnection(this._connectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        connection.LoadExtension(this._vectorSearchExtensionName);
+        connection.LoadVector();
         return connection;
     }
 
@@ -599,13 +595,9 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
         if (this._vectorPropertiesExist)
         {
-            var extensionName = !string.IsNullOrWhiteSpace(this._vectorSearchExtensionName) ?
-                this._vectorSearchExtensionName :
-                SqliteConstants.VectorSearchExtensionName;
-
             List<SqliteColumn> vectorTableColumns = SqlitePropertyMapping.GetColumns(this._model.Properties, data: false);
 
-            await this.CreateVirtualTableAsync(connection, this._vectorTableName, vectorTableColumns, ifNotExists, extensionName!, cancellationToken)
+            await this.CreateVirtualTableAsync(connection, this._vectorTableName, vectorTableColumns, ifNotExists, cancellationToken)
                 .ConfigureAwait(false);
         }
     }
@@ -623,11 +615,11 @@ public sealed class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey
             cancellationToken);
     }
 
-    private Task<int> CreateVirtualTableAsync(SqliteConnection connection, string tableName, List<SqliteColumn> columns, bool ifNotExists, string extensionName, CancellationToken cancellationToken)
+    private Task<int> CreateVirtualTableAsync(SqliteConnection connection, string tableName, List<SqliteColumn> columns, bool ifNotExists, CancellationToken cancellationToken)
     {
         const string OperationName = "CreateVirtualTable";
 
-        using var command = SqliteCommandBuilder.BuildCreateVirtualTableCommand(connection, tableName, columns, ifNotExists, extensionName);
+        using var command = SqliteCommandBuilder.BuildCreateVirtualTableCommand(connection, tableName, columns, ifNotExists);
 
         return connection.ExecuteWithErrorHandlingAsync(
             this._collectionMetadata,

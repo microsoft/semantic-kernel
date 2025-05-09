@@ -10,12 +10,6 @@ internal static class SqliteConstants
 {
     internal const string VectorStoreSystemName = "sqlite";
 
-    /// <summary>
-    /// SQLite extension name for vector search.
-    /// More information here: <see href="https://github.com/asg017/sqlite-vec"/>.
-    /// </summary>
-    public const string VectorSearchExtensionName = "vec0";
-
     /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have.</summary>
     public static readonly HashSet<Type> SupportedVectorTypes =
     [
