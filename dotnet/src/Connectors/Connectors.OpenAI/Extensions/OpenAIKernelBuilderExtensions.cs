@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Sponsor extensions class for <see cref="IKernelBuilder"/>.
 /// </summary>
-public static class OpenAIKernelBuilderExtensions
+public static partial class OpenAIKernelBuilderExtensions
 {
     #region Text Embedding
     /// <summary>
@@ -37,6 +37,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("Use AddOpenAIEmbeddingGenerator instead.")]
     public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -72,6 +73,7 @@ public static class OpenAIKernelBuilderExtensions
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("Use AddOpenAIEmbeddingGenerator instead.")]
     public static IKernelBuilder AddOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,

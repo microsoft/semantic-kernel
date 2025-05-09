@@ -34,7 +34,7 @@ public class VectorStore_VectorSearch_MultiStore_Postgres(ITestOutputHelper outp
             .CreateBuilder();
 
         // Register an embedding generation service with the DI container.
-        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
+        kernelBuilder.AddAzureOpenAIEmbeddingGenerator(
             deploymentName: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
             credential: new AzureCliCredential());
@@ -63,7 +63,7 @@ public class VectorStore_VectorSearch_MultiStore_Postgres(ITestOutputHelper outp
     public async Task ExampleWithoutDIAsync()
     {
         // Create an embedding generation service.
-        var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
+        var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());
@@ -76,7 +76,7 @@ public class VectorStore_VectorSearch_MultiStore_Postgres(ITestOutputHelper outp
         var vectorStore = new PostgresVectorStore(dataSource);
 
         // Create the common processor that works for any vector store.
-        var processor = new VectorStore_VectorSearch_MultiStore_Common(vectorStore, textEmbeddingGenerationService, this.Output);
+        var processor = new VectorStore_VectorSearch_MultiStore_Common(vectorStore, embeddingGenerator, this.Output);
 
         // Run the process and pass a key generator function to it, to generate unique record keys.
         // The key generator function is required, since different vector stores may require different key types.

@@ -37,7 +37,7 @@ public class VectorStore_VectorSearch_MultiStore_AzureAISearch(ITestOutputHelper
             .CreateBuilder();
 
         // Register an embedding generation service with the DI container.
-        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
+        kernelBuilder.AddAzureOpenAIEmbeddingGenerator(
             deploymentName: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
             credential: new AzureCliCredential());
@@ -67,7 +67,7 @@ public class VectorStore_VectorSearch_MultiStore_AzureAISearch(ITestOutputHelper
     public async Task ExampleWithoutDIAsync()
     {
         // Create an embedding generation service.
-        var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
+        var textEmbeddingGenerationService = new AzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());

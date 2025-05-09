@@ -2,9 +2,9 @@
 
 using System.Reflection;
 using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace GettingStartedWithVectorStores;
 
@@ -25,7 +25,7 @@ public class VectorStoresFixture
             .Build();
         TestConfiguration.Initialize(configRoot);
 
-        this.TextEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
+        this.EmbeddingGenerator = new AzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());
@@ -34,5 +34,5 @@ public class VectorStoresFixture
     /// <summary>
     /// Gets the text embedding generation service
     /// </summary>
-    public ITextEmbeddingGenerationService TextEmbeddingGenerationService { get; }
+    public IEmbeddingGenerator<string, Embedding<float>> EmbeddingGenerator { get; }
 }

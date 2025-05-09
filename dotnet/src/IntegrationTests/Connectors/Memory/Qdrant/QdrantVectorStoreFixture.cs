@@ -7,6 +7,7 @@ using Azure.Identity;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Grpc.Core;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -77,7 +78,15 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         Assert.NotNull(embeddingsConfig);
         Assert.NotEmpty(embeddingsConfig.DeploymentName);
         Assert.NotEmpty(embeddingsConfig.Endpoint);
-        this.EmbeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        this.TextEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
+            deploymentName: embeddingsConfig.DeploymentName,
+            endpoint: embeddingsConfig.Endpoint,
+            credential: new AzureCliCredential());
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        this.EmbeddingGenerator = new AzureOpenAIEmbeddingGenerator(
             deploymentName: embeddingsConfig.DeploymentName,
             endpoint: embeddingsConfig.Endpoint,
             credential: new AzureCliCredential());
@@ -91,7 +100,9 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// Gets the embedding generator to use for generating embeddings for text.
     /// </summary>
-    public ITextEmbeddingGenerationService EmbeddingGenerator { get; private set; }
+    public ITextEmbeddingGenerationService TextEmbeddingGenerationService { get; private set; }
+
+    public IEmbeddingGenerator<string, Embedding<float>> EmbeddingGenerator { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for our test model.</summary>
     public VectorStoreRecordDefinition HotelVectorStoreRecordDefinition { get; private set; }
@@ -159,7 +170,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         tagsValue2.ListValue = tags2;
 
         // Create some test data using named vectors.
-        var embedding = await this.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel.");
+        var embedding = await this.TextEmbeddingGenerationService.GenerateEmbeddingAsync("This is a great hotel.");
         var embeddingArray = embedding.ToArray();
 
         var namedVectors1 = new NamedVectors();

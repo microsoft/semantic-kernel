@@ -2,10 +2,10 @@
 
 using System.ComponentModel;
 using System.Text.Json;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 
@@ -35,7 +35,7 @@ public class OpenAI_FunctionCallingWithMemoryPlugin(ITestOutputHelper output) : 
         kernelBuilder.AddOpenAIChatCompletion(
                 modelId: TestConfiguration.OpenAI.ChatModelId!,
                 apiKey: TestConfiguration.OpenAI.ApiKey!);
-        kernelBuilder.AddOpenAITextEmbeddingGeneration(
+        kernelBuilder.AddOpenAIEmbeddingGenerator(
                 modelId: TestConfiguration.OpenAI.EmbeddingModelId!,
                 apiKey: TestConfiguration.OpenAI.ApiKey!);
         kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
@@ -43,9 +43,9 @@ public class OpenAI_FunctionCallingWithMemoryPlugin(ITestOutputHelper output) : 
         Kernel kernel = kernelBuilder.Build();
 
         // Create a text memory store and populate it with sample data
-        var embeddingGeneration = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        var embeddingGenerator = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
         VolatileMemoryStore memoryStore = new();
-        SemanticTextMemory textMemory = new(memoryStore, embeddingGeneration);
+        SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
         string collectionName = "SemanticKernel";
         await PopulateMemoryAsync(collectionName, textMemory);
 
@@ -114,7 +114,7 @@ public class OpenAI_FunctionCallingWithMemoryPlugin(ITestOutputHelper output) : 
         private readonly ITestOutputHelper _output = output;
 
         /// <inheritdoc />
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        public async Task OnFunctionInvocationAsync(Microsoft.SemanticKernel.FunctionInvocationContext context, Func<Microsoft.SemanticKernel.FunctionInvocationContext, Task> next)
         {
             this._output.WriteLine($"Function Invocation - {context.Function.Name}");
             await next(context);

@@ -34,7 +34,7 @@ public class AzureAISearchPlugin(ITestOutputHelper output) : BaseTest(output)
         kernelBuilder.Services.AddSingleton<IAzureAISearchService, AzureAISearchService>();
 
         // Embedding generation service to convert string query to vector
-        kernelBuilder.AddOpenAITextEmbeddingGeneration("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey);
+        kernelBuilder.AddOpenAIEmbeddingGenerator("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey);
 
         // Chat completion service to ask questions based on data from Azure AI Search index.
         kernelBuilder.AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey);

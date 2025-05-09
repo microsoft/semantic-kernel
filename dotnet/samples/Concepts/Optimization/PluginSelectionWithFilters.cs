@@ -34,7 +34,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         var builder = Kernel
             .CreateBuilder()
             .AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey)
-            .AddOpenAITextEmbeddingGeneration("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
+            .AddOpenAIEmbeddingGenerator("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
 
         // Add logging.
         var logger = this.LoggerFactory.CreateLogger<PluginSelectionWithFilters>();
@@ -108,7 +108,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         var builder = Kernel
             .CreateBuilder()
             .AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey)
-            .AddOpenAITextEmbeddingGeneration("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
+            .AddOpenAIEmbeddingGenerator("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
 
         // Add logging.
         var logger = this.LoggerFactory.CreateLogger<PluginSelectionWithFilters>();

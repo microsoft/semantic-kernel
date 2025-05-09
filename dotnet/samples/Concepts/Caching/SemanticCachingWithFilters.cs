@@ -124,8 +124,8 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
 
-            // Add Azure OpenAI text embedding generation service
-            builder.AddAzureOpenAITextEmbeddingGeneration(
+            // Add Azure OpenAI embedding generator
+            builder.AddAzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
@@ -138,8 +138,8 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
                 TestConfiguration.AzureOpenAI.Endpoint,
                 new AzureCliCredential());
 
-            // Add Azure OpenAI text embedding generation service
-            builder.AddAzureOpenAITextEmbeddingGeneration(
+            // Add Azure OpenAI embedding generator
+            builder.AddAzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());

@@ -73,12 +73,20 @@ public class AzureAISearchTextSearchTests(AzureAISearchVectorStoreFixture fixtur
             Assert.NotNull(azureOpenAIConfiguration);
             Assert.NotEmpty(azureOpenAIConfiguration.DeploymentName);
             Assert.NotEmpty(azureOpenAIConfiguration.Endpoint);
-            this.EmbeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            this.TextEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
+                azureOpenAIConfiguration.DeploymentName,
+                azureOpenAIConfiguration.Endpoint,
+                new AzureCliCredential());
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            this.EmbeddingGenerator = new AzureOpenAIEmbeddingGenerator(
                 azureOpenAIConfiguration.DeploymentName,
                 azureOpenAIConfiguration.Endpoint,
                 new AzureCliCredential());
 
-            this.VectorStore = new AzureAISearchVectorStore(fixture.SearchIndexClient);
+            this.VectorStore = new AzureAISearchVectorStore(fixture.SearchIndexClient, new() { EmbeddingGenerator = this.EmbeddingGenerator });
         }
 
         var vectorSearch = this.VectorStore.GetCollection<string, AzureAISearchHotel>(fixture.TestIndexName);
@@ -86,9 +94,7 @@ public class AzureAISearchTextSearchTests(AzureAISearchVectorStoreFixture fixtur
         var resultMapper = new HotelTextSearchResultMapper();
 
         // TODO: Once OpenAITextEmbeddingGenerationService implements MEAI's IEmbeddingGenerator (#10811), configure it with the AzureAISearchVectorStore above instead of passing it here.
-#pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
         var result = new VectorStoreTextSearch<AzureAISearchHotel>(vectorSearch, this.EmbeddingGenerator!, stringMapper, resultMapper);
-#pragma warning restore CS0618
 
         return Task.FromResult<ITextSearch>(result);
     }
