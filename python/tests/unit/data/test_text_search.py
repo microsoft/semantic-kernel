@@ -10,13 +10,7 @@ from pydantic import BaseModel
 from semantic_kernel import Kernel
 from semantic_kernel.data import TextSearch
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
-from semantic_kernel.data.text_search import (
-    KernelSearchResults,
-    SearchOptions,
-    TextSearchOptions,
-    TextSearchResult,
-    create_options,
-)
+from semantic_kernel.data.text_search import KernelSearchResults, SearchOptions, TextSearchResult, create_options
 from semantic_kernel.data.vector_search import VectorSearchOptions
 from semantic_kernel.exceptions import TextSearchException
 from semantic_kernel.functions import KernelArguments, KernelParameterMetadata
@@ -26,7 +20,7 @@ from semantic_kernel.utils.list_handler import desync_list
 def test_text_search():
     search_base_class = TextSearch()
     assert search_base_class is not None
-    assert search_base_class.options_class == TextSearchOptions
+    assert search_base_class.options_class == SearchOptions
 
 
 class TestSearch(TextSearch):
@@ -228,18 +222,18 @@ def test_create_options_none():
 
 
 def test_create_options_vector_to_text():
-    options = VectorSearchOptions(top=2, skip=1, include_vectors=True)
-    options_class = TextSearchOptions
-    new_options = create_options(options_class, options, top=1)
+    options = SearchOptions(top=2, skip=1)
+    options_class = VectorSearchOptions
+    new_options = create_options(options_class, options, include_vectors=True, top=1)
     assert new_options is not None
     assert isinstance(new_options, options_class)
     assert new_options.top == 1
-    assert getattr(new_options, "include_vectors", None) is None
+    assert new_options.include_vectors is True
 
 
 def test_create_options_from_dict():
     options = {"skip": 1}
-    options_class = TextSearchOptions
+    options_class = SearchOptions
     new_options = create_options(options_class, options, top=1)  # type: ignore
     assert new_options is not None
     assert isinstance(new_options, options_class)

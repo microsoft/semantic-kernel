@@ -4,7 +4,6 @@ from pytest import fixture, mark
 
 from semantic_kernel.connectors.memory.in_memory import InMemoryCollection, InMemoryStore
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.vector_search import VectorSearchOptions
 
 
 @fixture
@@ -91,7 +90,9 @@ async def test_vectorized_search_similar(collection, distance_function):
     await collection.upsert([record1, record2])
     results = await collection.search(
         vector=[0.9, 0.9, 0.9, 0.9, 0.9],
-        options=VectorSearchOptions(vector_property_name="vector", include_total_count=True, include_vectors=True),
+        vector_property_name="vector",
+        include_total_count=True,
+        include_vectors=True,
     )
     assert results.total_count == 2
     idx = 0

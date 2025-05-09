@@ -7,7 +7,6 @@ from chromadb.api import ClientAPI
 from chromadb.api.models.Collection import Collection
 
 from semantic_kernel.connectors.memory.chroma import ChromaCollection, ChromaStore
-from semantic_kernel.data.vector_search import VectorSearchOptions
 
 
 @pytest.fixture
@@ -103,8 +102,8 @@ async def test_chroma_collection_delete(chroma_collection, mock_client):
     mock_client.get_collection().delete.assert_called_once_with(ids=["1"])
 
 
-async def test_chroma_collection_search(chroma_collection, mock_client):
-    options = VectorSearchOptions(top=1, include_vectors=True)
+@pytest.mark.parametrize("include_vectors", [True, False])
+async def test_chroma_collection_search(chroma_collection, mock_client, include_vectors):
     mock_client.get_collection().query.return_value = {
         "ids": [["1"]],
         "documents": [["test document"]],
@@ -112,7 +111,7 @@ async def test_chroma_collection_search(chroma_collection, mock_client):
         "metadatas": [[{}]],
         "distances": [[0.1]],
     }
-    results = await chroma_collection.search(options=options, vector=[0.1, 0.2, 0.3, 0.4, 0.5])
+    results = await chroma_collection.search(vector=[0.1, 0.2, 0.3, 0.4, 0.5], top=1, include_vectors=include_vectors)
     async for res in results.results:
         assert res.record["id"] == "1"
         assert res.score == 0.1

@@ -288,26 +288,26 @@ class ChromaCollection(
         # Determine available fields
         ids = results["ids"][0] if "ids" in results else []
         metadatas = results.get("metadatas")
-        distances = results.get("distances")
         documents = results.get("documents")
         embeddings = results.get("embeddings")
+        distances = results.get("distances")
 
         # Build records dynamically based on available fields
         for idx, id in enumerate(ids):
-            record = {"id": id}
+            record: dict[str, Any] = {"id": id}
             # Add vector field if present
             if documents is not None and idx < len(documents[0]):
                 record["document"] = documents[0][idx]
             elif embeddings is not None and idx < len(embeddings[0]):
                 record["embedding"] = embeddings[0][idx]
             # Add distance if present
-            if distances is not None and idx < len(distances[0]):
+            if distances is not None and isinstance(distances, list) and idx < len(distances[0]):
                 record["distance"] = distances[0][idx]
             # Add metadata if present
-            if metadatas is not None and idx < len(metadatas[0]):
-                metadata = metadatas[0][idx]
-                if metadata:
-                    record.update(metadata)  # type: ignore
+            if metadatas is not None and idx < len(metadatas[0]) and metadatas[0] is not None:
+                metadata = metadatas[0] if isinstance(metadatas[0], dict) else metadatas[0][idx]  # type: ignore
+                if metadata and isinstance(metadata, dict):
+                    record.update(metadata)
             records.append(record)
         return records
 

@@ -17,7 +17,6 @@ from semantic_kernel.connectors.memory.azure_ai_search import (
     _data_model_definition_to_azure_ai_search_index,
     _get_search_index_client,
 )
-from semantic_kernel.data.vector_search import VectorSearchOptions
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     VectorStoreInitializationException,
@@ -332,8 +331,7 @@ def test_get_search_index_client(azure_ai_search_unit_test_env):
 
 @mark.parametrize("include_vectors", [True, False])
 async def test_search_vectorized_search(collection, mock_search, include_vectors):
-    options = VectorSearchOptions(include_vectors=include_vectors)
-    results = await collection.search(vector=[0.1, 0.2, 0.3], options=options)
+    results = await collection.search(vector=[0.1, 0.2, 0.3], include_vectors=include_vectors)
     assert results is not None
     async for result in results.results:
         assert result is not None
@@ -353,10 +351,9 @@ async def test_search_vectorized_search(collection, mock_search, include_vectors
 
 @mark.parametrize("include_vectors", [True, False])
 async def test_search_vectorizable_search(collection, mock_search, include_vectors):
-    options = VectorSearchOptions(include_vectors=include_vectors)
     collection.embedding_generator = AsyncMock(spec=EmbeddingGeneratorBase)
     collection.embedding_generator.generate_embeddings.return_value = np.array([[0.1, 0.2, 0.3]])
-    results = await collection.search("test", options=options)
+    results = await collection.search("test", include_vectors=include_vectors)
     assert results is not None
     async for result in results.results:
         assert result is not None
@@ -377,8 +374,12 @@ async def test_search_vectorizable_search(collection, mock_search, include_vecto
 @mark.parametrize("include_vectors", [True, False])
 @mark.parametrize("keywords", ["test", ["test1", "test2"]], ids=["single", "multiple"])
 async def test_search_keyword_hybrid_search(collection, mock_search, include_vectors, keywords):
-    options = VectorSearchOptions(include_vectors=include_vectors, additional_property_name="content")
-    results = await collection.hybrid_search(values=keywords, vector=[0.1, 0.2, 0.3], options=options)
+    results = await collection.hybrid_search(
+        values=keywords,
+        vector=[0.1, 0.2, 0.3],
+        include_vectors=include_vectors,
+        additional_property_name="content",
+    )
     assert results is not None
     async for result in results.results:
         assert result is not None
@@ -400,10 +401,9 @@ async def test_search_keyword_hybrid_search(collection, mock_search, include_vec
 
 @mark.parametrize("filter, result", filter_lambda_list("ai_search"))
 def test_lambda_filter(collection, filter, result):
-    options = VectorSearchOptions(filter=filter)
     if isinstance(result, type) and issubclass(result, Exception):
         with raises(result):
-            collection._build_filter(options.filter)
+            collection._build_filter(filter)
     else:
-        filter_string = collection._build_filter(options.filter)
+        filter_string = collection._build_filter(filter)
         assert filter_string == result

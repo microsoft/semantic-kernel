@@ -508,16 +508,13 @@ class TextSearch:
     async def search(
         self,
         query: str,
-        options: "SearchOptions | None" = None,
         **kwargs: Any,
     ) -> "KernelSearchResults[str]":
         """Search for text, returning a KernelSearchResult with a list of strings.
 
         Args:
             query: The query to search for.
-            options: The search options.
-            **kwargs: If options is None, the search options can be passed as keyword arguments.
-                They are then used to create a search options object.
+            **kwargs: Additional keyword arguments to pass to the search function.
 
         """
         ...
@@ -526,7 +523,6 @@ class TextSearch:
     async def get_text_search_results(
         self,
         query: str,
-        options: "SearchOptions | None" = None,
         **kwargs: Any,
     ) -> "KernelSearchResults[TextSearchResult]":
         """Search for text, returning a KernelSearchResult with TextSearchResults."""
@@ -536,7 +532,6 @@ class TextSearch:
     async def get_search_results(
         self,
         query: str,
-        options: "SearchOptions | None" = None,
         **kwargs: Any,
     ) -> "KernelSearchResults[Any]":
         """Search for text, returning a KernelSearchResult with the results directly from the service."""

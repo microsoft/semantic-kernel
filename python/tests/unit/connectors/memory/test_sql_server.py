@@ -465,10 +465,6 @@ class TestSqlServerCollection:
             connection=mock_connection,
         )
         vector = [0.1, 0.2, 0.3, 0.4, 0.5]
-        options = VectorSearchOptions(
-            vector_property_name="vector",
-            filter=lambda x: x.content == "test",
-        )
 
         @dataclass
         class MockRow:
@@ -480,7 +476,11 @@ class TestSqlServerCollection:
         mock_cursor.description = [["id"], ["content"], ["_vector_distance_value"]]
 
         mock_cursor.__iter__.return_value = [row]
-        search_result = await collection.search(vector=vector, options=options)
+        search_result = await collection.search(
+            vector=vector,
+            vector_property_name="vector",
+            filter=lambda x: x.content == "test",
+        )
         async for record in search_result.results:
             assert record.record["id"] == "1"
             assert record.record["content"] == "test"
