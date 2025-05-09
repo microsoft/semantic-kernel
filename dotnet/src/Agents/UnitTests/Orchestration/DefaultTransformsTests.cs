@@ -18,11 +18,11 @@ public class DefaultTransformsTests
     public async Task FromInputAsync_WithEnumerableOfChatMessageContent_ReturnsInputAsync()
     {
         // Arrange
-        IEnumerable<ChatMessageContent> input = new List<ChatMessageContent>
-        {
+        IEnumerable<ChatMessageContent> input =
+        [
             new(AuthorRole.User, "Hello"),
             new(AuthorRole.Assistant, "Hi there")
-        };
+        ];
 
         // Act
         IEnumerable<ChatMessageContent> result = await DefaultTransforms.FromInput(input);
@@ -158,7 +158,7 @@ public class DefaultTransformsTests
         ];
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => 
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await DefaultTransforms.ToOutput<TestObject>(input)
         );
     }
@@ -195,7 +195,7 @@ public class DefaultTransformsTests
         Assert.Equal(string.Empty, result);
     }
 
-    private class TestObject
+    private sealed class TestObject
     {
         public int Id { get; set; }
         public string? Name { get; set; }
