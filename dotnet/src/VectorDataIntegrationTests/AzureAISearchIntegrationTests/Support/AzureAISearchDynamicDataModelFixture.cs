@@ -4,9 +4,9 @@ using VectorDataSpecificationTests.Support;
 
 namespace AzureAISearchIntegrationTests.Support;
 
-public class AzureAISearchSimpleModelFixture : SimpleModelFixture<string>
+public class AzureAISearchDynamicDataModelFixture : DynamicDataModelFixture<string>
 {
-    public override string CollectionName => "simplemodel-" + AzureAISearchTestEnvironment.TestIndexPostfix;
+    public override string CollectionName => "dynamicdatamodel-" + AzureAISearchTestEnvironment.TestIndexPostfix;
 
     public override TestStore TestStore => AzureAISearchTestStore.Instance;
 }
