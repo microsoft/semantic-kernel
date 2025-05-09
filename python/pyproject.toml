@@ -50,6 +50,8 @@ dependencies = [
     "scipy>=1.15.1",
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
+    # Protobuf
+    "protobuf",
 ]
 
 ### Optional dependencies
@@ -88,13 +90,13 @@ faiss = [
     "faiss-cpu>=1.10.0"
 ]
 google = [
-    "google-cloud-aiplatform == 1.89.0",
+    "google-cloud-aiplatform == 1.91.0",
     "google-generativeai ~= 0.8"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 5.0",
-    "torch == 2.6.0"
+    "torch == 2.7.0"
 ]
 mcp = [
     "mcp ~= 1.6"
@@ -145,7 +147,7 @@ sql = [
 ]
 usearch = [
     "usearch ~= 2.16",
-    "pyarrow >= 12.0,< 20.0"
+    "pyarrow >= 12.0,< 21.0"
 ]
 weaviate = [
     "weaviate-client>=4.10,<5.0",
