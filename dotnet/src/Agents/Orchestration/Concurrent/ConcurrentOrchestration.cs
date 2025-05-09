@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
@@ -15,7 +14,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 public class ConcurrentOrchestration<TInput, TOutput>
     : AgentOrchestration<TInput, TOutput>
 {
-    internal static readonly string OrchestrationName = typeof(ConcurrentOrchestration<,>).Name.Split('`').First();
+    internal static readonly string OrchestrationName = FormatOrchestrationName(typeof(ConcurrentOrchestration<,>));
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConcurrentOrchestration{TInput, TOutput}"/> class.

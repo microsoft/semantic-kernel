@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
@@ -16,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 /// </summary>
 public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, TOutput>
 {
-    internal static readonly string OrchestrationName = typeof(HandoffOrchestration<,>).Name.Split('`').First();
+    internal static readonly string OrchestrationName = FormatOrchestrationName(typeof(HandoffOrchestration<,>));
 
     private readonly Dictionary<string, HandoffConnections> _handoffs;
 
