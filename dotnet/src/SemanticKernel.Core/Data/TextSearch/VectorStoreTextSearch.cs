@@ -171,28 +171,66 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <inheritdoc/>
+    public async IAsyncEnumerable<string> SearchAsync(string query, int top, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var searchResponse = this.ExecuteVectorSearchAsync(query, top, searchOptions, cancellationToken);
+
+        await foreach (var result in this.GetResultsAsStringAsync(searchResponse, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<TextSearchResult> GetTextSearchResultsAsync(string query, int top, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var searchResponse = this.ExecuteVectorSearchAsync(query, top, searchOptions, cancellationToken);
+
+        await foreach (var result in this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<object> GetSearchResultsAsync(string query, int top, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var searchResponse = this.ExecuteVectorSearchAsync(query, top, searchOptions, cancellationToken);
+
+        await foreach (var result in this.GetResultsAsRecordAsync(searchResponse, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
+    }
+
+    #region obsolete
+    /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
     public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
+        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions?.Top ?? TextSearchOptions.DefaultTop, searchOptions, cancellationToken);
 
         return Task.FromResult(new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken)));
     }
 
     /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
     public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
+        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions?.Top ?? TextSearchOptions.DefaultTop, searchOptions, cancellationToken);
 
         return Task.FromResult(new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken)));
     }
 
     /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
     public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken);
+        var searchResponse = this.ExecuteVectorSearchAsync(query, searchOptions?.Top ?? TextSearchOptions.DefaultTop, searchOptions, cancellationToken);
 
         return Task.FromResult(new KernelSearchResults<object>(this.GetResultsAsRecordAsync(searchResponse, cancellationToken)));
     }
+    #endregion
 
     #region private
     private readonly ITextEmbeddingGenerationService? _textEmbeddingGeneration;
@@ -246,9 +284,10 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// Execute a vector search and return the results.
     /// </summary>
     /// <param name="query">What to search for.</param>
+    /// <param name="top">Maximum number of search results to return.</param>
     /// <param name="searchOptions">Search options.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteVectorSearchAsync(string query, int top, TextSearchOptions? searchOptions, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         searchOptions ??= new TextSearchOptions();
         var vectorSearchOptions = new VectorSearchOptions<TRecord>
@@ -263,7 +302,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         {
             var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            await foreach (var result in this._vectorSearch!.SearchEmbeddingAsync(vectorizedQuery, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
+            await foreach (var result in this._vectorSearch!.SearchEmbeddingAsync(vectorizedQuery, top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
             {
                 yield return result;
             }
@@ -271,7 +310,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             yield break;
         }
 
-        await foreach (var result in this._vectorSearch!.SearchAsync(query, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
+        await foreach (var result in this._vectorSearch!.SearchAsync(query, top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
         {
             yield return result;
         }

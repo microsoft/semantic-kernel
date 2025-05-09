@@ -30,7 +30,7 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search and add to the kernel
-        var searchPlugin = textSearch.CreateWithSearch("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithSearch(top: 5, pluginName: "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -57,7 +57,7 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search and add to the kernel
-        var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithGetTextSearchResults(top: 5, pluginName: "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -89,7 +89,7 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
         var searchOptions = new TextSearchOptions() { Filter = filter };
         var searchPlugin = KernelPluginFactory.CreateFromFunctions(
             "SearchPlugin", "Search Microsoft Developer Blogs site only",
-            [textSearch.CreateGetTextSearchResults(searchOptions: searchOptions)]);
+            [textSearch.CreateGetTextSearchResults(top: 5, searchOptions: searchOptions)]);
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -138,9 +138,9 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
                 new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
                 new KernelParameterMetadata("site") { Description = "Only return results from this domain", IsRequired = false },
             ],
-            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
+            ReturnParameter = new() { ParameterType = typeof(List<string>) },
         };
 
-        return textSearch.CreateSearch(options);
+        return textSearch.CreateSearch(top: 5, options);
     }
 }

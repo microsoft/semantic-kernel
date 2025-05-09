@@ -18,7 +18,9 @@ namespace SemanticKernel.IntegrationTests.Data;
 /// </summary>
 public abstract class BaseTextSearchTests : BaseIntegrationTest
 {
-    [Fact(Skip = "For manual verification only.")]
+    private const string SkipReason = "For manual verification only.";
+
+    [Fact(Skip = SkipReason)]
     public virtual async Task CanSearchAsync()
     {
         // Arrange
@@ -30,11 +32,11 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var query = this.GetQuery();
 
         // Act
-        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<string> stringResults = textSearch.SearchAsync(query, 4);
 
         // Assert
         Assert.NotNull(stringResults);
-        var results = await stringResults.Results.ToArrayAsync<string>();
+        var results = await stringResults.ToArrayAsync<string>();
         Assert.Equal(4, results.Length);
         foreach (var result in results)
         {
@@ -42,7 +44,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         }
     }
 
-    [Fact(Skip = "For manual verification only.")]
+    [Fact(Skip = SkipReason)]
     public virtual async Task CanGetTextSearchResultsAsync()
     {
         // Arrange
@@ -54,11 +56,11 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var query = this.GetQuery();
 
         // Act
-        KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, 4);
 
         // Assert
         Assert.NotNull(textResults);
-        var results = await textResults.Results.ToArrayAsync<TextSearchResult>();
+        var results = await textResults.ToArrayAsync<TextSearchResult>();
         Assert.Equal(4, results.Length);
         foreach (var result in results)
         {
@@ -72,7 +74,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         }
     }
 
-    [Fact(Skip = "For manual verification only.")]
+    [Fact(Skip = SkipReason)]
     public virtual async Task CanGetSearchResultsAsync()
     {
         // Arrange
@@ -84,15 +86,15 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var query = this.GetQuery();
 
         // Act
-        KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<object> fullResults = textSearch.GetSearchResultsAsync(query, 4);
 
         // Assert
         Assert.NotNull(fullResults);
-        var results = await fullResults.Results.ToArrayAsync<object>();
+        var results = await fullResults.ToArrayAsync<object>();
         Assert.True(this.VerifySearchResults(results, query));
     }
 
-    [Fact(Skip = "For manual verification only.")]
+    [Fact(Skip = SkipReason)]
     public virtual async Task UsingTextSearchWithAFilterAsync()
     {
         // Arrange
@@ -105,15 +107,15 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var filter = this.GetTextSearchFilter();
 
         // Act
-        KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new() { Top = 4, Filter = filter });
+        IAsyncEnumerable<object> fullResults = textSearch.GetSearchResultsAsync(query, 4, new() { Filter = filter });
 
         // Assert
         Assert.NotNull(fullResults);
-        var results = await fullResults.Results.ToArrayAsync<object>();
+        var results = await fullResults.ToArrayAsync<object>();
         Assert.True(this.VerifySearchResults(results, query, filter));
     }
 
-    [Fact(Skip = "For manual verification only.")]
+    [Fact(Skip = SkipReason)]
     public virtual async Task FunctionCallingUsingCreateWithSearchAsync()
     {
         // Arrange
@@ -126,7 +128,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var kernel = this.CreateKernelWithOpenAI();
         kernel.AutoFunctionInvocationFilters.Add(filter);
 
-        var searchPlugin = textSearch.CreateWithSearch("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithSearch(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Act
@@ -142,7 +144,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         Assert.NotEmpty(results);
     }
 
-    [Fact(Skip = "For manual verification only.")]
+    [Fact(Skip = SkipReason)]
     public virtual async Task FunctionCallingUsingCreateWithGetSearchResultsAsync()
     {
         // Arrange
@@ -155,7 +157,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var kernel = this.CreateKernelWithOpenAI();
         kernel.AutoFunctionInvocationFilters.Add(filter);
 
-        var searchPlugin = textSearch.CreateWithGetSearchResults("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithGetSearchResults(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Act
@@ -171,7 +173,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         Assert.NotEmpty(results);
     }
 
-    [Fact(Skip = "For manual verification only.")]
+    [Fact(Skip = SkipReason)]
     public virtual async Task FunctionCallingUsingGetTextSearchResultsAsync()
     {
         // Arrange
@@ -184,7 +186,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var kernel = this.CreateKernelWithOpenAI();
         kernel.AutoFunctionInvocationFilters.Add(filter);
 
-        var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithGetTextSearchResults(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Act

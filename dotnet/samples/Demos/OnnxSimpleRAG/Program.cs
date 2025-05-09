@@ -67,8 +67,7 @@ foreach (var factTextFile in Directory.GetFiles("Facts", "*.txt"))
 // TODO: Once OpenAITextEmbeddingGenerationService implements MEAI's IEmbeddingGenerator (#10811), configure it with the InMemoryVectorStore above instead of passing it here.
 #pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
 var vectorStoreTextSearch = new VectorStoreTextSearch<InformationItem>(collection, embeddingService);
-#pragma warning restore CS0618
-kernel.Plugins.Add(vectorStoreTextSearch.CreateWithSearch("SearchPlugin"));
+kernel.Plugins.Add(vectorStoreTextSearch.CreateWithSearch(top: 5, "SearchPlugin"));
 
 // Start the conversation
 while (true)
