@@ -247,6 +247,46 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     }
 
     /// <summary>
+    /// Adds a step to the process from a declarative agent.
+    /// </summary>
+    /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
+    /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
+    /// <param name="aliases"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public ProcessAgentBuilder AddStepFromAgentProxy(AgentDefinition agentDefinition, string? threadName = null, IReadOnlyList<string>? aliases = null)
+    {
+        Verify.NotNull(agentDefinition, nameof(agentDefinition));
+
+        if (string.IsNullOrWhiteSpace(agentDefinition.Id))
+        {
+            throw new ArgumentException("AgentDefinition.Id cannot be null or empty.", nameof(agentDefinition));
+        }
+
+        if (string.IsNullOrWhiteSpace(agentDefinition.Name))
+        {
+            throw new ArgumentException("AgentDefinition.Name cannot be null or empty.", nameof(agentDefinition));
+        }
+
+        if (string.IsNullOrWhiteSpace(threadName))
+        {
+            // No thread name was specified so add a new thread for the agent.
+            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            threadName = agentDefinition.Name;
+        }
+
+        KernelProcessStateResolver<string?> agentIdResolver = new((s) =>
+        {
+            StateResolverContentWrapper wrapper = new() { State = s };
+            var result = JMESPathConditionEvaluator.EvaluateToString(wrapper, agentDefinition.Id);
+            return Task.FromResult(result);
+        });
+
+        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName, new NodeInputs()) { AgentIdResolver = agentIdResolver }; // TODO: Add inputs to the agent
+        return this.AddStep(stepBuilder, aliases);
+    }
+
+    /// <summary>
     /// Adds a step to the process that represents the end of the process.
     /// </summary>
     /// <returns></returns>

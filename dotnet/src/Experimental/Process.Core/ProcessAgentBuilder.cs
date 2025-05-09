@@ -56,6 +56,11 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     #region Public Interface
 
     /// <summary>
+    /// The optional resolver for the agent ID. This is used to determine the ID of the agent at runtime.
+    /// </summary>
+    public KernelProcessStateResolver<string?>? AgentIdResolver { get; init; } = null;
+
+    /// <summary>
     /// The name of the thread that this agent will run on.
     /// </summary>
     public string ThreadName { get; init; }
@@ -212,7 +217,7 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
 
         var state = new KernelProcessStepState(this.Name, "1.0", this.Id);
 
-        return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.ThreadName, this.Inputs);
+        return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.ThreadName, this.Inputs) { AgentIdResolver = this.AgentIdResolver };
     }
 
     internal ProcessFunctionTargetBuilder GetInvokeAgentFunctionTargetBuilder()
