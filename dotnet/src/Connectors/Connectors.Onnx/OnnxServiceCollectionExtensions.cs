@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.IO;
 using System.Text.Json;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -50,6 +52,7 @@ public static class OnnxServiceCollectionExtensions
     /// <param name="options">Options for the configuration of the model and service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Obsolete("Use AddBertOnnxEmbeddingGenerator instead.")]
     public static IServiceCollection AddBertOnnxTextEmbeddingGeneration(
         this IServiceCollection services,
         string onnxModelPath,
@@ -69,6 +72,7 @@ public static class OnnxServiceCollectionExtensions
     /// <param name="options">Options for the configuration of the model and service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Obsolete("Use AddBertOnnxEmbeddingGenerator instead.")]
     public static IServiceCollection AddBertOnnxTextEmbeddingGeneration(
         this IServiceCollection services,
         Stream onnxModelStream,
@@ -79,5 +83,47 @@ public static class OnnxServiceCollectionExtensions
         return services.AddKeyedSingleton<ITextEmbeddingGenerationService>(
             serviceId,
             BertOnnxTextEmbeddingGenerationService.Create(onnxModelStream, vocabStream, options));
+    }
+
+    /// <summary>Adds a text embedding generation service using a BERT ONNX model.</summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="onnxModelPath">The path to the ONNX model file.</param>
+    /// <param name="vocabPath">The path to the vocab file.</param>
+    /// <param name="options">Options for the configuration of the model and service.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    public static IServiceCollection AddBertOnnxEmbeddingGenerator(
+        this IServiceCollection services,
+        string onnxModelPath,
+        string vocabPath,
+        BertOnnxOptions? options = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+
+        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(
+            serviceId,
+            BertOnnxEmbeddingGenerator.Create(onnxModelPath, vocabPath, options));
+    }
+
+    /// <summary>Adds a text embedding generation service using a BERT ONNX model.</summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
+    /// <param name="onnxModelStream">Stream containing the ONNX model. The stream will be read during this call and will not be used after this call's completion.</param>
+    /// <param name="vocabStream">Stream containing the vocab file. The stream will be read during this call and will not be used after this call's completion.</param>
+    /// <param name="options">Options for the configuration of the model and service.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <returns>The same instance as <paramref name="services"/>.</returns>
+    public static IServiceCollection AddBertOnnxEmbeddingGenerator(
+        this IServiceCollection services,
+        Stream onnxModelStream,
+        Stream vocabStream,
+        BertOnnxOptions? options = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(services);
+
+        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(
+            serviceId,
+            BertOnnxEmbeddingGenerator.Create(onnxModelStream, vocabStream, options));
     }
 }

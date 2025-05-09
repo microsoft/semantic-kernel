@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -9,30 +8,29 @@ using System.Numerics.Tensors;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Onnx;
-using Microsoft.SemanticKernel.Embeddings;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Onnx;
 
-[Obsolete("Temporary test for Obsoleted BertOnnxTextEmbeddingGenerationService.")]
-public class BertOnnxTextEmbeddingGenerationServiceTests
+public class BertOnnxEmbeddingGeneratorTests
 {
     private static readonly HttpClient s_client = new();
 
     [Fact]
     public async Task ValidateEmbeddingsAreIdempotentAsync()
     {
-        Func<Task<BertOnnxTextEmbeddingGenerationService>>[] funcs =
+        Func<Task<BertOnnxEmbeddingGenerator>>[] funcs =
         [
             GetBgeMicroV2ServiceAsync,
             GetAllMiniLML6V2Async,
         ];
 
-        foreach (Func<Task<BertOnnxTextEmbeddingGenerationService>> func in funcs)
+        foreach (Func<Task<BertOnnxEmbeddingGenerator>> func in funcs)
         {
-            using BertOnnxTextEmbeddingGenerationService service = await func();
+            using BertOnnxEmbeddingGenerator service = await func();
 
             string[] inputs =
             [
@@ -49,11 +47,11 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
             foreach (string input in inputs)
             {
 #pragma warning disable CA1308 // Normalize strings to uppercase
-                IList<ReadOnlyMemory<float>> results = await service.GenerateEmbeddingsAsync([input, input.ToUpperInvariant(), input.ToLowerInvariant()]);
+                var results = await service.GenerateAsync([input, input.ToUpperInvariant(), input.ToLowerInvariant()]);
 #pragma warning restore CA1308 // Normalize strings to uppercase
                 for (int i = 1; i < results.Count; i++)
                 {
-                    AssertEqualTolerance(results[0].Span, results[i].Span);
+                    AssertEqualTolerance(results[0].Vector.Span, results[i].Vector.Span);
                 }
             }
         }
@@ -71,30 +69,28 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
         // Test with all the different ways a service can be created
         foreach (BertOnnxOptions? options in new[] { new BertOnnxOptions(), null })
         {
-            using var service1 = BertOnnxTextEmbeddingGenerationService.Create(modelPath, vocabPath, options);
-            using var service2 = BertOnnxTextEmbeddingGenerationService.Create(modelStream, vocabStream, options);
+            using var service1 = BertOnnxEmbeddingGenerator.Create(modelPath, vocabPath, options);
+            using var service2 = BertOnnxEmbeddingGenerator.Create(modelStream, vocabStream, options);
             modelStream.Position = vocabStream.Position = 0;
 
-            using var service3 = await BertOnnxTextEmbeddingGenerationService.CreateAsync(modelPath, vocabPath, options);
-            using var service4 = await BertOnnxTextEmbeddingGenerationService.CreateAsync(modelStream, vocabStream, options);
+            using var service3 = await BertOnnxEmbeddingGenerator.CreateAsync(modelPath, vocabPath, options);
+            using var service4 = await BertOnnxEmbeddingGenerator.CreateAsync(modelStream, vocabStream, options);
             modelStream.Position = vocabStream.Position = 0;
 
-            using var service5 = (BertOnnxTextEmbeddingGenerationService)Kernel.CreateBuilder().AddBertOnnxTextEmbeddingGeneration(modelPath, vocabPath, options).Build().GetRequiredService<ITextEmbeddingGenerationService>();
-            using var service6 = (BertOnnxTextEmbeddingGenerationService)Kernel.CreateBuilder().AddBertOnnxTextEmbeddingGeneration(modelStream, vocabStream, options).Build().GetRequiredService<ITextEmbeddingGenerationService>();
+            using var service5 = (BertOnnxEmbeddingGenerator)Kernel.CreateBuilder().AddBertOnnxEmbeddingGenerator(modelPath, vocabPath, options).Build().GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+            using var service6 = (BertOnnxEmbeddingGenerator)Kernel.CreateBuilder().AddBertOnnxEmbeddingGenerator(modelStream, vocabStream, options).Build().GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
             modelStream.Position = vocabStream.Position = 0;
 
             var b = Kernel.CreateBuilder();
-            b.Services.AddBertOnnxTextEmbeddingGeneration(modelPath, vocabPath, options);
-            using var service7 = (BertOnnxTextEmbeddingGenerationService)b.Build().GetRequiredService<ITextEmbeddingGenerationService>();
+            b.Services.AddBertOnnxEmbeddingGenerator(modelPath, vocabPath, options);
+            using var service7 = (BertOnnxEmbeddingGenerator)b.Build().GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
             b.Services.Clear();
-            b.Services.AddBertOnnxTextEmbeddingGeneration(modelStream, vocabStream, options);
-            using var service8 = (BertOnnxTextEmbeddingGenerationService)b.Build().GetRequiredService<ITextEmbeddingGenerationService>();
+            b.Services.AddBertOnnxEmbeddingGenerator(modelStream, vocabStream, options);
+            using var service8 = (BertOnnxEmbeddingGenerator)b.Build().GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
             modelStream.Position = vocabStream.Position = 0;
 
             foreach (var service in new[] { service1, service2, service3, service4, service5, service6, service7, service8 })
             {
-                Assert.Empty(service.Attributes);
-
                 // Inputs generated by running this Python code:
                 //     from sentence_transformers import SentenceTransformer
                 //     sentences = ["This is an example sentence", "Each sentence is converted"]
@@ -110,8 +106,8 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
 
                 foreach (var (Input, Embedding) in samples)
                 {
-                    IList<ReadOnlyMemory<float>> results = await service.GenerateEmbeddingsAsync([Input]);
-                    AssertEqualTolerance(Embedding, results[0].Span);
+                    var results = await service.GenerateAsync([Input]);
+                    AssertEqualTolerance(Embedding, results[0].Vector.Span);
                 }
             }
         }
@@ -120,7 +116,7 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
     [Fact]
     public async Task ValidateExpectedEmbeddingsForAllMiniLML6V2Async()
     {
-        using BertOnnxTextEmbeddingGenerationService service = await GetAllMiniLML6V2Async();
+        using BertOnnxEmbeddingGenerator service = await GetAllMiniLML6V2Async();
 
         // Inputs generated by running this Python code:
         //     from sentence_transformers import SentenceTransformer
@@ -137,18 +133,18 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
 
         foreach (var (Input, Embedding) in samples)
         {
-            IList<ReadOnlyMemory<float>> results = await service.GenerateEmbeddingsAsync([Input]);
-            AssertEqualTolerance(Embedding, results[0].Span);
+            var results = await service.GenerateAsync([Input]);
+            AssertEqualTolerance(Embedding, results[0].Vector.Span);
         }
     }
 
     [Fact]
     public async Task ValidateSimilarityScoresOrderedForBgeMicroV2Async()
     {
-        using BertOnnxTextEmbeddingGenerationService service = await GetBgeMicroV2ServiceAsync();
+        using BertOnnxEmbeddingGenerator service = await GetBgeMicroV2ServiceAsync();
 
         string input = "What is an amphibian?";
-        IList<ReadOnlyMemory<float>> inputResults = await service.GenerateEmbeddingsAsync([input]);
+        var inputResults = await service.GenerateAsync([input]);
 
         string[] examples =
         [
@@ -173,12 +169,12 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
             {
                 examples = [.. examples.OrderBy(e => Guid.NewGuid())]; // TODO: Random.Shared.Shuffle
 
-                IList<ReadOnlyMemory<float>> examplesResults = await service.GenerateEmbeddingsAsync(
+                var examplesResults = await service.GenerateAsync(
                     examples.Select(s => upper ? s.ToUpperInvariant() : s).ToList());
 
                 string[] sortedExamples = examples
                     .Zip(examplesResults)
-                    .OrderByDescending(p => TensorPrimitives.CosineSimilarity(inputResults[0].Span, p.Second.Span))
+                    .OrderByDescending(p => TensorPrimitives.CosineSimilarity(inputResults[0].Vector.Span, p.Second.Vector.Span))
                     .Select(p => p.First)
                     .ToArray();
 
@@ -207,10 +203,10 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
     [Fact]
     public async Task ValidateServiceMayBeUsedConcurrentlyAsync()
     {
-        using BertOnnxTextEmbeddingGenerationService service = await GetBgeMicroV2ServiceAsync();
+        using BertOnnxEmbeddingGenerator service = await GetBgeMicroV2ServiceAsync();
 
         string input = "What is an amphibian?";
-        IList<ReadOnlyMemory<float>> inputResults = await service.GenerateEmbeddingsAsync([input]);
+        var inputResults = await service.GenerateAsync([input]);
 
         string[] examples =
         [
@@ -231,12 +227,12 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
 
         for (int trial = 0; trial < 10; trial++)
         {
-            IList<ReadOnlyMemory<float>> examplesResults =
-                (await Task.WhenAll(examples.Select(e => service.GenerateEmbeddingsAsync([e])))).SelectMany(e => e).ToList();
+            var examplesResults =
+                (await Task.WhenAll(examples.Select(e => service.GenerateAsync([e])))).SelectMany(e => e).ToList();
 
             string[] sortedExamples = examples
                 .Zip(examplesResults)
-                .OrderByDescending(p => TensorPrimitives.CosineSimilarity(inputResults[0].Span, p.Second.Span))
+                .OrderByDescending(p => TensorPrimitives.CosineSimilarity(inputResults[0].Vector.Span, p.Second.Vector.Span))
                 .Select(p => p.First)
                 .ToArray();
 
@@ -311,13 +307,13 @@ public class BertOnnxTextEmbeddingGenerationServiceTests
     private const string BgeMicroV2ModelUrl = "https://huggingface.co/TaylorAI/bge-micro-v2/resolve/f09f671/onnx/model.onnx";
     private const string BgeMicroV2VocabUrl = "https://huggingface.co/TaylorAI/bge-micro-v2/raw/f09f671/vocab.txt";
 
-    private static async Task<BertOnnxTextEmbeddingGenerationService> GetBgeMicroV2ServiceAsync() =>
-        await BertOnnxTextEmbeddingGenerationService.CreateAsync(
+    private static async Task<BertOnnxEmbeddingGenerator> GetBgeMicroV2ServiceAsync() =>
+        await BertOnnxEmbeddingGenerator.CreateAsync(
             await GetTestFilePathAsync(BgeMicroV2ModelUrl),
             await GetTestFilePathAsync(BgeMicroV2VocabUrl));
 
-    private static async Task<BertOnnxTextEmbeddingGenerationService> GetAllMiniLML6V2Async() =>
-        await BertOnnxTextEmbeddingGenerationService.CreateAsync(
+    private static async Task<BertOnnxEmbeddingGenerator> GetAllMiniLML6V2Async() =>
+        await BertOnnxEmbeddingGenerator.CreateAsync(
             await GetTestFilePathAsync("https://huggingface.co/optimum/all-MiniLM-L6-v2/resolve/1024484/model.onnx"),
             await GetTestFilePathAsync("https://huggingface.co/optimum/all-MiniLM-L6-v2/raw/1024484/vocab.txt"),
             new BertOnnxOptions { NormalizeEmbeddings = true });
