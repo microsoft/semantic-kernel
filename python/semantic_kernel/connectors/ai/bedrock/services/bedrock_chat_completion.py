@@ -4,7 +4,7 @@ import sys
 from collections.abc import AsyncGenerator, Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
-
+import os
 import boto3
 
 if sys.version_info >= (3, 12):
@@ -197,7 +197,8 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             messages.append(MESSAGE_CONVERTERS[message.role](message))
 
         # Add Prompt caching for SYSTEM messages
-        messages.append({"cachePoint": {"type": "default"}})
+        if "claude-3-7-sonnet" in os.getenv("MODEL_ID"):
+            messages.append({"cachePoint": {"type": "default"}})
 
         return messages
 
@@ -231,7 +232,8 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         if settings.tools and settings.tool_choice:
             # Add Prompt caching for Tools
             tools = settings.tools
-            tools.append({"cachePoint": {"type": "default"}})
+            if "claude-3-7-sonnet" in os.getenv("MODEL_ID"):
+                tools.append({"cachePoint": {"type": "default"}})
             prepared_settings["toolConfig"] = {
                 "tools": tools,
                 "toolChoice": settings.tool_choice,
