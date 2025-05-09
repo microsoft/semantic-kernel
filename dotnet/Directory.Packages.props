@@ -154,6 +154,7 @@
     <!-- Memory stores -->
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.48.0-preview.0" />
     <PackageVersion Include="Pgvector" Version="0.3.1" />
+    <PackageVersion Include="sqlite-vec" Version="0.1.7-alpha.2" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
     <PackageVersion Include="Testcontainers" Version="4.4.0" />
