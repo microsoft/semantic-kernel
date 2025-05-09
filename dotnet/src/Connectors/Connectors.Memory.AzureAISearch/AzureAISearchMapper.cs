@@ -2,8 +2,8 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text.Json.Nodes;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using MEAI = Microsoft.Extensions.AI;
 
