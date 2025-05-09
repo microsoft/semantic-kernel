@@ -53,6 +53,7 @@ public sealed class OrchestrationHandoffs : Dictionary<string, AgentHandoffs>
 
 /// <summary>
 /// Extension methods for building and modifying <see cref="OrchestrationHandoffs"/> relationships.
+/// </summary>
 public static class OrchestrationHandoffsExtensions
 {
     /// <summary>
