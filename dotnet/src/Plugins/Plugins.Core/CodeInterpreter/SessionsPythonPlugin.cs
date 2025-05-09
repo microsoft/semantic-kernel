@@ -80,7 +80,7 @@ public sealed partial class SessionsPythonPlugin
         Keep everything in a single line; the \n sequences will represent line breaks
         when the string is processed or displayed.
         """)]
-    public async Task<string> ExecuteCodeAsync(
+    public async Task<SessionsPythonCodeExecutionResult> ExecuteCodeAsync(
         [Description("The valid Python code to execute.")] string code,
         CancellationToken cancellationToken = default)
     {
@@ -101,20 +101,7 @@ public sealed partial class SessionsPythonPlugin
 
         using var response = await this.SendAsync(httpClient, HttpMethod.Post, "executions", cancellationToken, content).ConfigureAwait(false);
 
-        var responseContent = JsonSerializer.Deserialize<JsonElement>(await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false));
-
-        var result = responseContent.GetProperty("result");
-
-        return $"""
-            Status:
-            {responseContent.GetProperty("status").GetRawText()}
-            Result:
-            {result.GetProperty("executionResult").GetRawText()}
-            Stdout:
-            {result.GetProperty("stdout").GetRawText()}
-            Stderr:
-            {result.GetProperty("stderr").GetRawText()}
-            """;
+        return JsonSerializer.Deserialize<SessionsPythonCodeExecutionResult>(await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
