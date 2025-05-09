@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="IKernelBuilder"/> class to configure Hugging Face connectors.
 /// </summary>
-public static class HuggingFaceKernelBuilderExtensions
+public static partial class HuggingFaceKernelBuilderExtensions
 {
     /// <summary>
     /// Adds an Hugging Face text generation service with the specified configuration.
@@ -116,6 +116,7 @@ public static class HuggingFaceKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Obsolete("Use AddHuggingFaceEmbeddingGenerator instead.")]
     public static IKernelBuilder AddHuggingFaceTextEmbeddingGeneration(
         this IKernelBuilder builder,
         string model,
@@ -140,6 +141,7 @@ public static class HuggingFaceKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    [Obsolete("Use AddHuggingFaceEmbeddingGenerator instead.")]
     public static IKernelBuilder AddHuggingFaceTextEmbeddingGeneration(
         this IKernelBuilder builder,
         Uri endpoint,
