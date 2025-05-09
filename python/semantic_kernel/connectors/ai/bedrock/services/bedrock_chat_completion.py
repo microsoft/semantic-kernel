@@ -247,11 +247,10 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
 
         if settings.tools and settings.tool_choice:
             # Add Prompt caching for Tools
-            tools = settings.tools
             if os.getenv("MODEL_ID") in MODELS_WITH_PROMPT_CACHING:
-                tools.append({"cachePoint": {"type": "default"}})
+                settings.tools.append({"cachePoint": {"type": "default"}})
             prepared_settings["toolConfig"] = {
-                "tools": tools,
+                "tools": settings.tools,
                 "toolChoice": settings.tool_choice,
             }
 
