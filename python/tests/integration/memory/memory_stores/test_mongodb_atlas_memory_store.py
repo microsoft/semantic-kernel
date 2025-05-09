@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 import pytest_asyncio
 
-from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_memory_store import MongoDBAtlasMemoryStore
+from semantic_kernel.connectors.memory_stores.mongodb_atlas.mongodb_atlas_memory_store import MongoDBAtlasMemoryStore
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 

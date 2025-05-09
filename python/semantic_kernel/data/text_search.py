@@ -2,13 +2,12 @@
 
 import json
 import logging
-import sys
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from copy import deepcopy
-from typing import Annotated, Any, ClassVar, Generic, Protocol, TypeVar
+from typing import Annotated, Any, Generic, Protocol, TypeVar
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME, TextSearchFunctions
 from semantic_kernel.exceptions import TextSearchException
@@ -17,110 +16,39 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.feature_stage_decorator import experimental
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
+from semantic_kernel.kernel_types import OptionalOneOrList
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 TSearchResult = TypeVar("TSearchResult")
-TSearchFilter = TypeVar("TSearchFilter", bound="SearchFilter")
+TSearchOptions = TypeVar("TSearchOptions", bound="SearchOptions")
 TMapInput = TypeVar("TMapInput")
 
 logger = logging.getLogger(__name__)
 
-# region: Filters
-
-
-@experimental
-class FilterClauseBase(ABC, KernelBaseModel):
-    """A base for all filter clauses."""
-
-    filter_clause_type: ClassVar[str] = "FilterClauseBase"
-    field_name: str
-    value: Any
-
-    def __str__(self) -> str:
-        """Return a string representation of the filter clause."""
-        return f"filter_clause_type='{self.filter_clause_type}' field_name='{self.field_name}' value='{self.value}'"
-
-
-@experimental
-class AnyTagsEqualTo(FilterClauseBase):
-    """A filter clause for a any tags equals comparison.
-
-    Args:
-        field_name: The name of the field containing the list of tags.
-        value: The value to compare against the list of tags.
-    """
-
-    filter_clause_type: ClassVar[str] = "any_tags_equal_to"
-
-
-@experimental
-class EqualTo(FilterClauseBase):
-    """A filter clause for an equals comparison.
-
-    Args:
-        field_name: The name of the field to compare.
-        value: The value to compare against the field.
-
-    """
-
-    filter_clause_type: ClassVar[str] = "equal_to"
-
-
-@experimental
-class SearchFilter:
-    """A filter clause for a search."""
-
-    def __init__(self) -> None:
-        """Initialize a new instance of SearchFilter."""
-        self.filters: list[FilterClauseBase] = []
-        self.group_type = "AND"
-        self.equal_to = self.__equal_to
-
-    def __equal_to(self, field_name: str, value: str) -> Self:
-        """Add an equals filter clause."""
-        self.filters.append(EqualTo(field_name=field_name, value=value))
-        return self
-
-    @classmethod
-    def equal_to(cls: type[TSearchFilter], field_name: str, value: str) -> TSearchFilter:
-        """Add an equals filter clause."""
-        filter = cls()
-        filter.equal_to(field_name, value)
-        return filter
-
-    def __str__(self) -> str:
-        """Return a string representation of the filter."""
-        return f"{f' {self.group_type} '.join(f'({f!s})' for f in self.filters)}"
-
-
 # region: Options
 
 
-@experimental
+@release_candidate
 class SearchOptions(ABC, KernelBaseModel):
-    """Options for a search."""
+    """Options for a search.
 
-    filter: SearchFilter = Field(default_factory=SearchFilter)
+    When multiple filters are used, they are combined with an AND operator.
+    """
+
+    filter: OptionalOneOrList[Callable | str] = None
+    skip: Annotated[int, Field(ge=0)] = 0
+    top: Annotated[int, Field(gt=0)] = 5
     include_total_count: bool = False
 
-
-@experimental
-class TextSearchOptions(SearchOptions):
-    """Options for a text search."""
-
-    top: Annotated[int, Field(gt=0)] = 5
-    skip: Annotated[int, Field(ge=0)] = 0
+    model_config = ConfigDict(
+        extra="allow", populate_by_name=True, arbitrary_types_allowed=True, validate_assignment=True
+    )
 
 
 # region: Results
 
 
-@experimental
+@release_candidate
 class KernelSearchResults(KernelBaseModel, Generic[TSearchResult]):
     """The result of a kernel search."""
 
@@ -129,7 +57,7 @@ class KernelSearchResults(KernelBaseModel, Generic[TSearchResult]):
     metadata: Mapping[str, Any] | None = None
 
 
-@experimental
+@release_candidate
 class TextSearchResult(KernelBaseModel):
     """The result of a text search."""
 
@@ -156,10 +84,10 @@ class OptionsUpdateFunctionType(Protocol):
 
 
 def create_options(
-    options_class: type["SearchOptions"],
+    options_class: type["TSearchOptions"],
     options: "SearchOptions | None",
     **kwargs: Any,
-) -> "SearchOptions":
+) -> "TSearchOptions":
     """Create search options.
 
     If options are supplied, they are checked for the right type, and the kwargs are used to update the options.
@@ -173,7 +101,7 @@ def create_options(
         **kwargs: The keyword arguments to use to create the options.
 
     Returns:
-        SearchOptions: The options.
+        The options of type options_class.
 
     Raises:
         ValidationError: If the options are not valid.
@@ -185,7 +113,7 @@ def create_options(
     # options are the right class, just update based on kwargs
     if isinstance(options, options_class):
         for key, value in kwargs.items():
-            if key in options.model_fields:
+            if key in options.__class__.model_fields:
                 setattr(options, key, value)
         return options
     # options are not the right class, so create new options
@@ -202,7 +130,10 @@ def create_options(
 
 
 def default_options_update_function(
-    query: str, options: "SearchOptions", parameters: list["KernelParameterMetadata"] | None = None, **kwargs: Any
+    query: str,
+    options: "SearchOptions",
+    parameters: list["KernelParameterMetadata"] | None = None,
+    **kwargs: Any,
 ) -> tuple[str, "SearchOptions"]:
     """The default options update function.
 
@@ -223,10 +154,19 @@ def default_options_update_function(
         assert param.name  # nosec, when used param name is always set
         if param.name in {"query", "top", "skip"}:
             continue
+        filter = None
         if param.name in kwargs:
-            options.filter.equal_to(param.name, kwargs[param.name])
-        if param.default_value:
-            options.filter.equal_to(param.name, param.default_value)
+            filter = f"lambda x: x.{param.name} == '{kwargs[param.name]}'"
+        elif param.default_value:
+            filter = f"lambda x: x.{param.name} == '{param.default_value}'"
+        if not filter:
+            continue
+        if options.filter is None:
+            options.filter = filter
+        elif isinstance(options.filter, list):
+            options.filter.append(filter)
+        else:
+            options.filter = [options.filter, filter]
 
     return query, options
 
@@ -234,14 +174,14 @@ def default_options_update_function(
 # region: Text Search
 
 
-@experimental
+@release_candidate
 class TextSearch:
     """The base class for all text searches."""
 
     @property
     def options_class(self) -> type["SearchOptions"]:
         """The options class for the search."""
-        return TextSearchOptions
+        return SearchOptions
 
     @staticmethod
     def _default_parameter_metadata() -> list[KernelParameterMetadata]:
@@ -293,18 +233,26 @@ class TextSearch:
 
     def create_search(
         self,
-        options: SearchOptions | None = None,
-        parameters: list[KernelParameterMetadata] | None = None,
-        options_update_function: OptionsUpdateFunctionType | None = None,
-        return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
+        *,
+        parameters: list[KernelParameterMetadata] | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 5,
+        skip: int = 0,
+        include_total_count: bool = False,
+        options_update_function: OptionsUpdateFunctionType | None = None,
         string_mapper: Callable[[TMapInput], str] | None = None,
+        **kwargs: Any,
     ) -> KernelFunction:
         """Create a kernel function from a search function.
 
         Args:
-            options: The search options.
+            filter: The filter to use for the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
             parameters: The parameters for the function, a list of KernelParameterMetadata.
             options_update_function: A function to update the search options.
                 The function should return the updated query and options.
@@ -316,11 +264,19 @@ class TextSearch:
             function_name: The name of the function, to be used in the kernel, default is "search".
             description: The description of the function, a default is provided.
             string_mapper: The function to map the search results to strings.
+            kwargs: The keyword arguments to use to create the options.
 
         Returns:
             KernelFunction: The kernel function.
 
         """
+        options = self.options_class(
+            filter=filter,
+            skip=skip,
+            top=top,
+            include_total_count=include_total_count,
+            **kwargs,
+        )
         return self._create_kernel_function(
             search_function=TextSearchFunctions.SEARCH,
             options=options,
@@ -334,18 +290,26 @@ class TextSearch:
 
     def create_get_text_search_results(
         self,
-        options: SearchOptions | None = None,
-        parameters: list[KernelParameterMetadata] | None = None,
-        options_update_function: OptionsUpdateFunctionType | None = None,
-        return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
+        *,
+        parameters: list[KernelParameterMetadata] | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 5,
+        skip: int = 0,
+        include_total_count: bool = False,
+        options_update_function: OptionsUpdateFunctionType | None = None,
         string_mapper: Callable[[TMapInput], str] | None = None,
+        **kwargs: Any,
     ) -> KernelFunction:
         """Create a kernel function from a get_text_search_results function.
 
         Args:
-            options: The search options.
+            filter: The filter to use for the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
             parameters: The parameters for the function, a list of KernelParameterMetadata.
             options_update_function: A function to update the search options.
                 The function should return the updated query and options.
@@ -357,10 +321,18 @@ class TextSearch:
             function_name: The name of the function, to be used in the kernel, default is "search".
             description: The description of the function, a default is provided.
             string_mapper: The function to map the search results to strings.
+            kwargs: The keyword arguments to use to create the options.
 
         Returns:
             KernelFunction: The kernel function.
         """
+        options = self.options_class(
+            filter=filter,
+            skip=skip,
+            top=top,
+            include_total_count=include_total_count,
+            **kwargs,
+        )
         return self._create_kernel_function(
             search_function=TextSearchFunctions.GET_TEXT_SEARCH_RESULT,
             options=options,
@@ -374,18 +346,26 @@ class TextSearch:
 
     def create_get_search_results(
         self,
-        options: SearchOptions | None = None,
-        parameters: list[KernelParameterMetadata] | None = None,
-        options_update_function: OptionsUpdateFunctionType | None = None,
-        return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
+        *,
+        parameters: list[KernelParameterMetadata] | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 5,
+        skip: int = 0,
+        include_total_count: bool = False,
+        options_update_function: OptionsUpdateFunctionType | None = None,
         string_mapper: Callable[[TMapInput], str] | None = None,
+        **kwargs: Any,
     ) -> KernelFunction:
         """Create a kernel function from a get_search_results function.
 
         Args:
-            options: The search options.
+            filter: The filter to use for the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
             parameters: The parameters for the function, a list of KernelParameterMetadata.
             options_update_function: A function to update the search options.
                 The function should return the updated query and options.
@@ -397,10 +377,18 @@ class TextSearch:
             function_name: The name of the function, to be used in the kernel, default is "search".
             description: The description of the function, a default is provided.
             string_mapper: The function to map the search results to strings.
+            kwargs: The keyword arguments to use to create the options.
 
         Returns:
             KernelFunction: The kernel function.
         """
+        options = self.options_class(
+            filter=filter,
+            skip=skip,
+            top=top,
+            include_total_count=include_total_count,
+            **kwargs,
+        )
         return self._create_kernel_function(
             search_function=TextSearchFunctions.GET_SEARCH_RESULT,
             options=options,
@@ -520,16 +508,13 @@ class TextSearch:
     async def search(
         self,
         query: str,
-        options: "SearchOptions | None" = None,
         **kwargs: Any,
     ) -> "KernelSearchResults[str]":
         """Search for text, returning a KernelSearchResult with a list of strings.
 
         Args:
             query: The query to search for.
-            options: The search options.
-            **kwargs: If options is None, the search options can be passed as keyword arguments.
-                They are then used to create a search options object.
+            **kwargs: Additional keyword arguments to pass to the search function.
 
         """
         ...
@@ -538,7 +523,6 @@ class TextSearch:
     async def get_text_search_results(
         self,
         query: str,
-        options: "SearchOptions | None" = None,
         **kwargs: Any,
     ) -> "KernelSearchResults[TextSearchResult]":
         """Search for text, returning a KernelSearchResult with TextSearchResults."""
@@ -548,7 +532,6 @@ class TextSearch:
     async def get_search_results(
         self,
         query: str,
-        options: "SearchOptions | None" = None,
         **kwargs: Any,
     ) -> "KernelSearchResults[Any]":
         """Search for text, returning a KernelSearchResult with the results directly from the service."""

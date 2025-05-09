@@ -3,7 +3,7 @@
 
 import pytest
 
-from semantic_kernel.connectors.memory.qdrant import QdrantMemoryStore
+from semantic_kernel.connectors.memory_stores.qdrant.qdrant_memory_store import QdrantMemoryStore
 
 try:
     import qdrant_client  # noqa: F401

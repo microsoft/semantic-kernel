@@ -19,10 +19,8 @@ from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchColle
 # This sample assumes the index is deployed, the vector fields can be empty.
 # If the vector fields are empty, change the first_run parameter to True to add the vectors.
 ###
-from semantic_kernel.data import (
-    VectorSearchOptions,
-)
-from semantic_kernel.data.vector_search import add_vector_to_records
+from semantic_kernel.data import VectorSearchOptions
+from semantic_kernel.data.vector_storage import add_vector_to_records
 
 first_run = False
 
@@ -90,7 +88,7 @@ async def main(query: str, first_run: bool = False):
     # Use vectorized search to search using the vector.
     results = await collection.vectorized_search(
         vector=query_vector,
-        options=VectorSearchOptions(vector_field_name="description_vector"),
+        options=VectorSearchOptions(vector_property_name="description_vector"),
     )
     async for result in results.results:
         print(
