@@ -2,7 +2,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 using Microsoft.SemanticKernel.Agents.Runtime;
 using Microsoft.SemanticKernel.Agents.Runtime.Core;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -25,7 +24,7 @@ internal sealed class GroupChatManagerActor :
     private readonly AgentType _orchestrationType;
     private readonly GroupChatManager _manager;
     private readonly ChatHistory _chat;
-    private readonly ChatGroup _team;
+    private readonly GroupChatTeam _team;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatManagerActor"/> class.
@@ -37,7 +36,7 @@ internal sealed class GroupChatManagerActor :
     /// <param name="team">The team of agents being orchestrated</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public GroupChatManagerActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, GroupChatManager manager, ChatGroup team, AgentType orchestrationType, ILogger? logger = null)
+    public GroupChatManagerActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, GroupChatManager manager, GroupChatTeam team, AgentType orchestrationType, ILogger? logger = null)
         : base(id, runtime, context, DefaultDescription, logger)
     {
         this._chat = [];

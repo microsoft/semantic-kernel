@@ -3,7 +3,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
@@ -23,7 +22,7 @@ public class RoundRobinGroupChatManager : GroupChatManager
         ValueTask.FromResult(new GroupChatManagerResult<string>(history.LastOrDefault()?.Content ?? string.Empty) { Reason = "Default result filter provides the final chat message." });
 
     /// <inheritdoc/>
-    public override ValueTask<GroupChatManagerResult<string>> SelectNextAgent(ChatHistory history, ChatGroup team, CancellationToken cancellationToken = default)
+    public override ValueTask<GroupChatManagerResult<string>> SelectNextAgent(ChatHistory history, GroupChatTeam team, CancellationToken cancellationToken = default)
     {
         string nextAgent = team.Skip(this._currentAgentIndex).First().Key;
         this._currentAgentIndex = (this._currentAgentIndex + 1) % team.Count;

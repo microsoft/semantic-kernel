@@ -4,7 +4,6 @@ using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
-using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -175,7 +174,7 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
             this.GetResponseAsync<string>(history, Prompts.Filter(topic), cancellationToken);
 
         /// <inheritdoc/>
-        public override ValueTask<GroupChatManagerResult<string>> SelectNextAgent(ChatHistory history, ChatGroup team, CancellationToken cancellationToken = default) =>
+        public override ValueTask<GroupChatManagerResult<string>> SelectNextAgent(ChatHistory history, GroupChatTeam team, CancellationToken cancellationToken = default) =>
             this.GetResponseAsync<string>(history, Prompts.Selection(topic, team.FormatList()), cancellationToken);
 
         /// <inheritdoc/>

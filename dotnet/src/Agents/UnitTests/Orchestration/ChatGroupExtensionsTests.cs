@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
+using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Orchestration;
@@ -11,7 +11,7 @@ public class ChatGroupExtensionsTests
     public void FormatNames_WithMultipleAgents_ReturnsCommaSeparatedList()
     {
         // Arrange
-        ChatGroup group = new()
+        GroupChatTeam group = new()
         {
             { "AgentOne", ("agent1", "First agent description") },
             { "AgentTwo", ("agent2", "Second agent description") },
@@ -29,7 +29,7 @@ public class ChatGroupExtensionsTests
     public void FormatNames_WithSingleAgent_ReturnsSingleName()
     {
         // Arrange
-        ChatGroup group = new()
+        GroupChatTeam group = new()
         {
             { "AgentOne", ("agent1", "First agent description") },
         };
@@ -45,7 +45,7 @@ public class ChatGroupExtensionsTests
     public void FormatNames_WithEmptyGroup_ReturnsEmptyString()
     {
         // Arrange
-        ChatGroup group = [];
+        GroupChatTeam group = [];
 
         // Act
         string result = group.FormatNames();
@@ -58,7 +58,7 @@ public class ChatGroupExtensionsTests
     public void FormatList_WithMultipleAgents_ReturnsMarkdownList()
     {
         // Arrange
-        ChatGroup group = new()
+        GroupChatTeam group = new()
         {
             { "AgentOne", ("agent1", "First agent description") },
             { "AgentTwo", ("agent2", "Second agent description") },
@@ -82,7 +82,7 @@ public class ChatGroupExtensionsTests
     public void FormatList_WithEmptyGroup_ReturnsEmptyString()
     {
         // Arrange
-        ChatGroup group = [];
+        GroupChatTeam group = [];
 
         // Act & Assert
         Assert.Equal(string.Empty, group.FormatNames());

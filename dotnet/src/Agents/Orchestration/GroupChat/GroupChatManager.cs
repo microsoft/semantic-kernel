@@ -2,7 +2,6 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
@@ -67,7 +66,7 @@ public abstract class GroupChatManager
     /// <param name="team">The group of agents participating in the chat.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A <see cref="GroupChatManagerResult{TValue}"/> containing the identifier of the next agent as a string.</returns>
-    public abstract ValueTask<GroupChatManagerResult<string>> SelectNextAgent(ChatHistory history, ChatGroup team, CancellationToken cancellationToken = default);
+    public abstract ValueTask<GroupChatManagerResult<string>> SelectNextAgent(ChatHistory history, GroupChatTeam team, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Determines whether user input should be requested based on the provided chat history.

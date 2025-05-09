@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
 using Microsoft.SemanticKernel.Agents.Runtime;
 
@@ -51,7 +50,7 @@ public class GroupChatOrchestration<TInput, TOutput> :
         AgentType outputType = await registrar.RegisterResultTypeAsync<GroupChatMessages.Result>(response => [response.Message]).ConfigureAwait(false);
 
         int agentCount = 0;
-        ChatGroup team = [];
+        GroupChatTeam team = [];
         foreach (Agent agent in this.Members)
         {
             ++agentCount;
