@@ -5,7 +5,7 @@ import sys
 from collections.abc import AsyncGenerator, Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
-
+import os
 import boto3
 
 if sys.version_info >= (3, 12):
@@ -56,6 +56,7 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents.chat_history import ChatHistory
 
+MODELS_WITH_PROMPT_CACHING: list = ["us.anthropic.claude-3-7-sonnet-20250219-v1:0"]
 
 class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     """Amazon Bedrock Chat Completion Service."""
@@ -221,6 +222,10 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 continue
             messages.append(MESSAGE_CONVERTERS[message.role](message))
 
+        # Add Prompt caching for SYSTEM messages
+        if os.getenv("MODEL_ID") in MODELS_WITH_PROMPT_CACHING:
+            messages.append({"cachePoint": {"type": "default"}})
+
         return messages
 
     def _prepare_settings_for_request(
@@ -251,6 +256,9 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         }
 
         if settings.tools and settings.tool_choice:
+            # Add Prompt caching for Tools
+            if os.getenv("MODEL_ID") in MODELS_WITH_PROMPT_CACHING:
+                settings.tools.append({"cachePoint": {"type": "default"}})
             prepared_settings["toolConfig"] = {
                 "tools": settings.tools,
                 "toolChoice": settings.tool_choice,
