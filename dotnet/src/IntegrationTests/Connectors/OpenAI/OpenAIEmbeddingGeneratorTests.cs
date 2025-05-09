@@ -12,6 +12,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 public sealed class OpenAIEmbeddingGeneratorTests
 {
     private const int AdaVectorLength = 1536;
+    private const string AdaModelId = "text-embedding-ada-002";
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
@@ -27,7 +28,7 @@ public sealed class OpenAIEmbeddingGeneratorTests
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAIEmbeddings").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
-        using var embeddingGenerator = new OpenAIEmbeddingGenerator(openAIConfiguration.ModelId, openAIConfiguration.ApiKey);
+        using var embeddingGenerator = new OpenAIEmbeddingGenerator(AdaModelId, openAIConfiguration.ApiKey);
 
         // Act
         var singleResult = await embeddingGenerator.GenerateAsync(testInputString);

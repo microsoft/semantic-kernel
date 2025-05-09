@@ -41,27 +41,6 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests
     [Theory]
     [InlineData(null, 3072)]
     [InlineData(1024, 1024)]
-    public async Task AzureOpenAITextEmbeddingGenerationWithDimensionsAsync(int? dimensions, int expectedVectorLength)
-    {
-        // Arrange
-        const string TestInputString = "test sentence";
-
-        using var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
-            deploymentName: "text-embedding-3-large",
-            endpoint: this._azureOpenAIConfiguration.Endpoint,
-            credential: new AzureCliCredential(),
-            dimensions: dimensions);
-
-        // Act
-        var result = await embeddingGenerator.GenerateAsync(TestInputString);
-
-        // Assert
-        Assert.Equal(expectedVectorLength, result.Vector.Length);
-    }
-
-    [Theory]
-    [InlineData(null, 3072)]
-    [InlineData(1024, 1024)]
     public async Task AzureOpenAIEmbeddingGeneratorWithDimensionsAsync(int? dimensions, int expectedVectorLength)
     {
         // Arrange

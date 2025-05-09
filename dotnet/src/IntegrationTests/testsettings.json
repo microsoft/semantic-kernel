@@ -58,12 +58,12 @@
     "Endpoint": ""
   },
   "HuggingFace": {
-    "EmbeddingModelId": "sentence-transformers/all-MiniLM-L6-v2",
+    "EmbeddingModelId": "",
     "TextGenerationModelId": "microsoft/phi-2",
     "ChatCompletionModelId": "tgi",
     "ApiKey": "",
     "TextGenerationEndpoint": "http://localhost:8080/",
-    "EmbeddingEndpoint": "https://api-inference.huggingface.co/",
+    "EmbeddingEndpoint": "https://router.huggingface.co/hf-inference/models/BAAI/bge-large-en-v1.5/pipeline/feature-extraction",
     "ChatCompletionEndpoint": "http://localhost:8080/"
   },
   "GoogleAI": {

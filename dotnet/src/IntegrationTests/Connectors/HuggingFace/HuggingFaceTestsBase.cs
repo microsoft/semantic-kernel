@@ -54,7 +54,6 @@ public abstract class HuggingFaceTestsBase
 
     protected IEmbeddingGenerator<string, Embedding<float>> CreateEmbeddingGenerator() =>
     new HuggingFaceEmbeddingGenerator(
-        modelId: this.Config.EmbeddingModelId,
         endpoint: new Uri(this.Config.EmbeddingEndpoint),
         apiKey: this.Config.ApiKey);
 

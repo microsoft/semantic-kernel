@@ -12,7 +12,6 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
-using SemanticKernel.IntegrationTests.Connectors.OpenAI;
 using static Microsoft.SemanticKernel.Data.VectorStoreExtensions;
 
 namespace SemanticKernel.IntegrationTests.Data;

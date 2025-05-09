@@ -39,7 +39,6 @@ public sealed class HuggingFaceEmbeddingGenerator : IEmbeddingGenerator<string, 
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId);
         this._isExternalHttpClient = httpClient is not null;
         this._httpClient = HttpClientProvider.GetHttpClient(httpClient);
 
