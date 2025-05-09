@@ -11,10 +11,10 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Transforms;
 /// <summary>
 /// Populates the target result type  <see cref="ChatMessageContent"/> into a structured output.
 /// </summary>
-/// <typeparam name="TOutput">The type of the structured output to deserialize to.</typeparam>
+/// <typeparam name="TOutput">The .NET type of the structured-output to deserialization target.</typeparam>
 public sealed class StructuredOutputTransform<TOutput>
 {
-    internal const string DefaultInstructions = "Please respond with a JSON object that contains the.";
+    internal const string DefaultInstructions = "Respond with JSON that is populated by using the information in this conversation.";
 
     private readonly IChatCompletionService _service;
     private readonly PromptExecutionSettings _executionSettings;
