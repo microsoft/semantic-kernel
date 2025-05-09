@@ -284,7 +284,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
     def _create_streaming_chat_message_content(
         self,
         stream_event: TextEvent | ContentBlockStopEvent | RawMessageDeltaEvent,
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
         function_invoke_attempt: int = 0,
     ) -> StreamingChatMessageContent:
         """Create a streaming chat message content object from a content block."""
@@ -309,7 +309,11 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             )
         elif isinstance(stream_event, RawMessageDeltaEvent):
             finish_reason = ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP[str(stream_event.delta.stop_reason)]
-            metadata["usage"]["output_tokens"] = stream_event.usage.output_tokens
+            output_tokens = stream_event.usage.output_tokens
+            if metadata is None:
+                metadata = {"usage": {"output_tokens": output_tokens}}
+            else:
+                metadata = metadata | {"usage": metadata.get("usage", {}) | {"output_tokens": output_tokens}}
 
         return StreamingChatMessageContent(
             choice_index=0,
