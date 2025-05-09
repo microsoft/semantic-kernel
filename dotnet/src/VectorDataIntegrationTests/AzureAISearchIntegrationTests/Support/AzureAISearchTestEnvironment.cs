@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 
 namespace AzureAISearchIntegrationTests.Support;
@@ -8,6 +9,10 @@ namespace AzureAISearchIntegrationTests.Support;
 
 internal static class AzureAISearchTestEnvironment
 {
+#pragma warning disable CA1308 // Normalize strings to uppercase
+    public static readonly string TestIndexPostfix = new Regex("[^a-zA-Z0-9]").Replace(Environment.MachineName.ToLowerInvariant(), "");
+#pragma warning restore CA1308 // Normalize strings to uppercase
+
     public static readonly string? ServiceUrl, ApiKey;
 
     public static bool IsConnectionInfoDefined => ServiceUrl is not null;

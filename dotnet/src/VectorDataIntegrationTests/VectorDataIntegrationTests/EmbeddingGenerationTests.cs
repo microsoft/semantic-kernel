@@ -135,7 +135,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         // The database doesn't support embedding generation, and no client-side generator has been configured at any level,
         // so SearchAsync should throw.
-        var collection = fixture.GetCollection<RawRecord>(fixture.TestStore.DefaultVectorStore, fixture.CollectionName + "WithoutGenerator");
+        var collection = fixture.GetCollection<RawRecord>(fixture.TestStore.DefaultVectorStore, fixture.CollectionName + "withoutgenerator");
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => collection.SearchAsync("foo", top: 1).ToListAsync().AsTask());
 

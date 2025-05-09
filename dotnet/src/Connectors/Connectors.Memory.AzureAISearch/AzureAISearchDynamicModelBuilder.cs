@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Linq;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -21,16 +19,4 @@ internal class AzureAISearchDynamicModelBuilder() : CollectionModelBuilder(s_mod
 
         UsesExternalSerializer = true
     };
-
-    protected override void Validate(Type type)
-    {
-        base.Validate(type);
-
-        if (this.VectorProperties.FirstOrDefault(p => p.EmbeddingGenerator is not null) is PropertyModel property)
-        {
-            throw new NotSupportedException(
-                $"The Azure AI Search connector does not currently support a custom embedding generator (configured for property '{property.ModelName}' on type '{type.Name}'). " +
-                "However, you can configure embedding generation in Azure AI Search itself, without requiring a .NET IEmbeddingGenerator.");
-        }
-    }
 }

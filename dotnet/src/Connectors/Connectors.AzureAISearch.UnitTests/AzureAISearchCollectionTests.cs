@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -148,11 +149,11 @@ public class AzureAISearchCollectionTests
     {
         // Arrange.
         this._searchClientMock.Setup(
-            x => x.GetDocumentAsync<MultiPropsModel>(
+            x => x.GetDocumentAsync<JsonObject>(
                 TestRecordKey1,
                 It.Is<GetDocumentOptions>(x => !x.SelectedFields.Any()),
                 this._testCancellationToken))
-            .ReturnsAsync(Response.FromValue(CreateModel(TestRecordKey1, true), Mock.Of<Response>()));
+            .ReturnsAsync(Response.FromValue(CreateJsonObjectModel(TestRecordKey1, true), Mock.Of<Response>()));
 
         var sut = this.CreateRecordCollection(useDefinition);
 
@@ -183,11 +184,11 @@ public class AzureAISearchCollectionTests
 
         string[] expectedSelectFields = useCustomJsonSerializerOptions ? ["key", "storage_data1", "data2"] : ["Key", "storage_data1", "Data2"];
         this._searchClientMock.Setup(
-            x => x.GetDocumentAsync<MultiPropsModel>(
+            x => x.GetDocumentAsync<JsonObject>(
                 TestRecordKey1,
                 It.IsAny<GetDocumentOptions>(),
                 this._testCancellationToken))
-            .ReturnsAsync(Response.FromValue(CreateModel(TestRecordKey1, true), Mock.Of<Response>()));
+            .ReturnsAsync(Response.FromValue(CreateJsonObjectModel(TestRecordKey1, true, useCustomJsonSerializerOptions), Mock.Of<Response>()));
 
         var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
 
@@ -204,7 +205,7 @@ public class AzureAISearchCollectionTests
         Assert.Equal("data 2", actual.Data2);
 
         this._searchClientMock.Verify(
-            x => x.GetDocumentAsync<MultiPropsModel>(
+            x => x.GetDocumentAsync<JsonObject>(
                 TestRecordKey1,
                 It.Is<GetDocumentOptions>(x => x.SelectedFields.SequenceEqual(expectedSelectFields)),
                 this._testCancellationToken),
@@ -218,13 +219,13 @@ public class AzureAISearchCollectionTests
     {
         // Arrange.
         this._searchClientMock.Setup(
-            x => x.GetDocumentAsync<MultiPropsModel>(
+            x => x.GetDocumentAsync<JsonObject>(
                 It.IsAny<string>(),
                 It.IsAny<GetDocumentOptions>(),
                 this._testCancellationToken))
             .ReturnsAsync((string id, GetDocumentOptions options, CancellationToken cancellationToken) =>
             {
-                return Response.FromValue(CreateModel(id, true), Mock.Of<Response>());
+                return Response.FromValue(CreateJsonObjectModel(id, true), Mock.Of<Response>());
             });
 
         var sut = this.CreateRecordCollection(useDefinition);
@@ -328,7 +329,7 @@ public class AzureAISearchCollectionTests
         // Arrange upload.
         this._searchClientMock.Setup(
             x => x.UploadDocumentsAsync(
-                It.IsAny<IEnumerable<MultiPropsModel>>(),
+                It.IsAny<IEnumerable<JsonObject>>(),
                 It.IsAny<IndexDocumentsOptions>(),
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
@@ -346,7 +347,7 @@ public class AzureAISearchCollectionTests
         // Assert.
         this._searchClientMock.Verify(
             x => x.UploadDocumentsAsync(
-                It.Is<IEnumerable<MultiPropsModel>>(x => x.Count() == 1 && x.First().Key == TestRecordKey1),
+                It.Is<IEnumerable<JsonObject>>(x => x.Count() == 1 && x.First()["Key"]!.ToString() == TestRecordKey1),
                 It.Is<IndexDocumentsOptions>(x => x.ThrowOnAnyError == true),
                 this._testCancellationToken),
             Times.Once);
@@ -371,7 +372,7 @@ public class AzureAISearchCollectionTests
         // Arrange upload.
         this._searchClientMock.Setup(
             x => x.UploadDocumentsAsync(
-                It.IsAny<IEnumerable<MultiPropsModel>>(),
+                It.IsAny<IEnumerable<JsonObject>>(),
                 It.IsAny<IndexDocumentsOptions>(),
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
@@ -390,7 +391,7 @@ public class AzureAISearchCollectionTests
         // Assert.
         this._searchClientMock.Verify(
             x => x.UploadDocumentsAsync(
-                It.Is<IEnumerable<MultiPropsModel>>(x => x.Count() == 2 && x.First().Key == TestRecordKey1 && x.ElementAt(1).Key == TestRecordKey2),
+                It.Is<IEnumerable<JsonObject>>(x => x.Count() == 2 && x.First()["Key"]!.ToString() == TestRecordKey1 && x.ElementAt(1)["Key"]!.ToString() == TestRecordKey2),
                 It.Is<IndexDocumentsOptions>(x => x.ThrowOnAnyError == true),
                 this._testCancellationToken),
             Times.Once);
@@ -427,10 +428,10 @@ public class AzureAISearchCollectionTests
     {
         // Arrange.
 #pragma warning disable Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
-        var searchResultsMock = Mock.Of<SearchResults<MultiPropsModel>>();
+        var searchResultsMock = Mock.Of<SearchResults<JsonObject>>();
 #pragma warning restore Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
         this._searchClientMock
-            .Setup(x => x.SearchAsync<MultiPropsModel>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SearchAsync<JsonObject>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Response.FromValue(searchResultsMock, Mock.Of<Response>()));
 
         var sut = new AzureAISearchCollection<string, MultiPropsModel>(
@@ -452,7 +453,7 @@ public class AzureAISearchCollectionTests
 
         // Assert.
         this._searchClientMock.Verify(
-            x => x.SearchAsync<MultiPropsModel>(
+            x => x.SearchAsync<JsonObject>(
                 null,
                 It.Is<SearchOptions>(x =>
                     x.Filter == "storage_data1 eq 'Data1FilterValue'" &&
@@ -469,10 +470,10 @@ public class AzureAISearchCollectionTests
     {
         // Arrange.
 #pragma warning disable Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
-        var searchResultsMock = Mock.Of<SearchResults<MultiPropsModel>>();
+        var searchResultsMock = Mock.Of<SearchResults<JsonObject>>();
 #pragma warning restore Moq1002 // Could not find a matching constructor for arguments: SearchResults has an internal parameterless constructor.
         this._searchClientMock
-            .Setup(x => x.SearchAsync<MultiPropsModel>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.SearchAsync<JsonObject>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Response.FromValue(searchResultsMock, Mock.Of<Response>()));
 
         var sut = new AzureAISearchCollection<string, MultiPropsModel>(
@@ -494,7 +495,7 @@ public class AzureAISearchCollectionTests
 
         // Assert.
         this._searchClientMock.Verify(
-            x => x.SearchAsync<MultiPropsModel>(
+            x => x.SearchAsync<JsonObject>(
                 null,
                 It.Is<SearchOptions>(x =>
                     x.Filter == "storage_data1 eq 'Data1FilterValue'" &&
@@ -529,6 +530,32 @@ public class AzureAISearchCollectionTests
             Vector1 = withVectors ? new float[] { 1, 2, 3, 4 } : null,
             Vector2 = withVectors ? new float[] { 1, 2, 3, 4 } : null,
             NotAnnotated = null,
+        };
+    }
+
+    private static JsonObject CreateJsonObjectModel(string key, bool withVectors, bool useCustomJsonSerializerOptions = false)
+    {
+        if (useCustomJsonSerializerOptions)
+        {
+            return new JsonObject
+            {
+                ["key"] = key,
+                ["storage_data1"] = "data 1",
+                ["data2"] = "data 2",
+                ["storage_vector1"] = withVectors ? new JsonArray { 1, 2, 3, 4 } : null,
+                ["vector2"] = withVectors ? new JsonArray { 1, 2, 3, 4 } : null,
+                ["notAnnotated"] = null,
+            };
+        }
+
+        return new JsonObject
+        {
+            ["Key"] = key,
+            ["storage_data1"] = "data 1",
+            ["Data2"] = "data 2",
+            ["storage_vector1"] = withVectors ? new JsonArray { 1, 2, 3, 4 } : null,
+            ["Vector2"] = withVectors ? new JsonArray { 1, 2, 3, 4 } : null,
+            ["NotAnnotated"] = null,
         };
     }
 

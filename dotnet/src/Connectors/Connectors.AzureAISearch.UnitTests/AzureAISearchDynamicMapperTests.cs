@@ -45,7 +45,7 @@ public class AzureAISearchDynamicMapperTests
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
     {
         // Arrange
-        var sut = new AzureAISearchDynamicMapper(s_model);
+        var sut = new AzureAISearchDynamicMapper(s_model, null);
         var dataModel = new Dictionary<string, object?>
         {
             ["Key"] = "key",
@@ -70,7 +70,7 @@ public class AzureAISearchDynamicMapperTests
         };
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, 0, null);
 
         // Assert
         Assert.Equal("key", (string?)storageModel["Key"]);
@@ -112,10 +112,10 @@ public class AzureAISearchDynamicMapperTests
             ["NullableFloatVector"] = null
         };
 
-        var sut = new AzureAISearchDynamicMapper(model);
+        var sut = new AzureAISearchDynamicMapper(model, null);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, 0, null);
 
         // Assert
         Assert.Null(storageModel["StringDataProp"]);
@@ -127,7 +127,7 @@ public class AzureAISearchDynamicMapperTests
     public void MapFromStorageToDataModelMapsAllSupportedTypes()
     {
         // Arrange
-        var sut = new AzureAISearchDynamicMapper(s_model);
+        var sut = new AzureAISearchDynamicMapper(s_model, null);
         var storageModel = new JsonObject();
         storageModel["Key"] = "key";
         storageModel["StringDataProp"] = "string";
@@ -188,7 +188,7 @@ public class AzureAISearchDynamicMapperTests
         storageModel["NullableIntDataProp"] = null;
         storageModel["NullableFloatVector"] = null;
 
-        var sut = new AzureAISearchDynamicMapper(model);
+        var sut = new AzureAISearchDynamicMapper(model, null);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
@@ -212,7 +212,7 @@ public class AzureAISearchDynamicMapperTests
             new VectorStoreVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
         ]);
 
-        var sut = new AzureAISearchDynamicMapper(model);
+        var sut = new AzureAISearchDynamicMapper(model, null);
         var storageModel = new JsonObject();
 
         // Act
@@ -234,10 +234,10 @@ public class AzureAISearchDynamicMapperTests
         ]);
 
         var dataModel = new Dictionary<string, object?> { ["Key"] = "key" };
-        var sut = new AzureAISearchDynamicMapper(model);
+        var sut = new AzureAISearchDynamicMapper(model, null);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(dataModel, 0, null);
 
         // Assert
         Assert.Equal("key", (string?)storageModel["Key"]);
@@ -259,7 +259,7 @@ public class AzureAISearchDynamicMapperTests
         var storageModel = new JsonObject();
         storageModel["Key"] = "key";
 
-        var sut = new AzureAISearchDynamicMapper(model);
+        var sut = new AzureAISearchDynamicMapper(model, null);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);

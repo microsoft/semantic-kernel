@@ -39,7 +39,7 @@ internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerial
 
         foreach (var dataProperty in model.DataProperties)
         {
-            if (dataModel.TryGetValue(dataProperty.StorageName, out var dataValue))
+            if (dataModel.TryGetValue(dataProperty.ModelName, out var dataValue))
             {
                 jsonObject[dataProperty.StorageName] = dataValue is not null ?
                     JsonSerializer.SerializeToNode(dataValue, dataProperty.Type, jsonSerializerOptions) :

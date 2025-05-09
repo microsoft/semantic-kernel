@@ -8,45 +8,72 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData.ProviderServices;
+using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Azure AI Search.
 /// </summary>
-internal sealed class AzureAISearchDynamicMapper(CollectionModel model)
+internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSerializerOptions? jsonSerializerOptions) : IAzureAISearchMapper<Dictionary<string, object?>>
 {
     /// <inheritdoc />
-    public JsonObject MapFromDataToStorageModel(Dictionary<string, object?> dataModel)
+    public JsonObject MapFromDataToStorageModel(Dictionary<string, object?> dataModel, int recordIndex, IReadOnlyList<MEAI.Embedding>?[]? generatedEmbeddings)
     {
         Verify.NotNull(dataModel);
 
-        var storageJsonObject = new JsonObject();
+        var jsonObject = new JsonObject();
 
-        // Loop through all known properties and map each from the data model json to the storage json.
-        foreach (var property in model.Properties)
-        {
-            switch (property)
+        jsonObject[model.KeyProperty.StorageName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
+            ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
+            : keyValue switch
             {
-                case KeyPropertyModel keyProperty:
-                    storageJsonObject.Add(keyProperty.StorageName, (string)model.KeyProperty.GetValueAsObject(dataModel)!);
-                    continue;
+                string s => s,
+                null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
+                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
+            };
 
-                case DataPropertyModel dataProperty:
-                case VectorPropertyModel vectorProperty:
-                    if (dataModel.TryGetValue(property.ModelName, out var dataValue))
-                    {
-                        var serializedJsonNode = JsonSerializer.SerializeToNode(dataValue);
-                        storageJsonObject.Add(property.StorageName, serializedJsonNode);
-                    }
-                    continue;
-
-                default:
-                    throw new UnreachableException();
+        foreach (var dataProperty in model.DataProperties)
+        {
+            if (dataModel.TryGetValue(dataProperty.ModelName, out var dataValue))
+            {
+                jsonObject[dataProperty.StorageName] = dataValue is not null ?
+                    JsonSerializer.SerializeToNode(dataValue, dataProperty.Type, jsonSerializerOptions) :
+                    null;
             }
         }
 
-        return storageJsonObject;
+        for (var i = 0; i < model.VectorProperties.Count; i++)
+        {
+            var property = model.VectorProperties[i];
+
+            if (generatedEmbeddings?[i]?[recordIndex] is MEAI.Embedding embedding)
+            {
+                Debug.Assert(property.EmbeddingGenerator is not null);
+
+                jsonObject.Add(
+                    property.StorageName,
+                    embedding switch
+                    {
+                        MEAI.Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
+                        MEAI.Embedding<byte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
+                        MEAI.Embedding<sbyte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
+                        _ => throw new UnreachableException()
+                    });
+            }
+            else
+            {
+                // No generated embedding, read the vector directly from the data model
+                if (dataModel.TryGetValue(property.ModelName, out var sourceValue))
+                {
+                    jsonObject.Add(property.StorageName, sourceValue is null
+                        ? null
+                        : JsonSerializer.SerializeToNode(sourceValue, property.Type, jsonSerializerOptions));
+                }
+            }
+        }
+
+        return jsonObject;
     }
 
     /// <inheritdoc />
