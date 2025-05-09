@@ -62,6 +62,20 @@ Example|Description
 [Step05_BedrockAgent_FileSearch](./BedrockAgent/Step05_BedrockAgent_FileSearch.cs)|How to use file search with a Bedrock agent (i.e. Bedrock knowledge base).
 [Step06_BedrockAgent_AgentChat](./BedrockAgent/Step06_BedrockAgent_AgentChat.cs)|How to create a conversation between two agents and one of them in a Bedrock agent.
 
+### Orchestration
+
+Example|Description
+---|---
+[Step01_Concurrent](./Orchestration/Step01_Concurrent.cs)|How to use a concurrent orchestration..
+[Step01a_ConcurrentWithStructuredOutput](./Orchestration/Step01a_ConcurrentWithStructuredOutput.cs)|How to use structured output (with concurrent orchestration).
+[Step02_Sequential](./Orchestration/Step02_Sequential.cs)|How to use sequential orchestration.
+[Step02a_Sequential](./Orchestration/Step02a_Sequential.cs)|How to cancel an orchestration (with sequential orchestration).
+[Step03_GroupChat](./Orchestration/Step03_GroupChat.cs)|How to use group-chat orchestration.
+[Step03a_GroupChatWithHumanInTheLoop](./Orchestration/Step03a_GroupChatWithHumanInTheLoop.cs)|How to use group-chat orchestration with human in the loop.
+[Step03b_GroupChatWithAIManager](./Orchestration/Step03b_GroupChatWithAIManager.cs)|How to use group-chat orchestration with a AI powered group-manager.
+[Step04_Handoff](./Orchestration/Step04_Handoff.cs)|How to use handoff orchestration.
+[Step04b_HandoffWithStructuredInput](./Orchestration/Step04b_HandoffWithStructuredInput.cs)|How to use structured input (with handoff orchestration).
+
 ## Legacy Agents
 
 Support for the OpenAI Assistant API was originally published in `Microsoft.SemanticKernel.Experimental.Agents` package:
