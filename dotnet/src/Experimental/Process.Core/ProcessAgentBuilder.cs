@@ -25,8 +25,9 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// <param name="agentDefinition"></param>
     /// <param name="threadName"></param>
     /// <param name="nodeInputs"></param>
+    /// <param name="stepId">Id of the step. If not provided, the Id will come from the agent Id.</param>
     /// <exception cref="KernelException"></exception>
-    public ProcessAgentBuilder(AgentDefinition agentDefinition, string threadName, NodeInputs nodeInputs) : base(id: agentDefinition.Id ?? agentDefinition.Name ?? throw new KernelException("All declarative agents must have an Id or a Name assigned."))
+    public ProcessAgentBuilder(AgentDefinition agentDefinition, string threadName, NodeInputs nodeInputs, string? stepId = null) : base(id: stepId ?? agentDefinition.Id ?? agentDefinition.Name ?? throw new KernelException("All declarative agents must have an Id or a Name assigned."))
     {
         Verify.NotNull(agentDefinition);
         this._agentDefinition = agentDefinition;
@@ -54,6 +55,11 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     }
 
     #region Public Interface
+
+    /// <summary>
+    /// The optional resolver for the agent ID. This is used to determine the ID of the agent at runtime.
+    /// </summary>
+    public KernelProcessStateResolver<string?>? AgentIdResolver { get; init; } = null;
 
     /// <summary>
     /// The name of the thread that this agent will run on.
@@ -212,7 +218,7 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
 
         var state = new KernelProcessStepState(this.Name, "1.0", this.Id);
 
-        return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.ThreadName, this.Inputs);
+        return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.ThreadName, this.Inputs) { AgentIdResolver = this.AgentIdResolver };
     }
 
     internal ProcessFunctionTargetBuilder GetInvokeAgentFunctionTargetBuilder()

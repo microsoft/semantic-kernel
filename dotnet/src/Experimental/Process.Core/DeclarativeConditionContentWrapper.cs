@@ -21,3 +21,15 @@ public class DeclarativeConditionContentWrapper
     [JsonPropertyName("_event_")]
     public object? Event { get; set; }
 }
+
+/// <summary>
+/// Wrapper class for the content of a state resolver.
+/// </summary>
+public class StateResolverContentWrapper
+{
+    /// <summary>
+    /// The state of the process.
+    /// </summary>
+    [JsonPropertyName("_state_")]
+    public object? State { get; set; }
+}

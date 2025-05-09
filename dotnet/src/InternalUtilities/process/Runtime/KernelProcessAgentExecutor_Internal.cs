@@ -12,10 +12,11 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a step in a process that executes an agent.
 /// </summary>
-public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProcessAgentExecutorState>
+internal sealed class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProcessAgentExecutorState>
 {
     private readonly KernelProcessAgentStep _agentStep;
     private readonly KernelProcessAgentThread _processThread;
+    private readonly ProcessStateManager _stateManager;
 
     internal KernelProcessAgentExecutorState _state = new();
 
@@ -24,13 +25,15 @@ public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProces
     /// </summary>
     /// <param name="agentStep"></param>
     /// <param name="processThread"></param>
-    public KernelProcessAgentExecutorInternal(KernelProcessAgentStep agentStep, KernelProcessAgentThread processThread)
+    /// <param name="stateManager"></param>
+    public KernelProcessAgentExecutorInternal(KernelProcessAgentStep agentStep, KernelProcessAgentThread processThread, ProcessStateManager stateManager)
     {
         Verify.NotNull(agentStep);
         Verify.NotNull(agentStep.AgentDefinition);
 
         this._agentStep = agentStep;
         this._processThread = processThread;
+        this._stateManager = stateManager;
     }
 
     /// <inheritdoc/>
@@ -54,7 +57,7 @@ public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProces
         ChatMessageContent? inputMessageContent = null;
         try
         {
-            if (!writtenToThread) // TODO: This check is not correct. We need to determine if the message has already been written to the thread. How do we do this?
+            if (!writtenToThread)
             {
                 inputMessageContent = null;
                 if (message is ChatMessageContent chatMessage)
@@ -70,6 +73,16 @@ public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProces
                         ChatCompletion.AuthorRole.User,
                         JsonSerializer.Serialize(message)
                     );
+                }
+            }
+
+            if (this._agentStep.AgentIdResolver is not null)
+            {
+                var state = this._stateManager.GetState();
+                this._agentStep.AgentDefinition.Id = await this._agentStep.AgentIdResolver(state).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(this._agentStep.AgentDefinition.Id))
+                {
+                    throw new KernelException("AgentIdResolver returned an empty agent ID");
                 }
             }
 

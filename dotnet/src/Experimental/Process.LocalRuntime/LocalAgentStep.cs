@@ -27,7 +27,7 @@ internal class LocalAgentStep : LocalStep
 
     protected override ValueTask InitializeStepAsync()
     {
-        this._stepInstance = new KernelProcessAgentExecutorInternal(this._stepInfo, this._agentThread);
+        this._stepInstance = new KernelProcessAgentExecutorInternal(this._stepInfo, this._agentThread, this._processStateManager);
         var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
 
         // Load the kernel functions

@@ -1,9 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
 
 namespace Microsoft.SemanticKernel;
+
+/// <summary>
+/// Delegate that represents a condition that must be met for a <see cref="KernelProcessEdge"/> to be activated.
+/// </summary>
+/// <param name="processState">The readonly process state.</param>
+/// <returns></returns>
+public delegate Task<T> KernelProcessStateResolver<T>(object? processState);
 
 /// <summary>
 /// Represents a step in a process that is an agent.
@@ -30,6 +38,11 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
         this.ThreadName = threadName;
         this.Inputs = inputs;
     }
+
+    /// <summary>
+    /// The optional resolver for the agent ID. This is used to determine the ID of the agent at runtime.
+    /// </summary>
+    public KernelProcessStateResolver<string?>? AgentIdResolver { get; init; } = null;
 
     /// <summary>
     /// The name of the thread this agent is associated with. Will be null if not associated with a specific thread instance.

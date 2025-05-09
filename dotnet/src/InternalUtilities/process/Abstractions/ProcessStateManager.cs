@@ -4,8 +4,8 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Process;
-internal class ProcessStateManager
+namespace Microsoft.SemanticKernel;
+internal sealed class ProcessStateManager
 {
     private readonly Type? _stateType;
     private object? _instance;
