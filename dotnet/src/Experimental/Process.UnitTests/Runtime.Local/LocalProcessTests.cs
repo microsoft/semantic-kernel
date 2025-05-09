@@ -2,6 +2,9 @@
 
 using System;
 using System.Threading.Tasks;
+using SemanticKernel.Process.TestsShared.Services;
+using SemanticKernel.Process.TestsShared.Setup;
+using SemanticKernel.Process.TestsShared.Steps;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.Runtime.Local.UnitTests;
@@ -159,6 +162,60 @@ public class LocalProcessTests
         Assert.False(kernel.Data.ContainsKey("error-global"));
         Assert.True(kernel.Data.ContainsKey("error-function"));
         Assert.IsType<KernelProcessError>(kernel.Data["error-function"]);
+    }
+
+    [Fact]
+    public async Task StartProcessWithKeyedProcessDictSuccessfullyAsync()
+    {
+        // Arrange
+        var processId = "myProcessId";
+        var processKey = CommonProcesses.ProcessKeys.CounterProcess;
+
+        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
+
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
+
+        // Act
+        await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
+            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            {
+                Id = CommonProcesses.ProcessEvents.StartProcess,
+            });
+
+        // Assert
+        var processState = await runningProcess.GetStateAsync();
+        Assert.NotNull(processState);
+        Assert.Equal(processId, processState.State.Id);
+        Assert.Equal(processKey, processState.State.Name);
+    }
+
+    [Fact]
+    public async Task StartProcessWithKeyedProcessDictFailDueMissingKeyAsync()
+    {
+        // Arrange
+        var processId = "myProcessId";
+        var processKey = "someKeyThatDoesNotExist";
+
+        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
+
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
+
+        // Act & Assert
+        try
+        {
+            await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
+                kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+                {
+                    Id = CommonProcesses.ProcessEvents.StartProcess,
+                });
+        }
+        catch (ArgumentException ex)
+        {
+            // Assert
+            Assert.Equal($"The process with key '{processKey}' is not registered.", ex.Message);
+        }
     }
 
     /// <summary>

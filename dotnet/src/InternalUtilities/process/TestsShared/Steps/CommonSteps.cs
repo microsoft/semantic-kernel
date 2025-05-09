@@ -16,23 +16,38 @@ public static class CommonSteps
     /// <summary>
     /// The step that counts how many times it has been invoked.
     /// </summary>
-    public sealed class CountStep : KernelProcessStep
+    public sealed class CountStep : KernelProcessStep<CounterState>
     {
         public const string CountFunction = nameof(Count);
 
         private readonly ICounterService _counter;
+
+        private CounterState? _state;
         public CountStep(ICounterService counterService)
         {
             this._counter = counterService;
+        }
+
+        public override ValueTask ActivateAsync(KernelProcessStepState<CounterState> state)
+        {
+            this._state = state.State ?? new();
+            this._counter.SetCount(this._state.Count);
+            Console.WriteLine($"Activating counter with value {this._state.Count}");
+            return base.ActivateAsync(state);
         }
 
         [KernelFunction]
         public string Count()
         {
             int count = this._counter.IncreaseCount();
-
+            this._state!.Count = count;
             return count.ToString();
         }
+    }
+
+    public class CounterState
+    {
+        public int Count { get; set; } = 0;
     }
 
     /// <summary>
