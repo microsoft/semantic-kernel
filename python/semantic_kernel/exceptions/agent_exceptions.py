@@ -46,6 +46,12 @@ class AgentChatHistoryReducerException(AgentException):
     pass
 
 
+class AgentThreadInitializationException(AgentException):
+    """An error occurred while initializing the agent thread."""
+
+    pass
+
+
 class AgentThreadOperationException(AgentException):
     """An error occurred while performing an operation on the agent thread."""
 

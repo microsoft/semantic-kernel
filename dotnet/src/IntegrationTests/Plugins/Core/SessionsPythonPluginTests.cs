@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
@@ -112,8 +113,8 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var result = await this._sut.ExecuteCodeAsync(code);
 
         // Assert
-        Assert.Contains("8", result);
-        Assert.Contains("Succeeded", result);
+        Assert.Equal("Succeeded", result.Status);
+        Assert.Contains("8", result.ToString());
     }
 
     [Fact(Skip = SkipReason)]
@@ -143,13 +144,13 @@ public sealed class SessionsPythonPluginTests : IDisposable
     /// <summary>
     /// Acquires authentication token for the Azure Container App Session pool.
     /// </summary>
-    private static async Task<string> GetAuthTokenAsync()
+    private static async Task<string> GetAuthTokenAsync(CancellationToken cancellationToken)
     {
         string resource = "https://acasessions.io/.default";
 
         var credential = new AzureCliCredential();
 
-        AccessToken token = await credential.GetTokenAsync(new Azure.Core.TokenRequestContext([resource])).ConfigureAwait(false);
+        AccessToken token = await credential.GetTokenAsync(new Azure.Core.TokenRequestContext([resource]), cancellationToken).ConfigureAwait(false);
 
         return token.Token;
     }

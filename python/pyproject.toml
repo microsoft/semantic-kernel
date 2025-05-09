@@ -50,12 +50,20 @@ dependencies = [
     "scipy>=1.15.1",
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
+    # Protobuf
+    "protobuf",
 ]
 
 ### Optional dependencies
 [project.optional-dependencies]
+anthropic = [
+    "anthropic ~= 0.32"
+]
 autogen = [
     "autogen-agentchat >= 0.2, <0.4"
+]
+aws = [
+    "boto3>=1.36.4,<1.38.0",
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
@@ -67,27 +75,31 @@ azure = [
 chroma = [
     "chromadb >= 0.5,< 1.1"
 ]
-google = [
-    "google-cloud-aiplatform == 1.89.0",
-    "google-generativeai ~= 0.8"
+# Temporary: use direct Test PyPI links until packages are published to Public PyPI
+# Once published, these will simplify to just "microsoft-agents-core" and "microsoft-agents-copilotstudio-client"
+copilot_studio = [
+  "microsoft-agents-core @ https://test-files.pythonhosted.org/packages/17/ae/c87bfb943e75fac50522e2598232fc386b0d7f09a2dd462bbdc63cb83602/microsoft_agents_core-0.0.0a2-py3-none-any.whl",
+  "microsoft-agents-copilotstudio-client @ https://test-files.pythonhosted.org/packages/47/de/9f9e0a0c57132363154dcf197bf2ce0ed33e9c986a8df8573091bcc79b54/microsoft_agents_copilotstudio_client-0.0.0a2-py3-none-any.whl"
+]
+dapr = [
+    "dapr>=1.14.0",
+    "dapr-ext-fastapi>=1.14.0",
+    "flask-dapr>=1.14.0",
 ]
 faiss = [
     "faiss-cpu>=1.10.0"
 ]
+google = [
+    "google-cloud-aiplatform == 1.91.0",
+    "google-generativeai ~= 0.8"
+]
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 5.0",
-    "torch == 2.6.0"
+    "torch == 2.7.0"
 ]
 mcp = [
     "mcp ~= 1.6"
-]
-mongo = [
-    "pymongo >= 4.8.0, < 4.13",
-    "motor >= 3.3.2,< 3.8.0"
-]
-notebooks = [
-    "ipykernel ~= 6.29"
 ]
 milvus = [
     "pymilvus >= 2.3,< 2.6",
@@ -96,14 +108,21 @@ milvus = [
 mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
+mongo = [
+    "pymongo >= 4.8.0, < 4.13",
+    "motor >= 3.3.2,< 3.8.0"
+]
+notebooks = [
+    "ipykernel ~= 6.29"
+]
 ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
     "onnxruntime-genai ~= 0.5; python_version < '3.13'"
 ]
-anthropic = [
-    "anthropic ~= 0.32"
+pandas = [
+    "pandas ~= 2.2"
 ]
 pinecone = [
     "pinecone[asyncio, grpc] ~= 6.0"
@@ -119,30 +138,19 @@ redis = [
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]
-usearch = [
-    "usearch ~= 2.16",
-    "pyarrow >= 12.0,< 20.0"
-]
-weaviate = [
-    "weaviate-client>=4.10,<5.0",
-]
-pandas = [
-    "pandas ~= 2.2"
-]
-aws = [
-    "boto3>=1.36.4,<1.38.0",
-]
-dapr = [
-    "dapr>=1.14.0",
-    "dapr-ext-fastapi>=1.14.0",
-    "flask-dapr>=1.14.0"
-]
 realtime = [
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
 ]
 sql = [
     "pyodbc >= 5.2"
+]
+usearch = [
+    "usearch ~= 2.16",
+    "pyarrow >= 12.0,< 21.0"
+]
+weaviate = [
+    "weaviate-client>=4.10,<5.0",
 ]
 
 [tool.uv]

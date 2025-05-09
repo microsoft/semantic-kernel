@@ -85,7 +85,7 @@ class AssistantThreadActions:
         client: "AsyncOpenAI",
         thread_id: str,
         message: "str | ChatMessageContent",
-        allowed_message_roles: list[str] = [AuthorRole.USER, AuthorRole.ASSISTANT],
+        allowed_message_roles: Sequence[str] | None = None,
         **kwargs: Any,
     ) -> "Message | None":
         """Create a message in the thread.
@@ -95,6 +95,8 @@ class AssistantThreadActions:
             thread_id: The ID of the thread to create the message in.
             message: The message to create.
             allowed_message_roles: The allowed message roles.
+                Defaults to [AuthorRole.USER, AuthorRole.ASSISTANT] if None.
+                Providing an empty list will disallow all message roles.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -108,6 +110,9 @@ class AssistantThreadActions:
         if any(isinstance(item, FunctionCallContent) for item in message.items):
             return None
 
+        # Set the default allowed message roles if not provided
+        if allowed_message_roles is None:
+            allowed_message_roles = [AuthorRole.USER, AuthorRole.ASSISTANT]
         if message.role.value not in allowed_message_roles and message.role != AuthorRole.TOOL:
             raise AgentExecutionException(
                 f"Invalid message role `{message.role.value}`. Allowed roles are {allowed_message_roles}."
