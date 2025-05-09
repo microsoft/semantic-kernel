@@ -13,16 +13,16 @@ public class ChatGroupExtensionsTests
         // Arrange
         ChatGroup group = new()
         {
-            { "agent1", ("Agent One", "First agent description") },
-            { "agent2", ("Agent Two", "Second agent description") },
-            { "agent3", ("Agent Three", "Third agent description") }
+            { "AgentOne", ("agent1", "First agent description") },
+            { "AgentTwo", ("agent2", "Second agent description") },
+            { "AgentThree", ("agent3", "Third agent description") }
         };
 
         // Act
         string result = group.FormatNames();
 
         // Assert
-        Assert.Equal("Agent One,Agent Two,Agent Three", result);
+        Assert.Equal("AgentOne,AgentTwo,AgentThree", result);
     }
 
     [Fact]
@@ -31,14 +31,14 @@ public class ChatGroupExtensionsTests
         // Arrange
         ChatGroup group = new()
         {
-            { "agent1", ("Agent One", "First agent description") }
+            { "AgentOne", ("agent1", "First agent description") },
         };
 
         // Act
         string result = group.FormatNames();
 
         // Assert
-        Assert.Equal("Agent One", result);
+        Assert.Equal("AgentOne", result);
     }
 
     [Fact]
@@ -60,9 +60,9 @@ public class ChatGroupExtensionsTests
         // Arrange
         ChatGroup group = new()
         {
-            { "agent1", ("Agent One", "First agent description") },
-            { "agent2", ("Agent Two", "Second agent description") },
-            { "agent3", ("Agent Three", "Third agent description") }
+            { "AgentOne", ("agent1", "First agent description") },
+            { "AgentTwo", ("agent2", "Second agent description") },
+            { "AgentThree", ("agent3", "Third agent description") }
         };
 
         // Act
@@ -71,9 +71,9 @@ public class ChatGroupExtensionsTests
         // Assert
         const string Expected =
             """
-            - Agent One: First agent description
-            - Agent Two: Second agent description
-            - Agent Three: Third agent description
+            - AgentOne: First agent description
+            - AgentTwo: Second agent description
+            - AgentThree: Third agent description
             """;
         Assert.Equal(Expected, result);
     }
