@@ -73,7 +73,6 @@ public sealed class SqliteCommandBuilderTests : IDisposable
     {
         // Arrange
         const string TableName = "TestTable";
-        const string ExtensionName = "TestExtension";
 
         var columns = new List<SqliteColumn>
         {
@@ -82,12 +81,12 @@ public sealed class SqliteCommandBuilderTests : IDisposable
         };
 
         // Act
-        var command = SqliteCommandBuilder.BuildCreateVirtualTableCommand(this._connection, TableName, columns, ifNotExists, ExtensionName);
+        var command = SqliteCommandBuilder.BuildCreateVirtualTableCommand(this._connection, TableName, columns, ifNotExists);
 
         // Assert
         Assert.Contains("CREATE VIRTUAL TABLE", command.CommandText);
         Assert.Contains(TableName, command.CommandText);
-        Assert.Contains($"USING {ExtensionName}", command.CommandText);
+        Assert.Contains("USING vec0", command.CommandText);
 
         Assert.Equal(ifNotExists, command.CommandText.Contains("IF NOT EXISTS"));
 

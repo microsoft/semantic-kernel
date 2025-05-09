@@ -28,9 +28,6 @@ public sealed class SqliteVectorStore : VectorStore
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
-    /// <summary>SQLite extension name for vector search operations.</summary>
-    private readonly string? _vectorSearchExtensionName;
-
     /// <summary>Custom virtual table name to store vectors.</summary>
     private readonly string? _vectorVirtualTableName;
 
@@ -48,7 +45,6 @@ public sealed class SqliteVectorStore : VectorStore
         this._connectionString = connectionString;
 
         options ??= SqliteVectorStoreOptions.Default;
-        this._vectorSearchExtensionName = options.VectorSearchExtensionName;
         this._vectorVirtualTableName = options.VectorVirtualTableName;
         this._embeddingGenerator = options.EmbeddingGenerator;
 
@@ -74,7 +70,6 @@ public sealed class SqliteVectorStore : VectorStore
             new()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                VectorSearchExtensionName = this._vectorSearchExtensionName,
                 VectorVirtualTableName = this._vectorVirtualTableName,
                 EmbeddingGenerator = this._embeddingGenerator
             });
