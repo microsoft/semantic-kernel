@@ -12,17 +12,20 @@ from semantic_kernel.contents.function_result_content import FunctionResultConte
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers
-user questions using the Bing Grounding tool.
+user questions using the Azure AI Search tool.
 
 The agent is created using a YAML declarative spec that configures the
-Bing Grounding tool. The agent is then used to answer user questions
-that require web search to answer correctly.
+Azure AI Search tool. The agent is then used to answer user questions
+that required grounding context from the Azure AI Search index.
 
-Note: the `BingConnectionId` is in the format of:
-/subscriptions/<sub_id>/resourceGroups/<rg>/providers/Microsoft.MachineLearningServices/workspaces/<workspace>/connections/<bing_connection_id>
+Note: the `AzureAISearchConnectionId` is in the format of:
+/subscriptions/<sub-id>/resourceGroups/<rg>/providers/Microsoft.MachineLearningServices/workspaces/<workspace>/connections/AzureAISearch
 
 It can either be configured as an env var `AZURE_AI_AGENT_BING_CONNECTION_ID` or passed in as an extra to 
-`create_from_yaml`: extras={"BingConnectionId": "<bing_connection_id>"}
+`create_from_yaml`: extras={
+    "AzureAISearchConnectionId": "<azure_ai_search_connection_id>",
+    "AzureAISearchIndexName": "<azure_ai_search_index_name>"
+}
 """
 
 # Define the YAML string for the sample
@@ -43,7 +46,7 @@ tools:
       index_name: ${AzureAI:AzureAISearchIndexName}
 """
 
-settings = AzureAIAgentSettings()  # ChatModelId & BingConnectionId come from .env/env vars
+settings = AzureAIAgentSettings()  # ChatModelId comes from .env/env vars
 
 
 async def main():
@@ -58,8 +61,8 @@ async def main():
                 client=client,
                 settings=settings,
                 extras={
-                    "AzureAISearchConnectionId": "/subscriptions/5b742c40-bc2b-4a4f-902f-ee9f644d8844/resourceGroups/sk-integration-test-infra/providers/Microsoft.MachineLearningServices/workspaces/ai-proj-sk-integration-test/connections/AzureAISearch",
-                    "AzureAISearchIndexName": "skglossary",
+                    "AzureAISearchConnectionId": "<azure-ai-search-connection-id>",
+                    "AzureAISearchIndexName": "<azure-ai-search-index-name>",
                 },
             )
 
@@ -68,6 +71,7 @@ async def main():
 
             print(f"# User: '{TASK}'")
 
+            # Define a callback function to handle intermediate messages
             async def on_intermediate_message(message: ChatMessageContent):
                 if message.items:
                     for item in message.items:
@@ -80,7 +84,7 @@ async def main():
             async for response in agent.invoke(messages=TASK, on_intermediate_message=on_intermediate_message):
                 print(f"# {response.name}: {response}")
         finally:
-            # Cleanup: Delete the thread and agent
+            # Cleanup: Delete the  agent
             await client.agents.delete_agent(agent.id)
 
 

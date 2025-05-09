@@ -141,7 +141,7 @@ def _azure_function(spec: ToolSpec) -> ToolDefinition:
 
 
 @_register_tool("bing_grounding")
-def _bing_grounding(spec: ToolSpec) -> ToolDefinition:
+def _bing_grounding(spec: ToolSpec) -> BingGroundingTool:
     connections = spec.options.get("tool_connections")
     if not connections or not isinstance(connections, list) or not connections[0]:
         raise AgentInitializationException(f"Missing or malformed 'tool_connections' in: {spec}")
@@ -151,13 +151,13 @@ def _bing_grounding(spec: ToolSpec) -> ToolDefinition:
 
 
 @_register_tool("code_interpreter")
-def _code_interpreter(spec: ToolSpec) -> ToolDefinition:
-    # no configurable options today
-    return CodeInterpreterTool()
+def _code_interpreter(spec: ToolSpec) -> CodeInterpreterTool:
+    file_ids = spec.options.get("file_ids")
+    return CodeInterpreterTool(file_ids=file_ids) if file_ids else CodeInterpreterTool()
 
 
 @_register_tool("file_search")
-def _file_search(spec: ToolSpec) -> ToolDefinition:
+def _file_search(spec: ToolSpec) -> FileSearchTool:
     vector_store_ids = spec.options.get("vector_store_ids")
     if not vector_store_ids or not isinstance(vector_store_ids, list) or not vector_store_ids[0]:
         raise AgentInitializationException(f"Missing or malformed 'vector_store_ids' in: {spec}")
@@ -215,7 +215,7 @@ def _openapi(spec: ToolSpec) -> OpenApiTool:
     )
 
 
-def _build_tool(spec: ToolSpec, kernel: "Kernel") -> list[ToolDefinition]:
+def _build_tool(spec: ToolSpec, kernel: "Kernel") -> ToolDefinition:
     if not spec.type:
         raise AgentInitializationException("Tool spec must include a 'type' field.")
 
@@ -225,7 +225,7 @@ def _build_tool(spec: ToolSpec, kernel: "Kernel") -> list[ToolDefinition]:
         raise AgentInitializationException(f"Unsupported tool type: {spec.type}") from exc
 
     sig = inspect.signature(builder)
-    return builder(spec) if len(sig.parameters) == 1 else builder(spec, kernel)
+    return builder(spec) if len(sig.parameters) == 1 else builder(spec, kernel)  # type: ignore[call-arg]
 
 
 def _build_tool_resources(tool_defs: list[ToolDefinition]) -> ToolResources | None:

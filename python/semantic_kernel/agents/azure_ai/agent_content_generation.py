@@ -426,7 +426,7 @@ def generate_streaming_azure_ai_search_content(
     if not step_details.tool_calls:
         return None
 
-    items: list[FunctionCallContent] = []
+    items: list[FunctionCallContent | FunctionResultContent] = []
 
     for index, tool in enumerate(step_details.tool_calls):
         if tool.type == "azure_ai_search":

@@ -43,12 +43,18 @@ USER_INPUTS = [
     "Thank you",
 ]
 
-AGENT_YAML = """
+# Define the YAML string for the sample
+SPEC = """
 type: foundry_agent
 name: Host
 instructions: Respond politely to the user's questions.
 model:
   id: ${AzureAI:ChatModelId}
+tools:
+  - id: MenuPlugin.get_specials
+    type: function
+  - id: MenuPlugin.get_item_price
+    type: function
 """
 
 
@@ -59,13 +65,13 @@ async def main() -> None:
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         # 1. Create a Kernel instance
-        # For declarative agents, the kernel is required to resolve the plugin
+        # For declarative agents, the kernel is required to resolve the plugin(s)
         kernel = Kernel()
         kernel.add_plugin(MenuPlugin())
 
         # 2. Create a Semantic Kernel agent for the Azure AI agent
         agent: AzureAIAgent = await AgentRegistry.create_from_yaml(
-            AGENT_YAML,
+            SPEC,
             kernel=kernel,
             settings=settings,
             client=client,

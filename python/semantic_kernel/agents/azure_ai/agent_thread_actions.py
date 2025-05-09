@@ -40,6 +40,7 @@ from semantic_kernel.agents.azure_ai.agent_content_generation import (
     generate_function_call_streaming_content,
     generate_function_result_content,
     generate_message_content,
+    generate_streaming_azure_ai_search_content,
     generate_streaming_bing_grounding_content,
     generate_streaming_code_interpreter_content,
     generate_streaming_function_content,
@@ -502,7 +503,7 @@ class AgentThreadActions:
                                             agent_name=agent.name, step_details=details
                                         )
                                     case AgentsNamedToolChoiceType.AZURE_AI_SEARCH:
-                                        content = generate_azure_ai_search_content(
+                                        content = generate_streaming_azure_ai_search_content(
                                             agent_name=agent.name, step_details=details
                                         )
                                 if content:

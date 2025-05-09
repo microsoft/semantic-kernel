@@ -34,7 +34,8 @@ model:
 tools:
   - type: code_interpreter
     options:
-        file_ids: ["${AzureAI:FileId1}"]
+      file_ids:
+        - ${AzureAI:FileId1}
 """
 
 settings = AzureAIAgentSettings()  # ChatModelId & ConnectionString come from env vars
