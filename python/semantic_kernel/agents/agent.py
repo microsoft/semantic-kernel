@@ -468,7 +468,7 @@ class Agent(KernelBaseModel, ABC):
 
     # endregion
 
-    # region Thread Managment
+    # region Thread Management
 
     async def _ensure_thread_exists_with_messages(
         self,
