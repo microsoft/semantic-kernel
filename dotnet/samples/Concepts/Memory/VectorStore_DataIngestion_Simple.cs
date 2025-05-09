@@ -3,10 +3,10 @@
 using System.Text.Json;
 using Azure.Identity;
 using Memory.VectorStoreFixtures;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
-using Microsoft.Extensions.AI;
 using Qdrant.Client;
 
 namespace Memory;

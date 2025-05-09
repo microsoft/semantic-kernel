@@ -2,9 +2,9 @@
 
 using Azure.Identity;
 using Memory.VectorStoreLangchainInterop;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.Extensions.AI;
 using StackExchange.Redis;
 using Sdk = Pinecone;
 

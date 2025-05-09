@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.Extensions.AI;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
-using System;
 
 namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
 
