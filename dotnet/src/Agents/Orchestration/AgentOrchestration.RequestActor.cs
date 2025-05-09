@@ -62,7 +62,7 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
                 this.Logger.LogOrchestrationStart(this.Context.Orchestration, this.Id);
                 await task.ConfigureAwait(false);
             }
-            catch (Exception exception)
+            catch (Exception exception) when (!exception.IsCriticalException())
             {
                 // Log exception details and allow orchestration to fail
                 this.Logger.LogOrchestrationRequestFailure(this.Context.Orchestration, this.Id, exception);

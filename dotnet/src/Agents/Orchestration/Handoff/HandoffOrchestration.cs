@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
@@ -17,16 +18,23 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
 {
     internal static readonly string OrchestrationName = FormatOrchestrationName(typeof(HandoffOrchestration<,>));
 
-    private readonly Dictionary<string, HandoffConnections> _handoffs;
+    private readonly OrchestrationHandoffs _handoffs;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandoffOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="handoffs">Defines the handoff connections for each agent.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
-    public HandoffOrchestration(Dictionary<string, HandoffConnections> handoffs, params Agent[] agents)
+    public HandoffOrchestration(OrchestrationHandoffs handoffs, params Agent[] agents)
         : base(OrchestrationName, agents)
     {
+        HashSet<string> agentNames = agents.Select(a => a.Name ?? a.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        string[] badNames = [.. handoffs.Keys.Concat(handoffs.Values.SelectMany(h => h.Keys)).Where(name => !agentNames.Contains(name))];
+        if (badNames.Length > 0)
+        {
+            throw new ArgumentException($"The following agents are not defined in the orchestration: {string.Join(", ", badNames)}", nameof(handoffs));
+        }
+
         this._handoffs = handoffs;
     }
 
@@ -77,7 +85,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
         }
 
         // Complete the handoff model
-        foreach ((string agentName, HandoffConnections handoffs) in this._handoffs)
+        foreach ((string agentName, AgentHandoffs handoffs) in this._handoffs)
         {
             // Retrieve the map for the agent (every agent had an empty map created)
             HandoffLookup agentHandoffs = handoffMap[agentName];

@@ -47,11 +47,6 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
         }
 
         /// <summary>
-        /// Gets or sets the optional target agent type to which the output message is forwarded.
-        /// </summary>
-        public AgentType? CompletionTarget { get; init; }
-
-        /// <summary>
         /// Processes the received TResult message by transforming it into a TOutput message.
         /// If a CompletionTarget is defined, it sends the transformed message to the corresponding agent.
         /// Additionally, it signals completion via the provided TaskCompletionSource if available.
@@ -65,27 +60,19 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
 
             try
             {
-                IList<ChatMessageContent> result = this._transformResult.Invoke(item);
-                TOutput output = await this._transform.Invoke(result).ConfigureAwait(false);
-
-                if (this.CompletionTarget.HasValue)
+                if (!this._completionSource.Task.IsCompleted)
                 {
-                    await this.SendMessageAsync(output!, this.CompletionTarget.Value, messageContext.CancellationToken).ConfigureAwait(false);
+                    IList<ChatMessageContent> result = this._transformResult.Invoke(item);
+                    TOutput output = await this._transform.Invoke(result).ConfigureAwait(false);
+                    this._completionSource.TrySetResult(output);
                 }
-
-                this._completionSource?.SetResult(output);
             }
             catch (Exception exception)
             {
                 // Log exception details and fail orchestration as per design.
                 this.Logger.LogOrchestrationResultFailure(this.Context.Orchestration, this.Id, exception);
-
-                if (this._completionSource == null)
-                {
-                    throw;
-                }
-
                 this._completionSource.SetException(exception);
+                throw;
             }
         }
     }

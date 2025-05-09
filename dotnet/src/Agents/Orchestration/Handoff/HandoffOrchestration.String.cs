@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 
 /// <summary>
@@ -15,7 +13,7 @@ public sealed class HandoffOrchestration : HandoffOrchestration<string, string>
     /// </summary>
     /// <param name="handoffs">Defines the handoff connections for each agent.</param>
     /// <param name="members">The agents to be orchestrated.</param>
-    public HandoffOrchestration(Dictionary<string, HandoffConnections> handoffs, params Agent[] members)
+    public HandoffOrchestration(OrchestrationHandoffs handoffs, params Agent[] members)
         : base(handoffs, members)
     {
     }

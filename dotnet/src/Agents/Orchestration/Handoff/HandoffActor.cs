@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +40,11 @@ internal sealed class HandoffActor :
     public HandoffActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, Agent agent, HandoffLookup handoffs, AgentType resultHandoff, ILogger<HandoffActor>? logger = null)
         : base(id, runtime, context, agent, logger)
     {
+        if (handoffs.ContainsKey(agent.Name ?? agent.Id))
+        {
+            throw new ArgumentException($"The agent {agent.Name ?? agent.Id} cannot have a handoff to itself.", nameof(handoffs));
+        }
+
         this._cache = [];
         this._handoffs = handoffs;
         this._resultHandoff = resultHandoff;

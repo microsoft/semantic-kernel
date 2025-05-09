@@ -14,7 +14,7 @@ namespace GettingStarted.Orchestration;
 public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task AuthorCriticAsync()
+    public async Task GroupChatAsync()
     {
         // Define the agents
         ChatCompletionAgent writer =
@@ -63,7 +63,7 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
         string input = "Create a slogon for a new eletric SUV that is affordable and fun to drive.";
         Console.WriteLine($"\n# INPUT: {input}\n");
         OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
-        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 4));
+        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 3));
         Console.WriteLine($"\n# RESULT: {text}");
 
         await runtime.RunUntilIdleAsync();

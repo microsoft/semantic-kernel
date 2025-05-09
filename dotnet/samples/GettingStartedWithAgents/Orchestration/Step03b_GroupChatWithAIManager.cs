@@ -135,7 +135,7 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
         // Run the orchestration
         Console.WriteLine($"\n# INPUT: {topic}\n");
         OrchestrationResult<string> result = await orchestration.InvokeAsync(topic, runtime);
-        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 4));
+        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 3));
         Console.WriteLine($"\n# RESULT: {text}");
 
         await runtime.RunUntilIdleAsync();

@@ -12,7 +12,7 @@ namespace GettingStarted.Orchestration;
 /// <summary>
 /// Demonstrates how to use the <see cref="HandoffOrchestration"/>.
 /// </summary>
-public class Step04b_HandoffWithStructuredInput(ITestOutputHelper output) : BaseOrchestrationTest(output)
+public class Step04a_HandoffWithStructuredInput(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
     public async Task HandoffStructuredInputAsync()

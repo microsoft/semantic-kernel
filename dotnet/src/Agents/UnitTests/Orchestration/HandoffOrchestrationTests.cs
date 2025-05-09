@@ -81,7 +81,7 @@ public class HandoffOrchestrationTests
         Assert.Equal(1, mockAgent3.InvokeCount);
     }
 
-    private static async Task<string> ExecuteOrchestrationAsync(InProcessRuntime runtime, Dictionary<string, HandoffConnections>? handoffs, params Agent[] mockAgents)
+    private static async Task<string> ExecuteOrchestrationAsync(InProcessRuntime runtime, Dictionary<string, AgentHandoffs>? handoffs, params Agent[] mockAgents)
     {
         // Act
         await runtime.StartAsync();

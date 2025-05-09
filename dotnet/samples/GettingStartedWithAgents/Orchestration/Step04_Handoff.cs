@@ -42,18 +42,9 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         // Define the orchestration
         OrchestrationMonitor monitor = new();
         HandoffOrchestration orchestration =
-            new(handoffs:
-                    new()
-                    {
-                        {
-                            triageAgent.Name!,
-                            new()
-                            {
-                                { pythonAgent.Name!, pythonAgent.Description! },
-                                { dotnetAgent.Name!, dotnetAgent.Description! },
-                            }
-                        }
-                    },
+            new(new OrchestrationHandoffs()
+                    .Add(triageAgent, dotnetAgent)
+                    .Add(triageAgent, pythonAgent),
                 triageAgent,
                 pythonAgent,
                 dotnetAgent)
@@ -109,6 +100,8 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
 
         // Define the pattern
         InProcessRuntime runtime = new();
+        //Dictionary<string, AgentHandoffs> test = [];
+        //Dictionary<string, Dictionary<string, string>> test = [];
         HandoffOrchestration orchestration =
             new(handoffs: [],
                 agent1)
