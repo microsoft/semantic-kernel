@@ -37,7 +37,7 @@ public class PineconeCollectionTests
         var pineconeClient = new PineconeClient("fake api key");
 
         // Act.
-        var sut = new PineconeCollection<string, SinglePropsModel>(
+        using var sut = new PineconeCollection<string, SinglePropsModel>(
             pineconeClient,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition });

@@ -21,9 +21,10 @@ public class CommonPostgresVectorStoreRecordCollectionTests(PostgresVectorStoreF
 
     protected override VectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
     {
-        return new PostgresCollection<string, TRecord>(fixture.DataSource!, recordCollectionName, ownsDataSource: false, new()
+        return new PostgresCollection<string, TRecord>(fixture.DataSource!, recordCollectionName, new()
         {
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+            OwnsDataSource = false,
         });
     }
 

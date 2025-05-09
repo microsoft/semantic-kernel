@@ -64,7 +64,7 @@ public sealed class CosmosNoSqlCollectionTests
     public void ConstructorWithDeclarativeModelInitializesCollection()
     {
         // Act & Assert
-        var collection = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var collection = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -81,7 +81,7 @@ public sealed class CosmosNoSqlCollectionTests
         };
 
         // Act
-        var collection = new CosmosNoSqlCollection<string, TestModel>(
+        using var collection = new CosmosNoSqlCollection<string, TestModel>(
             this._mockDatabase.Object,
             "collection",
             new() { VectorStoreRecordDefinition = definition });
@@ -117,7 +117,7 @@ public sealed class CosmosNoSqlCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
             collectionName);
 
@@ -159,7 +159,7 @@ public sealed class CosmosNoSqlCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        var sut = new CosmosNoSqlCollection<string, TestIndexingModel>(
+        using var sut = new CosmosNoSqlCollection<string, TestIndexingModel>(
             this._mockDatabase.Object,
             CollectionName,
             new() { IndexingMode = indexingMode, Automatic = indexingMode != IndexingMode.None });
@@ -259,7 +259,7 @@ public sealed class CosmosNoSqlCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
             CollectionName);
 
@@ -289,7 +289,7 @@ public sealed class CosmosNoSqlCollectionTests
         // Act
         if (useCompositeKeyCollection)
         {
-            var sut = new CosmosNoSqlCollection<CosmosNoSqlCompositeKey, CosmosNoSqlHotel>(
+            using var sut = new CosmosNoSqlCollection<CosmosNoSqlCompositeKey, CosmosNoSqlHotel>(
                 this._mockDatabase.Object,
                 "collection");
 
@@ -298,7 +298,7 @@ public sealed class CosmosNoSqlCollectionTests
         }
         else
         {
-            var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+            using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
                 this._mockDatabase.Object,
                 "collection");
 
@@ -321,7 +321,7 @@ public sealed class CosmosNoSqlCollectionTests
         // Arrange
         List<string> recordKeys = ["key1", "key2"];
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -344,7 +344,7 @@ public sealed class CosmosNoSqlCollectionTests
     public async Task DeleteCollectionInvokesValidMethodsAsync()
     {
         // Arrange
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -388,7 +388,7 @@ public sealed class CosmosNoSqlCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -431,7 +431,7 @@ public sealed class CosmosNoSqlCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -458,7 +458,7 @@ public sealed class CosmosNoSqlCollectionTests
         // Arrange
         var hotel = new CosmosNoSqlHotel("key") { HotelName = "Test Name" };
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -484,7 +484,7 @@ public sealed class CosmosNoSqlCollectionTests
         var hotel2 = new CosmosNoSqlHotel("key2") { HotelName = "Test Name 2" };
         var hotel3 = new CosmosNoSqlHotel("key3") { HotelName = "Test Name 3" };
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -528,7 +528,7 @@ public sealed class CosmosNoSqlCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -547,7 +547,7 @@ public sealed class CosmosNoSqlCollectionTests
     public async Task VectorizedSearchWithUnsupportedVectorTypeThrowsExceptionAsync()
     {
         // Arrange
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -560,7 +560,7 @@ public sealed class CosmosNoSqlCollectionTests
     public async Task VectorizedSearchWithNonExistentVectorPropertyNameThrowsExceptionAsync()
     {
         // Arrange
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             this._mockDatabase.Object,
             "collection");
 

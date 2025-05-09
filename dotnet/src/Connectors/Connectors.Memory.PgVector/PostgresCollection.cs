@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// <typeparam name="TKey">The type of the key.</typeparam>
 /// <typeparam name="TRecord">The type of the record.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IDisposable
+public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
     where TRecord : class
@@ -48,10 +48,9 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// </summary>
     /// <param name="dataSource">The data source to use for connecting to the database.</param>
     /// <param name="name">The name of the collection.</param>
-    /// <param name="ownsDataSource">A value indicating whether the data source should be disposed after the collection is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public PostgresCollection(NpgsqlDataSource dataSource, string name, bool ownsDataSource, PostgresCollectionOptions? options = default)
-        : this(new PostgresDbClient(dataSource, options?.Schema, ownsDataSource), name, options)
+    public PostgresCollection(NpgsqlDataSource dataSource, string name, PostgresCollectionOptions? options = default)
+        : this(new PostgresDbClient(dataSource, options?.Schema, options?.OwnsDataSource ?? PostgresVectorStoreOptions.Default.OwnsDataSource), name, options)
     {
         Verify.NotNull(dataSource);
     }
@@ -64,8 +63,11 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <param name="options">Optional configuration options for this class.</param>
     public PostgresCollection(string connectionString, string name, PostgresCollectionOptions? options = default)
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        : this(PostgresUtils.CreateDataSource(connectionString), name, ownsDataSource: true, options)
+        : this(PostgresUtils.CreateDataSource(connectionString), name, new(options)
 #pragma warning restore CA2000 // Dispose objects before losing scope
+        {
+            OwnsDataSource = true // We created the the data source, so we own it.
+        })
     {
     }
 
@@ -101,8 +103,12 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
         };
     }
 
-    /// <inheritdoc/>
-    public void Dispose() => this._client.Dispose();
+    /// <inheritdoc />
+    protected override void Dispose(bool disposing)
+    {
+        this._client.Dispose();
+        base.Dispose(disposing);
+    }
 
     /// <inheritdoc/>
     public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)

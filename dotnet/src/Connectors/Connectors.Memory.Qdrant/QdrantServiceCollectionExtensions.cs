@@ -34,6 +34,8 @@ public static class QdrantServiceCollectionExtensions
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
+                // The client was restored from the DI container, so we do not own it.
+                options.OwnsClient = false;
                 return new QdrantVectorStore(qdrantClient, options);
             });
 
@@ -62,6 +64,8 @@ public static class QdrantServiceCollectionExtensions
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
+                // We created the client, so we own it.
+                options.OwnsClient = true;
                 return new QdrantVectorStore(qdrantClient, options);
             });
 
@@ -97,6 +101,8 @@ public static class QdrantServiceCollectionExtensions
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
+                // The client was restored from the DI container, so we do not own it.
+                options.OwnsClient = false;
                 return (new QdrantCollection<TKey, TRecord>(qdrantClient, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
@@ -142,6 +148,8 @@ public static class QdrantServiceCollectionExtensions
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
+                // We created the client, so we own it.
+                options.OwnsClient = true;
                 return (new QdrantCollection<TKey, TRecord>(qdrantClient, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 

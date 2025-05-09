@@ -48,7 +48,7 @@ public class RedisHashSetCollectionTests
         {
             SetupExecuteMock(this._redisDatabaseMock, new RedisServerException("Unknown index name"));
         }
-        var sut = new RedisHashSetCollection<string, SinglePropsModel>(
+        using var sut = new RedisHashSetCollection<string, SinglePropsModel>(
             this._redisDatabaseMock.Object,
             collectionName);
 
@@ -72,7 +72,7 @@ public class RedisHashSetCollectionTests
         // Arrange.
         SetupExecuteMock(this._redisDatabaseMock, "FT.INFO", new RedisServerException("Unknown index name"));
         SetupExecuteMock(this._redisDatabaseMock, "FT.CREATE", string.Empty);
-        var sut = new RedisHashSetCollection<string, SinglePropsModel>(this._redisDatabaseMock.Object, TestCollectionName);
+        using var sut = new RedisHashSetCollection<string, SinglePropsModel>(this._redisDatabaseMock.Object, TestCollectionName);
 
         // Act.
         await sut.EnsureCollectionExistsAsync();
@@ -117,7 +117,7 @@ public class RedisHashSetCollectionTests
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, string.Empty);
-        var sut = this.CreateRecordCollection(false);
+        using var sut = this.CreateRecordCollection(false);
 
         // Act
         await sut.DeleteCollectionAsync();
@@ -145,7 +145,7 @@ public class RedisHashSetCollectionTests
             new("vector_storage_name", MemoryMarshal.AsBytes(new ReadOnlySpan<float>(new float[] { 1, 2, 3, 4 })).ToArray())
         };
         this._redisDatabaseMock.Setup(x => x.HashGetAllAsync(It.IsAny<RedisKey>(), CommandFlags.None)).ReturnsAsync(hashEntries);
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         var actual = await sut.GetAsync(
@@ -170,7 +170,7 @@ public class RedisHashSetCollectionTests
         // Arrange
         var redisValues = new RedisValue[] { new("data 1"), new("data 1") };
         this._redisDatabaseMock.Setup(x => x.HashGetAsync(It.IsAny<RedisKey>(), It.IsAny<RedisValue[]>(), CommandFlags.None)).ReturnsAsync(redisValues);
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         var actual = await sut.GetAsync(
@@ -215,7 +215,7 @@ public class RedisHashSetCollectionTests
                 _ => throw new ArgumentException("Unexpected key."),
             };
         });
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         var actual = await sut.GetAsync(
@@ -245,7 +245,7 @@ public class RedisHashSetCollectionTests
     {
         // Arrange
         this._redisDatabaseMock.Setup(x => x.KeyDeleteAsync(It.IsAny<RedisKey>(), CommandFlags.None)).ReturnsAsync(true);
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         await sut.DeleteAsync(TestRecordKey1);
@@ -261,7 +261,7 @@ public class RedisHashSetCollectionTests
     {
         // Arrange
         this._redisDatabaseMock.Setup(x => x.KeyDeleteAsync(It.IsAny<RedisKey>(), CommandFlags.None)).ReturnsAsync(true);
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         await sut.DeleteAsync([TestRecordKey1, TestRecordKey2]);
@@ -278,7 +278,7 @@ public class RedisHashSetCollectionTests
     {
         // Arrange
         this._redisDatabaseMock.Setup(x => x.HashSetAsync(It.IsAny<RedisKey>(), It.IsAny<HashEntry[]>(), CommandFlags.None)).Returns(Task.CompletedTask);
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
         var model = CreateModel(TestRecordKey1, true);
 
         // Act
@@ -300,7 +300,7 @@ public class RedisHashSetCollectionTests
     {
         // Arrange
         this._redisDatabaseMock.Setup(x => x.HashSetAsync(It.IsAny<RedisKey>(), It.IsAny<HashEntry[]>(), CommandFlags.None)).Returns(Task.CompletedTask);
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         var model1 = CreateModel(TestRecordKey1, true);
         var model2 = CreateModel(TestRecordKey2, true);
@@ -349,7 +349,7 @@ public class RedisHashSetCollectionTests
                 new RedisValue("0.25"),
             ]),
         });
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel.Data), "data 1");
 
@@ -438,7 +438,7 @@ public class RedisHashSetCollectionTests
         };
 
         // Act.
-        var sut = new RedisHashSetCollection<string, SinglePropsModel>(
+        using var sut = new RedisHashSetCollection<string, SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition });

@@ -65,7 +65,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
     public QdrantCollection(QdrantClient qdrantClient, string name, QdrantCollectionOptions? options = null)
-        : this(new MockableQdrantClient(qdrantClient), name, options)
+        : this(new MockableQdrantClient(qdrantClient, ownsClient: options?.OwnsClient ?? QdrantVectorStoreOptions.Default.OwnsClient), name, options)
     {
     }
 
@@ -105,6 +105,13 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
             VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
             CollectionName = name
         };
+    }
+
+    /// <inheritdoc />
+    protected override void Dispose(bool disposing)
+    {
+        this._qdrantClient.Dispose();
+        base.Dispose(disposing);
     }
 
     /// <inheritdoc />

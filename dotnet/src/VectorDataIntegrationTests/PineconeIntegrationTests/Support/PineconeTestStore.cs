@@ -5,7 +5,6 @@ using System.Net.Http;
 #pragma warning restore IDE0005 // Using directive is unnecessary.
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Pinecone;
 using VectorDataSpecificationTests.Support;
@@ -29,11 +28,8 @@ internal sealed class PineconeTestStore : TestStore
 
     private IContainer? _container;
     private Pinecone.PineconeClient? _client;
-    private PineconeVectorStore? _defaultVectorStore;
 
     public Pinecone.PineconeClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
-
-    public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public PineconeVectorStore GetVectorStore(PineconeVectorStoreOptions options)
         => new(this.Client, options);
@@ -77,7 +73,7 @@ internal sealed class PineconeTestStore : TestStore
             apiKey: "ForPineconeLocalTheApiKeysAreIgnored",
             clientOptions: clientOptions);
 
-        this._defaultVectorStore = new(this._client);
+        this.DefaultVectorStore = new PineconeVectorStore(this._client);
     }
 
     protected override async Task StopAsync()

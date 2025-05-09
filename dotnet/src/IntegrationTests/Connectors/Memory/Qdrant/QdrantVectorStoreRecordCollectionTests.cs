@@ -31,7 +31,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange.
-        var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName);
 
         // Act.
         var actual = await sut.CollectionExistsAsync();
@@ -57,7 +57,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, testCollectionName, options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, testCollectionName, options);
 
         var record = await this.CreateTestHotelAsync(30, fixture.EmbeddingGenerator);
 
@@ -110,7 +110,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             tempCollectionName,
             new VectorParams { Size = 4, Distance = Distance.Cosine });
 
-        var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, tempCollectionName);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, tempCollectionName);
 
         // Act
         await sut.DeleteCollectionAsync();
@@ -132,7 +132,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
 
         var record = await this.CreateTestHotelAsync(20, fixture.EmbeddingGenerator);
 
@@ -161,7 +161,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     {
         // Arrange.
         var options = new QdrantCollectionOptions { HasNamedVectors = false };
-        VectorStoreCollection<Guid, HotelInfoWithGuidId> sut = new QdrantCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
+        using VectorStoreCollection<Guid, HotelInfoWithGuidId> sut = new QdrantCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
 
         var record = new HotelInfoWithGuidId
         {
@@ -207,7 +207,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
 
         // Act.
         var getResult = await sut.GetAsync(11, new RecordRetrievalOptions { IncludeVectors = withEmbeddings });
@@ -249,7 +249,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             HasNamedVectors = false,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelWithGuidIdVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
+        using var sut = new QdrantCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
 
         // Act.
         var getResult = await sut.GetAsync(Guid.Parse("11111111-1111-1111-1111-111111111111"), new RecordRetrievalOptions { IncludeVectors = withEmbeddings });
@@ -276,7 +276,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     {
         // Arrange
         var options = new QdrantCollectionOptions { HasNamedVectors = true };
-        var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", options);
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
@@ -307,7 +307,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
 
         await sut.UpsertAsync(await this.CreateTestHotelAsync(20, fixture.EmbeddingGenerator));
 
@@ -333,7 +333,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
 
         await sut.UpsertAsync(await this.CreateTestHotelAsync(20, fixture.EmbeddingGenerator));
 
@@ -350,7 +350,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     {
         // Arrange
         var options = new QdrantCollectionOptions { HasNamedVectors = false };
-        var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "singleVectorHotels", options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "singleVectorHotels", options);
 
         // Act & Assert
         Assert.Null(await sut.GetAsync(15, new RecordRetrievalOptions { IncludeVectors = true }));
@@ -373,7 +373,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             HasNamedVectors = hasNamedVectors,
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
 
         // Act.
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
@@ -406,7 +406,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         {
             VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
         };
-        var sut = new QdrantCollection<object, Dictionary<string, object?>>(fixture.QdrantClient, "singleVectorHotels", options);
+        using var sut = new QdrantCollection<object, Dictionary<string, object?>>(fixture.QdrantClient, "singleVectorHotels", options);
 
         // Act
         var baseSetGetResult = await sut.GetAsync(11ul, new RecordRetrievalOptions { IncludeVectors = true });

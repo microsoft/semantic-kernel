@@ -37,12 +37,12 @@ internal sealed class PostgresDbClient(NpgsqlDataSource dataSource, string? sche
 
     public void Dispose()
     {
-        // An instance of PostgresDbClient can be shared between a single store and multiple collections.
-        // The reference count is used to track how many collections are using this instance.
-        // When the number gets to zero, the DataSource is getting disposed.
-        if (Interlocked.Decrement(ref this._referenceCount) == 0)
+        if (this._ownsDataSource)
         {
-            if (this._ownsDataSource)
+            // An instance of PostgresDbClient can be shared between a single store and multiple collections.
+            // The reference count is used to track how many collections are using this instance.
+            // When the number gets to zero, the DataSource is getting disposed.
+            if (Interlocked.Decrement(ref this._referenceCount) == 0)
             {
                 this.DataSource.Dispose();
             }
@@ -51,7 +51,11 @@ internal sealed class PostgresDbClient(NpgsqlDataSource dataSource, string? sche
 
     internal PostgresDbClient IncreaseReferenceCount()
     {
-        Interlocked.Increment(ref this._referenceCount);
+        if (this._ownsDataSource)
+        {
+            Interlocked.Increment(ref this._referenceCount);
+        }
+
         return this;
     }
 

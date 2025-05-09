@@ -32,7 +32,7 @@ public class RedisVectorStoreTests
     public void GetCollectionReturnsJsonCollection()
     {
         // Arrange.
-        var sut = new RedisVectorStore(this._redisDatabaseMock.Object);
+        using var sut = new RedisVectorStore(this._redisDatabaseMock.Object);
 
         // Act.
         var actual = sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName);
@@ -46,7 +46,7 @@ public class RedisVectorStoreTests
     public void GetCollectionReturnsHashSetCollection()
     {
         // Arrange.
-        var sut = new RedisVectorStore(this._redisDatabaseMock.Object, new() { StorageType = RedisStorageType.HashSet });
+        using var sut = new RedisVectorStore(this._redisDatabaseMock.Object, new() { StorageType = RedisStorageType.HashSet });
 
         // Act.
         var actual = sut.GetCollection<string, SinglePropsModel<string>>(TestCollectionName);
@@ -60,7 +60,7 @@ public class RedisVectorStoreTests
     public void GetCollectionThrowsForInvalidKeyType()
     {
         // Arrange.
-        var sut = new RedisVectorStore(this._redisDatabaseMock.Object);
+        using var sut = new RedisVectorStore(this._redisDatabaseMock.Object);
 
         // Act & Assert.
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<int, SinglePropsModel<int>>(TestCollectionName));
@@ -80,7 +80,7 @@ public class RedisVectorStoreTests
                     It.IsAny<string>(),
                 It.IsAny<object[]>()))
             .ReturnsAsync(RedisResult.Create(results));
-        var sut = new RedisVectorStore(this._redisDatabaseMock.Object);
+        using var sut = new RedisVectorStore(this._redisDatabaseMock.Object);
 
         // Act.
         var collectionNames = sut.ListCollectionNamesAsync();

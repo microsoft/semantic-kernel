@@ -29,7 +29,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task CollectionExistsReturnsCollectionStateAsync(bool createCollection)
     {
         // Arrange
-        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("CollectionExists");
+        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("CollectionExists");
 
         if (createCollection)
         {
@@ -47,7 +47,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanEnsureCollectionExistsAsync()
     {
         // Arrange
-        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("CreateCollection");
+        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("CreateCollection");
 
         // Act
         await sut.EnsureCollectionExistsAsync();
@@ -60,7 +60,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanCreateCollectionForSupportedDistanceFunctionsAsync()
     {
         // Arrange
-        var sut = fixture.GetCollection<ulong, RecordWithSupportedDistanceFunctions>("CreateCollectionForSupportedDistanceFunctions");
+        using var sut = fixture.GetCollection<ulong, RecordWithSupportedDistanceFunctions>("CreateCollectionForSupportedDistanceFunctions");
 
         // Act
         await sut.EnsureCollectionExistsAsync();
@@ -73,7 +73,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
-        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteCollection");
+        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteCollection");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -104,7 +104,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             VectorStoreRecordDefinition = useRecordDefinition ? GetVectorStoreRecordDefinition<ulong>() : null
         };
 
-        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteCollection", options);
+        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteCollection", options);
 
         var record = CreateTestHotel(HotelId);
 
@@ -142,7 +142,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     {
         // Arrange
         const ulong HotelId = 5;
-        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteRecord");
+        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteRecord");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -170,7 +170,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         const ulong HotelId2 = 2;
         const ulong HotelId3 = 3;
 
-        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("GetUpsertDeleteBatchWithNumericKey");
+        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("GetUpsertDeleteBatchWithNumericKey");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -202,7 +202,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         const string HotelId2 = "22222222-2222-2222-2222-222222222222";
         const string HotelId3 = "33333333-3333-3333-3333-333333333333";
 
-        var sut = fixture.GetCollection<string, SqliteHotel<string>>("GetUpsertDeleteBatchWithStringKey") as VectorStoreCollection<string, SqliteHotel<string>>;
+        using var sut = fixture.GetCollection<string, SqliteHotel<string>>("GetUpsertDeleteBatchWithStringKey") as VectorStoreCollection<string, SqliteHotel<string>>;
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -236,7 +236,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var collectionName = $"Collection{collectionNamePostfix}";
 
         const ulong HotelId = 5;
-        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>(collectionName);
+        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>(collectionName);
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -302,7 +302,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     {
         // Arrange
         const ulong HotelId = 5;
-        var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("UpsertRecord");
+        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("UpsertRecord");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -341,7 +341,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var hotel3 = CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = fixture.GetCollection<string, SqliteHotel<string>>("VectorizedSearch");
+        using var sut = fixture.GetCollection<string, SqliteHotel<string>>("VectorizedSearch");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -376,7 +376,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var hotel3 = CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = fixture.GetCollection<string, SqliteHotel<string>>("SearchEmbeddingWithOffset");
+        using var sut = fixture.GetCollection<string, SqliteHotel<string>>("SearchEmbeddingWithOffset");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -407,7 +407,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var hotel3 = CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = fixture.GetCollection<string, SqliteHotel<string>>("SearchEmbeddingWithFilter");
+        using var sut = fixture.GetCollection<string, SqliteHotel<string>>("SearchEmbeddingWithFilter");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -439,7 +439,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<ulong>()
         };
 
-        var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithNumericKey", options);
+        using var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithNumericKey", options);
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -479,7 +479,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<string>()
         };
 
-        var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithStringKey", options)
+        using var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithStringKey", options)
             as VectorStoreCollection<object, Dictionary<string, object?>>;
 
         await sut.EnsureCollectionExistsAsync();

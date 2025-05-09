@@ -44,7 +44,7 @@ public sealed class MongoCollectionTests
     public void ConstructorWithDeclarativeModelInitializesCollection()
     {
         // Act & Assert
-        var collection = new MongoCollection<string, MongoHotelModel>(
+        using var collection = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -61,7 +61,7 @@ public sealed class MongoCollectionTests
         };
 
         // Act
-        var collection = new MongoCollection<string, TestModel>(
+        using var collection = new MongoCollection<string, TestModel>(
             this._mockMongoDatabase.Object,
             "collection",
             new() { VectorStoreRecordDefinition = definition });
@@ -89,7 +89,7 @@ public sealed class MongoCollectionTests
             .Setup(l => l.ListCollectionNamesAsync(It.IsAny<ListCollectionNamesOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockCursor.Object);
 
-        var sut = new MongoCollection<string, MongoHotelModel>(
+        using var sut = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             collectionName);
 
@@ -139,7 +139,7 @@ public sealed class MongoCollectionTests
             .Setup(l => l.Indexes)
             .Returns(mockMongoIndexManager.Object);
 
-        var sut = new MongoCollection<string, MongoHotelModel>(
+        using var sut = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             CollectionName);
 
@@ -163,7 +163,7 @@ public sealed class MongoCollectionTests
         // Arrange
         const string RecordKey = "key";
 
-        var sut = new MongoCollection<string, MongoHotelModel>(
+        using var sut = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -187,7 +187,7 @@ public sealed class MongoCollectionTests
         // Arrange
         List<string> recordKeys = ["key1", "key2"];
 
-        var sut = new MongoCollection<string, MongoHotelModel>(
+        using var sut = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -211,7 +211,7 @@ public sealed class MongoCollectionTests
         // Arrange
         const string CollectionName = "collection";
 
-        var sut = new MongoCollection<string, MongoHotelModel>(
+        using var sut = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             CollectionName);
 
@@ -248,7 +248,7 @@ public sealed class MongoCollectionTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockCursor.Object);
 
-        var sut = new MongoCollection<string, MongoHotelModel>(
+        using var sut = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -286,7 +286,7 @@ public sealed class MongoCollectionTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockCursor.Object);
 
-        var sut = new MongoCollection<string, MongoHotelModel>(
+        using var sut = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -317,7 +317,7 @@ public sealed class MongoCollectionTests
         var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
         var expectedDefinition = Builders<BsonDocument>.Filter.Eq(document => document["_id"], "key");
 
-        var sut = new MongoCollection<string, MongoHotelModel>(
+        using var sut = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -343,7 +343,7 @@ public sealed class MongoCollectionTests
         var hotel2 = new MongoHotelModel("key2") { HotelName = "Test Name 2" };
         var hotel3 = new MongoHotelModel("key3") { HotelName = "Test Name 3" };
 
-        var sut = new MongoCollection<string, MongoHotelModel>(
+        using var sut = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -418,7 +418,7 @@ public sealed class MongoCollectionTests
         // Arrange
         this.MockCollectionForSearch();
 
-        var sut = new MongoCollection<string, MongoHotelModel>(
+        using var sut = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -472,7 +472,7 @@ public sealed class MongoCollectionTests
 
         this.MockCollectionForSearch();
 
-        var sut = new MongoCollection<string, VectorSearchModel>(
+        using var sut = new MongoCollection<string, VectorSearchModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -505,7 +505,7 @@ public sealed class MongoCollectionTests
         // Arrange
         this.MockCollectionForSearch();
 
-        var sut = new MongoCollection<string, MongoHotelModel>(
+        using var sut = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -521,7 +521,7 @@ public sealed class MongoCollectionTests
         // Arrange
         this.MockCollectionForSearch();
 
-        var sut = new MongoCollection<string, MongoHotelModel>(
+        using var sut = new MongoCollection<string, MongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -608,7 +608,7 @@ public sealed class MongoCollectionTests
             new() { VectorStoreRecordDefinition = definition } :
             null;
 
-        var sut = new MongoCollection<string, TDataModel>(
+        using var sut = new MongoCollection<string, TDataModel>(
             this._mockMongoDatabase.Object,
             "collection",
             options);

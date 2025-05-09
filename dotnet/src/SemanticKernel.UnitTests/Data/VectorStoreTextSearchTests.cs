@@ -15,7 +15,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
     public void CanCreateVectorStoreTextSearchWithEmbeddingGenerationService()
     {
         // Arrange.
-        var vectorStore = new InMemoryVectorStore();
+        using var vectorStore = new InMemoryVectorStore();
         var vectorSearch = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
@@ -33,7 +33,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
     public void CanCreateVectorStoreTextSearchWithIVectorSearch()
     {
         // Arrange.
-        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = new MockTextEmbeddingGenerator() });
+        using var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = new MockTextEmbeddingGenerator() });
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();

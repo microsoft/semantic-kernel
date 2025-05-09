@@ -51,7 +51,7 @@ public class RedisJsonCollectionTests
         {
             SetupExecuteMock(this._redisDatabaseMock, new RedisServerException("Unknown index name"));
         }
-        var sut = new RedisJsonCollection<string, MultiPropsModel>(
+        using var sut = new RedisJsonCollection<string, MultiPropsModel>(
             this._redisDatabaseMock.Object,
             collectionName);
 
@@ -79,7 +79,7 @@ public class RedisJsonCollectionTests
         // Arrange.
         SetupExecuteMock(this._redisDatabaseMock, "FT.INFO", new RedisServerException("Unknown index name"));
         SetupExecuteMock(this._redisDatabaseMock, "FT.CREATE", string.Empty);
-        var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
+        using var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
 
         // Act.
         await sut.EnsureCollectionExistsAsync();
@@ -138,7 +138,7 @@ public class RedisJsonCollectionTests
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, string.Empty);
-        var sut = this.CreateRecordCollection(false);
+        using var sut = this.CreateRecordCollection(false);
 
         // Act
         await sut.DeleteCollectionAsync();
@@ -162,7 +162,7 @@ public class RedisJsonCollectionTests
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, redisResultString);
-        var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
+        using var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
 
         // Act
         var actual = await sut.GetAsync(
@@ -195,7 +195,7 @@ public class RedisJsonCollectionTests
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, redisResultString);
-        var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
+        using var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
 
         // Act
         var actual = await sut.GetAsync(
@@ -227,7 +227,7 @@ public class RedisJsonCollectionTests
         var redisResultString1 = """{ "data1_json_name": "data 1", "Data2": "data 2", "vector1_json_name": [1, 2, 3, 4], "Vector2": [1, 2, 3, 4] }""";
         var redisResultString2 = """{ "data1_json_name": "data 1", "Data2": "data 2", "vector1_json_name": [5, 6, 7, 8], "Vector2": [1, 2, 3, 4] }""";
         SetupExecuteMock(this._redisDatabaseMock, [redisResultString1, redisResultString2]);
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         var actual = await sut.GetAsync(
@@ -262,7 +262,7 @@ public class RedisJsonCollectionTests
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, "200");
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         await sut.DeleteAsync(TestRecordKey1);
@@ -284,7 +284,7 @@ public class RedisJsonCollectionTests
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, "200");
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
         await sut.DeleteAsync([TestRecordKey1, TestRecordKey2]);
@@ -315,7 +315,7 @@ public class RedisJsonCollectionTests
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, "OK");
-        var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
+        using var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
         var model = CreateModel(TestRecordKey1, true);
 
         // Act
@@ -339,7 +339,7 @@ public class RedisJsonCollectionTests
     {
         // Arrange
         SetupExecuteMock(this._redisDatabaseMock, "OK");
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         var model1 = CreateModel(TestRecordKey1, true);
         var model2 = CreateModel(TestRecordKey2, true);
@@ -378,7 +378,7 @@ public class RedisJsonCollectionTests
                 new RedisValue("0.25")
             ]),
         });
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "data 1");
 

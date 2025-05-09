@@ -35,7 +35,7 @@ public sealed class CosmosNoSqlVectorStoreTests
     public void GetCollectionWithNotSupportedKeyThrowsException()
     {
         // Arrange
-        var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
+        using var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<Guid, CosmosNoSqlHotel>("collection"));
@@ -45,7 +45,7 @@ public sealed class CosmosNoSqlVectorStoreTests
     public void GetCollectionWithSupportedKeyReturnsCollection()
     {
         // Arrange
-        var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
+        using var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
 
         // Act
         var collectionWithStringKey = sut.GetCollection<string, CosmosNoSqlHotel>("collection1");
@@ -60,7 +60,7 @@ public sealed class CosmosNoSqlVectorStoreTests
     public void GetCollectionWithoutFactoryReturnsDefaultCollection()
     {
         // Arrange
-        var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
+        using var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
 
         // Act
         var collection = sut.GetCollection<string, CosmosNoSqlHotel>("collection");
@@ -97,7 +97,7 @@ public sealed class CosmosNoSqlVectorStoreTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
+        using var sut = new Microsoft.SemanticKernel.Connectors.CosmosNoSql.CosmosNoSqlVectorStore(this._mockDatabase.Object);
 
         // Act
         var actualCollectionNames = await sut.ListCollectionNamesAsync().ToListAsync();
