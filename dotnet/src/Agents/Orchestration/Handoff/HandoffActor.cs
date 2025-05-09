@@ -99,9 +99,9 @@ internal sealed class HandoffActor :
 
             this.Logger.LogHandoffAgentResult(this.Id, response.Content);
 
-            // The response can potentially be a TOOL message from the Handoff plugin since we have added
-            // a filter which will terminate the conversation when a function from the handoff plugin is called
-            // nd we don't want to publish that message, so we only publish if the response is an ASSISTANT message.
+            // The response can potentially be a TOOL message from the Handoff plugin due to the filter
+            // which will terminate the conversation when a function from the handoff plugin is called.
+            // Since we don't want to publish that message, so we only publish if the response is an ASSISTANT message.
             if (response.Role == AuthorRole.Assistant)
             {
                 await this.PublishMessageAsync(new HandoffMessages.Response { Message = response }, this.Context.Topic, messageId: null, messageContext.CancellationToken).ConfigureAwait(false);
