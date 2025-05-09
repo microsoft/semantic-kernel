@@ -9,7 +9,6 @@ from qdrant_client.models import Datatype, Distance, FieldCondition, MatchValue,
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection, QdrantStore
 from semantic_kernel.data.const import DistanceFunction
 from semantic_kernel.data.record_definition import VectorStoreRecordVectorField
-from semantic_kernel.data.vector_search import VectorSearchOptions
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
@@ -281,7 +280,7 @@ async def test_create_index_fail(collection_to_use, request):
 
 async def test_search(collection, mock_search):
     collection.named_vectors = False
-    results = await collection.search(vector=[1.0, 2.0, 3.0], options=VectorSearchOptions(include_vectors=False))
+    results = await collection.search(vector=[1.0, 2.0, 3.0], include_vectors=False)
     async for result in results.results:
         assert result.record["id"] == "id1"
         break
@@ -300,7 +299,9 @@ async def test_search(collection, mock_search):
 async def test_search_named_vectors(collection, mock_search):
     collection.named_vectors = True
     results = await collection.search(
-        vector=[1.0, 2.0, 3.0], options=VectorSearchOptions(vector_property_name="vector", include_vectors=False)
+        vector=[1.0, 2.0, 3.0],
+        vector_property_name="vector",
+        include_vectors=False,
     )
     async for result in results.results:
         assert result.record["id"] == "id1"
@@ -320,7 +321,8 @@ async def test_search_named_vectors(collection, mock_search):
 async def test_search_filter(collection, mock_search):
     results = await collection.search(
         vector=[1.0, 2.0, 3.0],
-        options=VectorSearchOptions(include_vectors=False, filter=lambda x: x.id == "id1"),
+        include_vectors=False,
+        filter=lambda x: x.id == "id1",
     )
     async for result in results.results:
         assert result.record["id"] == "id1"
@@ -339,4 +341,4 @@ async def test_search_filter(collection, mock_search):
 
 async def test_search_fail(collection):
     with raises(VectorSearchExecutionException, match="Search requires a vector."):
-        await collection.search(options=VectorSearchOptions(include_vectors=False))
+        await collection.search(include_vectors=False)

@@ -15,7 +15,6 @@ from pinecone.data.index_asyncio import _IndexAsyncio
 from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.memory.pinecone import PineconeCollection, PineconeStore
-from semantic_kernel.data.vector_search import VectorSearchOptions
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreInitializationException
 
 BASE_PATH_ASYNCIO = "pinecone.PineconeAsyncio"
@@ -293,11 +292,9 @@ async def test_search(collection):
         mock_query.return_value = query_response
         query_response = await collection.search(
             vector=[0.1, 0.2, 0.3, 0.4, 0.5],
-            options=VectorSearchOptions(
-                top=1,
-                include_vectors=True,
-                filter=lambda x: x.content == "test_content",
-            ),
+            top=1,
+            include_vectors=True,
+            filter=lambda x: x.content == "test_content",
         )
         mock_query.assert_awaited_once_with(
             vector=[0.1, 0.2, 0.3, 0.4, 0.5],
@@ -331,9 +328,7 @@ async def test_search_embed(collection):
     await collection._load_index_client()
     with patch.object(collection.index_client, "search_records", new_callable=AsyncMock) as mock_query:
         mock_query.return_value = query_response
-        query_response = await collection.search(
-            values="test", options=VectorSearchOptions(top=1, include_vectors=True)
-        )
+        query_response = await collection.search(values="test", top=1, include_vectors=True)
         mock_query.assert_awaited_once_with(
             query={"inputs": {"text": "test"}, "top_k": 1},
             namespace=collection.namespace,

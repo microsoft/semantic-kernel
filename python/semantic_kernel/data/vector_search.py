@@ -543,44 +543,34 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
     string_mapper: Callable[[TModel], str] | None = None
     text_search_results_mapper: Callable[[TModel], TextSearchResult] | None = None
 
-    async def search(
-        self, query: str, options: "SearchOptions | None" = None, **kwargs: Any
-    ) -> "KernelSearchResults[str]":
+    async def search(self, query: str, **kwargs: Any) -> "KernelSearchResults[str]":
         """Search for a query, returning a KernelSearchResult with a string as the results type."""
-        search_results = await self._execute_search(query, options, **kwargs)
+        search_results = await self._execute_search(query, **kwargs)
         return KernelSearchResults(
             results=self._get_results_as_strings(search_results.results),
             total_count=search_results.total_count,
             metadata=search_results.metadata,
         )
 
-    async def get_text_search_results(
-        self, query: str, options: "SearchOptions | None" = None, **kwargs: Any
-    ) -> "KernelSearchResults[TextSearchResult]":
+    async def get_text_search_results(self, query: str, **kwargs: Any) -> "KernelSearchResults[TextSearchResult]":
         """Search for a query, returning a KernelSearchResult with a TextSearchResult as the results type."""
-        search_results = await self._execute_search(query, options, **kwargs)
+        search_results = await self._execute_search(query, **kwargs)
         return KernelSearchResults(
             results=self._get_results_as_text_search_result(search_results.results),
             total_count=search_results.total_count,
             metadata=search_results.metadata,
         )
 
-    async def get_search_results(
-        self, query: str, options: "SearchOptions | None" = None, **kwargs: Any
-    ) -> "KernelSearchResults[VectorSearchResult[TModel]]":
+    async def get_search_results(self, query: str, **kwargs: Any) -> "KernelSearchResults[VectorSearchResult[TModel]]":
         """Search for a query, returning a KernelSearchResult with a VectorSearchResult[TModel] as the results type."""
-        return await self._execute_search(query, options, **kwargs)
+        return await self._execute_search(query, **kwargs)
 
-    async def _execute_search(
-        self, query: str, options: "SearchOptions | None", **kwargs: Any
-    ) -> "KernelSearchResults[VectorSearchResult[TModel]]":
+    async def _execute_search(self, query: str, **kwargs: Any) -> "KernelSearchResults[VectorSearchResult[TModel]]":
         """Internal method to execute the search."""
         if self.search_type == SearchType.VECTOR:
-            return await self.vector_search.search(values=query, **(options.model_dump() if options else {}), **kwargs)
+            return await self.vector_search.search(values=query, **kwargs)
         if self.search_type == SearchType.KEYWORD_HYBRID:
-            return await self.vector_search.hybrid_search(
-                values=query, **(options.model_dump() if options else {}), **kwargs
-            )
+            return await self.vector_search.hybrid_search(values=query, **kwargs)
         raise VectorSearchExecutionException("No search method available.")  # pragma: no cover
 
     async def _get_results_as_strings(self, results: AsyncIterable[VectorSearchResult[TModel]]) -> AsyncIterable[str]:

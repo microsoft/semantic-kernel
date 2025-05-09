@@ -24,7 +24,6 @@ from semantic_kernel.data.record_definition import (
     VectorStoreRecordVectorField,
     vectorstoremodel,
 )
-from semantic_kernel.data.vector_search import VectorSearchOptions
 
 
 @fixture(scope="function")
@@ -281,9 +280,10 @@ async def test_vector_search(
 
     search_results = await collection.search(
         vector=[1.0, 2.0, 3.0],
-        options=VectorSearchOptions(
-            top=10, skip=5, include_vectors=include_vectors, include_total_count=include_total_count
-        ),
+        top=10,
+        skip=5,
+        include_vectors=include_vectors,
+        include_total_count=include_total_count,
     )
     if include_total_count:
         # Including total count issues query directly

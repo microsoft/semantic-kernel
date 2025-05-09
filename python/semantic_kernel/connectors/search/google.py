@@ -1,27 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ast
 import logging
-from collections.abc import AsyncIterable
-from typing import TYPE_CHECKING, Any, ClassVar, Final
+from collections.abc import AsyncIterable, Callable
+from inspect import getsource
+from typing import Any, ClassVar, Final
 from urllib.parse import quote_plus
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import Field, SecretStr, ValidationError
 
-from semantic_kernel.data.text_search import (
-    KernelSearchResults,
-    SearchOptions,
-    TextSearch,
-    TextSearchOptions,
-    TextSearchResult,
-)
+from semantic_kernel.connectors.search.utils import SearchLambdaVisitor
+from semantic_kernel.data.text_search import KernelSearchResults, SearchOptions, TextSearch, TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel, KernelBaseSettings
+from semantic_kernel.kernel_types import OptionalOneOrList
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
-
-if TYPE_CHECKING:
-    from semantic_kernel.data.text_search import SearchOptions
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -176,10 +171,17 @@ class GoogleSearch(KernelBaseModel, TextSearch):
         super().__init__(settings=settings)  # type: ignore[call-arg]
 
     async def search(
-        self, query: str, options: "SearchOptions | None" = None, **kwargs: Any
+        self,
+        query: str,
+        *,
+        filter: OptionalOneOrList[Callable | str] = None,
+        skip: int = 0,
+        top: int = 5,
+        include_total_count: bool = False,
+        **kwargs: Any,
     ) -> "KernelSearchResults[str]":
         """Search for text, returning a KernelSearchResult with a list of strings."""
-        options = self._get_options(options, **kwargs)
+        options = SearchOptions(filter=filter, skip=skip, top=top, include_total_count=include_total_count, **kwargs)
         results = await self._inner_search(query=query, options=options)
         return KernelSearchResults(
             results=self._get_result_strings(results),
@@ -188,10 +190,17 @@ class GoogleSearch(KernelBaseModel, TextSearch):
         )
 
     async def get_text_search_results(
-        self, query: str, options: "SearchOptions | None" = None, **kwargs
+        self,
+        query: str,
+        *,
+        filter: OptionalOneOrList[Callable | str] = None,
+        skip: int = 0,
+        top: int = 5,
+        include_total_count: bool = False,
+        **kwargs: Any,
     ) -> "KernelSearchResults[TextSearchResult]":
         """Search for text, returning a KernelSearchResult with TextSearchResults."""
-        options = self._get_options(options, **kwargs)
+        options = SearchOptions(filter=filter, skip=skip, top=top, include_total_count=include_total_count, **kwargs)
         results = await self._inner_search(query=query, options=options)
         return KernelSearchResults(
             results=self._get_text_search_results(results),
@@ -200,10 +209,17 @@ class GoogleSearch(KernelBaseModel, TextSearch):
         )
 
     async def get_search_results(
-        self, query: str, options: "SearchOptions | None" = None, **kwargs
+        self,
+        query: str,
+        *,
+        filter: OptionalOneOrList[Callable | str] = None,
+        skip: int = 0,
+        top: int = 5,
+        include_total_count: bool = False,
+        **kwargs: Any,
     ) -> "KernelSearchResults[GoogleSearchResult]":
         """Search for text, returning a KernelSearchResult with the results directly from the service."""
-        options = self._get_options(options, **kwargs)
+        options = SearchOptions(filter=filter, skip=skip, top=top, include_total_count=include_total_count, **kwargs)
         results = await self._inner_search(query=query, options=options)
         return KernelSearchResults(
             results=self._get_google_search_results(results),
@@ -238,7 +254,7 @@ class GoogleSearch(KernelBaseModel, TextSearch):
             "search_time": response.search_information.search_time if response.search_information else 0,
         }
 
-    def _get_total_count(self, response: GoogleSearchResponse, options: TextSearchOptions) -> int | None:
+    def _get_total_count(self, response: GoogleSearchResponse, options: SearchOptions) -> int | None:
         total_results = (
             None
             if not options.include_total_count
@@ -250,15 +266,15 @@ class GoogleSearch(KernelBaseModel, TextSearch):
             return int(total_results)
         return None
 
-    def _get_options(self, options: "SearchOptions | None", **kwargs: Any) -> TextSearchOptions:
-        if options is not None and isinstance(options, TextSearchOptions):
+    def _get_options(self, options: "SearchOptions | None", **kwargs: Any) -> SearchOptions:
+        if options is not None and isinstance(options, SearchOptions):
             return options
         try:
-            return TextSearchOptions(**kwargs)
+            return SearchOptions(**kwargs)
         except ValidationError:
-            return TextSearchOptions()
+            return SearchOptions()
 
-    async def _inner_search(self, query: str, options: TextSearchOptions) -> GoogleSearchResponse:
+    async def _inner_search(self, query: str, options: SearchOptions) -> GoogleSearchResponse:
         self._validate_options(options)
 
         logger.info(
@@ -283,16 +299,36 @@ class GoogleSearch(KernelBaseModel, TextSearch):
             logger.error(f"An unexpected error occurred: {ex}")
             raise ServiceInvalidRequestError("An unexpected error occurred while getting search results.") from ex
 
-    def _validate_options(self, options: TextSearchOptions) -> None:
+    def _validate_options(self, options: SearchOptions) -> None:
         if options.top > 10:
             raise ServiceInvalidRequestError("count value must be less than or equal to 10.")
 
-    def _build_query(self, query: str, options: TextSearchOptions) -> str:
+    def _parse_filter_lambda(self, filter_lambda: Callable | str) -> list[dict[str, str]]:
+        """Parse a string lambda or string expression into a list of {field: value} dicts using AST."""
+        expr = filter_lambda if isinstance(filter_lambda, str) else getsource(filter_lambda).strip()
+        tree = ast.parse(expr, mode="eval")
+        node = tree.body
+        visitor = SearchLambdaVisitor(valid_parameters=QUERY_PARAMETERS)
+        visitor.visit(node)
+        return visitor.filters
+
+    def _build_query(self, query: str, options: SearchOptions) -> str:
         params = {
             "key": self.settings.api_key.get_secret_value(),
             "cx": self.settings.engine_id,
             "num": options.top,
             "start": options.skip,
         }
-        # TODO (eavanvalkenburg): redo filters
+        # parse the filter lambdas to query parameters
+        if options.filter:
+            filters = options.filter
+            if not isinstance(filters, list):
+                filters = [filters]
+            for f in filters:
+                try:
+                    for d in self._parse_filter_lambda(f):
+                        params.update(d)
+                except Exception as exc:
+                    logger.warning(f"Failed to parse filter lambda: {f}, ignoring this filter. Error: {exc}")
+                    continue
         return f"?q={quote_plus(query)}&{'&'.join(f'{k}={v}' for k, v in params.items())}"
