@@ -6,7 +6,7 @@ using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
-using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.Extensions.AI;
 using Qdrant.Client;
 
 namespace Memory;
@@ -39,7 +39,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
     public async Task UpsertWithDynamicRetrieveWithCustomAsync()
     {
         // Create an embedding generation service.
-        var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
+        var textEmbeddingGenerationService = new AzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());
@@ -56,7 +56,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
         var glossaryEntries = CreateDynamicGlossaryEntries().ToList();
         var tasks = glossaryEntries.Select(entry => Task.Run(async () =>
         {
-            entry["DefinitionEmbedding"] = await textEmbeddingGenerationService.GenerateEmbeddingAsync((string)entry["Definition"]!);
+            entry["DefinitionEmbedding"] = (await textEmbeddingGenerationService.GenerateAsync((string)entry["Definition"]!)).Vector;
         }));
         await Task.WhenAll(tasks);
 
@@ -79,7 +79,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
     public async Task UpsertWithCustomRetrieveWithDynamicAsync()
     {
         // Create an embedding generation service.
-        var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
+        var textEmbeddingGenerationService = new AzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());
@@ -96,7 +96,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
         var glossaryEntries = CreateCustomGlossaryEntries().ToList();
         var tasks = glossaryEntries.Select(entry => Task.Run(async () =>
         {
-            entry.DefinitionEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(entry.Definition);
+            entry.DefinitionEmbedding = (await textEmbeddingGenerationService.GenerateAsync(entry.Definition)).Vector;
         }));
         await Task.WhenAll(tasks);
 

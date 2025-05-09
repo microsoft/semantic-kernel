@@ -7,6 +7,7 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.Extensions.AI;
 
 namespace Memory;
 
@@ -25,7 +26,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
     public async Task IngestDataAndUseHybridSearch()
     {
         // Create an embedding generation service.
-        var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
+        var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());
@@ -45,7 +46,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
         var glossaryEntries = CreateGlossaryEntries().ToList();
         var tasks = glossaryEntries.Select(entry => Task.Run(async () =>
         {
-            entry.DefinitionEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(entry.Definition);
+            entry.DefinitionEmbedding = (await embeddingGenerator.GenerateAsync(entry.Definition)).Vector;
         }));
         await Task.WhenAll(tasks);
 
@@ -55,7 +56,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
 
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
-        var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
+        var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
         var resultRecords = await hybridSearchCollection.HybridSearchAsync(searchVector, ["Application", "Programming", "Interface"], top: 1).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
@@ -64,7 +65,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
 
         // Search the collection using a vector search.
         searchString = "What is Retrieval Augmented Generation";
-        searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
+        searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
         resultRecords = await hybridSearchCollection.HybridSearchAsync(searchVector, ["Retrieval", "Augmented", "Generation"], top: 1).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
@@ -73,7 +74,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
 
         // Search the collection using a vector search with pre-filtering.
         searchString = "What is Retrieval Augmented Generation";
-        searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
+        searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
         resultRecords = await hybridSearchCollection.HybridSearchAsync(searchVector, ["Retrieval", "Augmented", "Generation"], top: 3, new() { Filter = g => g.Category == "External Definitions" }).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);

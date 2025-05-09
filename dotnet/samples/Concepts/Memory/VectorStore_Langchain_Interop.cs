@@ -4,7 +4,7 @@ using Azure.Identity;
 using Memory.VectorStoreLangchainInterop;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.Extensions.AI;
 using StackExchange.Redis;
 using Sdk = Pinecone;
 
@@ -56,7 +56,7 @@ public class VectorStore_Langchain_Interop(ITestOutputHelper output) : BaseTest(
     private async Task ReadDataFromCollectionAsync(IVectorStore vectorStore, string collectionName)
     {
         // Create an embedding generation service.
-        var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
+        var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());
@@ -66,7 +66,7 @@ public class VectorStore_Langchain_Interop(ITestOutputHelper output) : BaseTest(
 
         // Search the data set.
         var searchString = "I'm looking for an animal that is loyal and will make a great companion";
-        var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
+        var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
         var resultRecords = await collection.SearchEmbeddingAsync(searchVector, top: 1).ToListAsync();
 
         this.Output.WriteLine("Search string: " + searchString);
