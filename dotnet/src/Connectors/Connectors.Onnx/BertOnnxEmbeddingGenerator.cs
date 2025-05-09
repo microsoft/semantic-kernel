@@ -38,14 +38,14 @@ public sealed class BertOnnxEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     private readonly BertTokenizer _tokenizer;
     /// <summary>The user-configurable options associated with this instance.</summary>
     private readonly BertOnnxOptions _options;
-    /// <summary>The number of dimensions in the resulting embeddings.</summary>
-    private readonly int _dimensions;
     /// <summary>The token type IDs. Currently this always remains zero'd but is required for input to the model.</summary>
     private readonly long[] _tokenTypeIds;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly EmbeddingGeneratorMetadata _metadata;
 
     /// <summary>Prevent external instantiation. Stores supplied arguments into fields.</summary>
     private BertOnnxEmbeddingGenerator(
+        string? modelPath,
         InferenceSession onnxSession,
         BertTokenizer tokenizer,
         int dimensions,
@@ -54,13 +54,14 @@ public sealed class BertOnnxEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     {
         this._onnxSession = onnxSession;
         this._tokenizer = tokenizer;
-        this._dimensions = dimensions;
         this._options = options;
         this._tokenTypeIds = new long[options.MaximumTokens];
         this._loggerFactory = loggerFactory;
+
+        this._metadata = new(defaultModelId: modelPath, defaultModelDimensions: dimensions);
     }
 
-    /// <summary>Creates a new instance of the <see cref="BertOnnxTextEmbeddingGenerationService"/> class.</summary>
+    /// <summary>Creates a new instance of the <see cref="BertOnnxEmbeddingGenerator"/> class.</summary>
     /// <param name="onnxModelPath">The path to the ONNX model file.</param>
     /// <param name="vocabPath">The path to the vocab file.</param>
     /// <param name="options">Options for the configuration of the model and service.</param>
@@ -87,7 +88,7 @@ public sealed class BertOnnxEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         BertOnnxOptions? options = null,
         ILoggerFactory? loggerFactory = null)
     {
-        Task<BertOnnxEmbeddingGenerator> t = CreateAsync(onnxModelStream, vocabStream, options, async: false, loggerFactory: loggerFactory, cancellationToken: default);
+        Task<BertOnnxEmbeddingGenerator> t = CreateAsync(null, onnxModelStream, vocabStream, options, async: false, loggerFactory: loggerFactory, cancellationToken: default);
         Debug.Assert(t.IsCompleted);
         return t.GetAwaiter().GetResult();
     }
@@ -118,7 +119,7 @@ public sealed class BertOnnxEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         BertOnnxOptions? options = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
-        => CreateAsync(onnxModelStream, vocabStream, options, async: true, loggerFactory: loggerFactory ?? NullLoggerFactory.Instance, cancellationToken: default);
+        => CreateAsync(null, onnxModelStream, vocabStream, options, async: true, loggerFactory: loggerFactory ?? NullLoggerFactory.Instance, cancellationToken: default);
 
     private static async Task<BertOnnxEmbeddingGenerator> CreateAsync(
         string onnxModelPath,
@@ -134,10 +135,11 @@ public sealed class BertOnnxEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         using Stream onnxModelStream = new FileStream(onnxModelPath, FileMode.Open, FileAccess.Read, FileShare.Read, 1, async);
         using Stream vocabStream = new FileStream(vocabPath, FileMode.Open, FileAccess.Read, FileShare.Read, 1, async);
 
-        return await CreateAsync(onnxModelStream, vocabStream, options, async, loggerFactory, cancellationToken).ConfigureAwait(false);
+        return await CreateAsync(onnxModelPath, onnxModelStream, vocabStream, options, async, loggerFactory, cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task<BertOnnxEmbeddingGenerator> CreateAsync(
+        string? onnxModelPath,
         Stream onnxModelStream,
         Stream vocabStream,
         BertOnnxOptions? options,
@@ -176,7 +178,7 @@ public sealed class BertOnnxEmbeddingGenerator : IEmbeddingGenerator<string, Emb
             }
         }
 
-        return new(onnxSession, tokenizer, dimensions, options, loggerFactory ?? NullLoggerFactory.Instance);
+        return new(onnxModelPath, onnxSession, tokenizer, dimensions, options, loggerFactory ?? NullLoggerFactory.Instance);
     }
 
     /// <inheritdoc/>
@@ -187,7 +189,7 @@ public sealed class BertOnnxEmbeddingGenerator : IEmbeddingGenerator<string, Emb
 
     private float[] Pool(ReadOnlySpan<float> modelOutput)
     {
-        int dimensions = this._dimensions;
+        int dimensions = this._metadata!.DefaultModelDimensions!.Value;
         int embeddings = Math.DivRem(modelOutput.Length, dimensions, out int leftover);
         if (leftover != 0)
         {
@@ -300,7 +302,8 @@ public sealed class BertOnnxEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is null ? null :
+            serviceKey is not null ? null :
+            serviceType == typeof(EmbeddingGeneratorMetadata) ? this._metadata :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
