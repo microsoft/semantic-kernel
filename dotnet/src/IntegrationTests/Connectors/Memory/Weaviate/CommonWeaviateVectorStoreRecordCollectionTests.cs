@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
@@ -13,6 +14,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 /// </summary>
 /// <param name="fixture">Weaviate setup and teardown.</param>
 [Collection("WeaviateVectorStoreCollection")]
+[DisableVectorStoreTests(Skip = "Weaviate tests are failing on the build server with connection reset errors, but passing locally.")]
 public class CommonWeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreFixture fixture) : BaseVectorStoreRecordCollectionTests<Guid>
 {
     protected override Guid Key1 => new("11111111-1111-1111-1111-111111111111");
@@ -28,7 +30,7 @@ public class CommonWeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreF
         var recordCollectionNameChars = recordCollectionName.ToCharArray();
         recordCollectionNameChars[0] = char.ToUpperInvariant(recordCollectionNameChars[0]);
 
-        return new WeaviateVectorStoreRecordCollection<TRecord>(fixture.HttpClient!, new string(recordCollectionNameChars), new()
+        return new WeaviateVectorStoreRecordCollection<Guid, TRecord>(fixture.HttpClient!, new string(recordCollectionNameChars), new()
         {
             VectorStoreRecordDefinition = vectorStoreRecordDefinition
         });

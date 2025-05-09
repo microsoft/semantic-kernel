@@ -10,8 +10,7 @@ from samples.getting_started_with_processes.step03.steps.gather_ingredients_step
     GatherIngredientsStep,
     GatherIngredientsWithStockStep,
 )
-from semantic_kernel.processes.process_builder import ProcessBuilder
-from semantic_kernel.processes.process_function_target_builder import ProcessFunctionTargetBuilder
+from semantic_kernel.processes import ProcessBuilder
 
 
 class GatherPotatoFriesIngredientsStep(GatherIngredientsStep):
@@ -42,13 +41,11 @@ class PotatoFriesProcess:
 
         gather_ingredients_step.on_event(
             GatherPotatoFriesIngredientsStep.OutputEvents.IngredientsGathered
-        ).send_event_to(ProcessFunctionTargetBuilder(slice_step, function_name=CutFoodStep.Functions.SliceFood))
+        ).send_event_to(slice_step, function_name=CutFoodStep.Functions.SliceFood)
 
-        slice_step.on_event(CutFoodStep.OutputEvents.SlicingReady).send_event_to(ProcessFunctionTargetBuilder(fry_step))
+        slice_step.on_event(CutFoodStep.OutputEvents.SlicingReady).send_event_to(fry_step)
 
-        fry_step.on_event(FryFoodStep.OutputEvents.FoodRuined).send_event_to(
-            ProcessFunctionTargetBuilder(gather_ingredients_step)
-        )
+        fry_step.on_event(FryFoodStep.OutputEvents.FoodRuined).send_event_to(gather_ingredients_step)
 
         return process_builder
 
@@ -65,28 +62,22 @@ class PotatoFriesProcess:
 
         gather_ingredients_step.on_event(
             GatherPotatoFriesIngredientsWithStockStep.OutputEvents.IngredientsGathered
-        ).send_event_to(
-            ProcessFunctionTargetBuilder(slice_step, function_name=CutFoodWithSharpeningStep.Functions.SliceFood)
-        )
+        ).send_event_to(slice_step, function_name=CutFoodWithSharpeningStep.Functions.SliceFood)
 
         gather_ingredients_step.on_event(
             GatherPotatoFriesIngredientsWithStockStep.OutputEvents.IngredientsOutOfStock
         ).stop_process()
 
-        slice_step.on_event(CutFoodWithSharpeningStep.OutputEvents.SlicingReady).send_event_to(
-            ProcessFunctionTargetBuilder(fry_step)
-        )
+        slice_step.on_event(CutFoodWithSharpeningStep.OutputEvents.SlicingReady).send_event_to(fry_step)
 
         slice_step.on_event(CutFoodWithSharpeningStep.OutputEvents.KnifeNeedsSharpening).send_event_to(
-            ProcessFunctionTargetBuilder(slice_step, function_name=CutFoodWithSharpeningStep.Functions.SharpenKnife)
+            slice_step, function_name=CutFoodWithSharpeningStep.Functions.SharpenKnife
         )
 
         slice_step.on_event(CutFoodWithSharpeningStep.OutputEvents.KnifeSharpened).send_event_to(
-            ProcessFunctionTargetBuilder(slice_step, function_name=CutFoodWithSharpeningStep.Functions.SliceFood)
+            slice_step, function_name=CutFoodWithSharpeningStep.Functions.SliceFood
         )
 
-        fry_step.on_event(FryFoodStep.OutputEvents.FoodRuined).send_event_to(
-            ProcessFunctionTargetBuilder(gather_ingredients_step)
-        )
+        fry_step.on_event(FryFoodStep.OutputEvents.FoodRuined).send_event_to(gather_ingredients_step)
 
         return process_builder

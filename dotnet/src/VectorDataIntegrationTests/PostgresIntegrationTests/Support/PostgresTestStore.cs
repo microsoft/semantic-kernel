@@ -8,8 +8,6 @@ using VectorDataSpecificationTests.Support;
 
 namespace PostgresIntegrationTests.Support;
 
-#pragma warning disable SKEXP0020
-
 internal sealed class PostgresTestStore : TestStore
 {
     public static PostgresTestStore Instance { get; } = new();

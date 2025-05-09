@@ -55,7 +55,7 @@ var collectionName = "ExampleCollection";
 foreach (var factTextFile in Directory.GetFiles("Facts", "*.txt"))
 {
     var factContent = File.ReadAllText(factTextFile);
-    await collection.UpsertAsync(new()
+    await collection.UpsertAsync(new InformationItem()
     {
         Id = Guid.NewGuid().ToString(),
         Text = factContent,
@@ -64,7 +64,10 @@ foreach (var factTextFile in Directory.GetFiles("Facts", "*.txt"))
 }
 
 // Add a plugin to search the database with.
+// TODO: Once OpenAITextEmbeddingGenerationService implements MEAI's IEmbeddingGenerator (#10811), configure it with the InMemoryVectorStore above instead of passing it here.
+#pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
 var vectorStoreTextSearch = new VectorStoreTextSearch<InformationItem>(collection, embeddingService);
+#pragma warning restore CS0618
 kernel.Plugins.Add(vectorStoreTextSearch.CreateWithSearch("SearchPlugin"));
 
 // Start the conversation

@@ -2,316 +2,526 @@
 <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.VectorData.DeleteRecordOptions</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.VectorData.UpsertRecordOptions</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.VectorData.VectorSearchOptions</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.VectorData.DeleteRecordOptions</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.VectorData.UpsertRecordOptions</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.VectorData.VectorSearchOptions</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.VectorData.DeleteRecordOptions</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.VectorData.UpsertRecordOptions</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0001</DiagnosticId>
-    <Target>T:Microsoft.Extensions.VectorData.VectorSearchOptions</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorizableTextSearch`1.VectorizableTextSearchAsync(System.String,Microsoft.Extensions.VectorData.VectorSearchOptions,System.Threading.CancellationToken)</Target>
+    <Target>M:Microsoft.Extensions.VectorData.HybridSearchOptions`1.get_Top</Target>
     <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorizedSearch`1.VectorizedSearchAsync``1(``0,Microsoft.Extensions.VectorData.VectorSearchOptions,System.Threading.CancellationToken)</Target>
+    <Target>M:Microsoft.Extensions.VectorData.HybridSearchOptions`1.set_Top(System.Int32)</Target>
     <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteAsync(`0,Microsoft.Extensions.VectorData.DeleteRecordOptions,System.Threading.CancellationToken)</Target>
+    <Target>M:Microsoft.Extensions.VectorData.IKeywordHybridSearch`1.HybridSearchAsync``1(``0,System.Collections.Generic.ICollection{System.String},Microsoft.Extensions.VectorData.HybridSearchOptions{`0},System.Threading.CancellationToken)</Target>
     <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteBatchAsync(System.Collections.Generic.IEnumerable{`0},Microsoft.Extensions.VectorData.DeleteRecordOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertAsync(`1,Microsoft.Extensions.VectorData.UpsertRecordOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertBatchAsync(System.Collections.Generic.IEnumerable{`1},Microsoft.Extensions.VectorData.UpsertRecordOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorizableTextSearch`1.VectorizableTextSearchAsync(System.String,Microsoft.Extensions.VectorData.VectorSearchOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorizedSearch`1.VectorizedSearchAsync``1(``0,Microsoft.Extensions.VectorData.VectorSearchOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteAsync(`0,Microsoft.Extensions.VectorData.DeleteRecordOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteBatchAsync(System.Collections.Generic.IEnumerable{`0},Microsoft.Extensions.VectorData.DeleteRecordOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertAsync(`1,Microsoft.Extensions.VectorData.UpsertRecordOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertBatchAsync(System.Collections.Generic.IEnumerable{`1},Microsoft.Extensions.VectorData.UpsertRecordOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorizableTextSearch`1.VectorizableTextSearchAsync(System.String,Microsoft.Extensions.VectorData.VectorSearchOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorizedSearch`1.VectorizedSearchAsync``1(``0,Microsoft.Extensions.VectorData.VectorSearchOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteAsync(`0,Microsoft.Extensions.VectorData.DeleteRecordOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteBatchAsync(System.Collections.Generic.IEnumerable{`0},Microsoft.Extensions.VectorData.DeleteRecordOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertAsync(`1,Microsoft.Extensions.VectorData.UpsertRecordOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertBatchAsync(System.Collections.Generic.IEnumerable{`1},Microsoft.Extensions.VectorData.UpsertRecordOptions,System.Threading.CancellationToken)</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.IVectorizableTextSearch`1.VectorizableTextSearchAsync(System.String,Microsoft.Extensions.VectorData.VectorSearchOptions{`0},System.Threading.CancellationToken)</Target>
     <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.IVectorizedSearch`1.VectorizedSearchAsync``1(``0,Microsoft.Extensions.VectorData.VectorSearchOptions{`0},System.Threading.CancellationToken)</Target>
     <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteAsync(`0,System.Threading.CancellationToken)</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteBatchAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)</Target>
     <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertAsync(`1,System.Threading.CancellationToken)</Target>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetBatchAsync(System.Collections.Generic.IEnumerable{`0},Microsoft.Extensions.VectorData.GetRecordOptions,System.Threading.CancellationToken)</Target>
     <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertBatchAsync(System.Collections.Generic.IEnumerable{`1},System.Threading.CancellationToken)</Target>
     <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.VectorSearchOptions`1.get_Top</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.VectorSearchOptions`1.set_Top(System.Int32)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.VectorStoreException.get_VectorStoreType</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.VectorStoreException.set_VectorStoreType(System.String)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.HybridSearchOptions`1.get_Top</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.HybridSearchOptions`1.set_Top(System.Int32)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IKeywordHybridSearch`1.HybridSearchAsync``1(``0,System.Collections.Generic.ICollection{System.String},Microsoft.Extensions.VectorData.HybridSearchOptions{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.IVectorizableTextSearch`1.VectorizableTextSearchAsync(System.String,Microsoft.Extensions.VectorData.VectorSearchOptions{`0},System.Threading.CancellationToken)</Target>
     <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.IVectorizedSearch`1.VectorizedSearchAsync``1(``0,Microsoft.Extensions.VectorData.VectorSearchOptions{`0},System.Threading.CancellationToken)</Target>
     <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteAsync(`0,System.Threading.CancellationToken)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteBatchAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)</Target>
     <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertAsync(`1,System.Threading.CancellationToken)</Target>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetBatchAsync(System.Collections.Generic.IEnumerable{`0},Microsoft.Extensions.VectorData.GetRecordOptions,System.Threading.CancellationToken)</Target>
     <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertBatchAsync(System.Collections.Generic.IEnumerable{`1},System.Threading.CancellationToken)</Target>
     <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.VectorSearchOptions`1.get_Top</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.VectorSearchOptions`1.set_Top(System.Int32)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.VectorStoreException.get_VectorStoreType</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.VectorStoreException.set_VectorStoreType(System.String)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.HybridSearchOptions`1.get_Top</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.HybridSearchOptions`1.set_Top(System.Int32)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IKeywordHybridSearch`1.HybridSearchAsync``1(``0,System.Collections.Generic.ICollection{System.String},Microsoft.Extensions.VectorData.HybridSearchOptions{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.IVectorizableTextSearch`1.VectorizableTextSearchAsync(System.String,Microsoft.Extensions.VectorData.VectorSearchOptions{`0},System.Threading.CancellationToken)</Target>
     <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.IVectorizedSearch`1.VectorizedSearchAsync``1(``0,Microsoft.Extensions.VectorData.VectorSearchOptions{`0},System.Threading.CancellationToken)</Target>
     <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteAsync(`0,System.Threading.CancellationToken)</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteBatchAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)</Target>
     <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
-    <DiagnosticId>CP0006</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertAsync(`1,System.Threading.CancellationToken)</Target>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetBatchAsync(System.Collections.Generic.IEnumerable{`0},Microsoft.Extensions.VectorData.GetRecordOptions,System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertBatchAsync(System.Collections.Generic.IEnumerable{`1},System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.VectorSearchOptions`1.get_Top</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.VectorSearchOptions`1.set_Top(System.Int32)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.VectorStoreException.get_VectorStoreType</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.VectorStoreException.set_VectorStoreType(System.String)</Target>
     <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertBatchAsync(System.Collections.Generic.IEnumerable{`1},System.Threading.CancellationToken)</Target>
+    <Target>M:Microsoft.Extensions.VectorData.IKeywordHybridSearch`1.GetService(System.Type,System.Object)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IKeywordHybridSearch`1.HybridSearchAsync``1(``0,System.Collections.Generic.ICollection{System.String},System.Int32,Microsoft.Extensions.VectorData.HybridSearchOptions{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorizableTextSearch`1.GetService(System.Type,System.Object)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorizableTextSearch`1.VectorizableTextSearchAsync(System.String,System.Int32,Microsoft.Extensions.VectorData.VectorSearchOptions{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorizedSearch`1.GetService(System.Type,System.Object)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorizedSearch`1.VectorizedSearchAsync``1(``0,System.Int32,Microsoft.Extensions.VectorData.VectorSearchOptions{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStore.GetService(System.Type,System.Object)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetAsync(System.Collections.Generic.IEnumerable{`0},Microsoft.Extensions.VectorData.GetRecordOptions,System.Threading.CancellationToken)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetAsync(System.Linq.Expressions.Expression{System.Func{`1,System.Boolean}},System.Int32,Microsoft.Extensions.VectorData.GetFilteredRecordOptions{`1},System.Threading.CancellationToken)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertAsync(System.Collections.Generic.IEnumerable{`1},System.Threading.CancellationToken)</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IKeywordHybridSearch`1.GetService(System.Type,System.Object)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IKeywordHybridSearch`1.HybridSearchAsync``1(``0,System.Collections.Generic.ICollection{System.String},System.Int32,Microsoft.Extensions.VectorData.HybridSearchOptions{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorizableTextSearch`1.GetService(System.Type,System.Object)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorizableTextSearch`1.VectorizableTextSearchAsync(System.String,System.Int32,Microsoft.Extensions.VectorData.VectorSearchOptions{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorizedSearch`1.GetService(System.Type,System.Object)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorizedSearch`1.VectorizedSearchAsync``1(``0,System.Int32,Microsoft.Extensions.VectorData.VectorSearchOptions{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStore.GetService(System.Type,System.Object)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetAsync(System.Collections.Generic.IEnumerable{`0},Microsoft.Extensions.VectorData.GetRecordOptions,System.Threading.CancellationToken)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetAsync(System.Linq.Expressions.Expression{System.Func{`1,System.Boolean}},System.Int32,Microsoft.Extensions.VectorData.GetFilteredRecordOptions{`1},System.Threading.CancellationToken)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertAsync(System.Collections.Generic.IEnumerable{`1},System.Threading.CancellationToken)</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IKeywordHybridSearch`1.GetService(System.Type,System.Object)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IKeywordHybridSearch`1.HybridSearchAsync``1(``0,System.Collections.Generic.ICollection{System.String},System.Int32,Microsoft.Extensions.VectorData.HybridSearchOptions{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorizableTextSearch`1.GetService(System.Type,System.Object)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorizableTextSearch`1.VectorizableTextSearchAsync(System.String,System.Int32,Microsoft.Extensions.VectorData.VectorSearchOptions{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorizedSearch`1.GetService(System.Type,System.Object)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorizedSearch`1.VectorizedSearchAsync``1(``0,System.Int32,Microsoft.Extensions.VectorData.VectorSearchOptions{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStore.GetService(System.Type,System.Object)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.DeleteAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetAsync(System.Collections.Generic.IEnumerable{`0},Microsoft.Extensions.VectorData.GetRecordOptions,System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetAsync(System.Linq.Expressions.Expression{System.Func{`1,System.Boolean}},System.Int32,Microsoft.Extensions.VectorData.GetFilteredRecordOptions{`1},System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.UpsertAsync(System.Collections.Generic.IEnumerable{`1},System.Threading.CancellationToken)</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0021</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStore.GetCollection``2(System.String,Microsoft.Extensions.VectorData.VectorStoreRecordDefinition)``1:notnull</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0021</DiagnosticId>
+    <Target>T:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2``1:notnull</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0021</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStore.GetCollection``2(System.String,Microsoft.Extensions.VectorData.VectorStoreRecordDefinition)``1:notnull</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0021</DiagnosticId>
+    <Target>T:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2``1:notnull</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0021</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStore.GetCollection``2(System.String,Microsoft.Extensions.VectorData.VectorStoreRecordDefinition)``1:notnull</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0021</DiagnosticId>
+    <Target>T:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2``1:notnull</Target>
     <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
