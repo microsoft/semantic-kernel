@@ -6,15 +6,9 @@ import uuid
 from collections.abc import AsyncGenerator, AsyncIterable, Awaitable, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 from pydantic import Field, model_validator
 
-from semantic_kernel.agents import Agent, register_agent_type
-from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
+from semantic_kernel.agents import Agent, AgentResponseItem, AgentThread, DeclarativeSpecMixin, register_agent_type
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -44,6 +38,11 @@ from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
 
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -114,7 +113,7 @@ class ChatHistoryAgentThread(AgentThread):
 
 
 @register_agent_type("chat_completion_agent")
-class ChatCompletionAgent(Agent):
+class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
     """A Chat Completion Agent based on ChatCompletionClientBase."""
 
     function_choice_behavior: FunctionChoiceBehavior | None = Field(
@@ -210,21 +209,6 @@ class ChatCompletionAgent(Agent):
         self.kernel.add_service(self.service, overwrite=True)
         return self
 
-    @classmethod
-    async def _from_dict(
-        cls,
-        data: dict,
-        *,
-        kernel: "Kernel | None" = None,
-        **kwargs,
-    ) -> "ChatCompletionAgent":
-        fields = cls._extract_common_fields(data, kernel=kernel)
-
-        if "service" in kwargs:
-            fields["service"] = kwargs["service"]
-
-        return cls(**fields)
-
     async def create_channel(
         self, chat_history: ChatHistory | None = None, thread_id: str | None = None
     ) -> AgentChannel:
@@ -249,6 +233,31 @@ class ChatCompletionAgent(Agent):
         messages = [message async for message in thread.get_messages()]
 
         return ChatHistoryChannel(messages=messages, thread=thread)
+
+    # region Declarative Spec
+
+    @override
+    @classmethod
+    async def _from_dict(
+        cls,
+        data: dict,
+        *,
+        kernel: "Kernel | None" = None,
+        **kwargs,
+    ) -> "ChatCompletionAgent":
+        fields = cls._normalize_spec_fields(data, kernel=kernel)
+
+        if "service" in kwargs:
+            fields["service"] = kwargs["service"]
+
+        if "function_choice_behavior" in kwargs:
+            fields["function_choice_behavior"] = kwargs["function_choice_behavior"]
+
+        return cls(**fields)
+
+    # endregion
+
+    # region Invocation Methods
 
     @trace_agent_get_response
     @override
@@ -463,6 +472,10 @@ class ChatCompletionAgent(Agent):
                 )
             )
 
+    # endregion
+
+    # region Helper Methods
+
     async def _inner_invoke(
         self,
         thread: ChatHistoryAgentThread,
@@ -571,3 +584,5 @@ class ChatCompletionAgent(Agent):
 
             if on_intermediate_message:
                 await on_intermediate_message(message)
+
+    # endregion

@@ -11,7 +11,8 @@ from semantic_kernel.kernel import Kernel
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers
-questions about a sample menu using a Semantic Kernel Plugin.
+questions about a sample menu using a Semantic Kernel Plugin. The agent is created
+using a yaml declarative spec.
 """
 
 
@@ -44,8 +45,8 @@ USER_INPUTS = [
 
 AGENT_YAML = """
 type: foundry_agent
-name: MyAzureAgent
-instructions: Respond politely.
+name: Host
+instructions: Respond politely to the user's questions.
 model:
   id: ${AzureAI:ChatModelId}
 """
@@ -57,18 +58,13 @@ async def main() -> None:
         DefaultAzureCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
-        # 1. Create an agent on the Azure AI agent service
-        # agent_definition = await client.agents.create_agent(
-        #     model=AzureAIAgentSettings().model_deployment_name,
-        #     name="Host",
-        #     instructions="Answer questions about the menu.",
-        # )
-
+        # 1. Create a Kernel instance
+        # For declarative agents, the kernel is required to resolve the plugin
         kernel = Kernel()
         kernel.add_plugin(MenuPlugin())
 
         # 2. Create a Semantic Kernel agent for the Azure AI agent
-        agent: AzureAIAgent = await AgentRegistry.create_agent_from_yaml(
+        agent: AzureAIAgent = await AgentRegistry.create_from_yaml(
             AGENT_YAML,
             kernel=kernel,
             settings=settings,

@@ -30,3 +30,4 @@ class AzureAIAgentSettings(KernelBaseSettings):
     subscription_id: str | None = None
     resource_group_name: str | None = None
     project_name: str | None = None
+    bing_connection_id: str | None = None

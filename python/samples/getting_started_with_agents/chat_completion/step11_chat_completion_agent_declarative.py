@@ -67,7 +67,7 @@ async def main():
     kernel.add_plugin(MenuPlugin(), plugin_name="MenuPlugin")
 
     # 5. Create the agent from YAML + inject the AI service
-    agent: ChatCompletionAgent = await AgentRegistry.create_agent_from_yaml(
+    agent: ChatCompletionAgent = await AgentRegistry.create_from_yaml(
         AGENT_YAML, kernel=kernel, service=OpenAIChatCompletion()
     )
 
@@ -82,10 +82,8 @@ async def main():
         thread = response.thread
 
     # 8. Cleanup the thread
-    if thread:
-        await thread.delete()
+    await thread.delete() if thread else None
 
 
-# 5. Entry point
 if __name__ == "__main__":
     asyncio.run(main())

@@ -16,6 +16,7 @@ from azure.ai.projects.models import (
     OpenAIPageableListOfThreadMessage,
     ResponseFormatJsonSchemaType,
     RunStep,
+    RunStepAzureAISearchToolCall,
     RunStepBingGroundingToolCall,
     RunStepCodeInterpreterToolCall,
     RunStepDeltaChunk,
@@ -32,6 +33,7 @@ from azure.ai.projects.models import (
 from azure.ai.projects.models._enums import MessageRole
 
 from semantic_kernel.agents.azure_ai.agent_content_generation import (
+    generate_azure_ai_search_content,
     generate_bing_grounding_content,
     generate_code_interpreter_content,
     generate_function_call_content,
@@ -282,7 +284,7 @@ class AgentThreadActions:
                                     )
                                 case AgentsNamedToolChoiceType.BING_GROUNDING:
                                     logger.debug(
-                                        f"Entering tool_calls (bing grounding) for run [{run.id}], agent "
+                                        f"Entering tool_calls (bing_grounding) for run [{run.id}], agent "
                                         f" `{agent.name}` and thread `{thread_id}`"
                                     )
                                     bing_call: RunStepBingGroundingToolCall = cast(
@@ -290,6 +292,17 @@ class AgentThreadActions:
                                     )
                                     content = generate_bing_grounding_content(
                                         agent_name=agent.name, bing_tool_call=bing_call
+                                    )
+                                case AgentsNamedToolChoiceType.AZURE_AI_SEARCH:
+                                    logger.debug(
+                                        f"Entering tool_calls (azure_ai_search) for run [{run.id}], agent "
+                                        f" `{agent.name}` and thread `{thread_id}`"
+                                    )
+                                    azure_ai_search_call: RunStepAzureAISearchToolCall = cast(
+                                        RunStepAzureAISearchToolCall, tool_call
+                                    )
+                                    content = generate_azure_ai_search_content(
+                                        agent_name=agent.name, azure_ai_search_tool_call=azure_ai_search_call
                                     )
 
                             if content:
@@ -486,6 +499,10 @@ class AgentThreadActions:
                                         content_is_visible = True
                                     case AgentsNamedToolChoiceType.BING_GROUNDING:
                                         content = generate_streaming_bing_grounding_content(
+                                            agent_name=agent.name, step_details=details
+                                        )
+                                    case AgentsNamedToolChoiceType.AZURE_AI_SEARCH:
+                                        content = generate_azure_ai_search_content(
                                             agent_name=agent.name, step_details=details
                                         )
                                 if content:
@@ -789,13 +806,21 @@ class AgentThreadActions:
             tool["openapi"] = openapi_data
         return tool
 
+    @staticmethod
+    def _deduplicate_tools(existing_tools: list[dict], new_tools: list[dict]) -> list[dict]:
+        existing_names = {
+            tool["function"]["name"] for tool in existing_tools if "function" in tool and "name" in tool["function"]
+        }
+        return [tool for tool in new_tools if tool.get("function", {}).get("name") not in existing_names]
+
     @classmethod
     def _get_tools(cls: type[_T], agent: "AzureAIAgent", kernel: "Kernel") -> list[dict[str, Any] | ToolDefinition]:
         """Get the tools for the agent."""
         tools: list[Any] = list(agent.definition.tools)
         funcs = kernel.get_full_list_of_function_metadata()
         dict_defs = [kernel_function_metadata_to_function_call_format(f) for f in funcs]
-        tools.extend(dict_defs)
+        deduped_defs = cls._deduplicate_tools(tools, dict_defs)
+        tools.extend(deduped_defs)
         return [cls._prepare_tool_definition(tool) for tool in tools]
 
     @classmethod

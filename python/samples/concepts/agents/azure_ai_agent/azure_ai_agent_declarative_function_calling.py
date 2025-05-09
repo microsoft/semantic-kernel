@@ -5,8 +5,7 @@ from typing import Annotated
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.agents.agent import AgentRegistry
+from semantic_kernel.agents import AgentRegistry, AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
@@ -41,39 +40,6 @@ class MenuPlugin:
         return "$9.99"
 
 
-# Hello World spec
-
-
-spec = """
-type: foundry_agent
-name: MyAgent
-description: My helpful agent.
-instructions: You are helpful agent.
-model:
-  id: ${AzureAI:ChatModelId}
-  connection:
-    connection_string: ${AzureAI:ConnectionString}
-"""
-
-#  Code interpreter spec
-
-spec = """
-type: foundry_agent
-name: CodeInterpreterAgent
-description: Agent with code interpreter tool.
-instructions: >
-  Use the code interpreter tool to answer questions that require code to be generated
-  and executed.
-model:
-  id: ${AzureAI:ChatModelId}
-  connection:
-    connection_string: ${AzureAI:ConnectionString}
-tools:
-  - type: code_interpreter
-    options:
-        file_ids: ["${AzureAI:FileId1}"]
-"""
-
 # Function spec
 
 spec = """ 
@@ -88,86 +54,76 @@ model:
   options:
     temperature: 0.4
 tools:
-  - id: GetSpecials
+  - id: MenuPlugin.get_specials
     type: function
     description: Get the specials from the menu.
     options:
       parameters:
         type: object
         properties: {}
-  - id: GetItemPrice
+  - id: MenuPlugin.get_item_price
     type: function
     description: Get the price of an item on the menu.
     options:
       parameters:
         type: object
         properties:
-          menuItem:
+          menu_item:
             type: string
             description: The name of the menu item.
-        required: ["menuItem"]
+        required: ["menu_item"]
 """
 
-spec = """
-type: foundry_agent
-name: FunctionCallingAgent
-instructions: Use the provided functions to answer questions about the menu.
-description: This agent uses the provided functions to answer questions about the menu.
-model:
-    id: ${AzureAI:ChatModelId}
-    options:
-    temperature: 0.4
-tools:
-    - id: GetSpecials
-      type: function
-      description: Get the specials from the menu.
-    - id: GetItemPrice
-      type: function
-      description: Get the price of an item on the menu.
-      options:
-          parameters:
-          - name: menuItem
-              type: string
-              required: true
-              description: The name of the menu item.  
-"""
-
-settings = AzureAIAgentSettings()  # ChatModelId & ConnectionString come from env vars
+settings = AzureAIAgentSettings()  # The Spec's ChatModelId & ConnectionString come from .env/env vars
 
 
-async def bootstrap():
+async def main():
     async with (
         DefaultAzureCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
-        # csv_file_path = os.path.join(
-        #     os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
-        #     "resources",
-        #     "agent_assistant_file_manipulation",
-        #     "sales.csv",
-        # )
-
         try:
-            # file = await client.agents.upload_file_and_poll(file_path=csv_file_path, purpose=FilePurpose.AGENTS)
-            # print(file.id)
-
-            kernel = Kernel()  # with your functions loaded
+            # Define an instance of the kernel
+            # The kernel must be supplied to be able to resolve the plugins
+            kernel = Kernel()
             kernel.add_plugin(MenuPlugin(), "MenuPlugin")
-            agent: AzureAIAgent = await AgentRegistry.create_agent_from_yaml(
+
+            # Create the AzureAI Agent from the YAML spec
+            agent: AzureAIAgent = await AgentRegistry.create_from_yaml(
                 spec,
                 kernel=kernel,
                 client=client,
                 settings=settings,
-                # extras={"FileId1": file.id},
             )
-            async for resp in agent.invoke(
-                messages="Using Python, give me the code to calculate the total sales for all segments."
-            ):
-                print(resp)
+
+            # Create the agent
+            user_inputs = [
+                "Hello",
+                "What is the special soup?",
+                "How much does that cost?",
+                "Thank you",
+            ]
+
+            # Create a thread for the agent
+            # If no thread is provided, a new thread will be
+            # created and returned with the initial response
+            thread: AzureAIAgentThread | None = None
+
+            for user_input in user_inputs:
+                print(f"# User: '{user_input}'")
+                # Invoke the agent for the specified task
+                async for response in agent.invoke(
+                    messages=user_input,
+                    thread=thread,
+                ):
+                    print(f"# {response.name}: {response}")
+                    # Store the thread for the next iteration
+                    thread = response.thread
         finally:
             # Cleanup: Delete the thread and agent
-            await client.agents.delete_agent(agent.id)
-            # await client.agents.delete_file(file.id)
+            await client.agents.delete_agent(agent.id) if agent else None
+            await thread.delete() if thread else None
 
 
-asyncio.run(bootstrap())
+if __name__ == "__main__":
+    asyncio.run(main())

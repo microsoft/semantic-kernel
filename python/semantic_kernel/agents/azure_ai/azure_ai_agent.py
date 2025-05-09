@@ -1,29 +1,25 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import inspect
+import json
 import logging
 import sys
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
+from copy import deepcopy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
 
 from azure.ai.projects.aio import AIProjectClient
 from azure.ai.projects.models import Agent as AzureAIAgentModel
 from azure.ai.projects.models import (
     AgentsApiResponseFormat,
     AgentsApiResponseFormatMode,
-    AzureAISearchResource,
-    AzureAISearchToolDefinition,
-    CodeInterpreterToolDefinition,
-    CodeInterpreterToolResource,
-    FileSearchToolDefinition,
-    FileSearchToolResource,
-    FunctionDefinition,
-    FunctionToolDefinition,
-    OpenApiToolDefinition,
+    AzureAISearchQueryType,
+    AzureAISearchTool,
+    BingGroundingTool,
+    CodeInterpreterTool,
+    FileSearchTool,
+    OpenApiAnonymousAuthDetails,
+    OpenApiTool,
     ResponseFormatJsonSchemaType,
     ThreadMessageOptions,
     ToolDefinition,
@@ -32,19 +28,21 @@ from azure.ai.projects.models import (
 )
 from pydantic import Field, SecretStr
 
-from semantic_kernel.agents.agent import (
+from semantic_kernel.agents import (
     Agent,
     AgentResponseItem,
     AgentSpec,
     AgentThread,
+    AzureAIAgentSettings,
+    DeclarativeSpecMixin,
     ToolSpec,
     register_agent_type,
 )
 from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActions
-from semantic_kernel.agents.azure_ai.azure_ai_agent_settings import AzureAIAgentSettings
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
@@ -65,18 +63,19 @@ from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
 )
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, SEMANTIC_KERNEL_USER_AGENT
 
+if TYPE_CHECKING:
+    from azure.ai.projects.models import ToolResources
+    from azure.identity.aio import DefaultAzureCredential
+
+    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+    from semantic_kernel.kernel_pydantic import KernelBaseSettings
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-if TYPE_CHECKING:
-    from azure.ai.projects.models import ToolResources
-    from azure.identity.aio import DefaultAzureCredential
-
-    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
 AgentsApiResponseFormatOption = (
     str | AgentsApiResponseFormatMode | AgentsApiResponseFormat | ResponseFormatJsonSchemaType
@@ -85,136 +84,166 @@ AgentsApiResponseFormatOption = (
 _T = TypeVar("_T", bound="AzureAIAgent")
 
 
-# ── in-file registry --------------------------------------------------------
-_TOOL_BUILDERS: dict[str, Callable[[ToolSpec], ToolDefinition]] = {}
+# region Declarative Spec
+
+_TOOL_BUILDERS: dict[str, Callable[[ToolSpec, Kernel | None], ToolDefinition]] = {}
 
 
 def _register_tool(tool_type: str):
-    def decorator(fn: Callable[[ToolSpec], ToolDefinition]):
+    def decorator(fn: Callable[[ToolSpec, Kernel | None], ToolDefinition]):
         _TOOL_BUILDERS[tool_type.lower()] = fn
         return fn
 
     return decorator
 
 
-# ── concrete builders -------------------------------------------------------
-# ── helper -----------------------------------------------------------
-def _normalize_parameters(params: Any) -> dict[str, Any]:
-    """Accept either.
+@_register_tool("azure_ai_search")
+def _azure_ai_search(spec: ToolSpec) -> AzureAISearchTool:
+    opts = spec.options or {}
 
-    • list[dict] “short-form” blocks   → build JSON-schema on the fly
-    • dict        “long-form” schema  → passthrough
-    """
-    from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
+    connections = opts.get("tool_connections")
+    if not connections or not isinstance(connections, list) or not connections[0]:
+        raise AgentInitializationException(f"Missing or malformed 'tool_connections' in: {spec}")
+    conn_id = connections[0]
 
-    # --- long-form (what you already support) ---
-    if isinstance(params, dict) and params.get("type") == "object":
-        return params
+    index_name = opts.get("index_name")
+    if not index_name or not isinstance(index_name, str):
+        raise AgentInitializationException(f"Missing or malformed 'index_name' in: {spec}")
 
-    # --- short-form (mirrors .NET list<object>) ---
-    if isinstance(params, list):
-        properties: dict[str, Any] = {}
-        required: list[str] = []
+    raw_query_type = opts.get("query_type", AzureAISearchQueryType.SIMPLE)
+    if type(raw_query_type) is str:
+        try:
+            query_type = AzureAISearchQueryType(raw_query_type.lower())
+        except ValueError:
+            raise AgentInitializationException(f"Invalid query_type '{raw_query_type}' in: {spec}")
+    else:
+        query_type = raw_query_type
 
-        for p in params:
-            if not isinstance(p, dict):
-                raise TypeError("Each parameter entry must be a mapping")
+    filter_expr = opts.get("filter", "")
 
-            name = p.get("name")
-            type_name = p.get("type")
-            description = p.get("description", "")
-            is_required = str(p.get("required", "false")).lower() == "true"
+    top_k = opts.get("top_k", 5)
+    if not isinstance(top_k, int):
+        raise AgentInitializationException(f"'top_k' must be an integer in: {spec}")
 
-            if not name or not type_name:
-                raise ValueError("Parameter entries require both 'name' and 'type'")
+    return AzureAISearchTool(
+        index_connection_id=conn_id,
+        index_name=index_name,
+        query_type=query_type,
+        filter=filter_expr,
+        top_k=top_k,
+    )
 
-            schema = KernelJsonSchemaBuilder.build_from_type_name(type_name, description)
-            properties[name] = schema
-            if is_required:
-                required.append(name)
 
-        return {
-            "type": "object",
-            "properties": properties,
-            "required": required,
-        }
+@_register_tool("azure_function")
+def _azure_function(spec: ToolSpec) -> ToolDefinition:
+    # TODO(evmattso): Implement Azure Function tool support
+    raise NotImplementedError("Azure Function tools are not yet supported with the Azure AI Agent Declarative Spec.")
 
-    # --- default: empty schema ---------------------------------------
-    return {"type": "object", "properties": {}}
+
+@_register_tool("bing_grounding")
+def _bing_grounding(spec: ToolSpec) -> ToolDefinition:
+    connections = spec.options.get("tool_connections")
+    if not connections or not isinstance(connections, list) or not connections[0]:
+        raise AgentInitializationException(f"Missing or malformed 'tool_connections' in: {spec}")
+
+    conn_id = connections[0]
+    return BingGroundingTool(connection_id=conn_id)
 
 
 @_register_tool("code_interpreter")
 def _code_interpreter(spec: ToolSpec) -> ToolDefinition:
     # no configurable options today
-    return CodeInterpreterToolDefinition()
-
-
-@_register_tool("function")
-def _function(spec: ToolSpec) -> ToolDefinition:
-    raw_params = (spec.options or {}).get("parameters", {"type": "object", "properties": {}})
-    params_schema = _normalize_parameters(raw_params)
-
-    fn_def = FunctionDefinition(
-        name=spec.id,
-        description=spec.description or "",
-        parameters=params_schema,
-    )
-    return FunctionToolDefinition(function=fn_def)
+    return CodeInterpreterTool()
 
 
 @_register_tool("file_search")
 def _file_search(spec: ToolSpec) -> ToolDefinition:
-    return FileSearchToolDefinition()  # options live in resources
+    vector_store_ids = spec.options.get("vector_store_ids")
+    if not vector_store_ids or not isinstance(vector_store_ids, list) or not vector_store_ids[0]:
+        raise AgentInitializationException(f"Missing or malformed 'vector_store_ids' in: {spec}")
+    return FileSearchTool(vector_store_ids=vector_store_ids)
 
 
-@_register_tool("azure_ai_search")
-def _azure_ai_search(spec: ToolSpec) -> ToolDefinition:
-    return AzureAISearchToolDefinition()  # options live in resources
+@_register_tool("function")
+def _function(spec: ToolSpec, kernel: "Kernel") -> ToolDefinition:
+    def parse_fqn(fqn: str) -> tuple[str, str]:
+        parts = fqn.split(".")
+        if len(parts) != 2:
+            raise AgentInitializationException(f"Function `{fqn}` must be in the form `pluginName.functionName`.")
+        return parts[0], parts[1]
+
+    if not spec.id:
+        raise AgentInitializationException("Function ID is required for function tools.")
+    plugin_name, function_name = parse_fqn(spec.id)
+    funcs = kernel.get_list_of_function_metadata_filters({"included_functions": f"{plugin_name}-{function_name}"})
+
+    match len(funcs):
+        case 0:
+            raise AgentInitializationException(f"Function `{spec.id}` not found in kernel.")
+        case 1:
+            return kernel_function_metadata_to_function_call_format(funcs[0])  # type: ignore[return-value]
+        case _:
+            raise AgentInitializationException(f"Multiple definitions found for `{spec.id}`. Please remove duplicates.")
 
 
 @_register_tool("openapi")
-def _openapi(spec: ToolSpec) -> ToolDefinition:
-    # caller is responsible for embedding the raw OpenAPI spec in options["spec"]
-    return OpenApiToolDefinition(
+def _openapi(spec: ToolSpec) -> OpenApiTool:
+    opts = spec.options or {}
+
+    if not spec.id:
+        raise AgentInitializationException("OpenAPI tool requires a non-empty 'id' (used as name).")
+    if not spec.description:
+        raise AgentInitializationException(f"OpenAPI tool '{spec.id}' requires a 'description'.")
+
+    raw_spec = opts.get("specification")
+    if not raw_spec:
+        raise AgentInitializationException(f"OpenAPI tool '{spec.id}' is missing required 'specification' field.")
+
+    try:
+        parsed_spec = json.loads(raw_spec) if isinstance(raw_spec, str) else raw_spec
+    except json.JSONDecodeError as e:
+        raise AgentInitializationException(f"Invalid JSON in OpenAPI 'specification' field: {e}") from e
+
+    auth = opts.get("auth", OpenApiAnonymousAuthDetails())
+
+    return OpenApiTool(
         name=spec.id,
-        description=spec.description or "",
-        spec=spec.options.get("spec") if spec.options else {},  # JSON schema dict
-        auth=spec.options.get("auth") if spec.options else None,  # e.g. OpenApiAnonymousAuthDetails()
+        description=spec.description,
+        spec=parsed_spec,
+        auth=auth,
+        default_parameters=opts.get("default_parameters"),
     )
 
 
-def _build_tool(spec: ToolSpec) -> ToolDefinition:
+def _build_tool(spec: ToolSpec, kernel: "Kernel") -> list[ToolDefinition]:
+    if not spec.type:
+        raise AgentInitializationException("Tool spec must include a 'type' field.")
+
     try:
-        return _TOOL_BUILDERS[spec.type.lower()](spec)
+        builder = _TOOL_BUILDERS[spec.type.lower()]
     except KeyError as exc:
-        raise ValueError(f"Unsupported tool type: {spec.type}") from exc
+        raise AgentInitializationException(f"Unsupported tool type: {spec.type}") from exc
+
+    sig = inspect.signature(builder)
+    return builder(spec) if len(sig.parameters) == 1 else builder(spec, kernel)
 
 
-def _build_tool_resources(tool_specs: list[ToolSpec]) -> ToolResources | None:
-    """Builds the tool resources from the tool specs."""
-    # buckets keyed by top-level resource attr name
+def _build_tool_resources(tool_defs: list[ToolDefinition]) -> ToolResources | None:
+    """Collects tool resources from known tool types with resource needs."""
     resources: dict[str, Any] = {}
 
-    for spec in tool_specs:
-        opts = spec.options or {}
-
-        if spec.type == "code_interpreter" and "file_ids" in opts:
-            resources["code_interpreter"] = CodeInterpreterToolResource(file_ids=list(opts["file_ids"]))
-
-        elif spec.type == "file_search" and "vector_store_ids" in opts:
-            resources["file_search"] = FileSearchToolResource(vector_store_ids=list(opts["vector_store_ids"]))
-
-        elif spec.type == "azure_ai_search":
-            idx_id = opts.get("index_connection_id")
-            idx_nm = opts.get("index_name")
-            if idx_id and idx_nm:
-                resources["azure_ai_search"] = AzureAISearchResource(
-                    index_connection_id=idx_id,
-                    index_name=idx_nm,
-                )
+    for tool in tool_defs:
+        if isinstance(tool, CodeInterpreterTool):
+            resources["code_interpreter"] = tool.resources.code_interpreter
+        elif isinstance(tool, AzureAISearchTool):
+            resources["azure_ai_search"] = tool.resources.azure_ai_search
+        elif isinstance(tool, FileSearchTool):
+            resources["file_search"] = tool.resources.file_search
 
     return ToolResources(**resources) if resources else None
 
+
+# endregion
 
 # region Thread
 
@@ -313,7 +342,7 @@ class AzureAIAgentThread(AgentThread):
 
 @experimental
 @register_agent_type("foundry_agent")
-class AzureAIAgent(Agent):
+class AzureAIAgent(DeclarativeSpecMixin, Agent):
     """Azure AI Agent class."""
 
     client: AIProjectClient
@@ -392,86 +421,6 @@ class AzureAIAgent(Agent):
 
         super().__init__(**args)
 
-    @classmethod
-    async def _from_dict(
-        cls: type[_T],
-        data: dict,
-        *,
-        kernel,
-        client: AIProjectClient,  # AIProjectClient (already created)
-        settings=None,  # AzureAIAgentSettings, optional
-        **kwargs,
-    ) -> "AzureAIAgent":
-        spec = AgentSpec.model_validate(data)
-
-        if spec.id:
-            remote = await client.agents.get_agent(spec.id)
-            return cls(
-                agent=remote,
-                client=client,
-                kernel=kernel,
-                instructions=spec.instructions or remote.instructions,
-            )
-
-        if not (spec.model and spec.model.id):
-            raise ValueError("model.id required when creating a new Azure AI agent")
-
-        # Build tool definitions & (optional) resources
-        tool_defs = [_build_tool(t) for t in spec.tools]
-        tool_resources = _build_tool_resources(spec.tools)
-
-        remote = await client.agents.create_agent(
-            model=spec.model.id,
-            name=spec.name,
-            description=spec.description,
-            instructions=spec.instructions,
-            tools=tool_defs,
-            tool_resources=tool_resources,
-            metadata=spec.extras,  # keep any extra fields
-        )
-
-        return cls(definition=remote, client=client, kernel=kernel)
-
-    @classmethod
-    def _get_setting(cls, value: Any) -> Any:
-        """Return raw value if `SecretStr`, otherwise pass through."""
-        if isinstance(value, SecretStr):
-            return value.get_secret_value()
-        return value
-
-    @classmethod
-    def resolve_placeholders(
-        cls, yaml_str: str, settings: AzureAIAgentSettings, extras: dict[str, Any] | None = None
-    ) -> str:
-        """Substitute ${AzureAI:Key} placeholders with fields from `AzureAIAgentSettings`."""
-        import re
-
-        pattern = re.compile(r"\$\{([^}]+)\}")
-
-        field_mapping = {
-            # core keys ---------------------------------------------------------
-            "ChatModelId": cls._get_setting(getattr(settings, "model_deployment_name", None)),
-            "ConnectionString": cls._get_setting(getattr(settings, "project_connection_string", None)),
-            "AgentId": cls._get_setting(getattr(settings, "agent_id", None)),
-            # optional extras ---------------------------------------------------
-            "Endpoint": cls._get_setting(getattr(settings, "endpoint", None)),
-            "SubscriptionId": cls._get_setting(getattr(settings, "subscription_id", None)),
-            "ResourceGroup": cls._get_setting(getattr(settings, "resource_group_name", None)),
-            "ProjectName": cls._get_setting(getattr(settings, "project_name", None)),
-        }
-
-        if extras:
-            field_mapping.update(extras)
-
-        def replacer(match: re.Match[str]) -> str:
-            full_key = match.group(1)  # for example, "AzureAI:ChatModelId"
-            section, _, key = full_key.partition(":")
-            if section != "AzureAI":
-                return match.group(0)  # leave untouched
-            return field_mapping.get(key, match.group(0)) or match.group(0)
-
-        return pattern.sub(replacer, yaml_str)
-
     @staticmethod
     def create_client(
         credential: "DefaultAzureCredential",
@@ -500,6 +449,148 @@ class AzureAIAgent(Agent):
             **({"user_agent": SEMANTIC_KERNEL_USER_AGENT} if APP_INFO else {}),
             **kwargs,
         )
+
+    # region Declarative Spec
+
+    @override
+    @classmethod
+    async def _from_dict(
+        cls: type["AzureAIAgent"],
+        data: dict,
+        *,
+        kernel: Kernel,
+        prompt_template_config: PromptTemplateConfig | None = None,
+        **kwargs,
+    ) -> "AzureAIAgent":
+        """Create an Azure AI Agent from the provided dictionary.
+
+        Args:
+            data: The dictionary containing the agent data.
+            kernel: The kernel to use for the agent.
+            prompt_template_config: The prompt template configuration.
+            kwargs: Additional keyword arguments. Note: unsupported keys may raise validation errors.
+
+        Returns:
+            AzureAIAgent: The Azure AI Agent instance.
+        """
+        client: AIProjectClient = kwargs.pop("client", None)
+        if client is None:
+            raise AgentInitializationException("Missing required 'client' in AzureAIAgent._from_dict()")
+
+        spec = AgentSpec.model_validate(data)
+
+        if "settings" in kwargs:
+            kwargs.pop("settings")
+
+        if spec.id:
+            existing_definition = await client.agents.get_agent(spec.id)
+
+            # Create a mutable clone
+            definition = deepcopy(existing_definition)
+
+            # Selectively override attributes from spec
+            if spec.name is not None:
+                setattr(definition, "name", spec.name)
+            if spec.description is not None:
+                setattr(definition, "description", spec.description)
+            if spec.instructions is not None:
+                setattr(definition, "instructions", spec.instructions)
+            if spec.extras:
+                merged_metadata = dict(getattr(definition, "metadata", {}) or {})
+                merged_metadata.update(spec.extras)
+                setattr(definition, "metadata", merged_metadata)
+
+            return cls(
+                definition=definition,
+                client=client,
+                kernel=kernel,
+                prompt_template_config=prompt_template_config,
+                **kwargs,
+            )
+
+        if not (spec.model and spec.model.id):
+            raise ValueError("model.id required when creating a new Azure AI agent")
+
+        # Build tool definitions & resources
+        tool_objs = [_build_tool(t, kernel) for t in spec.tools]
+        tool_defs = [d for tool in tool_objs for d in (tool.definitions if hasattr(tool, "definitions") else [tool])]
+        tool_resources = _build_tool_resources(tool_objs)
+
+        try:
+            agent_definition = await client.agents.create_agent(
+                model=spec.model.id,
+                name=spec.name,
+                description=spec.description,
+                instructions=spec.instructions,
+                tools=tool_defs,
+                tool_resources=tool_resources,
+                metadata=spec.extras,
+                **kwargs,
+            )
+        except Exception as ex:
+            print(f"Error creating agent: {ex}")
+
+        return cls(
+            definition=agent_definition,
+            client=client,
+            kernel=kernel,
+            prompt_template_config=prompt_template_config,
+            **kwargs,
+        )
+
+    @classmethod
+    def _get_setting(cls, value: Any) -> Any:
+        """Return raw value if `SecretStr`, otherwise pass through."""
+        if isinstance(value, SecretStr):
+            return value.get_secret_value()
+        return value
+
+    @classmethod
+    def resolve_placeholders(
+        cls: type[_T],
+        yaml_str: str,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+    ) -> str:
+        """Substitute ${AzureAI:Key} placeholders with fields from AzureAIAgentSettings and extras."""
+        import re
+
+        pattern = re.compile(r"\$\{([^}]+)\}")
+
+        # Build the mapping only if settings is provided and valid
+        field_mapping: dict[str, Any] = {}
+
+        if settings is not None:
+            if not isinstance(settings, AzureAIAgentSettings):
+                raise AgentInitializationException(f"Expected AzureAIAgentSettings, got {type(settings).__name__}")
+
+            field_mapping.update({
+                "ChatModelId": cls._get_setting(getattr(settings, "model_deployment_name", None)),
+                "ConnectionString": cls._get_setting(getattr(settings, "project_connection_string", None)),
+                "AgentId": cls._get_setting(getattr(settings, "agent_id", None)),
+                "Endpoint": cls._get_setting(getattr(settings, "endpoint", None)),
+                "SubscriptionId": cls._get_setting(getattr(settings, "subscription_id", None)),
+                "ResourceGroup": cls._get_setting(getattr(settings, "resource_group_name", None)),
+                "ProjectName": cls._get_setting(getattr(settings, "project_name", None)),
+                "BingConnectionId": cls._get_setting(getattr(settings, "bing_connection_id", None)),
+            })
+
+        # Merge in extras last (they override settings)
+        if extras:
+            field_mapping.update(extras)
+
+        def replacer(match: re.Match[str]) -> str:
+            full_key = match.group(1)
+            section, _, key = full_key.partition(":")
+            if section != "AzureAI":
+                return match.group(0)
+            return str(field_mapping.get(key, match.group(0)))
+
+        return pattern.sub(replacer, yaml_str)
+
+    # endregion
+
+    # region Invocation Methods
 
     @trace_agent_get_response
     @override
@@ -813,6 +904,8 @@ class AzureAIAgent(Agent):
             await thread.on_new_message(message)
             if on_intermediate_message:
                 await on_intermediate_message(message)
+
+    # endregion
 
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.

@@ -6,9 +6,6 @@ from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
-from semantic_kernel.agents import register_agent_type
-from semantic_kernel.utils.feature_stage_decorator import release_candidate
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -26,7 +23,7 @@ from openai.types.beta.assistant_response_format_option_param import AssistantRe
 from openai.types.beta.file_search_tool_param import FileSearchToolParam
 from pydantic import BaseModel, Field, ValidationError
 
-from semantic_kernel.agents import Agent
+from semantic_kernel.agents import Agent, register_agent_type
 from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
@@ -46,6 +43,7 @@ from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
@@ -242,21 +240,6 @@ class OpenAIAssistantAgent(Agent):
         if kwargs:
             args.update(kwargs)
         super().__init__(**args)
-
-    @classmethod
-    async def _from_dict(
-        cls,
-        data: dict,
-        *,
-        kernel,
-        **kwargs,
-    ) -> "OpenAIAssistantAgent":
-        fields = cls._extract_common_fields(data, kernel=kernel)
-
-        fields["client"] = kwargs["client"]  # Must inject
-        fields["definition"] = kwargs["definition"]  # Must inject (Assistant object)
-
-        return cls(**fields)
 
     @staticmethod
     def setup_resources(
