@@ -124,6 +124,67 @@ internal static class AgentToolDefinitionExtensions
         return agentToolDefinition.GetOption<List<object>>("vector_store_ids")?.Select(id => id.ToString()!).ToList();
     }
 
+    internal static List<string>? GetFileIds(this AgentToolDefinition agentToolDefinition)
+    {
+        return agentToolDefinition.GetOption<List<object>>("file_ids")?.Select(id => id.ToString()!).ToList();
+    }
+
+    internal static List<VectorStoreDataSource>? GetDataSources(this AgentToolDefinition agentToolDefinition)
+    {
+        var dataSources = agentToolDefinition.GetOption<List<object>?>("data_sources");
+        return dataSources is not null ? CreateDataSources(dataSources) : null;
+    }
+
+    internal static List<VectorStoreDataSource> CreateDataSources(List<object> values)
+    {
+        List<VectorStoreDataSource> dataSources = [];
+        foreach (var value in values)
+        {
+            if (value is Dictionary<object, object> dataSourceDict)
+            {
+                string? assetIdentifier = dataSourceDict.TryGetValue("asset_identifier", out var identifierValue) && identifierValue is string identifierString ? identifierString : null;
+                string? assetType = dataSourceDict.TryGetValue("asset_type", out var typeValue) && typeValue is string typeString ? typeString : null;
+
+                if (string.IsNullOrEmpty(assetIdentifier) || string.IsNullOrEmpty(assetType))
+                {
+                    throw new ArgumentException("The option keys 'asset_identifier' and 'asset_type' are required for a vector store data source.");
+                }
+
+                dataSources.Add(new VectorStoreDataSource(assetIdentifier, new VectorStoreDataSourceAssetType(assetType)));
+            }
+        }
+
+        return dataSources;
+    }
+
+    internal static IList<VectorStoreConfigurations>? GetVectorStoreConfigurations(this AgentToolDefinition agentToolDefinition)
+    {
+        var dataSources = agentToolDefinition.GetOption<List<object>?>("configurations");
+        return dataSources is not null ? CreateVectorStoreConfigurations(dataSources) : null;
+    }
+
+    internal static List<VectorStoreConfigurations> CreateVectorStoreConfigurations(List<object> values)
+    {
+        List<VectorStoreConfigurations> configurations = [];
+        foreach (var value in values)
+        {
+            if (value is Dictionary<object, object> configurationDict)
+            {
+                var storeName = configurationDict.TryGetValue("store_name", out var storeNameValue) && storeNameValue is string storeNameString ? storeNameString : null;
+                var dataSources = configurationDict.TryGetValue("data_sources", out var dataSourceValue) && dataSourceValue is List<object> dataSourceList ? CreateDataSources(dataSourceList) : null;
+
+                if (string.IsNullOrEmpty(storeName) || dataSources is null)
+                {
+                    throw new ArgumentException("The option keys 'store_name' and 'data_sources' are required for a vector store configuration.");
+                }
+
+                configurations.Add(new VectorStoreConfigurations(storeName, new VectorStoreConfiguration(dataSources)));
+            }
+        }
+
+        return configurations;
+    }
+
     private static AzureFunctionBinding GetAzureFunctionBinding(this AgentToolDefinition agentToolDefinition, string bindingType)
     {
         Verify.NotNull(agentToolDefinition.Options);
@@ -139,6 +200,27 @@ internal static class AgentToolDefinitionExtensions
         }
 
         return new AzureFunctionBinding(new AzureFunctionStorageQueue(storageServiceEndpoint, queueName));
+    }
+
+    internal static int? GetTopK(this AgentToolDefinition agentToolDefinition)
+    {
+        return agentToolDefinition.Options?.TryGetValue("top_k", out var topKValue) ?? false
+            ? int.Parse((string)topKValue!)
+            : null;
+    }
+
+    internal static string? GetFilter(this AgentToolDefinition agentToolDefinition)
+    {
+        return agentToolDefinition.Options?.TryGetValue("filter", out var filterValue) ?? false
+            ? filterValue as string
+            : null;
+    }
+
+    internal static AzureAISearchQueryType? GetAzureAISearchQueryType(this AgentToolDefinition agentToolDefinition)
+    {
+        return agentToolDefinition.Options?.TryGetValue("query_type", out var queryTypeValue) ?? false
+            ? new AzureAISearchQueryType(queryTypeValue as string)
+            : null;
     }
 
     private static FileSearchRankingOptions? GetFileSearchRankingOptions(this AgentToolDefinition agentToolDefinition)
