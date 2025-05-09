@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="IServiceCollection"/> interface to configure Mistral connectors.
 /// </summary>
-public static class MistralAIServiceCollectionExtensions
+public static partial class MistralAIServiceCollectionExtensions
 {
     /// <summary>
     /// Adds an Mistral chat completion service with the specified configuration.
@@ -69,6 +69,7 @@ public static class MistralAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+    [Obsolete("Use AddMistralEmbeddingGenerator instead.")]
     public static IServiceCollection AddMistralTextEmbeddingGeneration(
         this IServiceCollection services,
         string modelId,
