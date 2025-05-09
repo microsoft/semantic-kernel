@@ -75,6 +75,58 @@ internal static class JMESPathConditionEvaluator
         }
 #pragma warning restore CA1031 // Do not catch general exception types
     }
+
+    /// <summary>
+    /// Evaluates a JMESPath expression on a state object and returns the result as a string.
+    /// </summary>
+    /// <param name="data">The state object to evaluate against</param>
+    /// <param name="jmesPathExpression">The JMESPath expression</param>
+    /// <returns>The string result, or null if the result is null or cannot be converted to a string</returns>
+    public static string? EvaluateToString(object data, string jmesPathExpression)
+    {
+        if (data == null || string.IsNullOrEmpty(jmesPathExpression))
+        {
+            return null;
+        }
+
+        JmesPath _jmesPath = new();
+
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            // Convert your state object to a JSON string
+            string jsonState = JsonSerializer.Serialize(data);
+
+            // Evaluate the JMESPath expression
+            string result = _jmesPath.Transform(jsonState, jmesPathExpression);
+
+            // Handle different result scenarios
+            if (string.IsNullOrEmpty(result) || result == "null")
+            {
+                return null;
+            }
+
+            // Parse the result to handle string escape sequences properly
+            using JsonDocument doc = JsonDocument.Parse(result);
+            JsonElement root = doc.RootElement;
+
+            // Check if the result is a JSON string
+            if (root.ValueKind == JsonValueKind.String)
+            {
+                // Return the string value without quotes
+                return root.GetString();
+            }
+            // For non-string results, convert to string representation
+            return root.ToString();
+        }
+        catch (Exception ex)
+        {
+            // Log the exception if needed
+            Console.WriteLine($"Error evaluating JMESPath expression: {ex.Message}");
+            return null;
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
+    }
 }
 
 internal static class ConditionEvaluator

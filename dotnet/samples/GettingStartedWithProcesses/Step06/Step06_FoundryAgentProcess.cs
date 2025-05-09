@@ -212,6 +212,66 @@ public class Step06_FoundryAgentProcess : BaseTest
         string yaml = WorkflowSerializer.SerializeToYaml(workflow);
     }
 
+    [Fact]
+    public async Task ProcessWithExistingFoundryAgentsWithDynamicAgentResolution()
+    {
+        // Define the agents
+        var foundryAgentDefinition1 = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition2 = new AgentDefinition { Id = "_state_.NextAgentId", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
+
+        // Define the process with a state type
+        var processBuilder = new FoundryProcessBuilder("foundry_agents", stateType: typeof(DynamicAgentState));
+        processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
+
+        // Agent1 will increment the Counter state variable every time it runs
+        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, threadName: "shared_thread")
+            .WithMessageInput()
+            .OnComplete([
+            new DeclarativeProcessCondition
+            {
+                Type = DeclarativeProcessConditionType.Default,
+                Updates = [new VariableUpdate() { Path = "Counter", Operation = StateUpdateOperations.Increment, Value = 1 }],
+            }]);
+
+        var agent2 = processBuilder.AddStepFromAgentProxy(foundryAgentDefinition2, threadName: "shared_thread", stepId: "dynamicAgent");
+
+        processBuilder.OnInputEvent("start").SendEventTo(new(agent1));
+
+        // Agent1 should run as long as the Counter is less than 3
+        processBuilder.ListenFor().OnResult(agent1, condition: "_state_.Counter < `3`").SendEventTo(new(agent1));
+
+        // When the Counter is 3, Agent1 should stop and Agent2 should start
+        processBuilder.ListenFor().OnResult(agent1, condition: "_state_.Counter >= `3`").SendEventTo(new(agent2));
+
+        // When Agent2 is done, the process should stop
+        processBuilder.ListenFor().OnResult(agent2).StopProcess();
+
+        var process = processBuilder.Build();
+
+        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
+        var agentsClient = foundryClient.GetAgentsClient();
+
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.Services.AddSingleton(agentsClient);
+        kernelBuilder.Services.AddSingleton(foundryClient);
+        var kernel = kernelBuilder.Build();
+
+        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are distributed systems hard to reason about?" });
+        var agent1Result = await context.GetStateAsync();
+
+        Assert.NotNull(context);
+        Assert.NotNull(agent1Result);
+
+        var workflow = await WorkflowBuilder.BuildWorkflow(process);
+        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
+    }
+
+    public class DynamicAgentState
+    {
+        public string NextAgentId { get; set; } = "asst_bM0sHsmAmNhEMj2nxKgPCiYr";
+        public int Counter { get; set; }
+    }
+
     public class ProcessStateWithCounter
     {
         public int Counter { get; set; }
@@ -227,7 +287,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         string progressManagerAgentId = "";
         string actionRouterAgentId = "";
         string summarizerAgentId = "";
-        //string userAgentId = "";
+        string userAgentId = "";
 
         var processBuilder = new FoundryProcessBuilder("foundry_agents", stateType: typeof(DeepResearchState));
 
@@ -245,7 +305,6 @@ public class Step06_FoundryAgentProcess : BaseTest
                         new() { Operation = StateUpdateOperations.Set, Path = "Tasks", Value = "$output.tasks" },
                         new() { Operation = StateUpdateOperations.Set, Path = "Facts", Value = "$output.facts" }
                     ],
-                    //Emits = [new EventEmission() { EventType = "LedgerFactsComplete" }]
                 }
             ]);
 
@@ -257,7 +316,6 @@ public class Step06_FoundryAgentProcess : BaseTest
                         new() { Operation = StateUpdateOperations.Set, Path = "plan", Value = "$output.Plan" },
                         new() { Operation = StateUpdateOperations.Set, Path = "nextStep", Value = "$output.NextStep" }
                     ],
-                    //Emits = [new EventEmission() { EventType = "LedgerPlannerComplete" }]
                 }
             ]);
 
@@ -268,7 +326,6 @@ public class Step06_FoundryAgentProcess : BaseTest
                     Updates = [
                         new() { Operation = StateUpdateOperations.Set, Path = "NextStep", Value = "$output" }
                     ],
-                    //Emits = [new EventEmission() { EventType = "ProgressManagerComplete" }]
                 }
             ]);
 
@@ -279,12 +336,30 @@ public class Step06_FoundryAgentProcess : BaseTest
                     Updates = [
                         new() { Operation = StateUpdateOperations.Set, Path = "NextAgentId", Value = "$output.targetAgentId" }
                     ],
-                    //Emits = [new EventEmission() { EventType = "ActionRouterComplete" }]
                 }
             ]);
 
         // Dynamic Step?
-        // UserAgentStep?
+        var dynamicStep = processBuilder.AddStepFromAgentProxy(new AgentDefinition { Id = "_state_.NextAgentId", Name = "DynamicStep", Type = AzureAIAgentFactory.AzureAIAgentType }, threadName: "run")
+            .OnComplete([
+                new DeclarativeProcessCondition {
+                    Type = DeclarativeProcessConditionType.Default,
+                    Updates = [
+                        new() { Operation = StateUpdateOperations.Set, Path = "NextAgentId", Value = "$output.targetAgentId" }
+                    ],
+                }
+            ]);
+
+        // UserAgentStep TODO: HITL
+        var userAgentStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = userAgentId, Name = "UserAgent", Type = AzureAIAgentFactory.AzureAIAgentType }, threadName: "run")
+            .OnComplete([
+                new DeclarativeProcessCondition {
+                    Type = DeclarativeProcessConditionType.Default,
+                    Updates = [
+                        new() { Operation = StateUpdateOperations.Set, Path = "NextAgentId", Value = "$output.targetAgentId" }
+                    ],
+                }
+            ]);
 
         var summarizerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = summarizerAgentId, Name = "Summarizer", Type = AzureAIAgentFactory.AzureAIAgentType }, threadName: "run")
             .OnComplete([
@@ -293,7 +368,6 @@ public class Step06_FoundryAgentProcess : BaseTest
                     Updates = [
                         new() { Operation = StateUpdateOperations.Set, Path = "Summary", Value = "$output.summary" }
                     ],
-                    //Emits = [new EventEmission() { EventType = "SummarizerComplete" }]
                 }
             ]);
 
@@ -315,16 +389,31 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.ListenFor().OnResult(progressManagerStep).SendEventTo(new(routerStep));
 
         //Router -> Progress Manager
-        processBuilder.ListenFor().OnResult(routerStep, condition: "_event_.[?contains(NextAgentId, 'UnknownAgent')]").SendEventTo(new(progressManagerStep));
+        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_state_.NextAgentId, 'UnknownAgent')").SendEventTo(new(progressManagerStep));
 
         //Router -> Facts Update
-        processBuilder.ListenFor().OnResult(routerStep, condition: "_event_.[?contains(NextAgentId, 'LedgerFactsUpdate')]").SendEventTo(new(factUpdateStep));
+        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_state_.NextAgentId, 'LedgerFactsUpdate')").SendEventTo(new(factUpdateStep));
 
         //Router -> User Agent
-        //processBuilder.ListenFor().OnResult(routerStep).OnCondition(new DeclarativeProcessCondition { Type = DeclarativeProcessConditionType.State, Expression = "[?contains(NextAgentId, 'UserAgent')]" }).SendEventTo(new(userAgentId));
+        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_state_.NextAgentId, 'UserAgent')").SendEventTo(new(userAgentStep));
 
         //Router -> Summarizer
-        processBuilder.ListenFor().OnResult(routerStep, condition: "_event_.[?contains(NextAgentId, 'Summarizer')]").SendEventTo(new(summarizerStep));
+        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_state_.NextAgentId, 'Summarizer')").SendEventTo(new(summarizerStep));
+
+        //Router -> Dynamic Step
+        processBuilder.ListenFor().OnResult(routerStep, condition: "!contains(_state_.NextAgentId, 'FinalStepAgent')").SendEventTo(new(dynamicStep));
+
+        //Dynamic Step -> Progress Manager
+        processBuilder.ListenFor().OnResult(dynamicStep).SendEventTo(new(progressManagerStep));
+
+        //Facts Update -> Plan Update
+        processBuilder.ListenFor().OnResult(factUpdateStep).SendEventTo(new(planUpdateStep));
+
+        //PlanUpdate -> Progress Manager
+        processBuilder.ListenFor().OnResult(planUpdateStep).SendEventTo(new(progressManagerStep));
+
+        //Summarizer -> End
+        processBuilder.ListenFor().OnResult(summarizerStep).StopProcess();
     }
 
     public class DeepResearchState
