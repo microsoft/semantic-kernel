@@ -11,12 +11,10 @@ from semantic_kernel.agents.agent import AgentRegistry
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers
-user questions using the code interpreter tool.
+user questions using the file search tool.
 
-The agent is created using a YAML declarative spec that configures the
-code interpreter tool. The agent is then used to answer user questions
-that require code to be generated and executed. The responses are handled
-in a streaming manner.
+The agent is used to answer user questions that require file search to help ground 
+answers from the model.
 """
 
 # Define the YAML string for the sample

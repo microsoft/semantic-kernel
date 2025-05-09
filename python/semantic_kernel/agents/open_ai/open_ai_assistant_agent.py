@@ -23,7 +23,7 @@ from openai.types.beta.assistant_response_format_option_param import AssistantRe
 from openai.types.beta.file_search_tool_param import FileSearchToolParam
 from pydantic import BaseModel, Field, ValidationError
 
-from semantic_kernel.agents import Agent, register_agent_type
+from semantic_kernel.agents import Agent
 from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
@@ -157,7 +157,6 @@ class AssistantAgentThread(AgentThread):
 
 
 @release_candidate
-@register_agent_type("openai_assistant")
 class OpenAIAssistantAgent(Agent):
     """OpenAI Assistant Agent class.
 

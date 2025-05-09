@@ -5,7 +5,7 @@ import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable, Sequence
 from contextlib import AbstractAsyncContextManager
-from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Generic, Protocol, Type, TypeVar, runtime_checkable
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Generic, Protocol, TypeVar, runtime_checkable
 
 import yaml
 from pydantic import Field, model_validator
@@ -608,13 +608,19 @@ class DeclarativeSpecProtocol(Protocol):
 _TAgent = TypeVar("_TAgent", bound=Agent)
 
 # Global agent type registry
-AGENT_TYPE_REGISTRY: dict[str, Type[Agent]] = {}
+AGENT_TYPE_REGISTRY: dict[str, type[Agent]] = {}
 
 
 def register_agent_type(agent_type: str):
-    """Decorator to register an agent type with the registry."""
+    """Decorator to register an agent type with the registry.
 
-    def decorator(cls: Type[_TAgent]) -> Type[_TAgent]:
+    Example usage:
+        @register_agent_type("my_custom_agent")
+        class MyCustomAgent(Agent):
+            ...
+    """
+
+    def decorator(cls: type[_TAgent]) -> type[_TAgent]:
         AGENT_TYPE_REGISTRY[agent_type.lower()] = cls
         return cls
 
@@ -625,7 +631,7 @@ class AgentRegistry:
     """Responsible for creating agents from YAML, dicts, or files."""
 
     @staticmethod
-    def register_type(agent_type: str, agent_cls: Type[Agent]) -> None:
+    def register_type(agent_type: str, agent_cls: type[Agent]) -> None:
         """Register a new agent type at runtime.
 
         Args:
@@ -685,7 +691,6 @@ class AgentRegistry:
                 f"Agent class '{agent_cls.__name__}' does not support declarative spec loading."
             )
 
-        # Use the protocol safely
         yaml_str = agent_cls.resolve_placeholders(yaml_str, settings, extras)
         data = yaml.safe_load(yaml_str)
 
@@ -744,6 +749,8 @@ class AgentRegistry:
         )
 
 
+# region DeclarativeSpecMixin
+
 _D = TypeVar("_D", bound="DeclarativeSpecMixin")
 
 
@@ -752,7 +759,7 @@ class DeclarativeSpecMixin(ABC):
 
     @classmethod
     async def from_yaml(
-        cls: Type[_D],
+        cls: type[_D],
         yaml_str: str,
         *,
         kernel: Kernel,
@@ -776,7 +783,7 @@ class DeclarativeSpecMixin(ABC):
 
     @classmethod
     async def from_dict(
-        cls: Type[_D],
+        cls: type[_D],
         data: dict,
         *,
         kernel: Kernel,
@@ -798,7 +805,7 @@ class DeclarativeSpecMixin(ABC):
     @classmethod
     @abstractmethod
     async def _from_dict(
-        cls: Type[_D],
+        cls: type[_D],
         data: dict,
         *,
         kernel: Kernel,
@@ -810,7 +817,7 @@ class DeclarativeSpecMixin(ABC):
 
     @classmethod
     def resolve_placeholders(
-        cls: Type[_D],
+        cls: type[_D],
         yaml_str: str,
         settings: "KernelBaseSettings | None" = None,
         extras: dict[str, Any] | None = None,
@@ -823,7 +830,7 @@ class DeclarativeSpecMixin(ABC):
 
     @classmethod
     def _normalize_spec_fields(
-        cls: Type[_D],
+        cls: type[_D],
         data: dict,
         *,
         kernel: Kernel | None = None,
@@ -848,7 +855,6 @@ class DeclarativeSpecMixin(ABC):
                 if prompt_template_config.template is not None:
                     fields["instructions"] = prompt_template_config.template
 
-        # Handle tools
         if "tools" in data:
             tools_list = data["tools"]
             resolved_plugins = cls._resolve_tools(tools_list, kernel)
@@ -857,7 +863,7 @@ class DeclarativeSpecMixin(ABC):
         return fields
 
     @classmethod
-    def _resolve_tools(cls: Type[_D], tools_list: list[dict], kernel: Kernel | None = None) -> dict[str, Any]:
+    def _resolve_tools(cls: type[_D], tools_list: list[dict], kernel: Kernel | None = None) -> dict[str, Any]:
         """Resolve tools by id from the kernel plugins."""
         if kernel is None:
             raise AgentInitializationException("Kernel instance is required for declarative tool resolution.")

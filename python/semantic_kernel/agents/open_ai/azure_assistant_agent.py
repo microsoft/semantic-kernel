@@ -7,7 +7,7 @@ from typing import Any
 from openai import AsyncAzureOpenAI
 from pydantic import ValidationError
 
-from semantic_kernel.agents import OpenAIAssistantAgent, register_agent_type
+from semantic_kernel.agents import OpenAIAssistantAgent
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
@@ -16,7 +16,6 @@ from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semanti
 
 
 @release_candidate
-@register_agent_type("azure_openai_assistant")
 class AzureAssistantAgent(OpenAIAssistantAgent):
     """An Azure Assistant Agent class that extends the OpenAI Assistant Agent class."""
 

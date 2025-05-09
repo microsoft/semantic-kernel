@@ -455,7 +455,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
     @override
     @classmethod
     async def _from_dict(
-        cls: type["AzureAIAgent"],
+        cls: type[_T],
         data: dict,
         *,
         kernel: Kernel,
@@ -539,12 +539,13 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         )
 
     @classmethod
-    def _get_setting(cls, value: Any) -> Any:
+    def _get_setting(cls: type[_T], value: Any) -> Any:
         """Return raw value if `SecretStr`, otherwise pass through."""
         if isinstance(value, SecretStr):
             return value.get_secret_value()
         return value
 
+    @override
     @classmethod
     def resolve_placeholders(
         cls: type[_T],
@@ -573,9 +574,10 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
                 "ResourceGroup": cls._get_setting(getattr(settings, "resource_group_name", None)),
                 "ProjectName": cls._get_setting(getattr(settings, "project_name", None)),
                 "BingConnectionId": cls._get_setting(getattr(settings, "bing_connection_id", None)),
+                "AzureAISearchConnectionId": cls._get_setting(getattr(settings, "azure_ai_search_connection_id", None)),
+                "AzureAISearchIndexName": cls._get_setting(getattr(settings, "azure_ai_search_index_name", None)),
             })
 
-        # Merge in extras last (they override settings)
         if extras:
             field_mapping.update(extras)
 
@@ -586,7 +588,16 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
                 return match.group(0)
             return str(field_mapping.get(key, match.group(0)))
 
-        return pattern.sub(replacer, yaml_str)
+        result = pattern.sub(replacer, yaml_str)
+
+        # Safety check for unresolved placeholders
+        unresolved = pattern.findall(result)
+        if unresolved:
+            raise AgentInitializationException(
+                f"Unresolved placeholders in spec: {', '.join(f'${{{key}}}' for key in unresolved)}"
+            )
+
+        return result
 
     # endregion
 

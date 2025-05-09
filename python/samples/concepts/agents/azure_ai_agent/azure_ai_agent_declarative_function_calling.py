@@ -11,14 +11,9 @@ from semantic_kernel.kernel import Kernel
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers
-user questions. This sample demonstrates the basic steps to create an agent
-and simulate a conversation with the agent.
-
-The interaction with the agent is via the `get_response` method, which sends a
-user input to the agent and receives a response from the agent. The conversation
-history is maintained by the agent service, i.e. the responses are automatically
-associated with the thread. Therefore, client code does not need to maintain the
-conversation history.
+user questions. This sample demonstrates how to enable function calling from
+a declarative spec. The plugins/functions must already exist in the kernel.
+They are not created declaratively via the spec.
 """
 
 
@@ -56,22 +51,8 @@ model:
 tools:
   - id: MenuPlugin.get_specials
     type: function
-    description: Get the specials from the menu.
-    options:
-      parameters:
-        type: object
-        properties: {}
   - id: MenuPlugin.get_item_price
     type: function
-    description: Get the price of an item on the menu.
-    options:
-      parameters:
-        type: object
-        properties:
-          menu_item:
-            type: string
-            description: The name of the menu item.
-        required: ["menu_item"]
 """
 
 settings = AzureAIAgentSettings()  # The Spec's ChatModelId & ConnectionString come from .env/env vars

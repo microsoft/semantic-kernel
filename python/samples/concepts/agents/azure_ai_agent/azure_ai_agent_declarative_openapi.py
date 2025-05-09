@@ -9,11 +9,8 @@ from semantic_kernel.agents.agent import AgentRegistry
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers
-user questions using the OpenAPI tool.
-
-The agent is created using a YAML declarative spec that configures the
-OpenAPI tool. The agent is then used to answer user questions
-that leverage a free weather API.
+user questions using the OpenAPI tool. The agent is then used to answer user 
+questions that leverage a free weather API.
 """
 
 # Define the YAML string for the sample

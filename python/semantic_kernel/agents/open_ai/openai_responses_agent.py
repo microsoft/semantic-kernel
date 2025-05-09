@@ -20,7 +20,7 @@ from openai.types.shared_params.compound_filter import CompoundFilter
 from openai.types.shared_params.response_format_json_object import ResponseFormatJSONObject
 from pydantic import BaseModel, Field, ValidationError
 
-from semantic_kernel.agents import Agent, AgentResponseItem, AgentThread, RunPollingOptions, register_agent_type
+from semantic_kernel.agents import Agent, AgentResponseItem, AgentThread, RunPollingOptions
 from semantic_kernel.agents.open_ai.responses_agent_thread_actions import ResponsesAgentThreadActions
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
@@ -177,7 +177,6 @@ class ResponsesAgentThread(AgentThread):
 
 
 @experimental
-@register_agent_type("openai_responses")
 class OpenAIResponsesAgent(Agent):
     """OpenAI Responses Agent class.
 

@@ -10,7 +10,12 @@ from typing import Any, ClassVar
 
 from pydantic import ValidationError
 
-from semantic_kernel.agents import AgentResponseItem, AgentThread, register_agent_type
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+from semantic_kernel.agents import AgentResponseItem, AgentThread
 from semantic_kernel.agents.bedrock.action_group_utils import (
     parse_function_result_contents,
     parse_return_control_payload,
@@ -40,11 +45,6 @@ from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
     trace_agent_invocation,
 )
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +108,6 @@ class BedrockAgentThread(AgentThread):
 
 
 @experimental
-@register_agent_type("bedrock")
 class BedrockAgent(BedrockAgentBase):
     """Bedrock Agent.
 

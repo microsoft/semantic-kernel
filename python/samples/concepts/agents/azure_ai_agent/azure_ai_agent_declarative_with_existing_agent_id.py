@@ -8,7 +8,8 @@ from semantic_kernel.agents import AzureAIAgent
 from semantic_kernel.agents.agent import AgentRegistry
 
 """
-TODO 
+The following sample demonstrates how to create an Azure AI agent based 
+on an existing agent ID.
 """
 
 # Define the YAML string for the sample
