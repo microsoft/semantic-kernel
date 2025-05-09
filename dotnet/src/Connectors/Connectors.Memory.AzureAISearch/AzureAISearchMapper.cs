@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json.Nodes;
 using System.Text.Json;
 using Microsoft.Extensions.VectorData.ProviderServices;
-using System.Collections.Generic;
 using MEAI = Microsoft.Extensions.AI;
-using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
@@ -33,9 +32,9 @@ internal sealed class AzureAISearchMapper<TRecord>(CollectionModel model, JsonSe
 
                     jsonObject[property.StorageName] = embedding switch
                     {
-                        Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        Embedding<byte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        Embedding<sbyte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
+                        MEAI.Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
+                        MEAI.Embedding<byte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
+                        MEAI.Embedding<sbyte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
                         _ => throw new UnreachableException()
                     };
                 }
