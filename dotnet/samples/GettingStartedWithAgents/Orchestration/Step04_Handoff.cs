@@ -42,9 +42,7 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         // Define the orchestration
         OrchestrationMonitor monitor = new();
         HandoffOrchestration orchestration =
-            new(new OrchestrationHandoffs()
-                    .Add(triageAgent, dotnetAgent)
-                    .Add(triageAgent, pythonAgent),
+            new(OrchestrationHandoffs.Add(triageAgent, dotnetAgent, pythonAgent),
                 triageAgent,
                 pythonAgent,
                 dotnetAgent)

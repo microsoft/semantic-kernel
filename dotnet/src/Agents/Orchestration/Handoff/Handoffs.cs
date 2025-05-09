@@ -39,11 +39,20 @@ public sealed class OrchestrationHandoffs : Dictionary<string, AgentHandoffs>
     /// </summary>
     /// <param name="handoffs">A dictionary mapping source agent names/IDs to their <see cref="AgentHandoffs"/>.</param>
     public OrchestrationHandoffs(Dictionary<string, AgentHandoffs> handoffs) : base(handoffs) { }
+
+    /// <summary>
+    /// Adds handoff relationships from a source agent to one or more target agents.
+    /// Each target agent's name or ID is mapped to its description.
+    /// </summary>
+    /// <param name="source">The source agent.</param>
+    /// <param name="targets">The target agents to add as handoff targets for the source agent.</param>
+    /// <returns>The updated <see cref="OrchestrationHandoffs"/> instance.</returns>
+    public static OrchestrationHandoffs Add(Agent source, params Agent[] targets)
+        => new OrchestrationHandoffs().Add(source, targets);
 }
 
 /// <summary>
 /// Extension methods for building and modifying <see cref="OrchestrationHandoffs"/> relationships.
-/// </summary>
 public static class OrchestrationHandoffsExtensions
 {
     /// <summary>

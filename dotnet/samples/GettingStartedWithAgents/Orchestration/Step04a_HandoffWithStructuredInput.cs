@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
+using Amazon.Runtime.Internal.Transform;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
@@ -42,18 +43,7 @@ public class Step04a_HandoffWithStructuredInput(ITestOutputHelper output) : Base
 
         // Define the orchestration
         HandoffOrchestration<GithubIssue, string> orchestration =
-            new(handoffs:
-                    new()
-                    {
-                        {
-                            triageAgent.Name!,
-                            new()
-                            {
-                                { pythonAgent.Name!, pythonAgent.Description! },
-                                { dotnetAgent.Name!, dotnetAgent.Description! },
-                            }
-                        }
-                    },
+            new(OrchestrationHandoffs.Add(triageAgent, dotnetAgent, pythonAgent),
                 triageAgent,
                 pythonAgent,
                 dotnetAgent)
