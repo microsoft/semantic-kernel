@@ -2,6 +2,7 @@
 
 using System.Text.Json;
 using Memory.VectorStoreFixtures;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -9,7 +10,6 @@ using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Embeddings;
 using Qdrant.Client;
 using StackExchange.Redis;
 
@@ -46,7 +46,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
             .CreateBuilder();
 
         // Register an embedding generation service with the DI container.
-        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
+        kernelBuilder.AddAzureOpenAIEmbeddingGenerator(
             deploymentName: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
             apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
@@ -99,7 +99,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
     public async Task ExampleWithoutDIAsync(string databaseType)
     {
         // Create an embedding generation service.
-        var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
+        var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
@@ -128,7 +128,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         }
 
         // Create the DataIngestor.
-        var dataIngestor = new DataIngestor(vectorStore, textEmbeddingGenerationService);
+        var dataIngestor = new DataIngestor(vectorStore, embeddingGenerator);
 
         // Invoke the data ingestor using an appropriate key generator function for each database type.
         // Redis and InMemory supports string keys, while Qdrant supports ulong or Guid keys, so we use a different key generator for each key type.
@@ -160,8 +160,8 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
     /// Sample class that does ingestion of sample data into a vector store and allows retrieval of data from the vector store.
     /// </summary>
     /// <param name="vectorStore">The vector store to ingest data into.</param>
-    /// <param name="textEmbeddingGenerationService">Used to generate embeddings for the data being ingested.</param>
-    private sealed class DataIngestor(IVectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService)
+    /// <param name="embeddingGenerator">Used to generate embeddings for the data being ingested.</param>
+    private sealed class DataIngestor(IVectorStore vectorStore, IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
     {
         /// <summary>
         /// Create some glossary entries and upsert them into the vector store.
@@ -179,7 +179,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
             var glossaryEntries = CreateGlossaryEntries(uniqueKeyGenerator).ToList();
             var tasks = glossaryEntries.Select(entry => Task.Run(async () =>
             {
-                entry.DefinitionEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(entry.Definition);
+                entry.DefinitionEmbedding = (await embeddingGenerator.GenerateAsync(entry.Definition)).Vector;
             }));
             await Task.WhenAll(tasks);
 

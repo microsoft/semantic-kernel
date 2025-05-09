@@ -20,7 +20,7 @@ public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(outpu
 
     private async Task RunExampleAsync()
     {
-        var embeddingGenerator = new AzureOpenAITextEmbeddingGenerationService(
+        var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
             deploymentName: EmbeddingModelName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
             apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
@@ -46,7 +46,7 @@ public class TextChunkingAndEmbedding(ITestOutputHelper output) : BaseTest(outpu
         for (var i = 0; i < chunks.Count; i++)
         {
             var chunk = chunks[i];
-            var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(chunk);
+            var embeddings = await embeddingGenerator.GenerateAsync(chunk);
 
             Console.WriteLine($"Generated {embeddings.Count} embeddings from chunk {i + 1}");
         }

@@ -6,7 +6,7 @@ using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
-using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.Extensions.AI;
 using Qdrant.Client;
 
 namespace Memory;
@@ -29,7 +29,7 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
     public async Task ExampleAsync()
     {
         // Create an embedding generation service.
-        var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
+        var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());
@@ -46,7 +46,7 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
         var glossaryEntries = CreateGlossaryEntries().ToList();
         var tasks = glossaryEntries.Select(entry => Task.Run(async () =>
         {
-            entry.DefinitionEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(entry.Definition);
+            entry.DefinitionEmbedding = (await embeddingGenerator.GenerateAsync(entry.Definition)).Vector;
         }));
         await Task.WhenAll(tasks);
 
