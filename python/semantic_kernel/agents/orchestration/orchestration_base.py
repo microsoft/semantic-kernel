@@ -151,7 +151,7 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
             args = self.__orig_class__.__args__  # type: ignore[attr-defined]
             if len(args) == 1:
                 self.t_in = args[0]
-                self.t_out = DefaultTypeAlias
+                self.t_out = DefaultTypeAlias  # type: ignore[assignment]
             elif len(args) == 2:
                 self.t_in = args[0]
                 self.t_out = args[1]
