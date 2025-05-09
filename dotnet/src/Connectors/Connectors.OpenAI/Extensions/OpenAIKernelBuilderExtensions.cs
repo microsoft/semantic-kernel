@@ -20,7 +20,7 @@ using OpenAI;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Sponsor extensions class for <see cref="IKernelBuilder"/>.
+/// Extension methods for <see cref="IKernelBuilder"/>.
 /// </summary>
 public static class OpenAIKernelBuilderExtensions
 {
@@ -269,7 +269,7 @@ public static class OpenAIKernelBuilderExtensions
     #region Chat Completion
 
     /// <summary>
-    /// Adds the OpenAI chat completion service to the list.
+    /// Adds an <see cref="OpenAIChatCompletionService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -304,7 +304,7 @@ public static class OpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds the OpenAI chat completion service to the list.
+    /// Adds an <see cref="OpenAIChatCompletionService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model id</param>
@@ -330,7 +330,7 @@ public static class OpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds the Custom Endpoint OpenAI chat completion service to the list.
+    /// Adds a custom endpoint <see cref="OpenAIChatCompletionService"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>

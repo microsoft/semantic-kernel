@@ -18,8 +18,10 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(outpu
         If the query does not correspond with information provided, inform the user that their query cannot be answered.
         """;
 
-    [Fact]
-    public async Task ResetChatAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ResetChat(bool useChatClient)
     {
         // Define the assistant
         Assistant assistant =
@@ -36,7 +38,7 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(outpu
             {
                 Name = nameof(ChatCompletionAgent),
                 Instructions = AgentInstructions,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
         // Create a chat for agent interaction.
@@ -64,6 +66,8 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(outpu
             await chat.ResetAsync();
             await this.AssistantClient.DeleteAssistantAsync(assistantAgent.Id);
         }
+
+        chatClient?.Dispose();
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(Agent agent, string? input = null)
