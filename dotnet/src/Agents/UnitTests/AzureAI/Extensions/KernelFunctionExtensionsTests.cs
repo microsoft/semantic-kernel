@@ -9,7 +9,7 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.OpeAzureAInAI.Extensions;
 
 /// <summary>
-/// Unit testing of <see cref="KernelFunctionExtensions"/>.
+/// Unit testing of <see cref="Microsoft.SemanticKernel.Agents.AzureAI.KernelFunctionExtensions"/>.
 /// </summary>
 public class KernelFunctionExtensionsTests
 {

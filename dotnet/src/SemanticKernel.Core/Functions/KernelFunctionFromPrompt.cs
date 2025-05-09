@@ -395,13 +395,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
     /// <inheritdoc/>
-    public override KernelFunction Clone(string pluginName)
+    public override KernelFunction Clone(string? pluginName = null)
     {
-        Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
-
-        if (base.JsonSerializerOptions is not null)
+        if (pluginName is not null)
         {
-            return new KernelFunctionFromPrompt(
+            Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
+        }
+
+        return new KernelFunctionFromPrompt(
             this._promptTemplate,
             this.Name,
             pluginName,
@@ -412,25 +413,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             this.ExecutionSettings as Dictionary<string, PromptExecutionSettings> ?? this.ExecutionSettings!.ToDictionary(kv => kv.Key, kv => kv.Value),
             this._inputVariables,
             this._logger);
-        }
-
-        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Non AOT scenario.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Non AOT scenario.")]
-        KernelFunctionFromPrompt Clone()
-        {
-            return new KernelFunctionFromPrompt(
-            this._promptTemplate,
-            this.Name,
-            pluginName,
-            this.Description,
-            this.Metadata.Parameters,
-            this.Metadata.ReturnParameter,
-            this.ExecutionSettings as Dictionary<string, PromptExecutionSettings> ?? this.ExecutionSettings!.ToDictionary(kv => kv.Key, kv => kv.Value),
-            this._inputVariables,
-            this._logger);
-        }
-
-        return Clone();
     }
 
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
@@ -708,12 +690,26 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             s_invocationTokenUsagePrompt.Record(promptTokens, in tags);
             s_invocationTokenUsageCompletion.Record(completionTokens, in tags);
         }
-        else if (jsonObject.TryGetProperty("InputTokenCount", out var inputTokensJson) &&
-            inputTokensJson.TryGetInt32(out int inputTokens) &&
-            jsonObject.TryGetProperty("OutputTokenCount", out var outputTokensJson) &&
-            outputTokensJson.TryGetInt32(out int outputTokens))
+        else if (jsonObject.TryGetProperty("InputTokenCount", out var pascalInputTokensJson) &&
+            pascalInputTokensJson.TryGetInt32(out int pascalInputTokens) &&
+            jsonObject.TryGetProperty("OutputTokenCount", out var pascalOutputTokensJson) &&
+            pascalOutputTokensJson.TryGetInt32(out int pascalOutputTokens))
         {
             TagList tags = new() {
+                { MeasurementFunctionTagName, this.Name },
+                { MeasurementModelTagName, modelId }
+            };
+
+            s_invocationTokenUsagePrompt.Record(pascalInputTokens, in tags);
+            s_invocationTokenUsageCompletion.Record(pascalOutputTokens, in tags);
+        }
+        else if (jsonObject.TryGetProperty("inputTokenCount", out var inputTokensJson) &&
+                 inputTokensJson.TryGetInt32(out int inputTokens) &&
+                 jsonObject.TryGetProperty("outputTokenCount", out var outputTokensJson) &&
+                 outputTokensJson.TryGetInt32(out int outputTokens))
+        {
+            TagList tags = new()
+            {
                 { MeasurementFunctionTagName, this.Name },
                 { MeasurementModelTagName, modelId }
             };

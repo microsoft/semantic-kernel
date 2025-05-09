@@ -19,7 +19,7 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
     private readonly AIFunction _aiFunction;
 
     public AIFunctionKernelFunction(AIFunction aiFunction) :
-        base(aiFunction.Name,
+        base(aiFunction is KernelFunction kf && kf.PluginName is not null ? $"{kf.PluginName}_{kf.Name}" : aiFunction.Name,
             aiFunction.Description,
             MapParameterMetadata(aiFunction),
             aiFunction.JsonSerializerOptions,
@@ -39,7 +39,7 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
         this._aiFunction = other._aiFunction;
     }
 
-    public override KernelFunction Clone(string pluginName)
+    public override KernelFunction Clone(string? pluginName = null)
     {
         Verify.NotNullOrWhiteSpace(pluginName);
         return new AIFunctionKernelFunction(this, pluginName);

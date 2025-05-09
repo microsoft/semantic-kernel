@@ -78,7 +78,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         this._chatHistory = chatHistory;
         this.Messages = chatHistory.ToChatMessageList();
         chatHistory.SetChatMessageHandlers(this.Messages);
-        base.Function = function.AsAIFunction();
+        base.Function = function;
         this.Result = result;
     }
 
@@ -180,10 +180,10 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         get
         {
             if (this._kernelFunction is null
-                // If the schemas are different,
-                // AIFunction reference potentially was modified and the kernel function should be regenerated.
                 || !IsSameSchema(this._kernelFunction, base.Function))
             {
+                // If the schemas are different,
+                // AIFunction reference potentially was modified and the kernel function should be regenerated.
                 this._kernelFunction = base.Function.AsKernelFunction();
             }
 
@@ -224,7 +224,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     {
         // Compares the schemas, should be similar.
         return string.Equals(
-            kernelFunction.AsAIFunction().JsonSchema.ToString(),
+            kernelFunction.JsonSchema.ToString(),
             aiFunction.JsonSchema.ToString(),
             StringComparison.OrdinalIgnoreCase);
 
