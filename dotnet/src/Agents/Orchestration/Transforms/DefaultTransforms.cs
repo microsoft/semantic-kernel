@@ -31,20 +31,27 @@ internal static class DefaultTransforms
         return new ValueTask<IEnumerable<ChatMessageContent>>([new ChatMessageContent(AuthorRole.User, text)]);
     }
 
-    public static ValueTask<TOutput> ToOutput<TOutput>(ChatMessageContent result, CancellationToken cancellationToken = default)
+    public static ValueTask<TOutput> ToOutput<TOutput>(IList<ChatMessageContent> result, CancellationToken cancellationToken = default)
     {
-        TOutput? output =
+        bool isSingleResult = result.Count == 1;
+
+        TOutput output =
             GetDefaultOutput() ??
             GetObjectOutput() ??
-            throw new InvalidOperationException($"Unable to transform output message of type {typeof(ChatMessageContent)} to {typeof(TOutput)}.");
+            throw new InvalidOperationException($"Unable to transform output to {typeof(TOutput)}.");
 
         return new ValueTask<TOutput>(output);
 
         TOutput? GetObjectOutput()
         {
+            if (!isSingleResult)
+            {
+                return default;
+            }
+
             try
             {
-                return JsonSerializer.Deserialize<TOutput>(result.Content ?? string.Empty);
+                return JsonSerializer.Deserialize<TOutput>(result[0].Content ?? string.Empty);
             }
             catch (JsonException)
             {
@@ -55,14 +62,17 @@ internal static class DefaultTransforms
         TOutput? GetDefaultOutput()
         {
             object? output = null;
-            if (typeof(ChatMessageContent) == typeof(TOutput))
+            if (typeof(TOutput).IsAssignableFrom(result.GetType()))
             {
                 output = (object)result;
             }
-
-            if (typeof(string) == typeof(TOutput))
+            else if (isSingleResult && typeof(TOutput).IsAssignableFrom(typeof(ChatMessageContent)))
             {
-                output = result.Content ?? string.Empty;
+                output = (object)result[0];
+            }
+            else if (isSingleResult && typeof(string) == typeof(TOutput))
+            {
+                output = result[0].Content ?? string.Empty;
             }
 
             return (TOutput?)output;

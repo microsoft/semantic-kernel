@@ -49,7 +49,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
     /// <inheritdoc />
     protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(IAgentRuntime runtime, OrchestrationContext context, RegistrationContext registrar, ILogger logger)
     {
-        AgentType outputType = await registrar.RegisterResultTypeAsync<HandoffMessages.Result>(response => response.Message).ConfigureAwait(false);
+        AgentType outputType = await registrar.RegisterResultTypeAsync<HandoffMessages.Result>(response => [response.Message]).ConfigureAwait(false);
 
         // Each agent handsoff its result to the next agent.
         Dictionary<string, AgentType> agentMap = [];

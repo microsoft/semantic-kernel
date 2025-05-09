@@ -27,6 +27,8 @@ public delegate ValueTask<ChatMessageContent> OrchestrationInteractiveCallback()
 /// <summary>
 /// Base class for multi-agent agent orchestration patterns.
 /// </summary>
+/// <typeparam name="TInput">The type of the input to the orchestration.</typeparam>
+/// <typeparam name="TOutput">The type of the result output by the orchestration.</typeparam>
 public abstract partial class AgentOrchestration<TInput, TOutput>
 {
     private readonly string _orchestrationRoot;

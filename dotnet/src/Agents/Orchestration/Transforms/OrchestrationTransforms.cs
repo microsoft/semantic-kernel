@@ -19,15 +19,15 @@ public delegate ValueTask<IEnumerable<ChatMessageContent>> OrchestrationInputTra
 /// Delegate for transforming a <see cref="ChatMessageContent"/> into an output of type <typeparamref name="TOutput"/>.
 /// This is typically used to convert a chat response into a desired output format.
 /// </summary>
-/// <param name="result">The result message to transform.</param>
+/// <param name="result">The result messages to transform.</param>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
 /// <returns>A <see cref="ValueTask{TResult}"/> containing the transformed output of type <typeparamref name="TOutput"/>.</returns>
-public delegate ValueTask<TOutput> OrchestrationOutputTransform<TOutput>(ChatMessageContent result, CancellationToken cancellationToken = default);
+public delegate ValueTask<TOutput> OrchestrationOutputTransform<TOutput>(IList<ChatMessageContent> result, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Delegate for transforming the internal result message for an orchestration into a <see cref="ChatMessageContent"/>.
 /// </summary>
 /// <typeparam name="TResult">The result message type</typeparam>
-/// <param name="result">The result message</param>
+/// <param name="result">The result messages</param>
 /// <returns>The orchestration result as a <see cref="ChatMessageContent"/>.</returns>
-public delegate ChatMessageContent OrchestrationResultTransform<TResult>(TResult result);
+public delegate IList<ChatMessageContent> OrchestrationResultTransform<TResult>(TResult result);

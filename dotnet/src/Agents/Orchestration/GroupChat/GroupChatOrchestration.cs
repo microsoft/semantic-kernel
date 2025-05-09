@@ -48,7 +48,7 @@ public class GroupChatOrchestration<TInput, TOutput> :
     /// <inheritdoc />
     protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(IAgentRuntime runtime, OrchestrationContext context, RegistrationContext registrar, ILogger logger)
     {
-        AgentType outputType = await registrar.RegisterResultTypeAsync<GroupChatMessages.Result>(response => response.Message).ConfigureAwait(false);
+        AgentType outputType = await registrar.RegisterResultTypeAsync<GroupChatMessages.Result>(response => [response.Message]).ConfigureAwait(false);
 
         int agentCount = 0;
         ChatGroup team = [];

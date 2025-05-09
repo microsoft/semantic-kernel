@@ -45,7 +45,7 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
         OrchestrationResult<string[]> result = await orchestration.InvokeAsync(input, runtime);
 
         string[] output = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
-        Console.WriteLine($"\n# RESULT:\n{string.Join("\n", output.Select(text => $"\t{text}"))}");
+        Console.WriteLine($"\n# RESULT:\n{string.Join("\n\n", output.Select(text => $"{text}"))}");
 
         await runtime.RunUntilIdleAsync();
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Transforms;
@@ -64,7 +65,7 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
 
             try
             {
-                ChatMessageContent result = this._transformResult.Invoke(item);
+                IList<ChatMessageContent> result = this._transformResult.Invoke(item);
                 TOutput output = await this._transform.Invoke(result).ConfigureAwait(false);
 
                 if (this.CompletionTarget.HasValue)

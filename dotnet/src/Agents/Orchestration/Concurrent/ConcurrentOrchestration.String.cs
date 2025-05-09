@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
+using System.Threading.Tasks;
+
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 
 /// <summary>
@@ -14,5 +17,6 @@ public sealed class ConcurrentOrchestration : ConcurrentOrchestration<string, st
     public ConcurrentOrchestration(params Agent[] members)
         : base(members)
     {
+        this.ResultTransform = (response, cancellationToken) => ValueTask.FromResult<string[]>([.. response.Select(r => r.Content ?? string.Empty)]);
     }
 }

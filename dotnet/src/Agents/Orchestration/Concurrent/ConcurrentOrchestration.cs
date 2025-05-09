@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
@@ -11,6 +12,9 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 /// <summary>
 /// An orchestration that broadcasts the input message to each agent.
 /// </summary>
+/// <remarks>
+/// <c>TOutput</c> must be an array type for <see cref="ConcurrentOrchestration"/>.
+/// </remarks>
 public class ConcurrentOrchestration<TInput, TOutput>
     : AgentOrchestration<TInput, TOutput>
 {
@@ -34,7 +38,7 @@ public class ConcurrentOrchestration<TInput, TOutput>
     /// <inheritdoc />
     protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(IAgentRuntime runtime, OrchestrationContext context, RegistrationContext registrar, ILogger logger)
     {
-        AgentType outputType = await registrar.RegisterResultTypeAsync<ConcurrentMessages.Result[]>(response => response[0].Message).ConfigureAwait(false); // %%% HACK
+        AgentType outputType = await registrar.RegisterResultTypeAsync<ConcurrentMessages.Result[]>(response => [.. response.Select(r => r.Message)]).ConfigureAwait(false);
 
         // Register result actor
         AgentType resultType = this.FormatAgentType(context.Topic, "Results");

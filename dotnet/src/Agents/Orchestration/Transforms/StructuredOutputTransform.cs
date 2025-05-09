@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,16 +42,16 @@ public sealed class StructuredOutputTransform<TOutput>
     /// <summary>
     /// Transforms the provided <see cref="ChatMessageContent"/> into a strongly-typed structured output by invoking the chat completion service and deserializing the response.
     /// </summary>
-    /// <param name="message">The chat message content to process.</param>
+    /// <param name="messages">The chat messages to process.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The structured output of type <typeparamref name="TOutput"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the response cannot be deserialized into <typeparamref name="TOutput"/>.</exception>
-    public async ValueTask<TOutput> TransformAsync(ChatMessageContent message, CancellationToken cancellationToken = default)
+    public async ValueTask<TOutput> TransformAsync(IList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
     {
         ChatHistory history =
             [
                 new ChatMessageContent(AuthorRole.System, this.Instructions),
-                message,
+                .. messages,
             ];
         ChatMessageContent response = await this._service.GetChatMessageContentAsync(history, this._executionSettings, kernel: null, cancellationToken).ConfigureAwait(false);
         return
