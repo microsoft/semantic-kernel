@@ -149,10 +149,14 @@ class OrchestrationBase(ABC, Generic[TIn, TOut]):
 
         try:
             args = self.__orig_class__.__args__  # type: ignore[attr-defined]
-            if len(args) != 2:
-                raise TypeError("Orchestration must have input and output types.")
-            self.t_in = args[0]
-            self.t_out = args[1]
+            if len(args) == 1:
+                self.t_in = args[0]
+                self.t_out = DefaultTypeAlias
+            elif len(args) == 2:
+                self.t_in = args[0]
+                self.t_out = args[1]
+            else:
+                raise TypeError("Orchestration must have two type parameters.")
         except AttributeError:
             args = get_args(self.__orig_bases__[0])  # type: ignore[attr-defined]
 
