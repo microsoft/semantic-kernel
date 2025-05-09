@@ -213,6 +213,9 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 continue
             messages.append(MESSAGE_CONVERTERS[message.role](message))
 
+        # Add Prompt caching for SYSTEM messages
+        messages.append({"cachePoint": {"type": "default"}})
+
         return messages
 
     def _prepare_settings_for_request(
@@ -243,8 +246,11 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         }
 
         if settings.tools and settings.tool_choice:
+            # Add Prompt caching for Tools
+            tools = settings.tools
+            tools.append({"cachePoint": {"type": "default"}})
             prepared_settings["toolConfig"] = {
-                "tools": settings.tools,
+                "tools": tools,
                 "toolChoice": settings.tool_choice,
             }
 
