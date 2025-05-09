@@ -52,6 +52,7 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.contents.chat_history import ChatHistory
 
+MODELS_WITH_PROMPT_CACHING: list = ["us.anthropic.claude-3-7-sonnet-20250219-v1:0"]
 
 class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     """Amazon Bedrock Chat Completion Service."""
@@ -214,7 +215,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             messages.append(MESSAGE_CONVERTERS[message.role](message))
 
         # Add Prompt caching for SYSTEM messages
-        if "claude-3-7-sonnet" in os.getenv("MODEL_ID"):
+        if os.getenv("MODEL_ID") in MODELS_WITH_PROMPT_CACHING:
             messages.append({"cachePoint": {"type": "default"}})
 
         return messages
@@ -249,7 +250,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         if settings.tools and settings.tool_choice:
             # Add Prompt caching for Tools
             tools = settings.tools
-            if "claude-3-7-sonnet" in os.getenv("MODEL_ID"):
+            if os.getenv("MODEL_ID") in MODELS_WITH_PROMPT_CACHING:
                 tools.append({"cachePoint": {"type": "default"}})
             prepared_settings["toolConfig"] = {
                 "tools": tools,
