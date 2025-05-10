@@ -233,7 +233,7 @@ public class ProcessStepBuilderTests
     /// </summary>
     private sealed class TestProcessStepBuilder : ProcessStepBuilder
     {
-        public TestProcessStepBuilder(string name) : base(name) { }
+        public TestProcessStepBuilder(string name) : base(name, null) { }
 
         internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
         {

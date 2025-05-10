@@ -50,9 +50,10 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
     /// </summary>
     /// <param name="id">The name of the process. This is required.</param>
+    /// <param name="processBuilder">ProcessBuilder to copy from</param>
     /// <param name="stateType">The type of the state. This is optional.</param>
-    public ProcessBuilder(string id, Type? stateType = null)
-        : base(id)
+    public ProcessBuilder(string id, ProcessBuilder? processBuilder = null, Type? stateType = null)
+        : base(id, processBuilder)
     {
         Verify.NotNullOrWhiteSpace(id, nameof(id));
         this.StateType = stateType;
@@ -184,7 +185,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType<TStep>(string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id: id ?? typeof(TStep).Name);
+        ProcessStepBuilder<TStep> stepBuilder = new(id: id ?? typeof(TStep).Name, this.ProcessBuilder);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -198,7 +199,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType(Type stepType, string? id = null, IReadOnlyList<string>? aliases = null)
     {
-        ProcessStepBuilderTyped stepBuilder = new(stepType: stepType, id: id ?? stepType.Name);
+        ProcessStepBuilderTyped stepBuilder = new(stepType: stepType, id: id ?? stepType.Name, this.ProcessBuilder);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -214,8 +215,37 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, initialState: initialState);
+        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this.ProcessBuilder, initialState: initialState);
 
+        return this.AddStep(stepBuilder, aliases);
+    }
+
+    /// <summary>
+    /// Adds a step to the process from a declarative agent.
+    /// </summary>
+    /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
+    /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
+    /// <param name="aliases"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgent<TProcessState>(AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null) where TProcessState : class, new()
+    {
+        Verify.NotNull(agentDefinition, nameof(agentDefinition));
+
+        if (string.IsNullOrWhiteSpace(agentDefinition.Name))
+        {
+            throw new ArgumentException("AgentDefinition.Name cannot be null or empty.", nameof(agentDefinition));
+        }
+
+        if (string.IsNullOrWhiteSpace(threadName))
+        {
+            // No thread name was specified so add a new thread for the agent.
+            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            threadName = agentDefinition.Name;
+        }
+
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, new NodeInputs(), this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -244,7 +274,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName, new NodeInputs()) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, new NodeInputs(), this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -258,7 +288,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromAgentProxy(AgentDefinition agentDefinition, string? threadName = null, string? stepId = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgentProxy<TProcessState>(AgentDefinition agentDefinition, string? threadName = null, string? stepId = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null) where TProcessState : class, new()
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
 
@@ -286,7 +316,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             return Task.FromResult(result);
         });
 
-        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName, new NodeInputs(), stepId) { AgentIdResolver = agentIdResolver, HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, new NodeInputs(), this.ProcessBuilder, stepId) { AgentIdResolver = agentIdResolver, HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -322,7 +352,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
     public ProcessMapBuilder AddMapStepFromType<TStep>(string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name);
+        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this.ProcessBuilder);
 
         ProcessMapBuilder mapBuilder = new(stepBuilder);
 
@@ -340,7 +370,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
     public ProcessMapBuilder AddMapStepFromType<TStep, TState>(TState initialState, string id, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id, initialState: initialState);
+        ProcessStepBuilder<TStep> stepBuilder = new(id, this.ProcessBuilder, initialState: initialState);
 
         ProcessMapBuilder mapBuilder = new(stepBuilder);
 
@@ -375,7 +405,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessProxyBuilder"/></returns>
     public ProcessProxyBuilder AddProxyStep(string id, IReadOnlyList<string> externalTopics, IReadOnlyList<string>? aliases = null)
     {
-        ProcessProxyBuilder proxyBuilder = new(externalTopics, id ?? nameof(KernelProxyStep));
+        ProcessProxyBuilder proxyBuilder = new(externalTopics, id ?? nameof(KernelProxyStep), this);
 
         return this.AddStep(proxyBuilder, aliases);
     }

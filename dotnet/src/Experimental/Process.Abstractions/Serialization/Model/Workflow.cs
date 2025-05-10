@@ -698,8 +698,8 @@ public class VariableUpdate
     /// <summary>
     /// Gets or sets the variable to be updated.
     /// </summary>
-    [YamlMember(Alias = "variable")]
-    [JsonPropertyName("variable")]
+    [YamlMember(Alias = "path")]
+    [JsonPropertyName("path")]
     public string Path { get; set; } = string.Empty;
 
     /// <summary>

@@ -17,8 +17,8 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessProxyBuilder"/> class.
     /// </summary>
-    internal ProcessProxyBuilder(IReadOnlyList<string> externalTopics, string name)
-        : base(name)
+    internal ProcessProxyBuilder(IReadOnlyList<string> externalTopics, string name, ProcessBuilder? processBuilder)
+        : base(name, processBuilder)
     {
         if (externalTopics.Count == 0)
         {

@@ -18,7 +18,7 @@ public class ProcessMapBuilderTests
     public void ProcessMapBuilderFromStep()
     {
         // Arrange
-        ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");
+        ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}", null);
 
         // Act
         ProcessMapBuilder map = new(step);
@@ -38,7 +38,7 @@ public class ProcessMapBuilderTests
     public void ProcessMapBuilderFromMap()
     {
         // Arrange
-        ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");
+        ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}", null);
         ProcessMapBuilder map1 = new(step);
         ProcessMapBuilder map2 = new(step);
 
@@ -53,7 +53,7 @@ public class ProcessMapBuilderTests
     public void ProcessMapBuilderFromProcess()
     {
         // Arrange
-        ProcessBuilder process = new("MapOperation");
+        ProcessBuilder process = new("MapOperation", null);
         ProcessStepBuilder step = process.AddStepFromType<SimpleTestStep>($"One{nameof(SimpleTestStep)}");
         process.OnInputEvent("ComputeMapValue").SendEventTo(new ProcessFunctionTargetBuilder(step));
 
@@ -75,11 +75,11 @@ public class ProcessMapBuilderTests
     public void ProcessMapBuilderCanDefineTarget()
     {
         // Arrange
-        ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");
+        ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}", null);
         ProcessMapBuilder map = new(step);
 
         // Act
-        ProcessStepBuilder<SimpleTestStep> step2 = new($"Two{nameof(SimpleTestStep)}");
+        ProcessStepBuilder<SimpleTestStep> step2 = new($"Two{nameof(SimpleTestStep)}", null);
         map.OnEvent("Any").SendEventTo(new ProcessFunctionTargetBuilder(step2));
 
         // Assert
@@ -89,7 +89,7 @@ public class ProcessMapBuilderTests
         Assert.Equal(step2, map.Edges.Single().Value[0].Target!.Step);
 
         // Act
-        KernelProcessStepInfo processMap = map.BuildStep(new ProcessBuilder("Test"));
+        KernelProcessStepInfo processMap = map.BuildStep(new ProcessBuilder("Test", null));
 
         // Assert
         Assert.NotNull(processMap);
@@ -105,7 +105,7 @@ public class ProcessMapBuilderTests
     public void ProcessMapBuilderGetFunctionMetadataMapThrows()
     {
         // Arrange
-        ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");
+        ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}", null);
         ProcessMapBuilder map = new(step);
 
         // Act
@@ -120,11 +120,11 @@ public class ProcessMapBuilderTests
     public void ProcessMapBuilderWillBuild()
     {
         // Arrange
-        ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}");
+        ProcessStepBuilder<SimpleTestStep> step = new($"One{nameof(SimpleTestStep)}", null);
         ProcessMapBuilder map = new(step);
 
         // Act
-        KernelProcessStepInfo processMap = map.BuildStep(new ProcessBuilder("Test"));
+        KernelProcessStepInfo processMap = map.BuildStep(new ProcessBuilder("Test", null));
 
         // Assert
         Assert.NotNull(processMap);
@@ -144,7 +144,7 @@ public class ProcessMapBuilderTests
     public void ProcessMapBuilderFailsBuildForMapTarget()
     {
         // Arrange
-        ProcessBuilder process = new(nameof(InvalidTestStep));
+        ProcessBuilder process = new(nameof(InvalidTestStep), null);
         ProcessStepBuilder step = process.AddStepFromType<SimpleTestStep>();
         ProcessFunctionTargetBuilder invalidTarget = new(new ProcessMapBuilder(step));
 
@@ -163,7 +163,7 @@ public class ProcessMapBuilderTests
     public void ProcessMapBuilderFailsBuildForInvalidTarget()
     {
         // Arrange
-        ProcessBuilder process = new(nameof(InvalidTestStep));
+        ProcessBuilder process = new(nameof(InvalidTestStep), null);
         ProcessStepBuilder step = process.AddStepFromType<SimpleTestStep>();
 
         // Act & Assert

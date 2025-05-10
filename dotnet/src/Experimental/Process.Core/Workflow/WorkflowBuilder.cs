@@ -52,7 +52,7 @@ public class WorkflowBuilder
         // TODO: Process variables
         // TODO: Process schemas
 
-        ProcessBuilder processBuilder = new(workflow.Name);
+        ProcessBuilder processBuilder = new(workflow.Name, null);
 
         if (workflow.Inputs.Events?.CloudEvents is not null)
         {
@@ -458,7 +458,8 @@ public class WorkflowBuilder
                 ListenFor = new ListenCondition()
                 {
                     From = agentStep.State.Id,
-                    Event = edge.Key.key,
+                    Event = edge.Key.key.EndsWith("Invoke.OnResult", StringComparison.Ordinal) ? "_on_complete_" : edge.Key.key,
+
                     Condition = edge.Key.DeclarativeDefinition
                 },
                 Then = [.. edge.Value.Select(e => new ThenAction()

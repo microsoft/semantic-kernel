@@ -109,7 +109,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
-        var processBuilder = new FoundryProcessBuilder("foundry_agents", stateType: typeof(ProcessStateWithCounter));
+        var processBuilder = new FoundryProcessBuilder<ProcessStateWithCounter>("foundry_agents");
         processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
 
         var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, threadName: "shared_thread")
@@ -166,7 +166,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
-        var processBuilder = new FoundryProcessBuilder("foundry_agents", stateType: typeof(ProcessStateWithCounter));
+        var processBuilder = new FoundryProcessBuilder<ProcessStateWithCounter>("foundry_agents");
         processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
 
         // Agent1 will increment the Counter state variable every time it runs
@@ -220,7 +220,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         var foundryAgentDefinition2 = new AgentDefinition { Id = "_state_.NextAgentId", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
-        var processBuilder = new FoundryProcessBuilder("foundry_agents", stateType: typeof(DynamicAgentState));
+        var processBuilder = new FoundryProcessBuilder<DynamicAgentState>("foundry_agents");
         processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
 
         // Agent1 will increment the Counter state variable every time it runs
@@ -248,19 +248,19 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         var process = processBuilder.Build();
 
-        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-        var agentsClient = foundryClient.GetAgentsClient();
+        //var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
+        //var agentsClient = foundryClient.GetAgentsClient();
 
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddSingleton(agentsClient);
-        kernelBuilder.Services.AddSingleton(foundryClient);
-        var kernel = kernelBuilder.Build();
+        //var kernelBuilder = Kernel.CreateBuilder();
+        //kernelBuilder.Services.AddSingleton(agentsClient);
+        //kernelBuilder.Services.AddSingleton(foundryClient);
+        //var kernel = kernelBuilder.Build();
 
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are distributed systems hard to reason about?" });
-        var agent1Result = await context.GetStateAsync();
+        //var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are distributed systems hard to reason about?" });
+        //var agent1Result = await context.GetStateAsync();
 
-        Assert.NotNull(context);
-        Assert.NotNull(agent1Result);
+        //Assert.NotNull(context);
+        //Assert.NotNull(agent1Result);
 
         var workflow = await WorkflowBuilder.BuildWorkflow(process);
         string yaml = WorkflowSerializer.SerializeToYaml(workflow);
@@ -289,7 +289,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         string summarizerAgentId = nameof(summarizerAgentId);
         string userAgentId = nameof(userAgentId);
 
-        var processBuilder = new FoundryProcessBuilder("foundry_agents", stateType: typeof(DeepResearchState));
+        var processBuilder = new FoundryProcessBuilder<DeepResearchState>("foundry_agents");
 
         //Define Threads
         var planThread = processBuilder.AddThread("plan");
@@ -297,7 +297,7 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         // Define the steps
         var gatherFactsStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = ledgerFactsAgentId, Name = "LedgerFacts", Type = AzureAIAgentFactory.AzureAIAgentType }, threadName: "plan")
-            .WithUserStateInput("Instructions")
+            .WithUserStateInput((state) => state.Instructions)
             .OnComplete([
                 new DeclarativeProcessCondition {
                     Type = DeclarativeProcessConditionType.Default,

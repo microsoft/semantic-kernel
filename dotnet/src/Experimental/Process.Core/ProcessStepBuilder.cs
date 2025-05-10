@@ -95,6 +95,11 @@ public abstract class ProcessStepBuilder
     internal Dictionary<string, List<ProcessStepEdgeBuilder>> Edges { get; }
 
     /// <summary>
+    /// The process builder that this step is a part of. This may be null if the step is itself a process.
+    /// </summary>
+    internal ProcessBuilder? ProcessBuilder { get; }
+
+    /// <summary>
     /// Builds the step with step state
     /// </summary>
     /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
@@ -236,7 +241,8 @@ public abstract class ProcessStepBuilder
     /// Initializes a new instance of the <see cref="ProcessStepBuilder"/> class.
     /// </summary>
     /// <param name="id">The unique Id of the step.</param>
-    protected ProcessStepBuilder(string id)
+    /// <param name="processBuilder">The process builder that this step is a part of.</param>
+    protected ProcessStepBuilder(string id, ProcessBuilder? processBuilder)
     {
         Verify.NotNullOrWhiteSpace(id, nameof(id));
 
@@ -245,6 +251,7 @@ public abstract class ProcessStepBuilder
         this.FunctionsDict = [];
         this._eventNamespace = this.Id;
         this.Edges = new Dictionary<string, List<ProcessStepEdgeBuilder>>(StringComparer.OrdinalIgnoreCase);
+        this.ProcessBuilder = processBuilder;
     }
 }
 
@@ -265,9 +272,10 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
     /// </summary>
     /// <param name="stepType">The <see cref="Type"/> of the step.</param>
     /// <param name="id">The unique id of the step.</param>
+    /// <param name="processBuilder">The process builder that this step is a part of.</param>
     /// <param name="initialState">Initial state of the step to be used on the step building stage</param>
-    internal ProcessStepBuilderTyped(Type stepType, string id, object? initialState = default)
-        : base(id)
+    internal ProcessStepBuilderTyped(Type stepType, string id, ProcessBuilder? processBuilder, object? initialState = default)
+        : base(id, processBuilder)
     {
         Verify.NotNull(stepType);
 
@@ -350,9 +358,10 @@ public class ProcessStepBuilder<TStep> : ProcessStepBuilderTyped where TStep : K
     /// Creates a new instance of the <see cref="ProcessStepBuilder"/> class. If a name is not provided, the name will be derived from the type of the step.
     /// </summary>
     /// <param name="id">The unique Id of the step.</param>
+    /// <param name="processBuilder">The process builder that this step is a part of.</param>
     /// <param name="initialState">Initial state of the step to be used on the step building stage</param>
-    internal ProcessStepBuilder(string id, object? initialState = default)
-        : base(typeof(TStep), id, initialState)
+    internal ProcessStepBuilder(string id, ProcessBuilder? processBuilder, object? initialState = default)
+        : base(typeof(TStep), id, processBuilder, initialState)
     {
     }
 }

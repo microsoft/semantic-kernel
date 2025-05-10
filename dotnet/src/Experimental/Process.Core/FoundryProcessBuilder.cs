@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// A builder for creating a process that can be deployed to Azure Foundry.
 /// </summary>
-public class FoundryProcessBuilder
+public class FoundryProcessBuilder<TProcessState> where TProcessState : class, new()
 {
     private readonly ProcessBuilder _processBuilder;
 
@@ -19,10 +19,9 @@ public class FoundryProcessBuilder
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
     /// </summary>
     /// <param name="id">The name of the process. This is required.</param>
-    /// <param name="stateType">The type of the state. This is optional.</param>
-    public FoundryProcessBuilder(string id, Type? stateType = null)
+    public FoundryProcessBuilder(string id)
     {
-        this._processBuilder = new ProcessBuilder(id, stateType);
+        this._processBuilder = new ProcessBuilder(id, processBuilder: null, typeof(TProcessState));
     }
 
     /// <summary>
@@ -45,7 +44,7 @@ public class FoundryProcessBuilder
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgent(AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNull(agentDefinition);
         if (agentDefinition.Type != AzureAIAgentFactory.AzureAIAgentType)
@@ -53,7 +52,7 @@ public class FoundryProcessBuilder
             throw new ArgumentException($"The agent type '{agentDefinition.Type}' is not supported. Only '{AzureAIAgentFactory.AzureAIAgentType}' is supported.");
         }
 
-        return this._processBuilder.AddStepFromAgent(agentDefinition, threadName, humanInLoopMode, aliases);
+        return this._processBuilder.AddStepFromAgent<TProcessState>(agentDefinition, threadName, humanInLoopMode, aliases);
     }
 
     /// <summary>
@@ -66,7 +65,7 @@ public class FoundryProcessBuilder
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromAgentProxy(string stepId, AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgentProxy(string stepId, AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNullOrWhiteSpace(stepId);
         Verify.NotNull(agentDefinition);
@@ -75,7 +74,7 @@ public class FoundryProcessBuilder
             throw new ArgumentException($"The agent type '{agentDefinition.Type}' is not supported. Only '{AzureAIAgentFactory.AzureAIAgentType}' is supported.");
         }
 
-        return this._processBuilder.AddStepFromAgentProxy(agentDefinition, threadName, stepId, humanInLoopMode, aliases);
+        return this._processBuilder.AddStepFromAgentProxy<TProcessState>(agentDefinition, threadName, stepId, humanInLoopMode, aliases);
     }
 
     /// <summary>
@@ -105,5 +104,26 @@ public class FoundryProcessBuilder
     public KernelProcess Build(KernelProcessStateMetadata? stateMetadata = null)
     {
         return this._processBuilder.Build(stateMetadata);
+    }
+}
+
+/// <summary>
+/// A default process state for the <see cref="FoundryProcessBuilder"/>.
+/// </summary>
+public class DefaultProcessState
+{
+}
+
+/// <summary>
+/// A builder for creating a process that can be deployed to Azure Foundry.
+/// </summary>
+public class FoundryProcessBuilder : FoundryProcessBuilder<DefaultProcessState>
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FoundryProcessBuilder"/> class.
+    /// </summary>
+    /// <param name="id"></param>
+    public FoundryProcessBuilder(string id) : base(id)
+    {
     }
 }
