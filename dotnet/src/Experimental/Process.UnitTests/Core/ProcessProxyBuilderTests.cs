@@ -73,7 +73,7 @@ public class ProcessProxyBuilderTests
         stepSource.OnFunctionResult().EmitExternalEvent(proxy, this._topicName1);
 
         // Act
-        var proxyInfo = proxy.BuildStep();
+        var proxyInfo = proxy.BuildStep(new ProcessBuilder("Test"));
 
         // Assert
         Assert.NotNull(proxyInfo);
@@ -115,7 +115,7 @@ public class ProcessProxyBuilderTests
         ProcessProxyBuilder proxy = new([this._topicName1], this._proxyName);
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => proxy.BuildStep());
+        Assert.Throws<InvalidOperationException>(() => proxy.BuildStep(new ProcessBuilder("Test")));
     }
 
     private sealed class SimpleTestStep : KernelProcessStep

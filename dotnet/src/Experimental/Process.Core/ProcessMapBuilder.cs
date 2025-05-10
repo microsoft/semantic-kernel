@@ -74,7 +74,7 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
     }
 
     /// <inheritdoc/>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
     {
         KernelProcessMapStateMetadata? mapMetadata = stateMetadata as KernelProcessMapStateMetadata;
 
@@ -84,6 +84,6 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
         // Define the map state
         KernelProcessMapState state = new(this.Name, this.Version, this.Id);
 
-        return new KernelProcessMap(state, this.MapOperation.BuildStep(mapMetadata?.OperationState), builtEdges);
+        return new KernelProcessMap(state, this.MapOperation.BuildStep(processBuilder, mapMetadata?.OperationState), builtEdges);
     }
 }

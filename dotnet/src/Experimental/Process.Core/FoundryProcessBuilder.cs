@@ -41,10 +41,11 @@ public class FoundryProcessBuilder
     /// </summary>
     /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
     /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? threadName = null, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNull(agentDefinition);
         if (agentDefinition.Type != AzureAIAgentFactory.AzureAIAgentType)
@@ -52,27 +53,29 @@ public class FoundryProcessBuilder
             throw new ArgumentException($"The agent type '{agentDefinition.Type}' is not supported. Only '{AzureAIAgentFactory.AzureAIAgentType}' is supported.");
         }
 
-        return this._processBuilder.AddStepFromAgent(agentDefinition, threadName, aliases);
+        return this._processBuilder.AddStepFromAgent(agentDefinition, threadName, humanInLoopMode, aliases);
     }
 
     /// <summary>
     /// Adds a step to the process from a declarative agent.
     /// </summary>
+    /// <param name="stepId">Id of the step. If not provided, the Id will come from the agent Id.</param>
     /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
     /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
-    /// <param name="stepId">Id of the step. If not provided, the Id will come from the agent Id.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromAgentProxy(AgentDefinition agentDefinition, string? threadName = null, string? stepId = null, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder AddStepFromAgentProxy(string stepId, AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
     {
+        Verify.NotNullOrWhiteSpace(stepId);
         Verify.NotNull(agentDefinition);
         if (agentDefinition.Type != AzureAIAgentFactory.AzureAIAgentType)
         {
             throw new ArgumentException($"The agent type '{agentDefinition.Type}' is not supported. Only '{AzureAIAgentFactory.AzureAIAgentType}' is supported.");
         }
 
-        return this._processBuilder.AddStepFromAgentProxy(agentDefinition, threadName, stepId, aliases);
+        return this._processBuilder.AddStepFromAgentProxy(agentDefinition, threadName, stepId, humanInLoopMode, aliases);
     }
 
     /// <summary>

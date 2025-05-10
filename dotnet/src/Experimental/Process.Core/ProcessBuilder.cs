@@ -120,9 +120,10 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <summary>
     /// Builds the step.
     /// </summary>
+    /// <param name="processBuilder">ProcessBuilder to build the step for</param>
     /// <param name="stateMetadata">State to apply to the step on the build process</param>
     /// <returns></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
     {
         // The step is a, process so we can return the step info directly.
         return this.Build(stateMetadata as KernelProcessStateMetadata);
@@ -223,10 +224,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
     /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? threadName = null, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
 
@@ -242,7 +244,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName, new NodeInputs()); // TODO: Add inputs to the agent
+        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName, new NodeInputs()) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -252,10 +254,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
     /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
     /// <param name="stepId">Id of the step. If not provided, the Id will come from the agent Id.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromAgentProxy(AgentDefinition agentDefinition, string? threadName = null, string? stepId = null, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder AddStepFromAgentProxy(AgentDefinition agentDefinition, string? threadName = null, string? stepId = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
 
@@ -283,7 +286,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             return Task.FromResult(result);
         });
 
-        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName, new NodeInputs(), stepId) { AgentIdResolver = agentIdResolver }; // TODO: Add inputs to the agent
+        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName, new NodeInputs(), stepId) { AgentIdResolver = agentIdResolver, HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -416,13 +419,6 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         this._threads[threadName] = processThread;
         return this;
     }
-
-    //public ProcessBuilder Add<T>(string variableName, T initialValue)
-    //{
-    //    Verify.NotNullOrWhiteSpace(variableName, nameof(variableName));
-    //    //this.Variables[variableName] = initialValue;
-    //    return this;
-    //}
 
     /// <summary>
     /// Provides an instance of <see cref="ProcessEdgeBuilder"/> for defining an input edge to a process.

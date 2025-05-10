@@ -65,7 +65,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
     }
 
     /// <inheritdoc/>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
     {
         if (this._externalTopicUsage.All(topic => !topic.Value))
         {

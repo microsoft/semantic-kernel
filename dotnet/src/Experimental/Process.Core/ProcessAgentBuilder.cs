@@ -18,6 +18,7 @@ namespace Microsoft.SemanticKernel;
 public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor>
 {
     private readonly AgentDefinition _agentDefinition;
+    private bool _requiresStateInput;
 
     /// <summary>
     /// Creates a new instance of the <see cref="ProcessAgentBuilder"/> class.
@@ -90,6 +91,11 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// The inputs for this agent.
     /// </summary>
     public NodeInputs Inputs { get; internal set; }
+
+    /// <summary>
+    /// The human-in-the-loop mode for this agent. This determines whether the agent will wait for human input before proceeding.
+    /// </summary>
+    public HITLMode HumanInLoopMode { get; init; } = HITLMode.Never;
 
     /// <summary>
     /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
@@ -181,7 +187,17 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// <returns></returns>
     public ProcessAgentBuilder WithUserStateInput(string path)
     {
-        // TODO: Get schema from state object
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new ArgumentException("Path cannot be null or whitespace.", nameof(path));
+        }
+
+        if (this.Inputs != null)
+        {
+            throw new KernelException("User state input can only be set once.");
+        }
+
+        this._requiresStateInput = true;
         this.Inputs = new NodeInputs { Type = AgentInputType.Structured, Default = $"state.{path}" };
         return this;
     }
@@ -198,9 +214,14 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
 
     #endregion
 
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
     {
         KernelProcessMapStateMetadata? mapMetadata = stateMetadata as KernelProcessMapStateMetadata;
+
+        if (this._requiresStateInput)
+        {
+            // TODO: extract schema for state input
+        }
 
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
@@ -218,7 +239,7 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
 
         var state = new KernelProcessStepState(this.Name, "1.0", this.Id);
 
-        return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.ThreadName, this.Inputs) { AgentIdResolver = this.AgentIdResolver };
+        return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.ThreadName, this.Inputs) { AgentIdResolver = this.AgentIdResolver, HumanInLoopMode = this.HumanInLoopMode };
     }
 
     internal ProcessFunctionTargetBuilder GetInvokeAgentFunctionTargetBuilder()
@@ -252,20 +273,34 @@ public class DeclarativeEventHandlerGroupBuilder
                 {
                     if (this.DefaultHandler is not null)
                     {
-                        throw new KernelException("Only one default handler is allowed in a group of event handlers.");
+                        throw new KernelException("Only one `Default` handler is allowed in a group of event handlers.");
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(condition.Expression))
+                    {
+                        throw new KernelException("`Default` handlers must not have an eval expression.");
                     }
 
                     this.DefaultHandler = new DeclarativeEventHandlerBuilder(condition);
                 }
-                else if (condition.Type == DeclarativeProcessConditionType.State)
+                else if (condition.Type == DeclarativeProcessConditionType.Eval)
                 {
-                    this.StateHandlers ??= [];
-                    this.StateHandlers.Add(new DeclarativeEventHandlerBuilder(condition));
+                    this.EvalHandlers ??= [];
+                    this.EvalHandlers.Add(new DeclarativeEventHandlerBuilder(condition));
                 }
-                else if (condition.Type == DeclarativeProcessConditionType.Semantic)
+                else if (condition.Type == DeclarativeProcessConditionType.Always)
                 {
-                    this.SemanticHandlers ??= [];
-                    this.SemanticHandlers.Add(new DeclarativeEventHandlerBuilder(condition));
+                    if (this.DefaultHandler is not null)
+                    {
+                        throw new KernelException("Only one `Always` handler is allowed in a group of event handlers.");
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(condition.Expression))
+                    {
+                        throw new KernelException("`Always` handlers must not have an eval expression.");
+                    }
+
+                    this.AlwaysHandler = new DeclarativeEventHandlerBuilder(condition);
                 }
                 else
                 {
@@ -276,6 +311,11 @@ public class DeclarativeEventHandlerGroupBuilder
     }
 
     /// <summary>
+    /// The list of semantic handlers for this group of event handlers.
+    /// </summary>
+    public DeclarativeEventHandlerBuilder? AlwaysHandler { get; init; }
+
+    /// <summary>
     /// The optional default handler for this group of event handlers.
     /// </summary>
     public DeclarativeEventHandlerBuilder? DefaultHandler { get; set; }
@@ -283,12 +323,7 @@ public class DeclarativeEventHandlerGroupBuilder
     /// <summary>
     /// The list of state based handlers for this group of event handlers.
     /// </summary>
-    public List<DeclarativeEventHandlerBuilder>? StateHandlers { get; init; } = new List<DeclarativeEventHandlerBuilder>();
-
-    /// <summary>
-    /// The list of semantic handlers for this group of event handlers.
-    /// </summary>
-    public List<DeclarativeEventHandlerBuilder>? SemanticHandlers { get; init; } = new List<DeclarativeEventHandlerBuilder>();
+    public List<DeclarativeEventHandlerBuilder>? EvalHandlers { get; init; } = new List<DeclarativeEventHandlerBuilder>();
 
     /// <summary>
     /// Builds the declarative process condition for this event handler group.
@@ -298,9 +333,9 @@ public class DeclarativeEventHandlerGroupBuilder
     {
         return new KernelProcessDeclarativeConditionHandler
         {
-            Default = this.DefaultHandler?.Build(),
-            StateConditions = this.StateHandlers?.Select(h => h.Build()).ToList(),
-            SemanticConditions = this.SemanticHandlers?.Select(h => h.Build()).ToList()
+            DefaultCondition = this.DefaultHandler?.Build(),
+            AlwaysCondition = this.AlwaysHandler?.Build(),
+            EvalConditions = this.EvalHandlers?.Select(h => h.Build()).ToList(),
         };
     }
 }

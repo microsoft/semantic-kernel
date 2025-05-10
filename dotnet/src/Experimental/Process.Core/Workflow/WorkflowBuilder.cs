@@ -441,7 +441,8 @@ public class WorkflowBuilder
             Agent = agentStep.AgentDefinition,
             OnComplete = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnComplete),
             OnError = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnError),
-            Inputs = agentStep.Inputs
+            Inputs = agentStep.Inputs,
+            HumanInLoopType = agentStep.HumanInLoopMode
         };
 
         // re-group the edges to account for different conditions
@@ -480,15 +481,15 @@ public class WorkflowBuilder
         }
 
         List<OnEventAction> actions = [];
-        if (handler.StateConditions is not null && handler.StateConditions.Count > 0)
+        if (handler.EvalConditions is not null && handler.EvalConditions.Count > 0)
         {
-            actions.AddRange(handler.StateConditions.Select(h =>
+            actions.AddRange(handler.EvalConditions.Select(h =>
             {
                 return new OnEventAction
                 {
                     OnCondition = new DeclarativeProcessCondition
                     {
-                        Type = DeclarativeProcessConditionType.State,
+                        Type = DeclarativeProcessConditionType.Eval,
                         Expression = h.Expression,
                         Emits = h.Emits,
                         Updates = h.Updates
@@ -497,24 +498,22 @@ public class WorkflowBuilder
             }));
         }
 
-        if (handler.SemanticConditions is not null && handler.SemanticConditions.Count > 0)
+        if (handler.AlwaysCondition is not null)
         {
-            actions.AddRange(handler.SemanticConditions.Select(h =>
-            {
-                return new OnEventAction
+            actions.Add(
+                new OnEventAction
                 {
                     OnCondition = new DeclarativeProcessCondition
                     {
-                        Type = DeclarativeProcessConditionType.Semantic,
-                        Expression = h.Expression,
-                        Emits = h.Emits,
-                        Updates = h.Updates
+                        Type = DeclarativeProcessConditionType.Always,
+                        Expression = handler.AlwaysCondition.Expression,
+                        Emits = handler.AlwaysCondition.Emits,
+                        Updates = handler.AlwaysCondition.Updates
                     }
-                };
-            }));
+                });
         }
 
-        if (handler.Default is not null)
+        if (handler.DefaultCondition is not null)
         {
             actions.Add(
                 new OnEventAction
@@ -522,9 +521,9 @@ public class WorkflowBuilder
                     OnCondition = new DeclarativeProcessCondition
                     {
                         Type = DeclarativeProcessConditionType.Default,
-                        Expression = handler.Default.Expression,
-                        Emits = handler.Default.Emits,
-                        Updates = handler.Default.Updates
+                        Expression = handler.DefaultCondition.Expression,
+                        Emits = handler.DefaultCondition.Emits,
+                        Updates = handler.DefaultCondition.Updates
                     }
                 });
         }

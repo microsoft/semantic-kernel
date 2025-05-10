@@ -411,6 +411,13 @@ public class Node
     [YamlMember(Alias = "on_complete")]
     [JsonPropertyName("on_complete")]
     public List<OnEventAction>? OnComplete { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Human In The Loop (HITL) mode of the node.
+    /// </summary>
+    [YamlMember(Alias = "human_in_loop_type")]
+    [JsonPropertyName("human_in_loop_type")]
+    public HITLMode HumanInLoopType { get; set; } = HITLMode.Never;
 }
 
 /// <summary>
@@ -489,26 +496,6 @@ public class SchemaReference
     public string? Ref { get; set; }
 }
 
-///// <summary>
-///// Hook for the node.
-///// </summary>
-//public class NodeHook
-//{
-//    /// <summary>
-//    /// Gets or sets the events emitted by the hook.
-//    /// </summary>
-//    [YamlMember(Alias = "emits")]
-//    [JsonPropertyName("emits")]
-//    public List<EventEmission>? Emits { get; set; }
-
-//    /// <summary>
-//    /// Gets or sets the variable updates by the hook.
-//    /// </summary>
-//    [YamlMember(Alias = "updates")]
-//    [JsonPropertyName("updates")]
-//    public List<VariableUpdate>? Updates { get; set; }
-//}
-
 /// <summary>
 /// Action to be taken on completion.
 /// </summary>
@@ -530,17 +517,12 @@ public enum DeclarativeProcessConditionType
     /// <summary>
     /// Condition on the process state.
     /// </summary>
-    State,
-
-    /// <summary>
-    /// Condition on the output of an agent or step.
-    /// </summary>
-    Output,
+    Eval,
 
     /// <summary>
     /// Condition on the input to an agent or step.
     /// </summary>
-    Semantic,
+    Always,
 
     /// <summary>
     /// Condition that activates when no other condition is met.
@@ -558,7 +540,7 @@ public class DeclarativeProcessCondition
     /// </summary>
     [YamlMember(Alias = "type")]
     [JsonPropertyName("type")]
-    public DeclarativeProcessConditionType Type { get; set; } = DeclarativeProcessConditionType.State;
+    public DeclarativeProcessConditionType Type { get; set; } = DeclarativeProcessConditionType.Eval;
 
     /// <summary>
     /// Gets or sets the expression of the condition.
@@ -669,15 +651,43 @@ public enum StateUpdateOperations
     /// <summary>
     /// Set operation.
     /// </summary>
+    [YamlMember(Alias = "set")]
+    [JsonPropertyName("set")]
     Set,
+
     /// <summary>
     /// Increment operation.
     /// </summary>
+    [YamlMember(Alias = "increment")]
+    [JsonPropertyName("increment")]
     Increment,
+
     /// <summary>
     /// Decrement operation.
     /// </summary>
+    [YamlMember(Alias = "decrement")]
+    [JsonPropertyName("decrement")]
     Decrement
+}
+
+/// <summary>
+/// Mode for human-in-the-loop (HITL) interaction.
+/// </summary>
+public enum HITLMode
+{
+    /// <summary>
+    /// Always ask the user for input.
+    /// </summary>
+    [YamlMember(Alias = "always")]
+    [JsonPropertyName("always")]
+    Always,
+
+    /// <summary>
+    /// Never ask the user for input.
+    /// </summary>
+    [YamlMember(Alias = "never")]
+    [JsonPropertyName("never")]
+    Never,
 }
 
 /// <summary>

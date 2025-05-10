@@ -63,4 +63,9 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
     /// The handler group for code-based actions.
     /// </summary>
     public ProcessAgentActions Actions { get; init; }
+
+    /// <summary>
+    /// The human-in-the-loop mode for this agent. This determines whether the agent will wait for human input before proceeding.
+    /// </summary>
+    public HITLMode HumanInLoopMode { get; init; } = HITLMode.Never;
 }

@@ -98,7 +98,7 @@ public abstract class ProcessStepBuilder
     /// Builds the step with step state
     /// </summary>
     /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null);
+    internal abstract KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null);
 
     /// <summary>
     /// Registers a group input mapping for the step.
@@ -280,7 +280,7 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
     /// Builds the step with a state if provided
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcessStepInfo"/></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
     {
         KernelProcessStepState? stateObject = null;
         KernelProcessStepMetadataAttribute stepMetadataAttributes = KernelProcessStepMetadataFactory.ExtractProcessStepMetadataFromType(this._stepType);

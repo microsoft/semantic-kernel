@@ -30,7 +30,7 @@ internal sealed class EndStep : ProcessStepBuilder
         return [];
     }
 
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
     {
         // The end step has no state.
         return new KernelProcessStepInfo(typeof(KernelProcessStepState), new KernelProcessStepState(ProcessConstants.EndStepName, version: ProcessConstants.InternalStepsVersion), []);

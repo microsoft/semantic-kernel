@@ -89,7 +89,7 @@ public class ProcessMapBuilderTests
         Assert.Equal(step2, map.Edges.Single().Value[0].Target!.Step);
 
         // Act
-        KernelProcessStepInfo processMap = map.BuildStep();
+        KernelProcessStepInfo processMap = map.BuildStep(new ProcessBuilder("Test"));
 
         // Assert
         Assert.NotNull(processMap);
@@ -124,7 +124,7 @@ public class ProcessMapBuilderTests
         ProcessMapBuilder map = new(step);
 
         // Act
-        KernelProcessStepInfo processMap = map.BuildStep();
+        KernelProcessStepInfo processMap = map.BuildStep(new ProcessBuilder("Test"));
 
         // Assert
         Assert.NotNull(processMap);
