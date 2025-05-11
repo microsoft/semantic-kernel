@@ -37,11 +37,47 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
     }
 
     /// <summary>
+    /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
+    /// </summary>
+    /// <param name="target">The output target.</param>
+    /// <param name="inputs"> The inputs to the target.</param>
+    /// <param name="messagesIn"> The messages to be sent to the target.</param>
+    /// <param name="thread"> The thread to send the event to.</param>
+    /// <returns>A fresh builder instance for fluid definition</returns>
+    public ProcessStepEdgeBuilder SendEventToAgent(ProcessAgentBuilder target, Dictionary<string, string>? inputs = null, string? messagesIn = null, string? thread = null)
+    {
+        // TODO: Move this method to agent builder
+        return this.SendEventTo_Internal(new(target));
+    }
+
+    /// <summary>
+    /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
+    /// </summary>
+    /// <param name="target">The output target.</param>
+    /// <param name="inputs"> The inputs to the target.</param>
+    /// <param name="messagesIn"> The messages to be sent to the target.</param>
+    /// <param name="thread"> The thread to send the event to.</param>
+    /// <returns>A fresh builder instance for fluid definition</returns>
+    public ProcessStepEdgeBuilder SendEventToAgent<TProcessState>(ProcessAgentBuilder<TProcessState> target, Dictionary<string, string>? inputs = null, string? messagesIn = null, string? thread = null) where TProcessState : class, new()
+    {
+        // TODO: Move this method to agent builder
+        var metaData = new Dictionary<string, object?>()
+        {
+            { "foundryAgent.inputs", inputs },
+            { "foundryAgent.messagesIn", messagesIn },
+            { "foundryAgent.thread", thread }
+        };
+
+        return this.SendEventTo_Internal(new(target), metaData);
+    }
+
+    /// <summary>
     /// Sends the event to the specified target.
     /// </summary>
     /// <param name="target">The target to send the event to.</param>
+    /// <param name="metadata">Optional metadata to include with the event.</param>
     /// <returns>A new instance of <see cref="ListenForTargetBuilder"/>.</returns>
-    internal override ProcessStepEdgeBuilder SendEventTo_Internal(ProcessFunctionTargetBuilder target)
+    internal override ProcessStepEdgeBuilder SendEventTo_Internal(ProcessFunctionTargetBuilder target, Dictionary<string, object?>? metadata = null)
     {
         Verify.NotNull(target, nameof(target));
 
@@ -55,6 +91,7 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
             // Link all the source steps to the event listener
             var onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
             onEventBuilder.EdgeGroupBuilder = this.EdgeGroupBuilder;
+            onEventBuilder.Metadata = metadata ?? [];
 
             if (messageSource.Condition != null)
             {

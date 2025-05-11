@@ -245,7 +245,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, new NodeInputs(), this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -274,7 +274,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, new NodeInputs(), this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -316,7 +316,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             return Task.FromResult(result);
         });
 
-        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, new NodeInputs(), this.ProcessBuilder, stepId) { AgentIdResolver = agentIdResolver, HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder, stepId) { AgentIdResolver = agentIdResolver, HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 

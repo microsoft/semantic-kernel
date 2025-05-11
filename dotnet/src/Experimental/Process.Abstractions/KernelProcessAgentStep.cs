@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
@@ -28,7 +29,7 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
     /// <param name="threadName"></param>
     /// <param name="inputs"></param>
     /// <param name="incomingEdgeGroups"></param>
-    public KernelProcessAgentStep(AgentDefinition agentDefinition, ProcessAgentActions agentActions, KernelProcessStepState state, Dictionary<string, List<KernelProcessEdge>> edges, string threadName, NodeInputs inputs, Dictionary<string, KernelProcessEdgeGroup>? incomingEdgeGroups = null) : base(typeof(KernelProcessAgentExecutor), state, edges, incomingEdgeGroups)
+    public KernelProcessAgentStep(AgentDefinition agentDefinition, ProcessAgentActions agentActions, KernelProcessStepState state, Dictionary<string, List<KernelProcessEdge>> edges, string threadName, Dictionary<string, Type> inputs, Dictionary<string, KernelProcessEdgeGroup>? incomingEdgeGroups = null) : base(typeof(KernelProcessAgentExecutor), state, edges, incomingEdgeGroups)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentActions);
@@ -57,7 +58,7 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
     /// <summary>
     /// The inputs for this agent.
     /// </summary>
-    public NodeInputs Inputs { get; init; }
+    public Dictionary<string, Type> Inputs { get; init; }
 
     /// <summary>
     /// The handler group for code-based actions.

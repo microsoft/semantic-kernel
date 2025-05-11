@@ -6,7 +6,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using System.Text.Json.Nodes;
 using Json.More;
 using Json.Schema;
 using Json.Schema.Generation;
@@ -21,7 +20,6 @@ namespace Microsoft.SemanticKernel;
 public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProcessAgentExecutor> where TProcessState : class, new()
 {
     private readonly AgentDefinition _agentDefinition;
-    private bool _requiresStateInput;
 
     /// <summary>
     /// Creates a new instance of the <see cref="ProcessAgentBuilder"/> class.
@@ -32,7 +30,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
     /// <param name="processBuilder"></param>
     /// <param name="stepId">Id of the step. If not provided, the Id will come from the agent Id.</param>
     /// <exception cref="KernelException"></exception>
-    public ProcessAgentBuilder(AgentDefinition agentDefinition, string threadName, NodeInputs nodeInputs, ProcessBuilder? processBuilder, string? stepId = null)
+    public ProcessAgentBuilder(AgentDefinition agentDefinition, string threadName, Dictionary<string, Type> nodeInputs, ProcessBuilder? processBuilder, string? stepId = null)
         : base(id: stepId ?? agentDefinition.Id ?? agentDefinition.Name ?? throw new KernelException("All declarative agents must have an Id or a Name assigned."), processBuilder)
     {
         Verify.NotNull(agentDefinition);
@@ -51,7 +49,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
     /// <param name="nodeInputs"></param>
     /// <param name="processBuilder"></param>
     /// <exception cref="KernelException"></exception>
-    public ProcessAgentBuilder(AgentDefinition agentDefinition, Action<object?, KernelProcessStepContext> onComplete, Action<object?, KernelProcessStepContext> onError, string threadName, NodeInputs nodeInputs, ProcessBuilder processBuilder)
+    public ProcessAgentBuilder(AgentDefinition agentDefinition, Action<object?, KernelProcessStepContext> onComplete, Action<object?, KernelProcessStepContext> onError, string threadName, Dictionary<string, Type> nodeInputs, ProcessBuilder processBuilder)
         : base(agentDefinition.Id ?? throw new KernelException("AgentDefinition Id must be set"), processBuilder)
     {
         Verify.NotNull(agentDefinition);
@@ -97,7 +95,8 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
     /// <summary>
     /// The inputs for this agent.
     /// </summary>
-    public NodeInputs Inputs { get; internal set; }
+    //public NodeInputs Inputs { get; internal set; }
+    public Dictionary<string, Type> Inputs { get; internal set; } = [];
 
     /// <summary>
     /// The human-in-the-loop mode for this agent. This determines whether the agent will wait for human input before proceeding.
@@ -126,39 +125,39 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
         return this;
     }
 
+    ///// <summary>
+    ///// Sets the inputs for this agent.
+    ///// </summary>
+    ///// <param name="schema"></param>
+    ///// <param name="defaultValue"></param>
+    ///// <returns></returns>
+    //public ProcessAgentBuilder<TProcessState> WithStructuredInputs(JsonNode schema, object? defaultValue = null)
+    //{
+    //    Verify.NotNull(schema, nameof(schema));
+
+    //    this.Inputs = new NodeInputs { Schema = schema.ToJsonString(), /* Default = defaultValue */ };
+    //    return this;
+    //}
+
+    ///// <summary>
+    ///// Sets the inputs for this agent.
+    ///// </summary>
+    ///// <param name="defaultValue"></param>
+    ///// <returns></returns>
+    ///// <exception cref="KernelException"></exception>
+    //internal ProcessAgentBuilder<TProcessState> WithStructuredInput<T>(T? defaultValue = default) where T : class, new()
+    //{
+    //    return this.WithStructuredInput(typeof(T), defaultValue);
+    //}
+
     /// <summary>
     /// Sets the inputs for this agent.
     /// </summary>
-    /// <param name="schema"></param>
-    /// <param name="defaultValue"></param>
-    /// <returns></returns>
-    public ProcessAgentBuilder<TProcessState> WithStructuredInputs(JsonNode schema, object? defaultValue = null)
-    {
-        Verify.NotNull(schema, nameof(schema));
-
-        this.Inputs = new NodeInputs { Type = AgentInputType.Structured, StructuredInputSchema = schema.ToJsonString(), Default = defaultValue };
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the inputs for this agent.
-    /// </summary>
-    /// <param name="defaultValue"></param>
-    /// <returns></returns>
-    /// <exception cref="KernelException"></exception>
-    internal ProcessAgentBuilder<TProcessState> WithStructuredInput<T>(T? defaultValue = default) where T : class, new()
-    {
-        return this.WithStructuredInput(typeof(T), defaultValue);
-    }
-
-    /// <summary>
-    /// Sets the inputs for this agent.
-    /// </summary>
+    /// <param name="name"></param>
     /// <param name="inputType"></param>
-    /// <param name="defaultValue"></param>
     /// <returns></returns>
     /// <exception cref="KernelException"></exception>
-    internal ProcessAgentBuilder<TProcessState> WithStructuredInput(Type inputType, object? defaultValue = null)
+    internal ProcessAgentBuilder<TProcessState> WithStructuredInput(string name, Type inputType)
     {
         Verify.NotNull(inputType, nameof(inputType));
 
@@ -170,22 +169,17 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
                     .Build();
 
         var json = schema.ToJsonDocument().RootElement.ToString();
-        this.Inputs = new NodeInputs
-        {
-            Type = AgentInputType.Structured,
-            StructuredInputSchema = json,
-            Default = defaultValue
-        };
+        this.Inputs.Add(name, inputType);
 
         return this;
     }
 
-    internal ProcessAgentBuilder<TProcessState> WithNodeInputs(NodeInputs nodeInputs)
-    {
-        Verify.NotNull(nodeInputs, nameof(nodeInputs));
-        this.Inputs = nodeInputs;
-        return this;
-    }
+    //internal ProcessAgentBuilder<TProcessState> WithNodeInputs(NodeInputs nodeInputs)
+    //{
+    //    Verify.NotNull(nodeInputs, nameof(nodeInputs));
+    //    this.Inputs = nodeInputs;
+    //    return this;
+    //}
 
     /// <summary>
     /// Sets the inputs for this agent.
@@ -198,13 +192,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
         // Extract the property path and type from the expression
         var (_boundPropertyPath, _boundPropertyType) = this.ExtractPropertyInfo(propertySelector);
 
-        // Generate JSON schema for the property type
-        var _jsonSchema = this.GenerateJsonSchema(_boundPropertyType);
-
-        Console.WriteLine($"Bound input to property path: {_boundPropertyPath}");
-        Console.WriteLine($"Property type: {_boundPropertyType.Name}");
-        Console.WriteLine($"JSON Schema: {_jsonSchema}");
-
+        this.Inputs.Add(_boundPropertyPath, _boundPropertyType);
         return this;
     }
 
@@ -221,13 +209,17 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
 
             // Add the current member name to the path
             if (propertyPath.Length > 0)
+            {
                 propertyPath.Insert(0, ".");
+            }
 
             propertyPath.Insert(0, member.Name);
 
             // If this is our first iteration, save the property type
             if (propertyType == null)
+            {
                 propertyType = ((PropertyInfo)member).PropertyType;
+            }
 
             // Move to the next level in the expression
             expression = memberExpression.Expression;
@@ -242,34 +234,11 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
         throw new ArgumentException("Expression must be a property access expression", nameof(propertySelector));
     }
 
-    private string GenerateJsonSchema(Type type)
-    {
-        JsonSchemaBuilder jsonSchemaBuilder = new();
-        var schema = jsonSchemaBuilder.FromType(type).Build();
-        return schema.ToJsonDocument().RootElement.ToJsonString();
-    }
-
-    /// <summary>
-    /// Sets the inputs for this agent.
-    /// </summary>
-    /// <returns></returns>
-    public ProcessAgentBuilder<TProcessState> WithMessageInput()
-    {
-        this.Inputs = new NodeInputs { Type = AgentInputType.Thread };
-        return this;
-    }
-
     #endregion
 
     internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
     {
         KernelProcessMapStateMetadata? mapMetadata = stateMetadata as KernelProcessMapStateMetadata;
-
-        if (this._requiresStateInput)
-        {
-            // TODO: extract schema for state input
-            // 1. 
-        }
 
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
@@ -309,7 +278,7 @@ public class ProcessAgentBuilder : ProcessAgentBuilder<DefaultProcessState>
     /// <param name="nodeInputs"></param>
     /// <param name="processBuilder"></param>
     /// <param name="stepId"></param>
-    public ProcessAgentBuilder(AgentDefinition agentDefinition, string threadName, NodeInputs nodeInputs, ProcessBuilder? processBuilder, string? stepId = null) : base(agentDefinition, threadName, nodeInputs, processBuilder, stepId)
+    public ProcessAgentBuilder(AgentDefinition agentDefinition, string threadName, Dictionary<string, Type> nodeInputs, ProcessBuilder? processBuilder, string? stepId = null) : base(agentDefinition, threadName, nodeInputs, processBuilder, stepId)
     {
     }
 }

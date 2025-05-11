@@ -360,7 +360,7 @@ public class ProcessStepBuilder<TStep> : ProcessStepBuilderTyped where TStep : K
     /// <param name="id">The unique Id of the step.</param>
     /// <param name="processBuilder">The process builder that this step is a part of.</param>
     /// <param name="initialState">Initial state of the step to be used on the step building stage</param>
-    internal ProcessStepBuilder(string id, ProcessBuilder? processBuilder, object? initialState = default)
+    internal ProcessStepBuilder(string id, ProcessBuilder? processBuilder = null, object? initialState = default)
         : base(typeof(TStep), id, processBuilder, initialState)
     {
     }

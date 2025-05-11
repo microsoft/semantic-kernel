@@ -72,7 +72,7 @@ public class Workflow
     /// </summary>
     [YamlMember(Alias = "variables")]
     [JsonPropertyName("variables")]
-    public Dictionary<string, Variable>? Variables { get; set; }
+    public Dictionary<string, object>? Variables { get; set; }
 
     /// <summary>
     /// Gets or sets the schemas for the workflow.
@@ -172,7 +172,7 @@ public class InputEvents
 /// <summary>
 /// Messages for the workflow inputs.
 /// </summary>
-public class Messages
+public class Messages : List<object>
 {
 }
 
@@ -385,11 +385,32 @@ public class Node
     public AgentDefinition? Agent { get; set; }
 
     /// <summary>
+    /// Gets or sets the Human In The Loop (HITL) mode of the node.
+    /// </summary>
+    [YamlMember(Alias = "human_in_loop_type")]
+    [JsonPropertyName("human_in_loop_type")]
+    public HITLMode HumanInLoopType { get; set; } = HITLMode.Never;
+
+    /// <summary>
     /// Gets or sets the inputs of the node.
     /// </summary>
     [YamlMember(Alias = "inputs")]
     [JsonPropertyName("inputs")]
-    public NodeInputs? Inputs { get; set; }
+    public Dictionary<string, object>? Inputs { get; set; }
+
+    /// <summary>
+    /// The name of the thread the agent will run on.
+    /// </summary>
+    [YamlMember(Alias = "thread")]
+    [JsonPropertyName("thread")]
+    public string Thread { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The input messages
+    /// </summary>
+    [YamlMember(Alias = "messages_in", DefaultValuesHandling = DefaultValuesHandling.Preserve)]
+    [JsonPropertyName("messages_in")]
+    public Messages MessagesIn { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the agent input mapping of the node.
@@ -411,13 +432,6 @@ public class Node
     [YamlMember(Alias = "on_complete")]
     [JsonPropertyName("on_complete")]
     public List<OnEventAction>? OnComplete { get; set; }
-
-    /// <summary>
-    /// Gets or sets the Human In The Loop (HITL) mode of the node.
-    /// </summary>
-    [YamlMember(Alias = "human_in_loop_type")]
-    [JsonPropertyName("human_in_loop_type")]
-    public HITLMode HumanInLoopType { get; set; } = HITLMode.Never;
 }
 
 /// <summary>
@@ -462,25 +476,11 @@ public enum AgentInputType
 public class NodeInputs
 {
     /// <summary>
-    /// Gets or sets the type of the node input.
-    /// </summary>
-    [YamlMember(Alias = "type")]
-    [JsonPropertyName("type")]
-    public AgentInputType Type { get; set; }
-
-    /// <summary>
     /// Gets or sets the inputs of the node.
     /// </summary>
-    [YamlMember(Alias = "structured_input_schema")]
-    [JsonPropertyName("structured_input_schema")]
-    public string? StructuredInputSchema { get; set; }
-
-    /// <summary>
-    /// Gets or sets the schema of the node input.
-    /// </summary>
-    [YamlMember(Alias = "default")]
-    [JsonPropertyName("default")]
-    public object? Default { get; set; }
+    [YamlMember(Alias = "schema")]
+    [JsonPropertyName("schema")]
+    public string? Schema { get; set; }
 }
 
 /// <summary>
@@ -809,6 +809,20 @@ public class ThenAction
     [YamlMember(Alias = "inputs")]
     [JsonPropertyName("inputs")]
     public Dictionary<string, string>? Inputs { get; set; }
+
+    /// <summary>
+    /// Gets or sets the messages to be sent to the node.
+    /// </summary>
+    [YamlMember(Alias = "messages_in")]
+    [JsonPropertyName("messages_in")]
+    public string? MessagesIn { get; set; }
+
+    /// <summary>
+    /// Gets or sets the thread to send the event to.
+    /// </summary>
+    [YamlMember(Alias = "thread")]
+    [JsonPropertyName("thread")]
+    public string? Thread { get; set; }
 }
 
 /// <summary>

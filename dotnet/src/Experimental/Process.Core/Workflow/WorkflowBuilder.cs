@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -169,7 +170,7 @@ public class WorkflowBuilder
         if (node.Inputs != null)
         {
             var inputMapping = this.ExtractNodeInputs(node.Id);
-            agentBuilder.WithNodeInputs(node.Inputs);
+            //agentBuilder.WithNodeInputs(node.Inputs); TODO: What to do here?
         }
 
         this._stepBuilders[node.Id] = stepBuilder;
@@ -330,16 +331,44 @@ public class WorkflowBuilder
         {
             workflow.Variables.Add(thread.Key, new Variable()
             {
-                Type = "messages"
+                Type = "thread"
             });
         }
 
         if (process.UserStateype != null)
         {
-            workflow.Variables.Add("user_state", new Variable()
+            // Get all public properties
+            PropertyInfo[] properties = process.UserStateype.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            // Loop through each property and output its type
+            foreach (PropertyInfo property in properties)
             {
-                Type = "object"
-            });
+                if (property.PropertyType == typeof(List<ChatMessageContent>))
+                {
+                    workflow.Variables.Add(property.Name, new Variable()
+                    {
+                        Type = "messages"
+                    });
+
+                    continue;
+                }
+
+                var schema = KernelJsonSchemaBuilder.Build(property.PropertyType);
+                var schemaJson = JsonSerializer.Serialize(schema.RootElement);
+
+                var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .IgnoreUnmatchedProperties()
+                .Build();
+
+                var yamlSchema = deserializer.Deserialize(schemaJson);
+                if (yamlSchema is null)
+                {
+                    throw new KernelException("Failed to deserialize schema.");
+                }
+
+                workflow.Variables.Add(property.Name, yamlSchema);
+            }
         }
 
         // Add edges
@@ -439,10 +468,29 @@ public class WorkflowBuilder
             Id = agentStep.State.Id!,
             Type = agentStep.AgentDefinition.Type!,
             Agent = agentStep.AgentDefinition,
+            HumanInLoopType = agentStep.HumanInLoopMode,
+            Thread = agentStep.ThreadName,
             OnComplete = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnComplete),
             OnError = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnError),
-            Inputs = agentStep.Inputs,
-            HumanInLoopType = agentStep.HumanInLoopMode
+            Inputs = agentStep.Inputs.ToDictionary((kvp) => kvp.Key, (kvp) =>
+            {
+                var value = kvp.Value;
+                var schema = KernelJsonSchemaBuilder.Build(value);
+                var schemaJson = JsonSerializer.Serialize(schema.RootElement);
+
+                var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .IgnoreUnmatchedProperties()
+                .Build();
+
+                var yamlSchema = deserializer.Deserialize(schemaJson);
+                if (yamlSchema is null)
+                {
+                    throw new KernelException("Failed to deserialize schema.");
+                }
+
+                return yamlSchema;
+            })
         };
 
         // re-group the edges to account for different conditions
@@ -462,9 +510,30 @@ public class WorkflowBuilder
 
                     Condition = edge.Key.DeclarativeDefinition
                 },
-                Then = [.. edge.Value.Select(e => new ThenAction()
+                Then = [.. edge.Value.Select(e =>
                 {
-                    Node = e.edge.OutputTarget.StepId == ProcessConstants.EndStepName ? "End" : e.edge.OutputTarget.StepId
+                    if (!e.edge.Metadata.TryGetValue("foundryAgent.inputs", out object? inputsObj) || inputsObj is not Dictionary<string, string> inputsDict)
+                    {
+                        inputsDict = [];
+                    }
+
+                    if (!e.edge.Metadata.TryGetValue("foundryAgent.messagesIn", out object? messagesInObj) || messagesInObj is not string messagesIn)
+                    {
+                        messagesIn = null!;
+                    }
+
+                    if (!e.edge.Metadata.TryGetValue("foundryAgent.thread", out object? threadObj) || threadObj is null || threadObj is not string thread)
+                    {
+                        thread = agentStep.ThreadName;
+                    }
+
+                    return new ThenAction()
+                    {
+                        Node = e.edge.OutputTarget.StepId == ProcessConstants.EndStepName ? "End" : e.edge.OutputTarget.StepId,
+                        Inputs = inputsDict,
+                        MessagesIn = messagesIn,
+                        Thread = thread
+                    };
                 })]
             };
 

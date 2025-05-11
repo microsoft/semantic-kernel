@@ -113,7 +113,6 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
 
         var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, threadName: "shared_thread")
-            .WithMessageInput()
             .OnComplete([
             new DeclarativeProcessCondition
             {
@@ -171,7 +170,6 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         // Agent1 will increment the Counter state variable every time it runs
         var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, threadName: "shared_thread")
-            .WithMessageInput()
             .OnComplete([
             new DeclarativeProcessCondition
             {
@@ -225,7 +223,6 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         // Agent1 will increment the Counter state variable every time it runs
         var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, threadName: "shared_thread")
-            .WithMessageInput()
             .OnComplete([
             new DeclarativeProcessCondition
             {
@@ -380,37 +377,37 @@ public class Step06_FoundryAgentProcess : BaseTest
             .SendEventTo(new(gatherFactsStep));
 
         //Gather Facts -> Planner
-        processBuilder.ListenFor().OnResult(gatherFactsStep).SendEventTo(new(plannerStep));
+        processBuilder.ListenFor().OnResult(gatherFactsStep).SendEventToAgent(plannerStep);
 
         //Planner -> Progress Manager
-        processBuilder.ListenFor().OnResult(plannerStep).SendEventTo(new(progressManagerStep));
+        processBuilder.ListenFor().OnResult(plannerStep).SendEventToAgent(progressManagerStep);
 
         //Progress Manager -> Router
-        processBuilder.ListenFor().OnResult(progressManagerStep).SendEventTo(new(routerStep));
+        processBuilder.ListenFor().OnResult(progressManagerStep).SendEventToAgent(routerStep);
 
         //Router -> Progress Manager
-        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_state_.NextAgentId, 'UnknownAgent')").SendEventTo(new(progressManagerStep));
+        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_state_.NextAgentId, 'UnknownAgent')").SendEventToAgent(progressManagerStep, inputs: new Dictionary<string, string> { { "arg1", "_state_.NextAgentId" } }, messagesIn: "_state_.Plan");
 
         //Router -> Facts Update
-        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_state_.NextAgentId, 'LedgerFactsUpdate')").SendEventTo(new(factUpdateStep));
+        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_state_.NextAgentId, 'LedgerFactsUpdate')").SendEventToAgent(factUpdateStep);
 
         //Router -> User Agent
-        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_state_.NextAgentId, 'UserAgent')").SendEventTo(new(userAgentStep));
+        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_state_.NextAgentId, 'UserAgent')").SendEventToAgent(userAgentStep);
 
         //Router -> Summarizer
-        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_state_.NextAgentId, 'Summarizer')").SendEventTo(new(summarizerStep));
+        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_state_.NextAgentId, 'Summarizer')").SendEventToAgent(summarizerStep);
 
         //Router -> Dynamic Step
-        processBuilder.ListenFor().OnResult(routerStep, condition: "!contains(_state_.NextAgentId, 'FinalStepAgent')").SendEventTo(new(dynamicStep));
+        processBuilder.ListenFor().OnResult(routerStep, condition: "!contains(_state_.NextAgentId, 'FinalStepAgent')").SendEventToAgent(dynamicStep);
 
         //Dynamic Step -> Progress Manager
-        processBuilder.ListenFor().OnResult(dynamicStep).SendEventTo(new(progressManagerStep));
+        processBuilder.ListenFor().OnResult(dynamicStep).SendEventToAgent(progressManagerStep);
 
         //Facts Update -> Plan Update
-        processBuilder.ListenFor().OnResult(factUpdateStep).SendEventTo(new(planUpdateStep));
+        processBuilder.ListenFor().OnResult(factUpdateStep).SendEventToAgent(planUpdateStep);
 
         //PlanUpdate -> Progress Manager
-        processBuilder.ListenFor().OnResult(planUpdateStep).SendEventTo(new(progressManagerStep));
+        processBuilder.ListenFor().OnResult(planUpdateStep).SendEventToAgent(progressManagerStep);
 
         //Summarizer -> End
         processBuilder.ListenFor().OnResult(summarizerStep).StopProcess();
