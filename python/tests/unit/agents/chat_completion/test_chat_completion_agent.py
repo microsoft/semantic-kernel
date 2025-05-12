@@ -15,6 +15,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion impo
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.history_reducer.chat_history_truncation_reducer import ChatHistoryTruncationReducer
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelServiceNotFoundError
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
@@ -137,6 +138,25 @@ def test_initialize_chat_history_agent_thread_with_id():
     thread = ChatHistoryAgentThread(thread_id="test_thread_id")
     assert thread is not None
     assert thread.id == "test_thread_id"
+
+
+def test_initialize_with_base_chat_history():
+    base_history = ChatHistory()
+    thread = ChatHistoryAgentThread(chat_history=base_history, thread_id="base_test_thread")
+    assert thread is not None
+    assert thread.id == "base_test_thread"
+    assert isinstance(thread._chat_history, ChatHistory)
+    assert not isinstance(thread._chat_history, ChatHistoryTruncationReducer)
+
+
+def test_initialize_with_reducer_chat_history():
+    reducer = ChatHistoryTruncationReducer(
+        service=AsyncMock(spec=ChatCompletionClientBase), target_count=10, threshold_count=2
+    )
+    thread = ChatHistoryAgentThread(chat_history=reducer, thread_id="reducer_test_thread")
+    assert thread is not None
+    assert thread.id == "reducer_test_thread"
+    assert isinstance(thread._chat_history, ChatHistoryTruncationReducer)
 
 
 async def test_get_response(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
