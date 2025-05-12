@@ -51,7 +51,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <param name="ownsDataSource">A value indicating whether <paramref name="dataSource"/> is disposed after the collection is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public PostgresCollection(NpgsqlDataSource dataSource, string name, bool ownsDataSource, PostgresCollectionOptions? options = default)
-        : this(new PostgresDbClient(dataSource, options?.Schema, ownsDataSource), name, options)
+        : this(() => new PostgresDbClient(dataSource, options?.Schema, ownsDataSource), name, options)
     {
         Verify.NotNull(dataSource);
     }
@@ -63,53 +63,41 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <param name="name">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public PostgresCollection(string connectionString, string name, PostgresCollectionOptions? options = default)
-#pragma warning disable CA2000 // Dispose objects before losing scope
-        : this(PostgresUtils.CreateDataSource(connectionString), name, ownsDataSource: true, options)
-#pragma warning restore CA2000 // Dispose objects before losing scope
+        : this(() => new PostgresDbClient(PostgresUtils.CreateDataSource(connectionString), options?.Schema, ownsDataSource: true), name, options)
     {
+        Verify.NotNullOrWhiteSpace(connectionString);
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresCollection{TKey, TRecord}"/> class.
     /// </summary>
-    /// <param name="client">The client to use for interacting with the database.</param>
+    /// <param name="clientFactory">The client to use for interacting with the database.</param>
     /// <param name="name">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <remarks>
     /// This constructor is internal. It allows internal code to create an instance of this class with a custom client.
     /// </remarks>
-    internal PostgresCollection(PostgresDbClient client, string name, PostgresCollectionOptions? options = default)
+    internal PostgresCollection(Func<PostgresDbClient> clientFactory, string name, PostgresCollectionOptions? options)
     {
-        // Verify.
-        Verify.NotNull(client);
         Verify.NotNullOrWhiteSpace(name);
 
-        try
+        this.Name = name;
+
+        this._model = new PostgresModelBuilder()
+            .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
+
+        this._mapper = new PostgresMapper<TRecord>(this._model);
+
+        // The code above can throw, so we need to create the client after the model is built and verified.
+        // In case an exception is thrown, we don't need to dispose any resources.
+        this._client = clientFactory();
+
+        this._collectionMetadata = new()
         {
-            // Assign.
-            this.Name = name;
-
-            this._model = new PostgresModelBuilder()
-                .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
-
-            this._mapper = new PostgresMapper<TRecord>(this._model);
-
-            this._collectionMetadata = new()
-            {
-                VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
-                VectorStoreName = client.DatabaseName,
-                CollectionName = name
-            };
-        }
-        catch (Exception)
-        {
-            // Something went wrong, we dispose the client and don't store a reference.
-            client.Dispose();
-
-            throw;
-        }
-
-        this._client = client;
+            VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
+            VectorStoreName = this._client.DatabaseName,
+            CollectionName = name
+        };
     }
 
     /// <inheritdoc />

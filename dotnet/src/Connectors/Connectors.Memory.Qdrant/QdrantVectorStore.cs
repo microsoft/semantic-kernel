@@ -80,7 +80,7 @@ public sealed class QdrantVectorStore : VectorStore
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new QdrantCollection<TKey, TRecord>(this._qdrantClient.Share(), name, new()
+        => new QdrantCollection<TKey, TRecord>(() => this._qdrantClient.Share(), name, new()
         {
             HasNamedVectors = this._hasNamedVectors,
             VectorStoreRecordDefinition = vectorStoreRecordDefinition,

@@ -66,58 +66,49 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
     public QdrantCollection(QdrantClient qdrantClient, string name, bool ownsClient, QdrantCollectionOptions? options = null)
-        : this(new MockableQdrantClient(qdrantClient, ownsClient), name, options)
+        : this(() => new MockableQdrantClient(qdrantClient, ownsClient), name, options)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantCollection{TKey, TRecord}"/> class.
     /// </summary>
-    /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
+    /// <param name="clientFactory">Qdrant client factory.</param>
     /// <param name="name">The name of the collection that this <see cref="QdrantCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if the <paramref name="clientFactory"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    internal QdrantCollection(MockableQdrantClient qdrantClient, string name, QdrantCollectionOptions? options = null)
+    internal QdrantCollection(Func<MockableQdrantClient> clientFactory, string name, QdrantCollectionOptions? options = null)
     {
         // Verify.
-        Verify.NotNull(qdrantClient);
+        Verify.NotNull(clientFactory);
+        Verify.NotNullOrWhiteSpace(name);
 
-        try
+        if (typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
         {
-            Verify.NotNullOrWhiteSpace(name);
-
-            if (typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
-            {
-                throw new NotSupportedException("Only ulong and Guid keys are supported (and object for dynamic mapping).");
-            }
-
-            // Assign.
-            this.Name = name;
-
-            options ??= QdrantCollectionOptions.Default;
-            this._hasNamedVectors = options.HasNamedVectors;
-
-            this._model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(options.HasNamedVectors))
-                .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
-
-            this._mapper = new QdrantMapper<TRecord>(this._model, options.HasNamedVectors);
-
-            this._collectionMetadata = new()
-            {
-                VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
-                CollectionName = name
-            };
-        }
-        catch (Exception)
-        {
-            // Something went wrong, we dispose the client and don't store a reference.
-            qdrantClient.Dispose();
-
-            throw;
+            throw new NotSupportedException("Only ulong and Guid keys are supported (and object for dynamic mapping).");
         }
 
-        this._qdrantClient = qdrantClient;
+        // Assign.
+        this.Name = name;
+
+        options ??= QdrantCollectionOptions.Default;
+        this._hasNamedVectors = options.HasNamedVectors;
+
+        this._model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(options.HasNamedVectors))
+            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
+
+        this._mapper = new QdrantMapper<TRecord>(this._model, options.HasNamedVectors);
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
+            CollectionName = name
+        };
+
+        // The code above can throw, so we need to create the client after the model is built and verified.
+        // In case an exception is thrown, we don't need to dispose any resources.
+        this._qdrantClient = clientFactory();
     }
 
     /// <inheritdoc />

@@ -39,7 +39,7 @@ public class QdrantCollectionTests
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange.
-        using var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, collectionName);
+        using var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(() => this._qdrantClientMock.Object, collectionName);
 
         this._qdrantClientMock
             .Setup(x => x.CollectionExistsAsync(
@@ -58,7 +58,7 @@ public class QdrantCollectionTests
     public async Task CanCreateCollectionAsync()
     {
         // Arrange.
-        using var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
+        using var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(() => this._qdrantClientMock.Object, TestCollectionName);
 
         this._qdrantClientMock
             .Setup(x => x.CollectionExistsAsync(
@@ -125,7 +125,7 @@ public class QdrantCollectionTests
     public async Task CanDeleteCollectionAsync()
     {
         // Arrange.
-        using var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
+        using var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(() => this._qdrantClientMock.Object, TestCollectionName);
 
         this._qdrantClientMock
             .Setup(x => x.DeleteCollectionAsync(
@@ -455,7 +455,7 @@ public class QdrantCollectionTests
 
         // Act.
         using var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(
-            this._qdrantClientMock.Object,
+            () => this._qdrantClientMock.Object,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition });
     }
@@ -684,7 +684,7 @@ public class QdrantCollectionTests
         where T : notnull
     {
         var store = new QdrantCollection<T, SinglePropsModel<T>>(
-            this._qdrantClientMock.Object,
+            () => this._qdrantClientMock.Object,
             TestCollectionName,
             new()
             {

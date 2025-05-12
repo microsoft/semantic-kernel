@@ -86,7 +86,7 @@ public sealed class PostgresVectorStore : VectorStore
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
         => new PostgresCollection<TKey, TRecord>(
-            this._client.Share(),
+            () => this._client.Share(),
             name,
             new PostgresCollectionOptions()
             {
