@@ -44,6 +44,11 @@ public class WhiteboardBehavior : AIContextBehavior
     /// <inheritdoc/>
     public override IReadOnlyCollection<AIFunction> AIFunctions => Array.Empty<AIFunction>();
 
+    /// <summary>
+    /// Gets the current whiteboard content.
+    /// </summary>
+    public IReadOnlyList<string> CurrentWhiteboardContent => this._currentWhiteboardContent;
+
     /// <inheritdoc/>
     public override async Task OnNewMessageAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
@@ -111,9 +116,20 @@ public class WhiteboardBehavior : AIContextBehavior
             this._recentMessages.TryDequeue(out _);
         }
 
-        var inputMessagesJson = JsonSerializer.Serialize(recentMessagesList, WhiteboardBehaviorSourceGenerationContext.Default.ListChatMessage);
+        // Extrac the most important information from the input mesages.
+        var basicMessages = recentMessagesList
+            .Select(m => new BasicMessage
+            {
+                AuthorName = m.AuthorName,
+                Role = m.Role.ToString(),
+                Text = m.Text
+            });
+
+        // Serialize the input messages and the current whiteboard content to JSON.
+        var inputMessagesJson = JsonSerializer.Serialize(basicMessages, WhiteboardBehaviorSourceGenerationContext.Default.IEnumerableBasicMessage);
         var currentWhiteboardJson = JsonSerializer.Serialize(this._currentWhiteboardContent, WhiteboardBehaviorSourceGenerationContext.Default.ListString);
 
+        // Inovke the LLM to extract the latest information from the input messages and update the whiteboard.
         var result = await this._kernel.InvokePromptAsync(
             new JsonSerializerOptions(),
             MaintenancePromptTemplate,
@@ -127,11 +143,12 @@ public class WhiteboardBehavior : AIContextBehavior
             },
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
+        // Update the current whiteboard content with the LLM result.
         this._currentWhiteboardContent = JsonSerializer.Deserialize(result.ToString(), WhiteboardBehaviorSourceGenerationContext.Default.ListString) ?? [];
     }
 
     /// <summary>
-    /// Gets or sets the prompt template to use for extracting user facts and merging them with existing facts.
+    /// Gets the prompt template to use for maintaining the whiteboard.
     /// </summary>
     private const string MaintenancePromptTemplate =
         """
@@ -143,7 +160,9 @@ public class WhiteboardBehavior : AIContextBehavior
         When a decision is made, the proposals and requirements that led to the decision should be removed from the whiteboard.
         Whiteboard entries should be concise and to the point.
         The whiteboard can contain more than one piece of information for each category.
-        The maximum number of messages allowed on the whiteboard at one time is {{$maxWhiteboardMessages}}. Combine messages or remove the least important messages from the list if the maximum number of messages is reached.
+        The maximum number of messages allowed on the whiteboard at one time is {{$maxWhiteboardMessages}}.
+        Combine messages or remove the least important messages from the list if the maximum number of messages is reached.
+        Prioritize keeping detailed decisions for longer than requirements and proposals.
         Categorize whiteboard entries with a prefix of REQUIREMENT, PROPOSAL or DECISION.
         
         Here are 7 few shot examples:
@@ -151,49 +170,49 @@ public class WhiteboardBehavior : AIContextBehavior
         EXAMPLES START
 
         New Message:
-        [{"AuthorName":"Mary","Role":"user","Contents":[{"$type":"text","Text":"I want the colour scheme to be green and brown."}]}]
+        [{"AuthorName":"Mary","Role":"user","Text":"I want the colour scheme to be green and brown."}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to create a presentation."]
         New Whiteboard:
         ["REQUIREMENT - Mary wants to create a presentation.", "REQUIREMENT - The presentation colour schema should be green and brown."]
         
         New Message:
-        [{"AuthorName":"John","Role":"user","Contents":[{"$type":"text","Text":"I need you to help me with my homework."}]}]
+        [{"AuthorName":"John","Role":"user","Text":"I need you to help me with my homework."}]
         Current Whiteboard:
         []
         New Whiteboard:
         ["REQUIREMENT - John wants help with homework."]
 
         New Message:
-        [{"AuthorName":"John","Role":"user","Contents":[{"$type":"text","Text":"Hello"}]}]
+        [{"AuthorName":"John","Role":"user","Text":"Hello"}]
         Current Whiteboard:
         []
         New Whiteboard:
         []
         
         New Message:
-        [{"AuthorName":"Mary","Role":"user","Contents":[{"$type":"text","Text":"I've changed my mind, I want to go to London instead."}]}]
+        [{"AuthorName":"Mary","Role":"user","Text":"I've changed my mind, I want to go to London instead."}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris."]
         New Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to London."]
         
         New Message:
-        [{"AuthorName":"TravelAgent","Role":"assistant","Contents":[{"$type":"text","Text":"Here is an itinerary for your trip to Paris. Departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."}]}]
+        [{"AuthorName":"TravelAgent","Role":"assistant","Text":"Here is an itinerary for your trip to Paris. Departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025."]
         New Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
         
         New Message:
-        [{"AuthorName":"Mary","Role":"user","Contents":[{"$type":"text","Text":"That sounds good, let's book that."}]}]
+        [{"AuthorName":"Mary","Role":"user","Text":"That sounds good, let's book that."}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
         New Whiteboard:
         [""DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
 
         New Message:
-        [{"AuthorName":"Mary","Role":"user","Contents":[{"$type":"text","Text":"I don't like the suggested option. Can I leave a day earlier and fly with anyone but NotsocheapoAir?"}]}]
+        [{"AuthorName":"Mary","Role":"user","Text":"I don't like the suggested option. Can I leave a day earlier and fly with anyone but NotsocheapoAir?"}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
         New Whiteboard:
@@ -209,17 +228,30 @@ public class WhiteboardBehavior : AIContextBehavior
         {{$currentWhiteboard}}
         New Whiteboard:
         """;
+
+    /// <summary>
+    /// A simple message class that contains just the most basic msessage information
+    /// that is required to pass to the LLM.
+    /// </summary>
+    internal class BasicMessage
+    {
+        public string? AuthorName { get; set; }
+        public string Role { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+    }
 }
 
+/// <summary>
+/// Source generated json serializer for <see cref="WhiteboardBehavior"/>.
+/// </summary>
 [Experimental("SKEXP0130")]
 [JsonSourceGenerationOptions(JsonSerializerDefaults.General,
-    UseStringEnumConverter = true,
+    UseStringEnumConverter = false,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     WriteIndented = false)]
-[JsonSerializable(typeof(List<ChatMessage>))]
+[JsonSerializable(typeof(IEnumerable<WhiteboardBehavior.BasicMessage>))]
+[JsonSerializable(typeof(WhiteboardBehavior.BasicMessage))]
 [JsonSerializable(typeof(List<string>))]
-[JsonSerializable(typeof(ChatMessage))]
-[JsonSerializable(typeof(ChatRole))]
 internal partial class WhiteboardBehaviorSourceGenerationContext : JsonSerializerContext
 {
 }
