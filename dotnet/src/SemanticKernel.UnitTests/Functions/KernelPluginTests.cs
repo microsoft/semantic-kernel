@@ -205,7 +205,7 @@ public class KernelPluginTests
             ]);
 
         Kernel? kernel = withKernel ? new Kernel() : null;
-        AIFunction[] funcs = plugin.CloneFunctions(kernel).ToArray();
+        AIFunction[] funcs = plugin.AsAIFunctions(kernel).ToArray();
         Assert.Equal(2, funcs.Length);
 
         Assert.Equal("PluginName_Function1", funcs[0].Name);

@@ -16,12 +16,11 @@ namespace Microsoft.SemanticKernel;
 public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInvocationContext
 {
     private ChatHistory? _chatHistory;
-    private KernelFunction? _kernelFunction;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="Microsoft.Extensions.AI.FunctionInvocationContext"/>.
     /// </summary>
-    internal AutoFunctionInvocationContext(ChatOptions options)
+    internal AutoFunctionInvocationContext(ChatOptions options, KernelFunction kernelFunction)
     {
         Verify.NotNull(options);
 
@@ -41,7 +40,8 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
 
         this.ExecutionSettings = executionSettings;
         this.Options = options;
-        this.Result = new FunctionResult(this.Function) { Culture = kernel.Culture };
+        this.AIFunction = kernelFunction;
+        this.Result = new FunctionResult(kernelFunction) { Culture = kernel.Culture };
     }
 
     /// <summary>
@@ -74,7 +74,6 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
             }
         };
 
-        this._kernelFunction = function;
         this._chatHistory = chatHistory;
         this.Messages = chatHistory.ToChatMessageList();
         chatHistory.SetChatMessageHandlers(this.Messages);
@@ -179,15 +178,12 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     {
         get
         {
-            if (this._kernelFunction is null
-                || !IsSameSchema(this._kernelFunction, base.Function))
+            if (this.AIFunction is KernelFunction kf)
             {
-                // If the schemas are different,
-                // AIFunction reference potentially was modified and the kernel function should be regenerated.
-                this._kernelFunction = base.Function.AsKernelFunction();
+                return kf;
             }
 
-            return this._kernelFunction;
+            throw new InvalidOperationException($"The function provided in the initialization must be of type {nameof(KernelFunction)}.");
         }
     }
 

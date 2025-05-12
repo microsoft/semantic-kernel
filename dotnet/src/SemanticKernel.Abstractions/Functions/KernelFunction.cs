@@ -95,7 +95,7 @@ public abstract class KernelFunction : AIFunction
     /// The plugin name will be null if the function has not been added to a plugin.
     /// When a function is added to a plugin it will be cloned and the plugin name will be set.
     /// </remarks>
-    public string? PluginName => this.UseFullyQualifiedName ? null : this.Metadata.PluginName;
+    public string? PluginName => this.Metadata.PluginName;
 
     /// <summary>
     /// Gets a description of the function.
@@ -454,9 +454,11 @@ public abstract class KernelFunction : AIFunction
     public abstract KernelFunction Clone(string? pluginName = null);
 
     /// <inheritdoc/>
-    public override string ToString() => string.IsNullOrWhiteSpace(this.PluginName) ?
-        this.Name :
-        $"{this.PluginName}.{this.Name}";
+    public override string ToString() => this.UseFullyQualifiedName && !string.IsNullOrWhiteSpace(this.Metadata.PluginName)
+            ? $"{this.Metadata.PluginName}_{this.Metadata.Name}"
+            : string.IsNullOrWhiteSpace(this.PluginName)
+            ? this.Name
+            : $"{this.PluginName}.{this.Name}";
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
@@ -476,9 +478,9 @@ public abstract class KernelFunction : AIFunction
     /// <remarks>
     /// When using the <see cref="AIFunction.InvokeAsync"/> interface, the <see cref="Kernel"/> will be acquired as follows, in order of priority:
     /// <list type="number">
-    /// <item>From the <see cref="Kernel"/> provided in <see cref="KernelFunctionExtensions.Clone(KernelFunction,SemanticKernel.Kernel,string?)"/> when Cloning the <see cref="KernelFunction"/>.</item>
     /// <item>From the <see cref="AIFunctionArguments"/> dictionary with the <see cref="AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey"/> key.</item>
     /// <item>From the <see cref="AIFunctionArguments"/>.<see cref="AIFunctionArguments.Services"/> service provider.</item>
+    /// <item>From the <see cref="Kernel"/> provided in <see cref="KernelFunctionExtensions.Clone(KernelFunction,SemanticKernel.Kernel,string?)"/> when Cloning the <see cref="KernelFunction"/>.</item>
     /// <item>A new <see cref="Kernel"/> instance will be created using the same service provider in the <see cref="AIFunctionArguments"/>.<see cref="AIFunctionArguments.Services"/>.</item>
     /// </list>
     /// </remarks>
@@ -487,12 +489,11 @@ public abstract class KernelFunction : AIFunction
     /// <returns>The result of the function's execution.</returns>
     protected override async ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken)
     {
-        Kernel? kernel = this.Kernel;
-        if (kernel is null)
-        {
-            arguments.TryGetValue(AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey, out var kernelObject);
-            kernel = kernelObject as Kernel ?? new(arguments.Services);
-        }
+        Kernel kernel = (arguments.TryGetValue(AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey, out var kernelObject) && kernelObject is not null)
+            ? (kernelObject as Kernel)!
+            : arguments.Services?.GetService(typeof(Kernel)) as Kernel
+            ?? this.Kernel
+            ?? new(arguments.Services);
 
         var kernelArguments = new KernelArguments(arguments);
 

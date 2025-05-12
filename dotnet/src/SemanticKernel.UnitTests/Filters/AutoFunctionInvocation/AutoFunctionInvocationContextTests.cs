@@ -214,7 +214,7 @@ public class AutoFunctionInvocationContextTests
         };
 
         // Act
-        var context = new AutoFunctionInvocationContext(options);
+        var context = new AutoFunctionInvocationContext(options, function);
 
         // Assert
         Assert.Same(executionSettings, context.ExecutionSettings);
