@@ -764,7 +764,7 @@ class OpenAIResponsesAgent(Agent):
         function_choice_behavior = function_choice_behavior or self.function_choice_behavior
         assert function_choice_behavior is not None  # nosec
 
-        async for is_visible, response in ResponsesAgentThreadActions.invoke(
+        async for is_visible, message in ResponsesAgentThreadActions.invoke(
             agent=self,
             chat_history=chat_history,
             thread=thread,
@@ -774,13 +774,15 @@ class OpenAIResponsesAgent(Agent):
             function_choice_behavior=function_choice_behavior,
             **response_level_params,  # type: ignore
         ):
-            response.metadata["thread_id"] = thread.id
-            await thread.on_new_message(response)
-            if on_intermediate_message:
-                await on_intermediate_message(response)
+            message.metadata["thread_id"] = thread.id
+            await thread.on_new_message(message)
 
             if is_visible:
-                yield AgentResponseItem(message=response, thread=thread)
+                # Only yield visible messages
+                yield AgentResponseItem(message=message, thread=thread)
+            elif on_intermediate_message:
+                # Emit tool-related messages only via callback
+                await on_intermediate_message(message)
 
     @trace_agent_invocation
     @override
@@ -880,7 +882,8 @@ class OpenAIResponsesAgent(Agent):
 
         collected_messages: list[ChatMessageContent] | None = [] if on_intermediate_message else None
 
-        async for response in ResponsesAgentThreadActions.invoke_stream(
+        start_idx = 0
+        async for message in ResponsesAgentThreadActions.invoke_stream(
             agent=self,
             chat_history=chat_history,
             thread=thread,
@@ -891,14 +894,20 @@ class OpenAIResponsesAgent(Agent):
             function_choice_behavior=function_choice_behavior,
             **response_level_params,  # type: ignore
         ):
-            response.metadata["thread_id"] = thread.id
-            yield AgentResponseItem(message=response, thread=thread)
+            # Before yielding the current streamed message, emit any new full messages first
+            if collected_messages is not None:
+                new_messages = collected_messages[start_idx:]
+                start_idx = len(collected_messages)
 
-        for message in collected_messages or []:
+                for new_msg in new_messages:
+                    new_msg.metadata["thread_id"] = thread.id
+                    await thread.on_new_message(new_msg)
+                    if on_intermediate_message:
+                        await on_intermediate_message(new_msg)
+
+            # Now yield the current streamed content (StreamingTextContent)
             message.metadata["thread_id"] = thread.id
-            await thread.on_new_message(message)
-            if on_intermediate_message:
-                await on_intermediate_message(message)
+            yield AgentResponseItem(message=message, thread=thread)
 
     def _prepare_input_message(
         self,
