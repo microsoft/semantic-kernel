@@ -243,9 +243,11 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
         data: dict,
         *,
         kernel: "Kernel | None" = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         **kwargs,
     ) -> "ChatCompletionAgent":
-        fields = cls._normalize_spec_fields(data, kernel=kernel)
+        # Returns the normalized spec fields and a kernel configured with plugins, if present.
+        fields, kernel = cls._normalize_spec_fields(data, kernel=kernel, plugins=plugins, **kwargs)
 
         if "service" in kwargs:
             fields["service"] = kwargs["service"]
@@ -253,7 +255,7 @@ class ChatCompletionAgent(DeclarativeSpecMixin, Agent):
         if "function_choice_behavior" in kwargs:
             fields["function_choice_behavior"] = kwargs["function_choice_behavior"]
 
-        return cls(**fields)
+        return cls(**fields, kernel=kernel)
 
     # endregion
 

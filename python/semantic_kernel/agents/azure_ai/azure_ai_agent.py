@@ -461,7 +461,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         kernel: Kernel,
         prompt_template_config: PromptTemplateConfig | None = None,
         **kwargs,
-    ) -> "AzureAIAgent":
+    ) -> _T:
         """Create an Azure AI Agent from the provided dictionary.
 
         Args:
@@ -512,7 +512,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             raise ValueError("model.id required when creating a new Azure AI agent")
 
         # Build tool definitions & resources
-        tool_objs = [_build_tool(t, kernel) for t in spec.tools]
+        tool_objs = [_build_tool(t, kernel) for t in spec.tools if t.type != "function"]
         tool_defs = [d for tool in tool_objs for d in (tool.definitions if hasattr(tool, "definitions") else [tool])]
         tool_resources = _build_tool_resources(tool_objs)
 
@@ -582,11 +582,14 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             field_mapping.update(extras)
 
         def replacer(match: re.Match[str]) -> str:
-            full_key = match.group(1)
+            """Replace the matched placeholder with the corresponding value from field_mapping."""
+            full_key = match.group(1)  # for example, AzureAI:AzureAISearchConnectionId
             section, _, key = full_key.partition(":")
             if section != "AzureAI":
                 return match.group(0)
-            return str(field_mapping.get(key, match.group(0)))
+
+            # Try short key first (AzureAISearchConnectionId), then full (AzureAI:AzureAISearchConnectionId)
+            return str(field_mapping.get(key) or field_mapping.get(full_key) or match.group(0))
 
         result = pattern.sub(replacer, yaml_str)
 

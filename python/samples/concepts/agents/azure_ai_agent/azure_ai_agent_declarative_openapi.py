@@ -13,8 +13,6 @@ user questions using the OpenAPI tool. The agent is then used to answer user
 questions that leverage a free weather API.
 """
 
-# Define the YAML string for the sample
-
 # Toggle between a JSON or a YAML OpenAPI spec
 USE_JSON_OPENAPI_SPEC = True
 

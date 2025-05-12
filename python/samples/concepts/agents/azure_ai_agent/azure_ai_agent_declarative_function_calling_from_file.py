@@ -1,18 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import os
 from typing import Annotated
 
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AgentRegistry, AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.kernel import Kernel
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers
-user questions. This sample demonstrates how to enable function calling from
-a declarative spec. The plugins/functions must already exist in the kernel.
+user questions. The sample shows how to load a declarative spec from a file. 
+The plugins/functions must already exist in the kernel.
 They are not created declaratively via the spec.
 """
 
@@ -37,24 +37,6 @@ class MenuPlugin:
 
 # Function spec
 
-spec = """ 
-type: foundry_agent
-name: FunctionCallingAgent
-description: This agent uses the provided functions to answer questions about the menu.
-instructions: Use the provided functions to answer questions about the menu.
-model:
-  id: ${AzureAI:ChatModelId}
-  connection:
-    connection_string: ${AzureAI:ConnectionString}
-  options:
-    temperature: 0.4
-tools:
-  - id: MenuPlugin.get_specials
-    type: function
-  - id: MenuPlugin.get_item_price
-    type: function
-"""
-
 settings = AzureAIAgentSettings()  # The Spec's ChatModelId & ConnectionString come from .env/env vars
 
 
@@ -64,15 +46,18 @@ async def main():
         AzureAIAgent.create_client(credential=creds) as client,
     ):
         try:
-            # Define an instance of the kernel
-            # The kernel must be supplied to be able to resolve the plugins
-            kernel = Kernel()
-            kernel.add_plugin(MenuPlugin(), "MenuPlugin")
+            # Define the YAML file path for the sample
+            file_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
+                "resources",
+                "declarative_spec",
+                "spec.yaml",
+            )
 
             # Create the AzureAI Agent from the YAML spec
-            agent: AzureAIAgent = await AgentRegistry.create_from_yaml(
-                spec,
-                kernel=kernel,
+            agent: AzureAIAgent = await AgentRegistry.create_from_file(
+                file_path,
+                plugins=[MenuPlugin()],
                 client=client,
                 settings=settings,
             )

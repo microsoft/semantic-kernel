@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import importlib
 import logging
+import threading
 import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable, Sequence
@@ -584,7 +586,8 @@ class DeclarativeSpecProtocol(Protocol):
         cls: type,
         yaml_str: str,
         *,
-        kernel: Kernel,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         settings: "KernelBaseSettings | None" = None,
         extras: dict[str, Any] | None = None,
         **kwargs,
@@ -597,12 +600,16 @@ class DeclarativeSpecProtocol(Protocol):
         cls: type,
         data: dict,
         *,
-        kernel: Kernel,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         settings: "KernelBaseSettings | None" = None,
         **kwargs,
     ) -> "Agent":
         """Create an agent from a dictionary."""
         ...
+
+
+# region Agent Type Registry
 
 
 _TAgent = TypeVar("_TAgent", bound=Agent)
@@ -627,6 +634,43 @@ def register_agent_type(agent_type: str):
     return decorator
 
 
+_BUILTIN_AGENTS_LOADED = False
+_BUILTIN_AGENTS_LOCK = threading.Lock()
+
+# List of import paths for all built-in agent modules
+# These modules must contain `@register_agent_type(...)` decorators.
+_BUILTIN_AGENT_MODULES = [
+    "semantic_kernel.agents.chat_completion.chat_completion_agent",
+    "semantic_kernel.agents.azure_ai.azure_ai_agent",
+]
+
+
+def _preload_builtin_agents() -> None:
+    """Make sure all built-in agent modules are imported at least once, so their decorators register agent types."""
+    global _BUILTIN_AGENTS_LOADED
+
+    if _BUILTIN_AGENTS_LOADED:
+        return
+
+    with _BUILTIN_AGENTS_LOCK:
+        if _BUILTIN_AGENTS_LOADED:
+            return  # Double-checked locking
+
+        failed = []
+
+        for module_name in _BUILTIN_AGENT_MODULES:
+            try:
+                importlib.import_module(module_name)
+            except Exception as ex:
+                failed.append((module_name, ex))
+
+        if failed:
+            error_msgs = "\n".join(f"- {mod}: {err}" for mod, err in failed)
+            raise RuntimeError(f"Failed to preload the following built-in agent modules:\n{error_msgs}")
+
+        _BUILTIN_AGENTS_LOADED = True
+
+
 class AgentRegistry:
     """Responsible for creating agents from YAML, dicts, or files."""
 
@@ -648,6 +692,7 @@ class AgentRegistry:
         yaml_str: str,
         *,
         kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         settings: "KernelBaseSettings | None" = None,
         extras: dict[str, Any] | None = None,
         **kwargs,
@@ -657,6 +702,7 @@ class AgentRegistry:
         Args:
             yaml_str: The YAML string defining the agent.
             kernel: The Kernel instance to use for tool resolution and agent initialization.
+            plugins: The plugins to use for the agent.
             settings: The settings to use for the agent.
             extras: Additional parameters to resolve placeholders in the YAML.
             **kwargs: Additional parameters passed to the agent constructor if required.
@@ -672,6 +718,8 @@ class AgentRegistry:
                 yaml_str, kernel=kernel, service=AzureChatCompletion(),
             )
         """
+        _preload_builtin_agents()
+
         data = yaml.safe_load(yaml_str)
 
         agent_type = data.get("type", "").lower()
@@ -680,9 +728,6 @@ class AgentRegistry:
 
         if agent_type not in AGENT_TYPE_REGISTRY:
             raise AgentInitializationException(f"Agent type '{agent_type}' not registered.")
-
-        if not kernel:
-            kernel = Kernel()
 
         agent_cls = AGENT_TYPE_REGISTRY[agent_type]
 
@@ -697,6 +742,7 @@ class AgentRegistry:
         return await agent_cls.from_dict(
             data,
             kernel=kernel,
+            plugins=plugins,
             settings=settings,
             **kwargs,
         )
@@ -705,7 +751,8 @@ class AgentRegistry:
     async def create_from_dict(
         data: dict,
         *,
-        kernel: Kernel,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         settings: "KernelBaseSettings | None" = None,
         **kwargs,
     ) -> _TAgent:
@@ -714,6 +761,7 @@ class AgentRegistry:
         Args:
             data: The dictionary defining the agent fields.
             kernel: The Kernel instance to use for tool resolution and agent initialization.
+            plugins: The plugins to use for the agent.
             settings: The settings to use for the agent.
             **kwargs: Additional parameters passed to the agent constructor if required.
 
@@ -726,6 +774,8 @@ class AgentRegistry:
         Example:
             agent = await AgentRegistry.create_agent_from_dict(agent_data, kernel=kernel)
         """
+        _preload_builtin_agents()
+
         agent_type = data.get("type", "").lower()
 
         if not agent_type:
@@ -747,6 +797,56 @@ class AgentRegistry:
             settings=settings,
             **kwargs,
         )
+
+    @staticmethod
+    async def create_from_file(
+        file_path: str,
+        *,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+        encoding: str | None = None,
+        **kwargs,
+    ) -> _TAgent:
+        """Create a single agent instance from a YAML file.
+
+        Args:
+            file_path: Path to the YAML file defining the agent.
+            kernel: The Kernel instance to use for tool resolution and agent initialization.
+            plugins: The plugins to use for the agent.
+            settings: The settings to use for the agent.
+            extras: Additional parameters to resolve placeholders in the YAML.
+            encoding: The encoding of the file (default is 'utf-8').
+            **kwargs: Additional parameters passed to the agent constructor if required.
+
+        Returns:
+            An instance of the requested agent.
+
+        Raises:
+            AgentInitializationException: If the file is unreadable or the agent type is unsupported.
+        """
+        _preload_builtin_agents()
+
+        try:
+            if encoding is None:
+                encoding = "utf-8"
+            with open(file_path, encoding=encoding) as f:
+                yaml_str = f.read()
+        except Exception as e:
+            raise AgentInitializationException(f"Failed to read agent spec file: {e}") from e
+
+        return await AgentRegistry.create_from_yaml(
+            yaml_str,
+            kernel=kernel,
+            plugins=plugins,
+            settings=settings,
+            extras=extras,
+            **kwargs,
+        )
+
+
+# endregion
 
 
 # region DeclarativeSpecMixin
@@ -786,14 +886,15 @@ class DeclarativeSpecMixin(ABC):
         cls: type[_D],
         data: dict,
         *,
-        kernel: Kernel,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         prompt_template_config: PromptTemplateConfig | None = None,
         settings: "KernelBaseSettings | None" = None,
         **kwargs,
     ) -> _D:
         """Default implementation: call the protected _from_dict."""
         # Compose `data` and extracted common fields for the subclass
-        extracted = cls._normalize_spec_fields(data, kernel=kernel)
+        extracted, kernel = cls._normalize_spec_fields(data, kernel=kernel, plugins=plugins, **kwargs)
         return await cls._from_dict(
             {**data, **extracted},
             kernel=kernel,
@@ -834,7 +935,28 @@ class DeclarativeSpecMixin(ABC):
         data: dict,
         *,
         kernel: Kernel | None = None,
-    ) -> dict[str, Any]:
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        **kwargs,
+    ) -> tuple[dict[str, Any], Kernel]:
+        """Normalize the fields in the spec dictionary.
+
+        Returns:
+            A tuple of:
+                - Normalized constructor field dict
+                - The effective Kernel instance (created or reused)
+        """
+        if not kernel:
+            kernel = Kernel()
+
+        # Plugins provided explicitly
+        if plugins:
+            for plugin in plugins:
+                kernel.add_plugin(plugin)
+
+        # Validate tools declared in the spec exist in the kernel
+        if "tools" in data:
+            cls._validate_tools(data["tools"], kernel)
+
         fields = {
             "name": data.get("name"),
             "description": data.get("description"),
@@ -855,20 +977,17 @@ class DeclarativeSpecMixin(ABC):
                 if prompt_template_config.template is not None:
                     fields["instructions"] = prompt_template_config.template
 
-        if "tools" in data:
-            tools_list = data["tools"]
-            resolved_plugins = cls._resolve_tools(tools_list, kernel)
-            fields["plugins"] = resolved_plugins
-
-        return fields
+        return fields, kernel
 
     @classmethod
-    def _resolve_tools(cls: type[_D], tools_list: list[dict], kernel: Kernel | None = None) -> dict[str, Any]:
-        """Resolve tools by id from the kernel plugins."""
-        if kernel is None:
-            raise AgentInitializationException("Kernel instance is required for declarative tool resolution.")
+    def _validate_tools(cls: type[_D], tools_list: list[dict], kernel: Kernel) -> None:
+        """Validate tool references in the declarative spec against kernel's registered plugins.
 
-        resolved_plugins = {}
+        This validates the declared tools in the YAML spec, and only checks whether those references resolve
+        properly in the current kernel.
+        """
+        if not kernel:
+            raise AgentInitializationException("Kernel instance is required for tool resolution.")
 
         for tool in tools_list:
             tool_id = tool.get("id")
@@ -886,10 +1005,6 @@ class DeclarativeSpecMixin(ABC):
 
             if function_name not in plugin.functions:
                 raise AgentInitializationException(f"Function '{function_name}' not found in plugin '{plugin_name}'.")
-
-            resolved_plugins[tool_id] = plugin.get(function_name)
-
-        return resolved_plugins
 
 
 # endregion
