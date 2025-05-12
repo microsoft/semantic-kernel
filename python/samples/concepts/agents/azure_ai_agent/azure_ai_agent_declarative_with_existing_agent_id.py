@@ -27,6 +27,9 @@ async def main():
     ):
         try:
             # Create the AzureAI Agent from the YAML spec
+            # Note: the extras can be provided in the short-format (shown below) or
+            # in the long-format (as shown in the YAML spec, with the `AzureAI:` prefix).
+            # The short-format is used here for brevity
             agent: AzureAIAgent = await AgentRegistry.create_from_yaml(
                 yaml_str=spec,
                 client=client,

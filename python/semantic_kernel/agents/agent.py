@@ -862,7 +862,8 @@ class DeclarativeSpecMixin(ABC):
         cls: type[_D],
         yaml_str: str,
         *,
-        kernel: Kernel,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         prompt_template_config: PromptTemplateConfig | None = None,
         settings: "KernelBaseSettings | None" = None,
         extras: dict[str, Any] | None = None,
@@ -876,6 +877,7 @@ class DeclarativeSpecMixin(ABC):
         return await cls.from_dict(
             data,
             kernel=kernel,
+            plugins=plugins,
             prompt_template_config=prompt_template_config,
             settings=settings,
             **kwargs,
@@ -962,7 +964,6 @@ class DeclarativeSpecMixin(ABC):
             "description": data.get("description"),
             "instructions": data.get("instructions"),
             "arguments": KernelArguments(**(data.get("model", {}).get("options", {}))) if data.get("model") else None,
-            "kernel": kernel,
         }
 
         # Handle prompt_template if available

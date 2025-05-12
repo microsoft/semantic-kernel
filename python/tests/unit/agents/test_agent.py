@@ -337,12 +337,12 @@ class TestAgent(DeclarativeSpecMixin, Agent):
         return yaml_str
 
     @classmethod
-    async def _from_dict(cls, data, **kwargs):
+    async def _from_dict(cls, data, kernel, **kwargs):
         return cls(
             name=data.get("name"),
             description=data.get("description"),
             instructions=data.get("instructions"),
-            kernel=data.get("kernel"),
+            kernel=kernel,
         )
 
     async def get_response(self, messages, instructions_override=None):
