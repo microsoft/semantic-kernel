@@ -24,7 +24,7 @@ using Moq.Protected;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 /// <summary>
-/// Unit tests for the service collection extensions in the <see cref="AzureOpenAIServiceCollectionExtensions"/> class.
+/// Unit tests for the service collection extensions in the <see cref="Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions"/> class.
 /// </summary>
 public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
 {

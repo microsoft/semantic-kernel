@@ -2,13 +2,14 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides extension methods for the <see cref="IKernelBuilder"/> class to configure Mistral connectors.
 /// </summary>
-public static partial class MistralAIKernelBuilderExtensions
+public static class MistralAIKernelBuilderExtensions
 {
     /// <summary>
     /// Adds an Mistral chat completion service with the specified configuration.
@@ -59,6 +60,38 @@ public static partial class MistralAIKernelBuilderExtensions
         Verify.NotNull(builder);
 
         builder.Services.AddMistralTextEmbeddingGeneration(modelId, apiKey, endpoint, serviceId, httpClient);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds a MistralAI embedding generator service to the kernel.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="modelId">The name of the MistralAI modelId.</param>
+    /// <param name="apiKey">The API key required for accessing the MistralAI service.</param>
+    /// <param name="endpoint">Optional uri endpoint including the port where MistralAI server is hosted. Default is https://api.mistral.ai.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddMistralEmbeddingGenerator(
+        this IKernelBuilder builder,
+        string modelId,
+        string apiKey,
+        Uri? endpoint = null,
+        string? serviceId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNullOrWhiteSpace(apiKey);
+
+        builder.Services.AddMistralEmbeddingGenerator(
+            modelId,
+            apiKey,
+            endpoint,
+            serviceId,
+            httpClient);
 
         return builder;
     }

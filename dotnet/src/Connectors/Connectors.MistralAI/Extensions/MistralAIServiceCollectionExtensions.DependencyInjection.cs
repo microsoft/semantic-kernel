@@ -6,6 +6,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -37,12 +38,15 @@ public static class MistralAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
+#pragma warning disable CS0618 // Type or member is obsolete
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new MistralAIEmbeddingGenerator(
+            new MistralAITextEmbeddingGenerationService(
                 modelId,
                 apiKey,
                 endpoint,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>()));
+                serviceProvider.GetService<ILoggerFactory>())
+            .AsEmbeddingGenerator());
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

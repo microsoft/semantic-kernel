@@ -5,13 +5,13 @@ using System.Net.Http;
 using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Provides extension methods for <see cref="IServiceCollection"/> to configure Azure OpenAI connectors.
