@@ -40,12 +40,13 @@ public static class VectorDataStrings
 
     private static string TypeName(this Type type)
     {
-        if (!type.IsGenericType)
+        var i = type.Name.IndexOf('`');
+        if (i == -1)
         {
             return type.Name;
         }
 
-        var genericTypeName = type.Name.Substring(0, type.Name.IndexOf('`'));
+        var genericTypeName = type.Name.Substring(0, i);
         var genericArgs = string.Join(", ", type.GetGenericArguments().Select(t => t.TypeName()));
         return $"{genericTypeName}<{genericArgs}>";
     }
