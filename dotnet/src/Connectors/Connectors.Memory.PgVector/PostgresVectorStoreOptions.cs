@@ -36,7 +36,7 @@ public sealed class PostgresVectorStoreOptions
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the data source should be disposed after the vector store is disposed.
+    /// Gets or sets a value indicating whether the data source must be disposed by the vector store when the vector store is disposed.
     /// </summary>
     public bool OwnsDataSource { get; set; } = true;
 }
