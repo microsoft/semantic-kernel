@@ -32,7 +32,7 @@ public sealed class PostgresVectorStore : VectorStore
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
     /// </summary>
     /// <param name="dataSource">Postgres data source.</param>
-    /// <param name="ownsDataSource">A value indicating whether the data source must be disposed after the vector store is disposed.</param>
+    /// <param name="ownsDataSource">A value indicating whether <paramref name="dataSource"/> is disposed after the vector store is disposed.</param>
     /// <param name="options">Optional configuration options for this class</param>
     public PostgresVectorStore(NpgsqlDataSource dataSource, bool ownsDataSource, PostgresVectorStoreOptions? options = default)
     {

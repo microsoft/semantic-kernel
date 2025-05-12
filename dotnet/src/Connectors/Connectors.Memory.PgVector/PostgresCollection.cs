@@ -48,7 +48,7 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// </summary>
     /// <param name="dataSource">The data source to use for connecting to the database.</param>
     /// <param name="name">The name of the collection.</param>
-    /// <param name="ownsDataSource">A value indicating whether the data source must be disposed after the collection is disposed.</param>
+    /// <param name="ownsDataSource">A value indicating whether <paramref name="dataSource"/> is disposed after the collection is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public PostgresCollection(NpgsqlDataSource dataSource, string name, bool ownsDataSource, PostgresCollectionOptions? options = default)
         : this(new PostgresDbClient(dataSource, options?.Schema, ownsDataSource), name, options)
@@ -84,21 +84,32 @@ public sealed class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TK
         Verify.NotNull(client);
         Verify.NotNullOrWhiteSpace(name);
 
-        // Assign.
-        this._client = client;
-        this.Name = name;
-
-        this._model = new PostgresModelBuilder()
-            .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
-
-        this._mapper = new PostgresMapper<TRecord>(this._model);
-
-        this._collectionMetadata = new()
+        try
         {
-            VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
-            VectorStoreName = this._client.DatabaseName,
-            CollectionName = name
-        };
+            // Assign.
+            this.Name = name;
+
+            this._model = new PostgresModelBuilder()
+                .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
+
+            this._mapper = new PostgresMapper<TRecord>(this._model);
+
+            this._collectionMetadata = new()
+            {
+                VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
+                VectorStoreName = client.DatabaseName,
+                CollectionName = name
+            };
+        }
+        catch (Exception)
+        {
+            // Something went wrong, we dispose the client and don't store a reference.
+            client.Dispose();
+
+            throw;
+        }
+
+        this._client = client;
     }
 
     /// <inheritdoc />

@@ -38,7 +38,7 @@ public sealed class QdrantVectorStore : VectorStore
     /// Initializes a new instance of the <see cref="QdrantVectorStore"/> class.
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
-    /// <param name="ownsClient">A value indicating whether the client must be disposed after the vector store is disposed.</param>
+    /// <param name="ownsClient">A value indicating whether <paramref name="qdrantClient"/> is disposed after the vector store is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public QdrantVectorStore(QdrantClient qdrantClient, bool ownsClient, QdrantVectorStoreOptions? options = default)
         : this(new MockableQdrantClient(qdrantClient, ownsClient), options)

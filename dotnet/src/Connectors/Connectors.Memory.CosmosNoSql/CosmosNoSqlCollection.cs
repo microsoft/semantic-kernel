@@ -102,14 +102,65 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
         string name,
         CosmosNoSqlCollectionOptions? options)
     {
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(CosmosNoSqlCompositeKey) && typeof(TKey) != typeof(object))
-        {
-            throw new NotSupportedException($"Only {nameof(String)} and {nameof(CosmosNoSqlCompositeKey)} keys are supported (and object for dynamic mapping).");
-        }
-
         try
         {
+            if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(CosmosNoSqlCompositeKey) && typeof(TKey) != typeof(object))
+            {
+                throw new NotSupportedException($"Only {nameof(String)} and {nameof(CosmosNoSqlCompositeKey)} keys are supported (and object for dynamic mapping).");
+            }
+
             this._database = databaseProvider(clientWrapper.Client);
+
+            if (clientWrapper.Client.ClientOptions?.UseSystemTextJsonSerializerWithOptions is null)
+            {
+                throw new ArgumentException(
+                    $"Property {nameof(CosmosClientOptions.UseSystemTextJsonSerializerWithOptions)} in CosmosClient.ClientOptions " +
+                    $"is required to be configured for {nameof(CosmosNoSqlCollection<TKey, TRecord>)}.");
+            }
+
+            // Assign.
+            this.Name = name;
+
+            options ??= CosmosNoSqlCollectionOptions.Default;
+            this._indexingMode = options.IndexingMode;
+            this._automatic = options.Automatic;
+            var jsonSerializerOptions = options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
+
+            this._model = new CosmosNoSqlModelBuilder()
+                .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, jsonSerializerOptions);
+
+            // Assign mapper.
+            this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? (new CosmosNoSqlDynamicMapper(this._model, jsonSerializerOptions) as ICosmosNoSqlMapper<TRecord>)!
+                : new CosmosNoSqlMapper<TRecord>(this._model, options.JsonSerializerOptions);
+
+            // Setup partition key property
+            if (options.PartitionKeyPropertyName is not null)
+            {
+                if (!this._model.PropertyMap.TryGetValue(options.PartitionKeyPropertyName, out var property))
+                {
+                    throw new ArgumentException($"Partition key property '{options.PartitionKeyPropertyName}' is not part of the record definition.");
+                }
+
+                if (property.Type != typeof(string))
+                {
+                    throw new ArgumentException("Partition key property must be string.");
+                }
+
+                this._partitionKeyProperty = property;
+            }
+            else
+            {
+                // If partition key is not provided, use key property as a partition key.
+                this._partitionKeyProperty = this._model.KeyProperty;
+            }
+
+            this._collectionMetadata = new()
+            {
+                VectorStoreSystemName = CosmosNoSqlConstants.VectorStoreSystemName,
+                VectorStoreName = this._database.Id,
+                CollectionName = name
+            };
         }
         catch (Exception)
         {
@@ -119,57 +170,7 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
             throw;
         }
 
-        if (clientWrapper.Client.ClientOptions?.UseSystemTextJsonSerializerWithOptions is null)
-        {
-            throw new ArgumentException(
-                $"Property {nameof(CosmosClientOptions.UseSystemTextJsonSerializerWithOptions)} in CosmosClient.ClientOptions " +
-                $"is required to be configured for {nameof(CosmosNoSqlCollection<TKey, TRecord>)}.");
-        }
-
-        // Assign.
         this._clientWrapper = clientWrapper;
-        this.Name = name;
-
-        options ??= CosmosNoSqlCollectionOptions.Default;
-        this._indexingMode = options.IndexingMode;
-        this._automatic = options.Automatic;
-        var jsonSerializerOptions = options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
-
-        this._model = new CosmosNoSqlModelBuilder()
-            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, jsonSerializerOptions);
-
-        // Assign mapper.
-        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
-            ? (new CosmosNoSqlDynamicMapper(this._model, jsonSerializerOptions) as ICosmosNoSqlMapper<TRecord>)!
-            : new CosmosNoSqlMapper<TRecord>(this._model, options.JsonSerializerOptions);
-
-        // Setup partition key property
-        if (options.PartitionKeyPropertyName is not null)
-        {
-            if (!this._model.PropertyMap.TryGetValue(options.PartitionKeyPropertyName, out var property))
-            {
-                throw new ArgumentException($"Partition key property '{options.PartitionKeyPropertyName}' is not part of the record definition.");
-            }
-
-            if (property.Type != typeof(string))
-            {
-                throw new ArgumentException("Partition key property must be string.");
-            }
-
-            this._partitionKeyProperty = property;
-        }
-        else
-        {
-            // If partition key is not provided, use key property as a partition key.
-            this._partitionKeyProperty = this._model.KeyProperty;
-        }
-
-        this._collectionMetadata = new()
-        {
-            VectorStoreSystemName = CosmosNoSqlConstants.VectorStoreSystemName,
-            VectorStoreName = this._database.Id,
-            CollectionName = name
-        };
     }
 
     /// <inheritdoc/>

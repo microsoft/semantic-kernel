@@ -54,7 +54,7 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     /// <param name="storeOptions">Optional configuration options for <see cref="VectorStore"/>.</param>
     public CosmosNoSqlVectorStore(string connectionString, string databaseName,
         CosmosClientOptions? clientOptions = null, CosmosNoSqlVectorStoreOptions? storeOptions = null)
-        : this(new(new(connectionString, clientOptions), ownsClient: true), client => client.GetDatabase(databaseName), storeOptions)
+        : this(new ClientWrapper(new CosmosClient(connectionString, clientOptions), ownsClient: true), client => client.GetDatabase(databaseName), storeOptions)
     {
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNullOrWhiteSpace(databaseName);
@@ -66,6 +66,14 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         try
         {
             this._database = databaseProvider(clientWrapper.Client);
+            this._embeddingGenerator = options?.EmbeddingGenerator;
+            this._jsonSerializerOptions = options?.JsonSerializerOptions;
+
+            this._metadata = new()
+            {
+                VectorStoreSystemName = CosmosNoSqlConstants.VectorStoreSystemName,
+                VectorStoreName = this._database.Id
+            };
         }
         catch (Exception)
         {
@@ -76,14 +84,6 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         }
 
         this._clientWrapper = clientWrapper;
-        this._embeddingGenerator = options?.EmbeddingGenerator;
-        this._jsonSerializerOptions = options?.JsonSerializerOptions;
-
-        this._metadata = new()
-        {
-            VectorStoreSystemName = CosmosNoSqlConstants.VectorStoreSystemName,
-            VectorStoreName = this._database.Id
-        };
     }
 
     /// <inheritdoc/>

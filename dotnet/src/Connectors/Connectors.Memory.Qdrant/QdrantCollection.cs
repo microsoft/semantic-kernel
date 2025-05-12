@@ -61,7 +61,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
     /// <param name="name">The name of the collection that this <see cref="QdrantCollection{TKey, TRecord}"/> will access.</param>
-    /// <param name="ownsClient">A value indicating whether the client must be disposed after the collection is disposed.</param>
+    /// <param name="ownsClient">A value indicating whether <paramref name="qdrantClient"/> is disposed after the collection is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
@@ -82,30 +82,42 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     {
         // Verify.
         Verify.NotNull(qdrantClient);
-        Verify.NotNullOrWhiteSpace(name);
 
-        if (typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
+        try
         {
-            throw new NotSupportedException("Only ulong and Guid keys are supported (and object for dynamic mapping).");
+            Verify.NotNullOrWhiteSpace(name);
+
+            if (typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
+            {
+                throw new NotSupportedException("Only ulong and Guid keys are supported (and object for dynamic mapping).");
+            }
+
+            // Assign.
+            this.Name = name;
+
+            options ??= QdrantCollectionOptions.Default;
+            this._hasNamedVectors = options.HasNamedVectors;
+
+            this._model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(options.HasNamedVectors))
+                .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
+
+            this._mapper = new QdrantMapper<TRecord>(this._model, options.HasNamedVectors);
+
+            this._collectionMetadata = new()
+            {
+                VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
+                CollectionName = name
+            };
+        }
+        catch (Exception)
+        {
+            // Something went wrong, we dispose the client and don't store a reference.
+            qdrantClient.Dispose();
+
+            throw;
         }
 
-        // Assign.
         this._qdrantClient = qdrantClient;
-        this.Name = name;
-
-        options ??= QdrantCollectionOptions.Default;
-        this._hasNamedVectors = options.HasNamedVectors;
-
-        this._model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(options.HasNamedVectors))
-            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
-
-        this._mapper = new QdrantMapper<TRecord>(this._model, options.HasNamedVectors);
-
-        this._collectionMetadata = new()
-        {
-            VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
-            CollectionName = name
-        };
     }
 
     /// <inheritdoc />
