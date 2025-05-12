@@ -32,7 +32,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             model:
               id: ${AzureAI:ChatModelId}
               connection:
-                endpoint: ${AzureAI:Endpoint}
+                connection_string: ${AzureAI:ConnectionString}
             """;
         AzureAIAgentFactory factory = new();
 
