@@ -71,7 +71,7 @@ public abstract class VectorStore : IDisposable
     public abstract object? GetService(Type serviceType, object? serviceKey = null);
 
     /// <summary>
-    /// Disposes the <see cref="VectorStoreCollection{TKey, TRecord}"/> and releases any resources it holds.
+    /// Disposes the <see cref="VectorStore"/> and releases any resources it holds.
     /// </summary>
     /// <param name="disposing">True if called from <see cref="Dispose()"/>, false if called from a finalizer.</param>
     protected virtual void Dispose(bool disposing)
