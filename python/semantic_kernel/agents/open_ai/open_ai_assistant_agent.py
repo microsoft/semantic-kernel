@@ -636,21 +636,22 @@ class OpenAIAssistantAgent(Agent):
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 
-        async for is_visible, response in AssistantThreadActions.invoke(
+        async for is_visible, message in AssistantThreadActions.invoke(
             agent=self,
             thread_id=thread.id,
             kernel=kernel,
             arguments=arguments,
             **run_level_params,  # type: ignore
         ):
-            response.metadata["thread_id"] = thread.id
-            await thread.on_new_message(response)
-
-            if on_intermediate_message:
-                await on_intermediate_message(response)
+            message.metadata["thread_id"] = thread.id
+            await thread.on_new_message(message)
 
             if is_visible:
-                yield AgentResponseItem(message=response, thread=thread)
+                # Only yield visible messages
+                yield AgentResponseItem(message=message, thread=thread)
+            elif on_intermediate_message:
+                # Emit tool-related messages only via callback
+                await on_intermediate_message(message)
 
     @trace_agent_invocation
     @override
@@ -743,21 +744,28 @@ class OpenAIAssistantAgent(Agent):
 
         collected_messages: list[ChatMessageContent] | None = [] if on_intermediate_message else None
 
+        start_idx = 0
         async for message in AssistantThreadActions.invoke_stream(
             agent=self,
             thread_id=thread.id,
+            output_messages=collected_messages,
             kernel=kernel,
             arguments=arguments,
-            output_messages=collected_messages,
             **run_level_params,  # type: ignore
         ):
+            # Before yielding the current streamed message, emit any new full messages first
+            if collected_messages is not None:
+                new_messages = collected_messages[start_idx:]
+                start_idx = len(collected_messages)
+
+                for new_msg in new_messages:
+                    new_msg.metadata["thread_id"] = thread.id
+                    await thread.on_new_message(new_msg)
+                    if on_intermediate_message:
+                        await on_intermediate_message(new_msg)
+
+            # Now yield the current streamed content (StreamingTextContent)
             message.metadata["thread_id"] = thread.id
             yield AgentResponseItem(message=message, thread=thread)
-
-        for message in collected_messages or []:  # type: ignore
-            message.metadata["thread_id"] = thread.id
-            await thread.on_new_message(message)
-            if on_intermediate_message:
-                await on_intermediate_message(message)
 
     # endregion

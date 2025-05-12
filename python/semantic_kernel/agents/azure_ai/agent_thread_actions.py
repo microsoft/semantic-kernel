@@ -43,7 +43,6 @@ from semantic_kernel.agents.azure_ai.agent_content_generation import (
     generate_streaming_azure_ai_search_content,
     generate_streaming_bing_grounding_content,
     generate_streaming_code_interpreter_content,
-    generate_streaming_function_content,
     generate_streaming_message_content,
     get_function_call_contents,
 )
@@ -493,8 +492,8 @@ class AgentThreadActions:
                             for tool_call in details.tool_calls:
                                 content = None
                                 match tool_call.type:
-                                    case AgentsNamedToolChoiceType.FUNCTION:
-                                        content = generate_streaming_function_content(agent.name, details)
+                                    # Function Calling-related content is emitted as a single message
+                                    # via the `on_intermediate_message` callback.
                                     case AgentsNamedToolChoiceType.CODE_INTERPRETER:
                                         content = generate_streaming_code_interpreter_content(agent.name, details)
                                         content_is_visible = True
@@ -527,22 +526,25 @@ class AgentThreadActions:
                                 f"thread: {thread_id}."
                             )
 
-                        if action_result.function_call_streaming_content:
-                            if output_messages is not None:
-                                output_messages.append(action_result.function_call_streaming_content)
-                            async for sub_content in cls._stream_tool_outputs(
-                                agent=agent,
-                                thread_id=thread_id,
-                                run=run,
-                                action_result=action_result,
-                                active_messages=active_messages,
-                                output_messages=output_messages,
-                            ):
-                                if sub_content:
-                                    yield sub_content
+                        # First: append full call + result, so they appear before streaming tool text
+                        for content in (
+                            action_result.function_call_streaming_content,
+                            action_result.function_result_streaming_content,
+                        ):
+                            if content and output_messages is not None:
+                                output_messages.append(content)
 
-                        if action_result.function_result_streaming_content and output_messages is not None:
-                            output_messages.append(action_result.function_result_streaming_content)
+                        # Then: stream tool output content
+                        async for sub_content in cls._stream_tool_outputs(
+                            agent=agent,
+                            thread_id=thread_id,
+                            run=run,
+                            action_result=action_result,
+                            active_messages=active_messages,
+                            output_messages=output_messages,
+                        ):
+                            if sub_content:
+                                yield sub_content
 
                         break
 
