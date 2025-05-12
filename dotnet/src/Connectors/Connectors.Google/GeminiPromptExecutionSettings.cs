@@ -347,6 +347,11 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         }
 
         var json = JsonSerializer.Serialize(executionSettings);
-        return JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+        var result = JsonSerializer.Deserialize<GeminiPromptExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+        if (executionSettings.FunctionChoiceBehavior is not null and AutoFunctionChoiceBehavior)
+        {
+            result.ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions;
+        }
+        return result;
     }
 }

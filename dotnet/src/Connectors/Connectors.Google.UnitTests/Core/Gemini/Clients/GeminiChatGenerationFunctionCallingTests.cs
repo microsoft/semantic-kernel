@@ -210,6 +210,35 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
     }
 
     [Fact]
+    public async Task IfAutoInvokeUsingPromptExecutionSettingsShouldAddFunctionsCalledByModelToChatHistoryAsync()
+    {
+        // Arrange
+        using var handlerStub = new MultipleHttpMessageHandlerStub();
+        handlerStub.AddJsonResponse(this._responseContentWithFunction);
+        handlerStub.AddJsonResponse(this._responseContent);
+#pragma warning disable CA2000
+        var client = this.CreateChatCompletionClient(httpClient: handlerStub.CreateHttpClient());
+#pragma warning restore CA2000
+        var chatHistory = CreateSampleChatHistory();
+        var executionSettings = new PromptExecutionSettings
+        {
+            FunctionChoiceBehavior= FunctionChoiceBehavior.Auto()
+        };
+
+        // Act
+        await client.GenerateChatMessageAsync(chatHistory, executionSettings: executionSettings, kernel: this._kernelWithFunctions);
+
+        // Assert
+        var messages = chatHistory.OfType<GeminiChatMessageContent>();
+        var contents = messages.Where(item =>
+            item.Role == AuthorRole.Assistant &&
+            item.ToolCalls is not null &&
+            item.ToolCalls.Any(toolCall => toolCall.FullyQualifiedName == this._timePluginNow.FullyQualifiedName) &&
+            item.ToolCalls.Any(toolCall => toolCall.Arguments!["param1"]!.ToString()!.Equals("hello", StringComparison.Ordinal)));
+        Assert.Single(contents);
+    }
+
+    [Fact]
     public async Task IfAutoInvokeShouldAddFunctionResponseToChatHistoryAsync()
     {
         // Arrange
