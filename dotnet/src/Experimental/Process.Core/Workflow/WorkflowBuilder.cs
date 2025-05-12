@@ -380,7 +380,7 @@ public class WorkflowBuilder
             {
                 ListenFor = new ListenCondition()
                 {
-                    From = "$.inputs.events",
+                    From = "_workflow_",
                     Event = edge.Key
                 },
                 Then = [.. edge.Value.Select(e => new ThenAction()
@@ -507,12 +507,11 @@ public class WorkflowBuilder
                 {
                     From = agentStep.State.Id,
                     Event = edge.Key.key.EndsWith("Invoke.OnResult", StringComparison.Ordinal) ? "_on_complete_" : edge.Key.key,
-
                     Condition = edge.Key.DeclarativeDefinition
                 },
                 Then = [.. edge.Value.Select(e =>
                 {
-                    if (!e.edge.Metadata.TryGetValue("foundryAgent.inputs", out object? inputsObj) || inputsObj is not Dictionary<string, string> inputsDict)
+                    if (!e.edge.Metadata.TryGetValue("foundryAgent.inputs", out object? inputsObj) || inputsObj is null || inputsObj is not Dictionary<string, string> inputsDict)
                     {
                         inputsDict = [];
                     }
@@ -527,9 +526,21 @@ public class WorkflowBuilder
                         thread = agentStep.ThreadName;
                     }
 
+                    if (e.edge.OutputTarget is null && e.edge.Update is not null)
+                    {
+                        return new ThenAction()
+                        {
+                            Type = ActionType.Update,
+                            Path = e.edge.Update.Path,
+                            Operation = e.edge.Update.Operation,
+                            Value = e.edge.Update.Value,
+                        };
+                    }
+
                     return new ThenAction()
                     {
-                        Node = e.edge.OutputTarget.StepId == ProcessConstants.EndStepName ? "End" : e.edge.OutputTarget.StepId,
+                        Type = ActionType.NodeInvocation,
+                        Node = e.edge.OutputTarget?.StepId == ProcessConstants.EndStepName ? "End" : e.edge.OutputTarget?.StepId,
                         Inputs = inputsDict,
                         MessagesIn = messagesIn,
                         Thread = thread

@@ -21,6 +21,8 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
 {
     private readonly AgentDefinition _agentDefinition;
 
+    internal Dictionary<string, string> _defaultInputBindings = [];
+
     /// <summary>
     /// Creates a new instance of the <see cref="ProcessAgentBuilder"/> class.
     /// </summary>
@@ -125,43 +127,16 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
         return this;
     }
 
-    ///// <summary>
-    ///// Sets the inputs for this agent.
-    ///// </summary>
-    ///// <param name="schema"></param>
-    ///// <param name="defaultValue"></param>
-    ///// <returns></returns>
-    //public ProcessAgentBuilder<TProcessState> WithStructuredInputs(JsonNode schema, object? defaultValue = null)
-    //{
-    //    Verify.NotNull(schema, nameof(schema));
-
-    //    this.Inputs = new NodeInputs { Schema = schema.ToJsonString(), /* Default = defaultValue */ };
-    //    return this;
-    //}
-
-    ///// <summary>
-    ///// Sets the inputs for this agent.
-    ///// </summary>
-    ///// <param name="defaultValue"></param>
-    ///// <returns></returns>
-    ///// <exception cref="KernelException"></exception>
-    //internal ProcessAgentBuilder<TProcessState> WithStructuredInput<T>(T? defaultValue = default) where T : class, new()
-    //{
-    //    return this.WithStructuredInput(typeof(T), defaultValue);
-    //}
-
     /// <summary>
     /// Sets the inputs for this agent.
     /// </summary>
-    /// <param name="name"></param>
+    /// <param name="inputName"></param>
     /// <param name="inputType"></param>
     /// <returns></returns>
     /// <exception cref="KernelException"></exception>
-    internal ProcessAgentBuilder<TProcessState> WithStructuredInput(string name, Type inputType)
+    internal ProcessAgentBuilder<TProcessState> WithStructuredInput(string inputName, Type inputType)
     {
         Verify.NotNull(inputType, nameof(inputType));
-
-        // TODO, verify that defaultValue is of the same type as inputType
 
         var schemaBuilder = new JsonSchemaBuilder();
         JsonSchema schema = schemaBuilder
@@ -169,35 +144,31 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
                     .Build();
 
         var json = schema.ToJsonDocument().RootElement.ToString();
-        this.Inputs.Add(name, inputType);
+        this.Inputs.Add(inputName, inputType);
 
         return this;
     }
-
-    //internal ProcessAgentBuilder<TProcessState> WithNodeInputs(NodeInputs nodeInputs)
-    //{
-    //    Verify.NotNull(nodeInputs, nameof(nodeInputs));
-    //    this.Inputs = nodeInputs;
-    //    return this;
-    //}
 
     /// <summary>
     /// Sets the inputs for this agent.
     /// </summary>
     /// <typeparam name="TProperty"></typeparam>
     /// <param name="propertySelector"></param>
+    /// <param name="inputName"></param>
     /// <returns></returns>
-    public ProcessAgentBuilder<TProcessState> WithUserStateInput<TProperty>(Expression<Func<TProcessState, TProperty>> propertySelector)
+    public ProcessAgentBuilder<TProcessState> WithUserStateInput<TProperty>(Expression<Func<TProcessState, TProperty>> propertySelector, string? inputName = null)
     {
         // Extract the property path and type from the expression
-        var (_boundPropertyPath, _boundPropertyType) = this.ExtractPropertyInfo(propertySelector);
+        var (_boundPropertyName, _boundPropertyPath, _boundPropertyType) = this.ExtractPropertyInfo(propertySelector);
 
-        this.Inputs.Add(_boundPropertyPath, _boundPropertyType);
+        this._defaultInputBindings[_boundPropertyName] = _boundPropertyPath;
+        this.Inputs.Add(inputName ?? _boundPropertyName, _boundPropertyType);
         return this;
     }
 
-    private (string Path, Type Type) ExtractPropertyInfo<TState, TProperty>(Expression<Func<TState, TProperty>> propertySelector)
+    private (string Name, string Path, Type Type) ExtractPropertyInfo<TState, TProperty>(Expression<Func<TState, TProperty>> propertySelector)
     {
+        string propertyName = "";
         var propertyPath = new StringBuilder();
         var expression = propertySelector.Body;
         Type? propertyType = null;
@@ -206,6 +177,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
         while (expression is MemberExpression memberExpression)
         {
             var member = memberExpression.Member;
+            propertyName = member.Name;
 
             // Add the current member name to the path
             if (propertyPath.Length > 0)
@@ -228,7 +200,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
         if (expression is ParameterExpression)
         {
             // We've reached the parameter (e.g., 'myState'), which is good
-            return (propertyPath.ToString(), propertyType ?? typeof(TProperty));
+            return (propertyName, propertyPath.ToString(), propertyType ?? typeof(TProperty));
         }
 
         throw new ArgumentException("Expression must be a property access expression", nameof(propertySelector));

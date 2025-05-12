@@ -39,12 +39,12 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// Adds a step to the process from a declarative agent.
     /// </summary>
     /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
-    /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
+    /// <param name="defaultThread">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
     /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder<TProcessState> AddStepFromAgent(AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgent(AgentDefinition agentDefinition, string? defaultThread = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNull(agentDefinition);
         if (agentDefinition.Type != AzureAIAgentFactory.AzureAIAgentType)
@@ -52,7 +52,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
             throw new ArgumentException($"The agent type '{agentDefinition.Type}' is not supported. Only '{AzureAIAgentFactory.AzureAIAgentType}' is supported.");
         }
 
-        return this._processBuilder.AddStepFromAgent<TProcessState>(agentDefinition, threadName, humanInLoopMode, aliases);
+        return this._processBuilder.AddStepFromAgent<TProcessState>(agentDefinition, defaultThread, humanInLoopMode, aliases);
     }
 
     /// <summary>

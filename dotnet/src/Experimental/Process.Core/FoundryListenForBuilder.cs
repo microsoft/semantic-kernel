@@ -24,6 +24,16 @@ public class FoundryListenForBuilder
     }
 
     /// <summary>
+    /// Listens for an input event.
+    /// </summary>
+    /// <param name="eventName"></param>
+    /// <returns></returns>
+    public ListenForTargetBuilder InputEvent(string eventName, KernelProcessEdgeCondition? condition = null)
+    {
+        return this._listenForBuilder.InputEvent(eventName, condition);
+    }
+
+    /// <summary>
     /// Defines a message to listen for from a specific process step.
     /// </summary>
     /// <param name="messageType">The type of the message.</param>

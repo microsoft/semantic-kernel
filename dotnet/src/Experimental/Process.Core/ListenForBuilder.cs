@@ -26,6 +26,18 @@ public sealed class ListenForBuilder
     }
 
     /// <summary>
+    /// Listens for an input event.
+    /// </summary>
+    /// <param name="eventName"></param>
+    /// <param name="condition"></param>
+    /// <returns></returns>
+    internal ListenForTargetBuilder InputEvent(string eventName, KernelProcessEdgeCondition? condition = null)
+    {
+        this._targetBuilder = new ListenForTargetBuilder([new(eventName, this._processBuilder, condition)], this._processBuilder);
+        return this._targetBuilder;
+    }
+
+    /// <summary>
     /// Defines a message to listen for from a specific process step.
     /// </summary>
     /// <param name="messageType">The type of the message.</param>

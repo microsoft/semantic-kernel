@@ -797,11 +797,18 @@ public class ListenEvent
 public class ThenAction
 {
     /// <summary>
+    /// Gets or sets the type.
+    /// </summary>
+    [YamlMember(Alias = "type")]
+    [JsonPropertyName("type")]
+    public ActionType Type { get; set; }
+
+    /// <summary>
     /// Gets or sets the node to execute.
     /// </summary>
     [YamlMember(Alias = "node")]
     [JsonPropertyName("node")]
-    public string Node { get; set; } = string.Empty;
+    public string? Node { get; set; }
 
     /// <summary>
     /// Gets or sets the inputs for the node.
@@ -823,6 +830,43 @@ public class ThenAction
     [YamlMember(Alias = "thread")]
     [JsonPropertyName("thread")]
     public string? Thread { get; set; }
+
+    /// <summary>
+    /// Gets or sets the variable to be updated.
+    /// </summary>
+    [YamlMember(Alias = "path")]
+    [JsonPropertyName("path")]
+    public string? Path { get; set; }
+
+    /// <summary>
+    /// Gets or sets the operation to be performed on the variable.
+    /// </summary>
+    [YamlMember(Alias = "operation")]
+    [JsonPropertyName("operation")]
+    public StateUpdateOperations? Operation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the value to be assigned to the variable.
+    /// </summary>
+    [YamlMember(Alias = "value")]
+    [JsonPropertyName("value")]
+    public object? Value { get; set; }
+}
+
+/// <summary>
+/// The types of action
+/// </summary>
+public enum ActionType
+{
+    /// <summary>
+    /// An action type for invoking a Node.
+    /// </summary>
+    NodeInvocation,
+
+    /// <summary>
+    /// An action to aply an update to user state.
+    /// </summary>
+    Update
 }
 
 /// <summary>
