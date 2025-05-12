@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
-using Microsoft.SemanticKernel.Embeddings;
 using Qdrant.Client.Grpc;
 using Xunit;
 using Xunit.Abstractions;
