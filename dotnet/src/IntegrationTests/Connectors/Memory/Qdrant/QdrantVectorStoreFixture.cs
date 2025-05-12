@@ -11,7 +11,6 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Embeddings;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -79,13 +78,6 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         Assert.NotEmpty(embeddingsConfig.DeploymentName);
         Assert.NotEmpty(embeddingsConfig.Endpoint);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        this.TextEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
-            deploymentName: embeddingsConfig.DeploymentName,
-            endpoint: embeddingsConfig.Endpoint,
-            credential: new AzureCliCredential());
-#pragma warning restore CS0618 // Type or member is obsolete
-
         this.EmbeddingGenerator = new AzureOpenAIEmbeddingGenerator(
             deploymentName: embeddingsConfig.DeploymentName,
             endpoint: embeddingsConfig.Endpoint,
@@ -96,11 +88,6 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
 
     /// <summary>Gets the qdrant client connection to use for tests.</summary>
     public QdrantClient QdrantClient { get; private set; }
-
-    /// <summary>
-    /// Gets the embedding generator to use for generating embeddings for text.
-    /// </summary>
-    public ITextEmbeddingGenerationService TextEmbeddingGenerationService { get; private set; }
 
     public IEmbeddingGenerator<string, Embedding<float>> EmbeddingGenerator { get; private set; }
 
@@ -170,7 +157,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         tagsValue2.ListValue = tags2;
 
         // Create some test data using named vectors.
-        var embedding = await this.TextEmbeddingGenerationService.GenerateEmbeddingAsync("This is a great hotel.");
+        var embedding = (await this.EmbeddingGenerator.GenerateAsync("This is a great hotel.")).Vector;
         var embeddingArray = embedding.ToArray();
 
         var namedVectors1 = new NamedVectors();

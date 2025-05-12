@@ -67,7 +67,7 @@ public class VectorStore_VectorSearch_MultiStore_AzureAISearch(ITestOutputHelper
     public async Task ExampleWithoutDIAsync()
     {
         // Create an embedding generation service.
-        var textEmbeddingGenerationService = new AzureOpenAIEmbeddingGenerator(
+        var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 new AzureCliCredential());
@@ -79,7 +79,7 @@ public class VectorStore_VectorSearch_MultiStore_AzureAISearch(ITestOutputHelper
         var vectorStore = new AzureAISearchVectorStore(searchIndexClient);
 
         // Create the common processor that works for any vector store.
-        var processor = new VectorStore_VectorSearch_MultiStore_Common(vectorStore, textEmbeddingGenerationService, this.Output);
+        var processor = new VectorStore_VectorSearch_MultiStore_Common(vectorStore, embeddingGenerator, this.Output);
 
         // Run the process and pass a key generator function to it, to generate unique record keys.
         // The key generator function is required, since different vector stores may require different key types.

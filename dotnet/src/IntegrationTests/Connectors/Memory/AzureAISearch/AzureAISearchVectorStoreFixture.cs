@@ -15,7 +15,6 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Embeddings;
 using SemanticKernel.IntegrationTests.TestSettings;
 using SemanticKernel.IntegrationTests.TestSettings.Memory;
 using Xunit;
@@ -85,13 +84,6 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         Assert.NotEmpty(embeddingsConfig.DeploymentName);
         Assert.NotEmpty(embeddingsConfig.Endpoint);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        this.TextEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
-            deploymentName: embeddingsConfig.DeploymentName,
-            endpoint: embeddingsConfig.Endpoint,
-            credential: new AzureCliCredential());
-#pragma warning restore CS0618 // Type or member is obsolete
-
         this.EmbeddingGenerator = new AzureOpenAIEmbeddingGenerator(
             deploymentName: embeddingsConfig.DeploymentName,
             endpoint: embeddingsConfig.Endpoint,
@@ -121,11 +113,6 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// Gets the embedding generator to use for generating embeddings for text.
     /// </summary>
-    public ITextEmbeddingGenerationService TextEmbeddingGenerationService { get; private set; }
-
-    /// <summary>
-    /// Gets the embedding generator to use for generating embeddings for text.
-    /// </summary>
     public IEmbeddingGenerator<string, Embedding<float>> EmbeddingGenerator { get; private set; }
 
     /// <summary>
@@ -141,7 +128,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     {
         await AzureAISearchVectorStoreFixture.DeleteIndexIfExistsAsync(this._testIndexName, this.SearchIndexClient);
         await AzureAISearchVectorStoreFixture.CreateIndexAsync(this._testIndexName, this.SearchIndexClient);
-        await this.UploadDocumentsAsync(this.SearchIndexClient.GetSearchClient(this._testIndexName), this.TextEmbeddingGenerationService);
+        await this.UploadDocumentsAsync(this.SearchIndexClient.GetSearchClient(this._testIndexName), this.EmbeddingGenerator);
     }
 
     /// <summary>
@@ -211,10 +198,10 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     /// Upload test documents to the index.
     /// </summary>
     /// <param name="searchClient">The client to use for uploading the documents.</param>
-    /// <param name="embeddingGenerator">An instance of <see cref="ITextEmbeddingGenerationService"/> to generate embeddings.</param>
-    public async Task UploadDocumentsAsync(SearchClient searchClient, ITextEmbeddingGenerationService embeddingGenerator)
+    /// <param name="embeddingGenerator">An instance of <see cref="IEmbeddingGenerator"/> to generate embeddings.</param>
+    public async Task UploadDocumentsAsync(SearchClient searchClient, IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
     {
-        this.Embedding = await embeddingGenerator.GenerateEmbeddingAsync("This is a great hotel");
+        this.Embedding = (await embeddingGenerator.GenerateAsync("This is a great hotel")).Vector;
 
         IndexDocumentsBatch<AzureAISearchHotel> batch = IndexDocumentsBatch.Create(
             IndexDocumentsAction.Upload(

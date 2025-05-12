@@ -83,7 +83,7 @@ public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
     public async Task LoadTextSearchResultsAndSearchAsync()
     {
         // Create an embedding generation service.
-        var embeddingGenerationService = new OpenAIEmbeddingGenerator(
+        var embeddingGenerator = new OpenAIEmbeddingGenerator(
                 modelId: TestConfiguration.OpenAI.EmbeddingModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
 
@@ -110,11 +110,11 @@ public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
 
         // Create a record collection from a list of strings using the provided delegate.
         var vectorSearch = await vectorStore.CreateCollectionFromTextSearchResultsAsync<Guid, DataModel>(
-            collectionName, searchResults!, embeddingGenerationService, CreateRecord);
+            collectionName, searchResults!, embeddingGenerator, CreateRecord);
 
         // Search the collection using a vector search.
         var searchString = "What is the Semantic Kernel?";
-        var searchVector = (await embeddingGenerationService.GenerateAsync(searchString)).Vector;
+        var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
         var resultRecords = await vectorSearch!.SearchEmbeddingAsync(searchVector, top: 1).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);

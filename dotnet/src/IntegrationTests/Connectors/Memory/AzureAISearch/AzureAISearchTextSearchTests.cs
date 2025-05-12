@@ -74,13 +74,6 @@ public class AzureAISearchTextSearchTests(AzureAISearchVectorStoreFixture fixtur
             Assert.NotEmpty(azureOpenAIConfiguration.DeploymentName);
             Assert.NotEmpty(azureOpenAIConfiguration.Endpoint);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            this.TextEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
-                azureOpenAIConfiguration.DeploymentName,
-                azureOpenAIConfiguration.Endpoint,
-                new AzureCliCredential());
-#pragma warning restore CS0618 // Type or member is obsolete
-
             this.EmbeddingGenerator = new AzureOpenAIEmbeddingGenerator(
                 azureOpenAIConfiguration.DeploymentName,
                 azureOpenAIConfiguration.Endpoint,

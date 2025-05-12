@@ -104,7 +104,7 @@ public sealed class AzureOpenAIEmbeddingGenerator : IEmbeddingGenerator<string, 
     /// <inheritdoc />
     public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var result = await this._client.GetEmbeddingsAsync(this._client.DeploymentName, values.ToList(), kernel: null, this._metadata.DefaultModelDimensions, cancellationToken).ConfigureAwait(false);
+        var result = await this._client.GetEmbeddingsAsync(this._client.DeploymentName, values.ToList(), kernel: null, options?.Dimensions ?? this._metadata.DefaultModelDimensions, cancellationToken).ConfigureAwait(false);
         return new(result.Select(e => new Embedding<float>(e)));
     }
 

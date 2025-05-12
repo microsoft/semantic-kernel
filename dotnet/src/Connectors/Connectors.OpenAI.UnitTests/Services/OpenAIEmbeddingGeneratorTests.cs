@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.ClientModel;
@@ -9,58 +9,54 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Moq;
+using OpenAI;
+using Xunit;
 
-namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
+namespace SemanticKernel.Connectors.OpenAI.UnitTests.Services;
 
 /// <summary>
-/// Unit tests for <see cref="AzureOpenAITextEmbeddingGenerationService"/> class.
+/// Unit tests for <see cref="OpenAIEmbeddingGenerator"/> class.
 /// </summary>
-public sealed class AzureOpenAIEmbeddingGeneratorTests : IDisposable
+public sealed class OpenAIEmbeddingGeneratorTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly Mock<ILoggerFactory> _mockLoggerFactory;
 
-    public AzureOpenAIEmbeddingGeneratorTests()
+    public OpenAIEmbeddingGeneratorTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, false);
         this._mockLoggerFactory = new Mock<ILoggerFactory>();
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void ItCanBeInstantiatedAndPropertiesSetAsExpected(bool includeLoggerFactory)
+    [Fact]
+    public void ItCanBeInstantiatedAndPropertiesSetAsExpected()
     {
         // Arrange
-        using var sut = includeLoggerFactory ?
-            new AzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key", modelId: "model", dimensions: 2, loggerFactory: this._mockLoggerFactory.Object) :
-            new AzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key", modelId: "model", dimensions: 2);
-
-        using var sutWithAzureOpenAIClient = new AzureOpenAIEmbeddingGenerator("deployment-name", new AzureOpenAIClient(new Uri("https://endpoint"), new ApiKeyCredential("apiKey")), modelId: "model", dimensions: 2, loggerFactory: this._mockLoggerFactory.Object);
+        using var sut = new OpenAIEmbeddingGenerator("model", "apiKey", dimensions: 2, loggerFactory: this._mockLoggerFactory.Object);
+        using var sutWithOpenAIClient = new OpenAIEmbeddingGenerator("model", new OpenAIClient(new ApiKeyCredential("apiKey")), dimensions: 2, loggerFactory: this._mockLoggerFactory.Object);
 
         // Assert
         Assert.NotNull(sut);
-        Assert.NotNull(sutWithAzureOpenAIClient);
+        Assert.NotNull(sutWithOpenAIClient);
 
         Assert.Equal("model", sut.GetService<EmbeddingGeneratorMetadata>()!.DefaultModelId);
-        Assert.Equal("model", sut.GetService<AzureOpenAIEmbeddingGeneratorMetadata>()!.DefaultModelId);
-        Assert.Equal("deployment-name", sutWithAzureOpenAIClient.GetService<AzureOpenAIEmbeddingGeneratorMetadata>()!.DeploymentName);
-        Assert.Equal(2, sutWithAzureOpenAIClient.GetService<EmbeddingGeneratorMetadata>()!.DefaultModelDimensions);
+        Assert.Equal(2, sut.GetService<EmbeddingGeneratorMetadata>()!.DefaultModelDimensions);
+        Assert.Equal("model", sutWithOpenAIClient.GetService<EmbeddingGeneratorMetadata>()!.DefaultModelId);
+        Assert.Equal(2, sutWithOpenAIClient.GetService<EmbeddingGeneratorMetadata>()!.DefaultModelDimensions);
     }
 
     [Fact]
     public async Task ItGetEmbeddingsAsyncReturnsEmptyWhenProvidedDataIsEmpty()
     {
         // Arrange
-        using var sut = new AzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key");
+        using var sut = new OpenAIEmbeddingGenerator("model", "apiKey");
 
         // Act
         var result = await sut.GenerateAsync([], null, CancellationToken.None);
@@ -82,7 +78,7 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests : IDisposable
         };
         using HttpClient client = new(handler);
 
-        using var sut = new AzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key", httpClient: client);
+        using var sut = new OpenAIEmbeddingGenerator("model", "apiKey", httpClient: client);
 
         // Act
         var result = await sut.GenerateAsync(["test"], null, CancellationToken.None);
@@ -105,37 +101,17 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests : IDisposable
         };
         using HttpClient client = new(handler);
 
-        using var sut = new AzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key", httpClient: client);
+        using var sut = new OpenAIEmbeddingGenerator("model", "apiKey", httpClient: client);
 
         // Act & Assert
         await Assert.ThrowsAsync<KernelException>(async () => await sut.GenerateAsync(["test"], null, CancellationToken.None));
-    }
-
-    [Theory]
-    [MemberData(nameof(Versions))]
-    public async Task ItTargetsApiVersionAsExpected(string? apiVersion, string? expectedVersion = null)
-    {
-        // Arrange
-        using var sut = new AzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key", httpClient: this._httpClient, apiVersion: apiVersion);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(File.ReadAllText("./TestData/text-embeddings-response.txt"))
-        };
-
-        // Act
-        await sut.GenerateAsync(["test"], null, CancellationToken.None);
-
-        // Assert
-        Assert.NotNull(this._messageHandlerStub.RequestContent);
-
-        Assert.Contains($"api-version={expectedVersion}", this._messageHandlerStub.RequestUri!.ToString());
     }
 
     [Fact]
     public async Task ItDoesNotIncludeDimensionsInRequestWhenNotProvided()
     {
         // Arrange
-        using var sut = new AzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key", httpClient: this._httpClient);
+        using var sut = new OpenAIEmbeddingGenerator("model", "apiKey", httpClient: this._httpClient);
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(File.ReadAllText("./TestData/text-embeddings-response.txt"))
@@ -158,10 +134,9 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests : IDisposable
     {
         // Arrange
         const int DefaultDimensions = 512;
-        using var sut = new AzureOpenAIEmbeddingGenerator(
-            "deployment-name",
-            "https://endpoint",
-            "api-key",
+        using var sut = new OpenAIEmbeddingGenerator(
+            "model",
+            "apiKey",
             dimensions: DefaultDimensions,
             httpClient: this._httpClient);
 
@@ -190,13 +165,11 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests : IDisposable
         const int DefaultDimensions = 512;
         const int OptionsDimensions = 256;
 
-        using var sut = new AzureOpenAIEmbeddingGenerator(
-            "deployment-name",
-            "https://endpoint",
-            "api-key",
+        using var sut = new OpenAIEmbeddingGenerator(
+            "model",
+            "apiKey",
             dimensions: DefaultDimensions,
             httpClient: this._httpClient);
-
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(File.ReadAllText("./TestData/text-embeddings-response.txt"))
@@ -216,24 +189,6 @@ public sealed class AzureOpenAIEmbeddingGeneratorTests : IDisposable
         Assert.True(requestJson.RootElement.TryGetProperty("dimensions", out var dimensionsElement));
         Assert.Equal(OptionsDimensions, dimensionsElement.GetInt32());
     }
-
-    public static TheoryData<string?, string?> Versions => new()
-    {
-        { "V2024_10_01_preview", "2024-10-01-preview" },
-        { "V2024_10_01_PREVIEW", "2024-10-01-preview" },
-        { "2024_10_01_Preview", "2024-10-01-preview" },
-        { "2024-10-01-preview", "2024-10-01-preview" },
-        { "V2024_08_01_preview", "2024-08-01-preview" },
-        { "V2024_08_01_PREVIEW", "2024-08-01-preview" },
-        { "2024_08_01_Preview", "2024-08-01-preview" },
-        { "2024-08-01-preview", "2024-08-01-preview" },
-        { "V2024_06_01", "2024-06-01" },
-        { "2024_06_01", "2024-06-01" },
-        { "2024-06-01", "2024-06-01" },
-        { AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview.ToString(), null },
-        { AzureOpenAIClientOptions.ServiceVersion.V2024_08_01_Preview.ToString(), null },
-        { AzureOpenAIClientOptions.ServiceVersion.V2024_06_01.ToString(), null }
-    };
 
     public void Dispose()
     {
