@@ -9,6 +9,8 @@ using WeaviateIntegrationTests.Support.TestContainer;
 
 namespace WeaviateIntegrationTests.Support;
 
+#pragma warning restore CA2213 // Disposable fields should be disposed
+
 public sealed class WeaviateTestStore : TestStore
 {
     public static WeaviateTestStore NamedVectorsInstance { get; } = new(hasNamedVectors: true);
@@ -16,9 +18,7 @@ public sealed class WeaviateTestStore : TestStore
 
     public override string DefaultDistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
 
-#pragma warning disable CA2213 // Disposable fields should be disposed
     private readonly WeaviateContainer _container = new WeaviateBuilder().Build();
-#pragma warning restore CA2213 // Disposable fields should be disposed
     private readonly bool _hasNamedVectors;
     public HttpClient? _httpClient { get; private set; }
 

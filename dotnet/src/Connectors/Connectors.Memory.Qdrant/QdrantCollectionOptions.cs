@@ -32,9 +32,4 @@ public sealed class QdrantCollectionOptions
     /// Gets or sets the default embedding generator for vector properties in this collection.
     /// </summary>
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
-
-    /// <summary>
-    /// Gets or sets value indicating whether the client should be disposed after the vector store is disposed.
-    /// </summary>
-    public bool OwnsClient { get; set; } = QdrantVectorStoreOptions.Default.OwnsClient;
 }

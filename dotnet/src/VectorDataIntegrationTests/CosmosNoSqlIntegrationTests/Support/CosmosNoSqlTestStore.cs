@@ -34,12 +34,6 @@ internal sealed class CosmosNoSqlTestStore : TestStore
     {
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        this._client?.Dispose();
-        base.Dispose(disposing);
-    }
-
 #pragma warning disable CA5400 // HttpClient may be created without enabling CheckCertificateRevocationList
     protected override async Task StartAsync()
     {
@@ -63,4 +57,10 @@ internal sealed class CosmosNoSqlTestStore : TestStore
         this.DefaultVectorStore = new CosmosNoSqlVectorStore(this._database);
     }
 #pragma warning restore CA5400
+
+    protected override Task StopAsync()
+    {
+        this._client?.Dispose();
+        return base.StopAsync();
+    }
 }

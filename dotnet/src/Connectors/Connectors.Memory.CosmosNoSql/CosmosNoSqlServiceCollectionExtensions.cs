@@ -63,24 +63,26 @@ public static class CosmosNoSqlServiceCollectionExtensions
         CosmosNoSqlVectorStoreOptions? options = default,
         string? serviceId = default)
     {
+        Verify.NotNullOrWhiteSpace(connectionString);
+        Verify.NotNullOrWhiteSpace(databaseName);
+
         // If we are constructing Database, add the IVectorStore as singleton.
         services.AddKeyedSingleton<VectorStore>(
             serviceId,
             (sp, obj) =>
             {
-                var cosmosClient = new CosmosClient(connectionString, new()
+                CosmosClientOptions clientOptions = new()
                 {
                     ApplicationName = HttpHeaderConstant.Values.UserAgent,
                     UseSystemTextJsonSerializerWithOptions = options?.JsonSerializerOptions ?? JsonSerializerOptions.Default,
-                });
+                };
 
-                var database = cosmosClient.GetDatabase(databaseName);
                 options ??= sp.GetService<CosmosNoSqlVectorStoreOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return new CosmosNoSqlVectorStore(database, options);
+                return new CosmosNoSqlVectorStore(connectionString, databaseName, clientOptions, options);
             });
 
         return services;
@@ -142,23 +144,26 @@ public static class CosmosNoSqlServiceCollectionExtensions
         string? serviceId = default)
         where TRecord : class
     {
+        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(connectionString);
+        Verify.NotNullOrWhiteSpace(databaseName);
+
         services.AddKeyedSingleton<VectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
-                var cosmosClient = new CosmosClient(connectionString, new()
+                CosmosClientOptions clientOptions = new()
                 {
                     ApplicationName = HttpHeaderConstant.Values.UserAgent,
                     UseSystemTextJsonSerializerWithOptions = options?.JsonSerializerOptions ?? JsonSerializerOptions.Default,
-                });
+                };
 
-                var database = cosmosClient.GetDatabase(databaseName);
                 options ??= sp.GetService<CosmosNoSqlCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return new CosmosNoSqlCollection<string, TRecord>(database, collectionName, options);
+                return new CosmosNoSqlCollection<string, TRecord>(connectionString, databaseName, collectionName, clientOptions, options);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);

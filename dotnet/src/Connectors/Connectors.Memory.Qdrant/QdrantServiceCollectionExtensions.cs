@@ -35,8 +35,7 @@ public static class QdrantServiceCollectionExtensions
                 };
 
                 // The client was restored from the DI container, so we do not own it.
-                options.OwnsClient = false;
-                return new QdrantVectorStore(qdrantClient, options);
+                return new QdrantVectorStore(qdrantClient, ownsClient: false, options);
             });
 
         return services;
@@ -65,8 +64,7 @@ public static class QdrantServiceCollectionExtensions
                 };
 
                 // We created the client, so we own it.
-                options.OwnsClient = true;
-                return new QdrantVectorStore(qdrantClient, options);
+                return new QdrantVectorStore(qdrantClient, ownsClient: true, options);
             });
 
         return services;
@@ -102,8 +100,7 @@ public static class QdrantServiceCollectionExtensions
                 };
 
                 // The client was restored from the DI container, so we do not own it.
-                options.OwnsClient = false;
-                return (new QdrantCollection<TKey, TRecord>(qdrantClient, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                return (new QdrantCollection<TKey, TRecord>(qdrantClient, collectionName, ownsClient: false, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);
@@ -149,8 +146,7 @@ public static class QdrantServiceCollectionExtensions
                 };
 
                 // We created the client, so we own it.
-                options.OwnsClient = true;
-                return (new QdrantCollection<TKey, TRecord>(qdrantClient, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                return (new QdrantCollection<TKey, TRecord>(qdrantClient, collectionName, ownsClient: true, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);

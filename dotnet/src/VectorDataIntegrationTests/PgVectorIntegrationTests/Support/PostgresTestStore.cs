@@ -7,9 +7,9 @@ using VectorDataSpecificationTests.Support;
 
 namespace PgVectorIntegrationTests.Support;
 
-#pragma warning disable CA1001 // Types that own disposable fields should be disposable
+#pragma warning disable CA1001 // Type owns disposable fields but is not disposable
+
 internal sealed class PostgresTestStore : TestStore
-#pragma warning restore CA1001 // Types that own disposable fields should be disposable
 {
     public static PostgresTestStore Instance { get; } = new();
 
@@ -21,17 +21,10 @@ internal sealed class PostgresTestStore : TestStore
 
     public NpgsqlDataSource DataSource => this._dataSource ?? throw new InvalidOperationException("Not initialized");
 
-    protected override void Dispose(bool disposing)
-    {
-        this._dataSource?.Dispose();
-        base.Dispose(disposing);
-    }
-
     public PostgresVectorStore GetVectorStore(PostgresVectorStoreOptions options)
     {
         // The DataSource is shared with the static instance, we don't want any of the tests to dispose it.
-        options.OwnsDataSource = false;
-        return new(this.DataSource, options);
+        return new(this.DataSource, ownsDataSource: false, options);
     }
 
     private PostgresTestStore()
@@ -65,12 +58,16 @@ internal sealed class PostgresTestStore : TestStore
         await connection.ReloadTypesAsync();
 
         // It's a shared static instance, we don't want any of the tests to dispose it.
-        this.DefaultVectorStore = new PostgresVectorStore(this._dataSource, new() { OwnsDataSource = false });
+        this.DefaultVectorStore = new PostgresVectorStore(this._dataSource, ownsDataSource: false);
     }
 
     protected override async Task StopAsync()
     {
-        await this._dataSource!.DisposeAsync();
+        if (this._dataSource is not null)
+        {
+            await this._dataSource.DisposeAsync();
+        }
+
         await s_container.StopAsync();
     }
 }

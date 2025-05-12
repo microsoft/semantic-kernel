@@ -61,11 +61,12 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
     /// <param name="name">The name of the collection that this <see cref="QdrantCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="ownsClient">A value indicating whether the client must be disposed after the collection is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    public QdrantCollection(QdrantClient qdrantClient, string name, QdrantCollectionOptions? options = null)
-        : this(new MockableQdrantClient(qdrantClient, ownsClient: options?.OwnsClient ?? QdrantVectorStoreOptions.Default.OwnsClient), name, options)
+    public QdrantCollection(QdrantClient qdrantClient, string name, bool ownsClient, QdrantCollectionOptions? options = null)
+        : this(new MockableQdrantClient(qdrantClient, ownsClient), name, options)
     {
     }
 

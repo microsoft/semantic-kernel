@@ -32,14 +32,15 @@ public sealed class PostgresVectorStore : VectorStore
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
     /// </summary>
     /// <param name="dataSource">Postgres data source.</param>
+    /// <param name="ownsDataSource">A value indicating whether the data source must be disposed after the vector store is disposed.</param>
     /// <param name="options">Optional configuration options for this class</param>
-    public PostgresVectorStore(NpgsqlDataSource dataSource, PostgresVectorStoreOptions? options = default)
+    public PostgresVectorStore(NpgsqlDataSource dataSource, bool ownsDataSource, PostgresVectorStoreOptions? options = default)
     {
         Verify.NotNull(dataSource);
 
         this._schema = options?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
         this._embeddingGenerator = options?.EmbeddingGenerator;
-        this._client = new PostgresDbClient(dataSource, this._schema, options?.OwnsDataSource ?? PostgresVectorStoreOptions.Default.OwnsDataSource);
+        this._client = new PostgresDbClient(dataSource, this._schema, ownsDataSource);
 
         this._metadata = new()
         {
@@ -55,11 +56,8 @@ public sealed class PostgresVectorStore : VectorStore
     /// <param name="options">Optional configuration options for this class.</param>
     public PostgresVectorStore(string connectionString, PostgresVectorStoreOptions? options = default)
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        : this(PostgresUtils.CreateDataSource(connectionString), new(options)
+        : this(PostgresUtils.CreateDataSource(connectionString), ownsDataSource: true, options)
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        {
-            OwnsDataSource = true // We created the the data source, so we own it.
-        })
     {
     }
 
@@ -88,7 +86,7 @@ public sealed class PostgresVectorStore : VectorStore
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
         => new PostgresCollection<TKey, TRecord>(
-            this._client.IncreaseReferenceCount(),
+            this._client.Share(),
             name,
             new PostgresCollectionOptions()
             {

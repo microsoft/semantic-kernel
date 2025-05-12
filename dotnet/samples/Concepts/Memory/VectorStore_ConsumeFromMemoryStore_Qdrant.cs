@@ -33,7 +33,7 @@ public class VectorStore_ConsumeFromMemoryStore_Qdrant(ITestOutputHelper output,
         await qdrantFixture.ManualInitializeAsync();
 
         // Construct a VectorStore.
-        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"));
+        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"), ownsClient: true);
 
         // Use the VectorStore abstraction to connect to an existing collection which was previously created via the IMemoryStore abstraction
         var collection = vectorStore.GetCollection<Guid, VectorStoreRecord>("memorystorecollection");

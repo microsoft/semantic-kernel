@@ -21,9 +21,4 @@ public sealed class QdrantVectorStoreOptions
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
-
-    /// <summary>
-    /// Gets or sets value indicating whether the client should be disposed after the vector store is disposed.
-    /// </summary>
-    public bool OwnsClient { get; set; } = true;
 }

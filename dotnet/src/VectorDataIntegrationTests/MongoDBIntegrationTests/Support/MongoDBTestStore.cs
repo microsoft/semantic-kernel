@@ -7,13 +7,13 @@ using VectorDataSpecificationTests.Support;
 
 namespace MongoDBIntegrationTests.Support;
 
+#pragma warning disable CA1001 // Type owns disposable fields but is not disposable
+
 internal sealed class MongoDBTestStore : TestStore
 {
     public static MongoDBTestStore Instance { get; } = new();
 
-#pragma warning disable CA2213 // Disposable fields should be disposed
     private readonly MongoDbContainer _container = new MongoDbBuilder()
-#pragma warning restore CA2213 // Disposable fields should be disposed
         .WithImage("mongodb/mongodb-atlas-local:7.0.6")
         .Build();
 

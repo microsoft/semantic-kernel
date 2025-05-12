@@ -36,7 +36,7 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
 
         // Initiate the docker container and construct the vector store.
         await qdrantFixture.ManualInitializeAsync();
-        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"));
+        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"), ownsClient: true);
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<ulong, Glossary>("skglossary");

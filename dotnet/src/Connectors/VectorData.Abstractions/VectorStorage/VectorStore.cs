@@ -16,8 +16,6 @@ namespace Microsoft.Extensions.VectorData;
 /// </remarks>
 public abstract class VectorStore : IDisposable
 {
-    private bool _disposed;
-
     /// <summary>
     /// Gets a collection from the vector store.
     /// </summary>
@@ -73,7 +71,7 @@ public abstract class VectorStore : IDisposable
     public abstract object? GetService(Type serviceType, object? serviceKey = null);
 
     /// <summary>
-    /// Disposes the <see cref="VectorStore"/> and releases any resources it holds.
+    /// Disposes the <see cref="VectorStoreCollection{TKey, TRecord}"/> and releases any resources it holds.
     /// </summary>
     /// <param name="disposing">True if called from <see cref="Dispose()"/>, false if called from a finalizer.</param>
     protected virtual void Dispose(bool disposing)
@@ -81,16 +79,9 @@ public abstract class VectorStore : IDisposable
     }
 
     /// <inheritdoc/>
-#pragma warning disable CA1063 // Implement IDisposable Correctly
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize: This base class does not have a finalizer.
     public void Dispose()
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-#pragma warning restore CA1063 // Implement IDisposable Correctly
     {
-        if (!this._disposed)
-        {
-            this.Dispose(disposing: true);
-            this._disposed = true;
-        }
+        this.Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

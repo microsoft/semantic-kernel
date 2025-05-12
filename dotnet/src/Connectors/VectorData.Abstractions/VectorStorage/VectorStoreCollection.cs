@@ -23,8 +23,6 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     where TKey : notnull
     where TRecord : class
 {
-    private bool _disposed;
-
     /// <summary>
     /// Gets the name of the collection.
     /// </summary>
@@ -195,16 +193,9 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     }
 
     /// <inheritdoc/>
-#pragma warning disable CA1063 // Implement IDisposable Correctly
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize: This base class does not have a finalizer.
     public void Dispose()
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-#pragma warning restore CA1063 // Implement IDisposable Correctly
     {
-        if (!this._disposed)
-        {
-            this.Dispose(disposing: true);
-            this._disposed = true;
-        }
+        this.Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

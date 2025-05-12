@@ -35,8 +35,7 @@ public static class PostgresServiceCollectionExtensions
                 };
 
                 // The data source has been solved from the DI container, so we do not own it.
-                options.OwnsDataSource = false;
-                return new PostgresVectorStore(dataSource, options);
+                return new PostgresVectorStore(dataSource, ownsDataSource: false, options);
             });
 
         return services;
@@ -97,8 +96,7 @@ public static class PostgresServiceCollectionExtensions
                 };
 
                 // The data source has been solved from the DI container, so we do not own it.
-                options.OwnsDataSource = false;
-                return (new PostgresCollection<TKey, TRecord>(dataSource, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                return (new PostgresCollection<TKey, TRecord>(dataSource, collectionName, ownsDataSource: false, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);

@@ -8,7 +8,7 @@ namespace VectorDataSpecificationTests.Support;
 
 #pragma warning disable CA1001 // Type owns disposable fields but is not disposable
 
-public abstract class TestStore : IDisposable
+public abstract class TestStore
 {
     private readonly SemaphoreSlim _lock = new(1, 1);
     private int _referenceCount;
@@ -31,19 +31,6 @@ public abstract class TestStore : IDisposable
     {
         get => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
         set => this._defaultVectorStore = value;
-    }
-
-#pragma warning disable CA1816, CA1063 // Dispose methods should call SuppressFinalize: no finalizer
-    public void Dispose() => this.Dispose(true);
-#pragma warning restore CA1063, CA1063
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._lock.Dispose();
-            this._defaultVectorStore?.Dispose();
-        }
     }
 
     public virtual async Task ReferenceCountingStartAsync()
@@ -70,6 +57,7 @@ public abstract class TestStore : IDisposable
             if (--this._referenceCount == 0)
             {
                 await this.StopAsync();
+                this._defaultVectorStore?.Dispose();
             }
         }
         finally

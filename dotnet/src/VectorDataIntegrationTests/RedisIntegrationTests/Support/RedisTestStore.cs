@@ -7,14 +7,14 @@ using VectorDataSpecificationTests.Support;
 
 namespace RedisIntegrationTests.Support;
 
+#pragma warning restore CA2213 // Disposable fields should be disposed
+
 internal sealed class RedisTestStore : TestStore
 {
     public static RedisTestStore JsonInstance { get; } = new(RedisStorageType.Json);
     public static RedisTestStore HashSetInstance { get; } = new(RedisStorageType.HashSet);
 
-#pragma warning disable CA2213 // Disposable fields should be disposed
     private readonly RedisContainer _container = new RedisBuilder()
-#pragma warning restore CA2213 // Disposable fields should be disposed
         .WithImage("redis/redis-stack")
         .WithPortBinding(6379, assignRandomHostPort: true)
         .WithPortBinding(8001, assignRandomHostPort: true)
