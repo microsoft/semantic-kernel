@@ -40,7 +40,7 @@ internal static class ActivityExtensions
     {
         activity.AddEvent(new ActivityEvent(
             name,
-            tags: new ActivityTagsCollection(tags)
+            tags: [.. tags]
         ));
 
         return activity;

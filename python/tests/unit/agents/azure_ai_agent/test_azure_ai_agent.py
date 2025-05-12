@@ -33,14 +33,6 @@ async def test_azure_ai_agent_init_with_plugins_via_constructor(
     assert len(agent.kernel.plugins) == 1
 
 
-async def test_azure_ai_agent_add_chat_message(ai_project_client, ai_agent_definition):
-    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
-    with patch(
-        "semantic_kernel.agents.azure_ai.agent_thread_actions.AgentThreadActions.create_message",
-    ):
-        await agent.add_chat_message("threadId", ChatMessageContent(role="user", content="text"))  # pass anything
-
-
 async def test_azure_ai_agent_get_response(ai_project_client, ai_agent_definition):
     agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
 

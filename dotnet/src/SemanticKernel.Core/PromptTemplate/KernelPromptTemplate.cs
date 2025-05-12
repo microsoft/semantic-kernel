@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -99,11 +100,11 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
             switch (block)
             {
                 case ITextRendering staticBlock:
-                    blockResult = InternalTypeConverter.ConvertToString(staticBlock.Render(arguments), kernel.Culture);
+                    blockResult = ConvertToString(staticBlock.Render(arguments), kernel.Culture);
                     break;
 
                 case ICodeRendering dynamicBlock:
-                    blockResult = InternalTypeConverter.ConvertToString(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false), kernel.Culture);
+                    blockResult = ConvertToString(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false), kernel.Culture);
                     break;
 
                 default:
@@ -187,5 +188,13 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         return !disableTagEncoding && block is not TextBlock;
     }
 
+    private static string? ConvertToString(object? value, CultureInfo? culture = null)
+    {
+        if (value is null) { return null; }
+
+        return value is List<string> stringList
+            ? string.Join("\n", stringList)
+            : InternalTypeConverter.ConvertToString(value, culture);
+    }
     #endregion
 }
