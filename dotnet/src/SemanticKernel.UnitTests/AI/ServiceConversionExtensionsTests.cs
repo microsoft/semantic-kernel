@@ -295,11 +295,11 @@ public class ServiceConversionExtensionsTests
             [
                 new NopAIFunction("AIFunc1"),
                 new NopAIFunction("AIFunc2"),
-                KernelFunctionFactory.CreateFromMethod(() => "invoked", "NiftyFunction").AsAIFunction(),
+                KernelFunctionFactory.CreateFromMethod(() => "invoked", "NiftyFunction"),
                 .. KernelPluginFactory.CreateFromFunctions("NiftyPlugin",
                 [
                     KernelFunctionFactory.CreateFromMethod(() => "invoked", "NiftyFunction")
-                ]).AsAIFunctions(),
+                ]),
             ],
             ToolMode = mode,
         });

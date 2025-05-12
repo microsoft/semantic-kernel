@@ -87,7 +87,8 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
         object? result = null;
 
         UpdateOptionsForAutoFunctionInvocation(context.Options, context.Messages.Last().ToChatMessageContent());
-        var autoContext = new AutoFunctionInvocationContext(context.Options)
+
+        var autoContext = new AutoFunctionInvocationContext(context.Options, context.Function)
         {
             AIFunction = context.Function,
             Arguments = new KernelArguments(context.Arguments) { Services = this.FunctionInvocationServices },

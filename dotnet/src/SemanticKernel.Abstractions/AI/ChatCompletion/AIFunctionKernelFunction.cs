@@ -19,10 +19,12 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
     private readonly AIFunction _aiFunction;
 
     public AIFunctionKernelFunction(AIFunction aiFunction) :
-        base(aiFunction.Name,
-            aiFunction.Description,
-            MapParameterMetadata(aiFunction),
-            aiFunction.JsonSerializerOptions,
+        base(
+            name: aiFunction.Name,
+            pluginName: aiFunction is KernelFunction kf ? kf.PluginName : null,
+            description: aiFunction.Description,
+            parameters: MapParameterMetadata(aiFunction),
+            jsonSerializerOptions: aiFunction.JsonSerializerOptions,
             new KernelReturnParameterMetadata(AbstractionsJsonContext.Default.Options)
             {
                 Description = aiFunction.UnderlyingMethod?.ReturnParameter.GetCustomAttribute<DescriptionAttribute>()?.Description,
@@ -30,16 +32,19 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
                 Schema = new KernelJsonSchema(AIJsonUtilities.CreateJsonSchema(aiFunction.UnderlyingMethod?.ReturnParameter.ParameterType)),
             })
     {
+        // Kernel functions created from AI functions are always fully qualified
+        this.UseFullyQualifiedName = true;
         this._aiFunction = aiFunction;
     }
 
     private AIFunctionKernelFunction(AIFunctionKernelFunction other, string pluginName) :
         base(other.Name, pluginName, other.Description, other.Metadata.Parameters, AbstractionsJsonContext.Default.Options, other.Metadata.ReturnParameter)
     {
+        this.UseFullyQualifiedName = other.UseFullyQualifiedName;
         this._aiFunction = other._aiFunction;
     }
 
-    public override KernelFunction Clone(string pluginName)
+    public override KernelFunction Clone(string? pluginName = null)
     {
         Verify.NotNullOrWhiteSpace(pluginName);
         return new AIFunctionKernelFunction(this, pluginName);

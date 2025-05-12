@@ -148,7 +148,13 @@ public static class PromptExecutionSettingsExtensions
         if (settings.FunctionChoiceBehavior?.GetConfiguration(new([]) { Kernel = kernel }).Functions is { Count: > 0 } functions)
         {
             options.ToolMode = settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior ? ChatToolMode.RequireAny : ChatToolMode.Auto;
-            options.Tools = functions.Select(f => f.AsAIFunction(kernel)).Cast<AITool>().ToList();
+            options.Tools = [];
+            foreach (var function in functions)
+            {
+                // Clone the function to ensure it works running as a AITool lower-level abstraction for the specified kernel.
+                var functionClone = function.Clone(kernel);
+                options.Tools.Add(functionClone);
+            }
         }
 
         // Enables usage of AutoFunctionInvocationFilters
