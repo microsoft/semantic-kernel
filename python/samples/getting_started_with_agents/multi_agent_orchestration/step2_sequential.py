@@ -2,12 +2,10 @@
 
 import asyncio
 
-from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
-from semantic_kernel.agents.orchestration.sequential import SequentialOrchestration
-from semantic_kernel.agents.runtime.in_process.in_process_runtime import InProcessRuntime
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.agents import Agent, ChatCompletionAgent, SequentialOrchestration
+from semantic_kernel.agents.runtime import InProcessRuntime
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents import ChatMessageContent
 
 """
 The following sample demonstrates how to create a sequential orchestration for
@@ -20,40 +18,37 @@ results.
 """
 
 
-def agents() -> list[Agent]:
+def get_agents() -> list[Agent]:
     """Return a list of agents that will participate in the sequential orchestration.
 
     Feel free to add or remove agents.
     """
     concept_extractor_agent = ChatCompletionAgent(
         name="ConceptExtractorAgent",
-        description="A agent that extracts key concepts from a product description.",
         instructions=(
             "You are a marketing analyst. Given a product description, identify:\n"
             "- Key features\n"
             "- Target audience\n"
             "- Unique selling points\n\n"
         ),
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
     )
     writer_agent = ChatCompletionAgent(
         name="WriterAgent",
-        description="An agent that writes a marketing copy based on the extracted concepts.",
         instructions=(
             "You are a marketing copywriter. Given a block of text describing features, audience, and USPs, "
             "compose a compelling marketing copy (like a newsletter section) that highlights these points. "
             "Output should be short (around 150 words), output just the copy as a single text block."
         ),
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
     )
     format_proof_agent = ChatCompletionAgent(
         name="FormatProofAgent",
-        description="An agent that formats and proofreads the marketing copy.",
         instructions=(
             "You are an editor. Given the draft copy, correct grammar, improve clarity, ensure consistent tone, "
             "give format and make it polished. Output the final improved copy as a single text block."
         ),
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
     )
 
     # The order of the agents in the list will be the order in which they are executed
@@ -69,8 +64,9 @@ async def main():
     """Main function to run the agents."""
     # 1. Create a sequential orchestration with multiple agents and an agent
     #    response callback to observe the output from each agent.
+    agents = get_agents()
     sequential_orchestration = SequentialOrchestration(
-        members=agents(),
+        members=agents,
         agent_response_callback=agent_response_callback,
     )
 

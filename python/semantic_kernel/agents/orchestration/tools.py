@@ -13,7 +13,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel import Kernel
 
 
-def structure_output_transform(
+def structured_outputs_transform(
     target_structure: type[BaseModel],
     service: ChatCompletionClientBase,
     prompt_execution_settings: PromptExecutionSettings | None = None,

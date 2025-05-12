@@ -5,12 +5,12 @@ import sys
 from collections.abc import Awaitable, Callable
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.orchestration.agent_actor_base import AgentActorBase
+from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
 from semantic_kernel.agents.orchestration.orchestration_base import DefaultTypeAlias, OrchestrationBase, TIn, TOut
 from semantic_kernel.agents.runtime.core.cancellation_token import CancellationToken
 from semantic_kernel.agents.runtime.core.core_runtime import CoreRuntime
 from semantic_kernel.agents.runtime.core.message_context import MessageContext
-from semantic_kernel.agents.runtime.core.routed_agent import RoutedAgent, message_handler
+from semantic_kernel.agents.runtime.core.routed_agent import message_handler
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -24,13 +24,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class SequentialRequestMessage(KernelBaseModel):
-    """A request message type for concurrent agents."""
+    """A request message type for sequential agents."""
 
     body: DefaultTypeAlias
 
 
 class SequentialResultMessage(KernelBaseModel):
-    """A result message type for concurrent agents."""
+    """A result message type for sequential agents."""
 
     body: ChatMessageContent
 
@@ -72,7 +72,7 @@ class SequentialAgentActor(AgentActorBase):
         )
 
 
-class CollectionActor(RoutedAgent):
+class CollectionActor(ActorBase):
     """A agent container for collection results from the last agent in the sequence."""
 
     def __init__(
@@ -86,7 +86,7 @@ class CollectionActor(RoutedAgent):
         super().__init__(description=description)
 
     @message_handler
-    async def _handle_message(self, message: SequentialRequestMessage, ctx: MessageContext) -> None:
+    async def _handle_message(self, message: SequentialRequestMessage, _: MessageContext) -> None:
         """Handle the last message."""
         await self._result_callback(message.body)
 

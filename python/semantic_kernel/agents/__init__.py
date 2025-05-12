@@ -28,6 +28,8 @@ _AGENTS = {
     "AzureResponsesAgent": ".open_ai.azure_responses_agent",
     "ResponsesAgentThread": ".open_ai.openai_responses_agent",
     "RunPollingOptions": ".open_ai.run_polling_options",
+    "ConcurrentOrchestration": ".orchestration.concurrent",
+    "SequentialOrchestration": ".orchestration.sequential",
 }
 
 

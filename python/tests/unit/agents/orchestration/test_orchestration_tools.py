@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from pydantic import BaseModel
 
-from semantic_kernel.agents.orchestration.tools import structure_output_transform
+from semantic_kernel.agents.orchestration.tools import structured_outputs_transform
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -42,13 +42,13 @@ class MockModel(KernelBaseModel):
     age: int
 
 
-def test_structure_output_transform():
-    """Test the structure_output_transform function."""
+def test_structured_outputs_transform():
+    """Test the structured_outputs_transform function."""
 
     service = MockChatCompletionService(ai_model_id="test_model")
     prompt_execution_settings = PromptExecutionSettings()
 
-    transform = structure_output_transform(
+    transform = structured_outputs_transform(
         target_structure=MockModel,
         service=service,
         prompt_execution_settings=prompt_execution_settings,
@@ -57,15 +57,15 @@ def test_structure_output_transform():
     assert isinstance(transform, Callable)
 
 
-def test_structure_output_transform_original_settings_not_changed():
-    """Test the structure_output_transform function with original settings not changed."""
+def test_structured_outputs_transform_original_settings_not_changed():
+    """Test the structured_outputs_transform function with original settings not changed."""
 
     service = MockChatCompletionService(ai_model_id="test_model")
     prompt_execution_settings = PromptExecutionSettings(
         extension_data={"test_key": "test_value"},
     )
 
-    _ = structure_output_transform(
+    _ = structured_outputs_transform(
         target_structure=MockModel,
         service=service,
         prompt_execution_settings=prompt_execution_settings,
@@ -75,8 +75,8 @@ def test_structure_output_transform_original_settings_not_changed():
     assert prompt_execution_settings.extension_data["test_key"] == "test_value"
 
 
-def test_structure_output_transform_unsupported_service():
-    """Test the structure_output_transform function with unsupported service."""
+def test_structured_outputs_transform_unsupported_service():
+    """Test the structured_outputs_transform function with unsupported service."""
 
     with (
         patch.object(
@@ -89,11 +89,11 @@ def test_structure_output_transform_unsupported_service():
         service = MockChatCompletionService(ai_model_id="test_model")
         prompt_execution_settings = PromptExecutionSettings()
 
-        _ = structure_output_transform(MockModel, service, prompt_execution_settings)
+        _ = structured_outputs_transform(MockModel, service, prompt_execution_settings)
 
 
-async def test_structure_output_transform_invoke():
-    """Test the structure_output_transform function and invoke the transform."""
+async def test_structured_outputs_transform_invoke():
+    """Test the structured_outputs_transform function and invoke the transform."""
     mock_model = MockModel(name="John Doe", age=30)
 
     with (
@@ -108,7 +108,7 @@ async def test_structure_output_transform_invoke():
         service = MockChatCompletionService(ai_model_id="test_model")
         prompt_execution_settings = PromptExecutionSettings()
 
-        transform = structure_output_transform(
+        transform = structured_outputs_transform(
             target_structure=MockModel,
             service=service,
             prompt_execution_settings=prompt_execution_settings,
@@ -123,8 +123,8 @@ async def test_structure_output_transform_invoke():
         assert len(mock_get_chat_message_content.call_args[0][0].messages) == 2
 
 
-async def test_structure_output_transform_invoke_with_messages():
-    """Test the structure_output_transform function and invoke the transform with messages."""
+async def test_structured_outputs_transform_invoke_with_messages():
+    """Test the structured_outputs_transform function and invoke the transform with messages."""
     mock_model = MockModel(name="John Doe", age=30)
 
     with (
@@ -139,7 +139,7 @@ async def test_structure_output_transform_invoke_with_messages():
         service = MockChatCompletionService(ai_model_id="test_model")
         prompt_execution_settings = PromptExecutionSettings()
 
-        transform = structure_output_transform(
+        transform = structured_outputs_transform(
             target_structure=MockModel,
             service=service,
             prompt_execution_settings=prompt_execution_settings,
@@ -157,13 +157,13 @@ async def test_structure_output_transform_invoke_with_messages():
         assert len(mock_get_chat_message_content.call_args[0][0].messages) == 3
 
 
-async def test_structure_output_transform_invoke_unsupported_type():
-    """Test the structure_output_transform function and invoke the transform with messages of unsupported type."""
+async def test_structured_outputs_transform_invoke_unsupported_type():
+    """Test the structured_outputs_transform function and invoke the transform with messages of unsupported type."""
 
     service = MockChatCompletionService(ai_model_id="test_model")
     prompt_execution_settings = PromptExecutionSettings()
 
-    transform = structure_output_transform(
+    transform = structured_outputs_transform(
         target_structure=MockModel,
         service=service,
         prompt_execution_settings=prompt_execution_settings,

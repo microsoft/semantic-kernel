@@ -3,13 +3,12 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
-from semantic_kernel.agents.orchestration.concurrent import ConcurrentOrchestration
-from semantic_kernel.agents.orchestration.tools import structure_output_transform
-from semantic_kernel.agents.runtime.in_process.in_process_runtime import InProcessRuntime
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from pydantic import BaseModel
+
+from semantic_kernel.agents import Agent, ChatCompletionAgent, ConcurrentOrchestration
+from semantic_kernel.agents.orchestration.tools import structured_outputs_transform
+from semantic_kernel.agents.runtime import InProcessRuntime
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
 """
 The following sample demonstrates how to create a concurrent orchestration for
@@ -21,7 +20,7 @@ invoking the orchestration, and finally waiting for the results.
 """
 
 
-class ArticleAnalysis(KernelBaseModel):
+class ArticleAnalysis(BaseModel):
     """A model to hold the analysis of an article."""
 
     themes: list[str]
@@ -29,28 +28,25 @@ class ArticleAnalysis(KernelBaseModel):
     entities: list[str]
 
 
-def agents() -> list[Agent]:
+def get_agents() -> list[Agent]:
     """Return a list of agents that will participate in the concurrent orchestration.
 
     Feel free to add or remove agents.
     """
     theme_agent = ChatCompletionAgent(
         name="ThemeAgent",
-        description="An expert in identifying themes in articles",
         instructions="You are an expert in identifying themes in articles. Given an article, identify the main themes.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
     )
     sentiment_agent = ChatCompletionAgent(
         name="SentimentAgent",
-        description="An expert in sentiment analysis",
         instructions="You are an expert in sentiment analysis. Given an article, identify the sentiment.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
     )
     entity_agent = ChatCompletionAgent(
         name="EntityAgent",
-        description="An expert in entity recognition",
         instructions="You are an expert in entity recognition. Given an article, extract the entities.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
     )
 
     return [theme_agent, sentiment_agent, entity_agent]
@@ -64,18 +60,19 @@ async def main():
     #   and the generic types for the orchestration.
     # Note: the chat completion service and model provided to the
     #    structure output transform must support structured output.
+    agents = get_agents()
     concurrent_orchestration = ConcurrentOrchestration[str, ArticleAnalysis](
-        members=agents(),
-        output_transform=structure_output_transform(ArticleAnalysis, OpenAIChatCompletion()),
+        members=agents,
+        output_transform=structured_outputs_transform(ArticleAnalysis, AzureChatCompletion()),
     )
 
-    # 2. Create a runtime and start it
-    runtime = InProcessRuntime()
-    runtime.start()
-
-    # 3. Read the task from a file
+    # 2. Read the task from a file
     with open(os.path.join(os.path.dirname(__file__), "../resources", "Hamlet_full_play_summary.txt")) as file:
         task = file.read()
+
+    # 3. Create a runtime and start it
+    runtime = InProcessRuntime()
+    runtime.start()
 
     # 4. Invoke the orchestration with a task and the runtime
     orchestration_result = await concurrent_orchestration.invoke(

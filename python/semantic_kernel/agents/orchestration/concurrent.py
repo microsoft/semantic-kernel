@@ -6,7 +6,7 @@ import sys
 from collections.abc import Awaitable, Callable
 
 from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.orchestration.agent_actor_base import AgentActorBase
+from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
 from semantic_kernel.agents.orchestration.orchestration_base import (
     ChatMessageContent,
     DefaultTypeAlias,
@@ -17,7 +17,7 @@ from semantic_kernel.agents.orchestration.orchestration_base import (
 from semantic_kernel.agents.runtime.core.cancellation_token import CancellationToken
 from semantic_kernel.agents.runtime.core.core_runtime import CoreRuntime
 from semantic_kernel.agents.runtime.core.message_context import MessageContext
-from semantic_kernel.agents.runtime.core.routed_agent import RoutedAgent, message_handler
+from semantic_kernel.agents.runtime.core.routed_agent import message_handler
 from semantic_kernel.agents.runtime.core.topic import TopicId
 from semantic_kernel.agents.runtime.in_process.type_subscription import TypeSubscription
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -53,7 +53,14 @@ class ConcurrentAgentActor(AgentActorBase):
         collection_agent_type: str,
         agent_response_callback: Callable[[DefaultTypeAlias], Awaitable[None] | None] | None = None,
     ) -> None:
-        """Initialize the agent actor."""
+        """Initialize the agent actor.
+
+        Args:
+            agent: The agent to be executed.
+            internal_topic_type: The internal topic type for the actor.
+            collection_agent_type: The collection agent type for the actor.
+            agent_response_callback: A callback function to handle the response from the agent.
+        """
         self._collection_agent_type = collection_agent_type
         super().__init__(
             agent=agent,
@@ -82,7 +89,7 @@ class ConcurrentAgentActor(AgentActorBase):
         )
 
 
-class CollectionActor(RoutedAgent):
+class CollectionActor(ActorBase):
     """A agent container for collecting results from concurrent agents."""
 
     def __init__(
@@ -100,7 +107,7 @@ class CollectionActor(RoutedAgent):
         super().__init__(description=description)
 
     @message_handler
-    async def _handle_message(self, message: ConcurrentResponseMessage, ctx: MessageContext) -> None:
+    async def _handle_message(self, message: ConcurrentResponseMessage, _: MessageContext) -> None:
         async with self._lock:
             self._results.append(message.body)
 

@@ -33,8 +33,8 @@ class OrchestrationResult(KernelBaseModel, Generic[TOut]):
 
     value: TOut | None = None
     exception: BaseException | None = None
-    event: asyncio.Event = Field(default_factory=lambda: asyncio.Event())
-    cancellation_token: CancellationToken = Field(default_factory=lambda: CancellationToken())
+    event: asyncio.Event = Field(default_factory=asyncio.Event)
+    cancellation_token: CancellationToken = Field(default_factory=CancellationToken)
 
     async def get(self, timeout: float | None = None) -> TOut:
         """Get the result of the invocation.

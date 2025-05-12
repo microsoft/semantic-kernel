@@ -2,11 +2,9 @@
 
 import asyncio
 
-from semantic_kernel.agents.agent import Agent
-from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
-from semantic_kernel.agents.orchestration.concurrent import ConcurrentOrchestration
-from semantic_kernel.agents.runtime.in_process.in_process_runtime import InProcessRuntime
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.agents import Agent, ChatCompletionAgent, ConcurrentOrchestration
+from semantic_kernel.agents.runtime import InProcessRuntime
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
 """
 The following sample demonstrates how to create a concurrent orchestration for
@@ -18,22 +16,20 @@ waiting for the results.
 """
 
 
-def agents() -> list[Agent]:
+def get_agents() -> list[Agent]:
     """Return a list of agents that will participate in the concurrent orchestration.
 
     Feel free to add or remove agents.
     """
     physics_agent = ChatCompletionAgent(
         name="PhysicsExpert",
-        description="An expert in physics",
         instructions="You are an expert in physics. You answer questions from a physics perspective.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
     )
     chemistry_agent = ChatCompletionAgent(
         name="ChemistryExpert",
-        description="An expert in chemistry",
         instructions="You are an expert in chemistry. You answer questions from a chemistry perspective.",
-        service=OpenAIChatCompletion(),
+        service=AzureChatCompletion(),
     )
 
     return [physics_agent, chemistry_agent]
@@ -42,7 +38,8 @@ def agents() -> list[Agent]:
 async def main():
     """Main function to run the agents."""
     # 1. Create a concurrent orchestration with multiple agents
-    concurrent_orchestration = ConcurrentOrchestration(members=agents())
+    agents = get_agents()
+    concurrent_orchestration = ConcurrentOrchestration(members=agents)
 
     # 2. Create a runtime and start it
     runtime = InProcessRuntime()
