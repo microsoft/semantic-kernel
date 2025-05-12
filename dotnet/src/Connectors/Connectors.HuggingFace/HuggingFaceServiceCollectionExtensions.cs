@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="IServiceCollection"/> interface to configure Hugging Face connectors.
 /// </summary>
-public static partial class HuggingFaceServiceCollectionExtensions
+public static class HuggingFaceServiceCollectionExtensions
 {
     /// <summary>
     /// Adds an Hugging Face text generation service with the specified configuration.

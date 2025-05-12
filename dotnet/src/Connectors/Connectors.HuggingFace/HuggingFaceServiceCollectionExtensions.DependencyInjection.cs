@@ -3,17 +3,17 @@
 using System;
 using System.Net.Http;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Provides extension methods for the <see cref="IServiceCollection"/> interface to configure Hugging Face connectors.
 /// </summary>
-public static partial class HuggingFaceServiceCollectionExtensions
+public static class HuggingFaceServiceCollectionExtensions
 {
     /// <summary>
     /// Adds a HuggingFace embedding generator service with the specified configuration.
