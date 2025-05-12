@@ -86,7 +86,7 @@ public class ProcessMapBuilderTests
         Assert.Single(map.Edges);
         Assert.Single(map.Edges.Single().Value);
         Assert.NotNull(map.Edges.Single().Value[0].Target);
-        Assert.Equal(step2, map.Edges.Single().Value[0].Target!.Step);
+        Assert.Equal(step2, (map.Edges.Single().Value[0].Target as ProcessFunctionTargetBuilder)!.Step);
 
         // Act
         KernelProcessStepInfo processMap = map.BuildStep(new ProcessBuilder("Test", null));
@@ -95,7 +95,7 @@ public class ProcessMapBuilderTests
         Assert.NotNull(processMap);
         Assert.Equal(processMap.Edges.Count, map.Edges.Count);
         Assert.Equal(processMap.Edges.Single().Value.Count, map.Edges.First().Value.Count);
-        Assert.Equal(processMap.Edges.Single().Value.Single().OutputTarget!.StepId, map.Edges.Single().Value[0].Target!.Step.Id);
+        Assert.Equal((processMap.Edges.Single().Value.Single().OutputTarget as KernelProcessFunctionTarget)!.StepId, (map.Edges.Single().Value[0].Target as ProcessFunctionTargetBuilder)!.Step.Id);
     }
 
     /// <summary>

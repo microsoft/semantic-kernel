@@ -28,7 +28,15 @@ public sealed class ProcessEdgeBuilder : ProcessStepEdgeBuilder
     /// <summary>
     /// Sends the output of the source step to the specified target when the associated event fires.
     /// </summary>
-    public new ProcessEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder target, Dictionary<string, object?>? metadata = null)
+    public ProcessEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder target, Dictionary<string, object?>? metadata = null)
+    {
+        return this.SendEventTo(target as ProcessTargetBuilder, metadata);
+    }
+
+    /// <summary>
+    /// Sends the output of the source step to the specified target when the associated event fires.
+    /// </summary>
+    public new ProcessEdgeBuilder SendEventTo(ProcessTargetBuilder target, Dictionary<string, object?>? metadata = null)
     {
         if (this.Target is not null)
         {

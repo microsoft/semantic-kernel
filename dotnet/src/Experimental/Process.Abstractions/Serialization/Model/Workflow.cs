@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Process.Internal;
 using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -25,6 +26,13 @@ public class WorkflowWrapper
 /// </summary>
 public class Workflow
 {
+    /// <summary>
+    /// Gets or sets the unique identifier of the workflow.
+    /// </summary>
+    [YamlMember(Alias = "id")]
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets the format version.
     /// </summary>
@@ -851,6 +859,55 @@ public class ThenAction
     [YamlMember(Alias = "value")]
     [JsonPropertyName("value")]
     public object? Value { get; set; }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="ThenAction"/> class from a <see cref="KernelProcessEdge"/>.
+    /// </summary>
+    /// <param name="edge"></param>
+    /// <param name="defaultThread"></param>
+    /// <returns></returns>
+    /// <exception cref="KernelException"></exception>
+    public static ThenAction FromKernelProcessEdge(KernelProcessEdge edge, string? defaultThread)
+    {
+        if (edge.OutputTarget is KernelProcessStateTarget stateTarget)
+        {
+            return new ThenAction
+            {
+                Type = ActionType.Update,
+                Path = stateTarget.VariableUpdate.Path,
+                Operation = stateTarget.VariableUpdate.Operation,
+                Value = stateTarget.VariableUpdate.Value
+            };
+        }
+        if (edge.OutputTarget is KernelProcessFunctionTarget functionTarget)
+        {
+            if (!edge.Metadata.TryGetValue("foundryAgent.inputs", out object? inputsObj) || inputsObj is null || inputsObj is not Dictionary<string, string> inputsDict)
+            {
+                inputsDict = [];
+            }
+
+            if (!edge.Metadata.TryGetValue("foundryAgent.messagesIn", out object? messagesInObj) || messagesInObj is not string messagesIn)
+            {
+                messagesIn = null!;
+            }
+
+            if (!edge.Metadata.TryGetValue("foundryAgent.thread", out object? threadObj) || threadObj is null || threadObj is not string thread)
+            {
+                thread = defaultThread ?? "";
+            }
+
+            return new ThenAction()
+            {
+                Type = ActionType.NodeInvocation,
+                Node = functionTarget.StepId == ProcessConstants.EndStepName ? "End" : functionTarget.StepId,
+                Inputs = inputsDict,
+                MessagesIn = messagesIn,
+                Thread = thread
+            };
+        }
+
+        throw new KernelException("Unsupported target type");
+    }
 }
 
 /// <summary>

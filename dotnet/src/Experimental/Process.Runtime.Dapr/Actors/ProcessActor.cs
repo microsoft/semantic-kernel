@@ -417,8 +417,13 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             {
                 foreach (KernelProcessEdge edge in edges)
                 {
+                    if (edge.OutputTarget is not KernelProcessFunctionTarget functionTarget)
+                    {
+                        throw new KernelException("Only KernelProcessFunctionTarget can be used as input events.");
+                    }
+
                     ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Id, externalEvent.Data);
-                    var scopedMessageBufferId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
+                    var scopedMessageBufferId = this.ScopedActorId(new ActorId(functionTarget.StepId));
                     var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
                     await messageQueue.EnqueueAsync(message.ToJson()).ConfigureAwait(false);
                 }
@@ -451,10 +456,15 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         IList<ProcessEvent> processErrorEvents = errorEvents.ToProcessEvents();
         foreach (var errorEdge in errorEdges)
         {
+            if (errorEdge.OutputTarget is not KernelProcessFunctionTarget functionTarget)
+            {
+                throw new KernelException("Only KernelProcessFunctionTarget can be used as input events.");
+            }
+
             foreach (ProcessEvent errorEvent in processErrorEvents)
             {
                 var errorMessage = ProcessMessageFactory.CreateFromEdge(errorEdge, errorEvent.SourceId, errorEvent.Data);
-                var scopedErrorMessageBufferId = this.ScopedActorId(new ActorId(errorEdge.OutputTarget.StepId));
+                var scopedErrorMessageBufferId = this.ScopedActorId(new ActorId(functionTarget.StepId));
                 var errorStepQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedErrorMessageBufferId, nameof(MessageBufferActor));
                 await errorStepQueue.EnqueueAsync(errorMessage.ToJson()).ConfigureAwait(false);
             }
@@ -482,8 +492,13 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 {
                     foreach (var edge in edges)
                     {
+                        if (edge.OutputTarget is not KernelProcessFunctionTarget functionTarget)
+                        {
+                            throw new KernelException("Only KernelProcessFunctionTarget can be used as input events.");
+                        }
+
                         ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, scopedEvent.SourceId, scopedEvent.Data);
-                        var scopedMessageBufferId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId), scopeToParent: true);
+                        var scopedMessageBufferId = this.ScopedActorId(new ActorId(functionTarget.StepId), scopeToParent: true);
                         var messageQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedMessageBufferId, nameof(MessageBufferActor));
                         await messageQueue.EnqueueAsync(message.ToJson()).ConfigureAwait(false);
                     }

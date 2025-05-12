@@ -265,7 +265,7 @@ public class WorkflowBuilder
                     // The source is a step.
                     edgeBuilder = sourceStepBuilder.OnEvent(listenCondition.Event);
                 }
-                else if (listenCondition.From.Equals("$.inputs.events", StringComparison.OrdinalIgnoreCase) && this._inputEvents.ContainsKey(listenCondition.Event))
+                else if (listenCondition.From.Equals("_workflow_", StringComparison.OrdinalIgnoreCase) && this._inputEvents.ContainsKey(listenCondition.Event))
                 {
                     // The source is an input event.
                     edgeBuilder = processBuilder.OnInputEvent(listenCondition.Event);
@@ -300,7 +300,7 @@ public class WorkflowBuilder
                 }
 
                 // Add the edge to the node
-                edgeBuilder = edgeBuilder.SendEventTo(new(destinationStepBuilder));
+                edgeBuilder = edgeBuilder.SendEventTo(new ProcessFunctionTargetBuilder(destinationStepBuilder));
             }
         }
 
@@ -322,6 +322,10 @@ public class WorkflowBuilder
 
         Workflow workflow = new()
         {
+            Id = process.State.Id ?? throw new KernelException("The process must have an Id set"),
+            Description = process.Description,
+            FormatVersion = "1.0",
+            Name = process.State.Name,
             Nodes = [],
             Variables = [],
         };
@@ -383,10 +387,7 @@ public class WorkflowBuilder
                     From = "_workflow_",
                     Event = edge.Key
                 },
-                Then = [.. edge.Value.Select(e => new ThenAction()
-                {
-                    Node = e.OutputTarget.StepId
-                })]
+                Then = [.. edge.Value.Select(e => ThenAction.FromKernelProcessEdge(e, null))]
             };
 
             orchestration.Add(orchestrationStep);
@@ -438,13 +439,21 @@ public class WorkflowBuilder
                     Event = edge.Key,
                     Condition = edge.Value.FirstOrDefault()?.Condition.DeclarativeDefinition
                 },
-                Then = [.. edge.Value.Select(e => new ThenAction()
+                Then = [.. edge.Value.Select(e =>
                 {
-                    Node = e.OutputTarget.StepId switch
+                    if (e.OutputTarget is KernelProcessFunctionTarget functionTarget)
                     {
-                        ProcessConstants.EndStepName => "End",
-                        string s => s
+                        return new ThenAction()
+                        {
+                            Node = functionTarget.StepId switch
+                            {
+                                ProcessConstants.EndStepName => "End",
+                                string s => s
+                            }
+                        };
                     }
+
+                    throw new KernelException($"The edge target is not a function target: {e.OutputTarget}");
                 })]
             };
 
@@ -509,43 +518,7 @@ public class WorkflowBuilder
                     Event = edge.Key.key.EndsWith("Invoke.OnResult", StringComparison.Ordinal) ? "_on_complete_" : edge.Key.key,
                     Condition = edge.Key.DeclarativeDefinition
                 },
-                Then = [.. edge.Value.Select(e =>
-                {
-                    if (!e.edge.Metadata.TryGetValue("foundryAgent.inputs", out object? inputsObj) || inputsObj is null || inputsObj is not Dictionary<string, string> inputsDict)
-                    {
-                        inputsDict = [];
-                    }
-
-                    if (!e.edge.Metadata.TryGetValue("foundryAgent.messagesIn", out object? messagesInObj) || messagesInObj is not string messagesIn)
-                    {
-                        messagesIn = null!;
-                    }
-
-                    if (!e.edge.Metadata.TryGetValue("foundryAgent.thread", out object? threadObj) || threadObj is null || threadObj is not string thread)
-                    {
-                        thread = agentStep.ThreadName;
-                    }
-
-                    if (e.edge.OutputTarget is null && e.edge.Update is not null)
-                    {
-                        return new ThenAction()
-                        {
-                            Type = ActionType.Update,
-                            Path = e.edge.Update.Path,
-                            Operation = e.edge.Update.Operation,
-                            Value = e.edge.Update.Value,
-                        };
-                    }
-
-                    return new ThenAction()
-                    {
-                        Type = ActionType.NodeInvocation,
-                        Node = e.edge.OutputTarget?.StepId == ProcessConstants.EndStepName ? "End" : e.edge.OutputTarget?.StepId,
-                        Inputs = inputsDict,
-                        MessagesIn = messagesIn,
-                        Thread = thread
-                    };
-                })]
+                Then = [.. edge.Value.Select(e => ThenAction.FromKernelProcessEdge(e.edge, defaultThread: agentStep.ThreadName))]
             };
 
             orchestrationSteps.Add(orchestrationStep);

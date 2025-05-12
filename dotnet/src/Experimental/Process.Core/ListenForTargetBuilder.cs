@@ -19,7 +19,6 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
     /// <param name="messageSources">The list of message sources.</param>
     /// <param name="processBuilder">The process builder.</param>
     /// <param name="edgeGroup">The group ID for the message sources.</param>
-    /// <param name="variableUpdate">The variable update to be performed when the edge fires.</param>
     public ListenForTargetBuilder(List<MessageSourceBuilder> messageSources, ProcessBuilder processBuilder, KernelProcessEdgeGroupBuilder? edgeGroup = null) : base(processBuilder, "Aggregate", "Aggregate", edgeGroupBuilder: edgeGroup)
     {
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
@@ -48,7 +47,7 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
     public ProcessStepEdgeBuilder SendEventToAgent(ProcessAgentBuilder target, Dictionary<string, string>? inputs = null, string? messagesIn = null, string? thread = null)
     {
         // TODO: Move this method to agent builder
-        return this.SendEventTo_Internal(new(target));
+        return this.SendEventTo_Internal(new ProcessFunctionTargetBuilder(target));
     }
 
     /// <summary>
@@ -60,7 +59,7 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
     {
         Verify.NotNull(variableUpdate, nameof(variableUpdate));
         this.VariableUpdate = variableUpdate;
-        this.SendEventTo_Internal(null, this.Metadata, variableUpdate);
+        this.SendEventTo_Internal(new ProcessStateTargetBuilder(this.VariableUpdate), this.Metadata);
 
         return new ListenForTargetBuilder(this._messageSources, this._processBuilder, this.EdgeGroupBuilder);
     }
@@ -83,7 +82,7 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
             { "foundryAgent.thread", thread }
         };
 
-        return this.SendEventTo_Internal(new(target), metaData, this.VariableUpdate);
+        return this.SendEventTo_Internal(new ProcessFunctionTargetBuilder(target), metaData);
     }
 
     /// <summary>
@@ -91,15 +90,9 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
     /// </summary>
     /// <param name="target">The target to send the event to.</param>
     /// <param name="metadata">Optional metadata to include with the event.</param>
-    /// <param name="update">The list of variable updates to be performed when the edge fires.</param>
     /// <returns>A new instance of <see cref="ListenForTargetBuilder"/>.</returns>
-    internal override ProcessStepEdgeBuilder SendEventTo_Internal(ProcessFunctionTargetBuilder? target, Dictionary<string, object?>? metadata = null, VariableUpdate? update = null)
+    internal override ProcessStepEdgeBuilder SendEventTo_Internal(ProcessTargetBuilder target, Dictionary<string, object?>? metadata = null)
     {
-        if (target is null && update is null)
-        {
-            throw new InvalidOperationException("Either a target or an update must be specified.");
-        }
-
         foreach (var messageSource in this._messageSources)
         {
             if (messageSource.Source == null)
@@ -111,13 +104,12 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
             var onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
             onEventBuilder.EdgeGroupBuilder = this.EdgeGroupBuilder;
             onEventBuilder.Metadata = metadata ?? [];
-            onEventBuilder.VariableUpdate = update;
 
             if (messageSource.Condition != null)
             {
                 onEventBuilder.Condition = messageSource.Condition;
             }
-            onEventBuilder.SendEventTo(target, metadata, update);
+            onEventBuilder.SendEventTo(target, metadata);
         }
 
         return new ListenForTargetBuilder(this._messageSources, this._processBuilder, edgeGroup: this.EdgeGroupBuilder);

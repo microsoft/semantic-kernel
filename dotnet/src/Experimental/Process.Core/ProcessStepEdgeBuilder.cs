@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public class ProcessStepEdgeBuilder
 {
-    internal ProcessFunctionTargetBuilder? Target { get; set; }
+    internal ProcessTargetBuilder? Target { get; set; }
 
     /// <summary>
     /// The event data that the edge fires on.
@@ -72,25 +72,22 @@ public class ProcessStepEdgeBuilder
     {
         Verify.NotNull(this.Source?.Id);
 
-        if (this.Target is null && this.VariableUpdate is null)
+        if (this.Target is null || this.Source?.Id is null)
         {
-            throw new KernelException("A target or update must be provided.");
+            throw new InvalidOperationException("A target and Source must be specified before building the edge.");
         }
 
-        KernelProcessFunctionTarget? builtTarget = null;
-        if (this.Target is not null)
+        if (this.Target is ProcessFunctionTargetBuilder functionTargetBuilder)
         {
             if (this.EdgeGroupBuilder is not null && this.Target is ProcessStepTargetBuilder stepTargetBuilder)
             {
                 var messageSources = this.EdgeGroupBuilder.MessageSources.Select(e => new KernelProcessMessageSource(e.MessageType, e.Source.Id)).ToList();
                 var edgeGroup = new KernelProcessEdgeGroup(this.EdgeGroupBuilder.GroupId, messageSources, stepTargetBuilder.InputMapping);
-                this.Target.Step.RegisterGroupInputMapping(edgeGroup);
+                functionTargetBuilder.Step.RegisterGroupInputMapping(edgeGroup);
             }
-
-            builtTarget = this.Target.Build(processBuilder);
         }
 
-        return new KernelProcessEdge(this.Source.Id, builtTarget, groupId: this.EdgeGroupBuilder?.GroupId, this.Condition, this.Metadata, this.VariableUpdate);
+        return new KernelProcessEdge(this.Source.Id, this.Target.Build(processBuilder), groupId: this.EdgeGroupBuilder?.GroupId, this.Condition, this.Metadata, this.VariableUpdate);
     }
 
     /// <summary>
@@ -98,11 +95,10 @@ public class ProcessStepEdgeBuilder
     /// </summary>
     /// <param name="target">The output target.</param>
     /// <param name="metadata"> Optional metadata to include with the event.</param>
-    /// <param name="updates"> The list of variable updates to be performed when the edge fires.</param>
     /// <returns>A fresh builder instance for fluid definition</returns>
-    public ProcessStepEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder? target, Dictionary<string, object?>? metadata = null, VariableUpdate? update = null)
+    public ProcessStepEdgeBuilder SendEventTo(ProcessTargetBuilder target, Dictionary<string, object?>? metadata = null)
     {
-        return this.SendEventTo_Internal(target, metadata, update);
+        return this.SendEventTo_Internal(target, metadata);
     }
 
     /// <summary>
@@ -122,28 +118,24 @@ public class ProcessStepEdgeBuilder
     /// </summary>
     /// <param name="target">The output target.</param>
     /// <param name="metadata"> Optional metadata to include with the event.</param>
-    /// <param name="update"> An optional variable update to be performed when the edge fires.</param>
     /// <returns>A fresh builder instance for fluid definition</returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="ArgumentException"></exception>
-    internal virtual ProcessStepEdgeBuilder SendEventTo_Internal(ProcessFunctionTargetBuilder? target, Dictionary<string, object?>? metadata = null, VariableUpdate? update = null)
+    internal virtual ProcessStepEdgeBuilder SendEventTo_Internal(ProcessTargetBuilder target, Dictionary<string, object?>? metadata = null)
     {
         if (this.Target is not null)
         {
             throw new InvalidOperationException("An output target has already been set.");
         }
 
-        if (target is null && update is null)
+        if (target is ProcessFunctionTargetBuilder functionTargetBuilder)
         {
-            throw new KernelException("Either a target or an update must be provided.");
+            if (functionTargetBuilder.Step is ProcessMapBuilder && this.Source is ProcessMapBuilder)
+            {
+                throw new ArgumentException($"{nameof(ProcessMapBuilder)} may not target another {nameof(ProcessMapBuilder)}.", nameof(target));
+            }
         }
 
-        if (target is not null && this.Source is ProcessMapBuilder && target.Step is ProcessMapBuilder)
-        {
-            throw new ArgumentException($"{nameof(ProcessMapBuilder)} may not target another {nameof(ProcessMapBuilder)}.", nameof(target));
-        }
-
-        this.VariableUpdate = update;
         this.Target = target;
         this.Source.LinkTo(this.EventData.EventId, this);
 

@@ -27,6 +27,7 @@ public class FoundryListenForBuilder
     /// Listens for an input event.
     /// </summary>
     /// <param name="eventName"></param>
+    /// <param name="condition"></param>
     /// <returns></returns>
     public ListenForTargetBuilder InputEvent(string eventName, KernelProcessEdgeCondition? condition = null)
     {

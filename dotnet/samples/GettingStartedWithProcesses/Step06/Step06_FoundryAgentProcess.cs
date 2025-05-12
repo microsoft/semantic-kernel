@@ -300,8 +300,8 @@ public class Step06_FoundryAgentProcess : BaseTest
             .Update(new() { Path = "_variables_.StudentState.Name", Operation = StateUpdateOperations.Set, Value = "Runhan" })
             .SendEventToAgent(teacher, messagesIn: "_variables_.StudentMessages");
 
-        processBuilder.ListenFor().OnResult(teacher, condition: "contains(to_string(_event_.messages_out), '[COMPLETE]')")
-            .Update(new() { Path = "_variables_.TeacherMessages", Operation = StateUpdateOperations.Set, Value = "_event_.messages_out" })
+        processBuilder.ListenFor().OnResult(teacher, condition: "contains(to_string(_agent_.messages_out), '[COMPLETE]')")
+            .Update(new() { Path = "_variables_.TeacherMessages", Operation = StateUpdateOperations.Set, Value = "_agent_.messages_out" })
             .Update(new() { Path = "_variables_.InteractionCount", Operation = StateUpdateOperations.Increment, Value = 1 });
 
         processBuilder.ListenFor().OnResult(teacher, condition: "_default_")

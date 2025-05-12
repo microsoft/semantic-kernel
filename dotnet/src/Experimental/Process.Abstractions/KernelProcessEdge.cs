@@ -23,7 +23,7 @@ public sealed class KernelProcessEdge
     /// The collection of <see cref="KernelProcessFunctionTarget"/>s that are the output of the source Step.
     /// </summary>
     [DataMember]
-    public KernelProcessFunctionTarget? OutputTarget { get; init; }
+    public KernelProcessTarget OutputTarget { get; init; }
 
     /// <summary>
     /// The unique identifier for the group of edges. This may be null if the edge is not part of a group.
@@ -50,14 +50,10 @@ public sealed class KernelProcessEdge
     /// <summary>
     /// Creates a new instance of the <see cref="KernelProcessEdge"/> class.
     /// </summary>
-    public KernelProcessEdge(string sourceStepId, KernelProcessFunctionTarget? outputTarget, string? groupId = null, KernelProcessEdgeCondition? condition = null, Dictionary<string, object?>? metadata = null, VariableUpdate? update = null)
+    public KernelProcessEdge(string sourceStepId, KernelProcessTarget outputTarget, string? groupId = null, KernelProcessEdgeCondition? condition = null, Dictionary<string, object?>? metadata = null, VariableUpdate? update = null)
     {
         Verify.NotNullOrWhiteSpace(sourceStepId);
-
-        if (outputTarget is null && update is null)
-        {
-            throw new KernelException("A target or update must be provided.");
-        }
+        Verify.NotNull(outputTarget);
 
         this.SourceStepId = sourceStepId;
         this.OutputTarget = outputTarget;

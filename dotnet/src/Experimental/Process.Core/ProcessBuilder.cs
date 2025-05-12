@@ -24,7 +24,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     private readonly List<ProcessStepBuilder> _entrySteps = [];
 
     /// <summary>Maps external input event Ids to the target entry step for the event.</summary>
-    private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
+    private readonly Dictionary<string, ProcessTargetBuilder> _externalEventTargetMap = [];
 
     /// <summary>
     /// The collection of threads within this process.
@@ -47,16 +47,23 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     public Type? StateType { get; init; } = null;
 
     /// <summary>
+    /// The description of the process.
+    /// </summary>
+    public string Description { get; init; } = string.Empty;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
     /// </summary>
     /// <param name="id">The name of the process. This is required.</param>
+    /// <param name="description">The semantic description of the Process being built.</param>
     /// <param name="processBuilder">ProcessBuilder to copy from</param>
     /// <param name="stateType">The type of the state. This is optional.</param>
-    public ProcessBuilder(string id, ProcessBuilder? processBuilder = null, Type? stateType = null)
+    public ProcessBuilder(string id, string? description = null, ProcessBuilder? processBuilder = null, Type? stateType = null)
         : base(id, processBuilder)
     {
         Verify.NotNullOrWhiteSpace(id, nameof(id));
         this.StateType = stateType;
+        this.Description = description ?? string.Empty;
     }
 
     /// <summary>
@@ -497,8 +504,13 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             throw new KernelException($"The process named '{this.Name}' does not expose an event with Id '{eventId}'.");
         }
 
+        if (target is not ProcessFunctionTargetBuilder functionTargetBuilder)
+        {
+            throw new KernelException($"The process named '{this.Name}' does not expose an event with Id '{eventId}'.");
+        }
+
         // Targets for external events on a process should be scoped to the process itself rather than the step inside the process.
-        var processTarget = target with { Step = this, TargetEventId = eventId };
+        var processTarget = functionTargetBuilder with { Step = this, TargetEventId = eventId };
         return processTarget;
     }
 
@@ -516,8 +528,8 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         var builtSteps = this.BuildWithStateMetadata(stateMetadata);
 
         // Create the process
-        KernelProcessState state = new(this.Name, version: this.Version, id: this.HasParentProcess ? this.Id : null);
-        KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads, UserStateype = this.StateType };
+        KernelProcessState state = new(this.Name, version: this.Version, id: this.Id);
+        KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads, UserStateype = this.StateType, Description = this.Description };
 
         return process;
     }
