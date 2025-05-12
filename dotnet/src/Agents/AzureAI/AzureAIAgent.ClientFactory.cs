@@ -3,7 +3,6 @@ using System;
 using System.Net.Http;
 using Azure;
 using Azure.AI.Agents.Persistent;
-using Azure.AI.Projects.OneDP;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.SemanticKernel.Http;
@@ -11,12 +10,12 @@ using Microsoft.SemanticKernel.Http;
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
 /// <summary>
-/// Provides an <see cref="AIProjectClient"/> for use by <see cref="AzureAIAgent"/>.
+/// Provides an <see cref="PersistentAgentsClient"/> for use by <see cref="AzureAIAgent"/>.
 /// </summary>
 public sealed partial class AzureAIAgent : Agent
 {
     /// <summary>
-    /// Produces a <see cref="AIProjectClient"/>.
+    /// Produces a <see cref="PersistentAgentsClient"/>.
     /// </summary>
     /// <param name="endpoint">The Azure AI Foundry project endpoint.</param>
     /// <param name="credential"> A credential used to authenticate to an Azure Service.</param>
@@ -35,7 +34,7 @@ public sealed partial class AzureAIAgent : Agent
     }
 
     /// <summary>
-    /// Produces a <see cref="AIProjectClient"/>.
+    /// Produces a <see cref="PersistentAgentsClient"/>.
     /// </summary>
     /// <param name="endpoint">The Azure AI Foundry project endpoint.</param>
     /// <param name="credential"> A credential used to authenticate to an Azure Service.</param>

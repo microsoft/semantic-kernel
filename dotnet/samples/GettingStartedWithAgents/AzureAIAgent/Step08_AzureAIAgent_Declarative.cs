@@ -36,6 +36,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
 
         var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton(this.Client);
         builder.Services.AddSingleton<TokenCredential>(new AzureCliCredential());
         var kernel = builder.Build();
 
@@ -53,6 +54,8 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             name: MyAgent
             description: My helpful agent.
             instructions: You are helpful agent.
+            model:
+              id: ${AzureOpenAI:ChatModelId}
             """;
         AzureAIAgentFactory factory = new();
 
@@ -416,7 +419,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     public Step08_AzureAIAgent_Declarative(ITestOutputHelper output) : base(output)
     {
         var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<PersistentAgentsClient>(this.Client);
+        builder.Services.AddSingleton(this.Client);
         this._kernel = builder.Build();
     }
 

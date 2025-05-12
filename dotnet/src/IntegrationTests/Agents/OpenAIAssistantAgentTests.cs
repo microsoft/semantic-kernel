@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
@@ -501,7 +502,7 @@ public sealed class OpenAIAssistantAgentTests
         return azureOpenAIConfiguration;
     }
 
-    private static OpenAIClient CreateClient(AzureOpenAIConfiguration azureOpenAIConfiguration)
+    private static AzureOpenAIClient CreateClient(AzureOpenAIConfiguration azureOpenAIConfiguration)
     {
         return OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(azureOpenAIConfiguration.Endpoint));
     }
