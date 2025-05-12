@@ -3359,22 +3359,29 @@ name = "onnxruntime-genai"
 version = "0.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "numpy", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux')" },
+    { name = "numpy", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform == 'win32')" },
+    { name = "onnxruntime", version = "1.21.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13' and sys_platform == 'win32'" },
     { name = "onnxruntime", version = "1.21.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ef/47/ff222bb74a0725266cebfbca7bf24f0877b4e9abb1b38451173507d3c362/onnxruntime_genai-0.7.1-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:12dc0005dba08bee78ec5bae67624f9e92ce0dad8a6cab444b87d9a43236a514", size = 988999 },
     { url = "https://files.pythonhosted.org/packages/35/9c/6036b39644d9c1e4fb6f314a1d97d489d80e909e63ed40e431bc232d7b87/onnxruntime_genai-0.7.1-cp310-cp310-macosx_12_0_x86_64.whl", hash = "sha256:62bb39be347250f36a9e2402d256b6a88f5b662d86cf5418951a9b874d277314", size = 1106705 },
     { url = "https://files.pythonhosted.org/packages/db/da/422f4447439c96e8c9ea9eb3f2bad4eb482711a2d9e6760bc1b0fd5ea1e2/onnxruntime_genai-0.7.1-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:0dde969928a3d1fd2296997c88264b14a93bdabc21531ae2ec42756f4cc9cc3e", size = 1743341 },
+    { url = "https://files.pythonhosted.org/packages/f6/08/98311c41917525434f31b2182edfb1262dc89b96dbc270d97e1123f9369e/onnxruntime_genai-0.7.1-cp310-cp310-win_amd64.whl", hash = "sha256:e4a684bbe2971b38bc0c4e8908276d898ca1fb3c336ca1c37545991b45427020", size = 919232 },
     { url = "https://files.pythonhosted.org/packages/9d/28/99aeabe4a83f979dd49ea845eb4e63a1317182d9f2a06166fc892e4f20a4/onnxruntime_genai-0.7.1-cp311-cp311-macosx_12_0_arm64.whl", hash = "sha256:9b872ec5a093f0bc6f4fc2e84946e65de49331c194bd2763b7fecde09265e8f3", size = 990239 },
     { url = "https://files.pythonhosted.org/packages/4e/5c/0de3ac4c53351ff9d627c041eb6d56854ca658cbe30e1b9c128378142184/onnxruntime_genai-0.7.1-cp311-cp311-macosx_12_0_x86_64.whl", hash = "sha256:911a9ceec67ffff7f83f5e4d1d009d6aacd7238d3ac48532170d3720081d0f77", size = 1108450 },
     { url = "https://files.pythonhosted.org/packages/c9/c8/c58a3480619b37f230dbc480de45faf8f6ba531296bd82adc1dfe2a9515c/onnxruntime_genai-0.7.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:d85953eb8b900a690d0d33cfd2f09f0d11edf3f1c16343ec789b5c5b33e410fd", size = 1744730 },
+    { url = "https://files.pythonhosted.org/packages/aa/eb/a40cacec0911c9b472a20ec277030741d5822435ea6dd520aa049887e79d/onnxruntime_genai-0.7.1-cp311-cp311-win_amd64.whl", hash = "sha256:8f9b313fa800d25f60f759332cb80e6d37baa43fe5e46a9ce333e95f4ca16dd5", size = 920505 },
+    { url = "https://files.pythonhosted.org/packages/7e/44/04e758402ac97c94eb0653b41453edaab72626bc2b1aa10d8e5420f2d485/onnxruntime_genai-0.7.1-cp311-cp311-win_arm64.whl", hash = "sha256:04100fe07712eb8becc65881ff4490e421e87b6ec0b6b414581251b9f1d12fd3", size = 894553 },
     { url = "https://files.pythonhosted.org/packages/c8/fa/6776850be8a0173f5d3df3026aa0a031e0e4b8712023633e2dca3e599129/onnxruntime_genai-0.7.1-cp312-cp312-macosx_12_0_arm64.whl", hash = "sha256:480ec36799764352cc05e3c9dc9bc10f958faf4e83d1f69dcea4bd047cbf90fa", size = 990363 },
     { url = "https://files.pythonhosted.org/packages/08/8b/550b04464e2586dac6444b4ebb08f14aae7475a3cc4ce9d55982f44369cf/onnxruntime_genai-0.7.1-cp312-cp312-macosx_12_0_x86_64.whl", hash = "sha256:ab350fd6a148a9ed11898f7f1b75c10303680ed23c728f0d9f1b4a9870aed6af", size = 1109628 },
     { url = "https://files.pythonhosted.org/packages/9a/5c/d5e49136c2a26fdaa7b9712063a4ae201101258f7e10aad85ad53a775ed6/onnxruntime_genai-0.7.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:3785c1592ee1d44e46ec55760fd38f05ed3afb555d521d2d90e322189a999894", size = 1745228 },
+    { url = "https://files.pythonhosted.org/packages/10/9f/0a778c2e488b3ecb8995b40222a83c9fe9148a9771d7af954b577e1b7ed4/onnxruntime_genai-0.7.1-cp312-cp312-win_amd64.whl", hash = "sha256:a587ea1a71a7a4e59a8435c2c31ee2e4572125187c312d12bcdbab13df554a04", size = 920873 },
+    { url = "https://files.pythonhosted.org/packages/f9/75/7bc9b8795182d9d1097b25c2bbafafa8b4e5422ae297a7196b5864412ba0/onnxruntime_genai-0.7.1-cp312-cp312-win_arm64.whl", hash = "sha256:825a3336d20aaddfebaac162e209ce571f717feb1ab2ebc1101b3a405b30d58d", size = 894176 },
     { url = "https://files.pythonhosted.org/packages/4f/68/17e35ab21bfd82e9d8fd27503c4b725400591b6af812e3c95a615a6f4add/onnxruntime_genai-0.7.1-cp313-cp313-macosx_12_0_arm64.whl", hash = "sha256:56aed00de67a8e749d2eab5332bede996127416fc79a31ee4993ce35189e9450", size = 990486 },
     { url = "https://files.pythonhosted.org/packages/a5/d6/46c83d9f23910d1b11c109c3f314242a066322fd28f28019b963bbd79674/onnxruntime_genai-0.7.1-cp313-cp313-macosx_12_0_x86_64.whl", hash = "sha256:229824c101d3f3ae92fd58e85d50879fa1b726f41184065e6379f33a731c78f3", size = 1109729 },
     { url = "https://files.pythonhosted.org/packages/c9/93/d5354da877a3a1bf36a99f6741b4626ddac4cfa72b745307bfa7c900a39c/onnxruntime_genai-0.7.1-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:c892a5efaf33c735c1effb227fc0759546cb7a26a8152f266c71ee2a6afa4273", size = 1745190 },
+    { url = "https://files.pythonhosted.org/packages/05/f6/b8aa7884ab2a5a48ecd9562d39a8f46ae0b82ad958c8c115f864ab3a7e19/onnxruntime_genai-0.7.1-cp313-cp313-win_amd64.whl", hash = "sha256:1b0d5ccbbf96033b46b67822dfd355e50682f781d3bb9ac72b6ef1236d66d131", size = 920868 },
 ]
 
 [[package]]
@@ -5521,8 +5528,7 @@ ollama = [
     { name = "ollama", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 onnx = [
-    { name = "onnxruntime", version = "1.21.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'win32'" },
-    { name = "onnxruntime-genai", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux')" },
+    { name = "onnxruntime-genai", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform == 'win32')" },
 ]
 pandas = [
     { name = "pandas", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -5608,8 +5614,7 @@ requires-dist = [
     { name = "numpy", marker = "python_full_version < '3.12'", specifier = ">=1.25.0" },
     { name = "numpy", marker = "python_full_version >= '3.12'", specifier = ">=1.26.0" },
     { name = "ollama", marker = "extra == 'ollama'", specifier = "~=0.4" },
-    { name = "onnxruntime", marker = "sys_platform == 'win32' and extra == 'onnx'", specifier = "==1.21.0" },
-    { name = "onnxruntime-genai", marker = "python_full_version < '3.13' and sys_platform != 'win32' and extra == 'onnx'", specifier = "~=0.5" },
+    { name = "onnxruntime-genai", marker = "python_full_version < '3.13' and extra == 'onnx'", specifier = "~=0.5" },
     { name = "openai", specifier = ">=1.67" },
     { name = "openapi-core", specifier = ">=0.18,<0.20" },
     { name = "opentelemetry-api", specifier = "~=1.24" },
