@@ -12,8 +12,6 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel;
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
-
 /// <summary>
 /// Provides extension methods for the <see cref="IServiceCollection"/> interface to configure ONNX connectors.
 /// </summary>
@@ -45,6 +43,7 @@ public static class OnnxServiceCollectionExtensions
         return services;
     }
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
     /// <summary>Adds a text embedding generation service using a BERT ONNX model.</summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="onnxModelPath">The path to the ONNX model file.</param>
@@ -126,4 +125,5 @@ public static class OnnxServiceCollectionExtensions
             serviceId,
             BertOnnxEmbeddingGenerator.Create(onnxModelStream, vocabStream, options));
     }
+#pragma warning restore CA2000 // Dispose objects before losing scope
 }

@@ -12,8 +12,6 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel;
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
-
 /// <summary>
 /// Provides extension methods for the <see cref="IKernelBuilder"/> class to configure ONNX connectors.
 /// </summary>
@@ -53,6 +51,7 @@ public static class OnnxKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Obsolete("Use AddBertOnnxEmbeddingGenerator instead")]
+#pragma warning disable CA2000 // Dispose objects before losing scope
     public static IKernelBuilder AddBertOnnxTextEmbeddingGeneration(
         this IKernelBuilder builder,
         string onnxModelPath,
@@ -88,6 +87,7 @@ public static class OnnxKernelBuilderExtensions
 
         return builder;
     }
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
     /// <summary>Adds a text embedding generation service using a BERT ONNX model.</summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>

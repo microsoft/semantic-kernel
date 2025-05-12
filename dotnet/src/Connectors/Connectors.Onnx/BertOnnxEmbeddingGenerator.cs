@@ -18,7 +18,6 @@ using Microsoft.ML.OnnxRuntime;
 
 namespace Microsoft.SemanticKernel.Connectors.Onnx;
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
 
@@ -72,7 +71,9 @@ public sealed class BertOnnxEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         BertOnnxOptions? options = null,
         ILoggerFactory? loggerFactory = null)
     {
+#pragma warning disable CA2000 // Dispose objects before losing scope
         Task<BertOnnxEmbeddingGenerator> t = CreateAsync(onnxModelPath, vocabPath, options, async: false, loggerFactory: loggerFactory, cancellationToken: default);
+#pragma warning restore CA2000 // Dispose objects before losing scope
         Debug.Assert(t.IsCompleted);
         return t.GetAwaiter().GetResult();
     }
@@ -88,7 +89,9 @@ public sealed class BertOnnxEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         BertOnnxOptions? options = null,
         ILoggerFactory? loggerFactory = null)
     {
+#pragma warning disable CA2000 // Dispose objects before losing scope
         Task<BertOnnxEmbeddingGenerator> t = CreateAsync(null, onnxModelStream, vocabStream, options, async: false, loggerFactory: loggerFactory, cancellationToken: default);
+#pragma warning restore CA2000 // Dispose objects before losing scope
         Debug.Assert(t.IsCompleted);
         return t.GetAwaiter().GetResult();
     }
