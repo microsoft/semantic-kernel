@@ -91,6 +91,7 @@ public static class OnnxServiceCollectionExtensions
     /// <param name="options">Options for the configuration of the model and service.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
+#pragma warning disable CS0618 // Type or member is obsolete
     public static IServiceCollection AddBertOnnxEmbeddingGenerator(
         this IServiceCollection services,
         string onnxModelPath,
@@ -102,7 +103,7 @@ public static class OnnxServiceCollectionExtensions
 
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(
             serviceId,
-            BertOnnxEmbeddingGenerator.Create(onnxModelPath, vocabPath, options));
+            BertOnnxTextEmbeddingGenerationService.Create(onnxModelPath, vocabPath, options).AsEmbeddingGenerator());
     }
 
     /// <summary>Adds a text embedding generation service using a BERT ONNX model.</summary>
@@ -123,7 +124,8 @@ public static class OnnxServiceCollectionExtensions
 
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(
             serviceId,
-            BertOnnxEmbeddingGenerator.Create(onnxModelStream, vocabStream, options));
+            BertOnnxTextEmbeddingGenerationService.Create(onnxModelStream, vocabStream, options).AsEmbeddingGenerator());
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CA2000 // Dispose objects before losing scope
 }
