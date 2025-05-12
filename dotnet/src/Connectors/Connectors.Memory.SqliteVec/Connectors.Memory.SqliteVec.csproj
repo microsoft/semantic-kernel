@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="sqlite-vec" />
   </ItemGroup>
 
   <ItemGroup>

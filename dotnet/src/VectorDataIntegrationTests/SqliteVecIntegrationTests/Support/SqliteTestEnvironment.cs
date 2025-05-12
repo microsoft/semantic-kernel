@@ -7,12 +7,6 @@ namespace SqliteVecIntegrationTests.Support;
 
 internal static class SqliteTestEnvironment
 {
-    /// <summary>
-    /// SQLite extension name for vector search.
-    /// More information here: <see href="https://github.com/asg017/sqlite-vec"/>.
-    /// </summary>
-    private const string VectorSearchExtensionName = "vec0";
-
     private static bool? s_isSqliteVecInstalled;
 
     internal static bool TryLoadSqliteVec(SqliteConnection connection)
@@ -26,7 +20,7 @@ internal static class SqliteTestEnvironment
 
             try
             {
-                connection.LoadExtension(VectorSearchExtensionName);
+                connection.LoadVector();
                 s_isSqliteVecInstalled = true;
             }
             catch (SqliteException)
