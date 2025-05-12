@@ -120,7 +120,7 @@ ollama = [
 ]
 onnx = [
     "onnxruntime-genai ~= 0.5; python_version < '3.13' and platform_system != 'Windows'",
-    "onnxruntime == 1.21.0; platform_system == 'Windows'"
+    "onnxruntime == 1.22.0; platform_system == 'Windows'"
 ]
 pandas = [
     "pandas ~= 2.2"
