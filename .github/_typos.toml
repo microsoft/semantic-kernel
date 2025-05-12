@@ -26,7 +26,8 @@ extend-exclude = [
     "SK-dotnet.sln.DotSettings",
     "**/azure_ai_search_hotel_samples/README.md",
     "**/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.ProcessOrchestrator/Program.cs",
-    "**/Demos/ProcessFrameworkWithAspire/**/*.http"
+    "**/Demos/ProcessFrameworkWithAspire/**/*.http",
+    "**/samples/Concepts/Resources/travel-destination-overview.txt"
 ]
 
 [default.extend-words]
@@ -44,6 +45,7 @@ dall = "dall"             # OpenAI model name
 pn = "pn"                 # Kiota parameter
 nin = "nin"               # MongoDB "not in" operator
 asend = "asend"           # Async generator method
+Magentic = "Magentic"     # Magentic is a name of an agentic pattern
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service
