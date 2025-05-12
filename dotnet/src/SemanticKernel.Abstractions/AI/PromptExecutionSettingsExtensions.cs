@@ -151,6 +151,7 @@ public static class PromptExecutionSettingsExtensions
             options.Tools = [];
             foreach (var function in functions)
             {
+                // Clone the function to ensure it works running as a AITool lower-level abstraction for the specified kernel.
                 var functionClone = function.Clone(kernel);
                 options.Tools.Add(functionClone);
             }
