@@ -44,7 +44,7 @@ def get_azure_cosmos_db_no_sql_store():
 
 
 def get_chroma_store():
-    from semantic_kernel.connectors.memory.chroma.chroma import ChromaStore
+    from semantic_kernel.connectors.memory.chroma import ChromaStore
 
     return ChromaStore()
 

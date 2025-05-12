@@ -1,13 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import Literal
 
 from numpy import ndarray
 from pymongo import MongoClient
 
+from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBforMongoDBSettings
 from semantic_kernel.connectors.memory_stores.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
-from semantic_kernel.connectors.memory_stores.azure_cosmosdb.azure_cosmosdb_settings import AzureCosmosDBSettings
 from semantic_kernel.connectors.memory_stores.azure_cosmosdb.mongo_vcore_store_api import MongoStoreApi
 from semantic_kernel.connectors.memory_stores.azure_cosmosdb.utils import (
     CosmosDBSimilarityType,
@@ -16,12 +17,16 @@ from semantic_kernel.connectors.memory_stores.azure_cosmosdb.utils import (
 from semantic_kernel.exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 13):
+    from warning import deprecated
+else:
+    from typing_extensions import deprecated
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@deprecated("This class will be removed in a future release, use AzureCosmosDBforMongoDBStore and Collection instead.")
 class AzureCosmosDBMemoryStore(MemoryStoreBase):
     """A memory store that uses AzureCosmosDB for MongoDB vCore.
 
@@ -94,7 +99,7 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         # Right now this only supports Mongo, but set up to support more later.
         api_store: AzureCosmosDBStoreApi = None
         if cosmos_api == "mongo-vcore":
-            cosmosdb_settings = AzureCosmosDBSettings(
+            cosmosdb_settings = AzureCosmosDBforMongoDBSettings(
                 env_file_path=env_file_path,
                 connection_string=cosmos_connstr,
             )

@@ -15,10 +15,14 @@ from numpy import ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 13):
+    from warning import deprecated
+else:
+    from typing_extensions import deprecated
 
 
-@experimental
+@deprecated("This class will be removed in a future version. Use AzureComosDBNoSQLStore and Collection instead.")
 class AzureCosmosDBNoSQLMemoryStore(MemoryStoreBase):
     """You can read more about vector search using AzureCosmosDBNoSQL here: https://aka.ms/CosmosVectorSearch."""
 

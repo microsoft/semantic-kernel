@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import sys
 from typing import Final
 
 import numpy as np
@@ -11,7 +12,11 @@ from semantic_kernel.connectors.memory.weaviate import WeaviateSettings
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 13):
+    from warning import deprecated
+else:
+    from typing_extensions import deprecated
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -103,7 +108,10 @@ class FieldMapper:
         return {key.lstrip("_"): value for key, value in sk_dict.items()}
 
 
-@experimental
+@deprecated(
+    "WeaviateMemoryStore is deprecated and will be removed in a future version. "
+    "Please use WeaviateStore and Collection instead."
+)
 class WeaviateMemoryStore(MemoryStoreBase):
     """A memory store that uses Weaviate as the backend."""
 

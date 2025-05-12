@@ -32,7 +32,9 @@ else:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@deprecated("ChromaMemoryStore is deprecated and will be removed in a future version.Use ChromaStore instead.")
+@deprecated(
+    "ChromaMemoryStore is deprecated and will be removed in a future version. Use ChromaStore and Collection instead."
+)
 class ChromaMemoryStore(MemoryStoreBase):
     """ChromaMemoryStore provides an interface to store and retrieve data using ChromaDB."""
 

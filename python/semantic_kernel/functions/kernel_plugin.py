@@ -434,7 +434,9 @@ class KernelPlugin(KernelBaseModel):
         Returns:
             a KernelPlugin.
         """
-        return cls(name=plugin_name, description=plugin_description, functions=[text_search.create_search(**kwargs)])
+        return cls(
+            name=plugin_name, description=plugin_description, functions=[text_search.create_search_function(**kwargs)]
+        )
 
     @classmethod
     def from_text_search_with_get_text_search_results(

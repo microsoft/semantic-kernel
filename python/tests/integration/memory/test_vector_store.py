@@ -11,8 +11,8 @@ import pytest
 from semantic_kernel.connectors.memory.redis import RedisCollectionTypes
 from semantic_kernel.data import VectorStore
 from semantic_kernel.exceptions import MemoryConnectorConnectionException
-from tests.integration.memory.vector_stores.data_records import RAW_RECORD_ARRAY, RAW_RECORD_LIST
-from tests.integration.memory.vector_stores.vector_store_test_base import VectorStoreTestBase
+from tests.integration.memory.data_records import RAW_RECORD_ARRAY, RAW_RECORD_LIST
+from tests.integration.memory.vector_store_test_base import VectorStoreTestBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 

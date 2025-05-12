@@ -4,11 +4,6 @@ import json
 import sys
 from typing import Any
 
-if sys.version >= "3.12":
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 import numpy as np
 
 from semantic_kernel.connectors.memory_stores.azure_cosmosdb.azure_cosmos_db_store_api import AzureCosmosDBStoreApi
@@ -17,10 +12,18 @@ from semantic_kernel.connectors.memory_stores.azure_cosmosdb.utils import (
     CosmosDBVectorSearchType,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version >= "3.12":
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+if sys.version_info >= (3, 13):
+    from warning import deprecated
+else:
+    from typing_extensions import deprecated
 
 
-@experimental
+@deprecated("This class will be removed in a future release.")
 class MongoStoreApi(AzureCosmosDBStoreApi):
     """MongoStoreApi class for the Azure Cosmos DB Mongo store."""
 

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from datetime import datetime
 from typing import Any
 
@@ -11,6 +12,11 @@ from semantic_kernel.exceptions import ServiceResourceNotFoundError, ServiceResp
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 13):
+    from warning import deprecated
+else:
+    from typing_extensions import deprecated
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -144,7 +150,7 @@ def create_fields(dimensions: int) -> list[FieldSchema]:
     ]
 
 
-@experimental
+@deprecated("This class will be removed in a future version.")
 class MilvusMemoryStore(MemoryStoreBase):
     """Memory store based on Milvus."""
 

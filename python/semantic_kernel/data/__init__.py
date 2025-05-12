@@ -23,7 +23,7 @@ from semantic_kernel.data.text_search import (
     create_options,
     default_options_update_function,
 )
-from semantic_kernel.data.vector_search import VectorSearch, VectorSearchResult, VectorStoreTextSearch
+from semantic_kernel.data.vector_search import VectorSearch, VectorSearchResult
 from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
 
 __all__ = [
@@ -44,7 +44,6 @@ __all__ = [
     "VectorStoreRecordDefinition",
     "VectorStoreRecordKeyField",
     "VectorStoreRecordVectorField",
-    "VectorStoreTextSearch",
     "create_options",
     "default_options_update_function",
     "vectorstoremodel",

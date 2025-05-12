@@ -6,14 +6,11 @@ from typing import Any
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAIChatCompletion,
-    OpenAIChatPromptExecutionSettings,
-)
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 from semantic_kernel.connectors.search.google import GoogleSearch
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
-from semantic_kernel.functions import KernelArguments, KernelParameterMetadata, KernelPlugin
+from semantic_kernel.functions import KernelArguments, KernelParameterMetadata
 
 # This sample shows how to setup Google Search as a plugin in the Semantic Kernel.
 # With that plugin you can do function calling to augment your chat bot capabilities.
@@ -28,10 +25,9 @@ from semantic_kernel.functions import KernelArguments, KernelParameterMetadata, 
 
 kernel = Kernel()
 kernel.add_service(OpenAIChatCompletion(service_id="chat"))
-kernel.add_plugin(
-    KernelPlugin.from_text_search_with_search(
-        GoogleSearch(),
-        plugin_name="google",
+kernel.add_function(
+    plugin_name="google",
+    function=GoogleSearch().create_search_function(
         description="Get details about Semantic Kernel concepts.",
         parameters=[
             KernelParameterMetadata(
@@ -66,7 +62,7 @@ kernel.add_plugin(
                 type_object=str,
             ),
         ],
-    )
+    ),
 )
 chat_function = kernel.add_function(
     prompt="{{$chat_history}}{{$user_input}}",
@@ -122,6 +118,7 @@ async def chat() -> bool:
     if user_input == "exit":
         print("\n\nExiting chat...")
         return False
+
     arguments["user_input"] = user_input
     arguments["chat_history"] = history
     result = await kernel.invoke(chat_function, arguments=arguments)

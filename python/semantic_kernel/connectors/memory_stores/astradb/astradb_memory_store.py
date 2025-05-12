@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import sys
 
 import aiohttp
 from numpy import ndarray
@@ -15,6 +16,11 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
+if sys.version_info >= (3, 13):
+    from warning import deprecated
+else:
+    from typing_extensions import deprecated
+
 MAX_DIMENSIONALITY = 20000
 MAX_UPSERT_BATCH_SIZE = 100
 MAX_QUERY_WITHOUT_METADATA_BATCH_SIZE = 10000
@@ -25,6 +31,7 @@ MAX_DELETE_BATCH_SIZE = 1000
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@deprecated("This class has been deprecated and will be removed in a future release. ")
 @experimental
 class AstraDBMemoryStore(MemoryStoreBase):
     """A memory store that uses Astra database as the backend."""

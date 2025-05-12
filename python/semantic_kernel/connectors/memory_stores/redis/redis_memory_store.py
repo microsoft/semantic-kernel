@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 from typing import ClassVar
 
 import numpy as np
@@ -25,6 +26,11 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
+if sys.version_info >= (3, 13):
+    from warning import deprecated
+else:
+    from typing_extensions import deprecated
+
 logger: logging.Logger = logging.getLogger(__name__)
 
 
@@ -42,7 +48,7 @@ class RedisSettings(KernelBaseSettings):
     connection_string: SecretStr
 
 
-@experimental
+@deprecated("This class will be removed in a future version. Use RedisStore and RedisHashsetCollection instead.")
 class RedisMemoryStore(MemoryStoreBase):
     """A memory store implementation using Redis."""
 

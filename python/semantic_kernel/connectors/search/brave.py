@@ -4,13 +4,19 @@ import ast
 import logging
 from collections.abc import AsyncIterable, Callable
 from inspect import getsource
-from typing import Any, ClassVar, Final
+from typing import Any, ClassVar, Final, Literal, override
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import Field, SecretStr, ValidationError
 
 from semantic_kernel.connectors.search.utils import SearchLambdaVisitor
-from semantic_kernel.data.text_search import KernelSearchResults, SearchOptions, TextSearch, TextSearchResult
+from semantic_kernel.data.text_search import (
+    KernelSearchResults,
+    SearchOptions,
+    TextSearch,
+    TextSearchResult,
+    TSearchResult,
+)
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel, KernelBaseSettings
 from semantic_kernel.kernel_types import OptionalOneOrList
@@ -130,59 +136,26 @@ class BraveSearch(KernelBaseModel, TextSearch):
 
         super().__init__(settings=settings)  # type: ignore[call-arg]
 
+    @override
     async def search(
         self,
         query: str,
+        output_type: type[TSearchResult] | Literal["Any"] = str,
         *,
         filter: OptionalOneOrList[Callable | str] = None,
         skip: int = 0,
         top: int = 5,
         include_total_count: bool = False,
         **kwargs: Any,
-    ) -> "KernelSearchResults[str]":
-        """Search for text, returning a KernelSearchResult with a list of strings."""
+    ) -> "KernelSearchResults[TSearchResult]":
         options = SearchOptions(filter=filter, skip=skip, top=top, include_total_count=include_total_count, **kwargs)
         results = await self._inner_search(query=query, options=options)
         return KernelSearchResults(
-            results=self._get_result_strings(results),
-            total_count=self._get_total_count(results, options),
-            metadata=self._get_metadata(results),
-        )
-
-    async def get_text_search_results(
-        self,
-        query: str,
-        *,
-        filter: OptionalOneOrList[Callable | str] = None,
-        skip: int = 0,
-        top: int = 5,
-        include_total_count: bool = False,
-        **kwargs: Any,
-    ) -> "KernelSearchResults[TextSearchResult]":
-        """Search for text, returning a KernelSearchResult with TextSearchResults."""
-        options = SearchOptions(filter=filter, skip=skip, top=top, include_total_count=include_total_count, **kwargs)
-        results = await self._inner_search(query=query, options=options)
-        return KernelSearchResults(
-            results=self._get_text_search_results(results),
-            total_count=self._get_total_count(results, options),
-            metadata=self._get_metadata(results),
-        )
-
-    async def get_search_results(
-        self,
-        query: str,
-        *,
-        filter: OptionalOneOrList[Callable | str] = None,
-        skip: int = 0,
-        top: int = 5,
-        include_total_count: bool = False,
-        **kwargs: Any,
-    ) -> "KernelSearchResults[BraveWebPage]":
-        """Search for text, returning a KernelSearchResult with the results directly from the service."""
-        options = SearchOptions(filter=filter, skip=skip, top=top, include_total_count=include_total_count, **kwargs)
-        results = await self._inner_search(query=query, options=options)
-        return KernelSearchResults(
-            results=self._get_brave_web_pages(results),
+            results=self._get_result_strings(results)
+            if output_type is str
+            else self._get_text_search_results(results)
+            if output_type is TextSearchResult
+            else self._get_brave_web_pages(results),
             total_count=self._get_total_count(results, options),
             metadata=self._get_metadata(results),
         )

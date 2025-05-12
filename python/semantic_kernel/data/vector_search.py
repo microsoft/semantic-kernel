@@ -5,24 +5,38 @@ import logging
 from abc import abstractmethod
 from ast import AST, Lambda, NodeVisitor, expr, parse
 from collections.abc import AsyncIterable, Callable, Sequence
+from copy import deepcopy
 from enum import Enum
 from inspect import getsource
-from typing import Annotated, Any, ClassVar, Generic, TypeVar, overload
+from typing import Annotated, Any, ClassVar, Generic, Literal, TypeVar, overload
 
-from pydantic import Field
+from pydantic import Field, ValidationError
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.data.text_search import KernelSearchResults, SearchOptions, TextSearch, TextSearchResult
+from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
+from semantic_kernel.data.text_search import (
+    KernelSearchResults,
+    OptionsUpdateFunctionType,
+    SearchOptions,
+    TextSearch,
+    create_options,
+    default_options_update_function,
+)
 from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordHandler
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorSearchOptionsException,
     VectorStoreModelDeserializationException,
 )
+from semantic_kernel.exceptions.search_exceptions import TextSearchException
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreOperationException,
     VectorStoreOperationNotSupportedException,
 )
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OptionalOneOrList, OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
@@ -438,29 +452,6 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
             )
         )[0].tolist()
 
-    def as_text_search(
-        self,
-        search_type: str | SearchType = SearchType.VECTOR,
-        string_mapper: Callable | None = None,
-        text_search_results_mapper: Callable | None = None,
-        **kwargs: Any,
-    ) -> "VectorStoreTextSearch[TModel]":
-        """Convert the vector search to a text search.
-
-        Args:
-            search_type: The type of search to perform.
-            string_mapper: A function to map the string results.
-            text_search_results_mapper: A function to map the text search results.
-            **kwargs: Additional arguments that might be needed.
-        """
-        return VectorStoreTextSearch(
-            vector_search=self,
-            search_type=search_type if isinstance(search_type, SearchType) else SearchType(search_type),
-            string_mapper=string_mapper,
-            text_search_results_mapper=text_search_results_mapper,
-            **kwargs,
-        )
-
     def _build_filter(self, search_filter: OptionalOneOrMany[Callable | str] | None) -> OptionalOneOrMany[Any]:
         """Create the filter based on the filters.
 
@@ -508,96 +499,128 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         # to parse the lambda expression and return the filter string.
         pass
 
+    # region: Kernel Functions
 
-# region: VectorStoreTextSearch
-
-
-class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
-    """Class that wraps a Vector Store Record Collection to expose it as a Text Search.
-
-    Set the `search_type` to `SearchType.VECTOR` to use the vector search or
-    `SearchType.KEYWORD_HYBRID` to use the hybrid search.
-
-    The TextSearch class has three search methods:
-    - `search`: Search for a query, returning a KernelSearchResult with a string as the results type.
-    - `get_text_search_results`: Search for a query, returning a KernelSearchResult with a TextSearchResult as
-        the results type.
-    - `get_search_results`: Search for a query, returning a KernelSearchResult with a VectorSearchResult[TModel] as
-        the results type.
-
-    The `string_mapper` is used to map the record to a string for the `search` method.
-    The `text_search_results_mapper` is used to map the record to a TextSearchResult for
-        the `get_text_search_results` method.
-    Or use `get_search_results` to get the raw results from the vector store.
-
-    Args:
-        vector_search: A search mixin to use for text search.
-        search_type: The type of search to use. Defaults to `SearchType.VECTOR`.
-        string_mapper: A function to map a record to a string.
-        text_search_results_mapper: A function to map a record to a TextSearchResult.
-
-    """
-
-    vector_search: VectorSearch = Field(..., kw_only=False)
-    search_type: SearchType = SearchType.VECTOR
-    string_mapper: Callable[[TModel], str] | None = None
-    text_search_results_mapper: Callable[[TModel], TextSearchResult] | None = None
-
-    async def search(self, query: str, **kwargs: Any) -> "KernelSearchResults[str]":
-        """Search for a query, returning a KernelSearchResult with a string as the results type."""
-        search_results = await self._execute_search(query, **kwargs)
-        return KernelSearchResults(
-            results=self._get_results_as_strings(search_results.results),
-            total_count=search_results.total_count,
-            metadata=search_results.metadata,
+    def create_search_function(
+        self,
+        function_name: str = DEFAULT_FUNCTION_NAME,
+        description: str = DEFAULT_DESCRIPTION,
+        *,
+        search_type: Literal["vector", "keyword_hybrid"] = "vector",
+        parameters: list[KernelParameterMetadata] | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 5,
+        skip: int = 0,
+        include_total_count: bool = False,
+        options_update_function: OptionsUpdateFunctionType | None = None,
+        string_mapper: Callable[[VectorSearchResult[TModel]], str] | None = None,
+        **kwargs: Any,
+    ) -> KernelFunction:
+        """Create a kernel function from a search function."""
+        search_type = SearchType(search_type)
+        if search_type not in self.supported_search_types:
+            raise VectorStoreOperationNotSupportedException(
+                f"Search type '{search_type}' is not supported by this vector store: {self.__class__.__name__}"
+            )
+        options = self.options_class(
+            filter=filter,
+            skip=skip,
+            top=top,
+            include_total_count=include_total_count,
+            **kwargs,
+        )
+        return self._create_kernel_function(
+            search_type=search_type,
+            options=options,
+            parameters=parameters,
+            options_update_function=options_update_function,
+            return_parameter=return_parameter,
+            function_name=function_name,
+            description=description,
+            string_mapper=string_mapper,
         )
 
-    async def get_text_search_results(self, query: str, **kwargs: Any) -> "KernelSearchResults[TextSearchResult]":
-        """Search for a query, returning a KernelSearchResult with a TextSearchResult as the results type."""
-        search_results = await self._execute_search(query, **kwargs)
-        return KernelSearchResults(
-            results=self._get_results_as_text_search_result(search_results.results),
-            total_count=search_results.total_count,
-            metadata=search_results.metadata,
+    def _create_kernel_function(
+        self,
+        search_type: SearchType,
+        options: SearchOptions | None = None,
+        parameters: list[KernelParameterMetadata] | None = None,
+        options_update_function: OptionsUpdateFunctionType | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        function_name: str = DEFAULT_FUNCTION_NAME,
+        description: str = DEFAULT_DESCRIPTION,
+        string_mapper: Callable[[VectorSearchResult[TModel]], str] | None = None,
+    ) -> KernelFunction:
+        """Create a kernel function from a search function.
+
+        Args:
+            search_type: The type of search to perform.
+            output_type: The type of the output, default is str.
+            options: The search options.
+            parameters: The parameters for the function,
+                use an empty list for a function without parameters,
+                use None for the default set, which is "query", "top", and "skip".
+            options_update_function: A function to update the search options.
+                The function should return the updated query and options.
+                There is a default function that can be used, or you can supply your own.
+                The default function uses the parameters and the kwargs to update the options.
+                Adding equal to filters to the options for all parameters that are not "query", "top", or "skip".
+                As well as adding equal to filters for parameters that have a default value.
+            return_parameter: The return parameter for the function.
+            function_name: The name of the function, to be used in the kernel, default is "search".
+            description: The description of the function, a default is provided.
+            string_mapper: The function to map the search results to strings.
+                This can be applied to the results from the chosen search function.
+                When using the VectorStoreTextSearch and the Search method, a
+                string_mapper can be defined there as well, that is separate from this one.
+
+        Returns:
+            KernelFunction: The kernel function.
+
+        """
+        update_func = options_update_function or default_options_update_function
+
+        @kernel_function(name=function_name, description=description)
+        async def search_wrapper(**kwargs: Any) -> Sequence[str]:
+            query = kwargs.pop("query", "")
+            try:
+                inner_options = create_options(self.options_class, deepcopy(options), **kwargs)
+            except ValidationError:
+                # this usually only happens when the kwargs are invalid, so blank options in this case.
+                inner_options = self.options_class()
+            query, inner_options = update_func(query=query, options=inner_options, parameters=parameters, **kwargs)
+            match search_type:
+                case SearchType.VECTOR:
+                    try:
+                        results = await self.search(
+                            values=query,
+                            **inner_options.model_dump(exclude_defaults=True, exclude_none=True),
+                        )
+                    except Exception as e:
+                        msg = f"Exception in search function: {e}"
+                        logger.error(msg)
+                        raise TextSearchException(msg) from e
+                case SearchType.KEYWORD_HYBRID:
+                    try:
+                        results = await self.hybrid_search(
+                            values=query,
+                            **inner_options.model_dump(exclude_defaults=True, exclude_none=True),
+                        )
+                    except Exception as e:
+                        msg = f"Exception in hybrid search function: {e}"
+                        logger.error(msg)
+                        raise TextSearchException(msg) from e
+                case _:
+                    raise VectorStoreOperationNotSupportedException(
+                        f"Search type '{search_type}' is not supported by this vector store: {self.__class__.__name__}"
+                    )
+            if string_mapper:
+                return [string_mapper(result) async for result in results.results]
+            return [result.model_dump_json(exclude_none=True) async for result in results.results]
+
+        return KernelFunctionFromMethod(
+            method=search_wrapper,
+            parameters=TextSearch._default_parameter_metadata() if parameters is None else parameters,
+            return_parameter=return_parameter or TextSearch._default_return_parameter_metadata(),
         )
-
-    async def get_search_results(self, query: str, **kwargs: Any) -> "KernelSearchResults[VectorSearchResult[TModel]]":
-        """Search for a query, returning a KernelSearchResult with a VectorSearchResult[TModel] as the results type."""
-        return await self._execute_search(query, **kwargs)
-
-    async def _execute_search(self, query: str, **kwargs: Any) -> "KernelSearchResults[VectorSearchResult[TModel]]":
-        """Internal method to execute the search."""
-        if self.search_type == SearchType.VECTOR:
-            return await self.vector_search.search(values=query, **kwargs)
-        if self.search_type == SearchType.KEYWORD_HYBRID:
-            return await self.vector_search.hybrid_search(values=query, **kwargs)
-        raise VectorSearchExecutionException("No search method available.")  # pragma: no cover
-
-    async def _get_results_as_strings(self, results: AsyncIterable[VectorSearchResult[TModel]]) -> AsyncIterable[str]:
-        """Get the results as strings."""
-        if self.string_mapper:
-            async for result in results:
-                if result.record:
-                    yield self.string_mapper(result.record)
-            return
-        async for result in results:
-            if result.record:
-                yield self._default_map_to_string(result.record)
-
-    async def _get_results_as_text_search_result(
-        self, results: AsyncIterable[VectorSearchResult[TModel]]
-    ) -> AsyncIterable[TextSearchResult]:
-        """Get the results as strings."""
-        if self.text_search_results_mapper:
-            async for result in results:
-                if result.record:
-                    yield self.text_search_results_mapper(result.record)
-            return
-        async for result in results:
-            if result.record:
-                yield TextSearchResult(value=self._default_map_to_string(result.record))
-
-    @property
-    def options_class(self) -> type["SearchOptions"]:
-        """Get the options class."""
-        return VectorSearchOptions

@@ -2,6 +2,7 @@
 
 import contextlib
 import logging
+import sys
 import uuid
 from inspect import isawaitable
 
@@ -33,12 +34,16 @@ from semantic_kernel.connectors.memory_stores.azure_cognitive_search.utils impor
 from semantic_kernel.exceptions import MemoryConnectorInitializationError, MemoryConnectorResourceNotFound
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 13):
+    from warning import deprecated
+else:
+    from typing_extensions import deprecated
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@deprecated("This class will be removed in a future version. Use AzureAISearchStore and Collection instead.")
 class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     """Azure Cognitive Search Memory Store."""
 
@@ -74,9 +79,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             env_file_encoding (str | None): The encoding of the environment settings file
 
         """
-        from semantic_kernel.connectors.memory_stores.azure_cognitive_search.azure_ai_search_settings import (
-            AzureAISearchSettings,
-        )
+        from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchSettings
 
         try:
             acs_memory_settings = AzureAISearchSettings(

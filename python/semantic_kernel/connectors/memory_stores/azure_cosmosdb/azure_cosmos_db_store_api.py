@@ -1,15 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from abc import ABC, abstractmethod
 
 from numpy import ndarray
 
 from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 13):
+    from warning import deprecated
+else:
+    from typing_extensions import deprecated
 
 
 # Abstract class similar to the original data store that allows API level abstraction
-@experimental
+@deprecated("Will be removed in a future version.")
 class AzureCosmosDBStoreApi(ABC):
     """AzureCosmosDBStoreApi."""
 

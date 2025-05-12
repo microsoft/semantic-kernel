@@ -32,7 +32,7 @@ else:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@deprecated("MongoDBAtlasMemoryStore is deprecated. Use MongoDBMemoryStore instead.")
+@deprecated("MongoDBAtlasMemoryStore is deprecated. Use MongoDBStore and Collection instead.")
 class MongoDBAtlasMemoryStore(MemoryStoreBase):
     """Memory Store for MongoDB Atlas Vector Search Connections."""
 
