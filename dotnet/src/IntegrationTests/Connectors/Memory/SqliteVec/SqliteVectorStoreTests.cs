@@ -17,7 +17,9 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.SqliteVec;
 [Collection("SqliteVectorStoreCollection")]
 [DisableVectorStoreTests(Skip = "SQLite vector search extension is required")]
 public sealed class SqliteVectorStoreTests(SqliteVectorStoreFixture fixture)
+#pragma warning disable CA2000 // Dispose objects before losing scope
     : BaseVectorStoreTests<string, SqliteHotel<string>>(new SqliteVectorStore(fixture.ConnectionString))
+#pragma warning restore CA2000 // Dispose objects before losing scope
 {
     [VectorStoreFact]
     public async Task ItCanGetAListOfExistingCollectionNamesWhenRegisteredWithDIAsync()

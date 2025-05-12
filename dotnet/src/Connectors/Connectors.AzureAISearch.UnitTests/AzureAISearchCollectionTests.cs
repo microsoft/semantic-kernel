@@ -65,7 +65,7 @@ public class AzureAISearchCollectionTests
                 .ThrowsAsync(new RequestFailedException(404, "Index not found"));
         }
 
-        var sut = new AzureAISearchCollection<string, MultiPropsModel>(this._searchIndexClientMock.Object, collectionName);
+        using var sut = new AzureAISearchCollection<string, MultiPropsModel>(this._searchIndexClientMock.Object, collectionName);
 
         // Act.
         var actual = await sut.CollectionExistsAsync(this._testCancellationToken);
@@ -99,7 +99,7 @@ public class AzureAISearchCollectionTests
             .Setup(x => x.CreateIndexAsync(It.IsAny<SearchIndex>(), this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(new SearchIndex(TestCollectionName), Mock.Of<Response>()));
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
         await sut.EnsureCollectionExistsAsync();
@@ -133,7 +133,7 @@ public class AzureAISearchCollectionTests
             .Setup(x => x.DeleteIndexAsync(TestCollectionName, this._testCancellationToken))
             .Returns(Task.FromResult<Response?>(null));
 
-        var sut = this.CreateRecordCollection(false);
+        using var sut = this.CreateRecordCollection(false);
 
         // Act.
         await sut.DeleteCollectionAsync(this._testCancellationToken);
@@ -155,7 +155,7 @@ public class AzureAISearchCollectionTests
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(CreateJsonObjectModel(TestRecordKey1, true), Mock.Of<Response>()));
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
         var actual = await sut.GetAsync(
@@ -190,7 +190,7 @@ public class AzureAISearchCollectionTests
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(CreateJsonObjectModel(TestRecordKey1, true, useCustomJsonSerializerOptions), Mock.Of<Response>()));
 
-        var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
+        using var sut = this.CreateRecordCollection(useDefinition, useCustomJsonSerializerOptions);
 
         // Act.
         var actual = await sut.GetAsync(
@@ -228,7 +228,7 @@ public class AzureAISearchCollectionTests
                 return Response.FromValue(CreateJsonObjectModel(id, true), Mock.Of<Response>());
             });
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
         var actual = await sut.GetAsync(
@@ -261,7 +261,7 @@ public class AzureAISearchCollectionTests
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
         await sut.DeleteAsync(
@@ -296,7 +296,7 @@ public class AzureAISearchCollectionTests
                 this._testCancellationToken))
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
 
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
         await sut.DeleteAsync(
@@ -335,7 +335,7 @@ public class AzureAISearchCollectionTests
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
 
         // Arrange sut.
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         var model = CreateModel(TestRecordKey1, true);
 
@@ -378,7 +378,7 @@ public class AzureAISearchCollectionTests
             .ReturnsAsync(Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>()));
 
         // Arrange sut.
-        var sut = this.CreateRecordCollection(useDefinition);
+        using var sut = this.CreateRecordCollection(useDefinition);
 
         var model1 = CreateModel(TestRecordKey1, true);
         var model2 = CreateModel(TestRecordKey2, true);
@@ -417,7 +417,7 @@ public class AzureAISearchCollectionTests
         };
 
         // Act.
-        var sut = new AzureAISearchCollection<string, MultiPropsModel>(
+        using var sut = new AzureAISearchCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition });
@@ -434,7 +434,7 @@ public class AzureAISearchCollectionTests
             .Setup(x => x.SearchAsync<JsonObject>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Response.FromValue(searchResultsMock, Mock.Of<Response>()));
 
-        var sut = new AzureAISearchCollection<string, MultiPropsModel>(
+        using var sut = new AzureAISearchCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName);
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
@@ -476,7 +476,7 @@ public class AzureAISearchCollectionTests
             .Setup(x => x.SearchAsync<JsonObject>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Response.FromValue(searchResultsMock, Mock.Of<Response>()));
 
-        var sut = new AzureAISearchCollection<string, MultiPropsModel>(
+        using var sut = new AzureAISearchCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName);
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");

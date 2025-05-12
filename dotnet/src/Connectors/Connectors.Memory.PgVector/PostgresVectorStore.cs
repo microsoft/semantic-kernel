@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// <summary>
 /// Represents a vector store implementation using PostgreSQL.
 /// </summary>
-public sealed class PostgresVectorStore : VectorStore, IDisposable
+public sealed class PostgresVectorStore : VectorStore
 {
     private readonly PostgresDbClient _client;
 
@@ -32,7 +32,7 @@ public sealed class PostgresVectorStore : VectorStore, IDisposable
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
     /// </summary>
     /// <param name="dataSource">Postgres data source.</param>
-    /// <param name="ownsDataSource">A value indicating whether the data source should be disposed after the vector store is disposed.</param>
+    /// <param name="ownsDataSource">A value indicating whether <paramref name="dataSource"/> is disposed after the vector store is disposed.</param>
     /// <param name="options">Optional configuration options for this class</param>
     public PostgresVectorStore(NpgsqlDataSource dataSource, bool ownsDataSource, PostgresVectorStoreOptions? options = default)
     {
@@ -62,7 +62,11 @@ public sealed class PostgresVectorStore : VectorStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public void Dispose() => this._client.Dispose();
+    protected override void Dispose(bool disposing)
+    {
+        this._client.Dispose();
+        base.Dispose(disposing);
+    }
 
     /// <inheritdoc />
     public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
@@ -82,7 +86,7 @@ public sealed class PostgresVectorStore : VectorStore, IDisposable
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
         => new PostgresCollection<TKey, TRecord>(
-            this._client.IncreaseReferenceCount(),
+            () => this._client.Share(),
             name,
             new PostgresCollectionOptions()
             {

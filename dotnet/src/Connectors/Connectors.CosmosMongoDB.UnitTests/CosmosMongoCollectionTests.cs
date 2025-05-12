@@ -44,7 +44,7 @@ public sealed class CosmosMongoCollectionTests
     public void ConstructorWithDeclarativeModelInitializesCollection()
     {
         // Act & Assert
-        var collection = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var collection = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -61,7 +61,7 @@ public sealed class CosmosMongoCollectionTests
         };
 
         // Act
-        var collection = new CosmosMongoCollection<string, TestModel>(
+        using var collection = new CosmosMongoCollection<string, TestModel>(
             this._mockMongoDatabase.Object,
             "collection",
             new() { VectorStoreRecordDefinition = definition });
@@ -89,7 +89,7 @@ public sealed class CosmosMongoCollectionTests
             .Setup(l => l.ListCollectionNamesAsync(It.IsAny<ListCollectionNamesOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockCursor.Object);
 
-        var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             collectionName);
 
@@ -139,7 +139,7 @@ public sealed class CosmosMongoCollectionTests
             .Setup(l => l.Indexes)
             .Returns(mockMongoIndexManager.Object);
 
-        var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             CollectionName);
 
@@ -163,7 +163,7 @@ public sealed class CosmosMongoCollectionTests
         // Arrange
         const string RecordKey = "key";
 
-        var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -187,7 +187,7 @@ public sealed class CosmosMongoCollectionTests
         // Arrange
         List<string> recordKeys = ["key1", "key2"];
 
-        var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -211,7 +211,7 @@ public sealed class CosmosMongoCollectionTests
         // Arrange
         const string CollectionName = "collection";
 
-        var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             CollectionName);
 
@@ -248,7 +248,7 @@ public sealed class CosmosMongoCollectionTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockCursor.Object);
 
-        var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -286,7 +286,7 @@ public sealed class CosmosMongoCollectionTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockCursor.Object);
 
-        var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -317,7 +317,7 @@ public sealed class CosmosMongoCollectionTests
         var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
         var expectedDefinition = Builders<BsonDocument>.Filter.Eq(document => document["_id"], "key");
 
-        var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -343,7 +343,7 @@ public sealed class CosmosMongoCollectionTests
         var hotel2 = new CosmosMongoHotelModel("key2") { HotelName = "Test Name 2" };
         var hotel3 = new CosmosMongoHotelModel("key3") { HotelName = "Test Name 3" };
 
-        var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -418,7 +418,7 @@ public sealed class CosmosMongoCollectionTests
         // Arrange
         this.MockCollectionForSearch();
 
-        var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -476,7 +476,7 @@ public sealed class CosmosMongoCollectionTests
 
         this.MockCollectionForSearch();
 
-        var sut = new CosmosMongoCollection<string, VectorSearchModel>(
+        using var sut = new CosmosMongoCollection<string, VectorSearchModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -509,7 +509,7 @@ public sealed class CosmosMongoCollectionTests
         // Arrange
         this.MockCollectionForSearch();
 
-        var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -525,7 +525,7 @@ public sealed class CosmosMongoCollectionTests
         // Arrange
         this.MockCollectionForSearch();
 
-        var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
+        using var sut = new CosmosMongoCollection<string, CosmosMongoHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -612,7 +612,7 @@ public sealed class CosmosMongoCollectionTests
             new() { VectorStoreRecordDefinition = definition } :
             null;
 
-        var sut = new CosmosMongoCollection<string, TDataModel>(
+        using var sut = new CosmosMongoCollection<string, TDataModel>(
             this._mockMongoDatabase.Object,
             "collection",
             options);

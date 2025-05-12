@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.VectorData;
 /// <para>Unless otherwise documented, implementations of this abstract base class can be expected to be thread-safe, and can be used concurrently from multiple threads.</para>
 /// </remarks>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
-public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<TRecord>
+public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<TRecord>, IDisposable
 #pragma warning restore CA1711
     where TKey : notnull
     where TRecord : class
@@ -183,4 +183,19 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
 
     /// <inheritdoc />
     public abstract object? GetService(Type serviceType, object? serviceKey = null);
+
+    /// <summary>
+    /// Disposes the <see cref="VectorStoreCollection{TKey, TRecord}"/> and releases any resources it holds.
+    /// </summary>
+    /// <param name="disposing">True if called from <see cref="Dispose()"/>, false if called from a finalizer.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        this.Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
 }

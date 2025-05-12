@@ -26,7 +26,7 @@ public class VectorStoreTextSearchTestBase
     [Obsolete("VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete")]
     public static async Task<VectorStoreTextSearch<DataModelWithRawEmbedding>> CreateVectorStoreTextSearchWithEmbeddingGenerationServiceAsync()
     {
-        var vectorStore = new InMemoryVectorStore();
+        using var vectorStore = new InMemoryVectorStore();
         var vectorSearchable = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
@@ -42,7 +42,7 @@ public class VectorStoreTextSearchTestBase
     public static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchAsync()
     {
         using var embeddingGenerator = new MockTextEmbeddingGenerator();
-        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+        using var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();

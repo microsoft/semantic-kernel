@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// </remarks>
 /// <param name="dataSource">Postgres data source.</param>
 /// <param name="schema">Schema of collection tables.</param>
-/// <param name="ownsDataSource">A value indicating whether the data source should be disposed after the collection is disposed.</param>
+/// <param name="ownsDataSource">A value indicating whether <paramref name="dataSource"/> is disposed after the collection is disposed.</param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
 internal sealed class PostgresDbClient(NpgsqlDataSource dataSource, string? schema, bool ownsDataSource) : IDisposable
 {
@@ -37,21 +37,25 @@ internal sealed class PostgresDbClient(NpgsqlDataSource dataSource, string? sche
 
     public void Dispose()
     {
-        // An instance of PostgresDbClient can be shared between a single store and multiple collections.
-        // The reference count is used to track how many collections are using this instance.
-        // When the number gets to zero, the DataSource is getting disposed.
-        if (Interlocked.Decrement(ref this._referenceCount) == 0)
+        if (this._ownsDataSource)
         {
-            if (this._ownsDataSource)
+            // An instance of PostgresDbClient can be shared between a single store and multiple collections.
+            // The reference count is used to track how many collections are using this instance.
+            // When the number gets to zero, the DataSource is getting disposed.
+            if (Interlocked.Decrement(ref this._referenceCount) == 0)
             {
                 this.DataSource.Dispose();
             }
         }
     }
 
-    internal PostgresDbClient IncreaseReferenceCount()
+    internal PostgresDbClient Share()
     {
-        Interlocked.Increment(ref this._referenceCount);
+        if (this._ownsDataSource)
+        {
+            Interlocked.Increment(ref this._referenceCount);
+        }
+
         return this;
     }
 

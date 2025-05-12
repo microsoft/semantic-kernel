@@ -116,7 +116,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         {
             await qdrantFixture.ManualInitializeAsync();
             var qdrantClient = new QdrantClient("localhost");
-            vectorStore = new QdrantVectorStore(qdrantClient);
+            vectorStore = new QdrantVectorStore(qdrantClient, ownsClient: true);
         }
         else if (databaseType == "InMemory")
         {

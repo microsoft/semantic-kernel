@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.SqliteVec;
 using VectorDataSpecificationTests.Support;
 
@@ -15,10 +14,6 @@ internal sealed class SqliteTestStore : TestStore
 
     public static SqliteTestStore Instance { get; } = new();
 
-    private SqliteVectorStore? _defaultVectorStore;
-    public override VectorStore DefaultVectorStore
-        => this._defaultVectorStore ?? throw new InvalidOperationException("Call InitializeAsync() first");
-
     public override string DefaultDistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
 
     public SqliteVectorStore GetVectorStore(SqliteVectorStoreOptions options)
@@ -32,7 +27,7 @@ internal sealed class SqliteTestStore : TestStore
     {
         this._databasePath = Path.GetTempFileName();
         this._connectionString = $"Data Source={this._databasePath}";
-        this._defaultVectorStore = new SqliteVectorStore(this._connectionString);
+        this.DefaultVectorStore = new SqliteVectorStore(this._connectionString);
         return Task.CompletedTask;
     }
 

@@ -23,7 +23,7 @@ public sealed class MongoVectorStoreTests
     public void GetCollectionWithNotSupportedKeyThrowsException()
     {
         // Arrange
-        var sut = new MongoVectorStore(this._mockMongoDatabase.Object);
+        using var sut = new MongoVectorStore(this._mockMongoDatabase.Object);
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<Guid, MongoHotelModel>("collection"));
@@ -33,7 +33,7 @@ public sealed class MongoVectorStoreTests
     public void GetCollectionWithoutFactoryReturnsDefaultCollection()
     {
         // Arrange
-        var sut = new MongoVectorStore(this._mockMongoDatabase.Object);
+        using var sut = new MongoVectorStore(this._mockMongoDatabase.Object);
 
         // Act
         var collection = sut.GetCollection<string, MongoHotelModel>("collection");
@@ -62,7 +62,7 @@ public sealed class MongoVectorStoreTests
             .Setup(l => l.ListCollectionNamesAsync(It.IsAny<ListCollectionNamesOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockCursor.Object);
 
-        var sut = new MongoVectorStore(this._mockMongoDatabase.Object);
+        using var sut = new MongoVectorStore(this._mockMongoDatabase.Object);
 
         // Act
         var actualCollectionNames = await sut.ListCollectionNamesAsync().ToListAsync();

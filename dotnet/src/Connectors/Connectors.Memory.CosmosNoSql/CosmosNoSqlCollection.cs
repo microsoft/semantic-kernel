@@ -41,6 +41,7 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
 
     /// <summary>The default options for hybrid vector search.</summary>
     private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
+    private readonly ClientWrapper _clientWrapper;
 
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     private readonly Database _database;
@@ -70,71 +71,113 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
     /// <param name="database"><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</param>
     /// <param name="name">The name of the collection that this <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public CosmosNoSqlCollection(
-        Database database,
-        string name,
-        CosmosNoSqlCollectionOptions? options = default)
+    public CosmosNoSqlCollection(Database database, string name, CosmosNoSqlCollectionOptions? options = default)
+        : this(new(database.Client, ownsClient: false), _ => database, name, options)
     {
-        // Verify.
         Verify.NotNull(database);
         Verify.NotNullOrWhiteSpace(name);
+    }
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(CosmosNoSqlCompositeKey) && typeof(TKey) != typeof(object))
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> class.
+    /// </summary>
+    /// <param name="connectionString">Connection string required to connect to Azure CosmosDB NoSQL.</param>
+    /// <param name="databaseName">Database name for Azure CosmosDB NoSQL.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="clientOptions">Optional configuration options for <see cref="CosmosClient"/>.</param>
+    /// <param name="collectionOptions">Optional configuration options for <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
+    public CosmosNoSqlCollection(string connectionString, string databaseName, string collectionName,
+        CosmosClientOptions? clientOptions = null, CosmosNoSqlCollectionOptions? collectionOptions = null)
+        : this(new ClientWrapper(new CosmosClient(connectionString, clientOptions), ownsClient: true),
+              client => client.GetDatabase(databaseName), collectionName, null)
+    {
+        Verify.NotNullOrWhiteSpace(connectionString);
+        Verify.NotNullOrWhiteSpace(databaseName);
+        Verify.NotNullOrWhiteSpace(collectionName);
+    }
+
+    internal CosmosNoSqlCollection(
+        ClientWrapper clientWrapper,
+        Func<CosmosClient, Database> databaseProvider,
+        string name,
+        CosmosNoSqlCollectionOptions? options)
+    {
+        try
         {
-            throw new NotSupportedException($"Only {nameof(String)} and {nameof(CosmosNoSqlCompositeKey)} keys are supported (and object for dynamic mapping).");
-        }
-
-        if (database.Client?.ClientOptions?.UseSystemTextJsonSerializerWithOptions is null)
-        {
-            throw new ArgumentException(
-                $"Property {nameof(CosmosClientOptions.UseSystemTextJsonSerializerWithOptions)} in CosmosClient.ClientOptions " +
-                $"is required to be configured for {nameof(CosmosNoSqlCollection<TKey, TRecord>)}.");
-        }
-
-        // Assign.
-        this._database = database;
-        this.Name = name;
-
-        options ??= CosmosNoSqlCollectionOptions.Default;
-        this._indexingMode = options.IndexingMode;
-        this._automatic = options.Automatic;
-        var jsonSerializerOptions = options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
-
-        this._model = new CosmosNoSqlModelBuilder()
-            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, jsonSerializerOptions);
-
-        // Assign mapper.
-        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
-            ? (new CosmosNoSqlDynamicMapper(this._model, jsonSerializerOptions) as ICosmosNoSqlMapper<TRecord>)!
-            : new CosmosNoSqlMapper<TRecord>(this._model, options.JsonSerializerOptions);
-
-        // Setup partition key property
-        if (options.PartitionKeyPropertyName is not null)
-        {
-            if (!this._model.PropertyMap.TryGetValue(options.PartitionKeyPropertyName, out var property))
+            if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(CosmosNoSqlCompositeKey) && typeof(TKey) != typeof(object))
             {
-                throw new ArgumentException($"Partition key property '{options.PartitionKeyPropertyName}' is not part of the record definition.");
+                throw new NotSupportedException($"Only {nameof(String)} and {nameof(CosmosNoSqlCompositeKey)} keys are supported (and object for dynamic mapping).");
             }
 
-            if (property.Type != typeof(string))
+            this._database = databaseProvider(clientWrapper.Client);
+
+            if (clientWrapper.Client.ClientOptions?.UseSystemTextJsonSerializerWithOptions is null)
             {
-                throw new ArgumentException("Partition key property must be string.");
+                throw new ArgumentException(
+                    $"Property {nameof(CosmosClientOptions.UseSystemTextJsonSerializerWithOptions)} in CosmosClient.ClientOptions " +
+                    $"is required to be configured for {nameof(CosmosNoSqlCollection<TKey, TRecord>)}.");
             }
 
-            this._partitionKeyProperty = property;
+            // Assign.
+            this.Name = name;
+
+            options ??= CosmosNoSqlCollectionOptions.Default;
+            this._indexingMode = options.IndexingMode;
+            this._automatic = options.Automatic;
+            var jsonSerializerOptions = options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
+
+            this._model = new CosmosNoSqlModelBuilder()
+                .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, jsonSerializerOptions);
+
+            // Assign mapper.
+            this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? (new CosmosNoSqlDynamicMapper(this._model, jsonSerializerOptions) as ICosmosNoSqlMapper<TRecord>)!
+                : new CosmosNoSqlMapper<TRecord>(this._model, options.JsonSerializerOptions);
+
+            // Setup partition key property
+            if (options.PartitionKeyPropertyName is not null)
+            {
+                if (!this._model.PropertyMap.TryGetValue(options.PartitionKeyPropertyName, out var property))
+                {
+                    throw new ArgumentException($"Partition key property '{options.PartitionKeyPropertyName}' is not part of the record definition.");
+                }
+
+                if (property.Type != typeof(string))
+                {
+                    throw new ArgumentException("Partition key property must be string.");
+                }
+
+                this._partitionKeyProperty = property;
+            }
+            else
+            {
+                // If partition key is not provided, use key property as a partition key.
+                this._partitionKeyProperty = this._model.KeyProperty;
+            }
+
+            this._collectionMetadata = new()
+            {
+                VectorStoreSystemName = CosmosNoSqlConstants.VectorStoreSystemName,
+                VectorStoreName = this._database.Id,
+                CollectionName = name
+            };
         }
-        else
+        catch (Exception)
         {
-            // If partition key is not provided, use key property as a partition key.
-            this._partitionKeyProperty = this._model.KeyProperty;
+            // Something went wrong, we dispose the client and don't store a reference.
+            clientWrapper.Dispose();
+
+            throw;
         }
 
-        this._collectionMetadata = new()
-        {
-            VectorStoreSystemName = CosmosNoSqlConstants.VectorStoreSystemName,
-            VectorStoreName = database.Id,
-            CollectionName = name
-        };
+        this._clientWrapper = clientWrapper;
+    }
+
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        this._clientWrapper.Dispose();
+        base.Dispose(disposing);
     }
 
     /// <inheritdoc />

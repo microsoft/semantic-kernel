@@ -38,9 +38,10 @@ public sealed class QdrantVectorStore : VectorStore
     /// Initializes a new instance of the <see cref="QdrantVectorStore"/> class.
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
+    /// <param name="ownsClient">A value indicating whether <paramref name="qdrantClient"/> is disposed after the vector store is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public QdrantVectorStore(QdrantClient qdrantClient, QdrantVectorStoreOptions? options = default)
-        : this(new MockableQdrantClient(qdrantClient), options)
+    public QdrantVectorStore(QdrantClient qdrantClient, bool ownsClient, QdrantVectorStoreOptions? options = default)
+        : this(new MockableQdrantClient(qdrantClient, ownsClient), options)
     {
     }
 
@@ -65,6 +66,13 @@ public sealed class QdrantVectorStore : VectorStore
         };
     }
 
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        this._qdrantClient.Dispose();
+        base.Dispose(disposing);
+    }
+
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
 #if NET8_0_OR_GREATER
@@ -72,7 +80,7 @@ public sealed class QdrantVectorStore : VectorStore
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new QdrantCollection<TKey, TRecord>(this._qdrantClient, name, new QdrantCollectionOptions()
+        => new QdrantCollection<TKey, TRecord>(() => this._qdrantClient.Share(), name, new()
         {
             HasNamedVectors = this._hasNamedVectors,
             VectorStoreRecordDefinition = vectorStoreRecordDefinition,

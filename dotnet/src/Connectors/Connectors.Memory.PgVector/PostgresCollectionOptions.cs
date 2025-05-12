@@ -13,7 +13,7 @@ public sealed class PostgresCollectionOptions
     /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
-    public string Schema { get; set; } = "public";
+    public string Schema { get; set; } = PostgresVectorStoreOptions.Default.Schema;
 
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

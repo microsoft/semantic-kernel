@@ -26,6 +26,8 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     private readonly Database _database;
 
+    private readonly ClientWrapper _clientWrapper;
+
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
@@ -38,18 +40,57 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     /// <param name="database"><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public CosmosNoSqlVectorStore(Database database, CosmosNoSqlVectorStoreOptions? options = null)
+        : this(new(database.Client, ownsClient: false), _ => database, options)
     {
         Verify.NotNull(database);
+    }
 
-        this._database = database;
-        this._embeddingGenerator = options?.EmbeddingGenerator;
-        this._jsonSerializerOptions = options?.JsonSerializerOptions;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CosmosNoSqlVectorStore"/> class.
+    /// </summary>
+    /// <param name="connectionString">Connection string required to connect to Azure CosmosDB NoSQL.</param>
+    /// <param name="databaseName">Database name for Azure CosmosDB NoSQL.</param>
+    /// <param name="clientOptions">Optional configuration options for <see cref="CosmosClient"/>.</param>
+    /// <param name="storeOptions">Optional configuration options for <see cref="VectorStore"/>.</param>
+    public CosmosNoSqlVectorStore(string connectionString, string databaseName,
+        CosmosClientOptions? clientOptions = null, CosmosNoSqlVectorStoreOptions? storeOptions = null)
+        : this(new ClientWrapper(new CosmosClient(connectionString, clientOptions), ownsClient: true), client => client.GetDatabase(databaseName), storeOptions)
+    {
+        Verify.NotNullOrWhiteSpace(connectionString);
+        Verify.NotNullOrWhiteSpace(databaseName);
+    }
 
-        this._metadata = new()
+    private CosmosNoSqlVectorStore(ClientWrapper clientWrapper,
+        Func<CosmosClient, Database> databaseProvider, CosmosNoSqlVectorStoreOptions? options)
+    {
+        try
         {
-            VectorStoreSystemName = CosmosNoSqlConstants.VectorStoreSystemName,
-            VectorStoreName = database.Id
-        };
+            this._database = databaseProvider(clientWrapper.Client);
+            this._embeddingGenerator = options?.EmbeddingGenerator;
+            this._jsonSerializerOptions = options?.JsonSerializerOptions;
+
+            this._metadata = new()
+            {
+                VectorStoreSystemName = CosmosNoSqlConstants.VectorStoreSystemName,
+                VectorStoreName = this._database.Id
+            };
+        }
+        catch (Exception)
+        {
+            // Something went wrong, we dispose the client and don't store a reference.
+            clientWrapper.Dispose();
+
+            throw;
+        }
+
+        this._clientWrapper = clientWrapper;
+    }
+
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        this._clientWrapper.Dispose();
+        base.Dispose(disposing);
     }
 
 #pragma warning disable IDE0090 // Use 'new(...)'
@@ -60,7 +101,8 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
         => new CosmosNoSqlCollection<TKey, TRecord>(
-            this._database,
+            this._clientWrapper.Share(),
+            _ => this._database,
             name,
             new()
             {

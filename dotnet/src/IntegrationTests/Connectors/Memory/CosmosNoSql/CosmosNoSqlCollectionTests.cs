@@ -28,7 +28,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
     public async Task ItCanEnsureCollectionExistsAsync()
     {
         // Arrange
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "test-create-collection");
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "test-create-collection");
 
         // Act
         await sut.EnsureCollectionExistsAsync();
@@ -43,7 +43,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, collectionName);
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, collectionName);
 
         if (expectedExists)
         {
@@ -76,7 +76,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
             VectorStoreRecordDefinition = useRecordDefinition ? this.GetTestHotelRecordDefinition() : null
         };
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, collectionName);
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, collectionName);
 
         var record = this.CreateTestHotel(HotelId);
 
@@ -118,7 +118,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         const string TempCollectionName = "test-delete-collection";
         await fixture.Database!.CreateContainerAsync(new ContainerProperties(TempCollectionName, "/id"));
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, TempCollectionName);
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, TempCollectionName);
 
         Assert.True(await sut.CollectionExistsAsync());
 
@@ -137,7 +137,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(
             fixture.Database!,
             collectionName,
             new() { IndexingMode = indexingMode, Automatic = indexingMode != IndexingMode.None });
@@ -167,7 +167,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         const string HotelId = "55555555-5555-5555-5555-555555555555";
         const string HotelName = "Test Hotel Name";
 
-        VectorStoreCollection<CosmosNoSqlCompositeKey, CosmosNoSqlHotel> sut =
+        using VectorStoreCollection<CosmosNoSqlCompositeKey, CosmosNoSqlHotel> sut =
             new CosmosNoSqlCollection<CosmosNoSqlCompositeKey, CosmosNoSqlHotel>(
                 fixture.Database!,
                 "delete-with-partition-key",
@@ -201,7 +201,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         const string HotelId2 = "22222222-2222-2222-2222-222222222222";
         const string HotelId3 = "33333333-3333-3333-3333-333333333333";
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "get-and-delete-batch");
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "get-and-delete-batch");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -230,7 +230,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "upsert-record");
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "upsert-record");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -262,7 +262,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "vector-search-default");
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "vector-search-default");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -292,7 +292,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "vector-search-with-offset");
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "vector-search-with-offset");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -324,7 +324,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "vector-search-with-filter");
+        using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, "vector-search-with-filter");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -352,7 +352,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
             VectorStoreRecordDefinition = this.GetTestHotelRecordDefinition()
         };
 
-        var sut = new CosmosNoSqlCollection<object, Dictionary<string, object?>>(fixture.Database!, "dynamic-mapper", options);
+        using var sut = new CosmosNoSqlCollection<object, Dictionary<string, object?>>(fixture.Database!, "dynamic-mapper", options);
 
         await sut.EnsureCollectionExistsAsync();
 

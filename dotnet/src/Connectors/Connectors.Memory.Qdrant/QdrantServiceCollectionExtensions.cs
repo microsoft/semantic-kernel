@@ -34,7 +34,8 @@ public static class QdrantServiceCollectionExtensions
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return new QdrantVectorStore(qdrantClient, options);
+                // The client was restored from the DI container, so we do not own it.
+                return new QdrantVectorStore(qdrantClient, ownsClient: false, options);
             });
 
         return services;
@@ -62,7 +63,8 @@ public static class QdrantServiceCollectionExtensions
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return new QdrantVectorStore(qdrantClient, options);
+                // We created the client, so we own it.
+                return new QdrantVectorStore(qdrantClient, ownsClient: true, options);
             });
 
         return services;
@@ -97,7 +99,8 @@ public static class QdrantServiceCollectionExtensions
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return (new QdrantCollection<TKey, TRecord>(qdrantClient, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                // The client was restored from the DI container, so we do not own it.
+                return (new QdrantCollection<TKey, TRecord>(qdrantClient, collectionName, ownsClient: false, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);
@@ -142,7 +145,8 @@ public static class QdrantServiceCollectionExtensions
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return (new QdrantCollection<TKey, TRecord>(qdrantClient, collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                // We created the client, so we own it.
+                return (new QdrantCollection<TKey, TRecord>(qdrantClient, collectionName, ownsClient: true, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);

@@ -22,7 +22,7 @@ public class QdrantTextSearchTests(QdrantVectorStoreFixture fixture) : BaseVecto
         if (this.VectorStore is null)
         {
             this.EmbeddingGenerator = fixture.EmbeddingGenerator;
-            this.VectorStore = new QdrantVectorStore(fixture.QdrantClient);
+            this.VectorStore = new QdrantVectorStore(fixture.QdrantClient, ownsClient: false);
         }
 
         var options = new QdrantCollectionOptions
@@ -30,13 +30,13 @@ public class QdrantTextSearchTests(QdrantVectorStoreFixture fixture) : BaseVecto
             HasNamedVectors = true,
             VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition,
         };
-        var vectorSearch = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", options);
+        using var collection = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", ownsClient: false, options);
         var stringMapper = new HotelInfoTextSearchStringMapper();
         var resultMapper = new HotelInfoTextSearchResultMapper();
 
         // TODO: Once OpenAITextEmbeddingGenerationService implements MEAI's IEmbeddingGenerator (#10811), configure it with the AzureAISearchVectorStore above instead of passing it here.
 #pragma warning disable CS0618 // VectorStoreTextSearch with ITextEmbeddingGenerationService is obsolete
-        var result = new VectorStoreTextSearch<HotelInfo>(vectorSearch, this.EmbeddingGenerator!, stringMapper, resultMapper);
+        var result = new VectorStoreTextSearch<HotelInfo>(collection, this.EmbeddingGenerator!, stringMapper, resultMapper);
 #pragma warning restore CS0618
 
         return Task.FromResult<ITextSearch>(result);

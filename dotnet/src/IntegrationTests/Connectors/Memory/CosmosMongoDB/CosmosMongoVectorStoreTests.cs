@@ -10,6 +10,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.CosmosMongoDB;
 [Collection("CosmosMongoCollection")]
 [DisableVectorStoreTests(Skip = "Azure CosmosDB MongoDB cluster is required")]
 public class CosmosMongoVectorStoreTests(CosmosMongoVectorStoreFixture fixture)
+#pragma warning disable CA2000 // Dispose objects before losing scope
     : BaseVectorStoreTests<string, CosmosMongoHotel>(new CosmosMongoVectorStore(fixture.MongoDatabase))
+#pragma warning restore CA2000 // Dispose objects before losing scope
 {
 }

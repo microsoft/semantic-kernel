@@ -12,6 +12,7 @@ public abstract class TestStore
 {
     private readonly SemaphoreSlim _lock = new(1, 1);
     private int _referenceCount;
+    private VectorStore? _defaultVectorStore;
 
     /// <summary>
     /// Some databases modify vectors on upsert, e.g. normalizing them, so vectors
@@ -26,7 +27,11 @@ public abstract class TestStore
     protected virtual Task StopAsync()
         => Task.CompletedTask;
 
-    public abstract VectorStore DefaultVectorStore { get; }
+    public VectorStore DefaultVectorStore
+    {
+        get => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+        set => this._defaultVectorStore = value;
+    }
 
     public virtual async Task ReferenceCountingStartAsync()
     {
@@ -52,6 +57,7 @@ public abstract class TestStore
             if (--this._referenceCount == 0)
             {
                 await this.StopAsync();
+                this._defaultVectorStore?.Dispose();
             }
         }
         finally

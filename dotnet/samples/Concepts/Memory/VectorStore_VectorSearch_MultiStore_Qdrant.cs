@@ -71,7 +71,7 @@ public class VectorStore_VectorSearch_MultiStore_Qdrant(ITestOutputHelper output
         // Initialize the Qdrant docker container via the fixtures and construct the Qdrant VectorStore.
         await qdrantFixture.ManualInitializeAsync();
         var qdrantClient = new QdrantClient("localhost");
-        var vectorStore = new QdrantVectorStore(qdrantClient);
+        var vectorStore = new QdrantVectorStore(qdrantClient, ownsClient: true);
 
         // Create the common processor that works for any vector store.
         var processor = new VectorStore_VectorSearch_MultiStore_Common(vectorStore, textEmbeddingGenerationService, this.Output);

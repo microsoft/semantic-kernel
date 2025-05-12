@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.PgVector;
 using Npgsql;
 using Testcontainers.PostgreSql;
@@ -8,9 +7,9 @@ using VectorDataSpecificationTests.Support;
 
 namespace PgVectorIntegrationTests.Support;
 
-#pragma warning disable CA1001 // Types that own disposable fields should be disposable
+#pragma warning disable CA1001 // Type owns disposable fields but is not disposable
+
 internal sealed class PostgresTestStore : TestStore
-#pragma warning restore CA1001 // Types that own disposable fields should be disposable
 {
     public static PostgresTestStore Instance { get; } = new();
 
@@ -19,17 +18,13 @@ internal sealed class PostgresTestStore : TestStore
         .Build();
 
     private NpgsqlDataSource? _dataSource;
-    private PostgresVectorStore? _defaultVectorStore;
 
     public NpgsqlDataSource DataSource => this._dataSource ?? throw new InvalidOperationException("Not initialized");
-
-    public override VectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
     public PostgresVectorStore GetVectorStore(PostgresVectorStoreOptions options)
     {
         // The DataSource is shared with the static instance, we don't want any of the tests to dispose it.
-        bool ownsDataSource = false;
-        return new(this.DataSource, ownsDataSource, options);
+        return new(this.DataSource, ownsDataSource: false, options);
     }
 
     private PostgresTestStore()
@@ -63,14 +58,16 @@ internal sealed class PostgresTestStore : TestStore
         await connection.ReloadTypesAsync();
 
         // It's a shared static instance, we don't want any of the tests to dispose it.
-        bool ownsDataSource = false;
-        this._defaultVectorStore = new(this._dataSource, ownsDataSource);
+        this.DefaultVectorStore = new PostgresVectorStore(this._dataSource, ownsDataSource: false);
     }
 
     protected override async Task StopAsync()
     {
-        this._defaultVectorStore!.Dispose();
-        await this._dataSource!.DisposeAsync();
+        if (this._dataSource is not null)
+        {
+            await this._dataSource.DisposeAsync();
+        }
+
         await s_container.StopAsync();
     }
 }

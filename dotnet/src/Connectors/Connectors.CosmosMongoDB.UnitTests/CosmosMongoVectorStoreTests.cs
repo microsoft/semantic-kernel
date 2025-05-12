@@ -23,7 +23,7 @@ public sealed class CosmosMongoVectorStoreTests
     public void GetCollectionWithNotSupportedKeyThrowsException()
     {
         // Arrange
-        var sut = new CosmosMongoVectorStore(this._mockMongoDatabase.Object);
+        using var sut = new CosmosMongoVectorStore(this._mockMongoDatabase.Object);
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<Guid, CosmosMongoHotelModel>("collection"));
@@ -33,7 +33,7 @@ public sealed class CosmosMongoVectorStoreTests
     public void GetCollectionWithoutFactoryReturnsDefaultCollection()
     {
         // Arrange
-        var sut = new CosmosMongoVectorStore(this._mockMongoDatabase.Object);
+        using var sut = new CosmosMongoVectorStore(this._mockMongoDatabase.Object);
 
         // Act
         var collection = sut.GetCollection<string, CosmosMongoHotelModel>("collection");
@@ -62,7 +62,7 @@ public sealed class CosmosMongoVectorStoreTests
             .Setup(l => l.ListCollectionNamesAsync(It.IsAny<ListCollectionNamesOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockCursor.Object);
 
-        var sut = new CosmosMongoVectorStore(this._mockMongoDatabase.Object);
+        using var sut = new CosmosMongoVectorStore(this._mockMongoDatabase.Object);
 
         // Act
         var actualCollectionNames = await sut.ListCollectionNamesAsync().ToListAsync();

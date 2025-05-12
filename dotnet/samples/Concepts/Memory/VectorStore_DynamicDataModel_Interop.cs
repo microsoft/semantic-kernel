@@ -46,7 +46,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
 
         // Initiate the docker container and construct the vector store.
         await qdrantFixture.ManualInitializeAsync();
-        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"));
+        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"), ownsClient: true);
 
         // Get and create collection if it doesn't exist using the dynamic data model and record definition that defines the schema.
         var dynamicDataModelCollection = vectorStore.GetCollection<object, Dictionary<string, object?>>("skglossary", s_vectorStoreRecordDefinition);
@@ -84,7 +84,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
 
         // Initiate the docker container and construct the vector store.
         await qdrantFixture.ManualInitializeAsync();
-        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"));
+        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"), ownsClient: true);
 
         // Get and create collection if it doesn't exist using the custom data model.
         var customDataModelCollection = vectorStore.GetCollection<ulong, Glossary>("skglossary");
