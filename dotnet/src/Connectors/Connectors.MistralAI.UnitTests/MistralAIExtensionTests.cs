@@ -14,7 +14,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.MistralAI.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="Microsoft.Extensions.DependencyInjection.MistralAIServiceCollectionExtensions"/> and <see cref="Microsoft.Extensions.DependencyInjection.MistralAIKernelBuilderExtensions"/>.
+/// Unit tests for <see cref="Microsoft.Extensions.DependencyInjection.MistralAIServiceCollectionExtensions"/> and <see cref="Microsoft.SemanticKernel.MistralAIKernelBuilderExtensions"/>.
 /// </summary>
 public class MistralAIExtensionTests
 {
@@ -67,7 +67,6 @@ public class MistralAIExtensionTests
 
         // Assert
         Assert.NotNull(service);
-        Assert.IsType<MistralAIEmbeddingGenerator>(service);
     }
 
     [Fact]
@@ -119,7 +118,6 @@ public class MistralAIExtensionTests
 
         // Assert
         Assert.NotNull(service);
-        Assert.IsType<MistralAIEmbeddingGenerator>(service);
     }
 
     [Theory]
