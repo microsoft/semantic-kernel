@@ -2,18 +2,20 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import AssistantAgentThread, OpenAIAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.contents import AuthorRole, FunctionCallContent, FunctionResultContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.functions import kernel_function
 
 """
-The following sample demonstrates how to create an Assistant Agent
-using either OpenAI or Azure OpenAI resources and use it with streaming
-responses. Additionally, the invoke_stream configures a message callback 
-to receive fully formed messages once the streaming invocation is complete.
-The agent is configured to use a plugin that provides a list of specials
-from the menu and the price of the requested menu item.
+This sample demonstrates how to create an AzureAssistantAgent/OpenAIAssistantAgent and use it with the 
+streaming `invoke_stream()` method. The agent returns assistant messages as a stream of incremental chunks. 
+In addition, you can specify an `on_intermediate_message` callback to receive fully-formed tool-related 
+messages — such as function calls and their results — while the assistant response is still being streamed.
+
+In this example, the agent is configured with a plugin that provides menu specials and item pricing.
+As the user interacts with the agent, tool messages (like function calls) are emitted via the callback,
+while assistant replies stream back incrementally through the main response loop.
 """
 
 
@@ -52,7 +54,7 @@ async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> No
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIAssistantAgent.setup_resources()
+    client, model = AzureAssistantAgent.setup_resources()
 
     # Define the assistant definition
     definition = await client.beta.assistants.create(
@@ -62,7 +64,7 @@ async def main():
     )
 
     # Create the AzureAssistantAgent instance using the client and the assistant definition and the defined plugin
-    agent = OpenAIAssistantAgent(
+    agent = AzureAssistantAgent(
         client=client,
         definition=definition,
         plugins=[MenuPlugin()],

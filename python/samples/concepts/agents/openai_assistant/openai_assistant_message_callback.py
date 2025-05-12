@@ -8,15 +8,14 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.functions import kernel_function
 
 """
-The following sample demonstrates how to create an Assistant Agent
-using either OpenAI or Azure OpenAI resources and use it with functions.
-In order to answer user questions, the agent internally uses the
-functions. These internal steps are returned to the user as part of the
-agent's response. Thus, the invoke method configures a message callback
-to receive the agent's internal messages. 
+This sample demonstrates how to create an AzureAssistantAgent/OpenAIAssistantAgent and invoke it using the 
+non-streaming `invoke()` method. While `invoke()` returns only the final assistant message, the agent can 
+optionally emit intermediate messages (e.g., function calls and results) via a callback by supplying 
+`on_intermediate_message`.
 
-The agent is configured to use a plugin that provides a list of
-specials from the menu and the price of the requested menu item.
+In this example, the agent is configured with a plugin that provides menu specials and item pricing. As the user
+asks about the menu, the agent performs tool calls mid-invocation, and those intermediate steps are surfaced
+via the callback function while the invocation is still in progress.
 """
 
 
