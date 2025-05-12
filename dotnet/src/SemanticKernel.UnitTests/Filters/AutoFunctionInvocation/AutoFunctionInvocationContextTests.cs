@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
@@ -401,5 +402,223 @@ public class AutoFunctionInvocationContextTests
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => context.Arguments);
+    }
+
+    [Fact]
+    public void InternalConstructorWithOptionsAndAIFunctionSetsPropertiesCorrectly()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Test", "TestFunction");
+        var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
+        var executionSettings = new PromptExecutionSettings();
+
+        // Create options with required properties
+        var additionalProperties = new AdditionalPropertiesDictionary
+        {
+            [ChatOptionsExtensions.KernelKey] = kernel,
+            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent,
+            [ChatOptionsExtensions.PromptExecutionSettingsKey] = executionSettings
+        };
+
+        var options = new ChatOptions
+        {
+            AdditionalProperties = additionalProperties
+        };
+
+        // Act
+        var context = new AutoFunctionInvocationContext(options, function);
+
+        // Assert
+        Assert.Same(kernel, context.Kernel);
+        Assert.Same(function, context.Function);
+        Assert.Same(executionSettings, context.ExecutionSettings);
+        Assert.Same(chatMessageContent, context.ChatMessageContent);
+        Assert.NotNull(context.Result);
+        Assert.Equal(kernel.Culture, context.Result.Culture);
+    }
+
+    [Fact]
+    public void InternalConstructorWithOptionsAndAIFunctionThrowsWithNullOptions()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Test", "TestFunction");
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new AutoFunctionInvocationContext(null!, function));
+    }
+
+    [Fact]
+    public void InternalConstructorWithOptionsAndAIFunctionThrowsWithNullFunction()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
+
+        // Create options with required properties
+        var additionalProperties = new AdditionalPropertiesDictionary
+        {
+            [ChatOptionsExtensions.KernelKey] = kernel,
+            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent
+        };
+
+        var options = new ChatOptions
+        {
+            AdditionalProperties = additionalProperties
+        };
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new AutoFunctionInvocationContext(options, null!));
+    }
+
+    [Fact]
+    public void InternalConstructorWithOptionsAndAIFunctionThrowsWithNonKernelFunction()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
+        var testAIFunction = new TestAIFunction("TestFunction");
+
+        // Create options with required properties
+        var additionalProperties = new AdditionalPropertiesDictionary
+        {
+            [ChatOptionsExtensions.KernelKey] = kernel,
+            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent
+        };
+
+        var options = new ChatOptions
+        {
+            AdditionalProperties = additionalProperties
+        };
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => new AutoFunctionInvocationContext(options, testAIFunction));
+    }
+
+    [Fact]
+    public void InternalConstructorWithOptionsAndAIFunctionThrowsWithMissingKernel()
+    {
+        // Arrange
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Test", "TestFunction");
+        var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
+
+        // Create options without kernel
+        var additionalProperties = new AdditionalPropertiesDictionary
+        {
+            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent
+        };
+
+        var options = new ChatOptions
+        {
+            AdditionalProperties = additionalProperties
+        };
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new AutoFunctionInvocationContext(options, function));
+    }
+
+    [Fact]
+    public void InternalConstructorWithOptionsAndAIFunctionThrowsWithMissingChatMessageContent()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Test", "TestFunction");
+
+        // Create options without chat message content
+        var additionalProperties = new AdditionalPropertiesDictionary
+        {
+            [ChatOptionsExtensions.KernelKey] = kernel
+        };
+
+        var options = new ChatOptions
+        {
+            AdditionalProperties = additionalProperties
+        };
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => new AutoFunctionInvocationContext(options, function));
+    }
+
+    [Fact]
+    public void InternalConstructorWithOptionsAndAIFunctionCanSetAndRetrieveArguments()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Test", "TestFunction");
+        var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
+        var kernelArgs = new KernelArguments { ["test"] = "value" };
+
+        // Create options with required properties
+        var additionalProperties = new AdditionalPropertiesDictionary
+        {
+            [ChatOptionsExtensions.KernelKey] = kernel,
+            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent
+        };
+
+        var options = new ChatOptions
+        {
+            AdditionalProperties = additionalProperties
+        };
+
+        // Act
+        var context = new AutoFunctionInvocationContext(options, function)
+        {
+            Arguments = kernelArgs
+        };
+
+        // Assert
+        Assert.Same(kernelArgs, context.Arguments);
+        Assert.Equal("value", context.Arguments["test"]);
+    }
+
+    [Fact]
+    public void InternalConstructorWithOptionsAndAIFunctionInitializesEmptyArgumentsWhenSetToNull()
+    {
+        // Arrange
+        var kernel = new Kernel();
+        var function = KernelFunctionFactory.CreateFromMethod(() => "Test", "TestFunction");
+        var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
+
+        // Create options with required properties
+        var additionalProperties = new AdditionalPropertiesDictionary
+        {
+            [ChatOptionsExtensions.KernelKey] = kernel,
+            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent
+        };
+
+        var options = new ChatOptions
+        {
+            AdditionalProperties = additionalProperties
+        };
+
+        // Act
+        var context = new AutoFunctionInvocationContext(options, function)
+        {
+            Arguments = null
+        };
+
+        // Assert
+        Assert.NotNull(context.Arguments);
+        Assert.IsType<KernelArguments>(context.Arguments);
+        Assert.Empty(context.Arguments);
+    }
+
+    // Helper class for testing non-KernelFunction AIFunction
+    private sealed class TestAIFunction : AIFunction
+    {
+        public TestAIFunction(string name, string description = "")
+        {
+            this.Name = name;
+            this.Description = description;
+        }
+
+        public override string Name { get; }
+
+        public override string Description { get; }
+
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken)
+        {
+            return ValueTask.FromResult<object?>("Test result");
+        }
     }
 }

@@ -20,9 +20,15 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="Microsoft.Extensions.AI.FunctionInvocationContext"/>.
     /// </summary>
-    internal AutoFunctionInvocationContext(ChatOptions options, KernelFunction kernelFunction)
+    internal AutoFunctionInvocationContext(ChatOptions options, AIFunction aiFunction)
     {
         Verify.NotNull(options);
+        Verify.NotNull(aiFunction);
+
+        if (aiFunction is not KernelFunction kernelFunction)
+        {
+            throw new InvalidOperationException($"The function must be of type {nameof(KernelFunction)}.");
+        }
 
         // the ChatOptions must be provided with AdditionalProperties.
         Verify.NotNull(options.AdditionalProperties);
@@ -40,7 +46,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
 
         this.ExecutionSettings = executionSettings;
         this.Options = options;
-        this.AIFunction = kernelFunction;
+        this.AIFunction = aiFunction;
         this.Result = new FunctionResult(kernelFunction) { Culture = kernel.Culture };
     }
 
