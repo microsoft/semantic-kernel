@@ -90,7 +90,7 @@ faiss = [
     "faiss-cpu>=1.10.0"
 ]
 google = [
-    "google-cloud-aiplatform == 1.91.0",
+    "google-cloud-aiplatform == 1.92.0",
     "google-generativeai ~= 0.8"
 ]
 hugging_face = [
