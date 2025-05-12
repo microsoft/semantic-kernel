@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// OpenAI implementation of <see cref="ITextEmbeddingGenerationService"/>
 /// </summary>
 [Experimental("SKEXP0010")]
-[Obsolete("Use OpenAIEmbeddingGenerator instead.")]
+[Obsolete("Use AddOpenAIEmbeddingGenerator extension methods instead.")]
 public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
     private readonly ClientCore _client;

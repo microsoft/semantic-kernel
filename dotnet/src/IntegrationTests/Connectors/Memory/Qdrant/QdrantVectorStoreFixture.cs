@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Azure.Identity;
 using Docker.DotNet;
 using Docker.DotNet.Models;
@@ -10,7 +11,6 @@ using Grpc.Core;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -78,10 +78,9 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         Assert.NotEmpty(embeddingsConfig.DeploymentName);
         Assert.NotEmpty(embeddingsConfig.Endpoint);
 
-        this.EmbeddingGenerator = new AzureOpenAIEmbeddingGenerator(
-            deploymentName: embeddingsConfig.DeploymentName,
-            endpoint: embeddingsConfig.Endpoint,
-            credential: new AzureCliCredential());
+        this.EmbeddingGenerator = new AzureOpenAIClient(new Uri(embeddingsConfig.Endpoint), new AzureCliCredential())
+            .GetEmbeddingClient(embeddingsConfig.DeploymentName)
+            .AsIEmbeddingGenerator();
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

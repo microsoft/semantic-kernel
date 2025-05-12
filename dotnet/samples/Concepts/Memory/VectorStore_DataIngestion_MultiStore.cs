@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ClientModel;
 using System.Text.Json;
+using Azure.AI.OpenAI;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Microsoft.SemanticKernel.Connectors.Redis;
@@ -99,10 +100,9 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
     public async Task ExampleWithoutDIAsync(string databaseType)
     {
         // Create an embedding generation service.
-        var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
-                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+        var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new ApiKeyCredential(TestConfiguration.AzureOpenAIEmbeddings.ApiKey))
+            .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
+            .AsIEmbeddingGenerator();
 
         // Construct the chosen vector store and initialize docker containers via the fixtures where needed.
         IVectorStore vectorStore;

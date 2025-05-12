@@ -5,8 +5,8 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
+using OpenAI;
 
 namespace GettingStartedWithTextSearch;
 
@@ -36,9 +36,9 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
         TestConfiguration.Initialize(configRoot);
 
         // Create an embedding generation service.
-        this.EmbeddingGenerator = new OpenAIEmbeddingGenerator(
-                TestConfiguration.OpenAI.EmbeddingModelId,
-                TestConfiguration.OpenAI.ApiKey);
+        this.EmbeddingGenerator = new OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+            .GetEmbeddingClient(TestConfiguration.OpenAI.EmbeddingModelId)
+            .AsIEmbeddingGenerator();
 
         // Create an InMemory vector store.
         this.InMemoryVectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = this.EmbeddingGenerator });

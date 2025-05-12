@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.AI.OpenAI;
 using Azure.Identity;
 using Memory.VectorStoreFixtures;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using StackExchange.Redis;
 
@@ -72,10 +73,9 @@ public class VectorStore_VectorSearch_MultiStore_Redis(ITestOutputHelper output,
     public async Task ExampleWithoutDIAsync(RedisStorageType redisStorageType)
     {
         // Create an embedding generation service.
-        var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
-                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                new AzureCliCredential());
+        var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
+            .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
+            .AsIEmbeddingGenerator();
 
         // Initialize the Redis docker container via the fixtures and construct the Redis VectorStore with the preferred storage type.
         await redisFixture.ManualInitializeAsync();

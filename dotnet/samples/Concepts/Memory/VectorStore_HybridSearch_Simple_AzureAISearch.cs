@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure;
+using Azure.AI.OpenAI;
 using Azure.Identity;
 using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 namespace Memory;
 
@@ -25,10 +25,9 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
     public async Task IngestDataAndUseHybridSearch()
     {
         // Create an embedding generation service.
-        var embeddingGenerator = new AzureOpenAIEmbeddingGenerator(
-                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                new AzureCliCredential());
+        var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
+            .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
+            .AsIEmbeddingGenerator();
 
         // Construct the AzureAISearch VectorStore.
         var searchIndexClient = new SearchIndexClient(

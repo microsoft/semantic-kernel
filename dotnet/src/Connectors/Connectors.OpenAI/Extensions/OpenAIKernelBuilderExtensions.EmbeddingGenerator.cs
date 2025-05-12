@@ -2,8 +2,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI;
 
 namespace Microsoft.SemanticKernel;
@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 public static partial class OpenAIKernelBuilderExtensions
 {
     /// <summary>
-    /// Adds <see cref="OpenAIEmbeddingGenerator"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// Adds <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -50,7 +50,7 @@ public static partial class OpenAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds the <see cref="OpenAIEmbeddingGenerator"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// Adds the <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>

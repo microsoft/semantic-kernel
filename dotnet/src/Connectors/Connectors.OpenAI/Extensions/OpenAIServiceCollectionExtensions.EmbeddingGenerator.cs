@@ -6,6 +6,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
 
@@ -18,7 +19,7 @@ public static partial class OpenAIServiceCollectionExtensions
 {
     #region Text Embedding
     /// <summary>
-    /// Adds the <see cref="OpenAIEmbeddingGenerator"/> to the <see cref="IServiceCollection"/>.
+    /// Adds the <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -43,17 +44,19 @@ public static partial class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(apiKey);
 
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new OpenAIEmbeddingGenerator(
+#pragma warning disable CS0618 // Type or member is obsolete
+            new OpenAITextEmbeddingGenerationService(
                 modelId,
                 apiKey,
                 orgId,
-                dimensions,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>()));
+                serviceProvider.GetService<ILoggerFactory>(), dimensions)
+            .AsEmbeddingGenerator());
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     /// <summary>
-    /// Adds the <see cref="OpenAIEmbeddingGenerator"/> to the <see cref="IServiceCollection"/>.
+    /// Adds the <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="modelId">The OpenAI model id.</param>
@@ -71,12 +74,15 @@ public static partial class OpenAIServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(modelId);
 
+#pragma warning disable CS0618 // Type or member is obsolete
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new OpenAIEmbeddingGenerator(
+            new OpenAITextEmbeddingGenerationService(
                 modelId,
                 openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
-                dimensions,
-                serviceProvider.GetService<ILoggerFactory>()));
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions)
+            .AsEmbeddingGenerator());
+#pragma warning restore CS0618 // Type or member is obsolete
     }
     #endregion
 }

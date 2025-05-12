@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using Azure.AI.OpenAI;
 using Azure.Identity;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client;
 
@@ -39,10 +39,9 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
     public async Task UpsertWithDynamicRetrieveWithCustomAsync()
     {
         // Create an embedding generation service.
-        var textEmbeddingGenerationService = new AzureOpenAIEmbeddingGenerator(
-                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                new AzureCliCredential());
+        var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
+            .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
+            .AsIEmbeddingGenerator();
 
         // Initiate the docker container and construct the vector store.
         await qdrantFixture.ManualInitializeAsync();
@@ -56,7 +55,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
         var glossaryEntries = CreateDynamicGlossaryEntries().ToList();
         var tasks = glossaryEntries.Select(entry => Task.Run(async () =>
         {
-            entry["DefinitionEmbedding"] = (await textEmbeddingGenerationService.GenerateAsync((string)entry["Definition"]!)).Vector;
+            entry["DefinitionEmbedding"] = (await embeddingGenerator.GenerateAsync((string)entry["Definition"]!)).Vector;
         }));
         await Task.WhenAll(tasks);
 
@@ -79,10 +78,9 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
     public async Task UpsertWithCustomRetrieveWithDynamicAsync()
     {
         // Create an embedding generation service.
-        var textEmbeddingGenerationService = new AzureOpenAIEmbeddingGenerator(
-                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                new AzureCliCredential());
+        var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
+            .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
+            .AsIEmbeddingGenerator();
 
         // Initiate the docker container and construct the vector store.
         await qdrantFixture.ManualInitializeAsync();
@@ -96,7 +94,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
         var glossaryEntries = CreateCustomGlossaryEntries().ToList();
         var tasks = glossaryEntries.Select(entry => Task.Run(async () =>
         {
-            entry.DefinitionEmbedding = (await textEmbeddingGenerationService.GenerateAsync(entry.Definition)).Vector;
+            entry.DefinitionEmbedding = (await embeddingGenerator.GenerateAsync(entry.Definition)).Vector;
         }));
         await Task.WhenAll(tasks);
 

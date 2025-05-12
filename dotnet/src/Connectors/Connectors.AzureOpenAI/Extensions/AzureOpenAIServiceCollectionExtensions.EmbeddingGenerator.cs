@@ -8,6 +8,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
@@ -44,16 +45,18 @@ public static partial class AzureOpenAIServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
+#pragma warning disable CS0618 // Type or member is obsolete
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAIEmbeddingGenerator(
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 apiKey,
                 modelId,
-                dimensions,
-                apiVersion,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>()));
+                serviceProvider.GetService<ILoggerFactory>(), dimensions,
+                apiVersion)
+            .AsEmbeddingGenerator());
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     /// <summary>
@@ -84,16 +87,20 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNull(credential);
 
+#pragma warning disable CS0618 // Type or member is obsolete
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAIEmbeddingGenerator(
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 endpoint,
                 credential,
                 modelId,
-                dimensions,
-                apiVersion,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>()));
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions,
+                apiVersion
+                )
+            .AsEmbeddingGenerator());
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     /// <summary>
@@ -117,12 +124,15 @@ public static partial class AzureOpenAIServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
+#pragma warning disable CS0618 // Type or member is obsolete
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAIEmbeddingGenerator(
+            new AzureOpenAITextEmbeddingGenerationService(
                 deploymentName,
                 azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
                 modelId,
-                dimensions,
-                serviceProvider.GetService<ILoggerFactory>()));
+                serviceProvider.GetService<ILoggerFactory>(),
+                dimensions)
+            .AsEmbeddingGenerator());
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

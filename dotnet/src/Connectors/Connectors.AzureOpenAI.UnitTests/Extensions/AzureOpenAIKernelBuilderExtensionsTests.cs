@@ -126,7 +126,6 @@ public sealed class AzureOpenAIKernelBuilderExtensionsTests
         var service = builder.Build().GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
         Assert.NotNull(service);
-        Assert.True(service is AzureOpenAIEmbeddingGenerator);
     }
 
     #endregion
