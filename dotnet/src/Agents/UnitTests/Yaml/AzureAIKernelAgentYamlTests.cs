@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -38,12 +38,14 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         var builder = Kernel.CreateBuilder();
 
         // Add Azure AI agents client
-        var client = new AIProjectClient(
-            "endpoint;subscription_id;resource_group_name;project_name",
+        var client = new PersistentAgentsClient(
+            new Uri("https://test"),
             new FakeTokenCredential(),
-            new AIProjectClientOptions()
-            { Transport = new HttpClientTransport(this._httpClient) });
-        builder.Services.AddSingleton<AIProjectClient>(client);
+            new PersistentAgentsClientOptions
+            {
+                Transport = new HttpClientTransport(this._httpClient)
+            });
+        builder.Services.AddSingleton(client);
 
         this._kernel = builder.Build();
         this._kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());

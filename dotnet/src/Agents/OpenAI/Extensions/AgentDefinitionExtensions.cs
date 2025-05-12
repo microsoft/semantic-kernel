@@ -140,22 +140,20 @@ internal static class AgentDefinitionExtensions
 
             if (connection.Type.Equals(OpenAI, StringComparison.OrdinalIgnoreCase))
             {
-                OpenAIClientOptions clientOptions = OpenAIClientProvider.CreateOpenAIClientOptions(connection.TryGetEndpoint(), httpClient);
-                return new OpenAIClient(connection.GetApiKeyCredential(), clientOptions);
+                return OpenAIAssistantAgent.CreateOpenAIClient(connection.GetApiKeyCredential(), connection.TryGetEndpoint(), httpClient);
             }
             else if (connection.Type.Equals(AzureOpenAI, StringComparison.OrdinalIgnoreCase))
             {
                 var endpoint = connection.TryGetEndpoint();
                 Verify.NotNull(endpoint, "Endpoint must be specified when using Azure OpenAI.");
 
-                AzureOpenAIClientOptions clientOptions = OpenAIClientProvider.CreateAzureClientOptions(httpClient);
                 if (connection.ExtensionData.TryGetValue(ApiKey, out var apiKey) && apiKey is not null)
                 {
-                    return new AzureOpenAIClient(endpoint, connection.GetApiKeyCredential(), clientOptions);
+                    return OpenAIAssistantAgent.CreateAzureOpenAIClient(connection.GetApiKeyCredential(), endpoint, httpClient);
                 }
 
                 var tokenCredential = kernel.Services.GetRequiredService<TokenCredential>();
-                return new AzureOpenAIClient(endpoint, tokenCredential, clientOptions);
+                return OpenAIAssistantAgent.CreateAzureOpenAIClient(tokenCredential, endpoint, httpClient);
             }
 
             throw new InvalidOperationException($"Invalid OpenAI client type '{connection.Type}' was specified.");

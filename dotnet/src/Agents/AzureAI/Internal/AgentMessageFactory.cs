@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
@@ -35,7 +35,7 @@ internal static class AgentMessageFactory
                 .OfType<FileReferenceContent>()
                 .Select(
                     fileContent =>
-                        new MessageAttachment(fileContent.FileId, GetToolDefinition(fileContent.Tools).ToList()));
+                        new MessageAttachment(fileContent.FileId, [.. GetToolDefinition(fileContent.Tools)]));
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ internal static class AgentMessageFactory
                     role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Agent,
                     content: message.Content)
                 {
-                    Attachments = GetAttachments(message).ToArray(),
+                    Attachments = [.. GetAttachments(message)],
                 };
 
                 if (message.Metadata != null)

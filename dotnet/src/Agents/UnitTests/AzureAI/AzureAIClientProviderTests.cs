@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Net.Http;
-using Azure.AI.Projects;
+using Azure.AI.Projects.OneDP;
 using Azure.Identity;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Moq;
@@ -21,7 +21,7 @@ public class AzureAIClientProviderTests
     public void VerifyAzureAIClientProviderDefault()
     {
         // Act
-        AzureAIClientProvider provider = AzureAIClientProvider.FromConnectionString("test;test;test;test", new AzureCliCredential());
+        AzureAIClientProvider provider = AzureAIClientProvider.FromEndpoint(new Uri("https://test"), new AzureCliCredential());
 
         // Assert
         Assert.NotNull(provider.Client);
@@ -37,7 +37,7 @@ public class AzureAIClientProviderTests
         using HttpClient httpClient = new() { BaseAddress = new Uri("http://myproxy:9819") };
 
         // Act
-        AzureAIClientProvider provider = AzureAIClientProvider.FromConnectionString("test;test;test;test", new AzureCliCredential(), httpClient);
+        AzureAIClientProvider provider = AzureAIClientProvider.FromEndpoint(new Uri("https://test"), new AzureCliCredential(), httpClient);
 
         // Assert
         Assert.NotNull(provider.Client);
@@ -47,7 +47,7 @@ public class AzureAIClientProviderTests
         httpClientWithHeaders.DefaultRequestHeaders.Add("X-Test", "Test");
 
         // Act
-        AzureAIClientProvider providerWithHeaders = AzureAIClientProvider.FromConnectionString("test;test;test;test", new AzureCliCredential(), httpClientWithHeaders);
+        AzureAIClientProvider providerWithHeaders = AzureAIClientProvider.FromEndpoint(new Uri("https://test"), new AzureCliCredential(), httpClientWithHeaders);
 
         // Assert
         Assert.NotNull(providerWithHeaders.Client);

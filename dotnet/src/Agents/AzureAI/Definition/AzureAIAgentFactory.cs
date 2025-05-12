@@ -3,7 +3,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -33,10 +33,9 @@ public sealed class AzureAIAgentFactory : AgentFactory
 
         if (agentDefinition.Type?.Equals(AzureAIAgentType, System.StringComparison.Ordinal) ?? false)
         {
-            var projectClient = agentDefinition.GetAIProjectClient(kernel);
+            var client = agentDefinition.GetAgentsClient(kernel);
 
-            AgentsClient client = projectClient.GetAgentsClient();
-            Azure.AI.Projects.Agent agent;
+            PersistentAgent agent;
             if (!string.IsNullOrEmpty(agentDefinition.Id))
             {
                 // Get an existing agent

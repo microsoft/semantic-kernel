@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Azure.AI.Projects;
+using Azure.AI.Projects.OneDP;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.SemanticKernel.Http;
@@ -12,6 +14,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// Provides an <see cref="AIProjectClient"/> for use by <see cref="AzureAIAgent"/>.
 /// </summary>
+[Obsolete("Use AzureAIAgent.CreateAzureAIClient(...)")]
 public sealed class AzureAIClientProvider
 {
     private AgentsClient? _agentsClient;
@@ -34,26 +37,26 @@ public sealed class AzureAIClientProvider
     private AzureAIClientProvider(AIProjectClient client, IEnumerable<string> keys)
     {
         this.Client = client;
-        this.ConfigurationKeys = keys.ToArray();
+        this.ConfigurationKeys = [.. keys];
     }
 
     /// <summary>
     /// Produces a <see cref="AzureAIClientProvider"/>.
     /// </summary>
-    /// <param name="connectionString">The Azure AI Foundry project connection string, in the form `endpoint;subscription_id;resource_group_name;project_name`.</param>
+    /// <param name="endpoint">The Azure AI Foundry project connection string, in the form `endpoint;subscription_id;resource_group_name;project_name`.</param>
     /// <param name="credential"> A credential used to authenticate to an Azure Service.</param>
     /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
-    public static AzureAIClientProvider FromConnectionString(
-        string connectionString,
+    public static AzureAIClientProvider FromEndpoint(
+        Uri endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null)
     {
-        Verify.NotNullOrWhiteSpace(connectionString, nameof(connectionString));
+        Verify.NotNull(endpoint, nameof(endpoint));
         Verify.NotNull(credential, nameof(credential));
 
         AIProjectClientOptions clientOptions = CreateAzureClientOptions(httpClient);
 
-        return new(new AIProjectClient(connectionString, credential, clientOptions), CreateConfigurationKeys(connectionString, httpClient));
+        return new(new AIProjectClient(endpoint, credential, clientOptions), CreateConfigurationKeys(endpoint, httpClient));
     }
 
     /// <summary>
@@ -86,9 +89,9 @@ public sealed class AzureAIClientProvider
         return options;
     }
 
-    private static IEnumerable<string> CreateConfigurationKeys(string connectionString, HttpClient? httpClient)
+    private static IEnumerable<string> CreateConfigurationKeys(Uri endpoint, HttpClient? httpClient)
     {
-        yield return connectionString;
+        yield return endpoint.ToString();
 
         if (httpClient is not null)
         {

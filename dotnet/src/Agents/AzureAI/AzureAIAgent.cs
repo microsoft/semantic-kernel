@@ -5,13 +5,12 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using AAIP = Azure.AI.Projects;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -45,7 +44,7 @@ public sealed partial class AzureAIAgent : Agent
     /// <summary>
     /// Gets the assistant definition.
     /// </summary>
-    public Azure.AI.Projects.Agent Definition { get; private init; }
+    public PersistentAgent Definition { get; private init; }
 
     /// <summary>
     /// Gets the polling behavior for run processing.
@@ -61,8 +60,8 @@ public sealed partial class AzureAIAgent : Agent
     /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
     /// <param name="templateFormat">The format of the prompt template used when "templateFactory" parameter is supplied.</param>
     public AzureAIAgent(
-        Azure.AI.Projects.Agent model,
-        AgentsClient client,
+        PersistentAgent model,
+        PersistentAgentsClient client,
         IEnumerable<KernelPlugin>? plugins = null,
         IPromptTemplateFactory? templateFactory = null,
         string? templateFormat = null)
@@ -95,7 +94,7 @@ public sealed partial class AzureAIAgent : Agent
     /// <summary>
     /// The associated client.
     /// </summary>
-    public AgentsClient Client { get; }
+    public PersistentAgentsClient Client { get; }
 
     /// <summary>
     /// Adds a message to the specified thread.
@@ -431,7 +430,7 @@ public sealed partial class AzureAIAgent : Agent
 
         this.Logger.LogAzureAIAgentRestoringChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
 
-        AAIP.AgentThread thread = await this.Client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+        PersistentAgentThread thread = await this.Client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
 
         this.Logger.LogAzureAIAgentRestoredChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
 

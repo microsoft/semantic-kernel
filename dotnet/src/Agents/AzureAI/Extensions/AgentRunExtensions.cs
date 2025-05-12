@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
@@ -19,9 +18,9 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
 internal static class AgentRunExtensions
 {
     public static async IAsyncEnumerable<RunStep> GetStepsAsync(
-        this AgentsClient client,
-        ThreadRun run,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+           this PersistentAgentsClient client,
+           ThreadRun run,
+           [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         PageableList<RunStep>? steps = null;
         do
@@ -36,7 +35,7 @@ internal static class AgentRunExtensions
     }
 
     public static async Task<ThreadRun> CreateAsync(
-        this AgentsClient client,
+        this PersistentAgentsClient client,
         string threadId,
         AzureAIAgent agent,
         string? instructions,
@@ -49,11 +48,11 @@ internal static class AgentRunExtensions
         return
             await client.CreateRunAsync(
                 threadId,
-                agent.Definition.Id,
+                agent.Id,
                 overrideModelName: invocationOptions?.ModelName,
                 overrideInstructions: invocationOptions?.OverrideInstructions ?? instructions,
                 additionalInstructions: invocationOptions?.AdditionalInstructions,
-                additionalMessages: AgentMessageFactory.GetThreadMessages(invocationOptions?.AdditionalMessages).ToArray(),
+                additionalMessages: [.. AgentMessageFactory.GetThreadMessages(invocationOptions?.AdditionalMessages)],
                 overrideTools: tools,
                 stream: false,
                 temperature: invocationOptions?.Temperature,
@@ -87,7 +86,7 @@ internal static class AgentRunExtensions
     }
 
     public static IAsyncEnumerable<StreamingUpdate> CreateStreamingAsync(
-        this AgentsClient client,
+        this PersistentAgentsClient client,
         string threadId,
         AzureAIAgent agent,
         string? instructions,
@@ -100,11 +99,11 @@ internal static class AgentRunExtensions
         return
             client.CreateRunStreamingAsync(
                 threadId,
-                agent.Definition.Id,
+                agent.Id,
                 overrideModelName: invocationOptions?.ModelName,
                 overrideInstructions: invocationOptions?.OverrideInstructions ?? instructions,
                 additionalInstructions: invocationOptions?.AdditionalInstructions,
-                additionalMessages: AgentMessageFactory.GetThreadMessages(invocationOptions?.AdditionalMessages).ToArray(),
+                additionalMessages: [.. AgentMessageFactory.GetThreadMessages(invocationOptions?.AdditionalMessages)],
                 overrideTools: tools,
                 temperature: invocationOptions?.Temperature,
                 topP: invocationOptions?.TopP,

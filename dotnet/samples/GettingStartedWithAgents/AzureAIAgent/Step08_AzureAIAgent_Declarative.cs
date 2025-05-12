@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Plugins;
-using Agent = Microsoft.SemanticKernel.Agents.Agent;
 
 namespace GettingStarted.AzureAgents;
 
@@ -417,7 +416,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     public Step08_AzureAIAgent_Declarative(ITestOutputHelper output) : base(output)
     {
         var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<AIProjectClient>(this.Client);
+        builder.Services.AddSingleton<PersistentAgentsClient>(this.Client);
         this._kernel = builder.Build();
     }
 

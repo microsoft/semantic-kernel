@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Net.Http;
-using Azure.AI.Projects;
+using Azure;
+using Azure.AI.Agents.Persistent;
+using Azure.AI.Projects.OneDP;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Microsoft.SemanticKernel.Http;
@@ -15,25 +18,45 @@ public sealed partial class AzureAIAgent : Agent
     /// <summary>
     /// Produces a <see cref="AIProjectClient"/>.
     /// </summary>
-    /// <param name="connectionString">The Azure AI Foundry project connection string, in the form `endpoint;subscription_id;resource_group_name;project_name`.</param>
+    /// <param name="endpoint">The Azure AI Foundry project endpoint.</param>
     /// <param name="credential"> A credential used to authenticate to an Azure Service.</param>
     /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
-    public static AIProjectClient CreateAzureAIClient(
-        string connectionString,
+    public static PersistentAgentsClient CreateAgentsClient(
+        Uri endpoint,
+        AzureKeyCredential credential,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(endpoint, nameof(endpoint));
+        Verify.NotNull(credential, nameof(credential));
+
+        PersistentAgentsClientOptions clientOptions = CreateAzureClientOptions(httpClient);
+
+        return new PersistentAgentsClient(endpoint, credential, clientOptions);
+    }
+
+    /// <summary>
+    /// Produces a <see cref="AIProjectClient"/>.
+    /// </summary>
+    /// <param name="endpoint">The Azure AI Foundry project endpoint.</param>
+    /// <param name="credential"> A credential used to authenticate to an Azure Service.</param>
+    /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
+    public static PersistentAgentsClient CreateAgentsClient
+        (
+        Uri endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null)
     {
-        Verify.NotNullOrWhiteSpace(connectionString, nameof(connectionString));
+        Verify.NotNull(endpoint, nameof(endpoint));
         Verify.NotNull(credential, nameof(credential));
 
-        AIProjectClientOptions clientOptions = CreateAzureClientOptions(httpClient);
+        PersistentAgentsClientOptions clientOptions = CreateAzureClientOptions(httpClient);
 
-        return new AIProjectClient(connectionString, credential, clientOptions);
+        return new PersistentAgentsClient(endpoint, credential, clientOptions);
     }
 
-    private static AIProjectClientOptions CreateAzureClientOptions(HttpClient? httpClient)
+    private static PersistentAgentsClientOptions CreateAzureClientOptions(HttpClient? httpClient)
     {
-        AIProjectClientOptions options = new();
+        PersistentAgentsClientOptions options = new();
 
         options.AddPolicy(new SemanticKernelHeadersPolicy(), HttpPipelinePosition.PerCall);
 

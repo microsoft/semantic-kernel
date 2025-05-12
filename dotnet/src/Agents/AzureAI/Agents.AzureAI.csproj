@@ -37,7 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.AI.Projects" />
+    <PackageReference Include="Azure.AI.Agents.Persistent" /> 
+    <PackageReference Include="Azure.AI.Projects.OneDP" />
     <PackageReference Include="Azure.Identity" />
   </ItemGroup>
 

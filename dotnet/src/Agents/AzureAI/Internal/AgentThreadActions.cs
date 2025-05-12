@@ -9,13 +9,12 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
-using AAIP = Azure.AI.Projects;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 
@@ -44,9 +43,9 @@ internal static class AgentThreadActions
     /// <param name="client">The assistant client</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier</returns>
-    public static async Task<string> CreateThreadAsync(AgentsClient client, CancellationToken cancellationToken = default)
+    public static async Task<string> CreateThreadAsync(PersistentAgentsClient client, CancellationToken cancellationToken = default)
     {
-        AAIP.AgentThread thread = await client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        PersistentAgentThread thread = await client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return thread.Id;
     }
@@ -59,7 +58,7 @@ internal static class AgentThreadActions
     /// <param name="message">The message to add</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <throws><see cref="KernelException"/> if a system message is present, without taking any other action</throws>
-    public static async Task CreateMessageAsync(AgentsClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
+    public static async Task CreateMessageAsync(PersistentAgentsClient client, string threadId, ChatMessageContent message, CancellationToken cancellationToken)
     {
         if (message.Items.Any(i => i is FunctionCallContent))
         {
@@ -89,7 +88,7 @@ internal static class AgentThreadActions
     /// <param name="messageOrder">The order to return messages in.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public static async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(AgentsClient client, string threadId, ListSortOrder? messageOrder, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public static async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(PersistentAgentsClient client, string threadId, ListSortOrder? messageOrder, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Dictionary<string, string?> agentNames = []; // Cache agent names by their identifier
 
@@ -105,7 +104,7 @@ internal static class AgentThreadActions
                 if (!string.IsNullOrWhiteSpace(message.AssistantId) &&
                     !agentNames.TryGetValue(message.AssistantId, out assistantName))
                 {
-                    Azure.AI.Projects.Agent assistant = await client.GetAgentAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
+                    PersistentAgent assistant = await client.GetAgentAsync(message.AssistantId, cancellationToken).ConfigureAwait(false);
                     if (!string.IsNullOrWhiteSpace(assistant.Name))
                     {
                         agentNames.Add(assistant.Id, assistant.Name);
@@ -140,7 +139,7 @@ internal static class AgentThreadActions
     /// <returns>Asynchronous enumeration of messages.</returns>
     public static async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         AzureAIAgent agent,
-        AgentsClient client,
+        PersistentAgentsClient client,
         string threadId,
         AzureAIInvocationOptions? invocationOptions,
         ILogger logger,
@@ -186,7 +185,7 @@ internal static class AgentThreadActions
                 throw new KernelException($"Agent Failure - Run terminated: {run.Status} [{run.Id}]: {run.LastError?.Message ?? "Unknown"}");
             }
 
-            RunStep[] steps = await client.GetStepsAsync(run, cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
+            RunStep[] steps = await client.GetStepsAsync(run, cancellationToken: cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
             // Is tool action required?
             if (run.Status == RunStatus.RequiresAction)
@@ -371,7 +370,7 @@ internal static class AgentThreadActions
     /// </remarks>
     public static async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         AzureAIAgent agent,
-        AgentsClient client,
+        PersistentAgentsClient client,
         string threadId,
         IList<ChatMessageContent>? messages,
         AzureAIInvocationOptions? invocationOptions,
@@ -828,7 +827,7 @@ internal static class AgentThreadActions
         return toolOutputs;
     }
 
-    private static async Task<ThreadMessage?> RetrieveMessageAsync(AgentsClient client, string threadId, string messageId, TimeSpan syncDelay, CancellationToken cancellationToken)
+    private static async Task<ThreadMessage?> RetrieveMessageAsync(PersistentAgentsClient client, string threadId, string messageId, TimeSpan syncDelay, CancellationToken cancellationToken)
     {
         ThreadMessage? message = null;
 
