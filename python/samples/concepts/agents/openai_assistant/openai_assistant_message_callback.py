@@ -39,11 +39,18 @@ class MenuPlugin:
         return "$9.99"
 
 
-intermediate_steps: list[ChatMessageContent] = []
-
-
+# This callback function will be called for each intermediate message,
+# which will allow one to handle FunctionCallContent and FunctionResultContent.
+# If the callback is not provided, the agent will return the final response
+# with no intermediate tool call steps.
 async def handle_intermediate_steps(message: ChatMessageContent) -> None:
-    intermediate_steps.append(message)
+    for item in message.items or []:
+        if isinstance(item, FunctionResultContent):
+            print(f"Function Result:> {item.result} for function: {item.name}")
+        elif isinstance(item, FunctionCallContent):
+            print(f"Function Call:> {item.name} with arguments: {item.arguments}")
+        else:
+            print(f"{item}")
 
 
 async def main():
@@ -91,44 +98,31 @@ async def main():
         await thread.delete() if thread else None
         await client.beta.assistants.delete(assistant_id=agent.id)
 
-    # Print the intermediate steps
-    print("\nIntermediate Steps:")
-    for msg in intermediate_steps:
-        if any(isinstance(item, FunctionResultContent) for item in msg.items):
-            for fr in msg.items:
-                if isinstance(fr, FunctionResultContent):
-                    print(f"Function Result:> {fr.result} for function: {fr.name}")
-        elif any(isinstance(item, FunctionCallContent) for item in msg.items):
-            for fcc in msg.items:
-                if isinstance(fcc, FunctionCallContent):
-                    print(f"Function Call:> {fcc.name} with arguments: {fcc.arguments}")
-        else:
-            print(f"{msg.role}: {msg.content}")
+    """
+    Sample Output:
 
-    # Sample output:
-    # User: 'Hello'
+    # AuthorRole.USER: 'Hello'
     # AuthorRole.ASSISTANT: Hello! How can I assist you today?
-    # User: 'What is the special soup?'
-    # AuthorRole.ASSISTANT: The special soup is Clam Chowder. Would you like to know more about the menu or any
-    #                       specific items?
-    # User: 'How much does that cost?'
-    # AuthorRole.ASSISTANT: The Clam Chowder costs $9.99. Would you like to explore anything else on the menu?
-    # User: 'Thank you'
-    # AuthorRole.ASSISTANT: You're welcome! If you have any more questions or need assistance in the future, feel
-    #                       free to ask. Have a great day!
-    #
-    # Intermediate Steps:
-    # AuthorRole.ASSISTANT: Hello! How can I assist you today?
-    # Function Call:> MenuPlugin-get_specials with arguments: {}
-    # Function Result:>
-    #         Special Soup: Clam Chowder
-    #         Special Salad: Cobb Salad
-    #         Special Drink: Chai Tea
-    #          for function: MenuPlugin-get_specials
-    # Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item":"Clam Chowder"}
-    # Function Result:> $9.99 for function: MenuPlugin-get_item_price
-    # AuthorRole.ASSISTANT: You're welcome! If you have any more questions or need assistance in the future, feel
-    #                       free to ask. Have a great day!
+    # AuthorRole.USER: 'What is the special soup?'
+    Function Call:> MenuPlugin-get_specials with arguments: {}
+    Function Result:> 
+            Special Soup: Clam Chowder
+            Special Salad: Cobb Salad
+            Special Drink: Chai Tea
+            for function: MenuPlugin-get_specials
+    # AuthorRole.ASSISTANT: The special soup is Clam Chowder. Would you like to know more about the specials or 
+        anything else?
+    # AuthorRole.USER: 'What is the special drink?'
+    # AuthorRole.ASSISTANT: The special drink is Chai Tea. If you have any more questions, feel free to ask!
+    # AuthorRole.USER: 'How much is that?'
+    Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item":"Chai Tea"}
+    Function Result:> $9.99 for function: MenuPlugin-get_item_price
+    # AuthorRole.ASSISTANT: The Chai Tea is priced at $9.99. If there's anything else you'd like to know, 
+        just let me know!
+    # AuthorRole.USER: 'Thank you'
+    # AuthorRole.ASSISTANT: You're welcome! If you have any more questions or need further assistance, feel free to 
+        ask. Enjoy your day!
+    """
 
 
 if __name__ == "__main__":
