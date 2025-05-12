@@ -61,9 +61,9 @@ public class ChatCompletion_Whiteboard(ITestOutputHelper output) : BaseTest(outp
         await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "I want it to have a 500GB Harddrive.");
         await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "I want it in in Europe.");
         await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "Can you make it Linux and call it 'ContosoVM'.");
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "OK, let's call it `ContosoFinanceVM_EUR` instead.");
+        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "OK, let's call it `ContosoFinanceVM_Europe` instead.");
         await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "Thanks, now I want to create another VM.");
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "Make all the options the same as the last one, except for the region, which should be North America, and the name, which should be 'ContosoFinanceVM_NAM'.");
+        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "Make all the options the same as the last one, except for the region, which should be North America, and the name, which should be 'ContosoFinanceVM_NorthAmerica'.");
     }
 
     private async Task InvokeWithConsoleWriteLine(ChatCompletionAgent agent, ChatHistoryAgentThread agentThread, WhiteboardBehavior whiteboardBehavior, IChatHistoryReducer chatHistoryReducer, string message)

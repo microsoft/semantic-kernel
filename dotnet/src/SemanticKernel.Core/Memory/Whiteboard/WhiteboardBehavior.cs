@@ -116,7 +116,7 @@ public class WhiteboardBehavior : AIContextBehavior
             this._recentMessages.TryDequeue(out _);
         }
 
-        // Extrac the most important information from the input mesages.
+        // Extract the most important information from the input messages.
         var basicMessages = recentMessagesList
             .Select(m => new BasicMessage
             {
