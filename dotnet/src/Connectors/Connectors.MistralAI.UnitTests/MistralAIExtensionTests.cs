@@ -14,7 +14,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.MistralAI.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="MistralAIServiceCollectionExtensions"/> and <see cref="MistralAIKernelBuilderExtensions"/>.
+/// Unit tests for <see cref="Microsoft.Extensions.DependencyInjection.MistralAIServiceCollectionExtensions"/> and <see cref="Microsoft.Extensions.DependencyInjection.MistralAIKernelBuilderExtensions"/>.
 /// </summary>
 public class MistralAIExtensionTests
 {

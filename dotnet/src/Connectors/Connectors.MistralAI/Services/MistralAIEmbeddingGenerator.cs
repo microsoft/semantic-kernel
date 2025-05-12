@@ -28,14 +28,12 @@ public sealed class MistralAIEmbeddingGenerator : IEmbeddingGenerator<string, Em
     /// <param name="modelId">The Mistral modelId for the text generation service.</param>
     /// <param name="apiKey">API key for accessing the MistralAI service.</param>
     /// <param name="endpoint">Optional uri endpoint including the port where MistralAI server is hosted. Default is https://api.mistral.ai.</param>
-    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have, if supported by the model.</param>
     /// <param name="httpClient">Optional HTTP client to be used for communication with the MistralAI API.</param>
     /// <param name="loggerFactory">Optional logger factory to be used for logging.</param>
     public MistralAIEmbeddingGenerator(
         string modelId,
         string apiKey,
         Uri? endpoint = null,
-        int? dimensions = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -47,7 +45,7 @@ public sealed class MistralAIEmbeddingGenerator : IEmbeddingGenerator<string, Em
             logger: loggerFactory?.CreateLogger(this.GetType()) ?? NullLogger.Instance
         );
 
-        this._metadata = new EmbeddingGeneratorMetadata(defaultModelId: modelId, defaultModelDimensions: dimensions);
+        this._metadata = new EmbeddingGeneratorMetadata(defaultModelId: modelId);
     }
 
     /// <inheritdoc />

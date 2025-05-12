@@ -3,17 +3,17 @@
 using System;
 using System.Net.Http;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extension methods for adding MistralAI embedding generator to a service collection.
 /// </summary>
-public static partial class MistralAIServiceCollectionExtensions
+public static class MistralAIServiceCollectionExtensions
 {
     /// <summary>
     /// Adds a MistralAI embedding generator service to the service collection.
@@ -23,7 +23,6 @@ public static partial class MistralAIServiceCollectionExtensions
     /// <param name="apiKey">The API key required for accessing the MistralAI service.</param>
     /// <param name="endpoint">Optional uri endpoint including the port where MistralAI server is hosted. Default is https://api.mistral.ai.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
-    /// <param name="dimensions">The number of dimensions the resulting output embeddings should have, if supported by the model.</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     public static IServiceCollection AddMistralEmbeddingGenerator(
@@ -32,7 +31,6 @@ public static partial class MistralAIServiceCollectionExtensions
         string apiKey,
         Uri? endpoint = null,
         string? serviceId = null,
-        int? dimensions = null,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(services);
@@ -44,7 +42,6 @@ public static partial class MistralAIServiceCollectionExtensions
                 modelId,
                 apiKey,
                 endpoint,
-                dimensions,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 serviceProvider.GetService<ILoggerFactory>()));
     }

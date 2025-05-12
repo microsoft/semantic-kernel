@@ -20,7 +20,7 @@ public sealed class MistralAIEmbeddingGeneratorTests : MistralTestBase
         var content = this.GetTestResponseAsString("embeddings_response.json");
         this.DelegatingHandler = new AssertingDelegatingHandler("https://api.mistral.ai/v1/embeddings", content);
         this.HttpClient = new System.Net.Http.HttpClient(this.DelegatingHandler, false);
-        using var service = new MistralAIEmbeddingGenerator("mistral-small-latest", "key", httpClient: this.HttpClient, dimensions: null);
+        using var service = new MistralAIEmbeddingGenerator("mistral-small-latest", "key", httpClient: this.HttpClient);
 
         // Act
         List<string> data = ["Hello", "world"];
