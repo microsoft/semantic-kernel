@@ -33,8 +33,6 @@ internal sealed class AzureAISearchMapper<TRecord>(CollectionModel model, JsonSe
                     jsonObject[property.StorageName] = embedding switch
                     {
                         MEAI.Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        MEAI.Embedding<byte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        MEAI.Embedding<sbyte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
                         _ => throw new UnreachableException()
                     };
                 }
@@ -45,7 +43,5 @@ internal sealed class AzureAISearchMapper<TRecord>(CollectionModel model, JsonSe
     }
 
     public TRecord MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
-    {
-        return storageModel.Deserialize<TRecord>(jsonSerializerOptions)!;
-    }
+        => storageModel.Deserialize<TRecord>(jsonSerializerOptions)!;
 }

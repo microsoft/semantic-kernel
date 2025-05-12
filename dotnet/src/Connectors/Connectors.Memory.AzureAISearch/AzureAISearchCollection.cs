@@ -84,7 +84,7 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
             new AzureAISearchModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, options.JsonSerializerOptions);
 
         this._mappper = typeof(TRecord) == typeof(Dictionary<string, object?>) ?
-            (new AzureAISearchDynamicMapper(this._model, options.JsonSerializerOptions) as IAzureAISearchMapper<TRecord>)! :
+            (IAzureAISearchMapper<TRecord>)(object)new AzureAISearchDynamicMapper(this._model, options.JsonSerializerOptions) :
             new AzureAISearchMapper<TRecord>(this._model, options.JsonSerializerOptions);
 
         this._collectionMetadata = new()
@@ -416,58 +416,11 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
         Verify.NotNull(searchText);
         Verify.NotLessThan(top, 1);
 
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
-        {
-            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
-        }
-
-        if (this._model.VectorProperties.Count == 0)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
-        // Configure search settings.
-        var vectorQueries = new List<VectorQuery>
-        {
-            new VectorizableTextQuery(searchText) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
-        };
-
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        // Build filter object.
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._model),
-            _ => null
-        };
-#pragma warning restore CS0618
-
-        // Build search options.
-        var searchOptions = new SearchOptions
-        {
-            VectorSearch = new(),
-            Size = top,
-            Skip = options.Skip,
-        };
-
-        if (filter is not null)
-        {
-            searchOptions.Filter = filter;
-        }
-
-        searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
-
-        // Filter out vector fields if requested.
-        if (!options.IncludeVectors)
-        {
-            searchOptions.Select.Add(this._model.KeyProperty.StorageName);
-
-            foreach (var dataProperty in this._model.DataProperties)
-            {
-                searchOptions.Select.Add(dataProperty.StorageName);
-            }
-        }
+        var searchOptions = BuildSearchOptions(
+            this._model,
+            options,
+            top,
+            new VectorizableTextQuery(searchText) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
 
         await foreach (var result in this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
         {
@@ -498,53 +451,11 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
         var floatVector = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
 
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
-        {
-            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
-        }
-
-        // Configure search settings.
-        var vectorQueries = new List<VectorQuery>
-        {
-            new VectorizedQuery(floatVector) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
-        };
-
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        // Build filter object.
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._model),
-            _ => null
-        };
-#pragma warning restore CS0618
-
-        // Build search options.
-        var searchOptions = new SearchOptions
-        {
-            VectorSearch = new(),
-            Size = top,
-            Skip = options.Skip,
-        };
-
-        if (filter is not null)
-        {
-            searchOptions.Filter = filter;
-        }
-
-        searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
-
-        // Filter out vector fields if requested.
-        if (!options.IncludeVectors)
-        {
-            searchOptions.Select.Add(this._model.KeyProperty.StorageName);
-
-            foreach (var dataProperty in this._model.DataProperties)
-            {
-                searchOptions.Select.Add(dataProperty.StorageName);
-            }
-        }
+        var searchOptions = BuildSearchOptions(
+            this._model,
+            options,
+            top,
+            new VectorizedQuery(floatVector) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
 
         return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken);
     }
@@ -561,45 +472,22 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
         var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
         var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
-        // Configure search settings.
-        var vectorQueries = new List<VectorQuery>
-        {
-            new VectorizedQuery(floatVector) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
-        };
-
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        // Build filter object.
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._model),
-            _ => null
-        };
-#pragma warning restore CS0618
-
         // Build search options.
-        var searchOptions = new SearchOptions
-        {
-            VectorSearch = new(),
-            Size = top,
-            Skip = options.Skip,
-            Filter = filter
-        };
-        searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
-        searchOptions.SearchFields.Add(textDataProperty.StorageName);
-
-        // Filter out vector fields if requested.
-        if (!options.IncludeVectors)
-        {
-            searchOptions.Select.Add(this._model.KeyProperty.StorageName);
-
-            foreach (var dataProperty in this._model.DataProperties)
+        var searchOptions = BuildSearchOptions(
+            this._model,
+            new()
             {
-                searchOptions.Select.Add(dataProperty.StorageName);
-            }
-        }
+#pragma warning disable CS0618 // Type or member is obsolete
+                OldFilter = options.OldFilter,
+#pragma warning restore CS0618 // Type or member is obsolete
+                Filter = options.Filter,
+                VectorProperty = options.VectorProperty,
+                Skip = options.Skip,
+            },
+            top,
+            new VectorizedQuery(floatVector) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
 
+        searchOptions.SearchFields.Add(textDataProperty.StorageName);
         var keywordsCombined = string.Join(" ", keywords);
 
         return this.SearchAndMapToDataModelAsync(keywordsCombined, searchOptions, options.IncludeVectors, cancellationToken);
@@ -747,6 +635,63 @@ public sealed class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollecti
 
         return innerOptions;
     }
+
+    /// <summary>
+    /// Build the search options for a vector search, where the type of vector search can be provided as input.
+    /// E.g. VectorizedQuery or VectorizableTextQuery.
+    /// </summary>
+    private static SearchOptions BuildSearchOptions(CollectionModel model, RecordSearchOptions<TRecord> options, int top, VectorQuery? vectorQuery)
+    {
+        if (model.VectorProperties.Count == 0)
+        {
+            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
+        }
+
+        if (options.IncludeVectors && model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
+
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+        // Build filter object.
+        var filter = options switch
+        {
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, model),
+            _ => null
+        };
+#pragma warning restore CS0618
+
+        // Build search options.
+        var searchOptions = new SearchOptions
+        {
+            VectorSearch = new(),
+            Size = top,
+            Skip = options.Skip,
+        };
+
+        if (filter is not null)
+        {
+            searchOptions.Filter = filter;
+        }
+
+        searchOptions.VectorSearch.Queries.Add(vectorQuery);
+
+        // Filter out vector fields if requested.
+        if (!options.IncludeVectors)
+        {
+            searchOptions.Select.Add(model.KeyProperty.StorageName);
+
+            foreach (var dataProperty in model.DataProperties)
+            {
+                searchOptions.Select.Add(dataProperty.StorageName);
+            }
+        }
+
+        return searchOptions;
+    }
+
     private static async ValueTask<(IEnumerable<TRecord> records, IReadOnlyList<MEAI.Embedding>?[]?)> ProcessEmbeddingsAsync(
         CollectionModel model,
         IEnumerable<TRecord> records,

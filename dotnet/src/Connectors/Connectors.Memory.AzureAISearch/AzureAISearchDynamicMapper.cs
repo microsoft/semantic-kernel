@@ -56,8 +56,6 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
                     embedding switch
                     {
                         MEAI.Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        MEAI.Embedding<byte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        MEAI.Embedding<sbyte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
                         _ => throw new UnreachableException()
                     });
             }
