@@ -122,7 +122,7 @@ public sealed class HandlebarsPlannerTests
 
         if (useEmbeddings)
         {
-            builder.Services.AddAzureOpenAITextEmbeddingGeneration(
+            builder.Services.AddAzureOpenAIEmbeddingGenerator(
                 deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                 modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId,
                 endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,

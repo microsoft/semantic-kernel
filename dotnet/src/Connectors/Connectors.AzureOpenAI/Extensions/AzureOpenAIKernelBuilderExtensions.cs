@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for <see cref="IKernelBuilder"/> to configure Azure OpenAI connectors.
 /// </summary>
-public static class AzureOpenAIKernelBuilderExtensions
+public static partial class AzureOpenAIKernelBuilderExtensions
 {
     #region Chat Completion
 
@@ -158,6 +158,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("Use AddAzureOpenAIEmbeddingGenerator instead.")]
     public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string deploymentName,
@@ -199,6 +200,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("Use AddAzureOpenAIEmbeddingGenerator instead.")]
     public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string deploymentName,
@@ -238,6 +240,7 @@ public static class AzureOpenAIKernelBuilderExtensions
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("Use AddAzureOpenAIEmbeddingGenerator instead.")]
     public static IKernelBuilder AddAzureOpenAITextEmbeddingGeneration(
         this IKernelBuilder builder,
         string deploymentName,
