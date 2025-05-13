@@ -16,6 +16,7 @@ from .open_ai.open_ai_assistant_agent import AssistantAgentThread, OpenAIAssista
 from .open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
 from .open_ai.run_polling_options import RunPollingOptions
 from .orchestration.concurrent import ConcurrentOrchestration
+from .orchestration.group_chat import GroupChatOrchestration
 from .orchestration.sequential import SequentialOrchestration
 
 __all__ = [
@@ -41,6 +42,7 @@ __all__ = [
     "CopilotStudioAgentAuthMode",
     "CopilotStudioAgentSettings",
     "CopilotStudioAgentThread",
+    "GroupChatOrchestration",
     "OpenAIAssistantAgent",
     "OpenAIResponsesAgent",
     "ResponsesAgentThread",

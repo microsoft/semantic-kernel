@@ -30,6 +30,7 @@ _AGENTS = {
     "RunPollingOptions": ".open_ai.run_polling_options",
     "ConcurrentOrchestration": ".orchestration.concurrent",
     "SequentialOrchestration": ".orchestration.sequential",
+    "GroupChatOrchestration": ".orchestration.group_chat",
 }
 
 
