@@ -9,7 +9,8 @@ using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="ConcurrentOrchestration"/>.
+/// Demonstrates how to use the <see cref="ConcurrentOrchestration"/>
+/// for executing multiple agents on the same task in parallel.
 /// </summary>
 public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {

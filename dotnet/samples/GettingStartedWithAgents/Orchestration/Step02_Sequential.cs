@@ -9,7 +9,9 @@ using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="SequentialOrchestration"/>.
+/// Demonstrates how to use the <see cref="SequentialOrchestration"/> for
+/// executing multiple agents in sequence, i.e.the output of one agent is
+/// the input to the next agent.
 /// </summary>
 public class Step02_Sequential(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {

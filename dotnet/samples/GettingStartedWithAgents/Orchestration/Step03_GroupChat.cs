@@ -9,8 +9,15 @@ using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="GroupChatOrchestration"/>.
+/// Demonstrates how to use the <see cref="GroupChatOrchestration"/> ith a default
+/// round robin manager for controlling the flow of conversation in a round robin fashion.
 /// </summary>
+/// <remarks>
+/// Think of the group chat manager as a state machine, with the following possible states:
+/// - Request for user message
+/// - Termination, after which the manager will try to filter a result from the conversation
+/// - Continuation, at which the manager will select the next agent to speak.
+/// </remarks>
 public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]

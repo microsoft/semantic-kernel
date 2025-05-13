@@ -12,7 +12,9 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="GroupChatOrchestration"/>.
+/// Demonstrates how to use the <see cref="GroupChatOrchestration"/>
+/// with a group chat manager that uses a chat completion service to
+/// control the flow of the conversation.
 /// </summary>
 public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {

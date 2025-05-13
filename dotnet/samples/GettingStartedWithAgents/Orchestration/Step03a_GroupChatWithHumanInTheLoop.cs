@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="GroupChatOrchestration"/> with human in the loop.
+/// Demonstrates how to use the <see cref="GroupChatOrchestration"/> with human in the loop
 /// </summary>
 public class Step03a_GroupChatWithHumanInTheLoop(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
@@ -76,6 +76,13 @@ public class Step03a_GroupChatWithHumanInTheLoop(ITestOutputHelper output) : Bas
         await runtime.RunUntilIdleAsync();
     }
 
+    /// <summary>
+    /// Define a custom group chat manager that enables user input.
+    /// </summary>
+    /// <remarks>
+    /// User input is achieved by overriding the default round robin manager
+    /// to allow user input after the reviewer agent's message.
+    /// </remarks>
     private sealed class CustomRoundRobinGroupChatManager : RoundRobinGroupChatManager
     {
         public override ValueTask<GroupChatManagerResult<bool>> ShouldRequestUserInput(ChatHistory history, CancellationToken cancellationToken = default)
