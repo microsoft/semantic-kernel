@@ -12,6 +12,19 @@ public sealed class SqliteVectorStoreOptions
     internal static readonly SqliteVectorStoreOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="SqliteVectorStoreOptions"/> class.
+    /// </summary>
+    public SqliteVectorStoreOptions()
+    {
+    }
+
+    internal SqliteVectorStoreOptions(SqliteVectorStoreOptions? source, IEmbeddingGenerator embeddingGenerator)
+    {
+        this.VectorVirtualTableName = source?.VectorVirtualTableName;
+        this.EmbeddingGenerator = embeddingGenerator;
+    }
+
+    /// <summary>
     /// Custom virtual table name to store vectors.
     /// </summary>
     /// <remarks>

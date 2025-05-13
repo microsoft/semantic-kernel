@@ -13,6 +13,21 @@ public sealed class SqliteCollectionOptions
     internal static readonly SqliteCollectionOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="SqliteCollectionOptions"/> class.
+    /// </summary>
+    public SqliteCollectionOptions()
+    {
+    }
+
+    internal SqliteCollectionOptions(SqliteCollectionOptions? source, IEmbeddingGenerator embeddingGenerator)
+    {
+        this.VectorStoreRecordDefinition = source?.VectorStoreRecordDefinition;
+        this.VectorVirtualTableName = source?.VectorVirtualTableName;
+        this.VectorSearchExtensionName = source?.VectorSearchExtensionName;
+        this.EmbeddingGenerator = embeddingGenerator;
+    }
+
+    /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>
     /// <remarks>
