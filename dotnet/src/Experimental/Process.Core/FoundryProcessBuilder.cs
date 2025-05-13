@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// A builder for creating a process that can be deployed to Azure Foundry.
 /// </summary>
-public class FoundryProcessBuilder
+public class FoundryProcessBuilder<TProcessState> where TProcessState : class, new()
 {
     private readonly ProcessBuilder _processBuilder;
 
@@ -19,10 +19,10 @@ public class FoundryProcessBuilder
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
     /// </summary>
     /// <param name="id">The name of the process. This is required.</param>
-    /// <param name="stateType">The type of the state. This is optional.</param>
-    public FoundryProcessBuilder(string id, Type? stateType = null)
+    /// <param name="description">The description of the Process.</param>
+    public FoundryProcessBuilder(string id, string? description = null)
     {
-        this._processBuilder = new ProcessBuilder(id, stateType);
+        this._processBuilder = new ProcessBuilder(id, description, processBuilder: null, typeof(TProcessState));
     }
 
     /// <summary>
@@ -40,11 +40,12 @@ public class FoundryProcessBuilder
     /// Adds a step to the process from a declarative agent.
     /// </summary>
     /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
-    /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
+    /// <param name="defaultThread">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? threadName = null, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgent(AgentDefinition agentDefinition, string? defaultThread = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNull(agentDefinition);
         if (agentDefinition.Type != AzureAIAgentFactory.AzureAIAgentType)
@@ -52,27 +53,29 @@ public class FoundryProcessBuilder
             throw new ArgumentException($"The agent type '{agentDefinition.Type}' is not supported. Only '{AzureAIAgentFactory.AzureAIAgentType}' is supported.");
         }
 
-        return this._processBuilder.AddStepFromAgent(agentDefinition, threadName, aliases);
+        return this._processBuilder.AddStepFromAgent<TProcessState>(agentDefinition, defaultThread, humanInLoopMode, aliases);
     }
 
     /// <summary>
     /// Adds a step to the process from a declarative agent.
     /// </summary>
+    /// <param name="stepId">Id of the step. If not provided, the Id will come from the agent Id.</param>
     /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
     /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
-    /// <param name="stepId">Id of the step. If not provided, the Id will come from the agent Id.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromAgentProxy(AgentDefinition agentDefinition, string? threadName = null, string? stepId = null, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgentProxy(string stepId, AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
     {
+        Verify.NotNullOrWhiteSpace(stepId);
         Verify.NotNull(agentDefinition);
         if (agentDefinition.Type != AzureAIAgentFactory.AzureAIAgentType)
         {
             throw new ArgumentException($"The agent type '{agentDefinition.Type}' is not supported. Only '{AzureAIAgentFactory.AzureAIAgentType}' is supported.");
         }
 
-        return this._processBuilder.AddStepFromAgentProxy(agentDefinition, threadName, stepId, aliases);
+        return this._processBuilder.AddStepFromAgentProxy<TProcessState>(agentDefinition, threadName, stepId, humanInLoopMode, aliases);
     }
 
     /// <summary>
@@ -102,5 +105,26 @@ public class FoundryProcessBuilder
     public KernelProcess Build(KernelProcessStateMetadata? stateMetadata = null)
     {
         return this._processBuilder.Build(stateMetadata);
+    }
+}
+
+/// <summary>
+/// A default process state for the <see cref="FoundryProcessBuilder"/>.
+/// </summary>
+public class DefaultProcessState
+{
+}
+
+/// <summary>
+/// A builder for creating a process that can be deployed to Azure Foundry.
+/// </summary>
+public class FoundryProcessBuilder : FoundryProcessBuilder<DefaultProcessState>
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FoundryProcessBuilder"/> class.
+    /// </summary>
+    /// <param name="id"></param>
+    public FoundryProcessBuilder(string id) : base(id)
+    {
     }
 }

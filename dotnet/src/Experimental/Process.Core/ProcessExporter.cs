@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
+using YamlDotNet.Serialization.NamingConventions;
+using YamlDotNet.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.SemanticKernel.Process;
 
@@ -50,7 +53,25 @@ public sealed class ProcessExporter
                 Id = agentStep.State.Id ?? throw new KernelException("All steps must have an Id."),
                 Description = agentStep.Description,
                 Type = "agent",
-                Inputs = agentStep.Inputs,
+                Inputs = agentStep.Inputs.ToDictionary((kvp) => kvp.Key, (kvp) =>
+                {
+                    var value = kvp.Value;
+                    var schema = KernelJsonSchemaBuilder.Build(value);
+                    var schemaJson = JsonSerializer.Serialize(schema.RootElement);
+
+                    var deserializer = new DeserializerBuilder()
+                    .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                    .IgnoreUnmatchedProperties()
+                    .Build();
+
+                    var yamlSchema = deserializer.Deserialize(schemaJson);
+                    if (yamlSchema is null)
+                    {
+                        throw new KernelException("Failed to deserialize schema.");
+                    }
+
+                    return yamlSchema;
+                }),
                 OnComplete = null, // TODO: OnComplete,
                 OnError = null // TODO: OnError
             };
