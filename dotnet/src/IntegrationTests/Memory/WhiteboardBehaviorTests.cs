@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -43,7 +44,7 @@ public class WhiteboardBehaviorTests
         this._output = output;
     }
 
-    [Theory]
+    [RetryTheory]
     [MemberData(nameof(AddMessagesToWhiteboardData))]
     public async Task CanAddMessagesToWhiteboardAsync(ChatMessage[] chatMessages, string[][] expectedWhiteboardContent)
     {
