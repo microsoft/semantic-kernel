@@ -53,7 +53,7 @@ async def main():
     ):
         # 1. Create the reviewer agent on the Azure AI agent service
         reviewer_agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.model_deployment_name,
+            model=ai_agent_settings.deployment_name,
             name=REVIEWER_NAME,
             instructions=REVIEWER_INSTRUCTIONS,
         )
@@ -66,7 +66,7 @@ async def main():
 
         # 3. Create the copy writer agent on the Azure AI agent service
         copy_writer_agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.model_deployment_name,
+            model=ai_agent_settings.deployment_name,
             name=COPYWRITER_NAME,
             instructions=COPYWRITER_INSTRUCTIONS,
         )

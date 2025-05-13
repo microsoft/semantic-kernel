@@ -39,10 +39,7 @@ async def main() -> None:
 
     async with (
         DefaultAzureCredential() as creds,
-        AzureAIAgent.create_client(
-            credential=creds,
-            conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
-        ) as client,
+        AzureAIAgent.create_client(credential=creds, endpoint=ai_agent_settings.endpoint) as client,
     ):
         conn_list = await client.connections.list()
 
@@ -56,7 +53,7 @@ async def main() -> None:
 
         # Create agent definition
         agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.model_deployment_name,
+            model=ai_agent_settings.deployment_name,
             instructions="Answer questions about hotels using your index.",
             tools=ai_search.definitions,
             tool_resources=ai_search.resources,

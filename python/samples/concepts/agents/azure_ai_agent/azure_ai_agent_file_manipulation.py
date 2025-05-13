@@ -22,10 +22,7 @@ async def main() -> None:
 
     async with (
         DefaultAzureCredential() as creds,
-        AzureAIAgent.create_client(
-            credential=creds,
-            conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
-        ) as client,
+        AzureAIAgent.create_client(credential=creds, endpoint=ai_agent_settings.endpoint) as client,
     ):
         csv_file_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
@@ -40,7 +37,7 @@ async def main() -> None:
 
         # Create agent definition
         agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.model_deployment_name,
+            model=ai_agent_settings.deployment_name,
             tools=code_interpreter.definitions,
             tool_resources=code_interpreter.resources,
         )

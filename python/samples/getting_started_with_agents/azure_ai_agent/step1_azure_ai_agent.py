@@ -36,7 +36,7 @@ async def main() -> None:
     ):
         # 1. Create an agent on the Azure AI agent service
         agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.model_deployment_name,
+            model=ai_agent_settings.deployment_name,
             name="Assistant",
             instructions="Answer the user's questions.",
         )

@@ -10,16 +10,14 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from azure.ai.projects.aio import AIProjectClient
-from azure.ai.projects.models import Agent as AzureAIAgentModel
-from azure.ai.projects.models import (
-    AgentsApiResponseFormat,
-    AgentsApiResponseFormatMode,
+from azure.ai.agents.models import Agent as AzureAIAgentModel
+from azure.ai.agents.models import (
     ResponseFormatJsonSchemaType,
     ThreadMessageOptions,
     ToolDefinition,
     TruncationObject,
 )
+from azure.ai.projects.aio import AIProjectClient
 from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent, AgentResponseItem, AgentThread
@@ -56,9 +54,7 @@ if TYPE_CHECKING:
 
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
-AgentsApiResponseFormatOption = (
-    str | AgentsApiResponseFormatMode | AgentsApiResponseFormat | ResponseFormatJsonSchemaType
-)
+AgentsApiResponseFormatOption = str | ResponseFormatJsonSchemaType
 
 _T = TypeVar("_T", bound="AzureAIAgent")
 

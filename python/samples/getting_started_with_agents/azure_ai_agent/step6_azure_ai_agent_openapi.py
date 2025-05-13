@@ -58,7 +58,7 @@ async def main() -> None:
 
         # 3. Create an agent on the Azure AI agent service with the OpenAPI tools
         agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.model_deployment_name,
+            model=ai_agent_settings.deployment_name,
             tools=openapi_weather.definitions + openapi_countries.definitions,
         )
 

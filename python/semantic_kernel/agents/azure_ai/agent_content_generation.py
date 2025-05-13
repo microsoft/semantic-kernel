@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Any, cast
 
-from azure.ai.projects.models import (
+from azure.ai.agents.models import (
     MessageDeltaImageFileContent,
     MessageDeltaImageFileContentObject,
     MessageDeltaTextContent,
@@ -42,7 +42,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
-    from azure.ai.projects.models import (
+    from azure.ai.agents.models import (
         MessageDeltaChunk,
         RunStepDeltaToolCallObject,
     )

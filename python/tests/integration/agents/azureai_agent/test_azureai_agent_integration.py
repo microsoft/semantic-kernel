@@ -58,7 +58,7 @@ class TestAzureAIAgentIntegration:
                 plugins.append(WeatherPlugin())
 
             agent_definition = await client.agents.create_agent(
-                model=ai_agent_settings.model_deployment_name,
+                model=ai_agent_settings.deployment_name,
                 tools=tools,
                 tool_resources=tool_resources,
                 name="SKPythonIntegrationTestAgent",

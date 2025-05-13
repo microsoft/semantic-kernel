@@ -74,7 +74,7 @@ async def main():
         agent = AzureAIAgent(
             client=client,
             definition=await client.agents.create_agent(
-                model=AzureAIAgentSettings().model_deployment_name,
+                model=AzureAIAgentSettings().deployment_name,
                 name="GithubAgent",
                 instructions="You interact with the user to help them with the Microsoft semantic-kernel github "
                 "project. You have dedicated tools for this, including one to write release notes, "

@@ -37,7 +37,7 @@ async def main():
         agent = AzureAIAgent(
             client=client,
             definition=await client.agents.create_agent(
-                model=AzureAIAgentSettings.create().model_deployment_name,
+                model=AzureAIAgentSettings.create().deployment_name,
                 name="GithubAgent",
                 instructions="You are a microsoft/semantic-kernel Issue Triage Agent. "
                 "You look at all issues that have the tag: 'triage' and 'python'."

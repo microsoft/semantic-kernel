@@ -5,15 +5,12 @@ import logging
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 
-from azure.ai.projects.models import (
-    AgentsApiResponseFormat,
-    AgentsApiResponseFormatMode,
+from azure.ai.agents.models import (
     AgentsNamedToolChoiceType,
     AgentStreamEvent,
     AsyncAgentEventHandler,
     AsyncAgentRunStream,
     BaseAsyncAgentEventHandler,
-    OpenAIPageableListOfThreadMessage,
     ResponseFormatJsonSchemaType,
     RunStep,
     RunStepBingGroundingToolCall,
@@ -29,7 +26,7 @@ from azure.ai.projects.models import (
     ToolDefinition,
     TruncationObject,
 )
-from azure.ai.projects.models._enums import MessageRole
+from azure.ai.agents.models._enums import MessageRole
 
 from semantic_kernel.agents.azure_ai.agent_content_generation import (
     generate_bing_grounding_content,
@@ -99,10 +96,7 @@ class AgentThreadActions:
         max_prompt_tokens: int | None = None,
         max_completion_tokens: int | None = None,
         truncation_strategy: TruncationObject | None = None,
-        response_format: AgentsApiResponseFormat
-        | AgentsApiResponseFormatMode
-        | ResponseFormatJsonSchemaType
-        | None = None,
+        response_format: ResponseFormatJsonSchemaType | None = None,
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
         polling_options: RunPollingOptions | None = None,
@@ -340,10 +334,7 @@ class AgentThreadActions:
         max_completion_tokens: int | None = None,
         output_messages: list[ChatMessageContent] | None = None,
         parallel_tool_calls: bool | None = None,
-        response_format: AgentsApiResponseFormat
-        | AgentsApiResponseFormatMode
-        | ResponseFormatJsonSchemaType
-        | None = None,
+        response_format: ResponseFormatJsonSchemaType | None = None,
         tools: list[ToolDefinition] | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
@@ -680,43 +671,30 @@ class AgentThreadActions:
             sort_order: The order to sort the messages in.
 
         Yields:
-            An AsyncIterale of ChatMessageContent that includes the thread messages.
+            An AsyncIterable of ChatMessageContent that includes the thread messages.
         """
-        agent_names: dict[str, Any] = {}
-        last_id: str | None = None
-        messages: OpenAIPageableListOfThreadMessage
+        agent_names: dict[str, str] = {}
 
-        while True:
-            messages = await client.agents.list_messages(
-                thread_id=thread_id,
-                run_id=None,
-                limit=None,
-                order=sort_order,
-                after=last_id,
-                before=None,
-            )
+        async for message in client.agents.messages.list(
+            thread_id=thread_id,
+            run_id=None,
+            limit=None,
+            order=sort_order,
+            before=None,
+        ):
+            assistant_name: str | None = None
 
-            if not messages:
-                break
+            if message.agent_id and message.agent_id.strip() and message.agent_id not in agent_names:
+                agent = await client.agents.get_agent(message.agent_id)
+                if agent.name and agent.name.strip():
+                    agent_names[agent.id] = agent.name
 
-            for message in messages.data:
-                last_id = message.id
-                assistant_name: str | None = None
+            assistant_name = agent_names.get(message.agent_id) or message.agent_id
 
-                if message.agent_id and message.agent_id.strip() and message.agent_id not in agent_names:
-                    agent = await client.agents.get_agent(message.agent_id)
-                    if agent.name and agent.name.strip():
-                        agent_names[agent.id] = agent.name
+            content = generate_message_content(assistant_name, message)
 
-                assistant_name = agent_names.get(message.agent_id) or message.agent_id
-
-                content = generate_message_content(assistant_name, message)
-
-                if len(content.items) > 0:
-                    yield content
-
-            if not messages.has_more:
-                break
+            if len(content.items) > 0:
+                yield content
 
     # endregion
 
@@ -728,10 +706,7 @@ class AgentThreadActions:
         *,
         agent: "AzureAIAgent",
         model: str | None = None,
-        response_format: AgentsApiResponseFormat
-        | AgentsApiResponseFormatMode
-        | ResponseFormatJsonSchemaType
-        | None = None,
+        response_format: ResponseFormatJsonSchemaType | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
         metadata: dict[str, str] | None = None,
