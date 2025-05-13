@@ -106,8 +106,7 @@ public sealed class WeaviateMapperTests
             "CollectionName",
             hasNamedVectors,
             new WeaviateModelBuilder(hasNamedVectors)
-            .Build(
-                typeof(Dictionary<string, object?>),
+            .BuildDynamic(
                 new VectorStoreRecordDefinition
                 {
                     Properties =

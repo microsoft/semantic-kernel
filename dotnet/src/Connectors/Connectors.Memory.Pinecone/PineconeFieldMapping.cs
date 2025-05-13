@@ -2,9 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -14,37 +13,6 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// </summary>
 internal static class PineconeFieldMapping
 {
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    public static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-    ];
-
-    public static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
-    {
-        RequiresAtLeastOneVector = true,
-        SupportsMultipleKeys = false,
-        SupportsMultipleVectors = false,
-
-        SupportedKeyPropertyTypes = [typeof(string)],
-
-        SupportedDataPropertyTypes =
-        [
-            typeof(bool),
-            typeof(string),
-            typeof(int),
-            typeof(long),
-            typeof(float),
-            typeof(double),
-            typeof(decimal)
-        ],
-
-        SupportedEnumerableDataPropertyElementTypes = [typeof(string)],
-
-        SupportedVectorPropertyTypes = s_supportedVectorTypes
-    };
-
     public static object? ConvertFromMetadataValueToNativeType(MetadataValue metadataValue, Type targetType)
         => metadataValue.Value switch
         {
@@ -57,9 +25,20 @@ internal static class PineconeFieldMapping
             long longValue => ConvertToNumericValue(longValue, targetType),
             float floatValue => ConvertToNumericValue(floatValue, targetType),
             double doubleValue => ConvertToNumericValue(doubleValue, targetType),
-            MetadataValue[] array => VectorStoreRecordMapping.CreateEnumerable(array.Select(x => ConvertFromMetadataValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))), targetType),
-            List<MetadataValue> list => VectorStoreRecordMapping.CreateEnumerable(list.Select(x => ConvertFromMetadataValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))), targetType),
+            IEnumerable<MetadataValue> enumerable => DeserializeCollection(enumerable, targetType),
+
             _ => throw new InvalidOperationException($"Unsupported metadata type: '{metadataValue.Value?.GetType().FullName}'."),
+        };
+
+    private static object? DeserializeCollection(IEnumerable<MetadataValue> collection, Type targetType)
+        => targetType switch
+        {
+            Type t when t == typeof(List<string>)
+                => collection.Select(v => (string)v.Value).ToList(),
+            Type t when t == typeof(string[])
+                => collection.Select(v => (string)v.Value).ToArray(),
+
+            _ => throw new UnreachableException($"Unsupported collection type {targetType.Name}"),
         };
 
     public static MetadataValue ConvertToMetadataValue(object? sourceValue)

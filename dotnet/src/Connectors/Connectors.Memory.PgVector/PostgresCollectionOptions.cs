@@ -10,6 +10,8 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// </summary>
 public sealed class PostgresCollectionOptions
 {
+    internal static readonly PostgresCollectionOptions Default = new();
+
     /// <summary>
     /// Gets or sets the database schema.
     /// </summary>

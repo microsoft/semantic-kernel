@@ -207,6 +207,6 @@ public class RedisHashSetDynamicMappingTests
     }
 
     private static CollectionModel BuildModel(VectorStoreRecordDefinition definition)
-        => new CollectionModelBuilder(RedisHashSetCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
-            .Build(typeof(Dictionary<string, object?>), definition, defaultEmbeddingGenerator: null);
+        => new RedisModelBuilder(RedisHashSetCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
+            .BuildDynamic(definition, defaultEmbeddingGenerator: null);
 }

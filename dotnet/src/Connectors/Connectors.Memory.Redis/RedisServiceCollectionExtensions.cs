@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
@@ -20,6 +21,8 @@ public static class RedisServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresUnreferencedCode("The Redis provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Redis provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddRedisVectorStore(this IServiceCollection services, RedisVectorStoreOptions? options = default, string? serviceId = default)
     {
         // If we are not constructing the ConnectionMultiplexer, add the IVectorStore as transient, since we
@@ -48,6 +51,8 @@ public static class RedisServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresUnreferencedCode("The Redis provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Redis provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddRedisVectorStore(this IServiceCollection services, string redisConnectionConfiguration, RedisVectorStoreOptions? options = default, string? serviceId = default)
     {
         // If we are constructing the ConnectionMultiplexer, add the IVectorStore as singleton, since we are managing the lifetime
@@ -78,6 +83,8 @@ public static class RedisServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
+    [RequiresDynamicCode("This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
+    [RequiresUnreferencedCode("This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
     public static IServiceCollection AddRedisHashSetVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -114,6 +121,8 @@ public static class RedisServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
+    [RequiresDynamicCode("This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
+    [RequiresUnreferencedCode("This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
     public static IServiceCollection AddRedisHashSetVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -150,6 +159,8 @@ public static class RedisServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
+    [RequiresDynamicCode("This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
+    [RequiresUnreferencedCode("This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
     public static IServiceCollection AddRedisJsonVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -186,6 +197,8 @@ public static class RedisServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
+    [RequiresDynamicCode("This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
+    [RequiresUnreferencedCode("This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
     public static IServiceCollection AddRedisJsonVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,

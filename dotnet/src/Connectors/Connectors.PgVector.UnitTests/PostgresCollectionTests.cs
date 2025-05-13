@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.PgVector;
 using Xunit;
@@ -29,6 +28,6 @@ public class PostgresCollectionTests
         };
 
         // Act & Assert
-        Assert.Throws<NotSupportedException>(() => new PostgresCollection<object, Dictionary<string, object?>>("Host=localhost;Database=test;", TestCollectionName, options));
+        Assert.Throws<NotSupportedException>(() => new PostgresDynamicCollection("Host=localhost;Database=test;", TestCollectionName, options));
     }
 }

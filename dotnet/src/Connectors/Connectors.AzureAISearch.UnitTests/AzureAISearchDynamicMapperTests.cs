@@ -271,9 +271,8 @@ public class AzureAISearchDynamicMapperTests
     }
 
     private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
-        => new CollectionJsonModelBuilder(AzureAISearchModelBuilder.s_modelBuildingOptions)
-            .Build(
-                typeof(Dictionary<string, object?>),
+        => new AzureAISearchDynamicModelBuilder()
+            .BuildDynamic(
                 new() { Properties = properties },
                 defaultEmbeddingGenerator: null);
 }

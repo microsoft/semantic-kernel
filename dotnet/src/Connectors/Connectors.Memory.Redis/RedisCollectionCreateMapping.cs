@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using NRedisStack.Search;
@@ -77,7 +75,7 @@ internal static class RedisCollectionCreateMapping
                     // Add full text search field index.
                     if (dataProperty.IsFullTextIndexed)
                     {
-                        if (dataProperty.Type == typeof(string) || (typeof(IEnumerable).IsAssignableFrom(dataProperty.Type) && GetEnumerableType(dataProperty.Type) == typeof(string)))
+                        if (dataProperty.Type == typeof(string) || IsTagsType(dataProperty.Type))
                         {
                             schema.AddTextField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
                         }
@@ -94,7 +92,7 @@ internal static class RedisCollectionCreateMapping
                         {
                             schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
                         }
-                        else if (typeof(IEnumerable).IsAssignableFrom(dataProperty.Type) && GetEnumerableType(dataProperty.Type) == typeof(string))
+                        else if (IsTagsType(dataProperty.Type))
                         {
                             schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}.*", storageName));
                         }
@@ -126,6 +124,11 @@ internal static class RedisCollectionCreateMapping
         }
 
         return schema;
+
+        static bool IsTagsType(Type type)
+            => (type.IsArray && type.GetElementType() == typeof(string))
+                || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && type.GenericTypeArguments[0] == typeof(string))
+                || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(HashSet<>) && type.GenericTypeArguments[0] == typeof(string));
     }
 
     /// <summary>
@@ -176,34 +179,4 @@ internal static class RedisCollectionCreateMapping
             null => throw new UnreachableException("null embedding type"),
             _ => throw new InvalidOperationException($"Vector data type '{vectorProperty.Type.Name}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Redis VectorStore.")
         };
-
-    /// <summary>
-    /// Gets the type of object stored in the given enumerable type.
-    /// </summary>
-    /// <param name="type">The enumerable to get the stored type for.</param>
-    /// <returns>The type of object stored in the given enumerable type.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the given type is not enumerable.</exception>
-    private static Type GetEnumerableType(Type type)
-    {
-        if (type is IEnumerable)
-        {
-            return typeof(object);
-        }
-        else if (type.IsArray)
-        {
-            return type.GetElementType()!;
-        }
-
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-        {
-            return type.GetGenericArguments()[0];
-        }
-
-        if (type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type enumerableInterface)
-        {
-            return enumerableInterface.GetGenericArguments()[0];
-        }
-
-        throw new InvalidOperationException($"Data type '{type}' for {nameof(VectorStoreDataProperty)} is not supported by the Redis VectorStore.");
-    }
 }

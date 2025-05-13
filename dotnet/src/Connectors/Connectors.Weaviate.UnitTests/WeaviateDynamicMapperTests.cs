@@ -32,8 +32,7 @@ public sealed class WeaviateDynamicMapperTests
     };
 
     private static readonly CollectionModel s_model = new WeaviateModelBuilder(HasNamedVectors)
-        .Build(
-            typeof(Dictionary<string, object?>),
+        .BuildDynamic(
             new VectorStoreRecordDefinition
             {
                 Properties =
@@ -338,7 +337,7 @@ public sealed class WeaviateDynamicMapperTests
             ]
         };
 
-        var model = new WeaviateModelBuilder(HasNamedVectors).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null, s_jsonSerializerOptions);
+        var model = new WeaviateModelBuilder(HasNamedVectors).BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null, s_jsonSerializerOptions);
 
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 
@@ -369,7 +368,7 @@ public sealed class WeaviateDynamicMapperTests
             ]
         };
 
-        var model = new WeaviateModelBuilder(HasNamedVectors).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null, s_jsonSerializerOptions);
+        var model = new WeaviateModelBuilder(HasNamedVectors).BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null, s_jsonSerializerOptions);
 
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 
@@ -404,7 +403,7 @@ public sealed class WeaviateDynamicMapperTests
             ]
         };
 
-        var model = new WeaviateModelBuilder(hasNamedVectors).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null, s_jsonSerializerOptions);
+        var model = new WeaviateModelBuilder(hasNamedVectors).BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null, s_jsonSerializerOptions);
 
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 
@@ -436,7 +435,7 @@ public sealed class WeaviateDynamicMapperTests
             ]
         };
 
-        var model = new WeaviateModelBuilder(hasNamedVectors).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null, s_jsonSerializerOptions);
+        var model = new WeaviateModelBuilder(hasNamedVectors).BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null, s_jsonSerializerOptions);
 
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 

@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Pgvector;
@@ -11,68 +12,70 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
 internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuilder.ModelBuildingOptions)
 {
-    public static readonly HashSet<Type> SupportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-
-#if NET8_0_OR_GREATER
-        typeof(ReadOnlyMemory<Half>),
-        typeof(ReadOnlyMemory<Half>?),
-#endif
-
-        typeof(BitArray),
-        typeof(SparseVector)
-    ];
-
     public static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
-
-        SupportedKeyPropertyTypes =
-        [
-            typeof(short),
-            typeof(int),
-            typeof(long),
-            typeof(string),
-            typeof(Guid)
-        ],
-
-        SupportedDataPropertyTypes =
-        [
-            typeof(bool),
-            typeof(short),
-            typeof(int),
-            typeof(long),
-            typeof(float),
-            typeof(double),
-            typeof(decimal),
-            typeof(string),
-            typeof(DateTime),
-            typeof(DateTimeOffset),
-            typeof(Guid),
-            typeof(byte[]),
-        ],
-
-        SupportedEnumerableDataPropertyElementTypes =
-        [
-            typeof(bool),
-            typeof(short),
-            typeof(int),
-            typeof(long),
-            typeof(float),
-            typeof(double),
-            typeof(decimal),
-            typeof(string),
-            typeof(DateTime),
-            typeof(DateTimeOffset),
-            typeof(Guid)
-        ],
-
-        SupportedVectorPropertyTypes = SupportedVectorTypes
     };
+
+    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    {
+        supportedTypes = "short, int, long, string, Guid";
+
+        return type == typeof(short)
+            || type == typeof(int)
+            || type == typeof(long)
+            || type == typeof(string)
+            || type == typeof(Guid);
+    }
+
+    protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    {
+        supportedTypes = "bool, short, int, long, float, double, decimal, string, DateTime, DateTimeOffset, Guid, or arrays/lists of these types";
+
+        if (Nullable.GetUnderlyingType(type) is Type underlyingType)
+        {
+            type = underlyingType;
+        }
+
+        return IsValid(type)
+            || (type.IsArray && IsValid(type.GetElementType()!))
+            || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && IsValid(type.GenericTypeArguments[0]));
+
+        static bool IsValid(Type type)
+            => type == typeof(bool) ||
+                type == typeof(short) ||
+                type == typeof(int) ||
+                type == typeof(long) ||
+                type == typeof(float) ||
+                type == typeof(double) ||
+                type == typeof(decimal) ||
+                type == typeof(string) ||
+                type == typeof(DateTime) ||
+                type == typeof(DateTimeOffset) ||
+                type == typeof(Guid);
+    }
+
+    protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+        => IsVectorPropertyTypeValidCore(type, out supportedTypes);
+
+    internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    {
+        supportedTypes = "ReadOnlyMemory<float>, ReadOnlyMemory<Half>, BitArray, or SparseVector";
+
+        if (Nullable.GetUnderlyingType(type) is Type underlyingType)
+        {
+            type = underlyingType;
+        }
+
+        return type == typeof(ReadOnlyMemory<float>) ||
+#if NET8_0_OR_GREATER
+            type == typeof(ReadOnlyMemory<Half>) ||
+#endif
+            type == typeof(BitArray) ||
+            type == typeof(SparseVector);
+    }
 
     /// <inheritdoc />
     protected override void SetupEmbeddingGeneration(

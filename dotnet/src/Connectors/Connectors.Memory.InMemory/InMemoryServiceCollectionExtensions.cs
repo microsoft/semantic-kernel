@@ -21,6 +21,8 @@ public static class InMemoryServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresUnreferencedCode("The InMemory provider is incompatible with trimming.")]
+    [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
     public static IServiceCollection AddInMemoryVectorStore(this IServiceCollection services, InMemoryVectorStoreOptions? options = default, string? serviceId = default)
     {
         services.AddKeyedTransient<VectorStore>(
@@ -50,6 +52,8 @@ public static class InMemoryServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresUnreferencedCode("The InMemory provider is incompatible with trimming.")]
+    [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
     public static IServiceCollection AddInMemoryVectorStoreRecordCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,

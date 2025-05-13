@@ -18,8 +18,7 @@ public sealed class CosmosNoSqlMapperTests
 {
     private readonly CosmosNoSqlMapper<CosmosNoSqlHotel> _sut
         = new(
-            new CosmosNoSqlModelBuilder().Build(
-                typeof(Dictionary<string, object?>),
+            new CosmosNoSqlModelBuilder().BuildDynamic(
                 new()
                 {
                     Properties =

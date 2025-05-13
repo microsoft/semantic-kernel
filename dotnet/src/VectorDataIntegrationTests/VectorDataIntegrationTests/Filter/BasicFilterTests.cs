@@ -553,7 +553,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
             if (this.TestDynamic)
             {
-                this.DynamicCollection = this.TestStore.DefaultVectorStore.GetCollection<object, Dictionary<string, object?>>(this.CollectionName, this.CreateRecordDefinition());
+                this.DynamicCollection = this.TestStore.DefaultVectorStore.GetDynamicCollection(this.CollectionName, this.CreateRecordDefinition());
             }
         }
 

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -10,6 +11,7 @@ using Azure;
 using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using static Microsoft.Extensions.VectorData.VectorStoreErrorHandler;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -39,6 +41,8 @@ public sealed class AzureAISearchVectorStore : VectorStore
     /// </summary>
     /// <param name="searchIndexClient">Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
     public AzureAISearchVectorStore(SearchIndexClient searchIndexClient, AzureAISearchVectorStoreOptions? options = default)
     {
         Verify.NotNull(searchIndexClient);
@@ -56,20 +60,43 @@ public sealed class AzureAISearchVectorStore : VectorStore
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+    [RequiresDynamicCode("This overload of GetCollection() is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
+    [RequiresUnreferencedCode("This overload of GetCollecttion() is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
 #if NET8_0_OR_GREATER
     public override AzureAISearchCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new AzureAISearchCollection<TKey, TRecord>(
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new AzureAISearchCollection<TKey, TRecord>(
+                this._searchIndexClient,
+                name,
+                new AzureAISearchCollectionOptions()
+                {
+                    JsonSerializerOptions = this._jsonSerializerOptions,
+                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    EmbeddingGenerator = this._embeddingGenerator
+                });
+
+    /// <inheritdoc />
+    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
+#if NET8_0_OR_GREATER
+    public override AzureAISearchDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#else
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#endif
+        => new AzureAISearchDynamicCollection(
             this._searchIndexClient,
             name,
-            new AzureAISearchCollectionOptions()
+            new()
             {
                 JsonSerializerOptions = this._jsonSerializerOptions,
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator
-            });
+            }
+        );
 #pragma warning restore IDE0090
 
     /// <inheritdoc />
@@ -91,14 +118,14 @@ public sealed class AzureAISearchVectorStore : VectorStore
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.DeleteCollectionAsync(cancellationToken);
     }
 

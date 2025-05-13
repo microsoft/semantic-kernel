@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -28,7 +29,7 @@ namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
+public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect
@@ -71,6 +72,8 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
     /// <param name="database"><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</param>
     /// <param name="name">The name of the collection that this <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
     public CosmosNoSqlCollection(Database database, string name, CosmosNoSqlCollectionOptions? options = default)
         : this(new(database.Client, ownsClient: false), _ => database, name, options)
     {
@@ -85,11 +88,20 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
     /// <param name="databaseName">Database name for Azure CosmosDB NoSQL.</param>
     /// <param name="collectionName">The name of the collection that this <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="clientOptions">Optional configuration options for <see cref="CosmosClient"/>.</param>
-    /// <param name="collectionOptions">Optional configuration options for <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
-    public CosmosNoSqlCollection(string connectionString, string databaseName, string collectionName,
-        CosmosClientOptions? clientOptions = null, CosmosNoSqlCollectionOptions? collectionOptions = null)
-        : this(new ClientWrapper(new CosmosClient(connectionString, clientOptions), ownsClient: true),
-              client => client.GetDatabase(databaseName), collectionName, null)
+    /// <param name="options">Optional configuration options for <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
+    [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
+    public CosmosNoSqlCollection(
+        string connectionString,
+        string databaseName,
+        string collectionName,
+        CosmosClientOptions? clientOptions = null,
+        CosmosNoSqlCollectionOptions? options = null)
+        : this(
+            new ClientWrapper(new CosmosClient(connectionString, clientOptions), ownsClient: true),
+            client => client.GetDatabase(databaseName),
+            collectionName,
+            options)
     {
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNullOrWhiteSpace(databaseName);
@@ -100,6 +112,24 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
         ClientWrapper clientWrapper,
         Func<CosmosClient, Database> databaseProvider,
         string name,
+        CosmosNoSqlCollectionOptions? options)
+        : this(
+            clientWrapper,
+            databaseProvider,
+            name,
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(CosmosNoSqlDynamicCollection)))
+                : new CosmosNoSqlModelBuilder()
+                    .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
+            options)
+    {
+    }
+
+    internal CosmosNoSqlCollection(
+        ClientWrapper clientWrapper,
+        Func<CosmosClient, Database> databaseProvider,
+        string name,
+        Func<CosmosNoSqlCollectionOptions, CollectionModel> modelFactory,
         CosmosNoSqlCollectionOptions? options)
     {
         try
@@ -118,16 +148,14 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
                     $"is required to be configured for {nameof(CosmosNoSqlCollection<TKey, TRecord>)}.");
             }
 
+            options ??= CosmosNoSqlCollectionOptions.Default;
+
             // Assign.
             this.Name = name;
-
-            options ??= CosmosNoSqlCollectionOptions.Default;
+            this._model = modelFactory(options);
             this._indexingMode = options.IndexingMode;
             this._automatic = options.Automatic;
             var jsonSerializerOptions = options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
-
-            this._model = new CosmosNoSqlModelBuilder()
-                .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, jsonSerializerOptions);
 
             // Assign mapper.
             this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
@@ -489,7 +517,7 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
 
             default:
                 throw new InvalidOperationException(
-                    CosmosNoSqlModelBuilder.s_supportedVectorTypes.Contains(typeof(TInput))
+                    CosmosNoSqlModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
                         ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                         : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }
@@ -641,11 +669,10 @@ public sealed class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection
 
         var vectorType = vector.GetType();
 
-        if (!CosmosNoSqlModelBuilder.s_supportedVectorTypes.Contains(vectorType))
+        if (!CosmosNoSqlModelBuilder.IsVectorPropertyTypeValidCore(vectorType, out var supportedTypes))
         {
             throw new NotSupportedException(
-                $"The provided vector type {vectorType.FullName} is not supported by the Azure CosmosDB NoSQL connector. " +
-                $"Supported types are: {string.Join(", ", CosmosNoSqlModelBuilder.s_supportedVectorTypes.Select(l => l.FullName))}");
+                $"The provided vector type {vectorType.FullName} is not supported by the Azure CosmosDB NoSQL connector. Supported types are: {supportedTypes}");
         }
     }
 

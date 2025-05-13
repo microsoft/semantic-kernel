@@ -20,8 +20,7 @@ public sealed class CosmosNoSqlDynamicMapperTests
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = JsonSerializerOptions.Default;
 
     private static readonly CollectionModel s_model = new CosmosNoSqlModelBuilder()
-        .Build(
-            typeof(Dictionary<string, object?>),
+        .BuildDynamic(
             new VectorStoreRecordDefinition
             {
                 Properties = new List<VectorStoreProperty>

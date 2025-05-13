@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Pinecone;
+using CollectionModel = Microsoft.Extensions.VectorData.ProviderServices.CollectionModel;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -21,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
+public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -56,7 +58,20 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="pineconeClient"/> is null.</exception>
     /// <param name="name">The name of the collection that this <see cref="PineconeCollection{TKey, TRecord}"/> will access.</param>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
+    [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate PineconeDynamicCollection instead.")]
+    [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate PineconeDynamicCollection instead.")]
     public PineconeCollection(PineconeClient pineconeClient, string name, PineconeCollectionOptions? options = null)
+        : this(
+            pineconeClient,
+            name,
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(PineconeDynamicCollection)))
+                : new PineconeModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
+            options)
+    {
+    }
+
+    internal PineconeCollection(PineconeClient pineconeClient, string name, Func<PineconeCollectionOptions, CollectionModel> modelFactory, PineconeCollectionOptions? options)
     {
         Verify.NotNull(pineconeClient);
         VerifyCollectionName(name);
@@ -66,16 +81,16 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
             throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
         }
 
+        options ??= PineconeCollectionOptions.Default;
+
         this._pineconeClient = pineconeClient;
         this.Name = name;
+        this._model = modelFactory(options);
 
-        options ??= PineconeCollectionOptions.Default;
         this._indexNamespace = options.IndexNamespace;
         this._serverlessIndexCloud = options.ServerlessIndexCloud;
         this._serverlessIndexRegion = options.ServerlessIndexRegion;
 
-        this._model = new CollectionModelBuilder(PineconeFieldMapping.ModelBuildingOptions)
-            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
         this._mapper = new PineconeMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
@@ -406,7 +421,7 @@ public sealed class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TK
 
             default:
                 throw new InvalidOperationException(
-                    PineconeFieldMapping.s_supportedVectorTypes.Contains(typeof(TInput))
+                    PineconeModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
                         ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                         : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }

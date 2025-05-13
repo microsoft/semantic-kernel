@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,8 @@ public static class WeaviateServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddWeaviateVectorStore(
         this IServiceCollection services,
         HttpClient? httpClient = default,
@@ -62,6 +65,8 @@ public static class WeaviateServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddWeaviateVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,

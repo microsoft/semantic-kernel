@@ -2,12 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
@@ -59,12 +61,32 @@ public sealed class SqliteVectorStore : VectorStore
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
+    [RequiresDynamicCode("This overload of GetCollection() is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
+    [RequiresUnreferencedCode("This overload of GetCollecttion() is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
 #if NET8_0_OR_GREATER
     public override SqliteCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new SqliteCollection<TKey, TRecord>(
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new SqliteCollection<TKey, TRecord>(
+                this._connectionString,
+                name,
+                new()
+                {
+                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    VectorVirtualTableName = this._vectorVirtualTableName,
+                    EmbeddingGenerator = this._embeddingGenerator
+                });
+
+    /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    public override SqliteDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#else
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#endif
+        => new SqliteDynamicCollection(
             this._connectionString,
             name,
             new()
@@ -72,7 +94,8 @@ public sealed class SqliteVectorStore : VectorStore
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 VectorVirtualTableName = this._vectorVirtualTableName,
                 EmbeddingGenerator = this._embeddingGenerator
-            });
+            }
+        );
 #pragma warning restore IDE0090
 
     /// <inheritdoc />
@@ -107,14 +130,14 @@ public sealed class SqliteVectorStore : VectorStore
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.DeleteCollectionAsync(cancellationToken);
     }
 

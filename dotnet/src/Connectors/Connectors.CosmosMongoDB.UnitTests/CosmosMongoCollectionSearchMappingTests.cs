@@ -19,8 +19,7 @@ namespace SemanticKernel.Connectors.CosmosMongoDB.UnitTests;
 public sealed class CosmosMongoCollectionSearchMappingTests
 {
     private readonly CollectionModel _model = new MongoModelBuilder()
-        .Build(
-            typeof(Dictionary<string, object?>),
+        .BuildDynamic(
             new()
             {
                 Properties =

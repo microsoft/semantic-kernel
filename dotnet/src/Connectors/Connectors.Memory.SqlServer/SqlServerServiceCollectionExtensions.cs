@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -17,6 +18,8 @@ public static class SqlServerServiceCollectionExtensions
     /// Registers a <see cref="SqlServerVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
     /// </summary>
     /// <inheritdoc cref="AddVectorStore"/>
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddSqlServerVectorStore(
         this IServiceCollection services,
         Func<IServiceProvider, string> connectionStringProvider,
@@ -25,6 +28,8 @@ public static class SqlServerServiceCollectionExtensions
         => AddVectorStore(services, serviceKey: null, connectionStringProvider, optionsProvider, lifetime);
 
     /// <inheritdoc cref="AddVectorStore"/>
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddKeyedSqlServerVectorStore(
         this IServiceCollection services,
         object serviceKey,
@@ -73,6 +78,8 @@ public static class SqlServerServiceCollectionExtensions
     /// Registers a <see cref="SqlServerCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
     /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, SqlServerCollectionOptions}?, ServiceLifetime)"/>
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddSqlServerCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -84,6 +91,8 @@ public static class SqlServerServiceCollectionExtensions
         => AddCollection<TKey, TRecord>(services, serviceKey: null, collectionName, connectionStringProvider, optionsProvider, lifetime);
 
     /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, SqlServerCollectionOptions}?, ServiceLifetime)"/>
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddKeyedSqlServerCollection<TKey, TRecord>(
         this IServiceCollection services,
         object serviceKey,
@@ -146,6 +155,8 @@ public static class SqlServerServiceCollectionExtensions
     /// Registers a <see cref="SqlServerCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
     /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, string, SqlServerCollectionOptions?, ServiceLifetime)"/>/>
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddSqlServerCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -157,6 +168,8 @@ public static class SqlServerServiceCollectionExtensions
         => AddCollection<TKey, TRecord>(services, serviceKey: null, collectionName, connectionString, options, lifetime);
 
     /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, string, SqlServerCollectionOptions?, ServiceLifetime)"/>/>
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddKeyedSqlServerCollection<TKey, TRecord>(
         this IServiceCollection services,
         object serviceKey,

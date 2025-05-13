@@ -2,51 +2,65 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 
 internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBuildingOptions)
 {
-    private static readonly HashSet<Type> s_supportedDataTypes =
-    [
-        typeof(bool),
-        typeof(string),
-        typeof(int),
-        typeof(long),
-        typeof(float),
-        typeof(double),
-        typeof(DateTimeOffset)
-    ];
-
-    internal static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        // Float32
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-
-        // Uint8
-        typeof(ReadOnlyMemory<byte>),
-        typeof(ReadOnlyMemory<byte>?),
-
-        // Int8
-        typeof(ReadOnlyMemory<sbyte>),
-        typeof(ReadOnlyMemory<sbyte>?),
-    ];
-
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
         UsesExternalSerializer = true,
-
-        // TODO: Cosmos supports other key types (int, Guid...)
-        SupportedKeyPropertyTypes = [typeof(string)],
-        SupportedDataPropertyTypes = s_supportedDataTypes,
-        SupportedEnumerableDataPropertyElementTypes = s_supportedDataTypes,
-        SupportedVectorPropertyTypes = s_supportedVectorTypes,
-
-        ReservedKeyStorageName = CosmosNoSqlConstants.ReservedKeyPropertyName,
+        ReservedKeyStorageName = CosmosNoSqlConstants.ReservedKeyPropertyName
     };
+
+    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    {
+        // TODO: Cosmos supports other key types (int, Guid...)
+        supportedTypes = "string";
+
+        return type == typeof(string);
+    }
+
+    protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    {
+        supportedTypes = "string, int, long, double, float, bool, DateTimeOffset, or arrays/lists of these types";
+
+        if (Nullable.GetUnderlyingType(type) is Type underlyingType)
+        {
+            type = underlyingType;
+        }
+
+        return IsValid(type)
+            || (type.IsArray && IsValid(type.GetElementType()!))
+            || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && IsValid(type.GenericTypeArguments[0]));
+
+        static bool IsValid(Type type)
+            => type == typeof(bool) ||
+               type == typeof(string) ||
+               type == typeof(int) ||
+               type == typeof(long) ||
+               type == typeof(float) ||
+               type == typeof(double) ||
+               type == typeof(DateTimeOffset);
+    }
+
+    protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+        => IsVectorPropertyTypeValidCore(type, out supportedTypes);
+
+    internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
+    {
+        supportedTypes = "ReadOnlyMemory<float>, ReadOnlyMemory<byte>, ReadOnlyMemory<sbyte>";
+
+        if (Nullable.GetUnderlyingType(type) is Type underlyingType)
+        {
+            type = underlyingType;
+        }
+
+        return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<byte>) || type == typeof(ReadOnlyMemory<sbyte>);
+    }
 }

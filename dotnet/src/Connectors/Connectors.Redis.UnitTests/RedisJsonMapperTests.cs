@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Xunit;
 
@@ -20,7 +19,7 @@ public sealed class RedisJsonMapperTests
     public void MapsAllFieldsFromDataToStorageModel()
     {
         // Arrange.
-        var model = new CollectionJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
+        var model = new RedisJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
             .Build(typeof(MultiPropsModel), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
         var sut = new RedisJsonMapper<MultiPropsModel>(model, JsonSerializerOptions.Default);
 
@@ -42,7 +41,7 @@ public sealed class RedisJsonMapperTests
     {
         // Arrange.
         var jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var model = new CollectionJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
+        var model = new RedisJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
             .Build(typeof(MultiPropsModel), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
         var sut = new RedisJsonMapper<MultiPropsModel>(model, jsonSerializerOptions);
 
@@ -63,7 +62,7 @@ public sealed class RedisJsonMapperTests
     public void MapsAllFieldsFromStorageToDataModel()
     {
         // Arrange.
-        var model = new CollectionJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
+        var model = new RedisJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
             .Build(typeof(MultiPropsModel), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null, JsonSerializerOptions.Default);
         var sut = new RedisJsonMapper<MultiPropsModel>(model, JsonSerializerOptions.Default);
 
@@ -89,7 +88,7 @@ public sealed class RedisJsonMapperTests
     {
         // Arrange.
         var jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var model = new CollectionJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
+        var model = new RedisJsonModelBuilder(RedisJsonCollection<string, MultiPropsModel>.ModelBuildingOptions)
             .Build(typeof(MultiPropsModel), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null, jsonSerializerOptions);
         var sut = new RedisJsonMapper<MultiPropsModel>(model, jsonSerializerOptions);
 

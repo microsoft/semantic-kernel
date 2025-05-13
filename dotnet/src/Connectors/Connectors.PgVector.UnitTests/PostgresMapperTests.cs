@@ -162,7 +162,7 @@ public sealed class PostgresMapperTests
                 new VectorStoreKeyProperty("Key", typeof(TKey)),
                 new VectorStoreDataProperty("StringProperty", typeof(string)),
                 new VectorStoreDataProperty("IntProperty", typeof(int)),
-                new VectorStoreDataProperty("StringArray", typeof(IEnumerable<string>)),
+                new VectorStoreDataProperty("StringArray", typeof(List<string>)),
                 new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
             }
         };
@@ -181,7 +181,7 @@ public sealed class PostgresMapperTests
     }
 
     private static CollectionModel GetModel<TRecord>(VectorStoreRecordDefinition definition)
-        => new CollectionModelBuilder(PostgresModelBuilder.ModelBuildingOptions).Build(typeof(TRecord), definition, defaultEmbeddingGenerator: null);
+        => new PostgresModelBuilder().Build(typeof(TRecord), definition, defaultEmbeddingGenerator: null);
 
 #pragma warning disable CA1812
     private sealed class TestRecord<TKey>
@@ -196,7 +196,7 @@ public sealed class PostgresMapperTests
         public int? IntProperty { get; set; }
 
         [VectorStoreData]
-        public IEnumerable<string>? StringArray { get; set; }
+        public List<string>? StringArray { get; set; }
 
         [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? FloatVector { get; set; }

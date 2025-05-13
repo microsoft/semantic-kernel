@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -22,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
+public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -78,10 +79,23 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     /// <param name="mongoDatabase"><see cref="IMongoDatabase"/> that can be used to manage the collections in MongoDB.</param>
     /// <param name="name">The name of the collection that this <see cref="MongoCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate MongoDynamicCollection instead.")]
+    [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate MongoDynamicCollection instead.")]
     public MongoCollection(
         IMongoDatabase mongoDatabase,
         string name,
         MongoCollectionOptions? options = default)
+        : this(
+            mongoDatabase,
+            name,
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(MongoDynamicCollection)))
+                : new MongoModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
+            options)
+    {
+    }
+
+    internal MongoCollection(IMongoDatabase mongoDatabase, string name, Func<MongoCollectionOptions, CollectionModel> modelFactory, MongoCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
@@ -92,19 +106,20 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
         }
 
+        options ??= MongoCollectionOptions.Default;
+
         // Assign.
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
         this.Name = name;
+        this._model = modelFactory(options);
 
-        options ??= MongoCollectionOptions.Default;
         this._vectorIndexName = options.VectorIndexName;
         this._fullTextSearchIndexName = options.FullTextSearchIndexName;
         this._maxRetries = options.MaxRetries;
         this._delayInMilliseconds = options.DelayInMilliseconds;
         this._numCandidates = options.NumCandidates;
 
-        this._model = new MongoModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? (new MongoDynamicMapper(this._model) as IMongoMapper<TRecord>)!
             : new MongoMapper<TRecord>(this._model);
@@ -339,7 +354,7 @@ public sealed class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey,
 
             default:
                 throw new InvalidOperationException(
-                    MongoConstants.SupportedVectorTypes.Contains(typeof(TInput))
+                    MongoModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
                         ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                         : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +44,8 @@ public static class SqliteServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
+    [RequiresDynamicCode("This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
+    [RequiresUnreferencedCode("This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
     public static IServiceCollection AddSqliteVectorStoreRecordCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
