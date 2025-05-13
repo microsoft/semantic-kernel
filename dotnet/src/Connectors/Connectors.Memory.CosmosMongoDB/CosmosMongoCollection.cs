@@ -80,12 +80,14 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         : this(
             mongoDatabase,
             name,
-            new MongoModelBuilder().Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(CosmosMongoDynamicCollection)))
+                : new MongoModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
             options)
     {
     }
 
-    internal CosmosMongoCollection(IMongoDatabase mongoDatabase, string name, CollectionModel model, CosmosMongoCollectionOptions? options)
+    internal CosmosMongoCollection(IMongoDatabase mongoDatabase, string name, Func<CosmosMongoCollectionOptions, CollectionModel> modelFactory, CosmosMongoCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
@@ -96,13 +98,13 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
         }
 
+        options ??= CosmosMongoCollectionOptions.Default;
+
         // Assign.
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
         this.Name = name;
-        this._model = model;
-
-        options ??= CosmosMongoCollectionOptions.Default;
+        this._model = modelFactory(options);
         this._numLists = options.NumLists;
         this._efConstruction = options.EfConstruction;
         this._efSearch = options.EfSearch;

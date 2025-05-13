@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
@@ -59,14 +60,16 @@ public sealed class MongoVectorStore : VectorStore
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new MongoCollection<TKey, TRecord>(
-            this._mongoDatabase,
-            name,
-            new()
-            {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._embeddingGenerator
-            });
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new MongoCollection<TKey, TRecord>(
+                this._mongoDatabase,
+                name,
+                new()
+                {
+                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    EmbeddingGenerator = this._embeddingGenerator
+                });
 
     /// <inheritdoc />
 #if NET8_0_OR_GREATER

@@ -53,13 +53,14 @@ public class SqlServerCollection<TKey, TRecord>
         : this(
             connectionString,
             name,
-            new SqlServerModelBuilder()
-                .Build(typeof(TRecord), options?.RecordDefinition, options?.EmbeddingGenerator),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(SqlServerDynamicCollection)))
+                : new SqlServerModelBuilder().Build(typeof(TRecord), options.RecordDefinition, options.EmbeddingGenerator),
             options)
     {
     }
 
-    internal SqlServerCollection(string connectionString, string name, CollectionModel model, SqlServerCollectionOptions? options)
+    internal SqlServerCollection(string connectionString, string name, Func<SqlServerCollectionOptions, CollectionModel> modelFactory, SqlServerCollectionOptions? options)
     {
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNull(name);
@@ -69,7 +70,7 @@ public class SqlServerCollection<TKey, TRecord>
 
         this._connectionString = connectionString;
         this.Name = name;
-        this._model = model;
+        this._model = modelFactory(options);
 
         this._mapper = new SqlServerMapper<TRecord>(this._model);
 

@@ -23,6 +23,9 @@ public static class VectorDataStrings
     public static string EmbeddingTypePassedToSearchAsync
         => "'SearchAsync' performs embedding generation, and does not accept Embedding types directly. To search for an Embedding directly, use 'SearchEmbeddingAsync'.";
 
+    public static string GetCollectionWithDictionaryNotSupported
+        => "Dynamic mapping via Dictionary<string, object?> is not supported via this method, call GetDynamicCollection() instead.";
+
     public static string IncludeVectorsNotSupportedWithEmbeddingGeneration
         => "When an embedding generator is configured, `Include Vectors` cannot be enabled.";
 
@@ -37,6 +40,9 @@ public static class VectorDataStrings
 
     public static string NonEmbeddingVectorPropertyWithoutEmbeddingGenerator(VectorPropertyModel vectorProperty)
         => $"Property '{vectorProperty.ModelName}' has non-Embedding type '{TypeName(vectorProperty.EmbeddingType)}', but no embedding generator is configured.";
+
+    public static string NonDynamicCollectionWithDictionaryNotSupported(Type dynamicCollectionType)
+        => $"Dynamic mapping via Dictionary<string, object?> is not supported via this class, use '{TypeName(dynamicCollectionType)}' instead.";
 
     private static string TypeName(this Type type)
     {

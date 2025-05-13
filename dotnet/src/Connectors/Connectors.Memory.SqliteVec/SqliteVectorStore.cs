@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
@@ -67,15 +68,17 @@ public sealed class SqliteVectorStore : VectorStore
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new SqliteCollection<TKey, TRecord>(
-            this._connectionString,
-            name,
-            new()
-            {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                VectorVirtualTableName = this._vectorVirtualTableName,
-                EmbeddingGenerator = this._embeddingGenerator
-            });
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new SqliteCollection<TKey, TRecord>(
+                this._connectionString,
+                name,
+                new()
+                {
+                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    VectorVirtualTableName = this._vectorVirtualTableName,
+                    EmbeddingGenerator = this._embeddingGenerator
+                });
 
     /// <inheritdoc />
 #if NET8_0_OR_GREATER

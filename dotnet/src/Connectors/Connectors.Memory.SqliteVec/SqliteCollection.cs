@@ -72,13 +72,14 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         : this(
             connectionString,
             name,
-            new SqliteModelBuilder()
-                .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(SqliteDynamicCollection)))
+                : new SqliteModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
             options)
     {
     }
 
-    internal SqliteCollection(string connectionString, string name, CollectionModel model, SqliteCollectionOptions? options)
+    internal SqliteCollection(string connectionString, string name, Func<SqliteCollectionOptions, CollectionModel> modelFactory, SqliteCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(connectionString);
@@ -89,12 +90,12 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             throw new NotSupportedException($"Only {nameof(String)} and {nameof(UInt64)} keys are supported (and object for dynamic mapping).");
         }
 
+        options ??= SqliteCollectionOptions.Default;
+
         // Assign.
         this._connectionString = connectionString;
         this.Name = name;
-        this._model = model;
-
-        options ??= SqliteCollectionOptions.Default;
+        this._model = modelFactory(options);
 
         // Escape both table names before exposing them to anything that may build SQL commands.
         this._dataTableName = name.EscapeIdentifier();

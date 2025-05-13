@@ -22,10 +22,10 @@ public sealed class SqliteDynamicCollection : SqliteCollection<object, Dictionar
         : base(
             connectionString,
             name,
-            new SqliteModelBuilder()
+            static options => new SqliteModelBuilder()
                 .BuildDynamic(
-                    options?.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
-                    options?.EmbeddingGenerator),
+                    options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                    options.EmbeddingGenerator),
             options)
     {
     }

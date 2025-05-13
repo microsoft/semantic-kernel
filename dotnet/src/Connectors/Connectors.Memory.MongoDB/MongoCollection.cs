@@ -88,12 +88,14 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         : this(
             mongoDatabase,
             name,
-            new MongoModelBuilder().Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(MongoDynamicCollection)))
+                : new MongoModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
             options)
     {
     }
 
-    internal MongoCollection(IMongoDatabase mongoDatabase, string name, CollectionModel model, MongoCollectionOptions? options)
+    internal MongoCollection(IMongoDatabase mongoDatabase, string name, Func<MongoCollectionOptions, CollectionModel> modelFactory, MongoCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
@@ -104,13 +106,14 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
         }
 
+        options ??= MongoCollectionOptions.Default;
+
         // Assign.
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
         this.Name = name;
-        this._model = model;
+        this._model = modelFactory(options);
 
-        options ??= MongoCollectionOptions.Default;
         this._vectorIndexName = options.VectorIndexName;
         this._fullTextSearchIndexName = options.FullTextSearchIndexName;
         this._maxRetries = options.MaxRetries;

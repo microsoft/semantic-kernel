@@ -117,8 +117,10 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             clientWrapper,
             databaseProvider,
             name,
-            new CosmosNoSqlModelBuilder()
-                .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator, options?.JsonSerializerOptions ?? JsonSerializerOptions.Default),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(CosmosNoSqlDynamicCollection)))
+                : new CosmosNoSqlModelBuilder()
+                    .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
             options)
     {
     }
@@ -127,7 +129,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         ClientWrapper clientWrapper,
         Func<CosmosClient, Database> databaseProvider,
         string name,
-        CollectionModel model,
+        Func<CosmosNoSqlCollectionOptions, CollectionModel> modelFactory,
         CosmosNoSqlCollectionOptions? options)
     {
         try
@@ -146,11 +148,11 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
                     $"is required to be configured for {nameof(CosmosNoSqlCollection<TKey, TRecord>)}.");
             }
 
+            options ??= CosmosNoSqlCollectionOptions.Default;
+
             // Assign.
             this.Name = name;
-            this._model = model;
-
-            options ??= CosmosNoSqlCollectionOptions.Default;
+            this._model = modelFactory(options);
             this._indexingMode = options.IndexingMode;
             this._automatic = options.Automatic;
             var jsonSerializerOptions = options.JsonSerializerOptions ?? JsonSerializerOptions.Default;

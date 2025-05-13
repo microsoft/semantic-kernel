@@ -90,7 +90,7 @@ public abstract class CollectionModelBuilder
         // Go over the properties, set the PropertyInfos to point to the .NET type's properties and validate type compatibility.
         foreach (var property in this.Properties)
         {
-            // If we have a CLR type (POCO, not dynamic mapping), get the .NET property's type and make sure it matches the definition.
+            // When we have a CLR type (POCO, not dynamic mapping), get the .NET property's type and make sure it matches the definition.
             property.PropertyInfo = type.GetProperty(property.ModelName)
                 ?? throw new InvalidOperationException($"Property '{property.ModelName}' not found on CLR type '{type.FullName}'.");
 

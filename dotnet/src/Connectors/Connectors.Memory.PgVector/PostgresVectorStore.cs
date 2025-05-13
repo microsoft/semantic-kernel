@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
@@ -88,16 +89,18 @@ public sealed class PostgresVectorStore : VectorStore
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new PostgresCollection<TKey, TRecord>(
-            () => this._client.Share(),
-            name,
-            new()
-            {
-                Schema = this._schema,
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._embeddingGenerator,
-            }
-        );
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new PostgresCollection<TKey, TRecord>(
+                () => this._client.Share(),
+                name,
+                new()
+                {
+                    Schema = this._schema,
+                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    EmbeddingGenerator = this._embeddingGenerator,
+                }
+            );
 
     /// <inheritdoc />
 #if NET8_0_OR_GREATER

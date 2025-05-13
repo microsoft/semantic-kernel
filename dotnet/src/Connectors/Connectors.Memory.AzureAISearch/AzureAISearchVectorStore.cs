@@ -11,6 +11,7 @@ using Azure;
 using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using static Microsoft.Extensions.VectorData.VectorStoreErrorHandler;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -66,15 +67,17 @@ public sealed class AzureAISearchVectorStore : VectorStore
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new AzureAISearchCollection<TKey, TRecord>(
-            this._searchIndexClient,
-            name,
-            new AzureAISearchCollectionOptions()
-            {
-                JsonSerializerOptions = this._jsonSerializerOptions,
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._embeddingGenerator
-            });
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new AzureAISearchCollection<TKey, TRecord>(
+                this._searchIndexClient,
+                name,
+                new AzureAISearchCollectionOptions()
+                {
+                    JsonSerializerOptions = this._jsonSerializerOptions,
+                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    EmbeddingGenerator = this._embeddingGenerator
+                });
 
     /// <inheritdoc />
     [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]

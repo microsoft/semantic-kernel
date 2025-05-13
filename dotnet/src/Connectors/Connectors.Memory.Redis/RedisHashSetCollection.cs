@@ -84,13 +84,14 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         : this(
             database,
             name,
-            new RedisModelBuilder(ModelBuildingOptions)
-                .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(RedisHashSetDynamicCollection)))
+                : new RedisModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
             options)
     {
     }
 
-    internal RedisHashSetCollection(IDatabase database, string name, CollectionModel model, RedisHashSetCollectionOptions? options)
+    internal RedisHashSetCollection(IDatabase database, string name, Func<RedisHashSetCollectionOptions, CollectionModel> modelFactory, RedisHashSetCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(database);
@@ -101,12 +102,13 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping).");
         }
 
+        options ??= RedisHashSetCollectionOptions.Default;
+
         // Assign.
         this._database = database;
         this.Name = name;
-        this._model = model;
+        this._model = modelFactory(options);
 
-        options ??= RedisHashSetCollectionOptions.Default;
         this._prefixCollectionNameToKeyNames = options.PrefixCollectionNameToKeyNames;
 
         // Lookup storage property names.

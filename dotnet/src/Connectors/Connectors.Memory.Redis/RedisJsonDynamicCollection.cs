@@ -27,10 +27,10 @@ public sealed class RedisJsonDynamicCollection : RedisJsonCollection<object, Dic
         : base(
             database,
             name,
-            new RedisJsonDynamicModelBuilder(ModelBuildingOptions)
+            static options => new RedisJsonDynamicModelBuilder(ModelBuildingOptions)
                 .BuildDynamic(
-                    options?.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
-                    options?.EmbeddingGenerator),
+                    options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                    options.EmbeddingGenerator),
             options)
     {
     }

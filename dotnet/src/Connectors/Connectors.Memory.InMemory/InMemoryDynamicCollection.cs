@@ -26,9 +26,9 @@ public sealed class InMemoryDynamicCollection : InMemoryCollection<object, Dicti
             internalCollection: null,
             internalCollectionTypes: null,
             name,
-            new InMemoryModelBuilder().BuildDynamic(
-                options?.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
-                options?.EmbeddingGenerator),
+            static options => new InMemoryModelBuilder().BuildDynamic(
+                options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                options.EmbeddingGenerator),
             options)
     {
     }
@@ -42,9 +42,9 @@ public sealed class InMemoryDynamicCollection : InMemoryCollection<object, Dicti
             internalCollection,
             internalCollectionTypes,
             name,
-            new InMemoryModelBuilder().BuildDynamic(
-                options?.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
-                options?.EmbeddingGenerator),
+            static options => new InMemoryModelBuilder().BuildDynamic(
+                options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                options.EmbeddingGenerator),
             options)
     {
     }

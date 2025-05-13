@@ -54,7 +54,9 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             internalCollection: null,
             internalCollectionTypes: null,
             name,
-            new InMemoryModelBuilder().Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(InMemoryDynamicCollection)))
+                : new InMemoryModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
             options)
     {
     }
@@ -83,19 +85,20 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         ConcurrentDictionary<string, ConcurrentDictionary<object, object>>? internalCollection,
         ConcurrentDictionary<string, Type>? internalCollectionTypes,
         string name,
-        CollectionModel model,
+        Func<InMemoryCollectionOptions, CollectionModel> modelFactory,
         InMemoryCollectionOptions? options)
     {
         // Verify.
         Verify.NotNullOrWhiteSpace(name);
 
+        options ??= new InMemoryCollectionOptions();
+
         // Assign.
         this.Name = name;
-        this._model = model;
+        this._model = modelFactory(options);
 
         this._internalCollections = internalCollection ?? new();
         this._internalCollectionTypes = internalCollectionTypes ?? new();
-        options ??= new InMemoryCollectionOptions();
 
         this._collectionMetadata = new()
         {

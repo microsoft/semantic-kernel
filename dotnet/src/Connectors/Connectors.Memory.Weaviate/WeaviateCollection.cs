@@ -81,13 +81,15 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         : this(
             httpClient,
             name,
-            new WeaviateModelBuilder(options?.HasNamedVectors ?? true)
-                .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator, WeaviateConstants.s_jsonSerializerOptions),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(WeaviateDynamicCollection)))
+                : new WeaviateModelBuilder(options.HasNamedVectors)
+                    .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, WeaviateConstants.s_jsonSerializerOptions),
             options)
     {
     }
 
-    internal WeaviateCollection(HttpClient httpClient, string name, CollectionModel model, WeaviateCollectionOptions? options)
+    internal WeaviateCollection(HttpClient httpClient, string name, Func<WeaviateCollectionOptions, CollectionModel> modelFactory, WeaviateCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(httpClient);
@@ -100,13 +102,13 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         var endpoint = (options?.Endpoint ?? httpClient.BaseAddress) ?? throw new ArgumentException($"Weaviate endpoint should be provided via HttpClient.BaseAddress property or {nameof(WeaviateCollectionOptions)} options parameter.");
 
+        options ??= WeaviateCollectionOptions.Default;
+
         // Assign.
         this._httpClient = httpClient;
         this._endpoint = endpoint;
         this.Name = name;
-        this._model = model;
-
-        options ??= WeaviateCollectionOptions.Default;
+        this._model = modelFactory(options);
         this._apiKey = options.ApiKey;
         this._hasNamedVectors = options.HasNamedVectors;
 

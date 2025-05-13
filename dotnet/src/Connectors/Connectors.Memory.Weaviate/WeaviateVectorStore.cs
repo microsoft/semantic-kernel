@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -82,17 +83,19 @@ public sealed class WeaviateVectorStore : VectorStore
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new WeaviateCollection<TKey, TRecord>(
-            this._httpClient,
-            name,
-            new()
-            {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                Endpoint = this._endpoint,
-                ApiKey = this._apiKey,
-                HasNamedVectors = this._hasNamedVectors,
-                EmbeddingGenerator = this._embeddingGenerator
-            });
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new WeaviateCollection<TKey, TRecord>(
+                this._httpClient,
+                name,
+                new()
+                {
+                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    Endpoint = this._endpoint,
+                    ApiKey = this._apiKey,
+                    HasNamedVectors = this._hasNamedVectors,
+                    EmbeddingGenerator = this._embeddingGenerator
+                });
 
     /// <inheritdoc />
     // TODO: The provider uses unsafe JSON serialization in many places, #11963

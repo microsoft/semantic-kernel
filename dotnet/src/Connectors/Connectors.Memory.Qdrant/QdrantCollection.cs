@@ -87,13 +87,14 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         : this(
             clientFactory,
             name,
-            new QdrantModelBuilder(options?.HasNamedVectors ?? false)
-                .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(QdrantDynamicCollection)))
+                : new QdrantModelBuilder(options.HasNamedVectors).Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
             options)
     {
     }
 
-    internal QdrantCollection(Func<MockableQdrantClient> clientFactory, string name, CollectionModel model, QdrantCollectionOptions? options)
+    internal QdrantCollection(Func<MockableQdrantClient> clientFactory, string name, Func<QdrantCollectionOptions, CollectionModel> modelFactory, QdrantCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(clientFactory);
@@ -104,11 +105,12 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             throw new NotSupportedException("Only ulong and Guid keys are supported (and object for dynamic mapping).");
         }
 
+        options ??= QdrantCollectionOptions.Default;
+
         // Assign.
         this.Name = name;
-        this._model = model;
+        this._model = modelFactory(options);
 
-        options ??= QdrantCollectionOptions.Default;
         this._hasNamedVectors = options.HasNamedVectors;
         this._mapper = new QdrantMapper<TRecord>(this._model, options.HasNamedVectors);
 

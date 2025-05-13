@@ -64,13 +64,14 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         : this(
             pineconeClient,
             name,
-            new PineconeModelBuilder()
-                .Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(PineconeDynamicCollection)))
+                : new PineconeModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
             options)
     {
     }
 
-    internal PineconeCollection(PineconeClient pineconeClient, string name, CollectionModel model, PineconeCollectionOptions? options)
+    internal PineconeCollection(PineconeClient pineconeClient, string name, Func<PineconeCollectionOptions, CollectionModel> modelFactory, PineconeCollectionOptions? options)
     {
         Verify.NotNull(pineconeClient);
         VerifyCollectionName(name);
@@ -80,11 +81,12 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
         }
 
+        options ??= PineconeCollectionOptions.Default;
+
         this._pineconeClient = pineconeClient;
         this.Name = name;
-        this._model = model;
+        this._model = modelFactory(options);
 
-        options ??= PineconeCollectionOptions.Default;
         this._indexNamespace = options.IndexNamespace;
         this._serverlessIndexCloud = options.ServerlessIndexCloud;
         this._serverlessIndexRegion = options.ServerlessIndexRegion;

@@ -79,17 +79,19 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
         : this(
             database,
             name,
-            new RedisJsonModelBuilder(ModelBuildingOptions)
-                .Build(
-                    typeof(TRecord),
-                    options?.VectorStoreRecordDefinition,
-                    options?.EmbeddingGenerator,
-                    options?.JsonSerializerOptions ?? JsonSerializerOptions.Default),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(RedisJsonDynamicCollection)))
+                : new RedisJsonModelBuilder(ModelBuildingOptions)
+                    .Build(
+                        typeof(TRecord),
+                        options.VectorStoreRecordDefinition,
+                        options.EmbeddingGenerator,
+                        options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
             options)
     {
     }
 
-    internal RedisJsonCollection(IDatabase database, string name, CollectionModel model, RedisJsonCollectionOptions? options)
+    internal RedisJsonCollection(IDatabase database, string name, Func<RedisJsonCollectionOptions, CollectionModel> modelFactory, RedisJsonCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(database);
@@ -102,12 +104,13 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
 
         var isDynamic = typeof(TRecord) == typeof(Dictionary<string, object?>);
 
+        options ??= RedisJsonCollectionOptions.Default;
+
         // Assign.
         this._database = database;
         this.Name = name;
-        this._model = model;
+        this._model = modelFactory(options);
 
-        options ??= RedisJsonCollectionOptions.Default;
         this._prefixCollectionNameToKeyNames = options.PrefixCollectionNameToKeyNames;
         this._jsonSerializerOptions = options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
 

@@ -29,10 +29,10 @@ public sealed class QdrantDynamicCollection : QdrantCollection<object, Dictionar
         : base(
             clientFactory,
             name,
-            new QdrantModelBuilder(options.HasNamedVectors)
+            static options => new QdrantModelBuilder(options.HasNamedVectors)
                 .BuildDynamic(
-                    options?.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
-                    options?.EmbeddingGenerator),
+                    options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                    options.EmbeddingGenerator),
             options)
     {
     }

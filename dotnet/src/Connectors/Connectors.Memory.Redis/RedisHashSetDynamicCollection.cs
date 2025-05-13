@@ -27,10 +27,10 @@ public sealed class RedisHashSetDynamicCollection : RedisHashSetCollection<objec
         : base(
             database,
             name,
-            new RedisModelBuilder(ModelBuildingOptions)
+            static options => new RedisModelBuilder(ModelBuildingOptions)
                 .BuildDynamic(
-                    options?.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
-                    options?.EmbeddingGenerator),
+                    options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                    options.EmbeddingGenerator),
             options)
     {
     }

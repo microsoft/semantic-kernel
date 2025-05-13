@@ -30,7 +30,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
     }
 
     [ConditionalFact]
-    public async Task EnsureCollectionExists_twice()
+    public async Task EnsureCollectionExists_twice_does_not_throw()
     {
         var collection = this.GetCollection();
 

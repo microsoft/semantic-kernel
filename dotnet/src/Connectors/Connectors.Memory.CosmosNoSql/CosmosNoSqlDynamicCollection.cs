@@ -64,11 +64,11 @@ public sealed class CosmosNoSqlDynamicCollection : CosmosNoSqlCollection<object,
             clientWrapper,
             databaseProvider,
             name,
-            new CosmosNoSqlModelBuilder()
+            static options => new CosmosNoSqlModelBuilder()
                 .BuildDynamic(
-                    options?.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
-                    options?.EmbeddingGenerator,
-                    options?.JsonSerializerOptions ?? JsonSerializerOptions.Default),
+                    options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                    options.EmbeddingGenerator,
+                    options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
             options)
     {
     }

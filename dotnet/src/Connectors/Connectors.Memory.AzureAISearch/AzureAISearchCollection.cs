@@ -69,12 +69,15 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         : this(
             searchIndexClient,
             name,
-            new AzureAISearchModelBuilder().Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator, options?.JsonSerializerOptions ?? JsonSerializerOptions.Default),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(AzureAISearchDynamicCollection)))
+                : new AzureAISearchModelBuilder()
+                    .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
             options)
     {
     }
 
-    internal AzureAISearchCollection(SearchIndexClient searchIndexClient, string name, CollectionModel model, AzureAISearchCollectionOptions? options)
+    internal AzureAISearchCollection(SearchIndexClient searchIndexClient, string name, Func<AzureAISearchCollectionOptions, CollectionModel> modelFactory, AzureAISearchCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(searchIndexClient);
@@ -85,13 +88,13 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
         }
 
+        options ??= AzureAISearchCollectionOptions.Default;
+
         // Assign.
         this.Name = name;
-        this._model = model;
+        this._model = modelFactory(options);
         this._searchIndexClient = searchIndexClient;
         this._searchClient = this._searchIndexClient.GetSearchClient(name);
-
-        options ??= AzureAISearchCollectionOptions.Default;
 
         this._mappper = typeof(TRecord) == typeof(Dictionary<string, object?>) ?
             (IAzureAISearchMapper<TRecord>)(object)new AzureAISearchDynamicMapper(this._model, options.JsonSerializerOptions) :

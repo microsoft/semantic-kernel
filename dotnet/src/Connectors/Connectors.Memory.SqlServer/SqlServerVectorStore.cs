@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -65,19 +66,17 @@ public sealed class SqlServerVectorStore : VectorStore
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-    {
-        Verify.NotNull(name);
-
-        return new SqlServerCollection<TKey, TRecord>(
-            this._connectionString,
-            name,
-            new()
-            {
-                Schema = this._schema,
-                RecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._embeddingGenerator
-            });
-    }
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new SqlServerCollection<TKey, TRecord>(
+                this._connectionString,
+                name,
+                new()
+                {
+                    Schema = this._schema,
+                    RecordDefinition = vectorStoreRecordDefinition,
+                    EmbeddingGenerator = this._embeddingGenerator
+                });
 
     /// <inheritdoc />
     // TODO: The provider uses unsafe JSON serialization in many places, #11963

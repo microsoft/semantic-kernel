@@ -23,10 +23,10 @@ public sealed class MongoDynamicCollection : MongoCollection<object, Dictionary<
         : base(
             mongoDatabase,
             name,
-            new MongoModelBuilder()
+            static options => new MongoModelBuilder()
                 .BuildDynamic(
-                    options?.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
-                    options?.EmbeddingGenerator),
+                    options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                    options.EmbeddingGenerator),
             options)
     {
     }

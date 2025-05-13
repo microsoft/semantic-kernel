@@ -26,9 +26,9 @@ public sealed class AzureAISearchDynamicCollection : AzureAISearchCollection<obj
         : base(
             searchIndexClient,
             name,
-            new AzureAISearchDynamicModelBuilder().BuildDynamic(
-                options?.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
-                options?.EmbeddingGenerator),
+            static options => new AzureAISearchDynamicModelBuilder().BuildDynamic(
+                options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                options.EmbeddingGenerator),
             options)
     {
     }

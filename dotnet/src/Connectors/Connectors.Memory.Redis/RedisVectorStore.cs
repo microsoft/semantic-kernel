@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using NRedisStack.RedisStackCommands;
 using StackExchange.Redis;
 
@@ -65,7 +66,13 @@ public sealed class RedisVectorStore : VectorStore
     [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        => this._storageType switch
+    {
+        if (typeof(TRecord) == typeof(Dictionary<string, object?>))
+        {
+            throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported);
+        }
+
+        return this._storageType switch
         {
             RedisStorageType.HashSet => new RedisHashSetCollection<TKey, TRecord>(this._database, name, new RedisHashSetCollectionOptions()
             {
@@ -81,6 +88,7 @@ public sealed class RedisVectorStore : VectorStore
 
             _ => throw new UnreachableException()
         };
+    }
 
     /// <inheritdoc />
     // TODO: The provider uses unsafe JSON serialization in many places, #11963

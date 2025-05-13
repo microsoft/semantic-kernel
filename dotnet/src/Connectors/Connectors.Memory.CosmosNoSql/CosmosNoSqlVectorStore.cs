@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 
@@ -105,16 +106,18 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new CosmosNoSqlCollection<TKey, TRecord>(
-            this._clientWrapper.Share(),
-            _ => this._database,
-            name,
-            new()
-            {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                JsonSerializerOptions = this._jsonSerializerOptions,
-                EmbeddingGenerator = this._embeddingGenerator
-            });
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new CosmosNoSqlCollection<TKey, TRecord>(
+                this._clientWrapper.Share(),
+                _ => this._database,
+                name,
+                new()
+                {
+                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    JsonSerializerOptions = this._jsonSerializerOptions,
+                    EmbeddingGenerator = this._embeddingGenerator
+                });
 
     /// <inheritdoc />
     [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]

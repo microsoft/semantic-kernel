@@ -91,18 +91,22 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         : this(
             clientFactory,
             name,
-            new PostgresModelBuilder().Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator),
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(PostgresDynamicCollection)))
+                : new PostgresModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
             options)
     {
     }
 
-    internal PostgresCollection(Func<PostgresDbClient> clientFactory, string name, CollectionModel model, PostgresCollectionOptions? options)
+    internal PostgresCollection(Func<PostgresDbClient> clientFactory, string name, Func<PostgresCollectionOptions, CollectionModel> modelFactory, PostgresCollectionOptions? options)
     {
         Verify.NotNullOrWhiteSpace(name);
 
+        options ??= PostgresCollectionOptions.Default;
+
         this.Name = name;
-        this._model = model;
-        this._mapper = new PostgresMapper<TRecord>(model);
+        this._model = modelFactory(options);
+        this._mapper = new PostgresMapper<TRecord>(this._model);
 
         // The code above can throw, so we need to create the client after the model is built and verified.
         // In case an exception is thrown, we don't need to dispose any resources.

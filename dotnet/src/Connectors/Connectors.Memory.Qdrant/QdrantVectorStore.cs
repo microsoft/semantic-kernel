@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using Qdrant.Client;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -83,12 +84,14 @@ public sealed class QdrantVectorStore : VectorStore
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new QdrantCollection<TKey, TRecord>(() => this._qdrantClient.Share(), name, new()
-        {
-            HasNamedVectors = this._hasNamedVectors,
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-            EmbeddingGenerator = this._embeddingGenerator
-        });
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new QdrantCollection<TKey, TRecord>(this._qdrantClient.Share, name, new()
+            {
+                HasNamedVectors = this._hasNamedVectors,
+                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                EmbeddingGenerator = this._embeddingGenerator
+            });
 
     /// <inheritdoc />
 #if NET8_0_OR_GREATER
@@ -96,7 +99,7 @@ public sealed class QdrantVectorStore : VectorStore
 #else
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
 #endif
-        => new QdrantDynamicCollection(() => this._qdrantClient.Share(), name, new QdrantCollectionOptions()
+        => new QdrantDynamicCollection(this._qdrantClient.Share, name, new QdrantCollectionOptions()
         {
             HasNamedVectors = this._hasNamedVectors,
             VectorStoreRecordDefinition = vectorStoreRecordDefinition,

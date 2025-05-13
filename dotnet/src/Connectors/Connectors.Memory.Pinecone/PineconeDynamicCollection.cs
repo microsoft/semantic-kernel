@@ -23,10 +23,10 @@ public sealed class PineconeDynamicCollection : PineconeCollection<object, Dicti
         : base(
             pineconeClient,
             name,
-            new PineconeModelBuilder()
+            static options => new PineconeModelBuilder()
                 .BuildDynamic(
-                    options?.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
-                    options?.EmbeddingGenerator),
+                    options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                    options.EmbeddingGenerator),
             options)
     {
     }
