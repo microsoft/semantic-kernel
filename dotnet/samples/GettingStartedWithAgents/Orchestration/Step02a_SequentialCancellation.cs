@@ -10,7 +10,7 @@ namespace GettingStarted.Orchestration;
 /// <summary>
 /// Demonstrates how to use cancel a <see cref="SequentialOrchestration"/> while its running.
 /// </summary>
-public class Step02a_Sequential(ITestOutputHelper output) : BaseOrchestrationTest(output)
+public class Step02a_SequentialCancellation(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
     public async Task SequentialCancelledAsync()
