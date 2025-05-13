@@ -29,7 +29,7 @@ public class PostgresEmbeddingGenerationTests(PostgresEmbeddingGenerationTests.F
             services => services
                 .AddTransient<NpgsqlDataSource>(_ =>
                 {
-                    NpgsqlDataSourceBuilder builder = new (PostgresTestStore.Instance.ConnectionString);
+                    NpgsqlDataSourceBuilder builder = new(PostgresTestStore.Instance.ConnectionString);
                     builder.UseVector();
                     return builder.Build();
                 })
@@ -46,7 +46,7 @@ public class PostgresEmbeddingGenerationTests(PostgresEmbeddingGenerationTests.F
             services => services
                 .AddTransient<NpgsqlDataSource>(_ =>
                 {
-                    NpgsqlDataSourceBuilder builder = new (PostgresTestStore.Instance.ConnectionString);
+                    NpgsqlDataSourceBuilder builder = new(PostgresTestStore.Instance.ConnectionString);
                     builder.UseVector();
                     return builder.Build();
                 })
