@@ -33,7 +33,7 @@ public class StreamingAnnotationContentTests
     public void VerifyStreamingAnnotationContentWithFileId()
     {
         StreamingAnnotationContent definition =
-            new("test quote", "#id", AnnotationKind.FileCitation)
+            new("test quote", AnnotationKind.FileCitation, "#id")
             {
                 StartIndex = 33,
                 EndIndex = 49,

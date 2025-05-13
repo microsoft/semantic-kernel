@@ -67,11 +67,13 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// <summary>
     /// Start index of the citation.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? StartIndex { get; init; }
 
     /// <summary>
     /// End index of the citation.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? EndIndex { get; init; }
 
     /// <summary>
@@ -85,19 +87,12 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// Initializes a new instance of the <see cref="StreamingAnnotationContent"/> class.
     /// </summary>
     /// <param name="label">The citation label.</param>
-    /// <param name="referenceId">Identifies the referenced resource.</param>
     /// <param name="kind">Describes the kind of annotation</param>
-    /// <param name="modelId">The model ID used to generate the content.</param>
-    /// <param name="innerContent">Inner content</param>
-    /// <param name="metadata">Additional metadata</param>
+    /// <param name="referenceId">Identifies the referenced resource.</param>
     public StreamingAnnotationContent(
         string label,
-        string referenceId,
         AnnotationKind kind,
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, choiceIndex: 0, modelId, metadata)
+        string referenceId)
     {
         this.Label = label;
         this.ReferenceId = referenceId;

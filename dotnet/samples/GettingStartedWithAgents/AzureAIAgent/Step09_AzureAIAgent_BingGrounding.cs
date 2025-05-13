@@ -17,17 +17,17 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
     public async Task UseBingGroundingToolWithAgent()
     {
         // Access the BingGrounding connection
-        ConnectionsClient cxnClient = this.Client.GetConnectionsClient();
-        ConnectionResponse bingConnection = await cxnClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
+        ConnectionsClient connectionsClient = this.Client.GetConnectionsClient();
+        ConnectionResponse bingConnection = await connectionsClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
 
         // Define the agent
-        ToolConnectionList connectionList = new()
+        ToolConnectionList toolConnections = new()
         {
             ConnectionList = { new ToolConnection(bingConnection.Id) }
         };
         FoundryAgent definition = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
-            tools: [new BingGroundingToolDefinition(connectionList)]);
+            tools: [new BingGroundingToolDefinition(toolConnections)]);
         AzureAIAgent agent = new(definition, this.AgentsClient);
 
         // Create a thread for the agent conversation.
@@ -63,16 +63,16 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
     {
         // Access the BingGrounding connection
         ConnectionsClient connectionClient = this.Client.GetConnectionsClient();
-        ConnectionResponse bingConnection = await connectionClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
+        ConnectionResponse bingConnectionResponse = await connectionClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
 
         // Define the agent
-        ToolConnectionList tools = new()
+        ToolConnectionList toolConnections = new()
         {
-            ConnectionList = { new ToolConnection(bingConnection.Id) }
+            ConnectionList = { new ToolConnection(bingConnectionResponse.Id) }
         };
         FoundryAgent definition = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
-            tools: [new BingGroundingToolDefinition(tools)]);
+            tools: [new BingGroundingToolDefinition(toolConnections)]);
         AzureAIAgent agent = new(definition, this.AgentsClient);
 
         // Create a thread for the agent conversation.

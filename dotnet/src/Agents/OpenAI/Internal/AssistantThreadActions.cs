@@ -564,6 +564,7 @@ internal static class AssistantThreadActions
             new(role, content: null)
             {
                 AuthorName = assistantName,
+                InnerContent = message,
                 Metadata = metadata,
             };
 
@@ -604,6 +605,7 @@ internal static class AssistantThreadActions
             new(AuthorRole.Assistant, content: null)
             {
                 AuthorName = assistantName,
+                InnerContent = update,
             };
 
         // Process text content
@@ -689,11 +691,9 @@ internal static class AssistantThreadActions
         }
 
         return
-            new(label: annotation.TextToReplace,
-                referenceId,
-                kind,
-                innerContent: annotation)
+            new(label: annotation.TextToReplace, kind, referenceId)
             {
+                InnerContent = annotation,
                 StartIndex = annotation.StartIndex,
                 EndIndex = annotation.EndIndex,
             };
@@ -721,11 +721,9 @@ internal static class AssistantThreadActions
         }
 
         return
-            new(label: annotation.TextToReplace,
-                referenceId,
-                kind,
-                innerContent: annotation)
+            new(label: annotation.TextToReplace, kind, referenceId)
             {
+                InnerContent = annotation,
                 StartIndex = annotation.StartIndex,
                 EndIndex = annotation.EndIndex,
             };

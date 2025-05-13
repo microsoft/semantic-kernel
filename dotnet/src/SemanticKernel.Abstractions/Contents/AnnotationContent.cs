@@ -16,7 +16,7 @@ public class AnnotationContent : KernelContent
     /// The referenced file identifier.
     /// </summary>
     [JsonIgnore]
-    [Obsolete("Use `ReferenceId` property instead.  This method will be removed after June 1st 2025.")]
+    [Obsolete("Use `ReferenceId` property instead.")]
     public string? FileId
     {
         get => this.ReferenceId;
@@ -27,7 +27,7 @@ public class AnnotationContent : KernelContent
     /// The citation label in the associated response.
     /// </summary>
     [JsonIgnore]
-    [Obsolete("Use `Label` property instead.  This method will be removed after June 1st 2025.")]
+    [Obsolete("Use `Label` property instead.")]
     public string Quote => this.Label;
 
     /// <summary>
@@ -61,11 +61,13 @@ public class AnnotationContent : KernelContent
     /// <summary>
     /// Start index of the citation.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? StartIndex { get; init; }
 
     /// <summary>
     /// End index of the citation.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? EndIndex { get; init; }
 
     /// <summary>
@@ -79,19 +81,12 @@ public class AnnotationContent : KernelContent
     /// Initializes a new instance of the <see cref="AnnotationContent"/> class.
     /// </summary>
     /// <param name="label">The citation label.</param>
-    /// <param name="referenceId">Identifies the referenced resource.</param>
     /// <param name="kind">Describes the kind of annotation</param>
-    /// <param name="modelId">The model ID used to generate the content.</param>
-    /// <param name="innerContent">Inner content</param>
-    /// <param name="metadata">Additional metadata</param>
+    /// <param name="referenceId">Identifies the referenced resource.</param>
     public AnnotationContent(
         string label,
-        string referenceId,
         AnnotationKind kind,
-        string? modelId = null,
-        object? innerContent = null,
-        IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, modelId, metadata)
+        string referenceId)
     {
         this.Label = label;
         this.Kind = kind;

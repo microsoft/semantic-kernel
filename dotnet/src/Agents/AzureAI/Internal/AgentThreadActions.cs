@@ -688,10 +688,10 @@ internal static class AgentThreadActions
             return
                 new AnnotationContent(
                     label: annotation.Text,
-                    referenceId: fileCitationAnnotation.FileId,
                     kind: AnnotationKind.FileCitation,
-                    innerContent: annotation)
+                    referenceId: fileCitationAnnotation.FileId)
                 {
+                    InnerContent = annotation,
                     StartIndex = fileCitationAnnotation.StartIndex,
                     EndIndex = fileCitationAnnotation.EndIndex,
                 };
@@ -701,10 +701,10 @@ internal static class AgentThreadActions
             return
                 new AnnotationContent(
                     label: annotation.Text,
-                    referenceId: urlCitationAnnotation.UrlCitation.Url,
                     kind: AnnotationKind.UrlCitation,
-                    innerContent: annotation)
+                    referenceId: urlCitationAnnotation.UrlCitation.Url)
                 {
+                    InnerContent = annotation,
                     Title = urlCitationAnnotation.UrlCitation.Title,
                     StartIndex = urlCitationAnnotation.StartIndex,
                     EndIndex = urlCitationAnnotation.EndIndex,
@@ -715,10 +715,10 @@ internal static class AgentThreadActions
             return
                 new AnnotationContent(
                     label: annotation.Text,
-                    referenceId: filePathAnnotation.FileId,
                     kind: AnnotationKind.TextCitation,
-                    innerContent: annotation)
+                    referenceId: filePathAnnotation.FileId)
                 {
+                    InnerContent = annotation,
                     StartIndex = filePathAnnotation.StartIndex,
                     EndIndex = filePathAnnotation.EndIndex,
                 };
@@ -753,12 +753,9 @@ internal static class AgentThreadActions
         }
 
         return
-            new StreamingAnnotationContent(
-                label: annotation.TextToReplace,
-                referenceId,
-                kind,
-                innerContent: annotation)
+            new StreamingAnnotationContent(label: annotation.TextToReplace, kind, referenceId)
             {
+                InnerContent = annotation,
                 Title = annotation.Title,
                 StartIndex = annotation.StartIndex,
                 EndIndex = annotation.EndIndex,

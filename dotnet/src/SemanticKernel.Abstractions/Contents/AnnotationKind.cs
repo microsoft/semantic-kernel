@@ -14,17 +14,17 @@ public readonly struct AnnotationKind : IEquatable<AnnotationKind>
     /// <summary>
     /// Annotation kind representing a citation to a file.
     /// </summary>
-    public static AnnotationKind FileCitation { get; } = new("file");
+    public static AnnotationKind FileCitation { get; } = new("filecitation");
 
     /// <summary>
     /// Annotation kind representing a citation to a text segment.
     /// </summary>
-    public static AnnotationKind TextCitation { get; } = new("text");
+    public static AnnotationKind TextCitation { get; } = new("textcitation");
 
     /// <summary>
     /// Annotation kind representing a citation to a URL.
     /// </summary>
-    public static AnnotationKind UrlCitation { get; } = new("url");
+    public static AnnotationKind UrlCitation { get; } = new("urlcitation");
 
     /// <summary>
     /// Gets the label associated with this <see cref="AnnotationKind"/>.
