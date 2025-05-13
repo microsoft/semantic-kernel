@@ -21,7 +21,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// </remarks>
     [JsonIgnore]
     [Obsolete("Use `ReferenceId` property instead.")]
-    public string? FileId
+    public string FileId
     {
         get => this.ReferenceId;
         init => this.ReferenceId = value;
