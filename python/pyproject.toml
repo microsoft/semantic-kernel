@@ -52,6 +52,8 @@ dependencies = [
     "aiortc>=1.9.0",
     # Protobuf
     "protobuf",
+    # explicit typing extensions
+    "typing-extensions>=4.13",
 ]
 
 ### Optional dependencies
@@ -99,7 +101,7 @@ hugging_face = [
     "torch == 2.7.0"
 ]
 mcp = [
-    "mcp ~= 1.6"
+    "mcp~=1.8",
 ]
 milvus = [
     "pymilvus >= 2.3,< 2.6",
@@ -211,7 +213,7 @@ select = [
     "RET", #flake8-return check
     "SIM", #flake8-simplify check
     "TD", #todos
-    "FIX", #fixme checks 
+    "FIX", #fixme checks
     "ERA", #remove connected out code
     "RUF" #RUF specific rules
 ]
