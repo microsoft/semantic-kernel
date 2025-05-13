@@ -2,12 +2,14 @@
 
 using System.Globalization;
 using Azure;
+using Azure.AI.OpenAI;
 using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Data;
+using OpenAI;
 using VectorStoreRAG;
 using VectorStoreRAG.Options;
 
@@ -49,16 +51,16 @@ switch (appConfig.RagConfig.AIChatService)
 switch (appConfig.RagConfig.AIEmbeddingService)
 {
     case "AzureOpenAIEmbeddings":
-        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
-            appConfig.AzureOpenAIEmbeddingsConfig.DeploymentName,
-            appConfig.AzureOpenAIEmbeddingsConfig.Endpoint,
-            new AzureCliCredential());
+        builder.Services.AddSingleton<IEmbeddingGenerator>(
+            sp => new AzureOpenAIClient(new Uri(appConfig.AzureOpenAIEmbeddingsConfig.Endpoint), new AzureCliCredential())
+                .GetEmbeddingClient(appConfig.AzureOpenAIEmbeddingsConfig.DeploymentName)
+                .AsIEmbeddingGenerator());
         break;
     case "OpenAIEmbeddings":
-        kernelBuilder.AddOpenAITextEmbeddingGeneration(
-            appConfig.OpenAIEmbeddingsConfig.ModelId,
-            appConfig.OpenAIEmbeddingsConfig.ApiKey,
-            appConfig.OpenAIEmbeddingsConfig.OrgId);
+        builder.Services.AddSingleton<IEmbeddingGenerator>(
+            sp => new OpenAIClient(appConfig.OpenAIEmbeddingsConfig.ApiKey)
+                .GetEmbeddingClient(appConfig.OpenAIEmbeddingsConfig.ModelId)
+                .AsIEmbeddingGenerator());
         break;
     default:
         throw new NotSupportedException($"AI Embedding Service type '{appConfig.RagConfig.AIEmbeddingService}' is not supported.");
@@ -140,16 +142,7 @@ static void RegisterServices<TKey>(HostApplicationBuilder builder, IKernelBuilde
     where TKey : notnull
 {
     // Add a text search implementation that uses the registered vector store record collection for search.
-    kernelBuilder.AddVectorStoreTextSearch<TextSnippet<TKey>>(
-        new TextSearchStringMapper((result) => (result as TextSnippet<TKey>)!.Text!),
-        new TextSearchResultMapper((result) =>
-        {
-            // Create a mapping from the Vector Store data type to the data type returned by the Text Search.
-            // This text search will ultimately be used in a plugin and this TextSearchResult will be returned to the prompt template
-            // when the plugin is invoked from the prompt template.
-            var castResult = result as TextSnippet<TKey>;
-            return new TextSearchResult(value: castResult!.Text!) { Name = castResult.ReferenceDescription, Link = castResult.ReferenceLink };
-        }));
+    kernelBuilder.AddVectorStoreTextSearch<TextSnippet<TKey>>();
 
     // Add the key generator and data loader to the dependency injection container.
     builder.Services.AddSingleton<UniqueKeyGenerator<Guid>>(new UniqueKeyGenerator<Guid>(() => Guid.NewGuid()));

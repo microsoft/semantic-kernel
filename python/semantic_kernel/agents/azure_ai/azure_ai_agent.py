@@ -5,8 +5,6 @@ import sys
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
-from typing_extensions import deprecated
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -18,7 +16,6 @@ from azure.ai.projects.models import (
     AgentsApiResponseFormat,
     AgentsApiResponseFormatMode,
     ResponseFormatJsonSchemaType,
-    ThreadMessage,
     ThreadMessageOptions,
     ToolDefinition,
     TruncationObject,
@@ -469,11 +466,12 @@ class AzureAIAgent(Agent):
             message.metadata["thread_id"] = thread.id
             await thread.on_new_message(message)
 
-            if on_intermediate_message:
-                await on_intermediate_message(message)
-
             if is_visible:
+                # Only yield visible messages
                 yield AgentResponseItem(message=message, thread=thread)
+            elif on_intermediate_message:
+                # Emit tool-related messages only via callback
+                await on_intermediate_message(message)
 
     @trace_agent_invocation
     @override
@@ -563,6 +561,7 @@ class AzureAIAgent(Agent):
 
         collected_messages: list[ChatMessageContent] | None = [] if on_intermediate_message else None
 
+        start_idx = 0
         async for message in AgentThreadActions.invoke_stream(
             agent=self,
             thread_id=thread.id,
@@ -571,14 +570,20 @@ class AzureAIAgent(Agent):
             arguments=arguments,
             **run_level_params,  # type: ignore
         ):
+            # Before yielding the current streamed message, emit any new full messages first
+            if collected_messages is not None:
+                new_messages = collected_messages[start_idx:]
+                start_idx = len(collected_messages)
+
+                for new_msg in new_messages:
+                    new_msg.metadata["thread_id"] = thread.id
+                    await thread.on_new_message(new_msg)
+                    if on_intermediate_message:
+                        await on_intermediate_message(new_msg)
+
+            # Now yield the current streamed content (StreamingTextContent)
             message.metadata["thread_id"] = thread.id
             yield AgentResponseItem(message=message, thread=thread)
-
-        for message in collected_messages or []:  # type: ignore
-            message.metadata["thread_id"] = thread.id
-            await thread.on_new_message(message)
-            if on_intermediate_message:
-                await on_intermediate_message(message)
 
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.
@@ -613,18 +618,3 @@ class AzureAIAgent(Agent):
         assert thread.id is not None  # nosec
 
         return AzureAIChannel(client=self.client, thread_id=thread.id)
-
-    @deprecated(
-        "Pass messages directly to get_response(...)/invoke(...) instead. This method will be removed after May 1st 2025."  # noqa: E501
-    )
-    async def add_chat_message(self, thread_id: str, message: str | ChatMessageContent) -> "ThreadMessage | None":
-        """Add a chat message to the thread.
-
-        Args:
-            thread_id: The ID of the thread
-            message: The chat message to add
-
-        Returns:
-            ThreadMessage | None: The thread message
-        """
-        return await AgentThreadActions.create_message(client=self.client, thread_id=thread_id, message=message)

@@ -32,7 +32,22 @@ public class VectorStoreTextSearchTestBase
         var resultMapper = new DataModelTextSearchResultMapper();
         using var embeddingService = new MockTextEmbeddingGenerator();
         await AddRecordsAsync(vectorSearchable, embeddingService);
-        var sut = new VectorStoreTextSearch<DataModelWithRawEmbedding>(vectorSearchable, embeddingService, stringMapper, resultMapper);
+        var sut = new VectorStoreTextSearch<DataModelWithRawEmbedding>(vectorSearchable, (ITextEmbeddingGenerationService)embeddingService, stringMapper, resultMapper);
+        return sut;
+    }
+
+    /// <summary>
+    /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorSearchable{TRecord}"/>.
+    /// </summary>
+    public static async Task<VectorStoreTextSearch<DataModelWithRawEmbedding>> CreateVectorStoreTextSearchWithEmbeddingGeneratorAsync()
+    {
+        using var vectorStore = new InMemoryVectorStore();
+        var vectorSearchable = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
+        var stringMapper = new DataModelTextSearchStringMapper();
+        var resultMapper = new DataModelTextSearchResultMapper();
+        using var embeddingService = new MockTextEmbeddingGenerator();
+        await AddRecordsAsync(vectorSearchable, embeddingService);
+        var sut = new VectorStoreTextSearch<DataModelWithRawEmbedding>(vectorSearchable, (IEmbeddingGenerator<string, Embedding<float>>)embeddingService, stringMapper, resultMapper);
         return sut;
     }
 
