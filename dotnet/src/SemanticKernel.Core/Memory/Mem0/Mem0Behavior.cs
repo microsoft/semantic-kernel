@@ -37,7 +37,7 @@ namespace Microsoft.SemanticKernel.Memory;
 [Experimental("SKEXP0130")]
 public sealed class Mem0Behavior : AIContextBehavior
 {
-    private const string DefaultContextPrompt = "Consider the following memories when answering user questions:";
+    private const string DefaultContextPrompt = "## Memories\nConsider the following memories when answering user questions:";
 
     private readonly string? _applicationId;
     private readonly string? _agentId;
@@ -148,7 +148,11 @@ public sealed class Mem0Behavior : AIContextBehavior
                 inputText).ConfigureAwait(false);
 
         var lineSeparatedMemories = string.Join(Environment.NewLine, memories);
-        return string.Join(Environment.NewLine, this._contextPrompt, lineSeparatedMemories);
+        return
+            $"""
+            {this._contextPrompt}
+            {lineSeparatedMemories}
+            """;
     }
 
     /// <summary>

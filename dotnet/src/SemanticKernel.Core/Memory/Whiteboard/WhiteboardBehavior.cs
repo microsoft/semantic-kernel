@@ -19,8 +19,13 @@ namespace Microsoft.SemanticKernel.Memory;
 [Experimental("SKEXP0130")]
 public class WhiteboardBehavior : AIContextBehavior
 {
+    private const string DefaultContextPrompt = "## Whiteboard\nThe following list of messages are currently on the whiteboard:";
+    private const string DefaultWhiteboardEmptyPrompt = "## Whiteboard\nThe whiteboard is currently empty.";
     private const int MaxQueueSize = 3;
+
     private readonly int _maxWhiteboardMessages;
+    private readonly string _contextPrompt;
+    private readonly string _whiteboardEmptyPrompt;
 
     private readonly Kernel _kernel;
 
@@ -37,8 +42,12 @@ public class WhiteboardBehavior : AIContextBehavior
     /// <param name="options">Options for configuring the behavior.</param>
     public WhiteboardBehavior(Kernel kernel, WhiteboardBehaviorOptions? options = default)
     {
+        Verify.NotNull(kernel);
+
         this._kernel = kernel;
         this._maxWhiteboardMessages = options?.MaxWhiteboardMessages ?? 10;
+        this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
+        this._whiteboardEmptyPrompt = options?.WhiteboardEmptyPrompt ?? DefaultWhiteboardEmptyPrompt;
     }
 
     /// <inheritdoc/>
@@ -86,12 +95,12 @@ public class WhiteboardBehavior : AIContextBehavior
     {
         if (this._currentWhiteboardContent.Count == 0)
         {
-            return Task.FromResult("The whiteboard is currently empty.");
+            return Task.FromResult(this._whiteboardEmptyPrompt);
         }
 
         var numberedMessages = this._currentWhiteboardContent.Select((x, i) => $"{i} {x}");
         var joinedMessages = string.Join(Environment.NewLine, numberedMessages);
-        return Task.FromResult($"The following list has all messages currently on the whiteboard:\n{joinedMessages}");
+        return Task.FromResult($"{this._contextPrompt}\n{joinedMessages}");
     }
 
     /// <summary>
@@ -152,22 +161,23 @@ public class WhiteboardBehavior : AIContextBehavior
     /// </summary>
     private const string MaintenancePromptTemplate =
         """
-        You are an expert in maintaining a whiteboard during a conversation.
-        The whiteboard should maintain the requirements that the user is trying to meet, the latest proposal and any decisions that have been made by the users.
-        A proposal is a suggested solution to requirements provided by the user or the assistant.
-        Existing information on the whiteboard should be updated with new information as requirements change and new proposals and decisions are made.
-        Decisions should contain all information about the decision made.
-        When a decision is made, the proposals and requirements that led to the decision should be removed from the whiteboard.
-        Whiteboard entries should be concise and to the point.
-        The whiteboard can contain more than one piece of information for each category.
-        The maximum number of messages allowed on the whiteboard at one time is {{$maxWhiteboardMessages}}.
-        Combine messages or remove the least important messages from the list if the maximum number of messages is reached.
-        Prioritize keeping detailed decisions for longer than requirements and proposals.
-        Categorize whiteboard entries with a prefix of REQUIREMENT, PROPOSAL or DECISION.
-        
-        Here are 7 few shot examples:
+        You are an expert in maintaining a whiteboard during a conversation.The whiteboard should capture:
+        - **Requirements**: Goals or needs expressed by the user.
+        - **Proposals**: Suggested solutions to the requirements, provided by the user or assistant.
+        - **Decisions**: Finalized outcomes, including all relevant details.
 
-        EXAMPLES START
+        ## Guidelines:
+        1. **Update Existing Entries**: Modify whiteboard entries as requirements change or new proposals and decisions are made.
+        2. **User is decision maker**: Only users can make decisions. The assistant can only make proposals and execute them.
+        3. **Remove Redundant Information**: When a decision is made, remove the related requirements and proposals.
+        4. **Keep Requirements Concise**: Ensure requirements are clear and to the point.
+        5. **Categorize Entries**: Prefix each entry with `REQUIREMENT`, `PROPOSAL`, or `DECISION`.
+        6. **Prioritize Decisions**: Retain detailed decisions longer than requirements or proposals.
+        7. **Limit Entries**: Maintain a maximum of {{$maxWhiteboardMessages}} entries. If the limit is exceeded, combine or remove the least important entries, prioritizing decisions.
+
+        ## Examples:
+
+        ### Example 1:
 
         New Message:
         [{"AuthorName":"Mary","Role":"user","Text":"I want the colour scheme to be green and brown."}]
@@ -175,7 +185,9 @@ public class WhiteboardBehavior : AIContextBehavior
         ["REQUIREMENT - Mary wants to create a presentation."]
         New Whiteboard:
         ["REQUIREMENT - Mary wants to create a presentation.", "REQUIREMENT - The presentation colour schema should be green and brown."]
-        
+
+        ### Example 2:
+
         New Message:
         [{"AuthorName":"John","Role":"user","Text":"I need you to help me with my homework."}]
         Current Whiteboard:
@@ -183,27 +195,35 @@ public class WhiteboardBehavior : AIContextBehavior
         New Whiteboard:
         ["REQUIREMENT - John wants help with homework."]
 
+        ### Example 3:
+
         New Message:
         [{"AuthorName":"John","Role":"user","Text":"Hello"}]
         Current Whiteboard:
         []
         New Whiteboard:
         []
-        
+
+        ### Example 4:
+
         New Message:
         [{"AuthorName":"Mary","Role":"user","Text":"I've changed my mind, I want to go to London instead."}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris."]
         New Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to London."]
-        
+
+        ### Example 5:
+
         New Message:
         [{"AuthorName":"TravelAgent","Role":"assistant","Text":"Here is an itinerary for your trip to Paris. Departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025."]
         New Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
-        
+
+        ### Example 6:
+
         New Message:
         [{"AuthorName":"Mary","Role":"user","Text":"That sounds good, let's book that."}]
         Current Whiteboard:
@@ -211,16 +231,18 @@ public class WhiteboardBehavior : AIContextBehavior
         New Whiteboard:
         [""DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
 
+        ### Example 7:
+
         New Message:
         [{"AuthorName":"Mary","Role":"user","Text":"I don't like the suggested option. Can I leave a day earlier and fly with anyone but NotsocheapoAir?"}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
         New Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "REQUIREMENT - Mary does not want to fly with NotsocheapoAir."]
-        
-        EXAMPLES END
 
-        Return a new whiteboard for the following inputs like shown in the examples above:
+        ## Action
+
+        Now return a new whiteboard for the following inputs like shown in the examples above and using the previously mentioned instructions:
 
         New Message:
         {{$formattedMessages}}

@@ -59,7 +59,7 @@ public sealed class Mem0BehaviorOptions
     /// to those memories, in order to provide some context to the model.
     /// </summary>
     /// <value>
-    /// Defaults to &quot;Consider the following memories when answering user questions:&quot;
+    /// Defaults to &quot;## Memories\nConsider the following memories when answering user questions:&quot;
     /// </value>
     public string? ContextPrompt { get; init; }
 }
