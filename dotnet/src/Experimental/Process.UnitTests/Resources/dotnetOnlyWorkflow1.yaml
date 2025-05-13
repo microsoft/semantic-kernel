@@ -69,7 +69,7 @@ nodes:
       topic: "inputs.input"
     on_complete:
       - on_condition:
-          type: output
+          type: Eval
           expression: "results.articles.length > '0'"
           emits:
             - event_type: data_fetched
@@ -112,7 +112,7 @@ nodes:
       id: b_step_agent
     on_complete:
       - on_condition:
-          type: output
+          type: eval
           expression: "report_feedback.passed == 'true'"
           emits:
             - event_type: report_approved
@@ -169,7 +169,7 @@ orchestration:
 
   - listen_for:
       event: "StartRequested"
-      from: $.inputs.events
+      from: _workflow_
     then:
       - node: kickoff
 

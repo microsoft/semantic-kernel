@@ -61,22 +61,22 @@ public class ProcessSerializationTests
         Assert.Single(stepKickoff.Edges);
         var kickoffStartEdges = stepKickoff.Edges["kickoff_agent.StartARequested"];
         Assert.Equal(2, kickoffStartEdges.Count);
-        Assert.Contains(kickoffStartEdges, e => e.OutputTarget.StepId == "a_step_agent");
-        Assert.Contains(kickoffStartEdges, e => e.OutputTarget.StepId == "b_step_agent");
+        Assert.Contains(kickoffStartEdges, e => (e.OutputTarget as KernelProcessFunctionTarget)!.StepId == "a_step_agent");
+        Assert.Contains(kickoffStartEdges, e => (e.OutputTarget as KernelProcessFunctionTarget)!.StepId == "b_step_agent");
 
         // aStep and bStep have grouped outgoing edges to cStep on event aStepDone and bStepDone
         Assert.Single(stepA.Edges);
         var aStepDoneEdges = stepA.Edges["a_step_agent.AStepDone"];
         Assert.Single(aStepDoneEdges);
         var aStepDoneEdge = aStepDoneEdges.First();
-        Assert.Equal("c_step_agent", aStepDoneEdge.OutputTarget.StepId);
+        Assert.Equal("c_step_agent", (aStepDoneEdge.OutputTarget as KernelProcessFunctionTarget)!.StepId);
         Assert.NotEmpty(aStepDoneEdge.GroupId ?? "");
 
         Assert.Single(stepB.Edges);
         var bStepDoneEdges = stepB.Edges["b_step_agent.BStepDone"];
         Assert.Single(bStepDoneEdges);
         var bStepDoneEdge = bStepDoneEdges.First();
-        Assert.Equal("c_step_agent", bStepDoneEdge.OutputTarget.StepId);
+        Assert.Equal("c_step_agent", (bStepDoneEdge.OutputTarget as KernelProcessFunctionTarget)!.StepId);
         Assert.NotEmpty(bStepDoneEdge.GroupId ?? "");
 
         // cStep has outgoing edge to kickoff step on event cStepDone and one to end the process on event exitRequested
@@ -84,13 +84,13 @@ public class ProcessSerializationTests
         var cStepDoneEdges = stepC.Edges["c_step_agent.CStepDone"];
         Assert.Single(cStepDoneEdges);
         var cStepDoneEdge = cStepDoneEdges.First();
-        Assert.Equal("kickoff_agent", cStepDoneEdge.OutputTarget.StepId);
+        Assert.Equal("kickoff_agent", (cStepDoneEdge.OutputTarget as KernelProcessFunctionTarget)!.StepId);
         Assert.Null(cStepDoneEdge.GroupId);
 
         var exitRequestedEdges = stepC.Edges["Microsoft.SemanticKernel.Process.EndStep"];
         Assert.Single(exitRequestedEdges);
         var exitRequestedEdge = exitRequestedEdges.First();
-        Assert.Equal("Microsoft.SemanticKernel.Process.EndStep", exitRequestedEdge.OutputTarget.StepId);
+        Assert.Equal("Microsoft.SemanticKernel.Process.EndStep", (exitRequestedEdge.OutputTarget as KernelProcessFunctionTarget)!.StepId);
 
         // edges to cStep are in the same group
         Assert.Equal(aStepDoneEdge.GroupId, bStepDoneEdge.GroupId);

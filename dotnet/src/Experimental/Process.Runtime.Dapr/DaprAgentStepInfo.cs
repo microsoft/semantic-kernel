@@ -42,7 +42,7 @@ public sealed record DaprAgentStepInfo : DaprStepInfo
             throw new KernelException($"Unable to read state from agent step with name '{this.State.Name}', Id '{this.State.Id}' and type {this.State.GetType()}.");
         }
 
-        return new KernelProcessAgentStep(this.AgentDefinition, this.Actions, this.State, this.Edges, threadName: "", inputs: this.Inputs); // TODO: Set threadName
+        return new KernelProcessAgentStep(this.AgentDefinition, this.Actions, this.State, this.Edges, threadName: "", inputs: []); // TODO: Set threadName
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ public sealed record DaprAgentStepInfo : DaprStepInfo
             State = agentStepInfo.State,
             Edges = agentStepInfo.Edges,
             AgentDefinition = kernelAgentStepInfo.AgentDefinition,
-            Inputs = kernelAgentStepInfo.Inputs,
+            Inputs = new(),
             Actions = kernelAgentStepInfo.Actions,
         };
     }

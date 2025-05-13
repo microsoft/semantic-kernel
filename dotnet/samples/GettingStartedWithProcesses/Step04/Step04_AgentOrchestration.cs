@@ -168,17 +168,17 @@ public class Step04_AgentOrchestration : BaseTest
         // Pass user input to primary agent
         userInputStep
             .OnEvent(CommonEvents.UserInputReceived)
-            .SendEventTo(new(agentStep, parameterName: "message"))
-            .SendEventTo(new(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderUserText));
+            .SendEventTo(new ProcessFunctionTargetBuilder(agentStep, parameterName: "message"))
+            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderUserText));
 
         agentStep
             .OnFunctionResult()
-            .SendEventTo(new(userInputStep))
-            .SendEventTo(new(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderMessage));
+            .SendEventTo(new ProcessFunctionTargetBuilder(userInputStep))
+            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderMessage));
 
         agentStep
             .OnFunctionError()
-            .SendEventTo(new(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderError, "error"))
+            .SendEventTo(new ProcessFunctionTargetBuilder(renderMessageStep, RenderMessageStep.ProcessStepFunctions.RenderError, "error"))
             .StopProcess();
 
         return process.Build();
