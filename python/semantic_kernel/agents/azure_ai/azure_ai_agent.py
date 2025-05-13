@@ -49,7 +49,7 @@ from semantic_kernel.utils.telemetry.user_agent import APP_INFO, SEMANTIC_KERNEL
 logger: logging.Logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from azure.ai.projects.models import ToolResources
+    from azure.ai.agents.models import ToolResources
     from azure.identity.aio import DefaultAzureCredential
 
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -96,7 +96,7 @@ class AzureAIAgentThread(AgentThread):
     async def _create(self) -> str:
         """Starts the thread and returns its ID."""
         try:
-            response = await self._client.agents.create_thread(
+            response = await self._client.agents.threads.create(
                 messages=self._messages,
                 metadata=self._metadata,
                 tool_resources=self._tool_resources,
@@ -113,7 +113,7 @@ class AzureAIAgentThread(AgentThread):
         if self._id is None:
             raise AgentThreadOperationException("The thread cannot be deleted because it has not been created yet.")
         try:
-            await self._client.agents.delete_thread(self._id)
+            await self._client.agents.threads.delete(self._id)
         except Exception as ex:
             raise AgentThreadOperationException(
                 "The thread could not be deleted due to an error response from the service."
@@ -234,28 +234,28 @@ class AzureAIAgent(Agent):
     @staticmethod
     def create_client(
         credential: "DefaultAzureCredential",
-        conn_str: str | None = None,
+        endpoint: str | None = None,
         **kwargs: Any,
     ) -> AIProjectClient:
         """Create the Azure AI Project client using the connection string.
 
         Args:
             credential: The credential
-            conn_str: The connection string
+            endpoint: The Azure AI Foundry endpoint
             kwargs: Additional keyword arguments
 
         Returns:
             AIProjectClient: The Azure AI Project client
         """
-        if conn_str is None:
+        if endpoint is None:
             ai_agent_settings = AzureAIAgentSettings()
-            if not ai_agent_settings.project_connection_string:
-                raise AgentInitializationException("Please provide a valid Azure AI connection string.")
-            conn_str = ai_agent_settings.project_connection_string.get_secret_value()
+            if not ai_agent_settings.endpoint:
+                raise AgentInitializationException("Please provide a valid Azure AI endpoint.")
+            endpoint = ai_agent_settings.endpoint
 
-        return AIProjectClient.from_connection_string(
+        return AIProjectClient(
             credential=credential,
-            conn_str=conn_str,
+            endpoint=endpoint,
             **({"user_agent": SEMANTIC_KERNEL_USER_AGENT} if APP_INFO else {}),
             **kwargs,
         )
@@ -595,9 +595,6 @@ class AzureAIAgent(Agent):
 
         # Distinguish between agent names
         yield self.name
-
-        # Distinguish between different scopes
-        yield str(self.client.scope)
 
     async def create_channel(self, thread_id: str | None = None) -> AgentChannel:
         """Create a channel.

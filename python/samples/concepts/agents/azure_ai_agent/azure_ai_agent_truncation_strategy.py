@@ -2,7 +2,7 @@
 
 import asyncio
 
-from azure.ai.projects.models import TruncationObject
+from azure.ai.agents.models import TruncationObject
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import (

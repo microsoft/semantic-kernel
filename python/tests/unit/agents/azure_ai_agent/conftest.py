@@ -3,8 +3,8 @@
 from unittest.mock import AsyncMock
 
 import pytest
+from azure.ai.agents.models import Agent as AzureAIAgentModel
 from azure.ai.projects.aio import AIProjectClient
-from azure.ai.projects.models import Agent as AzureAIAgentModel
 
 
 @pytest.fixture

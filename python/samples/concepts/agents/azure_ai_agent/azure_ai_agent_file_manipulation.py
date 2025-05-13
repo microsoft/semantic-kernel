@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from azure.ai.projects.models import CodeInterpreterTool, FilePurpose
+from azure.ai.agents.models import CodeInterpreterTool, FilePurpose
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
@@ -31,7 +31,7 @@ async def main() -> None:
             "sales.csv",
         )
 
-        file = await client.agents.upload_file_and_poll(file_path=csv_file_path, purpose=FilePurpose.AGENTS)
+        file = await client.agents.files.upload_and_poll(file_path=csv_file_path, purpose=FilePurpose.AGENTS)
 
         code_interpreter = CodeInterpreterTool(file_ids=[file.id])
 

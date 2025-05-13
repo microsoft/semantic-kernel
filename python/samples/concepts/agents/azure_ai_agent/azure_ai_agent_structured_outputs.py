@@ -3,7 +3,7 @@
 import asyncio
 from enum import Enum
 
-from azure.ai.projects.models import (
+from azure.ai.agents.models import (
     ResponseFormatJsonSchema,
     ResponseFormatJsonSchemaType,
 )

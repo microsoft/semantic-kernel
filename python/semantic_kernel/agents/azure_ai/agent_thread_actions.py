@@ -162,7 +162,7 @@ class AgentThreadActions:
         # Remove keys with None values.
         run_options = {k: v for k, v in run_options.items() if v is not None}
 
-        run: ThreadRun = await agent.client.agents.create_run(
+        run: ThreadRun = await agent.client.agents.runs.create(
             agent_id=agent.id,
             thread_id=thread_id,
             instructions=merged_instructions or agent.instructions,
@@ -206,7 +206,7 @@ class AgentThreadActions:
                     )
 
                     tool_outputs = cls._format_tool_outputs(fccs, chat_history)
-                    await agent.client.agents.submit_tool_outputs_to_run(
+                    await agent.client.agents.runs.submit_tool_outputs(
                         run_id=run.id,
                         thread_id=thread_id,
                         tool_outputs=tool_outputs,  # type: ignore
@@ -214,9 +214,10 @@ class AgentThreadActions:
                     logger.debug(f"Submitted tool outputs for agent `{agent.name}` and thread `{thread_id}`")
                     continue
 
-            steps_response = await agent.client.agents.list_run_steps(run_id=run.id, thread_id=thread_id)
-            logger.debug(f"Called for steps_response for run [{run.id}] agent `{agent.name}` and thread `{thread_id}`")
-            steps: list[RunStep] = steps_response.data
+            steps: list[RunStep] = []
+            async for steps_response in agent.client.agents.run_steps.list(thread_id=thread_id, run_id=run.id):
+                steps.append(steps_response)
+            logger.debug(f"Call for steps_response for run [{run.id}] agent `{agent.name}` and thread `{thread_id}`")
 
             def sort_key(step: RunStep):
                 # Put tool_calls first, then message_creation.
@@ -401,7 +402,7 @@ class AgentThreadActions:
         )
         run_options = {k: v for k, v in run_options.items() if v is not None}
 
-        stream: AsyncAgentRunStream = await agent.client.agents.create_stream(
+        stream: AsyncAgentRunStream = await agent.client.agents.runs.stream(
             agent_id=agent.id,
             thread_id=thread_id,
             instructions=merged_instructions or agent.instructions,
@@ -565,7 +566,7 @@ class AgentThreadActions:
         This allows downstream consumers to iterate over the yielded content.
         """
         handler: BaseAsyncAgentEventHandler = AsyncAgentEventHandler()
-        await agent.client.agents.submit_tool_outputs_to_stream(
+        await agent.client.agents.runs.submit_tool_outputs_stream(
             run_id=run.id,
             thread_id=thread_id,
             tool_outputs=action_result.tool_outputs,  # type: ignore
@@ -616,7 +617,7 @@ class AgentThreadActions:
         Returns:
             The ID of the created thread.
         """
-        thread = await client.agents.create_thread(**kwargs)
+        thread = await client.agents.threads.create(**kwargs)
         return thread.id
 
     @classmethod
@@ -647,7 +648,7 @@ class AgentThreadActions:
         if not message.content.strip():
             return None
 
-        return await client.agents.create_message(
+        return await client.agents.messages.create(
             thread_id=thread_id,
             role=MessageRole.USER if message.role == AuthorRole.USER else MessageRole.AGENT,
             content=message.content,
@@ -807,7 +808,7 @@ class AgentThreadActions:
             await asyncio.sleep(polling_options.get_polling_interval(count).total_seconds())
             count += 1
             try:
-                run = await agent.client.agents.get_run(run_id=run.id, thread_id=thread_id)
+                run = await agent.client.agents.runs.get(run_id=run.id, thread_id=thread_id)
             except Exception as e:
                 logger.warning(f"Failed to retrieve run for run id: `{run.id}` and thread id: `{thread_id}`: {e}")
             if run.status not in cls.polling_status:
@@ -824,7 +825,7 @@ class AgentThreadActions:
         max_retries = 3
         while count < max_retries:
             try:
-                message = await agent.client.agents.get_message(thread_id=thread_id, message_id=message_id)
+                message = await agent.client.agents.messages.get(thread_id=thread_id, message_id=message_id)
                 break
             except Exception as ex:
                 logger.error(f"Failed to retrieve message {message_id} from thread {thread_id}: {ex}")
