@@ -14,6 +14,7 @@ from mcp import types
 from mcp.client.session import ClientSession
 from mcp.client.sse import sse_client
 from mcp.client.stdio import StdioServerParameters, stdio_client
+from mcp.client.streamable_http import streamablehttp_client
 from mcp.client.websocket import websocket_client
 from mcp.server.lowlevel import Server
 from mcp.shared.context import RequestContext
@@ -550,6 +551,68 @@ class MCPSsePlugin(MCPPluginBase):
         if self._client_kwargs:
             args.update(self._client_kwargs)
         return sse_client(**args)
+
+
+class MCPStreamableHttpPlugin(MCPPluginBase):
+    """MCP streamable http server configuration."""
+
+    def __init__(
+        self,
+        name: str,
+        url: str,
+        session: ClientSession | None = None,
+        description: str | None = None,
+        headers: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        sse_read_timeout: float | None = None,
+        terminate_on_close: bool | None = None,
+        kernel: Kernel | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the MCP streamable http plugin.
+
+        The arguments are used to create a streamable http client.
+        see mcp.client.streamable_http.streamablehttp_client for more details.
+
+        Any extra arguments passed to the constructor will be passed to the
+        streamable http client constructor.
+
+        Args:
+            name: The name of the plugin.
+            url: The URL of the MCP server.
+            session: The session to use for the MCP connection.
+            description: The description of the plugin.
+            headers: The headers to send with the request.
+            timeout: The timeout for the request.
+            sse_read_timeout: The timeout for reading from the SSE stream.
+            terminate_on_close: Close the transport when the MCP client is terminated.
+            kernel: The kernel instance with one or more Chat Completion clients.
+            kwargs: Any extra arguments to pass to the sse client.
+        """
+        super().__init__(name=name, description=description, session=session, kernel=kernel)
+        self.url = url
+        self.headers = headers or {}
+        self.timeout = timeout
+        self.sse_read_timeout = sse_read_timeout
+        self.terminate_on_close = terminate_on_close
+        self._client_kwargs = kwargs
+
+    def get_mcp_client(self) -> _AsyncGeneratorContextManager[Any, None]:
+        """Get an MCP streamable http client."""
+        args: dict[str, Any] = {
+            "url": self.url,
+        }
+        if self.headers:
+            args["headers"] = self.headers
+        if self.timeout:
+            args["timeout"] = self.timeout
+        if self.sse_read_timeout:
+            args["sse_read_timeout"] = self.sse_read_timeout
+        if self.terminate_on_close is not None:
+            args["terminate_on_close"] = self.terminate_on_close
+        if self._client_kwargs:
+            args.update(self._client_kwargs)
+        return streamablehttp_client(**args)
 
 
 class MCPWebsocketPlugin(MCPPluginBase):

@@ -273,7 +273,7 @@ internal static class AgentThreadActions
 
                     if (message is not null)
                     {
-                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, completedStep);
+                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, completedStep, logger);
 
                         if (content.Items.Count > 0)
                         {
@@ -414,7 +414,7 @@ internal static class AgentThreadActions
                     switch (contentUpdate.UpdateKind)
                     {
                         case StreamingUpdateReason.MessageUpdated:
-                            yield return GenerateStreamingMessageContent(agent.GetName(), contentUpdate);
+                            yield return GenerateStreamingMessageContent(agent.GetName(), run!, contentUpdate, logger);
                             break;
                     }
                 }
@@ -523,7 +523,7 @@ internal static class AgentThreadActions
 
                         if (message != null)
                         {
-                            ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, step);
+                            ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, step, logger);
                             messages?.Add(content);
                         }
                     }
@@ -554,7 +554,7 @@ internal static class AgentThreadActions
         logger.LogAzureAIAgentCompletedRun(nameof(InvokeAsync), run?.Id ?? "Failed", threadId);
     }
 
-    private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message, RunStep? completedStep = null)
+    private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message, RunStep? completedStep = null, ILogger? logger = null)
     {
         AuthorRole role = new(message.Role.ToString());
 
@@ -590,7 +590,15 @@ internal static class AgentThreadActions
 
                 foreach (MessageTextAnnotation annotation in textContent.Annotations)
                 {
-                    content.Items.Add(GenerateAnnotationContent(annotation));
+                    AnnotationContent? annotationItem = GenerateAnnotationContent(annotation);
+                    if (annotationItem != null)
+                    {
+                        content.Items.Add(annotationItem);
+                    }
+                    else
+                    {
+                        logger?.LogAzureAIAgentUnknownAnnotation(nameof(GenerateMessageContent), message.RunId, message.ThreadId, annotation.GetType());
+                    }
                 }
             }
             // Process image content
@@ -603,7 +611,7 @@ internal static class AgentThreadActions
         return content;
     }
 
-    private static StreamingChatMessageContent GenerateStreamingMessageContent(string? assistantName, MessageContentUpdate update)
+    private static StreamingChatMessageContent GenerateStreamingMessageContent(string? assistantName, ThreadRun run, MessageContentUpdate update, ILogger? logger)
     {
         StreamingChatMessageContent content =
             new(AuthorRole.Assistant, content: null)
@@ -624,7 +632,15 @@ internal static class AgentThreadActions
         // Process annotations
         else if (update.TextAnnotation != null)
         {
-            content.Items.Add(GenerateStreamingAnnotationContent(update.TextAnnotation));
+            StreamingAnnotationContent? annotationItem = GenerateStreamingAnnotationContent(update.TextAnnotation);
+            if (annotationItem != null)
+            {
+                content.Items.Add(annotationItem);
+            }
+            else
+            {
+                logger?.LogAzureAIAgentUnknownAnnotation(nameof(GenerateStreamingMessageContent), run.Id, run.ThreadId, update.TextAnnotation.GetType());
+            }
         }
 
         if (update.Role.HasValue && update.Role.Value != MessageRole.User)
@@ -664,46 +680,85 @@ internal static class AgentThreadActions
         return content.Items.Count > 0 ? content : null;
     }
 
-    private static AnnotationContent GenerateAnnotationContent(MessageTextAnnotation annotation)
+    private static AnnotationContent? GenerateAnnotationContent(MessageTextAnnotation annotation)
     {
-        string? fileId = null;
-
         if (annotation is MessageTextFileCitationAnnotation fileCitationAnnotation)
         {
-            fileId = fileCitationAnnotation.FileId;
+            return
+                new AnnotationContent(
+                    kind: AnnotationKind.FileCitation,
+                    label: annotation.Text,
+                    referenceId: fileCitationAnnotation.FileId)
+                {
+                    InnerContent = annotation,
+                    StartIndex = fileCitationAnnotation.StartIndex,
+                    EndIndex = fileCitationAnnotation.EndIndex,
+                };
+        }
+        if (annotation is MessageTextUrlCitationAnnotation urlCitationAnnotation)
+        {
+            return
+                new AnnotationContent(
+                    kind: AnnotationKind.UrlCitation,
+                    label: annotation.Text,
+                    referenceId: urlCitationAnnotation.UrlCitation.Url)
+                {
+                    InnerContent = annotation,
+                    Title = urlCitationAnnotation.UrlCitation.Title,
+                    StartIndex = urlCitationAnnotation.StartIndex,
+                    EndIndex = urlCitationAnnotation.EndIndex,
+                };
         }
         else if (annotation is MessageTextFilePathAnnotation filePathAnnotation)
         {
-            fileId = filePathAnnotation.FileId;
+            return
+                new AnnotationContent(
+                    label: annotation.Text,
+                    kind: AnnotationKind.TextCitation,
+                    referenceId: filePathAnnotation.FileId)
+                {
+                    InnerContent = annotation,
+                    StartIndex = filePathAnnotation.StartIndex,
+                    EndIndex = filePathAnnotation.EndIndex,
+                };
         }
 
-        return
-            new(annotation.Text)
-            {
-                Quote = annotation.Text,
-                FileId = fileId,
-            };
+        return null;
     }
 
-    private static StreamingAnnotationContent GenerateStreamingAnnotationContent(TextAnnotationUpdate annotation)
+    private static StreamingAnnotationContent? GenerateStreamingAnnotationContent(TextAnnotationUpdate annotation)
     {
-        string? fileId = null;
+        string? referenceId = null;
+        AnnotationKind kind;
 
         if (!string.IsNullOrEmpty(annotation.OutputFileId))
         {
-            fileId = annotation.OutputFileId;
+            referenceId = annotation.OutputFileId;
+            kind = AnnotationKind.TextCitation;
         }
         else if (!string.IsNullOrEmpty(annotation.InputFileId))
         {
-            fileId = annotation.InputFileId;
+            referenceId = annotation.InputFileId;
+            kind = AnnotationKind.FileCitation;
+        }
+        else if (!string.IsNullOrEmpty(annotation.Url))
+        {
+            referenceId = annotation.Url;
+            kind = AnnotationKind.UrlCitation;
+        }
+        else
+        {
+            return null;
         }
 
         return
-            new(annotation.TextToReplace)
+            new StreamingAnnotationContent(kind, referenceId)
             {
-                StartIndex = annotation.StartIndex ?? 0,
-                EndIndex = annotation.EndIndex ?? 0,
-                FileId = fileId,
+                Label = annotation.TextToReplace,
+                InnerContent = annotation,
+                Title = annotation.Title,
+                StartIndex = annotation.StartIndex,
+                EndIndex = annotation.EndIndex,
             };
     }
 

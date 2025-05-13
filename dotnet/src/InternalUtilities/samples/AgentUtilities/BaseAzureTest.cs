@@ -36,7 +36,7 @@ public abstract class BaseAzureAgentTest : BaseAgentsTest<PersistentAgentsClient
         {
             if (item is AnnotationContent annotation)
             {
-                await this.DownloadFileAsync(annotation.FileId!);
+                await this.DownloadFileAsync(annotation.ReferenceId!);
             }
         }
     }
