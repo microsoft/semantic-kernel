@@ -81,43 +81,6 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         }
     }
 
-    [Fact]
-    public async Task NoHandoffAsync()
-    {
-        // Define the agents
-        ChatCompletionAgent agent1 =
-            this.CreateAgent(
-                instructions:
-                """                
-                Analyze the previous message to determine count of words.
-
-                ALWAYS report the count using numeric digits formatted as: Words: <digits>                
-                """,
-                name: "Agent1",
-                description: "Able to count the number of words in a message");
-
-        // Define the pattern
-        InProcessRuntime runtime = new();
-        //Dictionary<string, AgentHandoffs> test = [];
-        //Dictionary<string, Dictionary<string, string>> test = [];
-        HandoffOrchestration orchestration =
-            new(handoffs: [],
-                agent1)
-            {
-                LoggerFactory = this.LoggerFactory
-            };
-
-        // Start the runtime
-        await runtime.StartAsync();
-        string input = "Tell me the count of words in: The quick brown fox jumps over the lazy dog";
-        Console.WriteLine($"\n# INPUT: {input}\n");
-        OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
-        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
-        Console.WriteLine($"\n# RESULT: {text}");
-
-        await runtime.RunUntilIdleAsync();
-    }
-
     private sealed class GithubPlugin
     {
         public Dictionary<string, string[]> Labels { get; } = [];

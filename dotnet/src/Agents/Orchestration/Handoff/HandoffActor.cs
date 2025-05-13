@@ -24,7 +24,7 @@ internal sealed class HandoffActor :
     private readonly AgentType _resultHandoff;
     private readonly List<ChatMessageContent> _cache;
 
-    private AgentType? _handoffAgentType;
+    private string? _handoffAgent;
     private string? _taskSummary;
 
     /// <summary>
@@ -113,11 +113,12 @@ internal sealed class HandoffActor :
                 await this.PublishMessageAsync(new HandoffMessages.Response { Message = response }, this.Context.Topic, messageId: null, messageContext.CancellationToken).ConfigureAwait(false);
             }
 
-            if (this._handoffAgentType != null)
+            if (this._handoffAgent != null)
             {
-                await this.SendMessageAsync(new HandoffMessages.Request(), this._handoffAgentType.Value, messageContext.CancellationToken).ConfigureAwait(false);
+                AgentType handoffType = this._handoffs[this._handoffAgent].AgentType;
+                await this.SendMessageAsync(new HandoffMessages.Request(), handoffType, messageContext.CancellationToken).ConfigureAwait(false);
 
-                this._handoffAgentType = null;
+                this._handoffAgent = null;
                 break;
             }
 
@@ -147,7 +148,7 @@ internal sealed class HandoffActor :
             {
                 KernelFunction kernelFunction =
                     KernelFunctionFactory.CreateFromMethod(
-                        (CancellationToken cancellationToken) => this.HandoffAsync(type, cancellationToken),
+                        (CancellationToken cancellationToken) => this.HandoffAsync(name, cancellationToken),
                         functionName: $"transfer_to_{name}",
                         description: description);
 
@@ -156,10 +157,10 @@ internal sealed class HandoffActor :
         }
     }
 
-    private ValueTask HandoffAsync(AgentType agentType, CancellationToken cancellationToken = default)
+    private ValueTask HandoffAsync(string agentName, CancellationToken cancellationToken = default)
     {
-        this.Logger.LogHandoffFunctionCall(this.Id, agentType);
-        this._handoffAgentType = agentType;
+        this.Logger.LogHandoffFunctionCall(this.Id, agentName);
+        this._handoffAgent = agentName;
         return ValueTask.CompletedTask;
     }
 

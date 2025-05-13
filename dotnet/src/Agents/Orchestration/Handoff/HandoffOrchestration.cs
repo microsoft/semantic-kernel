@@ -28,8 +28,11 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
     public HandoffOrchestration(OrchestrationHandoffs handoffs, params Agent[] agents)
         : base(OrchestrationName, agents)
     {
+        // Extract agent names
         HashSet<string> agentNames = agents.Select(a => a.Name ?? a.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        // Extract names from handoffs that don't align with a member agent.
         string[] badNames = [.. handoffs.Keys.Concat(handoffs.Values.SelectMany(h => h.Keys)).Where(name => !agentNames.Contains(name))];
+        // Fail fast if invalid names are present.
         if (badNames.Length > 0)
         {
             throw new ArgumentException($"The following agents are not defined in the orchestration: {string.Join(", ", badNames)}", nameof(handoffs));

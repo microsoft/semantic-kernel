@@ -37,11 +37,11 @@ internal static partial class HandoffOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "TOOL Handoff [{AgentId}]: {Handoff}")]
+        Message = "TOOL Handoff [{AgentId}]: {Name}")]
     public static partial void LogHandoffFunctionCall(
         this ILogger logger,
         AgentId agentId,
-        AgentType handoff);
+        string name);
 
     [LoggerMessage(
         EventId = 0,
