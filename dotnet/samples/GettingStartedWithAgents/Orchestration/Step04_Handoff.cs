@@ -19,11 +19,7 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
     [Fact]
     public async Task OrderSupportAsync()
     {
-        // Initialize plugin
-        OrderStatusPlugin githubPlugin = new();
-        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new OrderStatusPlugin());
-
-        // Define the agents
+        // Define the agents & tools
         ChatCompletionAgent triageAgent =
             this.CreateAgent(
                 instructions: "A customer support agent that triages issues.",
@@ -88,7 +84,6 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         OrchestrationResult<string> result = await orchestration.InvokeAsync(task, runtime);
         string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
         Console.WriteLine($"\n# RESULT: {text}");
-        // %%% Console.WriteLine($"\n# LABELS: {string.Join(",", githubPlugin.Labels["12345"])}\n");
 
         await runtime.RunUntilIdleAsync();
 
