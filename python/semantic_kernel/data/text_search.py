@@ -417,7 +417,9 @@ class TextSearch:
                     string_mapper=string_mapper,
                 )
             case _:
-                raise ValueError(f"Unknown output type: {output_type}. Must be 'str', 'TextSearchResult', or 'Any'.")
+                raise TextSearchException(
+                    f"Unknown output type: {output_type}. Must be 'str', 'TextSearchResult', or 'Any'."
+                )
 
     # endregion
     # region: Private methods

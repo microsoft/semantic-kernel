@@ -26,39 +26,18 @@ def test_text_search():
 class TestSearch(TextSearch):
     async def search(self, **kwargs) -> KernelSearchResults[Any]:
         """Test search function."""
+        output_type = kwargs.pop("output_type", str)
 
-        async def generator() -> AsyncGenerator[str, None]:
-            yield "test"
-
-        return KernelSearchResults(results=generator(), metadata=kwargs)
-
-    async def get_text_search_results(
-        self, query: str, options: SearchOptions | None = None, **kwargs: Any
-    ) -> KernelSearchResults[TextSearchResult]:
-        """Test get text search result function."""
-
-        async def generator() -> AsyncGenerator[TextSearchResult, None]:
-            yield TextSearchResult(value="test")
-
-        return KernelSearchResults(results=generator(), metadata=kwargs)
-
-    async def get_search_results(
-        self, query: str, options: SearchOptions | None = None, **kwargs: Any
-    ) -> KernelSearchResults[Any]:
-        """Test get search result function."""
-
-        async def generator() -> AsyncGenerator[str, None]:
-            yield "test"
+        async def generator() -> AsyncGenerator[str | TextSearchResult | Any, None]:
+            yield "test" if output_type is not TextSearchResult else TextSearchResult(value="test")
 
         return KernelSearchResults(results=generator(), metadata=kwargs)
 
 
-@pytest.mark.parametrize("search_function", ["search", "get_text_search_result", "get_search_result"])
-async def test_create_kernel_function(search_function: str, kernel: Kernel):
+@pytest.mark.parametrize("output_type", [str, TextSearchResult, "Any"])
+async def test_create_kernel_function(output_type: str, kernel: Kernel):
     test_search = TestSearch()
-    kernel_function = test_search._create_kernel_function(
-        search_function,
-    )
+    kernel_function = test_search._create_kernel_function(output_type=output_type)
     assert kernel_function is not None
     assert kernel_function.name == DEFAULT_FUNCTION_NAME
     assert kernel_function.description == DEFAULT_DESCRIPTION
@@ -73,20 +52,19 @@ async def test_create_kernel_function(search_function: str, kernel: Kernel):
     results = await kernel_function.invoke(kernel, KernelArguments(query="query"))
     assert results is not None
     assert results.value == (
-        ['{"name":null,"value":"test","link":null}'] if search_function == "get_text_search_result" else ["test"]
+        ['{"name":null,"value":"test","link":null}'] if output_type is TextSearchResult else ["test"]
     )
 
 
 def test_create_kernel_function_fail():
     test_search = TestSearch()
-    with pytest.raises(ValueError):
-        test_search._create_kernel_function(
-            search_function="unknown_test",
-            options=None,
-            parameters=None,
-            return_parameter=None,
+    with pytest.raises(TextSearchException):
+        test_search.create_search_function(
             function_name="search",
             description="description",
+            output_type="random",
+            parameters=None,
+            return_parameter=None,
             string_mapper=None,
         )
 
@@ -95,7 +73,7 @@ async def test_create_kernel_function_inner(kernel: Kernel):
     test_search = TestSearch()
 
     kernel_function = test_search._create_kernel_function(
-        search_function="search",
+        output_type=str,
         options=None,
         parameters=[],
         return_parameter=None,
@@ -112,7 +90,7 @@ async def test_create_kernel_function_inner_with_options(kernel: Kernel):
     test_search = TestSearch()
 
     kernel_function = test_search._create_kernel_function(
-        search_function="search",
+        output_type=str,
         options=SearchOptions(),
         parameters=[
             KernelParameterMetadata(
@@ -137,7 +115,7 @@ async def test_create_kernel_function_inner_with_other_options_type(kernel: Kern
     test_search = TestSearch()
 
     kernel_function = test_search._create_kernel_function(
-        search_function="search",
+        output_type=str,
         options=VectorSearchOptions(),
         parameters=[
             KernelParameterMetadata(
@@ -162,7 +140,7 @@ async def test_create_kernel_function_inner_no_results(kernel: Kernel):
     test_search = TestSearch()
 
     kernel_function = test_search._create_kernel_function(
-        search_function="search",
+        output_type=str,
         options=None,
         parameters=[],
         return_parameter=None,
@@ -221,16 +199,6 @@ def test_create_options_none():
     assert new_options.top == 1
 
 
-def test_create_options_vector_to_text():
-    options = SearchOptions(top=2, skip=1)
-    options_class = VectorSearchOptions
-    new_options = create_options(options_class, options, include_vectors=True, top=1)
-    assert new_options is not None
-    assert isinstance(new_options, options_class)
-    assert new_options.top == 1
-    assert new_options.include_vectors is True
-
-
 def test_create_options_from_dict():
     options = {"skip": 1}
     options_class = SearchOptions
@@ -244,29 +212,7 @@ def test_create_options_from_dict():
 
 def test_public_create_functions_search():
     test_search = TestSearch()
-    function = test_search.create_search()
-    assert function is not None
-    assert function.name == "search"
-    assert (
-        function.description == "Perform a search for content related to the specified query and return string results"
-    )
-    assert len(function.parameters) == 3
-
-
-def test_public_create_functions_get_text_search_results():
-    test_search = TestSearch()
-    function = test_search.create_get_text_search_results()
-    assert function is not None
-    assert function.name == "search"
-    assert (
-        function.description == "Perform a search for content related to the specified query and return string results"
-    )
-    assert len(function.parameters) == 3
-
-
-def test_public_create_functions_get_search_results():
-    test_search = TestSearch()
-    function = test_search.create_get_search_results()
+    function = test_search.create_search_function()
     assert function is not None
     assert function.name == "search"
     assert (

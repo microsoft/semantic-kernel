@@ -58,7 +58,7 @@ class OrderBy:
     """Order by class."""
 
     field: str
-    ascending: bool = Field(default=True, alias="asc")
+    ascending: bool = Field(default=True)
 
 
 @dataclass

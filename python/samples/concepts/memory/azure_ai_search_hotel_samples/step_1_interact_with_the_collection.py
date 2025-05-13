@@ -29,7 +29,7 @@ async def main(query: str):
             await collection.create_collection(index=custom_index)
         await collection.upsert(records)
         # get the first five records to check the upsert worked.
-        results = await collection.get(order_by={"field": "hotel_name", "asc": True}, top=5)
+        results = await collection.get(order_by={"field": "hotel_name", "ascending": True}, top=5)
         print("Get first five records: ")
         if results:
             for result in results:
