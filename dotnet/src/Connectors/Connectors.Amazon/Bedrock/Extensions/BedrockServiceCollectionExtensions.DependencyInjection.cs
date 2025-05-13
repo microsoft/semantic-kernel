@@ -39,14 +39,23 @@ public static class BedrockServiceCollectionExtensions
             try
             {
                 IAmazonBedrockRuntime runtime = bedrockRuntime ?? serviceProvider.GetRequiredService<IAmazonBedrockRuntime>();
-                var logger = serviceProvider.GetService<ILoggerFactory>();
+                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
                 // Check if the runtime instance is a proxy object
                 if (runtime.GetType().BaseType == typeof(AmazonServiceClient))
                 {
                     // Cast to AmazonServiceClient and subscribe to the event
                     ((AmazonServiceClient)runtime).BeforeRequestEvent += BedrockClientUtilities.BedrockServiceClientRequestHandler;
                 }
-                return runtime.AsIEmbeddingGenerator(modelId);
+
+                var embeddingGenerator = runtime.AsIEmbeddingGenerator(modelId);
+                if (loggerFactory is not null)
+                {
+                    embeddingGenerator = embeddingGenerator
+                        .AsBuilder()
+                        .UseLogging(loggerFactory)
+                        .Build();
+                }
+                return embeddingGenerator;
             }
             catch (Exception ex)
             {
