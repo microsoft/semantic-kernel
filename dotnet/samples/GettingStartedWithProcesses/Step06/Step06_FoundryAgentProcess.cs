@@ -283,7 +283,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         var teacher = processBuilder.AddStepFromAgent(teacherDefinition);
 
         // Orchestrate
-        processBuilder.ListenFor().InputEvent("start").SendEventToAgent(
+        processBuilder.ListenFor().ProcessEnter().SendEventToAgent(
             student,
             thread: "_variables_.StudentThread",
             messagesIn: "_variables_.TeacherMessages",
@@ -300,11 +300,18 @@ public class Step06_FoundryAgentProcess : BaseTest
             .Update(new() { Path = "_variables_.StudentState.Name", Operation = StateUpdateOperations.Set, Value = "Runhan" })
             .SendEventToAgent(teacher, messagesIn: "_variables_.StudentMessages");
 
-        processBuilder.ListenFor().OnResult(teacher, condition: "contains(to_string(_agent_.messages_out), '[COMPLETE]')")
+        processBuilder.ListenFor().OnExit(teacher, condition: "contains(to_string(_agent_.messages_out), '[COMPLETE]')")
+            .EmitEvent(
+                eventName: "correct_answer",
+                payload: new Dictionary<string, string>
+                {
+                    { "Question", "_variables_.TeacherMessages" },
+                    { "Answer", "_variables_.StudentMessages" }
+                })
             .Update(new() { Path = "_variables_.TeacherMessages", Operation = StateUpdateOperations.Set, Value = "_agent_.messages_out" })
             .Update(new() { Path = "_variables_.InteractionCount", Operation = StateUpdateOperations.Increment, Value = 1 });
 
-        processBuilder.ListenFor().OnResult(teacher, condition: "_default_")
+        processBuilder.ListenFor().OnExit(teacher, condition: "_default_")
             .SendEventToAgent(student);
 
         var process = processBuilder.Build();

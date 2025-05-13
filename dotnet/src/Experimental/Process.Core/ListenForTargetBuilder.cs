@@ -65,6 +65,19 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
     }
 
     /// <summary>
+    /// Signals that the specified event should be emitted.
+    /// </summary>
+    /// <param name="eventName"></param>
+    /// <param name="payload"></param>
+    /// <returns></returns>
+    public ListenForTargetBuilder EmitEvent(string eventName, Dictionary<string, string>? payload = null)
+    {
+        Verify.NotNullOrWhiteSpace(eventName, nameof(eventName));
+        this.SendEventTo_Internal(new ProcessEmitTargetBuilder(eventName, payload), this.Metadata);
+        return new ListenForTargetBuilder(this._messageSources, this._processBuilder, this.EdgeGroupBuilder);
+    }
+
+    /// <summary>
     /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
     /// </summary>
     /// <param name="target">The output target.</param>

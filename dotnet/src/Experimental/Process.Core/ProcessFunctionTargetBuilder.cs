@@ -59,6 +59,39 @@ public record ProcessStateTargetBuilder : ProcessTargetBuilder
 }
 
 /// <summary>
+/// Provides functionality for incrementally defining a process invocation target.
+/// </summary>
+public record ProcessEmitTargetBuilder : ProcessTargetBuilder
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessEmitTargetBuilder"/> class.
+    /// </summary>
+    /// <param name="eventName"></param>
+    /// <param name="payload"></param>
+    public ProcessEmitTargetBuilder(string eventName, Dictionary<string, string>? payload = null) : base(ProcessTargetType.StateUpdate)
+    {
+        Verify.NotNullOrWhiteSpace(eventName, nameof(eventName));
+        this.EventName = eventName;
+        this.Payload = payload;
+    }
+
+    /// <summary>
+    /// The name or type of the event to be emitted.
+    /// </summary>
+    public string EventName { get; init; }
+
+    /// <summary>
+    /// /// The payload to be sent with the event.
+    /// </summary>
+    public Dictionary<string, string>? Payload { get; init; }
+
+    internal override KernelProcessTarget Build(ProcessBuilder? processBuilder = null)
+    {
+        return new KernelProcessEmitTarget(this.EventName, this.Payload);
+    }
+}
+
+/// <summary>
 /// Provides functionality for incrementally defining a process function target.
 /// </summary>
 public record ProcessFunctionTargetBuilder : ProcessTargetBuilder

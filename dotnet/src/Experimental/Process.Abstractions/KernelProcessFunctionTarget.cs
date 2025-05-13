@@ -78,6 +78,34 @@ public record KernelProcessStateTarget : KernelProcessTarget
 }
 
 /// <summary>
+/// Represents a state operations target for an edge in a Process
+/// </summary>
+public record KernelProcessEmitTarget : KernelProcessTarget
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelProcessEmitTarget"/> class.
+    /// </summary>
+    /// <param name="eventName"></param>
+    /// <param name="payload"></param>
+    public KernelProcessEmitTarget(string eventName, Dictionary<string, string>? payload = null) : base(ProcessTargetType.StateUpdate)
+    {
+        Verify.NotNullOrWhiteSpace(eventName, nameof(eventName));
+        this.EventName = eventName;
+        this.Payload = payload;
+    }
+
+    /// <summary>
+    /// The name or type of the event to be emitted.
+    /// </summary>
+    public string EventName { get; init; }
+
+    /// <summary>
+    /// /// The payload to be sent with the event.
+    /// </summary>
+    public Dictionary<string, string>? Payload { get; init; }
+}
+
+/// <summary>
 /// A serializable representation of a specific parameter of a specific function of a specific Step.
 /// </summary>
 [DataContract]

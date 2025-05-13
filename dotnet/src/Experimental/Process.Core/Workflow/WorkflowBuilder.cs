@@ -385,7 +385,7 @@ public class WorkflowBuilder
                 ListenFor = new ListenCondition()
                 {
                     From = "_workflow_",
-                    Event = edge.Key
+                    Event = ResolveEventName(edge.Key)
                 },
                 Then = [.. edge.Value.Select(e => ThenAction.FromKernelProcessEdge(e, null))]
             };
@@ -515,7 +515,7 @@ public class WorkflowBuilder
                 ListenFor = new ListenCondition()
                 {
                     From = agentStep.State.Id,
-                    Event = edge.Key.key.EndsWith("Invoke.OnResult", StringComparison.Ordinal) ? "_on_complete_" : edge.Key.key,
+                    Event = ResolveEventName(edge.Key.key),
                     Condition = edge.Key.DeclarativeDefinition
                 },
                 Then = [.. edge.Value.Select(e => ThenAction.FromKernelProcessEdge(e.edge, defaultThread: agentStep.ThreadName))]
@@ -525,6 +525,30 @@ public class WorkflowBuilder
         }
 
         return node;
+    }
+
+    private static string ResolveEventName(string eventName)
+    {
+        Verify.NotNullOrWhiteSpace(eventName);
+
+        if (eventName.EndsWith("Invoke.OnResult", StringComparison.Ordinal))
+        {
+            return "_on_complete_";
+        }
+        if (eventName.EndsWith("Invoke.OnError", StringComparison.Ordinal))
+        {
+            return "_on_error_";
+        }
+        if (eventName.EndsWith("Invoke.OnEnter", StringComparison.Ordinal))
+        {
+            return "_on_enter_";
+        }
+        if (eventName.EndsWith("Invoke.OnExit", StringComparison.Ordinal))
+        {
+            return "_on_exit_";
+        }
+
+        return eventName;
     }
 
     private static List<OnEventAction> ToEventActions(KernelProcessDeclarativeConditionHandler? handler)

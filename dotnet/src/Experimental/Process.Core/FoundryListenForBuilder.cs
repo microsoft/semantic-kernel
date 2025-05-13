@@ -37,6 +37,16 @@ public class FoundryListenForBuilder
     /// <summary>
     /// Defines a message to listen for from a specific process step.
     /// </summary>
+    /// <param name="condition"></param>
+    /// <returns></returns>
+    public ListenForTargetBuilder ProcessEnter(KernelProcessEdgeCondition? condition = null)
+    {
+        return this.InputEvent("Invoke.OnEnter", condition);
+    }
+
+    /// <summary>
+    /// Defines a message to listen for from a specific process step.
+    /// </summary>
     /// <param name="messageType">The type of the message.</param>
     /// <param name="from">The process step from which the message originates.</param>
     /// <param name="condition">Condition that must be met for the message to be processed</param>
@@ -89,6 +99,28 @@ public class FoundryListenForBuilder
         }
 
         return this._listenForBuilder.OnResult(from, edgeCondition);
+    }
+
+    /// <summary>
+    /// Listen for the OnEnter event from a specific process step.
+    /// </summary>
+    /// <param name="from">The process step from which the message originates.</param>
+    /// <param name="condition">Condition that must be met for the message to be processed</param>
+    /// <returns>A builder for defining the target of the message.</returns>
+    public ListenForTargetBuilder OnEnter(ProcessStepBuilder from, string? condition = null)
+    {
+        return this.Message("Invoke.OnEnter", from, condition);
+    }
+
+    /// <summary>
+    /// Listen for the OnEnter event from a specific process step.
+    /// </summary>
+    /// <param name="from">The process step from which the message originates.</param>
+    /// <param name="condition">Condition that must be met for the message to be processed</param>
+    /// <returns>A builder for defining the target of the message.</returns>
+    public ListenForTargetBuilder OnExit(ProcessStepBuilder from, string? condition = null)
+    {
+        return this.Message("Invoke.OnExit", from, condition);
     }
 
     /// <summary>

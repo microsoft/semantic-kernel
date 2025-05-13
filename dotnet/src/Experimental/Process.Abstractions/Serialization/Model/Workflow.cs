@@ -861,6 +861,20 @@ public class ThenAction
     public object? Value { get; set; }
 
     /// <summary>
+    /// Gets or sets the type of message to emit.
+    /// </summary>
+    [YamlMember(Alias = "emit")]
+    [JsonPropertyName("emit")]
+    public string? EmitMessageType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the payload of the message to emit.
+    /// </summary>
+    [YamlMember(Alias = "payload")]
+    [JsonPropertyName("payload")]
+    public Dictionary<string, string>? EmitMessagePayload { get; set; }
+
+    /// <summary>
     /// Creates a new instance of the <see cref="ThenAction"/> class from a <see cref="KernelProcessEdge"/>.
     /// </summary>
     /// <param name="edge"></param>
@@ -905,6 +919,15 @@ public class ThenAction
                 Thread = thread
             };
         }
+        if (edge.OutputTarget is KernelProcessEmitTarget emitTarget)
+        {
+            return new ThenAction
+            {
+                Type = ActionType.Emit,
+                EmitMessageType = emitTarget.EventName,
+                EmitMessagePayload = emitTarget.Payload,
+            };
+        }
 
         throw new KernelException("Unsupported target type");
     }
@@ -923,7 +946,12 @@ public enum ActionType
     /// <summary>
     /// An action to aply an update to user state.
     /// </summary>
-    Update
+    Update,
+
+    /// <summary>
+    /// An action to emit an event.
+    /// </summary>
+    Emit
 }
 
 /// <summary>
