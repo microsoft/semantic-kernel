@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="GroupChatOrchestration"/>.
+/// Demonstrates how to use the <see cref="GroupChatOrchestration"/> with human in the loop.
 /// </summary>
 public class Step03a_GroupChatWithHumanInTheLoop(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
