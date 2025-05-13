@@ -721,8 +721,9 @@ internal static class AssistantThreadActions
         }
 
         return
-            new(kind, label: annotation.TextToReplace, referenceId)
+            new(kind, referenceId)
             {
+                Label = annotation.TextToReplace,
                 InnerContent = annotation,
                 StartIndex = annotation.StartIndex,
                 EndIndex = annotation.EndIndex,

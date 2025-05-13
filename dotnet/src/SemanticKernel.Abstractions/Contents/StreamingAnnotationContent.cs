@@ -32,7 +32,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// </summary>
     [JsonIgnore]
     [Obsolete("Use `Label` property instead.")]
-    public string Quote => this.Label;
+    public string? Quote => this.Label;
 
     /// <summary>
     /// Describes the annotation kind.
@@ -45,7 +45,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// <summary>
     /// The citation.
     /// </summary>
-    public string Label { get; init; } = string.Empty;
+    public string? Label { get; init; }
 
     /// <summary>
     /// The referenced file identifier.
@@ -55,7 +55,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// and image or document is produced as part of the agent response.
     /// </remarks>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? ReferenceId { get; init; }
+    public string ReferenceId { get; init; }
 
     /// <summary>
     /// The title of the annotation reference (when <see cref="Kind"/> == <see cref="AnnotationKind.UrlCitation"/>..
@@ -79,27 +79,23 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// Initializes a new instance of the <see cref="StreamingAnnotationContent"/> class.
     /// </summary>
     /// <param name="kind">Describes the kind of annotation</param>
-    /// <param name="label">The citation label.</param>
     /// <param name="referenceId">Identifies the referenced resource.</param>
     public StreamingAnnotationContent(
         AnnotationKind kind,
-        string label,
         string referenceId)
     {
-        Verify.NotNullOrWhiteSpace(label, nameof(label));
         Verify.NotNullOrWhiteSpace(referenceId, nameof(referenceId));
 
         this.Kind = kind;
-        this.Label = label;
         this.ReferenceId = referenceId;
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        bool hasReferenceId = !string.IsNullOrEmpty(this.ReferenceId);
+        bool hasLabel = !string.IsNullOrEmpty(this.ReferenceId);
 
-        return hasReferenceId ? $"{this.Label}: {this.ReferenceId}" : this.Label;
+        return hasLabel ? $"{this.Label}: {this.ReferenceId}" : this.ReferenceId;
     }
 
     /// <inheritdoc/>

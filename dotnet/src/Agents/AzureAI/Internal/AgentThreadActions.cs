@@ -753,8 +753,9 @@ internal static class AgentThreadActions
         }
 
         return
-            new StreamingAnnotationContent(kind, label: annotation.TextToReplace, referenceId)
+            new StreamingAnnotationContent(kind, referenceId)
             {
+                Label = annotation.TextToReplace,
                 InnerContent = annotation,
                 Title = annotation.Title,
                 StartIndex = annotation.StartIndex,

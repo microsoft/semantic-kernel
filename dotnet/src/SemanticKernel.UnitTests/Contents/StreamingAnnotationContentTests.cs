@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
 using Xunit;
 
@@ -20,8 +19,7 @@ public class StreamingAnnotationContentTests
     [Fact]
     public void VerifyStreamingAnnotationContentInitialState()
     {
-        Assert.Throws<ArgumentException>(() => new StreamingAnnotationContent(AnnotationKind.FileCitation, string.Empty, "test"));
-        Assert.Throws<ArgumentException>(() => new StreamingAnnotationContent(AnnotationKind.FileCitation, "test", string.Empty));
+        Assert.Throws<ArgumentException>(() => new StreamingAnnotationContent(AnnotationKind.FileCitation, string.Empty));
     }
 
     /// <summary>
@@ -31,8 +29,9 @@ public class StreamingAnnotationContentTests
     public void VerifyStreamingAnnotationContentWithFileId()
     {
         StreamingAnnotationContent definition =
-            new(AnnotationKind.FileCitation, "test label", "#id")
+            new(AnnotationKind.FileCitation, "#id")
             {
+                Label = "test label",
                 StartIndex = 33,
                 EndIndex = 49,
             };
