@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Agent = Azure.AI.Projects.Agent;
 
 namespace Agents;
 
@@ -21,15 +20,15 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         const string AgentInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
 
         // Define the agent
-        Agent definition = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
             AgentInstructions);
-        AzureAIAgent agent = new(definition, this.AgentsClient);
+        AzureAIAgent agent = new(definition, this.Client);
 
         // Create a thread for the agent conversation.
-        AzureAIAgentThread agentThread = new(this.AgentsClient, metadata: SampleMetadata);
+        AzureAIAgentThread agentThread = new(this.Client, metadata: SampleMetadata);
 
         // Respond to user input
         await InvokeAgentAsync(agent, agentThread, "Fortune favors the bold.");
@@ -47,19 +46,19 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         const string AgentInstructions = "Answer questions about the menu.";
 
         // Define the agent
-        Agent definition = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
             AgentInstructions);
-        AzureAIAgent agent = new(definition, this.AgentsClient);
+        AzureAIAgent agent = new(definition, this.Client);
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        AzureAIAgentThread agentThread = new(this.AgentsClient, metadata: SampleMetadata);
+        AzureAIAgentThread agentThread = new(this.Client, metadata: SampleMetadata);
 
         // Respond to user input
         await InvokeAgentAsync(agent, agentThread, "What is the special soup and its price?");
@@ -76,16 +75,16 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         const string AgentInstructions = "Solve math problems with code.";
 
         // Define the agent
-        Agent definition = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
             AgentInstructions,
             [new CodeInterpreterToolDefinition()]);
-        AzureAIAgent agent = new(definition, this.AgentsClient);
+        AzureAIAgent agent = new(definition, this.Client);
 
         // Create a thread for the agent conversation.
-        AzureAIAgentThread agentThread = new(this.AgentsClient, metadata: SampleMetadata);
+        AzureAIAgentThread agentThread = new(this.Client, metadata: SampleMetadata);
 
         // Respond to user input
         await InvokeAgentAsync(agent, agentThread, "Is 191 a prime number?");

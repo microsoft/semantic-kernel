@@ -55,7 +55,7 @@ public sealed partial class AzureAIAgent : Agent
     /// Initializes a new instance of the <see cref="AzureAIAgent"/> class.
     /// </summary>
     /// <param name="model">The agent model definition.</param>
-    /// <param name="client">An <see cref="AgentsClient"/> instance.</param>
+    /// <param name="client">An <see cref="PersistentAgentsClient"/> instance.</param>
     /// <param name="plugins">Optional collection of plugins to add to the kernel.</param>
     /// <param name="templateFactory">An optional factory to produce the <see cref="IPromptTemplate"/> for the agent.</param>
     /// <param name="templateFormat">The format of the prompt template used when "templateFactory" parameter is supplied.</param>
