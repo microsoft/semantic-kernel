@@ -13,9 +13,6 @@
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
-  <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/openai/Policies/GeneratedActionPipelinePolicy.cs" Link="%(RecursiveDir)OpenAI/%(Filename)%(Extension)" />
-  </ItemGroup>
   
   <PropertyGroup>
     <!-- NuGet Package Settings -->
