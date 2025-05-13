@@ -163,17 +163,26 @@ public class WhiteboardBehavior : AIContextBehavior
         """
         You are an expert in maintaining a whiteboard during a conversation.The whiteboard should capture:
         - **Requirements**: Goals or needs expressed by the user.
-        - **Proposals**: Suggested solutions to the requirements, provided by the user or assistant.
-        - **Decisions**: Finalized outcomes, including all relevant details.
+        - **Proposals**: Suggested solutions to the requirements, provided by the assistant.
+        - **Decisions**: Decisions made by the user, including all relevant details.
+        - **Outcomes**: Results of actions taken, including all relevant details.
+
+        ## Transitions:
+        - **Requirements -> Proposal**: When a proposal is made to satisfy one or more requirements.
+        - **Proposal -> Decision**: When a proposal is accepted by the user.
+        - **Proposal -> Outcome**: When an action is taken to execute a proposal.
+        - **Decision -> Outcome**: When an action is taken to execute a decision.
 
         ## Guidelines:
         1. **Update Existing Entries**: Modify whiteboard entries as requirements change or new proposals and decisions are made.
         2. **User is decision maker**: Only users can make decisions. The assistant can only make proposals and execute them.
-        3. **Remove Redundant Information**: When a decision is made, remove the related requirements and proposals.
+        3. **Remove Redundant Information**: When a decision is made or an outcome is achieved, remove the related requirements and proposals.
         4. **Keep Requirements Concise**: Ensure requirements are clear and to the point.
-        5. **Categorize Entries**: Prefix each entry with `REQUIREMENT`, `PROPOSAL`, or `DECISION`.
-        6. **Prioritize Decisions**: Retain detailed decisions longer than requirements or proposals.
-        7. **Limit Entries**: Maintain a maximum of {{$maxWhiteboardMessages}} entries. If the limit is exceeded, combine or remove the least important entries, prioritizing decisions.
+        5. **Keep Decisions, Proposals and Outcomes Detailed**: Ensure decisions, proposals and outcomes are comprehensive and include all requirements that went into the decision, proposal or outcome.
+        6. **Keep Decisions, Proposals and Outcomes Self Contained**: Ensure decisions, proposals and outcomes are self-contained and do not reference other entries.
+        6. **Categorize Entries**: Prefix each entry with `REQUIREMENT`, `PROPOSAL`, `DECISION` or `OUTCOME`.
+        7. **Prioritize Decisions and Outcomes**: Retain detailed decisions and outcomes longer than requirements or proposals.
+        8. **Limit Entries**: Maintain a maximum of {{$maxWhiteboardMessages}} entries. If the limit is exceeded, combine or remove the least important entries, prioritize keeping decisions and outcomes.
 
         ## Examples:
 
@@ -232,6 +241,15 @@ public class WhiteboardBehavior : AIContextBehavior
         [""DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
 
         ### Example 7:
+        
+        New Message:
+        [{"AuthorName":"TravelAgent","Role":"assistant","Text":"OK, I'll go ahead and book that for you."}]
+        Current Whiteboard:
+        [""DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
+        New Whiteboard:
+        [""OUTCOME - TravelAgent booked a flight for Mary departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir for EUR 243."]
+        
+        ### Example 8:
 
         New Message:
         [{"AuthorName":"Mary","Role":"user","Text":"I don't like the suggested option. Can I leave a day earlier and fly with anyone but NotsocheapoAir?"}]

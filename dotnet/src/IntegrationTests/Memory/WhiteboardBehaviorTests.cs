@@ -44,7 +44,7 @@ public class WhiteboardBehaviorTests
         this._output = output;
     }
 
-    [RetryTheory]
+    [Theory]
     [MemberData(nameof(AddMessagesToWhiteboardData))]
     public async Task CanAddMessagesToWhiteboardAsync(ChatMessage[] chatMessages, string[][] expectedWhiteboardContent)
     {
@@ -134,6 +134,37 @@ public class WhiteboardBehaviorTests
             new string[][]
             {
                 new string[] { "REQUIREMENT", "lamp" }, new string[] { "REQUIREMENT", "red" }, new string[] { "REQUIREMENT", "efficient" }
+            }
+        };
+        yield return new object[]
+        {
+            new[]
+            {
+                new ChatMessage(ChatRole.User, "I am looking to create a VM") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "It should be in Europe") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "It should have 16GB or RAM") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "It should have 4 cores") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.Assistant, "OK, shall I create a VM for you in Europe with 16GB of RAM, 4 cores and with the name `VM-Europe`?") { AuthorName = "Copilot" },
+            },
+            new string[][]
+            {
+                new string[] { "PROPOSAL", "Europe", "16GB", "4", "VM", "VM-Europe" }
+            }
+        };
+        yield return new object[]
+        {
+            new[]
+            {
+                new ChatMessage(ChatRole.User, "I am looking to create a VM") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.Assistant, "I need you to give me the required location, amount of RAM you need, and number of cores required.") { AuthorName = "Copilot" },
+                new ChatMessage(ChatRole.User, "It should be in Europe") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "It should have 16GB or RAM") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "It should have 4 cores") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.Assistant, "OK, I've created the VM for you.") { AuthorName = "Copilot" },
+            },
+            new string[][]
+            {
+                new string[] { "OUTCOME", "Europe", "16GB", "4", "VM" }
             }
         };
     }
