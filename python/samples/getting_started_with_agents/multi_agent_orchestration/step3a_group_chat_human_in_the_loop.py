@@ -114,7 +114,7 @@ async def main():
 
     # 3. Invoke the orchestration with a task and the runtime
     orchestration_result = await group_chat_orchestration.invoke(
-        task="Create a slogon for a new eletric SUV that is affordable and fun to drive.",
+        task="Create a slogan for a new electric SUV that is affordable and fun to drive.",
         runtime=runtime,
     )
 
