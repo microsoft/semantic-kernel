@@ -183,7 +183,7 @@ class GroupChatManager(KernelBaseModel, ABC):
     current_round: int = 0
     max_rounds: int | None = None
 
-    human_response_function: Callable[[], Awaitable[ChatMessageContent] | ChatMessageContent] | None = None
+    human_response_function: Callable[[ChatHistory], Awaitable[ChatMessageContent] | ChatMessageContent] | None = None
 
     @abstractmethod
     async def should_request_user_input(self, chat_history: ChatHistory) -> BooleanResult:
