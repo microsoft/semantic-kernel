@@ -102,7 +102,7 @@ public class HandoffOrchestrationTests : IDisposable
         Assert.NotNull(result);
 
         // Act
-        string response = await result.GetValueAsync(TimeSpan.FromSeconds(100));
+        string response = await result.GetValueAsync(TimeSpan.FromSeconds(10));
         await runtime.RunUntilIdleAsync();
 
         return response;
