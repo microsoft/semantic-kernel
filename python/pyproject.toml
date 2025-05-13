@@ -52,6 +52,8 @@ dependencies = [
     "aiortc>=1.9.0",
     # Protobuf
     "protobuf",
+    # explicit typing extensions
+    "typing-extensions>=4.13",
 ]
 
 ### Optional dependencies
