@@ -222,7 +222,7 @@ public sealed class GeminiChatGenerationFunctionCallingTests : IDisposable
         var chatHistory = CreateSampleChatHistory();
         var executionSettings = new PromptExecutionSettings
         {
-            FunctionChoiceBehavior= FunctionChoiceBehavior.Auto()
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
         // Act
