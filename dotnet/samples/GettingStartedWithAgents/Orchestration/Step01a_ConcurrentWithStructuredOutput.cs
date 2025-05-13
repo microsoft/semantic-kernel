@@ -14,7 +14,7 @@ using Resources;
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="ConcurrentOrchestration"/>.
+/// Demonstrates how to use the <see cref="ConcurrentOrchestration"/> with structured output.
 /// </summary>
 public class Step01a_ConcurrentWithStructuredOutput(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
