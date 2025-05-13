@@ -19,7 +19,7 @@ namespace VectorStoreRAG;
 /// <param name="chatCompletionService">The chat completion service to use for generating text from images.</param>
 internal sealed class DataLoader<TKey>(
     UniqueKeyGenerator<TKey> uniqueKeyGenerator,
-    VectorStoreCollection<TKey, TextSnippet<TKey>> vectorStoreRecordCollection, 
+    VectorStoreCollection<TKey, TextSnippet<TKey>> vectorStoreRecordCollection,
     IChatCompletionService chatCompletionService) : IDataLoader where TKey : notnull
 {
     /// <inheritdoc/>
