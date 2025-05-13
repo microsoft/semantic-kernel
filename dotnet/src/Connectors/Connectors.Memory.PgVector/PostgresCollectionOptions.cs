@@ -11,6 +11,20 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 public sealed class PostgresCollectionOptions
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresCollectionOptions"/> class.
+    /// </summary>
+    public PostgresCollectionOptions()
+    {
+    }
+
+    internal PostgresCollectionOptions(PostgresCollectionOptions? source, IEmbeddingGenerator embeddingGenerator)
+    {
+        this.Schema = source?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
+        this.VectorStoreRecordDefinition = source?.VectorStoreRecordDefinition;
+        this.EmbeddingGenerator = embeddingGenerator;
+    }
+
+    /// <summary>
     /// Gets or sets the database schema.
     /// </summary>
     public string Schema { get; set; } = PostgresVectorStoreOptions.Default.Schema;
