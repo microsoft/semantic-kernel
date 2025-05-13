@@ -26,6 +26,8 @@ from .open_ai.azure_responses_agent import AzureResponsesAgent
 from .open_ai.open_ai_assistant_agent import AssistantAgentThread, OpenAIAssistantAgent
 from .open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
 from .open_ai.run_polling_options import RunPollingOptions
+from .orchestration.concurrent import ConcurrentOrchestration
+from .orchestration.sequential import SequentialOrchestration
 
 __all__ = [
     "Agent",
@@ -47,6 +49,7 @@ __all__ = [
     "BedrockAgentThread",
     "ChatCompletionAgent",
     "ChatHistoryAgentThread",
+    "ConcurrentOrchestration",
     "CopilotStudioAgent",
     "CopilotStudioAgentAuthMode",
     "CopilotStudioAgentSettings",
@@ -58,6 +61,7 @@ __all__ = [
     "OpenAIResponsesAgent",
     "ResponsesAgentThread",
     "RunPollingOptions",
+    "SequentialOrchestration",
     "ToolSpec",
     "register_agent_type",
 ]

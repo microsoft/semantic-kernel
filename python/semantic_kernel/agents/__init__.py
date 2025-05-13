@@ -35,6 +35,8 @@ _AGENTS = {
     "RunPollingOptions": ".open_ai.run_polling_options",
     "register_agent_type": ".agent",
     "ToolSpec": ".agent",
+    "ConcurrentOrchestration": ".orchestration.concurrent",
+    "SequentialOrchestration": ".orchestration.sequential",
 }
 
 
