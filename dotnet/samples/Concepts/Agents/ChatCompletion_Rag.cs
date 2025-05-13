@@ -36,7 +36,7 @@ public class ChatCompletion_Rag(ITestOutputHelper output) : BaseTest(output)
     {
         var textEmbeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Create a vector store to store our documents.
         // Note that the embedding generator provided here must be able to generate embeddings matching the
@@ -94,7 +94,7 @@ public class ChatCompletion_Rag(ITestOutputHelper output) : BaseTest(output)
     {
         var textEmbeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Create a vector store to store our documents.
         // Note that the embedding generator provided here must be able to generate embeddings matching the
