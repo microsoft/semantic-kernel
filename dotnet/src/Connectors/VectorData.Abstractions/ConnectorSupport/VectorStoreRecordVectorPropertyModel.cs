@@ -126,7 +126,7 @@ public class VectorStoreRecordVectorPropertyModel(string modelName, Type type) :
                     this.GetValueAsObject(record) is var value && value is string s
                         ? s
                         : throw new InvalidOperationException($"Property '{this.ModelName}' was configured with an embedding generator accepting a string, but {value?.GetType().Name ?? "null"} was provided."),
-                    new() { Dimensions = this.Dimensions },
+                    options: null,
                     cancellationToken);
                 return true;
             }
@@ -137,7 +137,7 @@ public class VectorStoreRecordVectorPropertyModel(string modelName, Type type) :
                     this.GetValueAsObject(record) is var value && value is DataContent c
                         ? c
                         : throw new InvalidOperationException($"Property '{this.ModelName}' was configured with an embedding generator accepting a {nameof(DataContent)}, but {value?.GetType().Name ?? "null"} was provided."),
-                    new() { Dimensions = this.Dimensions },
+                    options: null,
                     cancellationToken);
                 return true;
             }
@@ -176,7 +176,8 @@ public class VectorStoreRecordVectorPropertyModel(string modelName, Type type) :
                     records.Select(r => this.GetValueAsObject(r) is var value && value is string s
                         ? s
                         : throw new InvalidOperationException($"Property '{this.ModelName}' was configured with an embedding generator accepting a string, but {value?.GetType().Name ?? "null"} was provided.")),
-                    new() { Dimensions = this.Dimensions }, cancellationToken);
+                    options: null,
+                    cancellationToken);
                 return true;
 
             case IEmbeddingGenerator<DataContent, TEmbedding> generator when this.EmbeddingType == typeof(TUnwrappedEmbedding):
@@ -184,7 +185,8 @@ public class VectorStoreRecordVectorPropertyModel(string modelName, Type type) :
                     records.Select(r => this.GetValueAsObject(r) is var value && value is DataContent c
                         ? c
                         : throw new InvalidOperationException($"Property '{this.ModelName}' was configured with an embedding generator accepting a {nameof(DataContent)}, but {value?.GetType().Name ?? "null"} was provided.")),
-                    new() { Dimensions = this.Dimensions }, cancellationToken);
+                    options: null,
+                    cancellationToken);
                 return true;
 
             case null:

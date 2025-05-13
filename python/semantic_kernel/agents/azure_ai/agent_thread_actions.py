@@ -16,6 +16,7 @@ from azure.ai.projects.models import (
     OpenAIPageableListOfThreadMessage,
     ResponseFormatJsonSchemaType,
     RunStep,
+    RunStepBingGroundingToolCall,
     RunStepCodeInterpreterToolCall,
     RunStepDeltaChunk,
     RunStepDeltaToolCallObject,
@@ -31,13 +32,14 @@ from azure.ai.projects.models import (
 from azure.ai.projects.models._enums import MessageRole
 
 from semantic_kernel.agents.azure_ai.agent_content_generation import (
+    generate_bing_grounding_content,
     generate_code_interpreter_content,
     generate_function_call_content,
     generate_function_call_streaming_content,
     generate_function_result_content,
     generate_message_content,
+    generate_streaming_bing_grounding_content,
     generate_streaming_code_interpreter_content,
-    generate_streaming_function_content,
     generate_streaming_message_content,
     get_function_call_contents,
 )
@@ -277,6 +279,17 @@ class AgentThreadActions:
                                         function_step=function_step,
                                         tool_call=tool_call,  # type: ignore
                                     )
+                                case AgentsNamedToolChoiceType.BING_GROUNDING:
+                                    logger.debug(
+                                        f"Entering tool_calls (bing grounding) for run [{run.id}], agent "
+                                        f" `{agent.name}` and thread `{thread_id}`"
+                                    )
+                                    bing_call: RunStepBingGroundingToolCall = cast(
+                                        RunStepBingGroundingToolCall, tool_call
+                                    )
+                                    content = generate_bing_grounding_content(
+                                        agent_name=agent.name, bing_tool_call=bing_call
+                                    )
 
                             if content:
                                 message_count += 1
@@ -464,11 +477,16 @@ class AgentThreadActions:
                             content_is_visible = False
                             for tool_call in details.tool_calls:
                                 content = None
-                                if tool_call.type == "function":
-                                    content = generate_streaming_function_content(agent.name, details)
-                                elif tool_call.type == "code_interpreter":
-                                    content = generate_streaming_code_interpreter_content(agent.name, details)
-                                    content_is_visible = True
+                                match tool_call.type:
+                                    # Function Calling-related content is emitted as a single message
+                                    # via the `on_intermediate_message` callback.
+                                    case AgentsNamedToolChoiceType.CODE_INTERPRETER:
+                                        content = generate_streaming_code_interpreter_content(agent.name, details)
+                                        content_is_visible = True
+                                    case AgentsNamedToolChoiceType.BING_GROUNDING:
+                                        content = generate_streaming_bing_grounding_content(
+                                            agent_name=agent.name, step_details=details
+                                        )
                                 if content:
                                     if output_messages is not None:
                                         output_messages.append(content)
@@ -490,22 +508,25 @@ class AgentThreadActions:
                                 f"thread: {thread_id}."
                             )
 
-                        if action_result.function_call_streaming_content:
-                            if output_messages is not None:
-                                output_messages.append(action_result.function_call_streaming_content)
-                            async for sub_content in cls._stream_tool_outputs(
-                                agent=agent,
-                                thread_id=thread_id,
-                                run=run,
-                                action_result=action_result,
-                                active_messages=active_messages,
-                                output_messages=output_messages,
-                            ):
-                                if sub_content:
-                                    yield sub_content
+                        # First: append full call + result, so they appear before streaming tool text
+                        for content in (
+                            action_result.function_call_streaming_content,
+                            action_result.function_result_streaming_content,
+                        ):
+                            if content and output_messages is not None:
+                                output_messages.append(content)
 
-                        if action_result.function_result_streaming_content and output_messages is not None:
-                            output_messages.append(action_result.function_result_streaming_content)
+                        # Then: stream tool output content
+                        async for sub_content in cls._stream_tool_outputs(
+                            agent=agent,
+                            thread_id=thread_id,
+                            run=run,
+                            action_result=action_result,
+                            active_messages=active_messages,
+                            output_messages=output_messages,
+                        ):
+                            if sub_content:
+                                yield sub_content
 
                         break
 

@@ -38,13 +38,17 @@
     <ProjectReference Include="..\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\Plugins.Memory\Plugins.Memory.csproj" />
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/HttpHeaderConstant.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Update="TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
+
   <ItemGroup>
     <Folder Include="Web\Tavily\" />
   </ItemGroup>
