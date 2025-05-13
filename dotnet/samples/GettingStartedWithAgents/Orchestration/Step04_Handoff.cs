@@ -5,72 +5,90 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="HandoffOrchestration"/>.
+/// Demonstrates how to use the <see cref="HandoffOrchestration"/> that represents
+/// a customer support triage system.The orchestration consists of 4 agents, each specialized
+/// in a different area of customer support: triage, refunds, order status, and order returns.
 /// </summary>
 public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task TriageAsync()
+    public async Task OrderSupportAsync()
     {
         // Initialize plugin
-        GithubPlugin githubPlugin = new();
-        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(githubPlugin);
+        OrderStatusPlugin githubPlugin = new();
+        KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new OrderStatusPlugin());
 
         // Define the agents
         ChatCompletionAgent triageAgent =
             this.CreateAgent(
-                instructions: "Given a GitHub issue, triage it.",
+                instructions: "A customer support agent that triages issues.",
                 name: "TriageAgent",
-                description: "An agent that triages GitHub issues");
-        ChatCompletionAgent pythonAgent =
+                description: "Handle customer requests.");
+        ChatCompletionAgent statusAgent =
             this.CreateAgent(
-                instructions: "You are an agent that handles Python related GitHub issues.",
-                name: "PythonAgent",
-                description: "An agent that handles Python related issues");
-        pythonAgent.Kernel.Plugins.Add(plugin);
-        ChatCompletionAgent dotnetAgent =
+                name: "OrderStatusAgent",
+                instructions: "Handle order status requests.",
+                description: "A customer support agent that checks order status.");
+        statusAgent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new OrderStatusPlugin()));
+        ChatCompletionAgent returnAgent =
             this.CreateAgent(
-                instructions: "You are an agent that handles .NET related GitHub issues.",
-                name: "DotNetAgent",
-                description: "An agent that handles .NET related issues");
-        dotnetAgent.Kernel.Plugins.Add(plugin);
+                name: "OrderReturnAgent",
+                instructions: "Handle order return requests.",
+                description: "A customer support agent that handles order returns.");
+        returnAgent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new OrderReturnPlugin()));
+        ChatCompletionAgent refundAgent =
+            this.CreateAgent(
+                name: "OrderRefundAgent",
+                instructions: "Handle order refund requests.",
+                description: "A customer support agent that handles order refund.");
+        refundAgent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new OrderRefundPlugin()));
 
         // Define the orchestration
         OrchestrationMonitor monitor = new();
+        Queue<string> responses = new();
         HandoffOrchestration orchestration =
-            new(OrchestrationHandoffs.Add(triageAgent, dotnetAgent, pythonAgent),
+            new(OrchestrationHandoffs
+                    .Add(triageAgent, statusAgent, returnAgent, refundAgent)
+                    .Add(statusAgent, triageAgent, "Transfer to this agent if the issue is not status related")
+                    .Add(returnAgent, triageAgent, "Transfer to this agent if the issue is not return related")
+                    .Add(refundAgent, triageAgent, "Transfer to this agent if the issue is not refund related"),
                 triageAgent,
-                pythonAgent,
-                dotnetAgent)
+                statusAgent,
+                returnAgent,
+                refundAgent)
             {
+                InteractiveCallback = () =>
+                {
+                    string input = responses.Dequeue();
+                    Console.WriteLine($"\n# INPUT: {input}\n");
+                    return ValueTask.FromResult(new ChatMessageContent(AuthorRole.User, input));
+                },
                 ResponseCallback = monitor.ResponseCallback,
                 LoggerFactory = this.LoggerFactory
             };
-
-        const string InputJson =
-            """
-            {
-              "id": "12345",
-              "title": "Bug: SQLite Error 1: 'ambiguous column name:' when including VectorStoreRecordKey in VectorSearchOptions.Filter",
-              "body": "Describe the bug\nWhen using column names marked as [VectorStoreRecordData(IsFilterable = true)] in VectorSearchOptions.Filter, the query runs correctly.\nHowever, using the column name marked as [VectorStoreRecordKey] in VectorSearchOptions.Filter, the query throws exception 'SQLite Error 1: ambiguous column name: StartUTC'.\n\nTo Reproduce\nAdd a filter for the column marked [VectorStoreRecordKey]. Since that same column exists in both the vec_TestTable and TestTable, the data for both columns cannot be returned.\n\nExpected behavior\nThe query should explicitly list the vec_TestTable column names to retrieve and should omit the [VectorStoreRecordKey] column since it will be included in the primary TestTable columns.\n\nPlatform\nMicrosoft.SemanticKernel.Connectors.Sqlite v1.46.0-preview\n\nAdditional context\nNormal DBContext logging shows only normal context queries. Queries run by VectorizedSearchAsync() don't appear in those logs and I could not find a way to enable logging in semantic search so that I could actually see the exact query that is failing. It would have been very useful to see the failing semantic query.",
-              "labels": []
-            }
-            """;
 
         // Start the runtime
         InProcessRuntime runtime = new();
         await runtime.StartAsync();
 
         // Run the orchestration
-        Console.WriteLine($"\n# INPUT:\n{InputJson}\n");
-        OrchestrationResult<string> result = await orchestration.InvokeAsync(InputJson, runtime);
+        string task = "I am a customer that needs help with my orders";
+        responses.Enqueue("I'd like to track the status of my order");
+        responses.Enqueue("My order ID is 123");
+        responses.Enqueue("I want to return another order of mine");
+        responses.Enqueue("Order ID 321");
+        responses.Enqueue("Broken item");
+        responses.Enqueue("No, bye");
+        Console.WriteLine($"\n# INPUT:\n{task}\n");
+        OrchestrationResult<string> result = await orchestration.InvokeAsync(task, runtime);
         string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
         Console.WriteLine($"\n# RESULT: {text}");
-        Console.WriteLine($"\n# LABELS: {string.Join(",", githubPlugin.Labels["12345"])}\n");
+        // %%% Console.WriteLine($"\n# LABELS: {string.Join(",", githubPlugin.Labels["12345"])}\n");
 
         await runtime.RunUntilIdleAsync();
 
@@ -81,14 +99,21 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         }
     }
 
-    private sealed class GithubPlugin
+    private sealed class OrderStatusPlugin
     {
-        public Dictionary<string, string[]> Labels { get; } = [];
-
         [KernelFunction]
-        public void AddLabels(string issueId, params string[] labels)
-        {
-            this.Labels[issueId] = labels;
-        }
+        public string CheckOrderStatus(string orderId) => $"Order {orderId} is shipped and will arrive in 2-3 days.";
+    }
+
+    private sealed class OrderReturnPlugin
+    {
+        [KernelFunction]
+        public string ProcessReturn(string orderId, string reason) => $"Return for order {orderId} has been processed successfully.";
+    }
+
+    private sealed class OrderRefundPlugin
+    {
+        [KernelFunction]
+        public string ProcessReturn(string orderId, string reason) => $"Refund for order {orderId} has been processed successfully.";
     }
 }

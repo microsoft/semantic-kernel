@@ -122,7 +122,7 @@ internal sealed class HandoffActor :
                 break;
             }
 
-            if (this.InteractiveCallback != null)
+            if (this.InteractiveCallback != null && this._taskSummary == null)
             {
                 ChatMessageContent input = await this.InteractiveCallback().ConfigureAwait(false);
                 this._cache.Add(input);
