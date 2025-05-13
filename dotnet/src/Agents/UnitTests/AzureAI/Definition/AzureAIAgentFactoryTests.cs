@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Azure.AI.Agents.Persistent;
-using Azure.AI.Projects.OneDP;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
