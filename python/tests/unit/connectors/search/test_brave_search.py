@@ -175,8 +175,8 @@ async def test_get_text_search_results_success(brave_unit_test_env, async_client
         patch.object(BraveSearchResponse, "model_validate_json", return_value=mock_response),
     ):
         search_instance = BraveSearch()
-        kernel_results: KernelSearchResults[TextSearchResult] = await search_instance.get_text_search_results(
-            "Test query", include_total_count=True
+        kernel_results: KernelSearchResults[TextSearchResult] = await search_instance.search(
+            "Test query", include_total_count=True, output_type=TextSearchResult
         )
 
     # Assert
@@ -214,7 +214,7 @@ async def test_get_search_results_success(brave_unit_test_env, async_client_mock
     ):
         # Act
         search_instance = BraveSearch()
-        kernel_results = await search_instance.get_search_results("Another query", include_total_count=True)
+        kernel_results = await search_instance.search("Another query", include_total_count=True, output_type="Any")
 
     # Assert
     results_list = []

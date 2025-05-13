@@ -2,9 +2,10 @@
 
 import ast
 import logging
+import sys
 from collections.abc import AsyncIterable, Callable
 from inspect import getsource
-from typing import Any, ClassVar, Final, Literal, override
+from typing import Any, ClassVar, Final, Literal
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import Field, SecretStr, ValidationError
@@ -22,6 +23,11 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel, KernelBaseSettings
 from semantic_kernel.kernel_types import OptionalOneOrList
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
+
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
 logger: logging.Logger = logging.getLogger(__name__)
 

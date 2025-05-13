@@ -1,30 +1,32 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
-from collections.abc import Coroutine
-from typing import Any
+from collections.abc import Awaitable, Callable
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
-from semantic_kernel.connectors.search.google import GoogleSearch
+from semantic_kernel.connectors.search import GoogleSearch
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
-from semantic_kernel.functions import KernelArguments, KernelParameterMetadata
+from semantic_kernel.functions import KernelParameterMetadata
 
-# This sample shows how to setup Google Search as a plugin in the Semantic Kernel.
-# With that plugin you can do function calling to augment your chat bot capabilities.
-# The plugin uses the search function of the GoogleSearch instance,
-# which returns only the snippet of the search results.
-# It also shows how the Parameters of the function can be used to pass arguments to the plugin,
-# this is shown with the siteSearch parameter.
-# The LLM can choose to override that but it will take the default value otherwise.
-# You can also set this up with the 'get_search_results', this returns a object with the full results of the search
-# and then you can add a `string_mapper` to the function to return the desired string of information
-# that you want to pass to the LLM.
+"""
+This sample shows how to setup Google Search as a plugin in the Semantic Kernel.
+With that plugin you can do function calling to augment your chat bot capabilities.
+The plugin uses the search function of the GoogleSearch instance,
+which returns only the snippet of the search results.
+It also shows how the Parameters of the function can be used to pass arguments to the plugin,
+this is shown with the siteSearch parameter.
+The LLM can choose to override that but it will take the default value otherwise.
+You can also set this up with the 'get_search_results', this returns a object with the full results of the search
+and then you can add a `string_mapper` to the function to return the desired string of information
+that you want to pass to the LLM.
+"""
 
 kernel = Kernel()
-kernel.add_service(OpenAIChatCompletion(service_id="chat"))
+service = OpenAIChatCompletion()
+kernel.add_service(service)
 kernel.add_function(
     plugin_name="google",
     function=GoogleSearch().create_search_function(
@@ -69,36 +71,33 @@ chat_function = kernel.add_function(
     plugin_name="ChatBot",
     function_name="Chat",
 )
-execution_settings = OpenAIChatPromptExecutionSettings(
+settings = OpenAIChatPromptExecutionSettings(
     service_id="chat",
     max_tokens=2000,
     temperature=0.7,
     top_p=0.8,
-    function_choice_behavior=FunctionChoiceBehavior.Auto(auto_invoke=True),
+    function_choice_behavior=FunctionChoiceBehavior.Auto(),
 )
 
-history = ChatHistory()
 system_message = """
 You are a chat bot, specialized in Semantic Kernel, Microsoft LLM orchestration SDK.
-Assume questions are related to that, and use the Bing search plugin to find answers.
+Assume questions are related to that, and use the Google search plugin to find answers.
 """
-history.add_system_message(system_message)
+history = ChatHistory(system_message=system_message)
 history.add_user_message("Hi there, who are you?")
 history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
 
-arguments = KernelArguments(settings=execution_settings)
-
 
 @kernel.filter(filter_type=FilterTypes.FUNCTION_INVOCATION)
-async def log_google_filter(context: FunctionInvocationContext, next: Coroutine[FunctionInvocationContext, Any, None]):
+async def log_google_filter(
+    context: FunctionInvocationContext, next: Callable[[FunctionInvocationContext], Awaitable[None]]
+):
     if context.function.plugin_name == "google":
         print("Calling Google search with arguments:")
         if "query" in context.arguments:
             print(f'  Query: "{context.arguments["query"]}"')
-        if "top" in context.arguments:
-            print(f'  Top: "{context.arguments["top"]}"')
-        if "skip" in context.arguments:
-            print(f'  Skip: "{context.arguments["skip"]}"')
+        if "siteSearch" in context.arguments:
+            print(f'  siteSearch: "{context.arguments["siteSearch"]}"')
         await next(context)
         print("Google search completed.")
     else:
@@ -119,12 +118,11 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    arguments["user_input"] = user_input
-    arguments["chat_history"] = history
-    result = await kernel.invoke(chat_function, arguments=arguments)
-    print(f"Mosscap:> {result}")
     history.add_user_message(user_input)
-    history.add_assistant_message(str(result))
+    result = await service.get_chat_message_content(history, settings, kernel=kernel)
+    if result:
+        print(f"Mosscap:> {result}")
+        history.add_message(result)
     return True
 
 

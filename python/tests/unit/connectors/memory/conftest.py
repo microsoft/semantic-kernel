@@ -297,5 +297,12 @@ def filter_lambda_list(store: str) -> list[ParameterSet]:
             },
             "constant",
         ),
+        (
+            lambda x: x.content.city == "Seattle",
+            {
+                "ai_search": "content/city eq 'Seattle'",
+            },
+            "nested property",
+        ),
     ]
     return [param(s[0], s[1][store], id=s[2]) for s in sets if store in s[1]]

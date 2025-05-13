@@ -15,12 +15,12 @@ from pydantic import Field, ValidationError
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
 from semantic_kernel.data.text_search import (
+    DynamicFilterFunction,
     KernelSearchResults,
-    OptionsUpdateFunctionType,
     SearchOptions,
     TextSearch,
     create_options,
-    default_options_update_function,
+    default_dynamic_filter_function,
 )
 from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordHandler
 from semantic_kernel.exceptions import (
@@ -350,6 +350,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
             VectorSearchOptionsException,
             VectorSearchExecutionException,
             VectorStoreOperationNotSupportedException,
+            VectorStoreOperationException,
         ):
             raise  # pragma: no cover
         except Exception as exc:
@@ -417,6 +418,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
             VectorSearchOptionsException,
             VectorSearchExecutionException,
             VectorStoreOperationNotSupportedException,
+            VectorStoreOperationException,
         ):
             raise  # pragma: no cover
         except Exception as exc:
@@ -428,7 +430,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         options: VectorSearchOptions,
     ) -> Sequence[float | int] | None:
         """Generate a vector from the given keywords."""
-        if not values:
+        if values is None:
             return None
         vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
@@ -512,29 +514,56 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         filter: OptionalOneOrList[Callable | str] = None,
         top: int = 5,
         skip: int = 0,
+        vector_property_name: str | None = None,
+        additional_property_name: str | None = None,
+        include_vectors: bool = False,
         include_total_count: bool = False,
-        options_update_function: OptionsUpdateFunctionType | None = None,
+        filter_update_function: DynamicFilterFunction | None = None,
         string_mapper: Callable[[VectorSearchResult[TModel]], str] | None = None,
-        **kwargs: Any,
     ) -> KernelFunction:
-        """Create a kernel function from a search function."""
-        search_type = SearchType(search_type)
-        if search_type not in self.supported_search_types:
+        """Create a kernel function from a search function.
+
+        Args:
+            function_name: The name of the function, to be used in the kernel, default is "search".
+            description: The description of the function, a default is provided.
+            search_type: The type of search to perform, can be 'vector' or 'keyword_hybrid'.
+            parameters: The parameters for the function,
+                use an empty list for a function without parameters,
+                use None for the default set, which is "query", "top", and "skip".
+            return_parameter: The return parameter for the function.
+            filter: The filter to apply to the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            vector_property_name: The name of the vector property to use for the search.
+            additional_property_name: The name of the additional property field to use for the search.
+            include_vectors: Whether to include the vectors in the results.
+            include_total_count: Whether to include the total count of results.
+            filter_update_function: A function to update the filters.
+                The function should return the updated filter.
+                The default function uses the parameters and the kwargs to update the filters, it
+                adds equal to filters to the options for all parameters that are not "query".
+                As well as adding equal to filters for parameters that have a default value.
+            string_mapper: The function to map the search results to strings.
+        """
+        search_types = SearchType(search_type)
+        if search_types not in self.supported_search_types:
             raise VectorStoreOperationNotSupportedException(
-                f"Search type '{search_type}' is not supported by this vector store: {self.__class__.__name__}"
+                f"Search type '{search_types.value}' is not supported by this vector store: {self.__class__.__name__}"
             )
-        options = self.options_class(
+        options = VectorSearchOptions(
             filter=filter,
             skip=skip,
             top=top,
             include_total_count=include_total_count,
-            **kwargs,
+            include_vectors=include_vectors,
+            vector_property_name=vector_property_name,
+            additional_property_name=additional_property_name,
         )
         return self._create_kernel_function(
-            search_type=search_type,
+            search_type=search_types,
             options=options,
             parameters=parameters,
-            options_update_function=options_update_function,
+            filter_update_function=filter_update_function,
             return_parameter=return_parameter,
             function_name=function_name,
             description=description,
@@ -546,40 +575,14 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
         search_type: SearchType,
         options: SearchOptions | None = None,
         parameters: list[KernelParameterMetadata] | None = None,
-        options_update_function: OptionsUpdateFunctionType | None = None,
+        filter_update_function: DynamicFilterFunction | None = None,
         return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
         string_mapper: Callable[[VectorSearchResult[TModel]], str] | None = None,
     ) -> KernelFunction:
-        """Create a kernel function from a search function.
-
-        Args:
-            search_type: The type of search to perform.
-            output_type: The type of the output, default is str.
-            options: The search options.
-            parameters: The parameters for the function,
-                use an empty list for a function without parameters,
-                use None for the default set, which is "query", "top", and "skip".
-            options_update_function: A function to update the search options.
-                The function should return the updated query and options.
-                There is a default function that can be used, or you can supply your own.
-                The default function uses the parameters and the kwargs to update the options.
-                Adding equal to filters to the options for all parameters that are not "query", "top", or "skip".
-                As well as adding equal to filters for parameters that have a default value.
-            return_parameter: The return parameter for the function.
-            function_name: The name of the function, to be used in the kernel, default is "search".
-            description: The description of the function, a default is provided.
-            string_mapper: The function to map the search results to strings.
-                This can be applied to the results from the chosen search function.
-                When using the VectorStoreTextSearch and the Search method, a
-                string_mapper can be defined there as well, that is separate from this one.
-
-        Returns:
-            KernelFunction: The kernel function.
-
-        """
-        update_func = options_update_function or default_options_update_function
+        """Create a kernel function from a search function."""
+        update_func = filter_update_function or default_dynamic_filter_function
 
         @kernel_function(name=function_name, description=description)
         async def search_wrapper(**kwargs: Any) -> Sequence[str]:
@@ -589,7 +592,7 @@ class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]
             except ValidationError:
                 # this usually only happens when the kwargs are invalid, so blank options in this case.
                 inner_options = self.options_class()
-            query, inner_options = update_func(query=query, options=inner_options, parameters=parameters, **kwargs)
+            inner_options.filter = update_func(filter=inner_options.filter, parameters=parameters, **kwargs)
             match search_type:
                 case SearchType.VECTOR:
                     try:

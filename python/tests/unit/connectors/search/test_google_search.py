@@ -11,6 +11,7 @@ from semantic_kernel.connectors.search.google import (
     GoogleSearchResponse,
     GoogleSearchResult,
 )
+from semantic_kernel.data.text_search import TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 
@@ -106,7 +107,7 @@ async def test_get_text_search_results(google_search) -> None:
     mock_response = GoogleSearchResponse(items=[item_1, item_2])
 
     with patch.object(google_search, "_inner_search", new=AsyncMock(return_value=mock_response)):
-        result = await google_search.get_text_search_results("test")
+        result = await google_search.search("test", output_type=TextSearchResult)
         items = [item async for item in result.results]
         assert len(items) == 2
         assert items[0].name == "Title1"
@@ -124,7 +125,7 @@ async def test_get_search_results(google_search) -> None:
     mock_response = GoogleSearchResponse(items=[item_1, item_2])
 
     with patch.object(google_search, "_inner_search", new=AsyncMock(return_value=mock_response)):
-        result = await google_search.get_search_results("test")
+        result = await google_search.search("test", output_type="Any")
         items = [item async for item in result.results]
         assert len(items) == 2
         assert items[0].title == "Title1"

@@ -16,12 +16,12 @@ from semantic_kernel.data.record_definition import (
     vectorstoremodel,
 )
 from semantic_kernel.data.text_search import (
+    DynamicFilterFunction,
     KernelSearchResults,
-    OptionsUpdateFunctionType,
     TextSearch,
     TextSearchResult,
     create_options,
-    default_options_update_function,
+    default_dynamic_filter_function,
 )
 from semantic_kernel.data.vector_search import VectorSearch, VectorSearchResult
 from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
@@ -31,9 +31,9 @@ __all__ = [
     "DEFAULT_FUNCTION_NAME",
     "DISTANCE_FUNCTION_DIRECTION_HELPER",
     "DistanceFunction",
+    "DynamicFilterFunction",
     "IndexKind",
     "KernelSearchResults",
-    "OptionsUpdateFunctionType",
     "TextSearch",
     "TextSearchResult",
     "VectorSearch",
@@ -45,6 +45,6 @@ __all__ = [
     "VectorStoreRecordKeyField",
     "VectorStoreRecordVectorField",
     "create_options",
-    "default_options_update_function",
+    "default_dynamic_filter_function",
     "vectorstoremodel",
 ]

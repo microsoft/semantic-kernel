@@ -6,7 +6,7 @@ from abc import abstractmethod
 from collections.abc import Mapping, Sequence
 from typing import Any, ClassVar, Generic, TypeVar, overload
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 from pydantic.dataclasses import dataclass
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
@@ -58,7 +58,7 @@ class OrderBy:
     """Order by class."""
 
     field: str
-    ascending: bool = True
+    ascending: bool = Field(default=True, alias="asc")
 
 
 @dataclass
@@ -666,6 +666,7 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
             order_by: The order by clause, this is a list of dicts with the field name and ascending flag,
                 (default is True, which means ascending).
                 Only used if keys are not provided.
+                example: {"field": "hotel_id", "ascending": True}
             **kwargs: Additional arguments.
 
         Returns:

@@ -78,6 +78,7 @@ DISTANCE_FUNCTION_MAP: Final[dict[DistanceFunction, VectorSearchAlgorithmMetric]
     DistanceFunction.DEFAULT: VectorSearchAlgorithmMetric.COSINE,
 }
 TYPE_MAP_DATA: Final[dict[str, str]] = {
+    "default": SearchFieldDataType.String,
     "str": SearchFieldDataType.String,
     "int": SearchFieldDataType.Int64,
     "float": SearchFieldDataType.Double,
@@ -86,7 +87,34 @@ TYPE_MAP_DATA: Final[dict[str, str]] = {
     "list[int]": SearchFieldDataType.Collection(SearchFieldDataType.Int64),
     "list[float]": SearchFieldDataType.Collection(SearchFieldDataType.Double),
     "list[bool]": SearchFieldDataType.Collection(SearchFieldDataType.Boolean),
-    "default": SearchFieldDataType.String,
+    "list[dict]": SearchFieldDataType.Collection(SearchFieldDataType.ComplexType),
+    "dict": SearchFieldDataType.ComplexType,
+    SearchFieldDataType.ComplexType: SearchFieldDataType.ComplexType,
+    SearchFieldDataType.String: SearchFieldDataType.String,
+    SearchFieldDataType.Int64: SearchFieldDataType.Int64,
+    SearchFieldDataType.Double: SearchFieldDataType.Double,
+    SearchFieldDataType.Boolean: SearchFieldDataType.Boolean,
+    SearchFieldDataType.Collection(SearchFieldDataType.String): SearchFieldDataType.Collection(
+        SearchFieldDataType.String
+    ),
+    SearchFieldDataType.Collection(SearchFieldDataType.Int64): SearchFieldDataType.Collection(
+        SearchFieldDataType.Int64
+    ),
+    SearchFieldDataType.Collection(SearchFieldDataType.Double): SearchFieldDataType.Collection(
+        SearchFieldDataType.Double
+    ),
+    SearchFieldDataType.Collection(SearchFieldDataType.Boolean): SearchFieldDataType.Collection(
+        SearchFieldDataType.Boolean
+    ),
+    SearchFieldDataType.Collection(SearchFieldDataType.ComplexType): SearchFieldDataType.Collection(
+        SearchFieldDataType.ComplexType
+    ),
+    SearchFieldDataType.Collection(SearchFieldDataType.Single): SearchFieldDataType.Collection(
+        SearchFieldDataType.Single
+    ),
+    SearchFieldDataType.DateTimeOffset: SearchFieldDataType.DateTimeOffset,
+    SearchFieldDataType.GeographyPoint: SearchFieldDataType.GeographyPoint,
+    SearchFieldDataType.Single: SearchFieldDataType.Single,
 }
 
 TYPE_MAP_VECTOR: Final[dict[str, str]] = {
@@ -178,7 +206,15 @@ def _data_model_definition_to_azure_ai_search_index(
         if isinstance(field, VectorStoreRecordDataField):
             if not field.property_type:
                 logger.debug(f"Field {field.name} has not specified type, defaulting to Edm.String.")
-            type_ = TYPE_MAP_DATA[field.property_type or "default"]
+            if field.property_type and field.property_type not in TYPE_MAP_DATA:
+                if field.property_type.startswith("dict"):
+                    type_ = TYPE_MAP_DATA["dict"]
+                elif field.property_type.startswith("list") and "dict" in field.property_type:
+                    type_ = TYPE_MAP_DATA["list[dict]"]
+                else:
+                    raise VectorStoreOperationException(f"{field.property_type} not supported in Azure AI Search.")
+            else:
+                type_ = TYPE_MAP_DATA[field.property_type or "default"]
             fields.append(
                 SearchField(
                     name=field.storage_property_name or field.name,
@@ -189,7 +225,7 @@ def _data_model_definition_to_azure_ai_search_index(
                     searchable=type_ in ("Edm.String", "Collection(Edm.String)")
                     if field.is_full_text_indexed is None
                     else field.is_full_text_indexed,
-                    sortable=True,
+                    sortable=not type_.startswith("Collection") or type_ == "Edm.ComplexType",
                     hidden=False,
                 )
             )
@@ -492,24 +528,28 @@ class AzureAISearchCollection(
                     search_args["vector_queries"] = [
                         VectorizedQuery(
                             vector=vector,  # type: ignore
-                            fields=vector_field.name if vector_field else None,
+                            fields=vector_field.storage_property_name or vector_field.name if vector_field else None,
                         )
                     ]
                 elif values is not None:
-                    generated_vector = await self._generate_vector_from_values(values, options)
+                    generated_vector = await self._generate_vector_from_values(values or "*", options)
                     vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
                     if generated_vector is not None:
                         search_args["vector_queries"] = [
                             VectorizedQuery(
                                 vector=generated_vector,  # type: ignore
-                                fields=vector_field.name if vector_field else None,
+                                fields=vector_field.storage_property_name or vector_field.name
+                                if vector_field
+                                else None,
                             )
                         ]
                     else:
                         search_args["vector_queries"] = [
                             VectorizableTextQuery(
                                 text=values,
-                                fields=vector_field.name if vector_field else None,
+                                fields=vector_field.storage_property_name or vector_field.name
+                                if vector_field
+                                else None,
                             )
                         ]
                 else:
@@ -557,6 +597,27 @@ class AzureAISearchCollection(
 
     @override
     def _lambda_parser(self, node: ast.AST) -> Any:
+        def _parse_attribute_chain(attr_node: ast.Attribute) -> str:
+            parts = []
+            current = attr_node
+            while isinstance(current, ast.Attribute):
+                parts.append(current.attr)
+                current = current.value
+            if isinstance(current, ast.Name):
+                # skip the root variable name (e.g., 'x')
+                pass
+            else:
+                raise NotImplementedError(f"Unsupported attribute chain root: {type(current)}")
+            # reverse to get the correct order
+            prop_path = "/".join(reversed(parts))
+            # Check if the top-level property is in the data model
+            top_level = parts[-1] if parts else None
+            if top_level and top_level not in self.data_model_definition.storage_property_names:
+                raise VectorStoreOperationException(
+                    f"Field '{top_level}' not in data model (storage property names are used)."
+                )
+            return prop_path
+
         match node:
             case ast.Compare():
                 if len(node.ops) > 1:
@@ -614,12 +675,8 @@ class AzureAISearchCollection(
                     case ast.Not():
                         return f"not {self._lambda_parser(node.operand)}"
             case ast.Attribute():
-                # Check if attribute is in data model
-                if node.attr not in self.data_model_definition.storage_property_names:
-                    raise VectorStoreOperationException(
-                        f"Field '{node.attr}' not in data model (storage property names are used)."
-                    )
-                return node.attr
+                # Support nested property chains
+                return _parse_attribute_chain(node)
             case ast.Name():
                 raise NotImplementedError("Constants are not supported, make sure to use a value or a attribute.")
             case ast.Constant():
