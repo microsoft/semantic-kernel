@@ -28,7 +28,7 @@ public class WhiteboardBehaviorOptions
     public string? ContextPrompt { get; init; }
 
     /// <summary>
-    /// This message is provided ot the model when there are no messages on the whiteboard.
+    /// This message is provided to the model when there are no messages on the whiteboard.
     /// </summary>
     /// <value>
     /// Defaults to &quot;## Whiteboard\nThe whiteboard is currently empty.&quot;
