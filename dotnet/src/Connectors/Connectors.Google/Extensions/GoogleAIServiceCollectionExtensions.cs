@@ -46,7 +46,7 @@ public static class GoogleAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add Google AI embeddings generation service to the specified service collection.
+    /// Add Google AI <see cref="ITextEmbeddingGenerationService"/> to the specified service collection.
     /// </summary>
     /// <param name="services">The service collection to add the Gemini Embeddings Generation service to.</param>
     /// <param name="modelId">The model for embeddings generation.</param>

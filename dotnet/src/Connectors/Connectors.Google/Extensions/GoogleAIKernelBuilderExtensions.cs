@@ -2,6 +2,8 @@
 
 using System;
 using System.Net.Http;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -49,7 +51,7 @@ public static class GoogleAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Add Google AI embeddings generation service to the kernel builder.
+    /// Add Google AI <see cref="ITextEmbeddingGenerationService"/> to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
@@ -85,7 +87,7 @@ public static class GoogleAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Add Google AI embeddings generation service to the kernel builder.
+    /// Add Google AI <see cref="IEmbeddingGenerator{String, Embedding}"/> to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>

@@ -98,7 +98,7 @@ public static class VertexAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds Vertex AI embeddings generation service to the specified service collection.
+    /// Adds Vertex AI <see cref="ITextEmbeddingGenerationService"/> to the specified service collection.
     /// </summary>
     /// <param name="services">The service collection to add the Gemini Embeddings Generation service to.</param>
     /// <param name="modelId">The model for embeddings generation.</param>
@@ -141,7 +141,7 @@ public static class VertexAIServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds Vertex AI embeddings generation service to the specified service collection.
+    /// Adds Vertex AI <see cref="ITextEmbeddingGenerationService"/> to the specified service collection.
     /// </summary>
     /// <param name="services">The service collection to add the Gemini Embeddings Generation service to.</param>
     /// <param name="modelId">The model for embeddings generation.</param>

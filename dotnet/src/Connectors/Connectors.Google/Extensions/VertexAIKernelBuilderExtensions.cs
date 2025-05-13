@@ -3,6 +3,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -103,7 +104,7 @@ public static class VertexAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds Vertex AI embeddings generation service to the kernel builder.
+    /// Adds Vertex AI <see cref="ITextEmbeddingGenerationService"/> to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
@@ -149,7 +150,7 @@ public static class VertexAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds Vertex AI embeddings generation service to the kernel builder.
+    /// Adds Vertex AI <see cref="ITextEmbeddingGenerationService"/> to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
@@ -190,7 +191,7 @@ public static class VertexAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds Vertex AI embeddings generation service to the kernel builder.
+    /// Add Vertex AI <see cref="IEmbeddingGenerator{String, Embedding}"/> to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
@@ -228,7 +229,7 @@ public static class VertexAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds Vertex AI embeddings generation service to the kernel builder.
+    /// Add Vertex AI <see cref="IEmbeddingGenerator{String, Embedding}"/> to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
