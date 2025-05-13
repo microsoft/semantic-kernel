@@ -6,7 +6,7 @@ import logging
 import sys
 from abc import abstractmethod
 from collections.abc import Callable, Sequence
-from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager, suppress
+from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
@@ -228,10 +228,6 @@ class MCPPluginBase:
             # If the session is not initialized, we need to reinitialize it
             await self.session.initialize()
         logger.debug("Connected to MCP server: %s", self.session)
-        with suppress(Exception):
-            logger.debug("Resources: %s", await self.session.list_resources())
-        with suppress(Exception):
-            logger.debug("Resource templates: %s", await self.session.list_resource_templates())
         await self.load_tools()
         await self.load_prompts()
 
