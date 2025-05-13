@@ -134,6 +134,8 @@ internal static class AzureAISearchCollectionCreateMapping
             Type t when t == typeof(List<int>) => SearchFieldDataType.Collection(SearchFieldDataType.Int32),
             Type t when t == typeof(long[]) => SearchFieldDataType.Collection(SearchFieldDataType.Int64),
             Type t when t == typeof(List<long>) => SearchFieldDataType.Collection(SearchFieldDataType.Int64),
+            Type t when t == typeof(float[]) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
+            Type t when t == typeof(List<float>) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
             Type t when t == typeof(double[]) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
             Type t when t == typeof(List<double>) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
             Type t when t == typeof(DateTime[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),

@@ -25,7 +25,7 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "int, long, ulong, short, ushort, string, bool, float, double,decimal, byte[]";
+        supportedTypes = "int, long, ulong, short, ushort, string, bool, float, double, decimal, byte[]";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {

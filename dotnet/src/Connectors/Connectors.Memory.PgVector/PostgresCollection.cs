@@ -15,10 +15,6 @@ using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
-// TODO: Remove this once we implement IDisposable at the abstraction level
-#pragma warning disable CA1063
-#pragma warning disable CA1816
-
 /// <summary>
 /// Represents a collection of vector store records in a Postgres database.
 /// </summary>
