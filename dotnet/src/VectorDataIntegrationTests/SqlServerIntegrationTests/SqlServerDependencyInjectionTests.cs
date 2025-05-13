@@ -21,39 +21,39 @@ public class SqlServerDependencyInjectionTests
             new(CreateConfigKey("SqlServer", serviceKey, "ConnectionString"), ConnectionString),
         ]);
 
-    protected override void RegisterVectorStore(IServiceCollection services, ServiceLifetime lifetime, object? serviceKey = null)
+    private static string ConnectionStringProvider(IServiceProvider sp)
+        => sp.GetRequiredService<IConfiguration>().GetRequiredSection("SqlServer:ConnectionString").Value!;
+
+    private static string ConnectionStringProvider(IServiceProvider sp, object serviceKey)
+        => sp.GetRequiredService<IConfiguration>().GetRequiredSection(CreateConfigKey("SqlServer", serviceKey, "ConnectionString")).Value!;
+
+    public override IEnumerable<Func<IServiceCollection, object?, string, ServiceLifetime, IServiceCollection>> CollectionDelegates
     {
-        if (serviceKey is null)
+        get
         {
-            services.AddSqlServerVectorStore(
-                sp => sp.GetRequiredService<IConfiguration>().GetRequiredSection("SqlServer:ConnectionString").Value!,
-                lifetime: lifetime);
-        }
-        else
-        {
-            services.AddKeyedSqlServerVectorStore(
-                serviceKey,
-                sp => sp.GetRequiredService<IConfiguration>().GetRequiredSection(CreateConfigKey("SqlServer", serviceKey, "ConnectionString")).Value!,
-                lifetime: lifetime);
+            yield return (services, serviceKey, collectionName, lifetime) => serviceKey is null
+                ? services.AddSqlServerCollection<string, SimpleRecord<string>>(
+                    collectionName, connectionString: ConnectionString, lifetime: lifetime)
+                : services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
+                    serviceKey, collectionName, connectionString: ConnectionString, lifetime: lifetime);
+
+            yield return (services, serviceKey, collectionName, lifetime) => serviceKey is null
+                ? services.AddSqlServerCollection<string, SimpleRecord<string>>(
+                    collectionName, ConnectionStringProvider, lifetime: lifetime)
+                : services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
+                    serviceKey, collectionName, sp => ConnectionStringProvider(sp, serviceKey), lifetime: lifetime);
         }
     }
 
-    protected override void RegisterCollection(IServiceCollection services, ServiceLifetime lifetime, string collectionName = "name", object? serviceKey = null)
+    public override IEnumerable<Func<IServiceCollection, object?, ServiceLifetime, IServiceCollection>> StoreDelegates
     {
-        if (serviceKey is null)
+        get
         {
-            services.AddSqlServerCollection<string, SimpleRecord<string>>(
-                collectionName,
-                sp => sp.GetRequiredService<IConfiguration>().GetRequiredSection("SqlServer:ConnectionString").Value!,
-                lifetime: lifetime);
-        }
-        else
-        {
-            services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
-                serviceKey,
-                collectionName,
-                sp => sp.GetRequiredService<IConfiguration>().GetRequiredSection(CreateConfigKey("SqlServer", serviceKey, "ConnectionString")).Value!,
-                lifetime: lifetime);
+            yield return (services, serviceKey, lifetime) => serviceKey is null
+                ? services.AddSqlServerVectorStore(
+                    ConnectionStringProvider, lifetime: lifetime)
+                : services.AddKeyedSqlServerVectorStore(
+                    serviceKey, sp => ConnectionStringProvider(sp, serviceKey), lifetime: lifetime);
         }
     }
 
@@ -81,70 +81,5 @@ public class SqlServerDependencyInjectionTests
             serviceKey: "notNull", collectionName: "notNull", connectionString: null!));
         Assert.Throws<ArgumentException>(() => services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
             serviceKey: "notNull", collectionName: "notNull", connectionString: ""));
-    }
-
-    [Fact]
-    public void WhenUserProvidesOptionBagWithoutEmbeddingGeneratorItsBeingResolved()
-    {
-        IServiceCollection services = new ServiceCollection();
-
-        bool wasResolved = false;
-        services.AddSingleton<IEmbeddingGenerator>(sp =>
-        {
-            wasResolved = true;
-            return null!;
-        });
-
-        services.AddSqlServerCollection<string, SimpleRecord<string>>(
-            collectionName: "notNull",
-            connectionString: ConnectionString,
-            options: new SqlServerCollectionOptions()
-            {
-                Schema = "customized"
-            });
-
-        Assert.False(wasResolved);
-
-        using ServiceProvider serviceProvider = services.BuildServiceProvider();
-        var collection = serviceProvider.GetRequiredService<SqlServerCollection<string, SimpleRecord<string>>>();
-
-        Assert.True(wasResolved);
-    }
-}
-
-public class SqlServerDependencyInjectionTests_ConnectionStrings : SqlServerDependencyInjectionTests
-{
-    protected override void PopulateConfiguration(ConfigurationManager configuration, object? serviceKey = null)
-    {
-        // do nothing, as in this scenario config should not be used at all
-    }
-
-    protected override void RegisterCollection(IServiceCollection services, ServiceLifetime lifetime, string collectionName = "name", object? serviceKey = null)
-    {
-        if (serviceKey is null)
-        {
-            services.AddSqlServerCollection<string, SimpleRecord<string>>(
-                collectionName,
-                connectionString: ConnectionString,
-                lifetime: lifetime);
-        }
-        else
-        {
-            services.AddKeyedSqlServerCollection<string, SimpleRecord<string>>(
-                serviceKey,
-                collectionName,
-                connectionString: ConnectionString,
-                lifetime: lifetime);
-        }
-    }
-
-    public override void CanRegisterVectorStore(ServiceLifetime lifetime, object? serviceKey)
-    {
-        // do nothing, we don't provide a test for this scenario with raw connection string
-    }
-
-    public override void CanRegisterConcreteTypeVectorStoreAfterSomeAbstractionHasBeenRegistered(ServiceLifetime lifetime, object? serviceKey)
-    {
-        // do nothing, we don't provide a test for this scenario with raw connection string
     }
 }
