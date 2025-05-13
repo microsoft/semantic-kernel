@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using FoundryAgent = Azure.AI.Projects.Agent;
+using AAIP = Azure.AI.Projects.OneDP;
 
 namespace GettingStarted.AzureAgents;
 
@@ -17,21 +17,22 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
     public async Task UseBingGroundingToolWithAgent()
     {
         // Access the BingGrounding connection
-        ConnectionsClient connectionsClient = this.Client.GetConnectionsClient();
-        ConnectionResponse bingConnection = await connectionsClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
+        AAIP.AIProjectClient projectClient = this.CreateProjectClient();
+        AAIP.Connections connectionsClient = projectClient.GetConnectionsClient();
+        AAIP.Connection bingConnectionResponse = await connectionsClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
 
         // Define the agent
         ToolConnectionList toolConnections = new()
         {
-            ConnectionList = { new ToolConnection(bingConnection.Id) }
+            ConnectionList = { new ToolConnection(bingConnectionResponse.Name) }
         };
-        FoundryAgent definition = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new BingGroundingToolDefinition(toolConnections)]);
-        AzureAIAgent agent = new(definition, this.AgentsClient);
+        AzureAIAgent agent = new(definition, this.Client);
 
         // Create a thread for the agent conversation.
-        AzureAIAgentThread thread = new(this.AgentsClient, metadata: SampleMetadata);
+        AzureAIAgentThread thread = new(this.Client, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -42,7 +43,7 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
         finally
         {
             await thread.DeleteAsync();
-            await this.AgentsClient.DeleteAgentAsync(agent.Id);
+            await this.Client.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -62,21 +63,22 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
     public async Task UseBingGroundingToolWithStreaming()
     {
         // Access the BingGrounding connection
-        ConnectionsClient connectionClient = this.Client.GetConnectionsClient();
-        ConnectionResponse bingConnectionResponse = await connectionClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
+        AAIP.AIProjectClient projectClient = this.CreateProjectClient();
+        AAIP.Connections connectionsClient = projectClient.GetConnectionsClient();
+        AAIP.Connection bingConnectionResponse = await connectionsClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
 
         // Define the agent
         ToolConnectionList toolConnections = new()
         {
-            ConnectionList = { new ToolConnection(bingConnectionResponse.Id) }
+            ConnectionList = { new ToolConnection(bingConnectionResponse.Name) }
         };
-        FoundryAgent definition = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new BingGroundingToolDefinition(toolConnections)]);
-        AzureAIAgent agent = new(definition, this.AgentsClient);
+        AzureAIAgent agent = new(definition, this.Client);
 
         // Create a thread for the agent conversation.
-        AzureAIAgentThread thread = new(this.AgentsClient, metadata: SampleMetadata);
+        AzureAIAgentThread thread = new(this.Client, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -96,7 +98,7 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
         finally
         {
             await thread.DeleteAsync();
-            await this.AgentsClient.DeleteAgentAsync(agent.Id);
+            await this.Client.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
