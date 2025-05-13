@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Amazon.BedrockRuntime;
 using Amazon.Runtime;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,6 +64,7 @@ public class BedrockServiceCollectionExtensionTests
     /// Ensures that IServiceCollection.AddBedrockTextEmbeddingGenerationService registers the <see cref="ITextEmbeddingGenerationService"/> with the correct implementation.
     /// </summary>
     [Fact]
+    [Obsolete("This test is deprecated and will be removed in a future release.")]
     public void AddBedrockTextEmbeddingServiceRegistersCorrectService()
     {
         // Arrange

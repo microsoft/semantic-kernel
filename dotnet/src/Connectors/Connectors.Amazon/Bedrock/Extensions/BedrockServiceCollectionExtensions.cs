@@ -113,6 +113,7 @@ public static class BedrockServiceCollectionExtensions
     /// <param name="bedrockRuntime">The optional <see cref="IAmazonBedrockRuntime" /> to use. If not provided will be retrieved from the Service Collection.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <returns>Returns back <see cref="IServiceCollection"/> with a configured service.</returns>
+    [Obsolete("Use AddBedrockEmbeddingGenerator instead.")]
     public static IServiceCollection AddBedrockTextEmbeddingGenerationService(
         this IServiceCollection services,
         string modelId,

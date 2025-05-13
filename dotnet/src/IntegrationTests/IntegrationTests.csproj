@@ -41,6 +41,7 @@
     <None Remove="skills\FunSkill\Joke\skprompt.txt" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AWSSDK.SecurityToken" />
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
