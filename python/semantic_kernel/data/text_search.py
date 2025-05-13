@@ -20,7 +20,6 @@ from semantic_kernel.kernel_types import OptionalOneOrList
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 TSearchOptions = TypeVar("TSearchOptions", bound="SearchOptions")
-TMapInput = TypeVar("TMapInput")
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +55,7 @@ class TextSearchResult(KernelBaseModel):
     link: str | None = None
 
 
-TSearchResult = TypeVar("TSearchResult", str, TextSearchResult, Any)
+TSearchResult = TypeVar("TSearchResult")
 
 
 @release_candidate
@@ -245,7 +244,7 @@ class TextSearch:
         skip: int = 0,
         include_total_count: bool = False,
         filter_update_function: DynamicFilterFunction | None = None,
-        string_mapper: Callable[[TMapInput], str] | None = None,
+        string_mapper: Callable[[TSearchResult], str] | None = None,
     ) -> KernelFunction:
         """Create a kernel function from a search function.
 
@@ -426,14 +425,14 @@ class TextSearch:
 
     def _create_kernel_function(
         self,
-        output_type: type[TSearchResult] | Literal["Any"] = str,
+        output_type: type[str] | type[TSearchResult] | Literal["Any"] = str,
         options: SearchOptions | None = None,
         parameters: list[KernelParameterMetadata] | None = None,
         filter_update_function: DynamicFilterFunction | None = None,
         return_parameter: KernelParameterMetadata | None = None,
         function_name: str = DEFAULT_FUNCTION_NAME,
         description: str = DEFAULT_DESCRIPTION,
-        string_mapper: Callable[[TMapInput], str] | None = None,
+        string_mapper: Callable[[TSearchResult], str] | None = None,
     ) -> KernelFunction:
         """Create a kernel function from a search function."""
         update_func = filter_update_function or default_dynamic_filter_function
@@ -467,8 +466,8 @@ class TextSearch:
 
     async def _map_results(
         self,
-        results: KernelSearchResults[TMapInput],
-        string_mapper: Callable[[TMapInput], str] | None = None,
+        results: KernelSearchResults[TSearchResult],
+        string_mapper: Callable[[TSearchResult], str] | None = None,
     ) -> list[str]:
         """Map search results to strings."""
         if string_mapper:
@@ -488,7 +487,7 @@ class TextSearch:
     async def search(
         self,
         query: str,
-        output_type: type[TSearchResult] | Literal["Any"] = str,
+        output_type: type[str] | type[TSearchResult] | Literal["Any"] = str,
         **kwargs: Any,
     ) -> "KernelSearchResults[TSearchResult]":
         """Search for text, returning a KernelSearchResult with a list of strings.

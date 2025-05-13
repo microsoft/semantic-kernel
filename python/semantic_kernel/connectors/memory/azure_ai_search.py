@@ -602,7 +602,7 @@ class AzureAISearchCollection(
             current = attr_node
             while isinstance(current, ast.Attribute):
                 parts.append(current.attr)
-                current = current.value
+                current = current.value  # type: ignore
             if isinstance(current, ast.Name):
                 # skip the root variable name (e.g., 'x')
                 pass

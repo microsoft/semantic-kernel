@@ -146,7 +146,7 @@ class BraveSearch(KernelBaseModel, TextSearch):
     async def search(
         self,
         query: str,
-        output_type: type[TSearchResult] | Literal["Any"] = str,
+        output_type: type[str] | type[TSearchResult] | Literal["Any"] = str,
         *,
         filter: OptionalOneOrList[Callable | str] = None,
         skip: int = 0,
