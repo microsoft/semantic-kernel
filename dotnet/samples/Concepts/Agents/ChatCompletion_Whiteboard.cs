@@ -59,7 +59,7 @@ public class ChatCompletion_Whiteboard(ITestOutputHelper output) : BaseTest(outp
         await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "I want it to have 3 cores.");
         await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "I want it to have 48GB of RAM.");
         await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "I want it to have a 500GB Harddrive.");
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "I want it in in Europe.");
+        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "I want it in Europe.");
         await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "Can you make it Linux and call it 'ContosoVM'.");
         await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "OK, let's call it `ContosoFinanceVM_Europe` instead.");
         await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "Thanks, now I want to create another VM.");
@@ -95,7 +95,7 @@ public class ChatCompletion_Whiteboard(ITestOutputHelper output) : BaseTest(outp
     private sealed class VMPlugin
     {
         [KernelFunction]
-        public Task<VMCreateResult> CreateVM(Region region, OperatingSystem os, string name, int numberOfCores, int memorySizeInGB, int HddSizeInGB)
+        public Task<VMCreateResult> CreateVM(Region region, OperatingSystem os, string name, int numberOfCores, int memorySizeInGB, int hddSizeInGB)
         {
             if (name == "ContosoVM")
             {
