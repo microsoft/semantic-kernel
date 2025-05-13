@@ -60,7 +60,7 @@ nodes:
     version: "1.0"
     description: "Kickoff the workflow"
     agent:
-      type: "Microsoft.SemanticKernel.Process.UnitTests.ProcessSerializationTests+KickoffStep, SemanticKernel.Process.UnitTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+      type: "Microsoft.SemanticKernel.Process.UnitTests.Steps.KickoffStep, SemanticKernel.Process.UnitTests"
       id: kickoff_agent
     inputs:
       input:
@@ -92,7 +92,7 @@ nodes:
       last_feedback: 
         type: string
     agent:
-      type: "Microsoft.SemanticKernel.Process.UnitTests.ProcessSerializationTests+AStep, SemanticKernel.Process.UnitTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+      type: "Microsoft.SemanticKernel.Process.UnitTests.Steps.AStep, SemanticKernel.Process.UnitTests"
       id: a_step_agent
     on_complete:
       - on_condition:
@@ -108,7 +108,7 @@ nodes:
     version: "1.0"
     description: "B Step"
     agent:
-      type: "Microsoft.SemanticKernel.Process.UnitTests.ProcessSerializationTests+BStep, SemanticKernel.Process.UnitTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+      type: "Microsoft.SemanticKernel.Process.UnitTests.Steps.BStep, SemanticKernel.Process.UnitTests"
       id: b_step_agent
     on_complete:
       - on_condition:
@@ -142,7 +142,7 @@ nodes:
     version: "1.0"
     description: "C Step"
     agent: 
-      type: "Microsoft.SemanticKernel.Process.UnitTests.ProcessSerializationTests+CStep, SemanticKernel.Process.UnitTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+      type: "Microsoft.SemanticKernel.Process.UnitTests.Steps.CStep, SemanticKernel.Process.UnitTests"
       id: c_step_agent
     # inputs:
     #   type: string
