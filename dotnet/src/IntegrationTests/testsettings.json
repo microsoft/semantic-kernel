@@ -9,8 +9,7 @@
     "ServiceId": "azure-ai-inference",
     "Endpoint": "",
     "ApiKey": "",
-    "ChatModelId ": "phi3",
-    "EmbeddingModelId": "phi3-embedding"
+    "ChatModelId ": "phi3"
   },
   "AzureAIInferenceEmbeddings": {
     "ServiceId": "azure-ai-inference-embeddings",
