@@ -944,7 +944,7 @@ public enum ActionType
     NodeInvocation,
 
     /// <summary>
-    /// An action to aply an update to user state.
+    /// An action to apply an update to user state.
     /// </summary>
     Update,
 

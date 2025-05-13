@@ -19,7 +19,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
     /// </summary>
     /// <param name="id">The name of the process. This is required.</param>
-    /// <param name="description">The descrption of the Process.</param>
+    /// <param name="description">The description of the Process.</param>
     public FoundryProcessBuilder(string id, string? description = null)
     {
         this._processBuilder = new ProcessBuilder(id, description, processBuilder: null, typeof(TProcessState));
