@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import AsyncGenerator, Callable
+from types import MethodType
 from unittest.mock import AsyncMock, create_autospec, patch
 
 import pytest
@@ -15,6 +16,11 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion impo
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.history_reducer.chat_history_truncation_reducer import ChatHistoryTruncationReducer
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelServiceNotFoundError
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
@@ -139,6 +145,25 @@ def test_initialize_chat_history_agent_thread_with_id():
     assert thread.id == "test_thread_id"
 
 
+def test_initialize_with_base_chat_history():
+    base_history = ChatHistory()
+    thread = ChatHistoryAgentThread(chat_history=base_history, thread_id="base_test_thread")
+    assert thread is not None
+    assert thread.id == "base_test_thread"
+    assert isinstance(thread._chat_history, ChatHistory)
+    assert not isinstance(thread._chat_history, ChatHistoryTruncationReducer)
+
+
+def test_initialize_with_reducer_chat_history():
+    reducer = ChatHistoryTruncationReducer(
+        service=AsyncMock(spec=ChatCompletionClientBase), target_count=10, threshold_count=2
+    )
+    thread = ChatHistoryAgentThread(chat_history=reducer, thread_id="reducer_test_thread")
+    assert thread is not None
+    assert thread.id == "reducer_test_thread"
+    assert isinstance(thread._chat_history, ChatHistoryTruncationReducer)
+
+
 async def test_get_response(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
     kernel, _ = kernel_with_ai_service
     agent = ChatCompletionAgent(
@@ -184,6 +209,57 @@ async def test_invoke(kernel_with_ai_service: tuple[Kernel, ChatCompletionClient
 
     assert len(messages) == 1
     assert messages[0].message.content == "Processed Message"
+
+
+async def test_invoke_emits_tool_call_then_result_then_text(kernel_with_ai_service):
+    kernel, chat_client = kernel_with_ai_service
+    agent = ChatCompletionAgent(kernel=kernel, name="TestAgent")
+    thread = ChatHistoryAgentThread()
+
+    call_msg = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[FunctionCallContent(id="test-id", name="get_specials", arguments="{}")],
+    )
+    result_msg = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="test-id", name="get_specials", result="Clam Chowder")],
+    )
+
+    final_msg = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        content="Clam Chowder is today's soup.",
+    )
+
+    chat_client.get_chat_message_contents = AsyncMock(return_value=[final_msg])
+
+    async def fake_drain(self, *_args, **_kwargs):
+        if not fake_drain.called:
+            fake_drain.called = True
+            return [call_msg, result_msg]
+        return []
+
+    fake_drain.called = False
+
+    with patch.object(ChatCompletionAgent, "_drain_mutated_messages", new=AsyncMock(side_effect=fake_drain)):
+        cb_messages: list[ChatMessageContent] = []
+
+        async def on_msg(m: ChatMessageContent):
+            cb_messages.append(m)
+
+        messages = [
+            m
+            async for m in agent.invoke(
+                messages="What's the special soup?", thread=thread, on_intermediate_message=on_msg
+            )
+        ]
+
+    assert [type(m.items[0]) for m in cb_messages] == [
+        FunctionCallContent,
+        FunctionResultContent,
+    ]
+    assert len(messages) == 1
+    assert isinstance(messages[0].message, ChatMessageContent)
+    assert messages[0].message.content.startswith("Clam Chowder")
 
 
 async def test_invoke_tool_call_not_added(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
@@ -251,6 +327,64 @@ async def test_invoke_stream(kernel_with_ai_service: tuple[Kernel, ChatCompletio
         async for response in agent.invoke_stream(messages="Initial Message", thread=thread):
             assert response.message.role == AuthorRole.USER
             assert response.message.content == "Initial Message"
+
+
+async def test_invoke_stream_emits_tool_call_then_result_then_text(kernel_with_ai_service):
+    kernel, chat_client = kernel_with_ai_service
+    agent = ChatCompletionAgent(kernel=kernel, name="TestAgent")
+    thread = ChatHistoryAgentThread()
+
+    call_msg = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        items=[FunctionCallContent(id="test-id", name="get_specials", arguments="{}")],
+    )
+    result_msg = ChatMessageContent(
+        role=AuthorRole.TOOL,
+        items=[FunctionResultContent(id="test-id", name="get_specials", result="Clam Chowder")],
+    )
+
+    text_msg = StreamingChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        content="Clam Chowder is today's soup.",
+        items=[StreamingTextContent(text="Clam Chowder is today's soup.", choice_index=0)],
+        choice_index=0,
+    )
+
+    async def fake_stream(*_args, **_kwargs):
+        yield [StreamingChatMessageContent(role=AuthorRole.ASSISTANT, content="", items=[], choice_index=0)]
+        yield [text_msg]
+
+    chat_client.get_streaming_chat_message_contents = MethodType(fake_stream, chat_client)
+
+    async def fake_drain(self, *_args, **_kwargs):
+        if not fake_drain.called:
+            fake_drain.called = True
+            return [call_msg, result_msg]
+        return []
+
+    fake_drain.called = False
+
+    with patch.object(ChatCompletionAgent, "_drain_mutated_messages", new=AsyncMock(side_effect=fake_drain)):
+        cb_messages: list[ChatMessageContent] = []
+
+        async def on_msg(m: ChatMessageContent):
+            cb_messages.append(m)
+
+        yielded_text: list[StreamingChatMessageContent] = []
+        async for resp in agent.invoke_stream(
+            messages="What's the special soup?",
+            thread=thread,
+            on_intermediate_message=on_msg,
+        ):
+            yielded_text.append(resp.message)
+
+    assert [type(m.items[0]) for m in cb_messages] == [
+        FunctionCallContent,
+        FunctionResultContent,
+    ]
+    assert len(yielded_text) == 1
+    assert isinstance(yielded_text[0], StreamingChatMessageContent)
+    assert yielded_text[0].content.startswith("Clam Chowder")
 
 
 async def test_invoke_stream_tool_call_added(

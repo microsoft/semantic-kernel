@@ -50,6 +50,8 @@ dependencies = [
     "scipy>=1.15.1",
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
+    # Protobuf
+    "protobuf",
 ]
 
 ### Optional dependencies
@@ -94,10 +96,10 @@ google = [
 hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 5.0",
-    "torch == 2.6.0"
+    "torch == 2.7.0"
 ]
 mcp = [
-    "mcp ~= 1.6"
+    "mcp~=1.8",
 ]
 milvus = [
     "pymilvus >= 2.3,< 2.6",
@@ -117,7 +119,8 @@ ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-    "onnxruntime-genai ~= 0.5; python_version < '3.13'"
+    "onnxruntime-genai ~= 0.5; python_version < '3.13' and platform_system != 'Windows'",
+    "onnxruntime == 1.21.0; platform_system == 'Windows'"
 ]
 pandas = [
     "pandas ~= 2.2"
@@ -145,7 +148,7 @@ sql = [
 ]
 usearch = [
     "usearch ~= 2.16",
-    "pyarrow >= 12.0,< 20.0"
+    "pyarrow >= 12.0,< 21.0"
 ]
 weaviate = [
     "weaviate-client>=4.10,<5.0",
@@ -208,7 +211,7 @@ select = [
     "RET", #flake8-return check
     "SIM", #flake8-simplify check
     "TD", #todos
-    "FIX", #fixme checks 
+    "FIX", #fixme checks
     "ERA", #remove connected out code
     "RUF" #RUF specific rules
 ]
