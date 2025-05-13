@@ -119,6 +119,7 @@ public static class VertexAIKernelBuilderExtensions
     /// when providing the token consider using caching strategy and refresh token logic
     /// when it is expired or close to expiration.
     /// </remarks>
+    [Obsolete("Use AddVertexAIEmbeddingGenerator instead.")]
     public static IKernelBuilder AddVertexAIEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -159,6 +160,7 @@ public static class VertexAIKernelBuilderExtensions
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Obsolete("Use AddVertexAIEmbeddingGenerator instead.")]
     public static IKernelBuilder AddVertexAIEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -184,6 +186,77 @@ public static class VertexAIKernelBuilderExtensions
                 apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds Vertex AI embeddings generation service to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="bearerTokenProvider">The Bearer Key provider for authentication.</param>
+    /// <param name="location">The location to process the request</param>
+    /// <param name="projectId">Your project ID</param>
+    /// <param name="apiVersion">The version of the Vertex API.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <returns>The updated kernel builder.</returns>
+    /// <remarks>
+    /// This <paramref name="bearerTokenProvider"/> will be called on every request,
+    /// when providing the token consider using caching strategy and refresh token logic
+    /// when it is expired or close to expiration.
+    /// </remarks>
+    public static IKernelBuilder AddVertexAIEmbeddingGenerator(
+        this IKernelBuilder builder,
+        string modelId,
+        Func<ValueTask<string>> bearerTokenProvider,
+        string location,
+        string projectId,
+        VertexAIVersion apiVersion = VertexAIVersion.V1,
+        string? serviceId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNull(modelId);
+        Verify.NotNull(bearerTokenProvider);
+        Verify.NotNull(location);
+        Verify.NotNull(projectId);
+
+        builder.Services.AddVertexAIEmbeddingGenerator(modelId, bearerTokenProvider, location, projectId, apiVersion, serviceId, httpClient);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds Vertex AI embeddings generation service to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="bearerKey">The Bearer Key for authentication.</param>
+    /// <param name="location">The location to process the request</param>
+    /// <param name="projectId">Your project ID</param>
+    /// <param name="apiVersion">The version of the Vertex API.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddVertexAIEmbeddingGenerator(
+        this IKernelBuilder builder,
+        string modelId,
+        string bearerKey,
+        string location,
+        string projectId,
+        VertexAIVersion apiVersion = VertexAIVersion.V1,
+        string? serviceId = null,
+        HttpClient? httpClient = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNull(modelId);
+        Verify.NotNull(bearerKey);
+        Verify.NotNull(location);
+        Verify.NotNull(projectId);
+
+        builder.Services.AddVertexAIEmbeddingGenerator(modelId, bearerKey, location, projectId, apiVersion, serviceId, httpClient);
+
         return builder;
     }
 }

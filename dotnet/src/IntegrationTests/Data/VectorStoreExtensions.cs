@@ -42,6 +42,7 @@ public static class VectorStoreExtensions
     /// <param name="entries">A list of strings.</param>
     /// <param name="embeddingGenerationService">A text embedding generation service.</param>
     /// <param name="createRecord">A delegate which can create a record with a valid key for each string and it's embedding.</param>
+    [Obsolete("Temporary test utility for Obsolete ITextEmbeddingGenerationService")]
     internal static async Task<IVectorStoreRecordCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
         this IVectorStore vectorStore,
         string collectionName,
@@ -114,6 +115,7 @@ public static class VectorStoreExtensions
     /// <param name="searchResults">A list of <see cref="TextSearchResult" />s.</param>
     /// <param name="embeddingGenerationService">A text embedding generation service.</param>
     /// <param name="createRecord">A delegate which can create a record with a valid key for each string and it's embedding.</param>
+    [Obsolete("Temporary test utility for Obsolete ITextEmbeddingGenerationService")]
     internal static async Task<IVectorStoreRecordCollection<TKey, TRecord>> CreateCollectionFromTextSearchResultsAsync<TKey, TRecord>(
         this IVectorStore vectorStore,
         string collectionName,

@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel.Embeddings;
 /// Provides a collection of static methods for operating on <see cref="IEmbeddingGenerationService{TValue,TEmbedding}"/> objects.
 /// </summary>
 [Experimental("SKEXP0001")]
+[Obsolete("Use IEmbeddingGenerator<string, Embedding<float>> instead.")]
 public static class EmbeddingGenerationExtensions
 {
     /// <summary>

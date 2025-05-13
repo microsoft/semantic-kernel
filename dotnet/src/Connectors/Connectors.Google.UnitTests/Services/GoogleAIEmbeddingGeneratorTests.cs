@@ -5,15 +5,13 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Connectors.Google;
-using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Services;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Services;
 
-[Obsolete("Temporary test for Obsolete ITextEmbeddingGenerationService")]
-public sealed class GoogleAITextEmbeddingGenerationServiceTests : IDisposable
+public sealed class GoogleAIEmbeddingGeneratorTests : IDisposable
 {
     private const string Model = "fake-model";
     private const string ApiKey = "fake-key";
@@ -21,7 +19,7 @@ public sealed class GoogleAITextEmbeddingGenerationServiceTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
-    public GoogleAITextEmbeddingGenerationServiceTests()
+    public GoogleAIEmbeddingGeneratorTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub
         {
@@ -50,40 +48,40 @@ public sealed class GoogleAITextEmbeddingGenerationServiceTests : IDisposable
     public void AttributesShouldContainModelId()
     {
         // Arrange & Act
-        var service = new GoogleAITextEmbeddingGenerationService(Model, ApiKey);
+        using var service = new GoogleAIEmbeddingGenerator(Model, ApiKey);
 
         // Assert
-        Assert.Equal(Model, service.Attributes[AIServiceExtensions.ModelIdKey]);
+        Assert.Equal(Model, service.GetService<EmbeddingGeneratorMetadata>()!.DefaultModelId);
     }
 
     [Fact]
     public void AttributesShouldNotContainDimensionsWhenNotProvided()
     {
         // Arrange & Act
-        var service = new GoogleAITextEmbeddingGenerationService(Model, ApiKey);
+        using var service = new GoogleAIEmbeddingGenerator(Model, ApiKey);
 
         // Assert
-        Assert.False(service.Attributes.ContainsKey(EmbeddingGenerationExtensions.DimensionsKey));
+        Assert.Null(service.GetService<EmbeddingGeneratorMetadata>()!.DefaultModelDimensions);
     }
 
     [Fact]
     public void AttributesShouldContainDimensionsWhenProvided()
     {
         // Arrange & Act
-        var service = new GoogleAITextEmbeddingGenerationService(Model, ApiKey, dimensions: Dimensions);
+        using var service = new GoogleAIEmbeddingGenerator(Model, ApiKey, dimensions: Dimensions);
 
         // Assert
-        Assert.Equal(Dimensions, service.Attributes[EmbeddingGenerationExtensions.DimensionsKey]);
+        Assert.Equal(Dimensions, service.GetService<EmbeddingGeneratorMetadata>()!.DefaultModelDimensions);
     }
 
     [Fact]
     public void GetDimensionsReturnsCorrectValue()
     {
         // Arrange
-        var service = new GoogleAITextEmbeddingGenerationService(Model, ApiKey, dimensions: Dimensions);
+        using var service = new GoogleAIEmbeddingGenerator(Model, ApiKey, dimensions: Dimensions);
 
         // Act
-        var result = service.GetDimensions();
+        var result = service.GetService<EmbeddingGeneratorMetadata>()!.DefaultModelDimensions;
 
         // Assert
         Assert.Equal(Dimensions, result);
@@ -93,10 +91,10 @@ public sealed class GoogleAITextEmbeddingGenerationServiceTests : IDisposable
     public void GetDimensionsReturnsNullWhenNotProvided()
     {
         // Arrange
-        var service = new GoogleAITextEmbeddingGenerationService(Model, ApiKey);
+        using var service = new GoogleAIEmbeddingGenerator(Model, ApiKey);
 
         // Act
-        var result = service.GetDimensions();
+        var result = service.GetService<EmbeddingGeneratorMetadata>()!.DefaultModelDimensions;
 
         // Assert
         Assert.Null(result);
@@ -106,7 +104,7 @@ public sealed class GoogleAITextEmbeddingGenerationServiceTests : IDisposable
     public async Task ShouldNotIncludeDimensionsInRequestWhenNotProvidedAsync()
     {
         // Arrange
-        var service = new GoogleAITextEmbeddingGenerationService(
+        using var service = new GoogleAIEmbeddingGenerator(
             modelId: Model,
             apiKey: ApiKey,
             dimensions: null,
@@ -114,7 +112,7 @@ public sealed class GoogleAITextEmbeddingGenerationServiceTests : IDisposable
         var dataToEmbed = new List<string> { "Text to embed" };
 
         // Act
-        await service.GenerateEmbeddingsAsync(dataToEmbed);
+        await service.GenerateAsync(dataToEmbed);
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestContent);
@@ -128,7 +126,7 @@ public sealed class GoogleAITextEmbeddingGenerationServiceTests : IDisposable
     public async Task ShouldIncludeDimensionsInRequestWhenProvidedAsync(int? dimensions)
     {
         // Arrange
-        var service = new GoogleAITextEmbeddingGenerationService(
+        using var service = new GoogleAIEmbeddingGenerator(
             modelId: Model,
             apiKey: ApiKey,
             dimensions: dimensions,
@@ -136,7 +134,7 @@ public sealed class GoogleAITextEmbeddingGenerationServiceTests : IDisposable
         var dataToEmbed = new List<string> { "Text to embed" };
 
         // Act
-        await service.GenerateEmbeddingsAsync(dataToEmbed);
+        await service.GenerateAsync(dataToEmbed);
 
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestContent);

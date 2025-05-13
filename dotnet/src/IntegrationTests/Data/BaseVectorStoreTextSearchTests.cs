@@ -38,6 +38,7 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     /// <summary>
     /// Add sample records to the vector store record collection.
     /// </summary>
+    [Obsolete("Temporary test mock for Obsolete ITextEmbeddingGenerationService")]
     public static async Task<IVectorStoreRecordCollection<TKey, TRecord>> AddRecordsAsync<TKey, TRecord>(
         IVectorStore vectorStore,
         string collectionName,
@@ -104,6 +105,7 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     /// <summary>
     /// Mock implementation of <see cref="ITextEmbeddingGenerationService"/>.
     /// </summary>
+    [Obsolete("Temporary test mock for Obsolete ITextEmbeddingGenerationService")]
     protected sealed class MockTextEmbeddingGenerationService : ITextEmbeddingGenerationService
     {
         /// <inheritdoc />

@@ -2,10 +2,10 @@
 
 using System.Diagnostics;
 using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace Caching;
 
@@ -181,7 +181,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// Filter which is executed during prompt rendering operation.
     /// </summary>
     public sealed class PromptCacheFilter(
-        ITextEmbeddingGenerationService textEmbeddingGenerationService,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         IVectorStore vectorStore)
         : CacheBaseFilter, IPromptRenderFilter
     {
@@ -193,7 +193,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
             // Get rendered prompt
             var prompt = context.RenderedPrompt!;
 
-            var promptEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(prompt);
+            var promptEmbedding = await embeddingGenerator.GenerateAsync(prompt);
 
             var collection = vectorStore.GetCollection<string, CacheRecord>(CollectionName);
             await collection.CreateCollectionIfNotExistsAsync();
@@ -218,11 +218,11 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
     /// Filter which is executed during function invocation.
     /// </summary>
     public sealed class FunctionCacheFilter(
-        ITextEmbeddingGenerationService textEmbeddingGenerationService,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         IVectorStore vectorStore)
         : CacheBaseFilter, IFunctionInvocationFilter
     {
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        public async Task OnFunctionInvocationAsync(Microsoft.SemanticKernel.FunctionInvocationContext context, Func<Microsoft.SemanticKernel.FunctionInvocationContext, Task> next)
         {
             // Trigger function invocation
             await next(context);
@@ -237,7 +237,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
                 var recordId = context.Result.Metadata?.GetValueOrDefault(RecordIdKey, Guid.NewGuid().ToString()) as string;
 
                 // Generate prompt embedding.
-                var promptEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(context.Result.RenderedPrompt);
+                var promptEmbedding = await embeddingGenerator.GenerateAsync(context.Result.RenderedPrompt);
 
                 // Cache rendered prompt and LLM result.
                 var collection = vectorStore.GetCollection<string, CacheRecord>(CollectionName);
@@ -248,7 +248,7 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
                     Id = recordId!,
                     Prompt = context.Result.RenderedPrompt,
                     Result = result.ToString(),
-                    PromptEmbedding = promptEmbedding
+                    PromptEmbedding = promptEmbedding.Vector
                 };
 
                 await collection.UpsertAsync(cacheRecord, cancellationToken: context.CancellationToken);
