@@ -578,7 +578,7 @@ internal static class AssistantThreadActions
                 foreach (TextAnnotation annotation in itemContent.TextAnnotations)
                 {
                     AnnotationContent? annotationItem = GenerateAnnotationContent(annotation);
-                    if (annotationItem != null)
+                    if (annotationItem is not null)
                     {
                         content.Items.Add(annotationItem);
                     }
@@ -622,7 +622,7 @@ internal static class AssistantThreadActions
         else if (update.TextAnnotation != null)
         {
             StreamingAnnotationContent? annotationItem = GenerateStreamingAnnotationContent(update.TextAnnotation);
-            if (annotationItem != null)
+            if (annotationItem is not null)
             {
                 content.Items.Add(annotationItem);
             }
@@ -691,7 +691,7 @@ internal static class AssistantThreadActions
         }
 
         return
-            new(label: annotation.TextToReplace, kind, referenceId)
+            new(kind, label: annotation.TextToReplace, referenceId)
             {
                 InnerContent = annotation,
                 StartIndex = annotation.StartIndex,
@@ -721,7 +721,7 @@ internal static class AssistantThreadActions
         }
 
         return
-            new(label: annotation.TextToReplace, kind, referenceId)
+            new(kind, label: annotation.TextToReplace, referenceId)
             {
                 InnerContent = annotation,
                 StartIndex = annotation.StartIndex,

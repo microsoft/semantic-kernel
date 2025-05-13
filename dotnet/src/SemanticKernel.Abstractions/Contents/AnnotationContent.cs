@@ -19,7 +19,7 @@ public class AnnotationContent : KernelContent
     public string? FileId
     {
         get => this.ReferenceId;
-        init => this.ReferenceId = value ?? string.Empty;
+        //init => this.ReferenceId = value ?? string.Empty;
     }
 
     /// <summary>
@@ -30,29 +30,28 @@ public class AnnotationContent : KernelContent
     public string Quote => this.Label;
 
     /// <summary>
-    /// Identifies the referenced resource according to its <see cref="Kind"/>.
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string ReferenceId { get; init; } = string.Empty;
-
-    /// <summary>
-    /// The citation label in the associated response.
-    /// </summary>
-    /// <remarks>
-    /// This is the citation referebce that will be displayed in the response.
-    /// </remarks>
-    public string Label { get; init; } = string.Empty;
-
-    /// <summary>
     /// Describes the annotation kind.
     /// </summary>
     /// <remarks>
     /// Provides context for using <see cref="ReferenceId"/>.
     /// </remarks>
-    public AnnotationKind Kind { get; init; }
+    public AnnotationKind Kind { get; }
 
     /// <summary>
-    /// The title of the annotation reference.
+    /// The citation label in the associated response.
+    /// </summary>
+    /// <remarks>
+    /// This is the citation reference that will be displayed in the response.
+    /// </remarks>
+    public string Label { get; }
+
+    /// <summary>
+    /// Identifies the referenced resource according to its <see cref="Kind"/>.
+    /// </summary>
+    public string ReferenceId { get; }
+
+    /// <summary>
+    /// The title of the annotation reference (when <see cref="Kind"/> == <see cref="AnnotationKind.UrlCitation"/>..
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Title { get; init; }
@@ -72,23 +71,20 @@ public class AnnotationContent : KernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="AnnotationContent"/> class.
     /// </summary>
-    [JsonConstructor]
-    public AnnotationContent()
-    { }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AnnotationContent"/> class.
-    /// </summary>
-    /// <param name="label">The citation label.</param>
     /// <param name="kind">Describes the kind of annotation</param>
+    /// <param name="label">The citation label.</param>
     /// <param name="referenceId">Identifies the referenced resource.</param>
+    [JsonConstructor]
     public AnnotationContent(
-        string label,
         AnnotationKind kind,
+        string label,
         string referenceId)
     {
-        this.Label = label;
+        Verify.NotNullOrWhiteSpace(label, nameof(label));
+        Verify.NotNullOrWhiteSpace(referenceId, nameof(referenceId));
+
         this.Kind = kind;
+        this.Label = label;
         this.ReferenceId = referenceId;
     }
 }

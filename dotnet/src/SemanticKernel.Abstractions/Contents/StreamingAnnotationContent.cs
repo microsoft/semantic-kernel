@@ -20,7 +20,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// and image or document is produced as part of the agent response.
     /// </remarks>
     [JsonIgnore]
-    [Obsolete("Use `ReferenceId` property instead.  This method will be removed after June 1st 2025.")]
+    [Obsolete("Use `ReferenceId` property instead.")]
     public string? FileId
     {
         get => this.ReferenceId;
@@ -35,6 +35,19 @@ public class StreamingAnnotationContent : StreamingKernelContent
     public string Quote => this.Label;
 
     /// <summary>
+    /// Describes the annotation kind.
+    /// </summary>
+    /// <remarks>
+    /// Provides context for using <see cref="ReferenceId"/>.
+    /// </remarks>
+    public AnnotationKind Kind { get; init; }
+
+    /// <summary>
+    /// The citation.
+    /// </summary>
+    public string Label { get; init; } = string.Empty;
+
+    /// <summary>
     /// The referenced file identifier.
     /// </summary>
     /// <remarks>
@@ -45,23 +58,10 @@ public class StreamingAnnotationContent : StreamingKernelContent
     public string? ReferenceId { get; init; }
 
     /// <summary>
-    /// The title of the annotation reference.
+    /// The title of the annotation reference (when <see cref="Kind"/> == <see cref="AnnotationKind.UrlCitation"/>..
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Title { get; init; }
-
-    /// <summary>
-    /// The citation.
-    /// </summary>
-    public string Label { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Describes the annotation kind.
-    /// </summary>
-    /// <remarks>
-    /// Provides context for using <see cref="ReferenceId"/>.
-    /// </remarks>
-    public AnnotationKind Kind { get; init; }
 
     /// <summary>
     /// Start index of the citation.
@@ -78,37 +78,28 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingAnnotationContent"/> class.
     /// </summary>
-    [JsonConstructor]
-    public StreamingAnnotationContent()
-    { }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="StreamingAnnotationContent"/> class.
-    /// </summary>
-    /// <param name="label">The citation label.</param>
     /// <param name="kind">Describes the kind of annotation</param>
+    /// <param name="label">The citation label.</param>
     /// <param name="referenceId">Identifies the referenced resource.</param>
     public StreamingAnnotationContent(
-        string label,
         AnnotationKind kind,
+        string label,
         string referenceId)
     {
+        Verify.NotNullOrWhiteSpace(label, nameof(label));
+        Verify.NotNullOrWhiteSpace(referenceId, nameof(referenceId));
+
+        this.Kind = kind;
         this.Label = label;
         this.ReferenceId = referenceId;
-        this.Kind = kind;
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        bool hasFileId = !string.IsNullOrEmpty(this.ReferenceId);
+        bool hasReferenceId = !string.IsNullOrEmpty(this.ReferenceId);
 
-        if (hasFileId)
-        {
-            return $"{this.Label}: {this.ReferenceId}";
-        }
-
-        return this.Label;
+        return hasReferenceId ? $"{this.Label}: {this.ReferenceId}" : this.Label;
     }
 
     /// <inheritdoc/>

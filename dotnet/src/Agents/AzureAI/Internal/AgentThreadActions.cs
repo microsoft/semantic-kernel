@@ -687,8 +687,8 @@ internal static class AgentThreadActions
         {
             return
                 new AnnotationContent(
-                    label: annotation.Text,
                     kind: AnnotationKind.FileCitation,
+                    label: annotation.Text,
                     referenceId: fileCitationAnnotation.FileId)
                 {
                     InnerContent = annotation,
@@ -700,8 +700,8 @@ internal static class AgentThreadActions
         {
             return
                 new AnnotationContent(
-                    label: annotation.Text,
                     kind: AnnotationKind.UrlCitation,
+                    label: annotation.Text,
                     referenceId: urlCitationAnnotation.UrlCitation.Url)
                 {
                     InnerContent = annotation,
@@ -753,7 +753,7 @@ internal static class AgentThreadActions
         }
 
         return
-            new StreamingAnnotationContent(label: annotation.TextToReplace, kind, referenceId)
+            new StreamingAnnotationContent(kind, label: annotation.TextToReplace, referenceId)
             {
                 InnerContent = annotation,
                 Title = annotation.Title,

@@ -203,7 +203,7 @@ public class ChatMessageContentTests
             new FunctionResultContent(new FunctionCallContent("function-name", "plugin-name", "function-id"), "function-result"),
             new FileReferenceContent(fileId: "file-id-1") { ModelId = "model-7", Metadata = new Dictionary<string, object?>() { ["metadata-key-7"] = "metadata-value-7" } },
             new FileReferenceContent(fileId: "file-id-2") { Tools = ["a", "b", "c"] },
-            new AnnotationContent("quote-8", AnnotationKind.TextCitation, "file-id-3") { ModelId = "model-8", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } },
+            new AnnotationContent(AnnotationKind.TextCitation, "quote-8", "file-id-3") { ModelId = "model-8", StartIndex = 2, EndIndex = 24, Metadata = new Dictionary<string, object?>() { ["metadata-key-8"] = "metadata-value-8" } },
         ];
 
         // Act

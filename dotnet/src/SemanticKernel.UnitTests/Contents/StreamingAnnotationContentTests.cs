@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
 using Xunit;
 
@@ -18,12 +20,8 @@ public class StreamingAnnotationContentTests
     [Fact]
     public void VerifyStreamingAnnotationContentInitialState()
     {
-        StreamingAnnotationContent definition = new();
-
-        Assert.Empty(definition.Label);
-        Assert.Null(definition.StartIndex);
-        Assert.Null(definition.EndIndex);
-        Assert.Null(definition.ReferenceId);
+        Assert.Throws<ArgumentException>(() => new StreamingAnnotationContent(AnnotationKind.FileCitation, string.Empty, "test"));
+        Assert.Throws<ArgumentException>(() => new StreamingAnnotationContent(AnnotationKind.FileCitation, "test", string.Empty));
     }
 
     /// <summary>
@@ -33,17 +31,18 @@ public class StreamingAnnotationContentTests
     public void VerifyStreamingAnnotationContentWithFileId()
     {
         StreamingAnnotationContent definition =
-            new("test quote", AnnotationKind.FileCitation, "#id")
+            new(AnnotationKind.FileCitation, "test label", "#id")
             {
                 StartIndex = 33,
                 EndIndex = 49,
             };
 
-        Assert.Equal("test quote", definition.Label);
+        Assert.Equal(AnnotationKind.FileCitation, definition.Kind);
+        Assert.Equal("test label", definition.Label);
         Assert.Equal(33, definition.StartIndex);
         Assert.Equal(49, definition.EndIndex);
         Assert.Equal("#id", definition.ReferenceId);
-        Assert.Equal("test quote: #id", definition.ToString());
-        Assert.Equal("test quote: #id", Encoding.UTF8.GetString(definition.ToByteArray()));
+        Assert.Equal("test label: #id", definition.ToString());
+        Assert.Equal("test label: #id", Encoding.UTF8.GetString(definition.ToByteArray()));
     }
 }
