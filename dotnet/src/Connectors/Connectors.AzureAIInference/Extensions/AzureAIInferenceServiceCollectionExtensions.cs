@@ -4,11 +4,11 @@ using System;
 using System.Net.Http;
 using Azure.AI.Inference;
 using Azure.Core;
-using Azure.Core.Pipeline;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureAIInference.Core;
 
 namespace Microsoft.SemanticKernel;
 
@@ -43,13 +43,8 @@ public static class AzureAIInferenceServiceCollectionExtensions
 
         return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
         {
-            var options = new AzureAIInferenceClientOptions();
-
             httpClient ??= serviceProvider.GetService<HttpClient>();
-            if (httpClient is not null)
-            {
-                options.Transport = new HttpClientTransport(httpClient);
-            }
+            var options = ChatClientCore.GetClientOptions(httpClient);
 
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
@@ -95,13 +90,8 @@ public static class AzureAIInferenceServiceCollectionExtensions
 
         return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
         {
-            var options = new AzureAIInferenceClientOptions();
-
             httpClient ??= serviceProvider.GetService<HttpClient>();
-            if (httpClient is not null)
-            {
-                options.Transport = new HttpClientTransport(httpClient);
-            }
+            var options = ChatClientCore.GetClientOptions(httpClient);
 
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
@@ -162,6 +152,75 @@ public static class AzureAIInferenceServiceCollectionExtensions
         });
     }
 
+    /// <summary>
+    /// Add an Azure AI Inference <see cref="IEmbeddingGenerator"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    public static IServiceCollection AddAzureAIInferenceEmbeddingGenerator(
+        this IServiceCollection services,
+        string modelId,
+        string? apiKey = null,
+        Uri? endpoint = null,
+        HttpClient? httpClient = null,
+        string? serviceId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(services);
+        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
+        {
+            httpClient ??= serviceProvider.GetService<HttpClient>();
+            var options = ChatClientCore.GetClientOptions(httpClient);
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            var builder = new Azure.AI.Inference.EmbeddingsClient(endpoint, new Azure.AzureKeyCredential(apiKey ?? SingleSpace), options)
+                .AsIEmbeddingGenerator(modelId).AsBuilder();
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory).Build();
+            }
+
+            builder.UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            return builder.Build();
+        });
+    }
+
+    /// <summary>
+    /// Add an Azure AI Inference <see cref="IEmbeddingGenerator"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    public static IServiceCollection AddAzureAIInferenceEmbeddingGenerator(
+        this IServiceCollection services,
+        string modelId,
+        TokenCredential credential,
+        Uri? endpoint = null,
+        HttpClient? httpClient = null,
+        string? serviceId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(services);
+        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
+        {
+            httpClient ??= serviceProvider.GetService<HttpClient>();
+            var options = ChatClientCore.GetClientOptions(httpClient);
+
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            var builder = new Azure.AI.Inference.EmbeddingsClient(endpoint, credential, options)
+                .AsIEmbeddingGenerator(modelId)
+                .AsBuilder();
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory).Build();
+            }
+
+            builder.UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            return builder.Build();
+        });
+    }
+
     #region Private
 
     /// <summary>
@@ -175,7 +234,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
     /// to this limit, but if we do, auto-invoke will be disabled for the current flow in order to prevent runaway execution.
     /// With the current setup, the way this could possibly happen is if a prompt function is configured with built-in
     /// execution settings that opt-in to auto-invocation of everything in the kernel, in which case the invocation of that
-    /// prompt function could advertize itself as a candidate for auto-invocation. We don't want to outright block that,
+    /// prompt function could advertise itself as a candidate for auto-invocation. We don't want to outright block that,
     /// if that's something a developer has asked to do (e.g. it might be invoked with different arguments than its parent
     /// was invoked with), but we do want to limit it. This limit is arbitrary and can be tweaked in the future and/or made
     /// configurable should need arise.
@@ -187,6 +246,5 @@ public static class AzureAIInferenceServiceCollectionExtensions
     /// this single space is used to avoid breaking the client.
     /// </summary>
     private const string SingleSpace = " ";
-
     #endregion
 }

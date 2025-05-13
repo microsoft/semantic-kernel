@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Provides extension methods for <see cref="IServiceCollection"/> to configure Azure OpenAI connectors.
 /// </summary>
-public static partial class AzureOpenAIServiceCollectionExtensions
+public static class AzureOpenAIServiceCollectionExtensions
 {
     /// <summary>
     /// Adds the <see cref="AzureOpenAITextEmbeddingGenerationService"/> to the <see cref="IServiceCollection"/>.
