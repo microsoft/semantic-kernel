@@ -28,6 +28,7 @@ from .open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgent
 from .open_ai.run_polling_options import RunPollingOptions
 from .orchestration.concurrent import ConcurrentOrchestration
 from .orchestration.group_chat import GroupChatManager, GroupChatOrchestration, RoundRobinGroupChatManager
+from .orchestration.handoffs import HandoffOrchestration, OrchestrationHandoffs
 from .orchestration.sequential import SequentialOrchestration
 
 __all__ = [
@@ -58,10 +59,12 @@ __all__ = [
     "DeclarativeSpecMixin",
     "GroupChatManager",
     "GroupChatOrchestration",
+    "HandoffOrchestration",
     "ModelConnection",
     "ModelSpec",
     "OpenAIAssistantAgent",
     "OpenAIResponsesAgent",
+    "OrchestrationHandoffs",
     "ResponsesAgentThread",
     "RoundRobinGroupChatManager",
     "RunPollingOptions",
