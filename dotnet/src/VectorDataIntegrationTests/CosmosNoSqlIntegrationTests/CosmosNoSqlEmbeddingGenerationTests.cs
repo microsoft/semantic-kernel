@@ -4,7 +4,6 @@ using CosmosNoSqlIntegrationTests.Support;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
 using Xunit;
@@ -32,7 +31,7 @@ public class CosmosNoSQLEmbeddingGenerationTests(CosmosNoSQLEmbeddingGenerationT
         [
             services => services
                 .AddSingleton(CosmosNoSqlTestStore.Instance.Database)
-                .AddCosmosNoSqlVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddCosmosNoSqlCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 }

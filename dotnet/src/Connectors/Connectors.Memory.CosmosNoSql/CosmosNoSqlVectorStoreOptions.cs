@@ -11,6 +11,19 @@ namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 public sealed class CosmosNoSqlVectorStoreOptions
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="CosmosNoSqlVectorStoreOptions"/> class.
+    /// </summary>
+    public CosmosNoSqlVectorStoreOptions()
+    {
+    }
+
+    internal CosmosNoSqlVectorStoreOptions(CosmosNoSqlVectorStoreOptions? source)
+    {
+        this.JsonSerializerOptions = source?.JsonSerializerOptions;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+    }
+
+    /// <summary>
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure CosmosDB NoSQL record.
     /// </summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; set; }

@@ -86,7 +86,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// </summary>
     /// <param name="connectionString">Connection string required to connect to Azure CosmosDB NoSQL.</param>
     /// <param name="databaseName">Database name for Azure CosmosDB NoSQL.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="clientOptions">Optional configuration options for <see cref="CosmosClient"/>.</param>
     /// <param name="options">Optional configuration options for <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
@@ -94,18 +94,18 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     public CosmosNoSqlCollection(
         string connectionString,
         string databaseName,
-        string collectionName,
+        string name,
         CosmosClientOptions? clientOptions = null,
         CosmosNoSqlCollectionOptions? options = null)
         : this(
             new ClientWrapper(new CosmosClient(connectionString, clientOptions), ownsClient: true),
             client => client.GetDatabase(databaseName),
-            collectionName,
+            name,
             options)
     {
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNullOrWhiteSpace(databaseName);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
     }
 
     internal CosmosNoSqlCollection(
