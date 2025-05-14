@@ -86,11 +86,20 @@ public abstract class GroupChatManager
     {
         Interlocked.Increment(ref this._invocationsCount);
 
+        bool resultValue = false;
+        string reason = "Maximum number of invocations has not been reached.";
         if (this.InvocationsCount > this.MaximumInvocations)
         {
-            return ValueTask.FromResult(new GroupChatManagerResult<bool>(true) { Reason = "Maximum number of invocations reached." });
+            resultValue = true;
+            reason = "Maximum number of invocations reached.";
         }
 
-        return ValueTask.FromResult(new GroupChatManagerResult<bool>(false) { Reason = "Maximum number of invocations has not been reached." });
+        GroupChatManagerResult<bool> result = new(resultValue) { Reason = reason };
+
+#if !NETCOREAPP
+        return result.AsValueTask();
+#else
+        return ValueTask.FromResult(result);
+#endif
     }
 }

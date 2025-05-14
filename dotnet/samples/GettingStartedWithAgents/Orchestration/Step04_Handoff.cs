@@ -82,7 +82,8 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         responses.Enqueue("No, bye");
         Console.WriteLine($"\n# INPUT:\n{task}\n");
         OrchestrationResult<string> result = await orchestration.InvokeAsync(task, runtime);
-        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
+
+        string text = await result.GetValueAsync(TimeSpan.FromSeconds(300));
         Console.WriteLine($"\n# RESULT: {text}");
 
         await runtime.RunUntilIdleAsync();
