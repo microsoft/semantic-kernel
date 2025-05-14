@@ -18,8 +18,11 @@ internal sealed class PostgresTestStore : TestStore
         .Build();
 
     private NpgsqlDataSource? _dataSource;
+    private string? _connectionString;
 
     public NpgsqlDataSource DataSource => this._dataSource ?? throw new InvalidOperationException("Not initialized");
+
+    public string ConnectionString => this._connectionString ?? throw new InvalidOperationException("Not initialized");
 
     public PostgresVectorStore GetVectorStore(PostgresVectorStoreOptions options)
     {
@@ -35,18 +38,18 @@ internal sealed class PostgresTestStore : TestStore
     {
         await s_container.StartAsync();
 
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder
+        NpgsqlConnectionStringBuilder connectionStringBuilder = new()
         {
-            ConnectionStringBuilder =
-            {
-                Host = s_container.Hostname,
-                Port = s_container.GetMappedPublicPort(5432),
-                Username = PostgreSqlBuilder.DefaultUsername,
-                Password = PostgreSqlBuilder.DefaultPassword,
-                Database = PostgreSqlBuilder.DefaultDatabase
-            }
+            Host = s_container.Hostname,
+            Port = s_container.GetMappedPublicPort(5432),
+            Username = PostgreSqlBuilder.DefaultUsername,
+            Password = PostgreSqlBuilder.DefaultPassword,
+            Database = PostgreSqlBuilder.DefaultDatabase
         };
 
+        this._connectionString = connectionStringBuilder.ConnectionString;
+
+        NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionStringBuilder.ConnectionString);
         dataSourceBuilder.UseVector();
 
         this._dataSource = dataSourceBuilder.Build();

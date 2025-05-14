@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq.Expressions;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
@@ -16,28 +17,40 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
 {
     protected abstract void PopulateConfiguration(ConfigurationManager configuration, object? serviceKey = null);
 
-    protected abstract void RegisterVectorStore(IServiceCollection services, ServiceLifetime lifetime, object? serviceKey = null);
+    public abstract IEnumerable<Func<IServiceCollection, object?, ServiceLifetime, IServiceCollection>> StoreDelegates { get; }
 
-    protected abstract void RegisterCollection(IServiceCollection services, ServiceLifetime lifetime, string collectionName = "name", object? serviceKey = null);
+    public abstract IEnumerable<Func<IServiceCollection, object?, string, ServiceLifetime, IServiceCollection>> CollectionDelegates { get; }
 
     [Fact]
     public void ServiceCollectionCantBeNull()
     {
-        Assert.Throws<ArgumentNullException>(() => this.RegisterVectorStore(null!, ServiceLifetime.Singleton, serviceKey: null));
-        Assert.Throws<ArgumentNullException>(() => this.RegisterVectorStore(null!, ServiceLifetime.Singleton, serviceKey: "notNull"));
-        Assert.Throws<ArgumentNullException>(() => this.RegisterCollection(null!, ServiceLifetime.Singleton, serviceKey: null));
-        Assert.Throws<ArgumentNullException>(() => this.RegisterCollection(null!, ServiceLifetime.Singleton, serviceKey: "notNull"));
+        foreach (var registrationDelegate in this.StoreDelegates)
+        {
+            Assert.Throws<ArgumentNullException>(() => registrationDelegate(null!, null, ServiceLifetime.Singleton));
+            Assert.Throws<ArgumentNullException>(() => registrationDelegate(null!, "serviceKey", ServiceLifetime.Singleton));
+        }
+
+        foreach (var registrationDelegate in this.CollectionDelegates)
+        {
+            Assert.Throws<ArgumentNullException>(() => registrationDelegate(null!, null, "collectionName", ServiceLifetime.Singleton));
+            Assert.Throws<ArgumentNullException>(() => registrationDelegate(null!, "serviceKey", "collectionName", ServiceLifetime.Singleton));
+        }
     }
 
     [Fact]
     public void CollectionNameCantBeNullOrEmpty()
     {
-        IServiceCollection services = this.CreateServices();
+        const string EmptyCollectionName = "";
 
-        Assert.Throws<ArgumentNullException>(() => this.RegisterCollection(services, ServiceLifetime.Singleton, collectionName: null!, serviceKey: null));
-        Assert.Throws<ArgumentNullException>(() => this.RegisterCollection(services, ServiceLifetime.Singleton, collectionName: null!, serviceKey: "notNull"));
-        Assert.Throws<ArgumentException>(() => this.RegisterCollection(services, ServiceLifetime.Singleton, collectionName: "", serviceKey: null));
-        Assert.Throws<ArgumentException>(() => this.RegisterCollection(services, ServiceLifetime.Singleton, collectionName: "", serviceKey: "notNull"));
+        foreach (var registrationDelegate in this.CollectionDelegates)
+        {
+            IServiceCollection services = this.CreateServices();
+
+            Assert.Throws<ArgumentNullException>(() => registrationDelegate(services, null, null!, ServiceLifetime.Singleton));
+            Assert.Throws<ArgumentNullException>(() => registrationDelegate(services, "serviceKey", null!, ServiceLifetime.Singleton));
+            Assert.Throws<ArgumentException>(() => registrationDelegate(services, null, EmptyCollectionName, ServiceLifetime.Singleton));
+            Assert.Throws<ArgumentException>(() => registrationDelegate(services, "serviceKey", EmptyCollectionName, ServiceLifetime.Singleton));
+        }
     }
 
 #pragma warning disable CA1000 // Do not declare static members on generic types
@@ -56,64 +69,104 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
     [MemberData(nameof(LifetimesAndServiceKeys))]
     public virtual void CanRegisterVectorStore(ServiceLifetime lifetime, object? serviceKey)
     {
-        IServiceCollection services = this.CreateServices(serviceKey);
+        foreach (var registrationDelegate in this.StoreDelegates)
+        {
+            IServiceCollection services = this.CreateServices(serviceKey);
 
-        this.RegisterVectorStore(services, lifetime, serviceKey);
+            registrationDelegate(services, serviceKey, lifetime);
 
-        using ServiceProvider serviceProvider = services.BuildServiceProvider();
-        // let's ensure that concrete types are registered
-        Verify<TVectorStore>(serviceProvider, lifetime, serviceKey);
-        // and the abstraction too
-        Verify<VectorStore>(serviceProvider, lifetime, serviceKey);
+            using ServiceProvider serviceProvider = services.BuildServiceProvider();
+            // let's ensure that concrete types are registered
+            Verify<TVectorStore>(serviceProvider, lifetime, serviceKey);
+            // and the abstraction too
+            Verify<VectorStore>(serviceProvider, lifetime, serviceKey);
+        }
     }
 
     [Theory]
     [MemberData(nameof(LifetimesAndServiceKeys))]
     public void CanRegisterCollections(ServiceLifetime lifetime, object? serviceKey)
     {
-        IServiceCollection services = this.CreateServices(serviceKey);
+        foreach (var registrationDelegate in this.CollectionDelegates)
+        {
+            IServiceCollection services = this.CreateServices(serviceKey);
 
-        this.RegisterCollection(services, lifetime, serviceKey: serviceKey);
+            registrationDelegate(services, serviceKey, "collectionName", lifetime);
 
-        using ServiceProvider serviceProvider = services.BuildServiceProvider();
-        // Let's ensure that concrete types are registered.
-        Verify<TCollection>(serviceProvider, lifetime, serviceKey);
-        // And the VectorStoreCollection abstraction.
-        Verify<VectorStoreCollection<TKey, TRecord>>(serviceProvider, lifetime, serviceKey);
-        // And the IVectorSearchable abstraction.
-        Verify<IVectorSearchable<TRecord>>(serviceProvider, lifetime, serviceKey);
+            using ServiceProvider serviceProvider = services.BuildServiceProvider();
+            // Let's ensure that concrete types are registered.
+            Verify<TCollection>(serviceProvider, lifetime, serviceKey);
+            // And the VectorStoreCollection abstraction.
+            Verify<VectorStoreCollection<TKey, TRecord>>(serviceProvider, lifetime, serviceKey);
+            // And the IVectorSearchable abstraction.
+            Verify<IVectorSearchable<TRecord>>(serviceProvider, lifetime, serviceKey);
+        }
     }
 
     [Theory]
     [MemberData(nameof(LifetimesAndServiceKeys))]
     public virtual void CanRegisterConcreteTypeVectorStoreAfterSomeAbstractionHasBeenRegistered(ServiceLifetime lifetime, object? serviceKey)
     {
-        IServiceCollection services = this.CreateServices(serviceKey);
+        foreach (var registrationDelegate in this.StoreDelegates)
+        {
+            IServiceCollection services = this.CreateServices(serviceKey);
 
-        // Users may be willing to register more than one IVectorStore implementation.
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey, (sp, key) => new FakeVectorStore(), lifetime));
+            // Users may be willing to register more than one IVectorStore implementation.
+            services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey, (sp, key) => new FakeVectorStore(), lifetime));
 
-        this.RegisterVectorStore(services, lifetime, serviceKey);
+            registrationDelegate(services, serviceKey, lifetime);
 
-        using ServiceProvider serviceProvider = services.BuildServiceProvider();
-        // let's ensure that concrete types are registered
-        Verify<TVectorStore>(serviceProvider, lifetime, serviceKey);
+            using ServiceProvider serviceProvider = services.BuildServiceProvider();
+            // let's ensure that concrete types are registered
+            Verify<TVectorStore>(serviceProvider, lifetime, serviceKey);
+        }
     }
 
     [Theory]
     [MemberData(nameof(LifetimesAndServiceKeys))]
     public void CanRegisterConcreteTypeCollectionsAfterSomeAbstractionHasBeenRegistered(ServiceLifetime lifetime, object? serviceKey)
     {
-        IServiceCollection services = this.CreateServices(serviceKey);
+        foreach (var registrationDelegate in this.CollectionDelegates)
+        {
+            IServiceCollection services = this.CreateServices(serviceKey);
 
-        // Users may be willing to register more than one VectorStoreCollection implementation.
-        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey, (sp, key) => new FakeVectorStoreRecordCollection(), lifetime));
+            // Users may be willing to register more than one VectorStoreCollection implementation.
+            services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey, (sp, key) => new FakeVectorStoreRecordCollection(), lifetime));
 
-        this.RegisterCollection(services, lifetime, serviceKey: serviceKey);
+            registrationDelegate(services, serviceKey, "collectionName", lifetime);
 
-        using ServiceProvider serviceProvider = services.BuildServiceProvider();
-        // let's ensure that concrete types are registered
-        Verify<TCollection>(serviceProvider, lifetime, serviceKey);
+            using ServiceProvider serviceProvider = services.BuildServiceProvider();
+            // let's ensure that concrete types are registered
+            Verify<TCollection>(serviceProvider, lifetime, serviceKey);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(LifetimesAndServiceKeys))]
+    public void EmbeddingGeneratorIsResolved(ServiceLifetime lifetime, object? serviceKey)
+    {
+        foreach (var registrationDelegate in this.CollectionDelegates)
+        {
+            IServiceCollection services = this.CreateServices(serviceKey);
+
+            bool wasResolved = false;
+            services.AddSingleton<IEmbeddingGenerator>(sp =>
+            {
+                wasResolved = true;
+                return null!;
+            });
+
+            registrationDelegate(services, serviceKey, "collectionName", lifetime);
+
+            Assert.False(wasResolved); // it's lazy
+
+            using ServiceProvider serviceProvider = services.BuildServiceProvider();
+            using var collection = serviceKey is null
+                ? serviceProvider.GetRequiredService<TCollection>()
+                : serviceProvider.GetRequiredKeyedService<TCollection>(serviceKey);
+
+            Assert.True(wasResolved);
+        }
     }
 
     protected IServiceCollection CreateServices(object? serviceKey = null)

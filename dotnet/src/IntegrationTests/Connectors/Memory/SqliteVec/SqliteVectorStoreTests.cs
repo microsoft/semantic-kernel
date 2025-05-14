@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.SqliteVec;
 using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
@@ -15,7 +14,6 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.SqliteVec;
 /// Integration tests for <see cref="SqliteVectorStore"/> class.
 /// </summary>
 [Collection("SqliteVectorStoreCollection")]
-[DisableVectorStoreTests(Skip = "SQLite vector search extension is required")]
 public sealed class SqliteVectorStoreTests(SqliteVectorStoreFixture fixture)
 #pragma warning disable CA2000 // Dispose objects before losing scope
     : BaseVectorStoreTests<string, SqliteHotel<string>>(new SqliteVectorStore(fixture.ConnectionString))
@@ -27,7 +25,7 @@ public sealed class SqliteVectorStoreTests(SqliteVectorStoreFixture fixture)
         // Arrange
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddSqliteVectorStore(fixture.ConnectionString);
+        serviceCollection.AddSqliteVectorStore(_ => fixture.ConnectionString);
 
         var provider = serviceCollection.BuildServiceProvider();
 
