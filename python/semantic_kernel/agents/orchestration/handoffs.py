@@ -52,10 +52,35 @@ AgentHandoffs = dict[str, str]
 
 
 class OrchestrationHandoffs(dict[str, AgentHandoffs]):
-    """A model representing the possible handoff connections for an orchestration."""
+    """A dictionary mapping agent names to their handoff connections.
+
+    Handoff connections are represented as a dictionary where the key is the target agent name
+    and the value is a description of the handoff connection. For example:
+    {
+        "AgentA": {
+            "AgentB": "Transfer to Agent B for further assistance.",
+            "AgentC": "Transfer to Agent C for technical support."
+        },
+        "AgentB": {
+            "AgentA": "Transfer to Agent A for general inquiries.",
+            "AgentC": "Transfer to Agent C for billing issues."
+        }
+    }
+
+    This class allows for easy addition of handoff connections between agents.
+    """
 
     def add(self, source_agent: str | Agent, target_agent: str | Agent, description: str | None = None) -> "Self":
-        """Add a handoff connection to the orchestration."""
+        """Add a handoff connection to the source agent.
+
+        Args:
+            source_agent (str | Agent): The source agent name or instance.
+            target_agent (str | Agent): The target agent name or instance.
+            description (str | None): The description of the handoff connection.
+
+        Returns:
+            Self: The updated orchestration handoffs, allowing for method chaining.
+        """
         return self._add(
             source_agent=source_agent if isinstance(source_agent, str) else source_agent.name,
             target_agent=target_agent if isinstance(target_agent, str) else target_agent.name,
@@ -63,7 +88,15 @@ class OrchestrationHandoffs(dict[str, AgentHandoffs]):
         )
 
     def add_many(self, source_agent: str | Agent, target_agents: list[str | Agent] | AgentHandoffs) -> "Self":
-        """Add multiple handoff connections to the orchestration."""
+        """Add multiple handoff connections to the source agent.
+
+        Args:
+            source_agent (str | Agent): The source agent name or instance.
+            target_agents (list[str | Agent] | AgentHandoffs): A list of target agent names or instances.
+
+        Returns:
+            Self: The updated orchestration handoffs, allowing for method chaining.
+        """
         if isinstance(target_agents, list):
             for target_agent in target_agents:
                 self._add(
@@ -82,9 +115,7 @@ class OrchestrationHandoffs(dict[str, AgentHandoffs]):
 
     def _add(self, source_agent: str, target_agent: str, description: str) -> "Self":
         """Helper method to add a handoff connection."""
-        if source_agent not in self:
-            self[source_agent] = AgentHandoffs()
-        self[source_agent][target_agent] = description or ""
+        self.setdefault(source_agent, AgentHandoffs())[target_agent] = description or ""
 
         return self
 

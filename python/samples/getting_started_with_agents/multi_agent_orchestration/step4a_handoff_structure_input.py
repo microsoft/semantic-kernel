@@ -3,8 +3,7 @@
 import asyncio
 from enum import Enum
 
-from semantic_kernel.agents import Agent, ChatCompletionAgent, HandoffOrchestration
-from semantic_kernel.agents.orchestration.handoffs import OrchestrationHandoffs
+from semantic_kernel.agents import Agent, ChatCompletionAgent, HandoffOrchestration, OrchestrationHandoffs
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.contents import AuthorRole, ChatMessageContent

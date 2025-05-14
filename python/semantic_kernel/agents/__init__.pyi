@@ -27,7 +27,7 @@ from .open_ai.open_ai_assistant_agent import AssistantAgentThread, OpenAIAssista
 from .open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
 from .open_ai.run_polling_options import RunPollingOptions
 from .orchestration.concurrent import ConcurrentOrchestration
-from .orchestration.handoffs import HandoffOrchestration
+from .orchestration.handoffs import HandoffOrchestration, OrchestrationHandoffs
 from .orchestration.sequential import SequentialOrchestration
 
 __all__ = [
@@ -61,6 +61,7 @@ __all__ = [
     "ModelSpec",
     "OpenAIAssistantAgent",
     "OpenAIResponsesAgent",
+    "OrchestrationHandoffs",
     "ResponsesAgentThread",
     "RunPollingOptions",
     "SequentialOrchestration",

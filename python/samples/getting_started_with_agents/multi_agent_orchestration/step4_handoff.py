@@ -2,8 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents import Agent, ChatCompletionAgent, HandoffOrchestration
-from semantic_kernel.agents.orchestration.handoffs import OrchestrationHandoffs
+from semantic_kernel.agents import Agent, ChatCompletionAgent, HandoffOrchestration, OrchestrationHandoffs
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.contents import AuthorRole, ChatMessageContent
@@ -93,27 +92,27 @@ def get_agents() -> tuple[list[Agent], OrchestrationHandoffs]:
     handoffs = (
         OrchestrationHandoffs()
         .add_many(
-            support_agent.name,
-            {
+            source_agent=support_agent.name,
+            target_agents={
                 refund_agent.name: "Transfer to this agent if the issue is refund related",
                 order_status_agent.name: "Transfer to this agent if the issue is order status related",
                 order_return_agent.name: "Transfer to this agent if the issue is order return related",
             },
         )
         .add(
-            refund_agent.name,
-            support_agent.name,
-            "Transfer to this agent if the issue is not refund related",
+            source_agent=refund_agent.name,
+            target_agent=support_agent.name,
+            description="Transfer to this agent if the issue is not refund related",
         )
         .add(
-            order_status_agent.name,
-            support_agent.name,
-            "Transfer to this agent if the issue is not order status related",
+            source_agent=order_status_agent.name,
+            target_agent=support_agent.name,
+            description="Transfer to this agent if the issue is not order status related",
         )
         .add(
-            order_return_agent.name,
-            support_agent.name,
-            "Transfer to this agent if the issue is not order return related",
+            source_agent=order_return_agent.name,
+            target_agent=support_agent.name,
+            description="Transfer to this agent if the issue is not order return related",
         )
     )
 
