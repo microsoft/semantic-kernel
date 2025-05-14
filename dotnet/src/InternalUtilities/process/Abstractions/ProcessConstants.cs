@@ -35,6 +35,12 @@ internal static class ProcessConstants
         public const string DefaultCondition = "_default_";
 
         public const string OnEnterEvent = "_on_enter_";
+
+        public const string OnCompleteEvent = "_on_complete_";
+
+        public const string OnExitEvent = "_on_exit_";
+
+        public const string OnErrorEvent = "_on_error_";
     }
 
     /// <summary>

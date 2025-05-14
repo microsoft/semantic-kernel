@@ -863,8 +863,8 @@ public class ThenAction
     /// <summary>
     /// Gets or sets the type of message to emit.
     /// </summary>
-    [YamlMember(Alias = "emit")]
-    [JsonPropertyName("emit")]
+    [YamlMember(Alias = "message_type")]
+    [JsonPropertyName("message_type")]
     public string? EmitMessageType { get; set; }
 
     /// <summary>

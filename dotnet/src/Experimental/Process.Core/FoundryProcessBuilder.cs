@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Azure.Identity;
@@ -15,6 +15,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// A builder for creating a process that can be deployed to Azure Foundry.
 /// </summary>
+[Experimental("SKEXP0081")]
 public class FoundryProcessBuilder<TProcessState> where TProcessState : class, new()
 {
     private readonly ProcessBuilder _processBuilder;
@@ -71,7 +72,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder<TProcessState> AddStepFromAgentProxy(string stepId, AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgentProxy(string stepId, AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null) // TODO: Is there a better way to model this?
     {
         Verify.NotNullOrWhiteSpace(stepId);
         Verify.NotNull(agentDefinition);
@@ -93,22 +94,13 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
         return this._processBuilder.OnInputEvent(eventId);
     }
 
-    ///// <summary>
-    ///// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
-    ///// </summary>
-    ///// <returns></returns>
-    //public FoundryListenForBuilder ListenFor()
-    //{
-    //    return new FoundryListenForBuilder(this._processBuilder);
-    //}
-
     /// <summary>
     /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
     /// </summary>
     /// <param name="step"> The process step from which the message originates.</param>
     /// <param name="condition"></param>
     /// <returns></returns>
-    public ListenForTargetBuilder OnResultFromStep(ProcessStepBuilder step, string? condition = null)
+    public FoundryListenForTargetBuilder OnResultFromStep(ProcessStepBuilder step, string? condition = null)
     {
         Verify.NotNull(step);
         return new FoundryListenForBuilder(this._processBuilder).ResultFrom(step, condition);
@@ -120,7 +112,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// <param name="step"></param>
     /// <param name="condition"></param>
     /// <returns></returns>
-    public ListenForTargetBuilder OnStepEnter(ProcessStepBuilder step, string? condition = null)
+    public FoundryListenForTargetBuilder OnStepEnter(ProcessStepBuilder step, string? condition = null)
     {
         Verify.NotNull(step);
         return new FoundryListenForBuilder(this._processBuilder).OnEnter(step, condition);
@@ -132,7 +124,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// <param name="step"></param>
     /// <param name="condition"></param>
     /// <returns></returns>
-    public ListenForTargetBuilder OnStepExit(ProcessStepBuilder step, string? condition = null)
+    public FoundryListenForTargetBuilder OnStepExit(ProcessStepBuilder step, string? condition = null)
     {
         Verify.NotNull(step);
         return new FoundryListenForBuilder(this._processBuilder).OnExit(step, condition);
@@ -142,7 +134,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for when the process starts.
     /// </summary>
     /// <returns></returns>
-    public ListenForTargetBuilder OnProcessEnter()
+    public FoundryListenForTargetBuilder OnProcessEnter()
     {
         return new FoundryListenForBuilder(this._processBuilder).ProcessStart();
     }
@@ -157,11 +149,16 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
         return this._processBuilder.Build(stateMetadata);
     }
 
+    /// <summary>
+    /// Deploys the process to Azure Foundry.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <param name="endpoint"></param>
+    /// <returns></returns>
     public async Task DeployToFoundryAsync(KernelProcess process, string endpoint)
     {
         using var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {(await new DefaultAzureCredential().GetTokenAsync(new Azure.Core.TokenRequestContext(s_scopes)).ConfigureAwait(false)).Token}");
-
 
         var workflow = await WorkflowBuilder.BuildWorkflow(process).ConfigureAwait(false);
         string yaml = WorkflowSerializer.SerializeToYaml(workflow);
@@ -182,16 +179,9 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
 }
 
 /// <summary>
-/// A default process state for the <see cref="FoundryProcessBuilder"/>.
-/// </summary>
-public class DefaultProcessState
-{
-}
-
-/// <summary>
 /// A builder for creating a process that can be deployed to Azure Foundry.
 /// </summary>
-public class FoundryProcessBuilder : FoundryProcessBuilder<DefaultProcessState>
+public class FoundryProcessBuilder : FoundryProcessBuilder<FoundryProcessDefaultState>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FoundryProcessBuilder"/> class.
@@ -200,4 +190,11 @@ public class FoundryProcessBuilder : FoundryProcessBuilder<DefaultProcessState>
     public FoundryProcessBuilder(string id) : base(id)
     {
     }
+}
+
+/// <summary>
+/// A default process state for the <see cref="FoundryProcessBuilder"/>.
+/// </summary>
+public class FoundryProcessDefaultState
+{
 }

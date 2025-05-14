@@ -52,11 +52,14 @@ internal sealed class KernelProcessAgentExecutorInternal : KernelProcessStep<Ker
     /// <param name="writtenToThread"> <see langword="true"/> if the message has already been written to the thread</param>
     /// <returns></returns>
     [KernelFunction]
-    public async Task<ChatMessageContent?> InvokeAsync(Kernel kernel, object? message = null, bool writtenToThread = false)
+    public async Task<AgentInvokeOutputWrapper?> InvokeAsync(Kernel kernel, object? message = null, bool writtenToThread = false)
     {
         ChatMessageContent? inputMessageContent = null;
         try
         {
+            // TODO: Update agent inputs to include messages_in, thread, user_messages, etc.
+            // TODO: copy messages_in to the thread
+
             if (!writtenToThread)
             {
                 inputMessageContent = null;
@@ -112,7 +115,13 @@ internal sealed class KernelProcessAgentExecutorInternal : KernelProcessStep<Ker
                 }
             }
 
-            return agentResponses.FirstOrDefault();
+            var outputWrapper = new AgentInvokeOutputWrapper
+            {
+                MessagesOut = agentResponses,
+                // TODO: Events
+            };
+
+            return outputWrapper;
         }
         catch (System.Exception)
         {
@@ -135,4 +144,11 @@ public sealed class KernelProcessAgentExecutorState
     /// Thread related information used for checking thread details by the specific agent
     /// </summary>
     public string? ThreadId { get; set; }
+}
+
+internal sealed class AgentInvokeOutputWrapper
+{
+    public List<ChatMessageContent> MessagesOut { get; set; } = [];
+
+    public Dictionary<string, object?>? Events { get; set; } = [];
 }

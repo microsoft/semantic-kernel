@@ -47,13 +47,10 @@ public class WorkflowBuilder
             throw new ArgumentException("Workflow inputs are not specified.");
         }
 
-        // TODO: Process metadata
-        // TODO: Process inputs
         // TODO: Process outputs
         // TODO: Process variables
-        // TODO: Process schemas
 
-        ProcessBuilder processBuilder = new(workflow.Name, null);
+        ProcessBuilder processBuilder = new(workflow.Id, description: workflow.Description, processBuilder: null);
 
         if (workflow.Inputs.Events?.CloudEvents is not null)
         {
@@ -531,21 +528,21 @@ public class WorkflowBuilder
     {
         Verify.NotNullOrWhiteSpace(eventName);
 
-        if (eventName.EndsWith("Invoke.OnResult", StringComparison.Ordinal))
+        if (eventName.EndsWith("Invoke.OnResult", StringComparison.Ordinal) || eventName.EndsWith(ProcessConstants.Declarative.OnCompleteEvent, StringComparison.OrdinalIgnoreCase))
         {
-            return "_on_complete_";
+            return ProcessConstants.Declarative.OnCompleteEvent;
         }
-        if (eventName.EndsWith("Invoke.OnError", StringComparison.Ordinal))
+        if (eventName.EndsWith(ProcessConstants.Declarative.OnErrorEvent, StringComparison.Ordinal))
         {
-            return "_on_error_";
+            return ProcessConstants.Declarative.OnErrorEvent;
         }
-        if (eventName.EndsWith("Invoke.OnEnter", StringComparison.Ordinal))
+        if (eventName.EndsWith(ProcessConstants.Declarative.OnEnterEvent, StringComparison.Ordinal))
         {
-            return "_on_enter_";
+            return ProcessConstants.Declarative.OnEnterEvent;
         }
-        if (eventName.EndsWith("Invoke.OnExit", StringComparison.Ordinal))
+        if (eventName.EndsWith(ProcessConstants.Declarative.OnExitEvent, StringComparison.Ordinal))
         {
-            return "_on_exit_";
+            return ProcessConstants.Declarative.OnExitEvent;
         }
 
         return eventName;

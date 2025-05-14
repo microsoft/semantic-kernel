@@ -252,7 +252,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode };
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -281,7 +281,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode };
         return this.AddStep(stepBuilder, aliases);
     }
 

@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -329,7 +328,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
         try
         {
-            this.EnqueueOnEnterMessagesAsync();
+            await this.EnqueueOnEnterMessagesAsync().ConfigureAwait(false);
 
             // Run the Pregel algorithm until there are no more messages being sent.
             LocalStep? finalStep = null;
@@ -397,7 +396,6 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         // TODO: Process edges for the OnProcessStart event
         foreach (var edge in this._process.Edges.Where(e => e.Key.Equals(ProcessConstants.Declarative.OnEnterEvent, StringComparison.OrdinalIgnoreCase)))
         {
-
         }
 
         return Task.CompletedTask;
