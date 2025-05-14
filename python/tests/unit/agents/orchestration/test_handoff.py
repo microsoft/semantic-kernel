@@ -317,6 +317,10 @@ async def test_invoke():
             assert (
                 len(kernel.plugins[HANDOFF_PLUGIN_NAME].functions) == 3
             )  # two handoff functions + complete task function
+            # The kernel in the agent should not be modified
+            assert len(agent_a.kernel.plugins) == 0
+            assert len(agent_b.kernel.plugins) == 0
+            assert len(agent_c.kernel.plugins) == 0
         finally:
             await runtime.stop_when_idle()
 
@@ -350,6 +354,9 @@ async def test_invoke_with_list():
         assert mock_get_response.call_count == 1
         # Two messages + one message added internally to steer the conversation
         assert len(mock_get_response.call_args_list[0][1]["messages"]) == 3
+        # The kernel in the agent should not be modified
+        assert len(agent_a.kernel.plugins) == 0
+        assert len(agent_b.kernel.plugins) == 0
 
 
 async def test_invoke_with_response_callback():
@@ -375,6 +382,9 @@ async def test_invoke_with_response_callback():
     assert len(responses) == 1
     assert all(isinstance(item, ChatMessageContent) for item in responses)
     assert all(item.content == "mock_response" for item in responses)
+    # The kernel in the agent should not be modified
+    assert len(agent_a.kernel.plugins) == 0
+    assert len(agent_b.kernel.plugins) == 0
 
 
 async def test_invoke_with_handoff_function_call():
@@ -402,6 +412,9 @@ async def test_invoke_with_handoff_function_call():
 
         assert mock_handoff_to_agent.call_count == 1
         assert mock_handoff_to_agent.call_args_list[0][0][1] == agent_b.name
+        # The kernel in the agent should not be modified
+        assert len(agent_a.kernel.plugins) == 0
+        assert len(agent_b.kernel.plugins) == 0
 
 
 @pytest.mark.skipif(

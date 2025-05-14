@@ -168,7 +168,7 @@ class HandoffAgentActor(AgentActorBase):
         self._handoff_connections = handoff_connections
         self._result_callback = result_callback
 
-        self._kernel = agent.kernel.model_copy()
+        self._kernel = agent.kernel.clone()
         self._add_handoff_functions()
 
         self._handoff_agent_name: str | None = None
