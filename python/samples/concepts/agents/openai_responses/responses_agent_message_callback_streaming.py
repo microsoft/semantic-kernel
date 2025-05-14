@@ -39,11 +39,18 @@ class MenuPlugin:
         return "$9.99"
 
 
-intermediate_steps: list[ChatMessageContent] = []
-
-
+# This callback function will be called for each intermediate message,
+# which will allow one to handle FunctionCallContent and FunctionResultContent.
+# If the callback is not provided, the agent will return the final response
+# with no intermediate tool call steps.
 async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> None:
-    intermediate_steps.append(message)
+    for item in message.items or []:
+        if isinstance(item, FunctionResultContent):
+            print(f"Function Result:> {item.result} for function: {item.name}")
+        elif isinstance(item, FunctionCallContent):
+            print(f"Function Call:> {item.name} with arguments: {item.arguments}")
+        else:
+            print(f"{item}")
 
 
 async def main():
@@ -85,52 +92,27 @@ async def main():
     finally:
         await thread.delete() if thread else None
 
-    # Print the final chat history
-    print("\nIntermediate Steps:")
-    for msg in intermediate_steps:
-        if any(isinstance(item, FunctionResultContent) for item in msg.items):
-            for fr in msg.items:
-                if isinstance(fr, FunctionResultContent):
-                    print(f"Function Result:> {fr.result} for function: {fr.name}")
-        elif any(isinstance(item, FunctionCallContent) for item in msg.items):
-            for fcc in msg.items:
-                if isinstance(fcc, FunctionCallContent):
-                    print(f"Function Call:> {fcc.name} with arguments: {fcc.arguments}")
-        else:
-            print(f"{msg.role}: {msg.content}")
-
     """
     Sample Output:
 
     # AuthorRole.USER: 'Hello'
-    # Host: Hi there! How can I assist you with the menu today?
+    # Host: Hello! How can I assist you with the menu today?
     # AuthorRole.USER: 'What is the special soup?'
-    # Host: The special soup is Clam Chowder.
+    Function Call:> MenuPlugin-get_specials with arguments: {}
+    Function Result:> 
+            Special Soup: Clam Chowder
+            Special Salad: Cobb Salad
+            Special Drink: Chai Tea
+            for function: MenuPlugin-get_specials
+    # Host: The special soup today is Clam Chowder. Would you like to know more about it or hear about other specials?
     # AuthorRole.USER: 'What is the special drink?'
-    # Host: The special drink is Chai Tea.
+    # Host: The special drink today is Chai Tea. Would you like more details or are you interested in ordering it?
     # AuthorRole.USER: 'How much is that?'
-    # Host: The Chai Tea is $9.99. Would you like to know more about the menu?
+    Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item":"Chai Tea"}
+    Function Result:> $9.99 for function: MenuPlugin-get_item_price
+    # Host: The special drink, Chai Tea, is $9.99. Would you like to order one or need information on something else?
     # AuthorRole.USER: 'Thank you'
-    # Host: You're welcome! If you have any questions about the menu or need assistance, feel free to ask.
-
-    Intermediate Steps:
-    AuthorRole.ASSISTANT: Hi there! How can I assist you with the menu today?
-    AuthorRole.ASSISTANT: 
-    Function Result:> 
-            Special Soup: Clam Chowder
-            Special Salad: Cobb Salad
-            Special Drink: Chai Tea
-            for function: MenuPlugin-get_specials
-    AuthorRole.ASSISTANT: The special soup is Clam Chowder.
-    AuthorRole.ASSISTANT: 
-    Function Result:> 
-            Special Soup: Clam Chowder
-            Special Salad: Cobb Salad
-            Special Drink: Chai Tea
-            for function: MenuPlugin-get_specials
-    AuthorRole.ASSISTANT: The special drink is Chai Tea.
-    AuthorRole.ASSISTANT: Could you please specify the menu item you are asking about?
-    AuthorRole.ASSISTANT: You're welcome! If you have any questions about the menu or need assistance, feel free to ask.
+    # Host: You're welcome! If you have any more questions or need help with the menu, just let me know. Enjoy your day!
     """
 
 

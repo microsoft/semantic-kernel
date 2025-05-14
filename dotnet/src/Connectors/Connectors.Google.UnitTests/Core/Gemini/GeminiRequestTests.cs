@@ -638,6 +638,24 @@ public sealed class GeminiRequestTests
         Assert.Equal(2, roleProperty.GetProperty("enum").GetArrayLength());
     }
 
+    [Fact]
+    public void FromPromptAndExecutionSettingsWithThinkingConfigReturnsInGenerationConfig()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ModelId = "gemini-2.5-flash-preview-04-17",
+            ThinkingConfig = new GeminiThinkingConfig { ThinkingBudget = 1024 }
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.Equal(executionSettings.ThinkingConfig.ThinkingBudget, request.Configuration?.ThinkingConfig?.ThinkingBudget);
+    }
+
     private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :
         KernelContent(innerContent, modelId, metadata);
 

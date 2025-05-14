@@ -16,6 +16,8 @@ from azure.ai.projects.models import (
     OpenAIPageableListOfThreadMessage,
     ResponseFormatJsonSchemaType,
     RunStep,
+    RunStepAzureAISearchToolCall,
+    RunStepBingGroundingToolCall,
     RunStepCodeInterpreterToolCall,
     RunStepDeltaChunk,
     RunStepDeltaToolCallObject,
@@ -31,24 +33,24 @@ from azure.ai.projects.models import (
 from azure.ai.projects.models._enums import MessageRole
 
 from semantic_kernel.agents.azure_ai.agent_content_generation import (
+    generate_azure_ai_search_content,
+    generate_bing_grounding_content,
     generate_code_interpreter_content,
     generate_function_call_content,
     generate_function_call_streaming_content,
     generate_function_result_content,
     generate_message_content,
+    generate_streaming_azure_ai_search_content,
+    generate_streaming_bing_grounding_content,
     generate_streaming_code_interpreter_content,
-    generate_streaming_function_content,
     generate_streaming_message_content,
     get_function_call_contents,
 )
 from semantic_kernel.agents.azure_ai.azure_ai_agent_utils import AzureAIAgentUtils
-from semantic_kernel.agents.open_ai.assistant_content_generation import (
-    merge_streaming_function_results,
-)
+from semantic_kernel.agents.open_ai.assistant_content_generation import merge_streaming_function_results
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
-from semantic_kernel.connectors.ai.function_calling_utils import (
-    kernel_function_metadata_to_function_call_format,
-)
+from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -106,6 +108,7 @@ class AgentThreadActions:
         | None = None,
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
+        polling_options: RunPollingOptions | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
         """Invoke the message in the thread.
@@ -130,6 +133,8 @@ class AgentThreadActions:
             response_format: The response format.
             parallel_tool_calls: The parallel tool calls.
             metadata: The metadata.
+            polling_options: The polling options defined at the run-level. These will override the agent-level
+                polling options.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -178,7 +183,9 @@ class AgentThreadActions:
         function_steps: dict[str, "FunctionCallContent"] = {}
 
         while run.status != "completed":
-            run = await cls._poll_run_status(agent=agent, run=run, thread_id=thread_id)
+            run = await cls._poll_run_status(
+                agent=agent, run=run, thread_id=thread_id, polling_options=polling_options or agent.polling_options
+            )
 
             if run.status in cls.error_message_states:
                 error_message = ""
@@ -275,6 +282,28 @@ class AgentThreadActions:
                                         function_step=function_step,
                                         tool_call=tool_call,  # type: ignore
                                     )
+                                case AgentsNamedToolChoiceType.BING_GROUNDING:
+                                    logger.debug(
+                                        f"Entering tool_calls (bing_grounding) for run [{run.id}], agent "
+                                        f" `{agent.name}` and thread `{thread_id}`"
+                                    )
+                                    bing_call: RunStepBingGroundingToolCall = cast(
+                                        RunStepBingGroundingToolCall, tool_call
+                                    )
+                                    content = generate_bing_grounding_content(
+                                        agent_name=agent.name, bing_tool_call=bing_call
+                                    )
+                                case AgentsNamedToolChoiceType.AZURE_AI_SEARCH:
+                                    logger.debug(
+                                        f"Entering tool_calls (azure_ai_search) for run [{run.id}], agent "
+                                        f" `{agent.name}` and thread `{thread_id}`"
+                                    )
+                                    azure_ai_search_call: RunStepAzureAISearchToolCall = cast(
+                                        RunStepAzureAISearchToolCall, tool_call
+                                    )
+                                    content = generate_azure_ai_search_content(
+                                        agent_name=agent.name, azure_ai_search_tool_call=azure_ai_search_call
+                                    )
 
                             if content:
                                 message_count += 1
@@ -298,7 +327,7 @@ class AgentThreadActions:
                             message_id=message_call_details.message_creation.message_id,  # type: ignore
                         )
                         if message:
-                            content = generate_message_content(agent.name, message)
+                            content = generate_message_content(agent.name, message, completed_step)
                             if content and len(content.items) > 0:
                                 message_count += 1
                                 logger.debug(
@@ -462,11 +491,20 @@ class AgentThreadActions:
                             content_is_visible = False
                             for tool_call in details.tool_calls:
                                 content = None
-                                if tool_call.type == "function":
-                                    content = generate_streaming_function_content(agent.name, details)
-                                elif tool_call.type == "code_interpreter":
-                                    content = generate_streaming_code_interpreter_content(agent.name, details)
-                                    content_is_visible = True
+                                match tool_call.type:
+                                    # Function Calling-related content is emitted as a single message
+                                    # via the `on_intermediate_message` callback.
+                                    case AgentsNamedToolChoiceType.CODE_INTERPRETER:
+                                        content = generate_streaming_code_interpreter_content(agent.name, details)
+                                        content_is_visible = True
+                                    case AgentsNamedToolChoiceType.BING_GROUNDING:
+                                        content = generate_streaming_bing_grounding_content(
+                                            agent_name=agent.name, step_details=details
+                                        )
+                                    case AgentsNamedToolChoiceType.AZURE_AI_SEARCH:
+                                        content = generate_streaming_azure_ai_search_content(
+                                            agent_name=agent.name, step_details=details
+                                        )
                                 if content:
                                     if output_messages is not None:
                                         output_messages.append(content)
@@ -488,22 +526,25 @@ class AgentThreadActions:
                                 f"thread: {thread_id}."
                             )
 
-                        if action_result.function_call_streaming_content:
-                            if output_messages is not None:
-                                output_messages.append(action_result.function_call_streaming_content)
-                            async for sub_content in cls._stream_tool_outputs(
-                                agent=agent,
-                                thread_id=thread_id,
-                                run=run,
-                                action_result=action_result,
-                                active_messages=active_messages,
-                                output_messages=output_messages,
-                            ):
-                                if sub_content:
-                                    yield sub_content
+                        # First: append full call + result, so they appear before streaming tool text
+                        for content in (
+                            action_result.function_call_streaming_content,
+                            action_result.function_result_streaming_content,
+                        ):
+                            if content and output_messages is not None:
+                                output_messages.append(content)
 
-                        if action_result.function_result_streaming_content and output_messages is not None:
-                            output_messages.append(action_result.function_result_streaming_content)
+                        # Then: stream tool output content
+                        async for sub_content in cls._stream_tool_outputs(
+                            agent=agent,
+                            thread_id=thread_id,
+                            run=run,
+                            action_result=action_result,
+                            active_messages=active_messages,
+                            output_messages=output_messages,
+                        ):
+                            if sub_content:
+                                yield sub_content
 
                         break
 
@@ -768,26 +809,36 @@ class AgentThreadActions:
             tool["openapi"] = openapi_data
         return tool
 
+    @staticmethod
+    def _deduplicate_tools(existing_tools: list[dict], new_tools: list[dict]) -> list[dict]:
+        existing_names = {
+            tool["function"]["name"] for tool in existing_tools if "function" in tool and "name" in tool["function"]
+        }
+        return [tool for tool in new_tools if tool.get("function", {}).get("name") not in existing_names]
+
     @classmethod
     def _get_tools(cls: type[_T], agent: "AzureAIAgent", kernel: "Kernel") -> list[dict[str, Any] | ToolDefinition]:
         """Get the tools for the agent."""
         tools: list[Any] = list(agent.definition.tools)
         funcs = kernel.get_full_list_of_function_metadata()
         dict_defs = [kernel_function_metadata_to_function_call_format(f) for f in funcs]
-        tools.extend(dict_defs)
+        deduped_defs = cls._deduplicate_tools(tools, dict_defs)
+        tools.extend(deduped_defs)
         return [cls._prepare_tool_definition(tool) for tool in tools]
 
     @classmethod
-    async def _poll_run_status(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str) -> ThreadRun:
+    async def _poll_run_status(
+        cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str, polling_options: RunPollingOptions
+    ) -> ThreadRun:
         """Poll the run status."""
         logger.info(f"Polling run status: {run.id}, threadId: {thread_id}")
         try:
             run = await asyncio.wait_for(
-                cls._poll_loop(agent=agent, run=run, thread_id=thread_id),
-                timeout=agent.polling_options.run_polling_timeout.total_seconds(),
+                cls._poll_loop(agent=agent, run=run, thread_id=thread_id, polling_options=polling_options),
+                timeout=polling_options.run_polling_timeout.total_seconds(),
             )
         except asyncio.TimeoutError:
-            timeout_duration = agent.polling_options.run_polling_timeout
+            timeout_duration = polling_options.run_polling_timeout
             error_message = (
                 f"Polling timed out for run id: `{run.id}` and thread id: `{thread_id}` "
                 f"after waiting {timeout_duration}."
@@ -798,11 +849,13 @@ class AgentThreadActions:
         return run
 
     @classmethod
-    async def _poll_loop(cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str) -> ThreadRun:
+    async def _poll_loop(
+        cls: type[_T], agent: "AzureAIAgent", run: ThreadRun, thread_id: str, polling_options: RunPollingOptions
+    ) -> ThreadRun:
         """Continuously poll the run status until it is no longer pending."""
         count = 0
         while True:
-            await asyncio.sleep(agent.polling_options.get_polling_interval(count).total_seconds())
+            await asyncio.sleep(polling_options.get_polling_interval(count).total_seconds())
             count += 1
             try:
                 run = await agent.client.agents.get_run(run_id=run.id, thread_id=thread_id)

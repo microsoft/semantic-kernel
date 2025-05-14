@@ -9,6 +9,8 @@ using Xunit.Sdk;
 
 namespace SqlServerIntegrationTests.Filter;
 
+#pragma warning disable CS0252 // Possible unintended reference comparison; left hand side needs cast
+
 public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture)
     : BasicFilterTests<int>(fixture), IClassFixture<SqlServerBasicFilterTests.Fixture>
 {
@@ -16,18 +18,22 @@ public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture
     {
         // Test sends: WHERE (NOT (("Int" = 8) OR ("String" = 'foo')))
         // There's a NULL string in the database, and relational null semantics in conjunction with negation makes the default implementation fail.
-        await Assert.ThrowsAsync<EqualException>(() => base.Not_over_Or());
+        await Assert.ThrowsAsync<FailException>(() => base.Not_over_Or());
 
         // Compensate by adding a null check:
-        await this.TestFilterAsync(r => r.String != null && !(r.Int == 8 || r.String == "foo"));
+        await this.TestFilterAsync(
+            r => r.String != null && !(r.Int == 8 || r.String == "foo"),
+            r => r["String"] != null && !((int)r["Int"]! == 8 || r["String"] == "foo"));
     }
 
     public override async Task NotEqual_with_string()
     {
         // As above, null semantics + negation
-        await Assert.ThrowsAsync<EqualException>(() => base.NotEqual_with_string());
+        await Assert.ThrowsAsync<FailException>(() => base.NotEqual_with_string());
 
-        await this.TestFilterAsync(r => r.String != null && r.String != "foo");
+        await this.TestFilterAsync(
+            r => r.String != null && r.String != "foo",
+            r => r["String"] != null && r["String"] != "foo");
     }
 
     public override Task Contains_over_field_string_array()
@@ -58,10 +64,10 @@ public class SqlServerBasicFilterTests(SqlServerBasicFilterTests.Fixture fixture
 
         public override TestStore TestStore => SqlServerTestStore.Instance;
 
-        protected override string CollectionName => s_uniqueName;
+        public override string CollectionName => s_uniqueName;
 
         // Override to remove the string collection properties, which aren't (currently) supported on SqlServer
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties = base.GetRecordDefinition().Properties.Where(p => p.PropertyType != typeof(string[]) && p.PropertyType != typeof(List<string>)).ToList()

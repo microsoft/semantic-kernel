@@ -2,6 +2,7 @@
 
 using System.Text.Json;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
@@ -34,7 +35,10 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
             (sp, obj) =>
             {
                 var database = sp.GetRequiredService<Database>();
-                var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreOptions>();
+                options ??= sp.GetService<AzureCosmosDBNoSQLVectorStoreOptions>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
                 return new AzureCosmosDBNoSQLVectorStore(database, options);
             });
@@ -71,7 +75,10 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
                 });
 
                 var database = cosmosClient.GetDatabase(databaseName);
-                var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreOptions>();
+                options ??= sp.GetService<AzureCosmosDBNoSQLVectorStoreOptions>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
                 return new AzureCosmosDBNoSQLVectorStore(database, options);
             });
@@ -80,7 +87,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure CosmosDB NoSQL <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
+    /// Register an Azure CosmosDB NoSQL <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID
     /// and where the Azure CosmosDB NoSQL <see cref="Database"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
@@ -94,15 +101,19 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
         string collectionName,
         AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
                 var database = sp.GetRequiredService<Database>();
-                var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>>();
+                options ??= sp.GetService<AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, TRecord>(database, collectionName, options);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -111,7 +122,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register an Azure CosmosDB NoSQL <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
+    /// Register an Azure CosmosDB NoSQL <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID
     /// and where the Azure CosmosDB NoSQL <see cref="Database"/> is constructed using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
@@ -129,6 +140,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
         string databaseName,
         AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
@@ -141,9 +153,12 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
                 });
 
                 var database = cosmosClient.GetDatabase(databaseName);
-                var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>>();
+                options ??= sp.GetService<AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                {
+                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                };
 
-                return new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, TRecord>(database, collectionName, options);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -152,14 +167,14 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
     {
-        services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
+        services.AddKeyedTransient<IVectorSearch<TRecord>>(
             serviceId,
             (sp, obj) =>
             {

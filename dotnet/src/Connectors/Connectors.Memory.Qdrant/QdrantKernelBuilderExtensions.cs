@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Qdrant <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("The IKernelBuilder extensions are being obsoleted, call the appropriate function on the Services property of your IKernelBuilder")]
 public static class QdrantKernelBuilderExtensions
 {
     /// <summary>
@@ -41,7 +43,7 @@ public static class QdrantKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Register a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
+    /// Register a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID
     /// and where the Qdrant <see cref="QdrantClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
@@ -57,13 +59,14 @@ public static class QdrantKernelBuilderExtensions
         QdrantVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
+        where TRecord : notnull
     {
         builder.Services.AddQdrantVectorStoreRecordCollection<TKey, TRecord>(collectionName, options, serviceId);
         return builder;
     }
 
     /// <summary>
-    /// Register a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
+    /// Register a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the specified service ID
     /// and where the Qdrant <see cref="QdrantClient"/> is constructed using the provided parameters.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
@@ -87,6 +90,7 @@ public static class QdrantKernelBuilderExtensions
         QdrantVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
+        where TRecord : notnull
     {
         builder.Services.AddQdrantVectorStoreRecordCollection<TKey, TRecord>(collectionName, host, port, https, apiKey, options, serviceId);
         return builder;

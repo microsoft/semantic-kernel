@@ -13,6 +13,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.AzureCosmosDBMongoDB;
 /// <summary>
 /// Integration tests of <see cref="AzureCosmosDBMongoDBMemoryStore"/>.
 /// </summary>
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class AzureCosmosDBMongoDBMemoryStoreTests : IClassFixture<AzureCosmosDBMongoDBMemoryStoreTestsFixture>
 {
     private const string? SkipReason = "Azure CosmosDB Mongo vCore cluster is required";

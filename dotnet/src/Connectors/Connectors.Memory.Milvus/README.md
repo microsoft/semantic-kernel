@@ -19,7 +19,6 @@ docker-compose up -d
 ```
 
 3. Use Semantic Kernel with Milvus, connecting to `localhost` with the default (gRPC) port of 1536:
-   > See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
 
 ```csharp
 using MilvusMemoryStore memoryStore = new("localhost");

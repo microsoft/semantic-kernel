@@ -14,7 +14,7 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests;
 
 /// <summary>
-/// Contains tests for the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
+/// Contains tests for the <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 public class QdrantVectorStoreRecordCollectionTests
 {
@@ -39,7 +39,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(this._qdrantClientMock.Object, collectionName);
+        var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, collectionName);
 
         this._qdrantClientMock
             .Setup(x => x.CollectionExistsAsync(
@@ -58,7 +58,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanCreateCollectionAsync()
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
+        var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
 
         this._qdrantClientMock
             .Setup(x => x.CreateCollectionAsync(
@@ -119,7 +119,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanDeleteCollectionAsync()
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
+        var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
 
         this._qdrantClientMock
             .Setup(x => x.DeleteCollectionAsync(
@@ -226,7 +226,7 @@ public class QdrantVectorStoreRecordCollectionTests
         this.SetupRetrieveMock(testRecordKeys.Select(x => CreateRetrievedPoint(hasNamedVectors, x)).ToList());
 
         // Act.
-        var actual = await sut.GetBatchAsync(
+        var actual = await sut.GetAsync(
             testRecordKeys,
             new() { IncludeVectors = true },
             this._testCancellationToken).ToListAsync();
@@ -251,52 +251,6 @@ public class QdrantVectorStoreRecordCollectionTests
         Assert.Equal(2, actual.Count);
         Assert.Equal(testRecordKeys[0], actual[0].Key);
         Assert.Equal(testRecordKeys[1], actual[1].Key);
-    }
-
-    [Fact]
-    public async Task CanGetRecordWithCustomMapperAsync()
-    {
-        // Arrange.
-        var retrievedPoint = CreateRetrievedPoint(true, UlongTestRecordKey1);
-        this.SetupRetrieveMock([retrievedPoint]);
-
-        // Arrange mapper mock from PointStruct to data model.
-        var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel<ulong>, PointStruct>>(MockBehavior.Strict);
-        mapperMock.Setup(
-            x => x.MapFromStorageToDataModel(
-                It.IsAny<PointStruct>(),
-                It.IsAny<StorageToDataModelMapperOptions>()))
-            .Returns(CreateModel(UlongTestRecordKey1, true));
-
-        // Arrange target with custom mapper.
-        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(
-            this._qdrantClientMock.Object,
-            TestCollectionName,
-            new()
-            {
-                HasNamedVectors = true,
-                PointStructCustomMapper = mapperMock.Object
-            });
-
-        // Act
-        var actual = await sut.GetAsync(
-            UlongTestRecordKey1,
-            new() { IncludeVectors = true },
-            this._testCancellationToken);
-
-        // Assert
-        Assert.NotNull(actual);
-        Assert.Equal(UlongTestRecordKey1, actual.Key);
-        Assert.Equal("data 1", actual.OriginalNameData);
-        Assert.Equal("data 1", actual.Data);
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector!.Value.ToArray());
-
-        mapperMock
-            .Verify(
-                x => x.MapFromStorageToDataModel(
-                    It.Is<PointStruct>(x => x.Id.Num == UlongTestRecordKey1),
-                    It.Is<StorageToDataModelMapperOptions>(x => x.IncludeVectors)),
-                Times.Once);
     }
 
     [Theory]
@@ -369,7 +323,7 @@ public class QdrantVectorStoreRecordCollectionTests
         this.SetupDeleteMocks();
 
         // Act
-        await sut.DeleteBatchAsync(
+        await sut.DeleteAsync(
             [UlongTestRecordKey1, UlongTestRecordKey2],
             cancellationToken: this._testCancellationToken);
 
@@ -398,7 +352,7 @@ public class QdrantVectorStoreRecordCollectionTests
         this.SetupDeleteMocks();
 
         // Act
-        await sut.DeleteBatchAsync(
+        await sut.DeleteAsync(
             [s_guidTestRecordKey1, s_guidTestRecordKey2],
             cancellationToken: this._testCancellationToken);
 
@@ -454,9 +408,9 @@ public class QdrantVectorStoreRecordCollectionTests
         var models = testRecordKeys.Select(x => CreateModel(x, true));
 
         // Act
-        var actual = await sut.UpsertBatchAsync(
+        var actual = await sut.UpsertAsync(
             models,
-            cancellationToken: this._testCancellationToken).ToListAsync();
+            cancellationToken: this._testCancellationToken);
 
         // Assert
         Assert.NotNull(actual);
@@ -479,46 +433,6 @@ public class QdrantVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
-    [Fact]
-    public async Task CanUpsertRecordWithCustomMapperAsync()
-    {
-        // Arrange.
-        this.SetupUpsertMock();
-        var pointStruct = new PointStruct
-        {
-            Id = new() { Num = UlongTestRecordKey1 },
-            Payload = { ["OriginalNameData"] = "data 1", ["data_storage_name"] = "data 1" },
-            Vectors = new[] { 1f, 2f, 3f, 4f }
-        };
-
-        // Arrange mapper mock from data model to PointStruct.
-        var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel<ulong>, PointStruct>>(MockBehavior.Strict);
-        mapperMock
-            .Setup(x => x.MapFromDataToStorageModel(It.IsAny<SinglePropsModel<ulong>>()))
-            .Returns(pointStruct);
-
-        // Arrange target with custom mapper.
-        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(
-            this._qdrantClientMock.Object,
-            TestCollectionName,
-            new()
-            {
-                HasNamedVectors = false,
-                PointStructCustomMapper = mapperMock.Object
-            });
-
-        var model = CreateModel(UlongTestRecordKey1, true);
-
-        // Act
-        await sut.UpsertAsync(model, this._testCancellationToken);
-
-        // Assert
-        mapperMock
-            .Verify(
-                x => x.MapFromDataToStorageModel(It.Is<SinglePropsModel<ulong>>(x => x == model)),
-                Times.Once);
-    }
-
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
     /// In this case, the expectation is that a custom mapper will be provided to map between the
@@ -532,17 +446,17 @@ public class QdrantVectorStoreRecordCollectionTests
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(ulong)),
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+                new VectorStoreRecordKeyProperty(nameof(SinglePropsModel<ulong>.Key), typeof(ulong)),
+                new VectorStoreRecordDataProperty(nameof(SinglePropsModel<ulong>.OriginalNameData), typeof(string)),
+                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel<ulong>.Vector), typeof(ReadOnlyMemory<float>?), 4),
             }
         };
 
         // Act.
-        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(
+        var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(
             this._qdrantClientMock.Object,
             TestCollectionName,
-            new() { VectorStoreRecordDefinition = definition, PointStructCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel<ulong>, PointStruct>>() });
+            new() { VectorStoreRecordDefinition = definition });
     }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
@@ -559,10 +473,11 @@ public class QdrantVectorStoreRecordCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel<TKey>.Data), "data 1");
 
         // Act.
-        var actual = await sut.VectorizedSearchAsync(
+        var results = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
-            new() { IncludeVectors = true, OldFilter = filter, Top = 5, Skip = 2 },
-            this._testCancellationToken);
+            top: 5,
+            new() { IncludeVectors = true, OldFilter = filter, Skip = 2 },
+            this._testCancellationToken).ToListAsync();
 
         // Assert.
         this._qdrantClientMock
@@ -586,7 +501,6 @@ public class QdrantVectorStoreRecordCollectionTests
                     this._testCancellationToken),
                 Times.Once);
 
-        var results = await actual.Results.ToListAsync();
         Assert.Single(results);
         Assert.Equal(testRecordKey, results.First().Record.Key);
         Assert.Equal("data 1", results.First().Record.OriginalNameData);
@@ -768,7 +682,7 @@ public class QdrantVectorStoreRecordCollectionTests
     private IVectorStoreRecordCollection<T, SinglePropsModel<T>> CreateRecordCollection<T>(bool useDefinition, bool hasNamedVectors)
         where T : notnull
     {
-        var store = new QdrantVectorStoreRecordCollection<SinglePropsModel<T>>(
+        var store = new QdrantVectorStoreRecordCollection<T, SinglePropsModel<T>>(
             this._qdrantClientMock.Object,
             TestCollectionName,
             new()
@@ -798,9 +712,9 @@ public class QdrantVectorStoreRecordCollectionTests
             Properties =
             [
                 new VectorStoreRecordKeyProperty("Key", keyType),
-                new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
-                new VectorStoreRecordDataProperty("Data", typeof(string)) { IsFilterable = true, StoragePropertyName = "data_storage_name" },
-                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector_storage_name" }
+                new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
+                new VectorStoreRecordDataProperty("Data", typeof(string)) { IsIndexed = true, StoragePropertyName = "data_storage_name" },
+                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { StoragePropertyName = "vector_storage_name" }
             ]
         };
     }
@@ -810,11 +724,11 @@ public class QdrantVectorStoreRecordCollectionTests
         [VectorStoreRecordKey]
         public required T Key { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true, IsFullTextSearchable = true)]
+        [VectorStoreRecordData(IsIndexed = true, IsFullTextIndexed = true)]
         public string OriginalNameData { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_data_json_name")]
-        [VectorStoreRecordData(IsFilterable = true, StoragePropertyName = "data_storage_name")]
+        [VectorStoreRecordData(IsIndexed = true, StoragePropertyName = "data_storage_name")]
         public string Data { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_vector_json_name")]
