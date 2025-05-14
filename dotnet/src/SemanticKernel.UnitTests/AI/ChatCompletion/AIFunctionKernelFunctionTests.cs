@@ -15,7 +15,7 @@ public class AIFunctionKernelFunctionTests
     {
         // Arrange and Act
         AIFunction aiFunction = AIFunctionFactory.Create((string p1, int? p2 = null) => p1,
-            new AIFunctionFactoryOptions { JsonSchemaCreateOptions = new AIJsonSchemaCreateOptions { RequireAllProperties = false } });
+            new AIFunctionFactoryOptions { JsonSchemaCreateOptions = new AIJsonSchemaCreateOptions { TransformOptions = new() { RequireAllProperties = false } } });
 
         AIFunctionKernelFunction sut = new(aiFunction);
 

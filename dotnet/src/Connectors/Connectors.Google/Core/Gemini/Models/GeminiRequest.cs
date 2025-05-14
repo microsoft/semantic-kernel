@@ -17,10 +17,10 @@ internal sealed class GeminiRequest
     private static JsonSerializerOptions? s_options;
     private static readonly AIJsonSchemaCreateOptions s_schemaOptions = new()
     {
-        IncludeSchemaKeyword = false,
-        IncludeTypeInEnumSchemas = true,
-        RequireAllProperties = false,
-        DisallowAdditionalProperties = false,
+        TransformOptions = new()
+        {
+            UseNullableKeyword = true,
+        }
     };
 
     [JsonPropertyName("contents")]
