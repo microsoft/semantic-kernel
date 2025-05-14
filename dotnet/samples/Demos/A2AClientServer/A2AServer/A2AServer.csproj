@@ -10,9 +10,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <SkipBuild Condition="'$(NETSdkVersion)' == '8.0.x'">true</SkipBuild>
+    <SkipBuild Condition="'$(TargetFramework)' == 'net8.0'">true</SkipBuild>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="SharpA2A.Core" />
     <PackageReference Include="SharpA2A.AspNetCore" />
