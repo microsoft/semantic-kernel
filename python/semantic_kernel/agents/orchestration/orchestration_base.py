@@ -25,17 +25,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 DefaultTypeAlias = Union[ChatMessageContent, list[ChatMessageContent]]
 
-
-def is_chat_message_content(value: DefaultTypeAlias) -> bool:
-    """Check if the value is a ChatMessageContent."""
-    return isinstance(value, ChatMessageContent)
-
-
-def is_chat_message_content_list(value: DefaultTypeAlias) -> bool:
-    """Check if the value is a list of ChatMessageContent."""
-    return isinstance(value, list) and all(isinstance(item, ChatMessageContent) for item in value)
-
-
 TIn = TypeVar("TIn", default=DefaultTypeAlias)
 TOut = TypeVar("TOut", default=DefaultTypeAlias)
 

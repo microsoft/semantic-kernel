@@ -10,14 +10,7 @@ from typing import Generic, TypeVar
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
-from semantic_kernel.agents.orchestration.orchestration_base import (
-    DefaultTypeAlias,
-    OrchestrationBase,
-    TIn,
-    TOut,
-    is_chat_message_content,
-    is_chat_message_content_list,
-)
+from semantic_kernel.agents.orchestration.orchestration_base import DefaultTypeAlias, OrchestrationBase, TIn, TOut
 from semantic_kernel.agents.runtime.core.cancellation_token import CancellationToken
 from semantic_kernel.agents.runtime.core.core_runtime import CoreRuntime
 from semantic_kernel.agents.runtime.core.message_context import MessageContext
@@ -112,12 +105,12 @@ class GroupChatAgentActor(AgentActorBase):
     async def _handle_start_message(self, message: GroupChatStartMessage, ctx: MessageContext) -> None:
         """Handle the start message for the group chat."""
         logger.debug(f"{self.id}: Received group chat start message.")
-        if is_chat_message_content(message.body):
+        if isinstance(message.body, ChatMessageContent):
             if self._agent_thread:
                 await self._agent_thread.on_new_message(message.body)
             else:
                 self._chat_history.add_message(message.body)
-        elif is_chat_message_content_list(message.body):
+        elif isinstance(message.body, list) and all(isinstance(m, ChatMessageContent) for m in message.body):
             if self._agent_thread:
                 for m in message.body:
                     await self._agent_thread.on_new_message(m)
@@ -329,9 +322,9 @@ class GroupChatManagerActor(ActorBase):
     async def _handle_start_message(self, message: GroupChatStartMessage, ctx: MessageContext) -> None:
         """Handle the start message for the group chat."""
         logger.debug(f"{self.id}: Received group chat start message.")
-        if is_chat_message_content(message.body):
+        if isinstance(message.body, ChatMessageContent):
             self._chat_history.add_message(message.body)
-        elif is_chat_message_content_list(message.body):
+        elif isinstance(message.body, list) and all(isinstance(m, ChatMessageContent) for m in message.body):
             for m in message.body:
                 self._chat_history.add_message(m)
         else:
