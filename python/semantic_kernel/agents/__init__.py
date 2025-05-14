@@ -38,6 +38,7 @@ _AGENTS = {
     "ConcurrentOrchestration": ".orchestration.concurrent",
     "SequentialOrchestration": ".orchestration.sequential",
     "HandoffOrchestration": ".orchestration.handoffs",
+    "GroupChatOrchestration": ".orchestration.group_chat",
 }
 
 

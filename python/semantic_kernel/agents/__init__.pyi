@@ -27,6 +27,7 @@ from .open_ai.open_ai_assistant_agent import AssistantAgentThread, OpenAIAssista
 from .open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
 from .open_ai.run_polling_options import RunPollingOptions
 from .orchestration.concurrent import ConcurrentOrchestration
+from .orchestration.group_chat import GroupChatManager, GroupChatOrchestration, RoundRobinGroupChatManager
 from .orchestration.handoffs import HandoffOrchestration, OrchestrationHandoffs
 from .orchestration.sequential import SequentialOrchestration
 
@@ -56,6 +57,8 @@ __all__ = [
     "CopilotStudioAgentSettings",
     "CopilotStudioAgentThread",
     "DeclarativeSpecMixin",
+    "GroupChatManager",
+    "GroupChatOrchestration",
     "HandoffOrchestration",
     "ModelConnection",
     "ModelSpec",
@@ -63,6 +66,7 @@ __all__ = [
     "OpenAIResponsesAgent",
     "OrchestrationHandoffs",
     "ResponsesAgentThread",
+    "RoundRobinGroupChatManager",
     "RunPollingOptions",
     "SequentialOrchestration",
     "ToolSpec",

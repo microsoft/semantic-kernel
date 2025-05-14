@@ -101,7 +101,7 @@ hugging_face = [
     "torch == 2.7.0"
 ]
 mcp = [
-    "mcp~=1.8",
+    "mcp>=1.8",
 ]
 milvus = [
     "pymilvus >= 2.3,< 2.6",

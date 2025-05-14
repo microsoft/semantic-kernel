@@ -5658,7 +5658,7 @@ requires-dist = [
     { name = "google-generativeai", marker = "extra == 'google'", specifier = "~=0.8" },
     { name = "ipykernel", marker = "extra == 'notebooks'", specifier = "~=6.29" },
     { name = "jinja2", specifier = "~=3.1" },
-    { name = "mcp", marker = "extra == 'mcp'", specifier = "~=1.8" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.8" },
     { name = "microsoft-agents-copilotstudio-client", marker = "extra == 'copilot-studio'", url = "https://test-files.pythonhosted.org/packages/47/de/9f9e0a0c57132363154dcf197bf2ce0ed33e9c986a8df8573091bcc79b54/microsoft_agents_copilotstudio_client-0.0.0a2-py3-none-any.whl" },
     { name = "microsoft-agents-core", marker = "extra == 'copilot-studio'", url = "https://test-files.pythonhosted.org/packages/17/ae/c87bfb943e75fac50522e2598232fc386b0d7f09a2dd462bbdc63cb83602/microsoft_agents_core-0.0.0a2-py3-none-any.whl" },
     { name = "milvus", marker = "sys_platform != 'win32' and extra == 'milvus'", specifier = ">=2.3,<2.3.8" },
