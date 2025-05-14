@@ -119,7 +119,7 @@ public sealed class VectorStoreRecordModel
         // If vector property name is not provided, check if there is a single vector property, or throw if there are no vectors or more than one.
         return this._singleVectorProperty ??= this.VectorProperties switch
         {
-            [var singleProperty] => singleProperty,
+        [var singleProperty] => singleProperty,
             { Count: 0 } => throw new InvalidOperationException($"The '{this._recordType.Name}' type does not have any vector properties."),
             _ => throw new InvalidOperationException($"The '{this._recordType.Name}' type has multiple vector properties, please specify your chosen property via options.")
         };
@@ -153,7 +153,7 @@ public sealed class VectorStoreRecordModel
             // If text data property name is not provided, check if a single full text indexed text property exists or throw otherwise.
             this._singleFullTextSearchProperty = fullTextStringProperties switch
             {
-                [var singleProperty] => singleProperty,
+            [var singleProperty] => singleProperty,
                 { Count: 0 } => throw new InvalidOperationException($"The '{this._recordType.Name}' type does not have any text data properties that have full text indexing enabled."),
                 _ => throw new InvalidOperationException($"The '{this._recordType.Name}' type has multiple text data properties that have full text indexing enabled, please specify your chosen property via options.")
             };
