@@ -14,7 +14,7 @@ namespace VectorDataSpecificationTests;
 #pragma warning disable CA2000 // Don't actually need to dispose FakeEmbeddingGenerator
 #pragma warning disable CS8605 // Unboxing a possibly null value.
 
-public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TKey>.StringVectorFixture stringVectorFixture, EmbeddingGenerationTests<TKey>.NativeVectorFixture nativeVectorFixture)
+public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TKey>.StringVectorFixture stringVectorFixture, EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture romOfFloatVectorFixture)
     where TKey : notnull
 {
     #region Search
@@ -133,10 +133,10 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     [ConditionalFact]
     public virtual async Task SearchAsync_with_search_only_embedding_generation()
     {
-        var collection = nativeVectorFixture.GetCollection<RecordWithReadonlyMemoryOfFloatVectorProperty>(
-            nativeVectorFixture.CreateVectorStore(new FakeEmbeddingGenerator()),
-            nativeVectorFixture.CollectionName,
-            nativeVectorFixture.CreateRecordDefinition());
+        var collection = romOfFloatVectorFixture.GetCollection<RecordWithRomOfFloatVectorProperty>(
+            romOfFloatVectorFixture.CreateVectorStore(new FakeEmbeddingGenerator()),
+            romOfFloatVectorFixture.CollectionName,
+            romOfFloatVectorFixture.CreateRecordDefinition());
 
         var result = await collection.SearchAsync("[1, 1, 1]", top: 1).SingleAsync();
 
@@ -383,7 +383,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         public string? Text { get; set; }
     }
 
-    public class RecordWithReadonlyMemoryOfFloatVectorProperty
+    public class RecordWithRomOfFloatVectorProperty
     {
         public TKey Key { get; set; } = default!;
         public ReadOnlyMemory<float> Embedding { get; set; }
@@ -515,7 +515,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
             => Interlocked.Increment(ref this._counter);
     }
 
-    public abstract class NativeVectorFixture : VectorStoreCollectionFixture<TKey, RecordWithReadonlyMemoryOfFloatVectorProperty>
+    public abstract class RomOfFloatVectorFixture : VectorStoreCollectionFixture<TKey, RecordWithRomOfFloatVectorProperty>
     {
         private int _counter;
 
@@ -526,20 +526,20 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
             {
                 Properties =
                 [
-                    new VectorStoreKeyProperty(nameof(RecordWithReadonlyMemoryOfFloatVectorProperty.Key), typeof(TKey)),
-                    new VectorStoreVectorProperty(nameof(RecordWithReadonlyMemoryOfFloatVectorProperty.Embedding), typeof(ReadOnlyMemory<float>), dimensions: 3)
+                    new VectorStoreKeyProperty(nameof(RecordWithRomOfFloatVectorProperty.Key), typeof(TKey)),
+                    new VectorStoreVectorProperty(nameof(RecordWithRomOfFloatVectorProperty.Embedding), typeof(ReadOnlyMemory<float>), dimensions: 3)
                     {
                         DistanceFunction = this.DefaultDistanceFunction,
                         IndexKind = this.DefaultIndexKind
                     },
 
-                    new VectorStoreDataProperty(nameof(RecordWithReadonlyMemoryOfFloatVectorProperty.Counter), typeof(int)) { IsIndexed = true },
-                    new VectorStoreDataProperty(nameof(RecordWithReadonlyMemoryOfFloatVectorProperty.Text), typeof(string))
+                    new VectorStoreDataProperty(nameof(RecordWithRomOfFloatVectorProperty.Counter), typeof(int)) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(RecordWithRomOfFloatVectorProperty.Text), typeof(string))
                 ],
                 EmbeddingGenerator = new FakeEmbeddingGenerator()
             };
 
-        protected override List<RecordWithReadonlyMemoryOfFloatVectorProperty> BuildTestData() =>
+        protected override List<RecordWithRomOfFloatVectorProperty> BuildTestData() =>
         [
             new()
             {

@@ -12,8 +12,8 @@ using Xunit;
 
 namespace PineconeIntegrationTests;
 
-public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, PineconeEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<string>(stringVectorFixture, nativeVectorFixture), IClassFixture<PineconeEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<PineconeEmbeddingGenerationTests.NativeVectorFixture>
+public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, PineconeEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<PineconeEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<PineconeEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     // Overriding since Pinecone requires collection names to only contain ASCII lowercase letters, digits and dashes.
     public override async Task SearchAsync_without_generator_throws()
@@ -52,7 +52,7 @@ public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.S
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<string>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => PineconeTestStore.Instance;
 

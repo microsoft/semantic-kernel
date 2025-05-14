@@ -11,8 +11,8 @@ using Xunit;
 
 namespace PgVectorIntegrationTests;
 
-public class PostgresEmbeddingGenerationTests(PostgresEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, PostgresEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<int>(stringVectorFixture, nativeVectorFixture), IClassFixture<PostgresEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<PostgresEmbeddingGenerationTests.NativeVectorFixture>
+public class PostgresEmbeddingGenerationTests(PostgresEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, PostgresEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<int>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<PostgresEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<PostgresEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     public new class StringVectorFixture : EmbeddingGenerationTests<int>.StringVectorFixture
     {
@@ -36,7 +36,7 @@ public class PostgresEmbeddingGenerationTests(PostgresEmbeddingGenerationTests.S
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<int>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<int>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => PostgresTestStore.Instance;
 

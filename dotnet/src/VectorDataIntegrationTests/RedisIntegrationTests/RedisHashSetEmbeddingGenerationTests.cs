@@ -12,8 +12,8 @@ using Xunit;
 
 namespace RedisIntegrationTests;
 
-public class RedisHashSetEmbeddingGenerationTests(RedisHashSetEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, RedisHashSetEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<string>(stringVectorFixture, nativeVectorFixture), IClassFixture<RedisHashSetEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<RedisHashSetEmbeddingGenerationTests.NativeVectorFixture>
+public class RedisHashSetEmbeddingGenerationTests(RedisHashSetEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, RedisHashSetEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<RedisHashSetEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<RedisHashSetEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
     {
@@ -39,7 +39,7 @@ public class RedisHashSetEmbeddingGenerationTests(RedisHashSetEmbeddingGeneratio
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<string>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => RedisTestStore.HashSetInstance;
 

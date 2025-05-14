@@ -11,8 +11,8 @@ using Xunit;
 
 namespace RedisIntegrationTests;
 
-public class RedisJsonEmbeddingGenerationTests(RedisJsonEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, RedisJsonEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<string>(stringVectorFixture, nativeVectorFixture), IClassFixture<RedisJsonEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<RedisJsonEmbeddingGenerationTests.NativeVectorFixture>
+public class RedisJsonEmbeddingGenerationTests(RedisJsonEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, RedisJsonEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<RedisJsonEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<RedisJsonEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
     {
@@ -36,7 +36,7 @@ public class RedisJsonEmbeddingGenerationTests(RedisJsonEmbeddingGenerationTests
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<string>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => RedisTestStore.JsonInstance;
 

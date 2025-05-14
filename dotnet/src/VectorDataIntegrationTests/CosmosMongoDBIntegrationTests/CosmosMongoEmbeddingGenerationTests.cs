@@ -11,8 +11,8 @@ using Xunit;
 
 namespace CosmosMongoDBIntegrationTests;
 
-public class CosmosMongoEmbeddingGenerationTests(CosmosMongoEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, CosmosMongoEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<string>(stringVectorFixture, nativeVectorFixture), IClassFixture<CosmosMongoEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<CosmosMongoEmbeddingGenerationTests.NativeVectorFixture>
+public class CosmosMongoEmbeddingGenerationTests(CosmosMongoEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, CosmosMongoEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<CosmosMongoEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<CosmosMongoEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
     {
@@ -36,7 +36,7 @@ public class CosmosMongoEmbeddingGenerationTests(CosmosMongoEmbeddingGenerationT
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<string>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => CosmosMongoTestStore.Instance;
 

@@ -10,8 +10,8 @@ using Xunit;
 
 namespace SqlServerIntegrationTests;
 
-public class SqlServerEmbeddingGenerationTests(SqlServerEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, SqlServerEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<int>(stringVectorFixture, nativeVectorFixture), IClassFixture<SqlServerEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<SqlServerEmbeddingGenerationTests.NativeVectorFixture>
+public class SqlServerEmbeddingGenerationTests(SqlServerEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, SqlServerEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<int>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<SqlServerEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<SqlServerEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     public new class StringVectorFixture : EmbeddingGenerationTests<int>.StringVectorFixture
     {
@@ -32,7 +32,7 @@ public class SqlServerEmbeddingGenerationTests(SqlServerEmbeddingGenerationTests
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<int>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<int>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => SqlServerTestStore.Instance;
 

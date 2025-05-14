@@ -11,8 +11,8 @@ using Xunit;
 
 namespace MongoDBIntegrationTests;
 
-public class MongoDBEmbeddingGenerationTests(MongoDBEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, MongoDBEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<string>(stringVectorFixture, nativeVectorFixture), IClassFixture<MongoDBEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<MongoDBEmbeddingGenerationTests.NativeVectorFixture>
+public class MongoDBEmbeddingGenerationTests(MongoDBEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, MongoDBEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<MongoDBEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<MongoDBEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
     {
@@ -36,7 +36,7 @@ public class MongoDBEmbeddingGenerationTests(MongoDBEmbeddingGenerationTests.Str
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<string>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => MongoDBTestStore.Instance;
 

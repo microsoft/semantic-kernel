@@ -11,8 +11,8 @@ using Xunit;
 
 namespace CosmosNoSqlIntegrationTests;
 
-public class CosmosNoSQLEmbeddingGenerationTests(CosmosNoSQLEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, CosmosNoSQLEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<string>(stringVectorFixture, nativeVectorFixture), IClassFixture<CosmosNoSQLEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<CosmosNoSQLEmbeddingGenerationTests.NativeVectorFixture>
+public class CosmosNoSQLEmbeddingGenerationTests(CosmosNoSQLEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, CosmosNoSQLEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<CosmosNoSQLEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<CosmosNoSQLEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
     {
@@ -36,7 +36,7 @@ public class CosmosNoSQLEmbeddingGenerationTests(CosmosNoSQLEmbeddingGenerationT
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<string>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => CosmosNoSqlTestStore.Instance;
 

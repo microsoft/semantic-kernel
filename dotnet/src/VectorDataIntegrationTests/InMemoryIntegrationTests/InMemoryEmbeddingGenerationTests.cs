@@ -10,8 +10,8 @@ using Xunit;
 
 namespace InMemoryIntegrationTests;
 
-public class InMemoryEmbeddingGenerationTests(InMemoryEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, InMemoryEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<int>(stringVectorFixture, nativeVectorFixture), IClassFixture<InMemoryEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<InMemoryEmbeddingGenerationTests.NativeVectorFixture>
+public class InMemoryEmbeddingGenerationTests(InMemoryEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, InMemoryEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<int>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<InMemoryEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<InMemoryEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     // InMemory doesn't allowing accessing the same collection via different .NET types (it's unique in this).
     // The following dynamic tests attempt to access the fixture collection - which is created with Record - via
@@ -51,7 +51,7 @@ public class InMemoryEmbeddingGenerationTests(InMemoryEmbeddingGenerationTests.S
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<int>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<int>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => InMemoryTestStore.Instance;
 

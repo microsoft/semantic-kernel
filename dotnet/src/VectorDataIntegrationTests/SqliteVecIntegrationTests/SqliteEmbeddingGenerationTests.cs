@@ -11,8 +11,8 @@ using Xunit;
 
 namespace SqliteVecIntegrationTests;
 
-public class SqliteEmbeddingGenerationTests(SqliteEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, SqliteEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<string>(stringVectorFixture, nativeVectorFixture), IClassFixture<SqliteEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<SqliteEmbeddingGenerationTests.NativeVectorFixture>
+public class SqliteEmbeddingGenerationTests(SqliteEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, SqliteEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<SqliteEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<SqliteEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
     {
@@ -32,7 +32,7 @@ public class SqliteEmbeddingGenerationTests(SqliteEmbeddingGenerationTests.Strin
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<string>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => SqliteTestStore.Instance;
 

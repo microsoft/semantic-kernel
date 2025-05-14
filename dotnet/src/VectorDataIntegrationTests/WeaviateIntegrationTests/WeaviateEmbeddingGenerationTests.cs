@@ -11,8 +11,8 @@ using Xunit;
 
 namespace WeaviateIntegrationTests;
 
-public class WeaviateEmbeddingGenerationTests(WeaviateEmbeddingGenerationTests.StringVectorFixture fixture, WeaviateEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<Guid>(fixture, nativeVectorFixture), IClassFixture<WeaviateEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<WeaviateEmbeddingGenerationTests.NativeVectorFixture>
+public class WeaviateEmbeddingGenerationTests(WeaviateEmbeddingGenerationTests.StringVectorFixture fixture, WeaviateEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<Guid>(fixture, romOfFloatVectorFixture), IClassFixture<WeaviateEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<WeaviateEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     public new class StringVectorFixture : EmbeddingGenerationTests<Guid>.StringVectorFixture
     {
@@ -36,7 +36,7 @@ public class WeaviateEmbeddingGenerationTests(WeaviateEmbeddingGenerationTests.S
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<Guid>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<Guid>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => WeaviateTestStore.NamedVectorsInstance;
 

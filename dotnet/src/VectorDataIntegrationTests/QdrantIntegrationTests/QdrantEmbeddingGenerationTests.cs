@@ -11,8 +11,8 @@ using Xunit;
 
 namespace QdrantIntegrationTests;
 
-public class QdrantEmbeddingGenerationTests(QdrantEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, QdrantEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<Guid>(stringVectorFixture, nativeVectorFixture), IClassFixture<QdrantEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<QdrantEmbeddingGenerationTests.NativeVectorFixture>
+public class QdrantEmbeddingGenerationTests(QdrantEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, QdrantEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<Guid>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<QdrantEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<QdrantEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     public new class StringVectorFixture : EmbeddingGenerationTests<Guid>.StringVectorFixture
     {
@@ -36,7 +36,7 @@ public class QdrantEmbeddingGenerationTests(QdrantEmbeddingGenerationTests.Strin
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<Guid>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<Guid>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => QdrantTestStore.UnnamedVectorInstance;
 

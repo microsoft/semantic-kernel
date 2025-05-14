@@ -12,8 +12,8 @@ using Xunit;
 
 namespace AzureAISearchIntegrationTests;
 
-public class AzureAISearchEmbeddingGenerationTests(AzureAISearchEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, AzureAISearchEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
-    : EmbeddingGenerationTests<string>(stringVectorFixture, nativeVectorFixture), IClassFixture<AzureAISearchEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<AzureAISearchEmbeddingGenerationTests.NativeVectorFixture>
+public class AzureAISearchEmbeddingGenerationTests(AzureAISearchEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, AzureAISearchEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<AzureAISearchEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<AzureAISearchEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
     [ConditionalFact(Skip = "SearchAsync without a generator delegates to the service for AzureAISearch")]
     public override Task SearchAsync_without_generator_throws()
@@ -46,7 +46,7 @@ public class AzureAISearchEmbeddingGenerationTests(AzureAISearchEmbeddingGenerat
         ];
     }
 
-    public new class NativeVectorFixture : EmbeddingGenerationTests<string>.NativeVectorFixture
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
 
