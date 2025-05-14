@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
+// Source Originally from: https://github.com/dotnet/extensions/blob/ef3f0a/src/Shared/Throw/Throw.cs
+
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
