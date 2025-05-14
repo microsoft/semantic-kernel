@@ -36,6 +36,6 @@ public class Step01_A2AAgent(ITestOutputHelper output) : BaseAzureAgentTest(outp
     }
 
     #region private
-    private static JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };
     #endregion
 }
