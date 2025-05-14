@@ -20,26 +20,13 @@ public static class SqliteServiceCollectionExtensions
     /// <summary>
     /// Registers a <see cref="SqliteVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
     /// </summary>
-    /// <inheritdoc cref="AddVectorStore"/>
+    /// <inheritdoc cref="AddKeyedSqliteVectorStore"/>
     public static IServiceCollection AddSqliteVectorStore(
         this IServiceCollection services,
         Func<IServiceProvider, string> connectionStringProvider,
         Func<IServiceProvider, SqliteVectorStoreOptions>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddVectorStore(services, serviceKey: null, connectionStringProvider, optionsProvider, lifetime);
-
-    /// <inheritdoc cref="AddVectorStore"/>
-    public static IServiceCollection AddKeyedSqliteVectorStore(
-        this IServiceCollection services,
-        object serviceKey,
-        Func<IServiceProvider, string> connectionStringProvider,
-        Func<IServiceProvider, SqliteVectorStoreOptions>? optionsProvider = null,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-    {
-        Verify.NotNull(serviceKey);
-
-        return AddVectorStore(services, serviceKey, connectionStringProvider, optionsProvider, lifetime);
-    }
+        => AddKeyedSqliteVectorStore(services, serviceKey: null, connectionStringProvider, optionsProvider, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="SqliteVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
@@ -50,12 +37,12 @@ public static class SqliteServiceCollectionExtensions
     /// <param name="optionsProvider">Options provider to further configure the vector store.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
-    private static IServiceCollection AddVectorStore(
-        IServiceCollection services,
+    public static IServiceCollection AddKeyedSqliteVectorStore(
+        this IServiceCollection services,
         object? serviceKey,
         Func<IServiceProvider, string> connectionStringProvider,
-        Func<IServiceProvider, SqliteVectorStoreOptions>? optionsProvider,
-        ServiceLifetime lifetime)
+        Func<IServiceProvider, SqliteVectorStoreOptions>? optionsProvider = null,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
         Verify.NotNull(services);
         Verify.NotNull(connectionStringProvider);
@@ -76,68 +63,50 @@ public static class SqliteServiceCollectionExtensions
     /// <summary>
     /// Registers a <see cref="SqliteCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
-    /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, SqliteCollectionOptions}?, ServiceLifetime)"/>
+    /// <inheritdoc cref="AddKeyedSqliteCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, SqliteCollectionOptions}?, ServiceLifetime)"/>
     [RequiresDynamicCode(DynamicCodeMessage)]
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddSqliteCollection<TKey, TRecord>(
         this IServiceCollection services,
-        string collectionName,
+        string name,
         Func<IServiceProvider, string> connectionStringProvider,
         Func<IServiceProvider, SqliteCollectionOptions>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
-        => AddCollection<TKey, TRecord>(services, serviceKey: null, collectionName, connectionStringProvider, optionsProvider, lifetime);
-
-    /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, SqliteCollectionOptions}?, ServiceLifetime)"/>
-    [RequiresDynamicCode(DynamicCodeMessage)]
-    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
-    public static IServiceCollection AddKeyedSqliteCollection<TKey, TRecord>(
-        this IServiceCollection services,
-        object serviceKey,
-        string collectionName,
-        Func<IServiceProvider, string> connectionStringProvider,
-        Func<IServiceProvider, SqliteCollectionOptions>? optionsProvider = null,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        where TKey : notnull
-        where TRecord : class
-    {
-        Verify.NotNull(serviceKey);
-
-        return AddCollection<TKey, TRecord>(services, serviceKey, collectionName, connectionStringProvider, optionsProvider, lifetime);
-    }
+        => AddKeyedSqliteCollection<TKey, TRecord>(services, serviceKey: null, name, connectionStringProvider, optionsProvider, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="SqliteCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the collection.</param>
-    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="name">The name of the collection.</param>
     /// <param name="connectionStringProvider">The connection string provider.</param>
     /// <param name="optionsProvider">Options provider to further configure the collection.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
     [RequiresDynamicCode(DynamicCodeMessage)]
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
-    private static IServiceCollection AddCollection<TKey, TRecord>(
+    public static IServiceCollection AddKeyedSqliteCollection<TKey, TRecord>(
         this IServiceCollection services,
         object? serviceKey,
-        string collectionName,
+        string name,
         Func<IServiceProvider, string> connectionStringProvider,
-        Func<IServiceProvider, SqliteCollectionOptions?>? optionsProvider = null,
+        Func<IServiceProvider, SqliteCollectionOptions>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
         Verify.NotNull(connectionStringProvider);
 
         services.Add(new ServiceDescriptor(typeof(SqliteCollection<TKey, TRecord>), serviceKey, (sp, _) =>
         {
             var connectionString = connectionStringProvider(sp);
             var options = GetCollectionOptions(sp, optionsProvider);
-            return new SqliteCollection<TKey, TRecord>(connectionString, collectionName, options);
+            return new SqliteCollection<TKey, TRecord>(connectionString, name, options);
         }, lifetime));
 
         services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey,
@@ -155,53 +124,35 @@ public static class SqliteServiceCollectionExtensions
     /// <summary>
     /// Registers a <see cref="SqliteCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
-    /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, string, SqliteCollectionOptions?, ServiceLifetime)"/>/>
+    /// <inheritdoc cref="AddKeyedSqliteCollection{TKey, TRecord}(IServiceCollection, object?, string, string, SqliteCollectionOptions?, ServiceLifetime)"/>/>
     [RequiresDynamicCode(DynamicCodeMessage)]
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddSqliteCollection<TKey, TRecord>(
         this IServiceCollection services,
-        string collectionName,
+        string name,
         string connectionString,
         SqliteCollectionOptions? options = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
-        => AddCollection<TKey, TRecord>(services, serviceKey: null, collectionName, connectionString, options, lifetime);
-
-    /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, string, SqliteCollectionOptions?, ServiceLifetime)"/>/>
-    [RequiresDynamicCode(DynamicCodeMessage)]
-    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
-    public static IServiceCollection AddKeyedSqliteCollection<TKey, TRecord>(
-        this IServiceCollection services,
-        object serviceKey,
-        string collectionName,
-        string connectionString,
-        SqliteCollectionOptions? options = null,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        where TKey : notnull
-        where TRecord : class
-    {
-        Verify.NotNull(serviceKey);
-
-        return AddCollection<TKey, TRecord>(services, serviceKey, collectionName, connectionString, options, lifetime);
-    }
+        => AddKeyedSqliteCollection<TKey, TRecord>(services, serviceKey: null, name, connectionString, options, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="SqliteCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the collection.</param>
-    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="name">The name of the collection.</param>
     /// <param name="connectionString">The connection string.</param>
     /// <param name="options">Options to further configure the collection.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
     [RequiresDynamicCode(DynamicCodeMessage)]
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
-    private static IServiceCollection AddCollection<TKey, TRecord>(
+    public static IServiceCollection AddKeyedSqliteCollection<TKey, TRecord>(
         this IServiceCollection services,
         object? serviceKey,
-        string collectionName,
+        string name,
         string connectionString,
         SqliteCollectionOptions? options = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
@@ -210,7 +161,7 @@ public static class SqliteServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        return AddCollection<TKey, TRecord>(services, serviceKey, collectionName, _ => connectionString, _ => options, lifetime);
+        return AddKeyedSqliteCollection<TKey, TRecord>(services, serviceKey, name, _ => connectionString, _ => options!, lifetime);
     }
 
     private static SqliteVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, SqliteVectorStoreOptions?>? optionsProvider)

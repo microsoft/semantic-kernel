@@ -17,7 +17,7 @@ public static class SqlServerServiceCollectionExtensions
     /// <summary>
     /// Registers a <see cref="SqlServerVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
     /// </summary>
-    /// <inheritdoc cref="AddVectorStore"/>
+    /// <inheritdoc cref="AddKeyedSqlServerVectorStore"/>
     [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddSqlServerVectorStore(
@@ -25,22 +25,7 @@ public static class SqlServerServiceCollectionExtensions
         Func<IServiceProvider, string> connectionStringProvider,
         Func<IServiceProvider, SqlServerVectorStoreOptions>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddVectorStore(services, serviceKey: null, connectionStringProvider, optionsProvider, lifetime);
-
-    /// <inheritdoc cref="AddVectorStore"/>
-    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
-    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
-    public static IServiceCollection AddKeyedSqlServerVectorStore(
-        this IServiceCollection services,
-        object serviceKey,
-        Func<IServiceProvider, string> connectionStringProvider,
-        Func<IServiceProvider, SqlServerVectorStoreOptions>? optionsProvider = null,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-    {
-        Verify.NotNull(serviceKey);
-
-        return AddVectorStore(services, serviceKey, connectionStringProvider, optionsProvider, lifetime);
-    }
+        => AddKeyedSqlServerVectorStore(services, serviceKey: null, connectionStringProvider, optionsProvider, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="SqlServerVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
@@ -51,12 +36,14 @@ public static class SqlServerServiceCollectionExtensions
     /// <param name="optionsProvider">Options provider to further configure the vector store.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
-    private static IServiceCollection AddVectorStore(
-        IServiceCollection services,
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
+    public static IServiceCollection AddKeyedSqlServerVectorStore(
+        this IServiceCollection services,
         object? serviceKey,
         Func<IServiceProvider, string> connectionStringProvider,
-        Func<IServiceProvider, SqlServerVectorStoreOptions>? optionsProvider,
-        ServiceLifetime lifetime)
+        Func<IServiceProvider, SqlServerVectorStoreOptions>? optionsProvider = null,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
         Verify.NotNull(services);
         Verify.NotNull(connectionStringProvider);
@@ -77,66 +64,50 @@ public static class SqlServerServiceCollectionExtensions
     /// <summary>
     /// Registers a <see cref="SqlServerCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
-    /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, SqlServerCollectionOptions}?, ServiceLifetime)"/>
+    /// <inheritdoc cref="AddKeyedSqlServerCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, SqlServerCollectionOptions}?, ServiceLifetime)"/>
     [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddSqlServerCollection<TKey, TRecord>(
         this IServiceCollection services,
-        string collectionName,
+        string name,
         Func<IServiceProvider, string> connectionStringProvider,
         Func<IServiceProvider, SqlServerCollectionOptions>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
-        => AddCollection<TKey, TRecord>(services, serviceKey: null, collectionName, connectionStringProvider, optionsProvider, lifetime);
-
-    /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, SqlServerCollectionOptions}?, ServiceLifetime)"/>
-    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
-    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
-    public static IServiceCollection AddKeyedSqlServerCollection<TKey, TRecord>(
-        this IServiceCollection services,
-        object serviceKey,
-        string collectionName,
-        Func<IServiceProvider, string> connectionStringProvider,
-        Func<IServiceProvider, SqlServerCollectionOptions>? optionsProvider = null,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        where TKey : notnull
-        where TRecord : class
-    {
-        Verify.NotNull(serviceKey);
-
-        return AddCollection<TKey, TRecord>(services, serviceKey, collectionName, connectionStringProvider, optionsProvider, lifetime);
-    }
+        => AddKeyedSqlServerCollection<TKey, TRecord>(services, serviceKey: null, name, connectionStringProvider, optionsProvider, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="SqlServerCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the collection.</param>
-    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="name">The name of the collection.</param>
     /// <param name="connectionStringProvider">The connection string provider.</param>
     /// <param name="optionsProvider">Options provider to further configure the collection.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
-    private static IServiceCollection AddCollection<TKey, TRecord>(
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
+    public static IServiceCollection AddKeyedSqlServerCollection<TKey, TRecord>(
         this IServiceCollection services,
         object? serviceKey,
-        string collectionName,
+        string name,
         Func<IServiceProvider, string> connectionStringProvider,
-        Func<IServiceProvider, SqlServerCollectionOptions?>? optionsProvider = null,
+        Func<IServiceProvider, SqlServerCollectionOptions>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
         Verify.NotNull(connectionStringProvider);
 
         services.Add(new ServiceDescriptor(typeof(SqlServerCollection<TKey, TRecord>), serviceKey, (sp, _) =>
         {
             var connectionString = connectionStringProvider(sp);
             var options = GetCollectionOptions(sp, optionsProvider);
-            return new SqlServerCollection<TKey, TRecord>(connectionString, collectionName, options);
+            return new SqlServerCollection<TKey, TRecord>(connectionString, name, options);
         }, lifetime));
 
         services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey,
@@ -154,51 +125,35 @@ public static class SqlServerServiceCollectionExtensions
     /// <summary>
     /// Registers a <see cref="SqlServerCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
-    /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, string, SqlServerCollectionOptions?, ServiceLifetime)"/>/>
+    /// <inheritdoc cref="AddKeyedSqlServerCollection{TKey, TRecord}(IServiceCollection, object?, string, string, SqlServerCollectionOptions?, ServiceLifetime)"/>/>
     [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddSqlServerCollection<TKey, TRecord>(
         this IServiceCollection services,
-        string collectionName,
+        string name,
         string connectionString,
         SqlServerCollectionOptions? options = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
-        => AddCollection<TKey, TRecord>(services, serviceKey: null, collectionName, connectionString, options, lifetime);
-
-    /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, string, SqlServerCollectionOptions?, ServiceLifetime)"/>/>
-    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
-    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
-    public static IServiceCollection AddKeyedSqlServerCollection<TKey, TRecord>(
-        this IServiceCollection services,
-        object serviceKey,
-        string collectionName,
-        string connectionString,
-        SqlServerCollectionOptions? options = null,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        where TKey : notnull
-        where TRecord : class
-    {
-        Verify.NotNull(serviceKey);
-
-        return AddCollection<TKey, TRecord>(services, serviceKey, collectionName, connectionString, options, lifetime);
-    }
+        => AddKeyedSqlServerCollection<TKey, TRecord>(services, serviceKey: null, name, connectionString, options, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="SqlServerCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the collection.</param>
-    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="name">The name of the collection.</param>
     /// <param name="connectionString">The connection string.</param>
     /// <param name="options">Options to further configure the collection.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
-    private static IServiceCollection AddCollection<TKey, TRecord>(
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
+    public static IServiceCollection AddKeyedSqlServerCollection<TKey, TRecord>(
         this IServiceCollection services,
         object? serviceKey,
-        string collectionName,
+        string name,
         string connectionString,
         SqlServerCollectionOptions? options = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
@@ -207,7 +162,7 @@ public static class SqlServerServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        return AddCollection<TKey, TRecord>(services, serviceKey, collectionName, _ => connectionString, _ => options, lifetime);
+        return AddKeyedSqlServerCollection<TKey, TRecord>(services, serviceKey, name, _ => connectionString, _ => options!, lifetime);
     }
 
     private static SqlServerVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, SqlServerVectorStoreOptions?>? optionsProvider)

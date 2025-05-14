@@ -30,17 +30,17 @@ public class SqliteDependencyInjectionTests
     {
         get
         {
-            yield return (services, serviceKey, collectionName, lifetime) => serviceKey is null
+            yield return (services, serviceKey, name, lifetime) => serviceKey is null
                 ? services.AddSqliteCollection<string, SimpleRecord<string>>(
-                    collectionName, connectionString: ConnectionString, lifetime: lifetime)
+                    name, connectionString: ConnectionString, lifetime: lifetime)
                 : services.AddKeyedSqliteCollection<string, SimpleRecord<string>>(
-                    serviceKey, collectionName, connectionString: ConnectionString, lifetime: lifetime);
+                    serviceKey, name, connectionString: ConnectionString, lifetime: lifetime);
 
-            yield return (services, serviceKey, collectionName, lifetime) => serviceKey is null
+            yield return (services, serviceKey, name, lifetime) => serviceKey is null
                 ? services.AddSqliteCollection<string, SimpleRecord<string>>(
-                    collectionName, ConnectionStringProvider, lifetime: lifetime)
+                    name, ConnectionStringProvider, lifetime: lifetime)
                 : services.AddKeyedSqliteCollection<string, SimpleRecord<string>>(
-                    serviceKey, collectionName, sp => ConnectionStringProvider(sp, serviceKey), lifetime: lifetime);
+                    serviceKey, name, sp => ConnectionStringProvider(sp, serviceKey), lifetime: lifetime);
         }
     }
 
@@ -63,8 +63,8 @@ public class SqliteDependencyInjectionTests
 
         Assert.Throws<ArgumentNullException>(() => services.AddSqliteVectorStore(connectionStringProvider: null!));
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedSqliteVectorStore(serviceKey: "notNull", connectionStringProvider: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddSqliteCollection<string, SimpleRecord<string>>(collectionName: "notNull", connectionStringProvider: null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedSqliteCollection<string, SimpleRecord<string>>(serviceKey: "notNull", collectionName: "notNull", connectionStringProvider: null!));
+        Assert.Throws<ArgumentNullException>(() => services.AddSqliteCollection<string, SimpleRecord<string>>(name: "notNull", connectionStringProvider: null!));
+        Assert.Throws<ArgumentNullException>(() => services.AddKeyedSqliteCollection<string, SimpleRecord<string>>(serviceKey: "notNull", name: "notNull", connectionStringProvider: null!));
     }
 
     [Fact]
@@ -73,12 +73,12 @@ public class SqliteDependencyInjectionTests
         IServiceCollection services = new ServiceCollection();
 
         Assert.Throws<ArgumentNullException>(() => services.AddSqliteCollection<string, SimpleRecord<string>>(
-            collectionName: "notNull", connectionString: null!));
+            name: "notNull", connectionString: null!));
         Assert.Throws<ArgumentException>(() => services.AddSqliteCollection<string, SimpleRecord<string>>(
-            collectionName: "notNull", connectionString: ""));
+            name: "notNull", connectionString: ""));
         Assert.Throws<ArgumentNullException>(() => services.AddKeyedSqliteCollection<string, SimpleRecord<string>>(
-            serviceKey: "notNull", collectionName: "notNull", connectionString: null!));
+            serviceKey: "notNull", name: "notNull", connectionString: null!));
         Assert.Throws<ArgumentException>(() => services.AddKeyedSqliteCollection<string, SimpleRecord<string>>(
-            serviceKey: "notNull", collectionName: "notNull", connectionString: ""));
+            serviceKey: "notNull", name: "notNull", connectionString: ""));
     }
 }

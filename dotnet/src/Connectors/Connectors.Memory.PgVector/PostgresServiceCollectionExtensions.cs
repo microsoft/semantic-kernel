@@ -73,12 +73,11 @@ public static class PostgresServiceCollectionExtensions
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddKeyedPostgresVectorStore(
         this IServiceCollection services,
-        object serviceKey,
+        object? serviceKey,
         string connectionString,
         PostgresVectorStoreOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
-        Verify.NotNull(serviceKey);
         Verify.NotNullOrWhiteSpace(connectionString);
 
         return AddVectorStore(services, serviceKey, sp => connectionString, sp => options, lifetime);
@@ -98,15 +97,11 @@ public static class PostgresServiceCollectionExtensions
     /// <inheritdoc cref="AddVectorStore(IServiceCollection, object?, Func{IServiceProvider, string}, Func{IServiceProvider, PostgresVectorStoreOptions?}?, ServiceLifetime)"/>
     public static IServiceCollection AddKeyedPostgresVectorStore(
         this IServiceCollection services,
-        object serviceKey,
+        object? serviceKey,
         Func<IServiceProvider, string> connectionStringProvider,
         Func<IServiceProvider, PostgresVectorStoreOptions?>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-    {
-        Verify.NotNull(serviceKey);
-
-        return AddVectorStore(services, serviceKey, connectionStringProvider, optionsProvider, lifetime);
-    }
+        => AddVectorStore(services, serviceKey, connectionStringProvider, optionsProvider, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
@@ -147,7 +142,7 @@ public static class PostgresServiceCollectionExtensions
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="name">The name of the collection.</param>
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="lifetime">The service lifetime for the store. It needs to match <see cref="NpgsqlDataSource"/> lifetime. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>Service collection.</returns>
@@ -155,14 +150,14 @@ public static class PostgresServiceCollectionExtensions
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddPostgresCollection<TKey, TRecord>(
         this IServiceCollection services,
-        string collectionName,
+        string name,
         PostgresCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
 
         services.Add(new ServiceDescriptor(typeof(PostgresCollection<TKey, TRecord>), (sp) =>
         {
@@ -170,7 +165,7 @@ public static class PostgresServiceCollectionExtensions
             var copy = GetCollectionOptions(sp, _ => options);
 
             // The data source has been solved from the DI container, so we do not own it.
-            return new PostgresCollection<TKey, TRecord>(dataSource, collectionName, ownsDataSource: false, copy);
+            return new PostgresCollection<TKey, TRecord>(dataSource, name, ownsDataSource: false, copy);
         }, lifetime));
 
         AddAbstractions<TKey, TRecord>(services, serviceKey: null, lifetime);
@@ -186,7 +181,7 @@ public static class PostgresServiceCollectionExtensions
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddPostgresCollection<TKey, TRecord>(
         this IServiceCollection services,
-        string collectionName,
+        string name,
         string connectionString,
         PostgresCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
@@ -195,7 +190,7 @@ public static class PostgresServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        return AddCollection<TKey, TRecord>(services, serviceKey: null, collectionName, sp => connectionString, sp => options, lifetime);
+        return AddKeyedPostgresCollection<TKey, TRecord>(services, serviceKey: null, name, sp => connectionString, sp => options, lifetime);
     }
 
     /// <summary>
@@ -205,7 +200,7 @@ public static class PostgresServiceCollectionExtensions
     /// <typeparam name="TRecord">The type of the record.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the collection.</param>
-    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="name">The name of the collection.</param>
     /// <param name="connectionString">Postgres database connection string.</param>
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
@@ -214,85 +209,66 @@ public static class PostgresServiceCollectionExtensions
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddKeyedPostgresCollection<TKey, TRecord>(
         this IServiceCollection services,
-        object serviceKey,
-        string collectionName,
+        object? serviceKey,
+        string name,
         string connectionString,
         PostgresCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
     {
-        Verify.NotNull(serviceKey);
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        return AddCollection<TKey, TRecord>(services, serviceKey, collectionName, sp => connectionString, sp => options, lifetime);
+        return AddKeyedPostgresCollection<TKey, TRecord>(services, serviceKey, name, sp => connectionString, sp => options, lifetime);
     }
 
     /// <summary>
     /// Registers a <see cref="PostgresCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
-    /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, PostgresCollectionOptions?}?, ServiceLifetime)"/>
+    /// <inheritdoc cref="AddKeyedPostgresCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, PostgresCollectionOptions?}?, ServiceLifetime)"/>
     [RequiresDynamicCode(DynamicCodeMessage)]
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddPostgresCollection<TKey, TRecord>(
         this IServiceCollection services,
-        string collectionName,
+        string name,
         Func<IServiceProvider, string> connectionStringProvider,
         Func<IServiceProvider, PostgresCollectionOptions?>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
-        => AddCollection<TKey, TRecord>(services, serviceKey: null, collectionName, connectionStringProvider, optionsProvider, lifetime);
-
-    /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, PostgresCollectionOptions?}?, ServiceLifetime)"/>
-    [RequiresDynamicCode(DynamicCodeMessage)]
-    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
-    public static IServiceCollection AddKeyedPostgresCollection<TKey, TRecord>(
-        this IServiceCollection services,
-        object? serviceKey,
-        string collectionName,
-        Func<IServiceProvider, string> connectionStringProvider,
-        Func<IServiceProvider, PostgresCollectionOptions?>? optionsProvider = null,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        where TKey : notnull
-        where TRecord : class
-    {
-        Verify.NotNull(serviceKey);
-
-        return AddCollection<TKey, TRecord>(services, serviceKey, collectionName, connectionStringProvider, optionsProvider, lifetime);
-    }
+        => AddKeyedPostgresCollection<TKey, TRecord>(services, serviceKey: null, name, connectionStringProvider, optionsProvider, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="PostgresCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the collection.</param>
-    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="name">The name of the collection.</param>
     /// <param name="connectionStringProvider">The connection string provider.</param>
     /// <param name="optionsProvider">Options provider to further configure the collection.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
     [RequiresDynamicCode(DynamicCodeMessage)]
     [RequiresUnreferencedCode(UnreferencedCodeMessage)]
-    private static IServiceCollection AddCollection<TKey, TRecord>(
+    public static IServiceCollection AddKeyedPostgresCollection<TKey, TRecord>(
         this IServiceCollection services,
         object? serviceKey,
-        string collectionName,
+        string name,
         Func<IServiceProvider, string> connectionStringProvider,
-        Func<IServiceProvider, PostgresCollectionOptions?>? optionsProvider,
-        ServiceLifetime lifetime)
+        Func<IServiceProvider, PostgresCollectionOptions?>? optionsProvider = null,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
     {
         Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
         Verify.NotNull(connectionStringProvider);
 
         services.Add(new ServiceDescriptor(typeof(PostgresCollection<TKey, TRecord>), serviceKey, (sp, _) =>
         {
             var connectionString = connectionStringProvider(sp);
             var options = GetCollectionOptions(sp, optionsProvider);
-            return new PostgresCollection<TKey, TRecord>(connectionString, collectionName, options);
+            return new PostgresCollection<TKey, TRecord>(connectionString, name, options);
         }, lifetime));
 
         AddAbstractions<TKey, TRecord>(services, serviceKey, lifetime);
