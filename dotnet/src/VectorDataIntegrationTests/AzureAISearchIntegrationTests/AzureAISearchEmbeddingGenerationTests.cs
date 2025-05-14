@@ -12,8 +12,8 @@ using Xunit;
 
 namespace AzureAISearchIntegrationTests;
 
-public class AzureAISearchEmbeddingGenerationTests(AzureAISearchEmbeddingGenerationTests.Fixture fixture)
-    : EmbeddingGenerationTests<string>(fixture), IClassFixture<AzureAISearchEmbeddingGenerationTests.Fixture>
+public class AzureAISearchEmbeddingGenerationTests(AzureAISearchEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, AzureAISearchEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, nativeVectorFixture), IClassFixture<AzureAISearchEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<AzureAISearchEmbeddingGenerationTests.NativeVectorFixture>
 {
     [ConditionalFact(Skip = "SearchAsync without a generator delegates to the service for AzureAISearch")]
     public override Task SearchAsync_without_generator_throws()
@@ -21,12 +21,37 @@ public class AzureAISearchEmbeddingGenerationTests(AzureAISearchEmbeddingGenerat
         return base.SearchAsync_without_generator_throws();
     }
 
-    public new class Fixture : EmbeddingGenerationTests<string>.Fixture
+    public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
     {
         public override TestStore TestStore => AzureAISearchTestStore.Instance;
 
         // Azure AI search only supports lowercase letters, digits or dashes.
         public override string CollectionName => "embedding-gen-tests" + AzureAISearchTestEnvironment.TestIndexPostfix;
+
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+            => AzureAISearchTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
+        [
+            services => services
+                .AddSingleton(AzureAISearchTestStore.Instance.Client)
+                .AddAzureAISearchVectorStore()
+        ];
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
+        [
+            services => services
+                .AddSingleton(AzureAISearchTestStore.Instance.Client)
+                .AddAzureAISearchVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+        ];
+    }
+
+    public new class NativeVectorFixture : EmbeddingGenerationTests<string>.NativeVectorFixture
+    {
+        public override TestStore TestStore => AzureAISearchTestStore.Instance;
+
+        // Azure AI search only supports lowercase letters, digits or dashes.
+        public override string CollectionName => "search-only-embedding-gen-tests" + AzureAISearchTestEnvironment.TestIndexPostfix;
 
         public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => AzureAISearchTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });

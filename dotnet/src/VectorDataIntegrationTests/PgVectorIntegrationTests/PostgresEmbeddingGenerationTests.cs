@@ -11,10 +11,32 @@ using Xunit;
 
 namespace PgVectorIntegrationTests;
 
-public class PostgresEmbeddingGenerationTests(PostgresEmbeddingGenerationTests.Fixture fixture)
-    : EmbeddingGenerationTests<int>(fixture), IClassFixture<PostgresEmbeddingGenerationTests.Fixture>
+public class PostgresEmbeddingGenerationTests(PostgresEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, PostgresEmbeddingGenerationTests.NativeVectorFixture nativeVectorFixture)
+    : EmbeddingGenerationTests<int>(stringVectorFixture, nativeVectorFixture), IClassFixture<PostgresEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<PostgresEmbeddingGenerationTests.NativeVectorFixture>
 {
-    public new class Fixture : EmbeddingGenerationTests<int>.Fixture
+    public new class StringVectorFixture : EmbeddingGenerationTests<int>.StringVectorFixture
+    {
+        public override TestStore TestStore => PostgresTestStore.Instance;
+
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+            => PostgresTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
+        [
+            services => services
+                .AddSingleton(PostgresTestStore.Instance.DataSource)
+                .AddPostgresVectorStore()
+        ];
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
+        [
+            services => services
+                .AddSingleton(PostgresTestStore.Instance.DataSource)
+                .AddPostgresVectorStoreRecordCollection<int, RecordWithAttributes>(this.CollectionName)
+        ];
+    }
+
+    public new class NativeVectorFixture : EmbeddingGenerationTests<int>.NativeVectorFixture
     {
         public override TestStore TestStore => PostgresTestStore.Instance;
 
