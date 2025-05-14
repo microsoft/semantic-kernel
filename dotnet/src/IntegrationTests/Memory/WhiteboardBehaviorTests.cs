@@ -113,7 +113,7 @@ public class WhiteboardBehaviorTests
     }
 
     [Fact]
-    public Task AddsOutcomeToWhiteboardAsync()
+    public Task AddsActionToWhiteboardAsync()
     {
         return this.CanAddMessagesToWhiteboardAsync(
             new[]
@@ -123,11 +123,13 @@ public class WhiteboardBehaviorTests
                 new ChatMessage(ChatRole.User, "It should be in Europe") { AuthorName = "Siobhan" },
                 new ChatMessage(ChatRole.User, "It should have 16GB or RAM") { AuthorName = "Siobhan" },
                 new ChatMessage(ChatRole.User, "It should have 4 cores") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.Assistant, "OK, shall I create a VM for you in Europe with 16GB of RAM, 4 cores and with the name `VM-Europe`?") { AuthorName = "Copilot" },
+                new ChatMessage(ChatRole.User, "Yes, please go ahead and create that.") { AuthorName = "Siobhan" },
                 new ChatMessage(ChatRole.Assistant, "OK, I've created the VM for you.") { AuthorName = "Copilot" },
             },
             new string[][]
             {
-                new string[] { "OUTCOME", "Europe", "16GB", "4", "VM" }
+                new string[] { "ACTION", "Europe", "16GB", "4", "VM" }
             });
     }
 

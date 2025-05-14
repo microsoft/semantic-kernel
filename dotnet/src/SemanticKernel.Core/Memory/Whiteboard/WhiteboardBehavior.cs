@@ -145,6 +145,7 @@ public class WhiteboardBehavior : AIContextBehavior
             FormatPromptTemplate(inputMessagesJson, currentWhiteboardJson, this._maxWhiteboardMessages),
             new()
             {
+                Temperature = 0,
                 ResponseFormat = new ChatResponseFormatJson(s_structuredOutputSchema.RootElement),
             },
             cancellationToken).ConfigureAwait(false);
@@ -172,24 +173,24 @@ public class WhiteboardBehavior : AIContextBehavior
         - **Requirements**: Goals or needs expressed by the user.
         - **Proposals**: Suggested solutions to the requirements, provided by the assistant.
         - **Decisions**: Decisions made by the user, including all relevant details.
-        - **Outcomes**: Results of actions taken, including all relevant details.
+        - **Actions**: Actions that had been taken to implement a proposal or decision, including all relevant details.
 
         ## Transitions:
         - **Requirements -> Proposal**: When a proposal is made to satisfy one or more requirements.
         - **Proposal -> Decision**: When a proposal is accepted by the user.
-        - **Proposal -> Outcome**: When an action is taken to execute a proposal.
-        - **Decision -> Outcome**: When an action is taken to execute a decision.
+        - **Proposal -> Actions**: When an action has been taken to execute a proposal.
+        - **Decision -> Actions**: When an action has been taken to implement a decision.
 
         ## Guidelines:
         1. **Update Existing Entries**: Modify whiteboard entries as requirements change or new proposals and decisions are made.
         2. **User is decision maker**: Only users can make decisions. The assistant can only make proposals and execute them.
-        3. **Remove Redundant Information**: When a decision is made or an outcome is achieved, remove the related requirements and proposals.
+        3. **Remove Redundant Information**: When a decision is made or an action is taken, remove the requirements and proposals that led to it.
         4. **Keep Requirements Concise**: Ensure requirements are clear and to the point.
-        5. **Keep Decisions, Proposals and Outcomes Detailed**: Ensure decisions, proposals and outcomes are comprehensive and include all requirements that went into the decision, proposal or outcome.
-        6. **Keep Decisions, Proposals and Outcomes Self Contained**: Ensure decisions, proposals and outcomes are self-contained and do not reference other entries.
-        6. **Categorize Entries**: Prefix each entry with `REQUIREMENT`, `PROPOSAL`, `DECISION` or `OUTCOME`.
-        7. **Prioritize Decisions and Outcomes**: Retain detailed decisions and outcomes longer than requirements or proposals.
-        8. **Limit Entries**: Maintain a maximum of {{$maxWhiteboardMessages}} entries. If the limit is exceeded, combine or remove the least important entries, prioritize keeping decisions and outcomes.
+        5. **Keep Decisions, Proposals and Actions Detailed**: Ensure decisions, proposals and actions are comprehensive and include all requirements that went into the decision, proposal or action.
+        6. **Keep Decisions, Proposals and Actions Self Contained**: Ensure decisions, proposals and actions are self-contained and do not reference other entries, e.g. output "ACTION - The agent booked flight going out, COA 1133 DUB to CDG, 14 April 2025 and return, COA 1134 CDG to DUB, 16 April 2025", instead of "ACTION - The agent booked the flights as defined in requirements.".
+        7. **Categorize Entries**: Prefix each entry with `REQUIREMENT`, `PROPOSAL`, `DECISION` or `ACTION`.
+        8. **Prioritize Decisions and Actions**: Retain detailed decisions and actions longer than requirements or proposals.
+        9. **Limit Entries**: Maintain a maximum of {{$maxWhiteboardMessages}} entries. If the limit is exceeded, combine or remove the least important entries, prioritize keeping decisions and actions.
 
         ## Examples:
 
@@ -245,16 +246,16 @@ public class WhiteboardBehavior : AIContextBehavior
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
         New Whiteboard:
-        {"newWhiteboard":[""DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]}
+        {"newWhiteboard":["DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]}
 
         ### Example 7:
         
         New Message:
-        [{"AuthorName":"TravelAgent","Role":"assistant","Text":"OK, I'll go ahead and book that for you."}]
+        [{"AuthorName":"TravelAgent","Role":"assistant","Text":"OK, I've booked that for you."}]
         Current Whiteboard:
         [""DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
         New Whiteboard:
-        {"newWhiteboard":[""OUTCOME - TravelAgent booked a flight for Mary departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir for EUR 243."]}
+        {"newWhiteboard":["ACTION - TravelAgent booked a flight for Mary departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir for EUR 243."]}
         
         ### Example 8:
 
