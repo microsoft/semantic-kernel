@@ -23,7 +23,7 @@ public static class PostgresServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="PostgresVectorStore"/> on.</param>
     /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
-    /// <param name="lifetime">The service lifetime for the store. It needs to match <see cref="NpgsqlDataSource"/> lifetime. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddPostgresVectorStore(
         this IServiceCollection services,
