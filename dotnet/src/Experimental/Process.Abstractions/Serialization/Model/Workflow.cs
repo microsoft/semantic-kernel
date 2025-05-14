@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Threading;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process.Internal;
 using YamlDotNet.Serialization;
@@ -895,28 +896,10 @@ public class ThenAction
         }
         if (edge.OutputTarget is KernelProcessFunctionTarget functionTarget)
         {
-            if (!edge.Metadata.TryGetValue("foundryAgent.inputs", out object? inputsObj) || inputsObj is null || inputsObj is not Dictionary<string, string> inputsDict)
-            {
-                inputsDict = [];
-            }
-
-            if (!edge.Metadata.TryGetValue("foundryAgent.messagesIn", out object? messagesInObj) || messagesInObj is not string messagesIn)
-            {
-                messagesIn = null!;
-            }
-
-            if (!edge.Metadata.TryGetValue("foundryAgent.thread", out object? threadObj) || threadObj is null || threadObj is not string thread)
-            {
-                thread = defaultThread ?? "";
-            }
-
             return new ThenAction()
             {
                 Type = ActionType.NodeInvocation,
                 Node = functionTarget.StepId == ProcessConstants.EndStepName ? "End" : functionTarget.StepId,
-                Inputs = inputsDict,
-                MessagesIn = messagesIn,
-                Thread = thread
             };
         }
         if (edge.OutputTarget is KernelProcessEmitTarget emitTarget)
@@ -926,6 +909,17 @@ public class ThenAction
                 Type = ActionType.Emit,
                 EmitMessageType = emitTarget.EventName,
                 EmitMessagePayload = emitTarget.Payload,
+            };
+        }
+        if (edge.OutputTarget is KernelProcessAgentInvokeTarget agentInvokeTarget)
+        {
+            return new ThenAction()
+            {
+                Type = ActionType.NodeInvocation,
+                Node = agentInvokeTarget.StepId == ProcessConstants.EndStepName ? "End" : agentInvokeTarget.StepId,
+                Inputs = agentInvokeTarget.InputEvals,
+                MessagesIn = agentInvokeTarget.MessagesInEval,
+                Thread = agentInvokeTarget.ThreadEval
             };
         }
 

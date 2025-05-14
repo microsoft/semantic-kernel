@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel;
 
@@ -28,15 +27,15 @@ public sealed class ProcessEdgeBuilder : ProcessStepEdgeBuilder
     /// <summary>
     /// Sends the output of the source step to the specified target when the associated event fires.
     /// </summary>
-    public ProcessEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder target, Dictionary<string, object?>? metadata = null)
+    public ProcessEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder target)
     {
-        return this.SendEventTo(target as ProcessTargetBuilder, metadata);
+        return this.SendEventTo(target as ProcessTargetBuilder);
     }
 
     /// <summary>
     /// Sends the output of the source step to the specified target when the associated event fires.
     /// </summary>
-    public new ProcessEdgeBuilder SendEventTo(ProcessTargetBuilder target, Dictionary<string, object?>? metadata = null)
+    public new ProcessEdgeBuilder SendEventTo(ProcessTargetBuilder target)
     {
         if (this.Target is not null)
         {
@@ -44,7 +43,6 @@ public sealed class ProcessEdgeBuilder : ProcessStepEdgeBuilder
         }
 
         this.Target = target;
-        this.Metadata = metadata ?? [];
         ProcessStepEdgeBuilder edgeBuilder = new(this.Source, this.EventData.EventId, this.EventData.EventId) { Target = this.Target };
         this.Source.LinkTo(this.EventData.EventId, edgeBuilder);
 

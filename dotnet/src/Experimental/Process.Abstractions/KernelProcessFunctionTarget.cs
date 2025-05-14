@@ -117,11 +117,10 @@ public record KernelProcessAgentInvokeTarget : KernelProcessTarget
     /// <param name="threadEval"></param>
     /// <param name="messagesInEval"></param>
     /// <param name="inputEvals"></param>
-    public KernelProcessAgentInvokeTarget(string stepId, string threadEval, string messagesInEval, Dictionary<string, string> inputEvals) : base(ProcessTargetType.Invocation)
+    public KernelProcessAgentInvokeTarget(string stepId, string threadEval, string? messagesInEval, Dictionary<string, string> inputEvals) : base(ProcessTargetType.Invocation)
     {
         Verify.NotNullOrWhiteSpace(stepId);
         Verify.NotNullOrWhiteSpace(threadEval);
-        Verify.NotNullOrWhiteSpace(messagesInEval);
         Verify.NotNull(inputEvals);
 
         this.StepId = stepId;
@@ -143,7 +142,7 @@ public record KernelProcessAgentInvokeTarget : KernelProcessTarget
     /// <summary>
     /// An evaluation string that will be evaluated to determine the messages to send to the target.
     /// </summary>
-    public string MessagesInEval { get; init; }
+    public string? MessagesInEval { get; init; }
 
     /// <summary>
     /// An evaluation string that will be evaluated to determine the inputs to send to the target.

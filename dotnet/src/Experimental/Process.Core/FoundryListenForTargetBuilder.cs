@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel;
 
@@ -46,20 +48,14 @@ public class FoundryListenForTargetBuilder
     /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
     /// </summary>
     /// <param name="target">The output target.</param>
+    /// <param name="thread"> The thread to send the event to.</param>
     /// <param name="inputs"> The inputs to the target.</param>
     /// <param name="messagesIn"> The messages to be sent to the target.</param>
-    /// <param name="thread"> The thread to send the event to.</param>
     /// <returns>A fresh builder instance for fluid definition</returns>
-    public ProcessStepEdgeBuilder SendEventTo<TProcessState>(ProcessAgentBuilder<TProcessState> target, Dictionary<string, string>? inputs = null, string? messagesIn = null, string? thread = null) where TProcessState : class, new()
+    public ProcessStepEdgeBuilder SendEventTo<TProcessState>(ProcessAgentBuilder<TProcessState> target, string? thread = null, Dictionary<string, string>? inputs = null, string? messagesIn = null) where TProcessState : class, new()
     {
-        var metaData = new Dictionary<string, object?>()
-        {
-            { "foundryAgent.inputs", inputs },
-            { "foundryAgent.messagesIn", messagesIn },
-            { "foundryAgent.thread", thread }
-        };
-
-        return this._listenForTargetBuilder.SendEventTo_Internal(new ProcessAgentInvokeTargetBuilder(target, thread ?? "", messagesIn ?? "", inputs ?? []), metaData);
+        var threadName = thread ?? target.DefaultThreadName ?? throw new InvalidOperationException($"`SendEventTo({target.Name})` called with empty thread parameter and no default thread. Either specify the thread when calling `SendEventTo` or set the default thread on the agent step.");
+        return this._listenForTargetBuilder.SendEventTo_Internal(new ProcessAgentInvokeTargetBuilder(target, threadName, messagesIn ?? "", inputs ?? []));
     }
 
     /// <summary>

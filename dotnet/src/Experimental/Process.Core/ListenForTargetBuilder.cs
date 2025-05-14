@@ -55,7 +55,7 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
 
         // TODO: Should metadata go into the target now?
         this.VariableUpdate = new VariableUpdate { Path = path, Operation = operation, Value = value };
-        this.SendEventTo_Internal(new ProcessStateTargetBuilder(this.VariableUpdate), this.Metadata);
+        this.SendEventTo_Internal(new ProcessStateTargetBuilder(this.VariableUpdate));
 
         return new ListenForTargetBuilder(this._messageSources, this._processBuilder, this.EdgeGroupBuilder);
     }
@@ -69,7 +69,7 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
     internal ListenForTargetBuilder EmitEvent(string eventName, Dictionary<string, string>? payload = null)
     {
         Verify.NotNullOrWhiteSpace(eventName, nameof(eventName));
-        this.SendEventTo_Internal(new ProcessEmitTargetBuilder(eventName, payload), this.Metadata);
+        this.SendEventTo_Internal(new ProcessEmitTargetBuilder(eventName, payload));
         return new ListenForTargetBuilder(this._messageSources, this._processBuilder, this.EdgeGroupBuilder);
     }
 
@@ -77,9 +77,8 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
     /// Sends the event to the specified target.
     /// </summary>
     /// <param name="target">The target to send the event to.</param>
-    /// <param name="metadata">Optional metadata to include with the event.</param>
     /// <returns>A new instance of <see cref="ListenForTargetBuilder"/>.</returns>
-    internal override ProcessStepEdgeBuilder SendEventTo_Internal(ProcessTargetBuilder target, Dictionary<string, object?>? metadata = null)
+    internal override ProcessStepEdgeBuilder SendEventTo_Internal(ProcessTargetBuilder target)
     {
         foreach (var messageSource in this._messageSources)
         {
@@ -91,13 +90,12 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
             // Link all the source steps to the event listener
             var onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
             onEventBuilder.EdgeGroupBuilder = this.EdgeGroupBuilder;
-            onEventBuilder.Metadata = metadata ?? [];
 
             if (messageSource.Condition != null)
             {
                 onEventBuilder.Condition = messageSource.Condition;
             }
-            onEventBuilder.SendEventTo(target, metadata);
+            onEventBuilder.SendEventTo(target);
         }
 
         return new ListenForTargetBuilder(this._messageSources, this._processBuilder, edgeGroup: this.EdgeGroupBuilder);

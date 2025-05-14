@@ -37,7 +37,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
     {
         Verify.NotNull(agentDefinition);
         this._agentDefinition = agentDefinition;
-        this.ThreadName = threadName;
+        this.DefaultThreadName = threadName;
         this.Inputs = nodeInputs;
     }
 
@@ -58,7 +58,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
         this._agentDefinition = agentDefinition;
         this.OnCompleteCodeAction = onComplete;
         this.OnErrorCodeAction = onError;
-        this.ThreadName = threadName;
+        this.DefaultThreadName = threadName;
         this.Inputs = nodeInputs;
     }
 
@@ -72,7 +72,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
     /// <summary>
     /// The name of the thread that this agent will run on.
     /// </summary>
-    public string ThreadName { get; init; }
+    public string DefaultThreadName { get; init; }
 
     /// <summary>
     /// The optional handler group for OnComplete events.
@@ -116,16 +116,16 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
         return this;
     }
 
-    ///// <summary>
-    ///// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
-    ///// </summary>
-    ///// <returns></returns>
-    //public ProcessAgentBuilder<TProcessState> OnError(List<DeclarativeProcessCondition> conditions)
-    //{
-    //    var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
-    //    this.OnErrorBuilder = builder;
-    //    return this;
-    //}
+    /// <summary>
+    /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
+    /// </summary>
+    /// <returns></returns>
+    public ProcessAgentBuilder<TProcessState> OnError(List<DeclarativeProcessCondition> conditions)
+    {
+        var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
+        this.OnErrorBuilder = builder;
+        return this;
+    }
 
     /// <summary>
     /// Sets the inputs for this agent.
@@ -228,7 +228,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
 
         var state = new KernelProcessStepState(this.Name, "1.0", this.Id);
 
-        return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.ThreadName, this.Inputs) { AgentIdResolver = this.AgentIdResolver, HumanInLoopMode = this.HumanInLoopMode };
+        return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.DefaultThreadName, this.Inputs) { AgentIdResolver = this.AgentIdResolver, HumanInLoopMode = this.HumanInLoopMode };
     }
 
     internal ProcessFunctionTargetBuilder GetInvokeAgentFunctionTargetBuilder()
