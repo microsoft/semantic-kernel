@@ -41,7 +41,7 @@ public static class CommonProcesses
 
         counterStep
             .OnFunctionResult()
-            .SendEventTo(new(echoStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
 
         return process.Build();
     }
@@ -56,15 +56,15 @@ public static class CommonProcesses
 
         process
             .OnInputEvent(ProcessEvents.StartProcess)
-            .SendEventTo(new(counterStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep));
 
         counterStep
             .OnFunctionResult()
-            .SendEventTo(new(evenNumberStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(evenNumberStep));
 
         evenNumberStep
             .OnEvent(CommonSteps.EvenNumberDetectorStep.OutputEvents.EvenNumber)
-            .SendEventTo(new(echoStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
 
         return process.Build();
     }
@@ -113,19 +113,19 @@ public static class CommonProcesses
 
         process
             .OnInputEvent(ProcessEvents.OtherEvent)
-            .SendEventTo(new(echoStep1));
+            .SendEventTo(new ProcessFunctionTargetBuilder(echoStep1));
 
         echoStep21
             .OnFunctionResult()
-            .SendEventTo(new(echoStep22));
+            .SendEventTo(new ProcessFunctionTargetBuilder(echoStep22));
 
         echoStep31
             .OnFunctionResult()
-            .SendEventTo(new(echoStep32));
+            .SendEventTo(new ProcessFunctionTargetBuilder(echoStep32));
 
         echoStep32
             .OnFunctionResult()
-            .SendEventTo(new(echoStep33));
+            .SendEventTo(new ProcessFunctionTargetBuilder(echoStep33));
 
         // merging inputs
         process
@@ -147,7 +147,7 @@ public static class CommonProcesses
 
         mergeStep
             .OnFunctionResult()
-            .SendEventTo(new(finalEchoStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(finalEchoStep));
 
         return process.Build();
     }
