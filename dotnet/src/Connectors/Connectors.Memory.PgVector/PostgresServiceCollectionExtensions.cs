@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -14,6 +15,9 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class PostgresServiceCollectionExtensions
 {
+    private const string DynamicCodeMessage = "This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
+    private const string UnreferencedCodeMessage = "This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
+
     /// <summary>
     /// Register a <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, where the <see cref="NpgsqlDataSource"/> is retrieved from the dependency injection container.
     /// </summary>
@@ -114,6 +118,8 @@ public static class PostgresServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="lifetime">The service lifetime for the store. It needs to match <see cref="NpgsqlDataSource"/> lifetime. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>Service collection.</returns>
+    [RequiresDynamicCode(DynamicCodeMessage)]
+    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddPostgresCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -143,6 +149,8 @@ public static class PostgresServiceCollectionExtensions
     /// Registers a <see cref="PostgresCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
     /// <inheritdoc cref="AddKeyedPostgresCollection{TKey, TRecord}(IServiceCollection, object, string, string, PostgresCollectionOptions?, ServiceLifetime)"/>
+    [RequiresDynamicCode(DynamicCodeMessage)]
+    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddPostgresCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -169,6 +177,8 @@ public static class PostgresServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>Service collection.</returns>
+    [RequiresDynamicCode(DynamicCodeMessage)]
+    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddKeyedPostgresCollection<TKey, TRecord>(
         this IServiceCollection services,
         object serviceKey,
@@ -189,6 +199,8 @@ public static class PostgresServiceCollectionExtensions
     /// Registers a <see cref="PostgresCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
     /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, PostgresCollectionOptions?}?, ServiceLifetime)"/>
+    [RequiresDynamicCode(DynamicCodeMessage)]
+    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddPostgresCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -200,6 +212,8 @@ public static class PostgresServiceCollectionExtensions
         => AddCollection<TKey, TRecord>(services, serviceKey: null, collectionName, connectionStringProvider, optionsProvider, lifetime);
 
     /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, PostgresCollectionOptions?}?, ServiceLifetime)"/>
+    [RequiresDynamicCode(DynamicCodeMessage)]
+    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddKeyedPostgresCollection<TKey, TRecord>(
         this IServiceCollection services,
         object? serviceKey,
@@ -225,6 +239,8 @@ public static class PostgresServiceCollectionExtensions
     /// <param name="optionsProvider">Options provider to further configure the collection.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
+    [RequiresDynamicCode(DynamicCodeMessage)]
+    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     private static IServiceCollection AddCollection<TKey, TRecord>(
         this IServiceCollection services,
         object? serviceKey,

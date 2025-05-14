@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Azure;
 using Azure.Core;
@@ -27,6 +28,8 @@ public static class AzureAISearchServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddAzureAISearchVectorStore(this IServiceCollection services, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
         // If we are not constructing the SearchIndexClient, add the IVectorStore as transient, since we
@@ -56,6 +59,8 @@ public static class AzureAISearchServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddAzureAISearchVectorStore(this IServiceCollection services, Uri endpoint, TokenCredential tokenCredential, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
         Verify.NotNull(endpoint);
@@ -88,6 +93,8 @@ public static class AzureAISearchServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddAzureAISearchVectorStore(this IServiceCollection services, Uri endpoint, AzureKeyCredential credential, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
         Verify.NotNull(endpoint);
@@ -121,6 +128,8 @@ public static class AzureAISearchServiceCollectionExtensions
     /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddAzureAISearchVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -160,6 +169,8 @@ public static class AzureAISearchServiceCollectionExtensions
     /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddAzureAISearchVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -204,6 +215,8 @@ public static class AzureAISearchServiceCollectionExtensions
     /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddAzureAISearchVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,

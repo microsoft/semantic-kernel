@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
@@ -76,6 +77,8 @@ public static class PineconeServiceCollectionExtensions
     /// <param name="options">Optional configuration options to pass to the <see cref="PineconeCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresDynamicCode("This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
+    [RequiresUnreferencedCode("This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
     public static IServiceCollection AddPineconeVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -114,6 +117,8 @@ public static class PineconeServiceCollectionExtensions
     /// <param name="options">Optional configuration options to pass to the <see cref="PineconeCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresDynamicCode("This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
+    [RequiresUnreferencedCode("This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
     public static IServiceCollection AddPineconeVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -13,7 +14,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
-using Microsoft.SemanticKernel.Connectors.PgVector;
 using NRedisStack.Json.DataTypes;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
@@ -28,7 +28,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
+public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -36,25 +36,11 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
-    internal static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<double>),
-        typeof(ReadOnlyMemory<float>?),
-        typeof(ReadOnlyMemory<double>?)
-    ];
-
     internal static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
-
-        SupportedKeyPropertyTypes = [typeof(string)],
-        SupportedDataPropertyTypes = null, // TODO: Validate data property types
-        SupportedEnumerableDataPropertyElementTypes = null,
-        SupportedVectorPropertyTypes = s_supportedVectorTypes,
-
         UsesExternalSerializer = true
     };
 
@@ -86,7 +72,26 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
     /// <param name="name">The name of the collection that this <see cref="RedisJsonCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
+    // TODO: The provider uses unsafe JSON serialization in many places, #11963
+    [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
     public RedisJsonCollection(IDatabase database, string name, RedisJsonCollectionOptions? options = null)
+        : this(
+            database,
+            name,
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(RedisJsonDynamicCollection)))
+                : new RedisJsonModelBuilder(ModelBuildingOptions)
+                    .Build(
+                        typeof(TRecord),
+                        options.VectorStoreRecordDefinition,
+                        options.EmbeddingGenerator,
+                        options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
+            options)
+    {
+    }
+
+    internal RedisJsonCollection(IDatabase database, string name, Func<RedisJsonCollectionOptions, CollectionModel> modelFactory, RedisJsonCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(database);
@@ -99,17 +104,15 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
 
         var isDynamic = typeof(TRecord) == typeof(Dictionary<string, object?>);
 
+        options ??= RedisJsonCollectionOptions.Default;
+
         // Assign.
         this._database = database;
         this.Name = name;
+        this._model = modelFactory(options);
 
-        options ??= RedisJsonCollectionOptions.Default;
         this._prefixCollectionNameToKeyNames = options.PrefixCollectionNameToKeyNames;
         this._jsonSerializerOptions = options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
-
-        this._model = isDynamic ?
-            new RedisModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator) :
-            new RedisJsonModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, this._jsonSerializerOptions);
 
         // Lookup storage property names.
         this._dataStoragePropertyNames = this._model.DataProperties.Select(p => p.StorageName).ToArray();
@@ -440,7 +443,7 @@ public sealed class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<T
 
             default:
                 throw new InvalidOperationException(
-                    s_supportedVectorTypes.Contains(typeof(TInput))
+                    RedisJsonModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
                         ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                         : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }

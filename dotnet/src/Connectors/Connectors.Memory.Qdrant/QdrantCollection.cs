@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -24,7 +25,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="Guid"/> or <see cref="ulong"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
+public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -61,10 +62,12 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
     /// <param name="name">The name of the collection that this <see cref="QdrantCollection{TKey, TRecord}"/> will access.</param>
-    /// <param name="ownsClient">A value indicating whether <paramref name="qdrantClient"/> is disposed after the collection is disposed.</param>
+    /// <param name="ownsClient">A value indicating whether <paramref name="qdrantClient"/> is disposed when the collection is disposed.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
+    [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate QdrantDynamicCollection instead.")]
+    [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate QdrantDynamicCollection instead")]
     public QdrantCollection(QdrantClient qdrantClient, string name, bool ownsClient, QdrantCollectionOptions? options = null)
         : this(() => new MockableQdrantClient(qdrantClient, ownsClient), name, options)
     {
@@ -78,7 +81,20 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="clientFactory"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
+    [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate QdrantDynamicCollection instead.")]
+    [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate QdrantDynamicCollection instead")]
     internal QdrantCollection(Func<MockableQdrantClient> clientFactory, string name, QdrantCollectionOptions? options = null)
+        : this(
+            clientFactory,
+            name,
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(QdrantDynamicCollection)))
+                : new QdrantModelBuilder(options.HasNamedVectors).Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
+            options)
+    {
+    }
+
+    internal QdrantCollection(Func<MockableQdrantClient> clientFactory, string name, Func<QdrantCollectionOptions, CollectionModel> modelFactory, QdrantCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(clientFactory);
@@ -89,15 +105,13 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
             throw new NotSupportedException("Only ulong and Guid keys are supported (and object for dynamic mapping).");
         }
 
+        options ??= QdrantCollectionOptions.Default;
+
         // Assign.
         this.Name = name;
+        this._model = modelFactory(options);
 
-        options ??= QdrantCollectionOptions.Default;
         this._hasNamedVectors = options.HasNamedVectors;
-
-        this._model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(options.HasNamedVectors))
-            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator);
-
         this._mapper = new QdrantMapper<TRecord>(this._model, options.HasNamedVectors);
 
         this._collectionMetadata = new()
@@ -173,26 +187,25 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
             var dataProperties = this._model.DataProperties.Where(x => x.IsIndexed);
             foreach (var dataProperty in dataProperties)
             {
-                if (QdrantCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type, out PayloadSchemaType schemaType))
+                // Note that the schema type doesn't distinguish between array and scalar type (so PayloadSchemaType.Integer is used for both integer and array of integers)
+                if (QdrantCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type, out PayloadSchemaType schemaType)
+                    || dataProperty.Type.IsArray
+                        && QdrantCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type.GetElementType()!, out schemaType)
+                    || dataProperty.Type.IsGenericType
+                        && dataProperty.Type.GetGenericTypeDefinition() == typeof(List<>)
+                        && QdrantCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type.GenericTypeArguments[0], out schemaType))
                 {
-                    // Do nothing since schemaType is already set.
-                }
-                else if (VectorStoreRecordPropertyVerification.IsSupportedEnumerableType(dataProperty.Type) && VectorStoreRecordPropertyVerification.GetCollectionElementType(dataProperty.Type) == typeof(string))
-                {
-                    // For enumerable of strings, use keyword schema type, since this allows tag filtering.
-                    schemaType = PayloadSchemaType.Keyword;
+                    await this._qdrantClient.CreatePayloadIndexAsync(
+                        this.Name,
+                        dataProperty.StorageName,
+                        schemaType,
+                        cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     // TODO: This should move to model validation
-                    throw new InvalidOperationException($"Property {nameof(VectorStoreDataProperty.IsIndexed)} on {nameof(VectorStoreDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
+                    throw new InvalidOperationException($"Property {nameof(VectorStoreDataProperty.IsIndexed)} on {nameof(VectorStoreDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type {dataProperty.Type.Name} is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
                 }
-
-                await this._qdrantClient.CreatePayloadIndexAsync(
-                    this.Name,
-                    dataProperty.StorageName,
-                    schemaType,
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
             }
 
             // Add indexes for each of the data properties that require full text search.
@@ -529,7 +542,7 @@ public sealed class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
             default:
                 throw new InvalidOperationException(
-                    QdrantFieldMapping.s_supportedVectorTypes.Contains(typeof(TInput))
+                    QdrantModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
                         ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                         : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }

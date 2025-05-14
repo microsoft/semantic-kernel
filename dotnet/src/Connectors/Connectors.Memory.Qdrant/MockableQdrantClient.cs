@@ -23,7 +23,7 @@ internal class MockableQdrantClient : IDisposable
     /// Initializes a new instance of the <see cref="MockableQdrantClient"/> class.
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
-    /// <param name="ownsClient">A value indicating whether <paramref name="qdrantClient"/> is disposed after the vector store is disposed.</param>
+    /// <param name="ownsClient">A value indicating whether <paramref name="qdrantClient"/> is disposed when the vector store is disposed.</param>
     public MockableQdrantClient(QdrantClient qdrantClient, bool ownsClient = true)
     {
         Verify.NotNull(qdrantClient);

@@ -330,9 +330,6 @@ public sealed class SqliteCommandBuilderTests : IDisposable
     }
 
     private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
-        => new CollectionModelBuilder(SqliteConstants.ModelBuildingOptions)
-            .Build(
-                typeof(Dictionary<string, object?>),
-                new() { Properties = properties },
-                defaultEmbeddingGenerator: null);
+        => new SqliteModelBuilder()
+            .BuildDynamic(new() { Properties = properties }, defaultEmbeddingGenerator: null);
 }

@@ -276,5 +276,5 @@ public sealed class MongoDynamicMapperTests
     }
 
     private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
-        => new MongoModelBuilder().Build(typeof(Dictionary<string, object?>), new() { Properties = properties }, defaultEmbeddingGenerator: null);
+        => new MongoModelBuilder().BuildDynamic(new() { Properties = properties }, defaultEmbeddingGenerator: null);
 }

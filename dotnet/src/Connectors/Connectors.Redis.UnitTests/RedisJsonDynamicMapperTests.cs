@@ -19,9 +19,8 @@ public class RedisJsonDynamicMapperTests
     private static readonly float[] s_floatVector = new float[] { 1.0f, 2.0f, 3.0f, 4.0f };
 
     private static readonly CollectionModel s_model
-        = new CollectionJsonModelBuilder(RedisJsonCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
-            .Build(
-                typeof(Dictionary<string, object?>),
+        = new RedisJsonModelBuilder(RedisJsonCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
+            .BuildDynamic(
                 new()
                 {
                     Properties =

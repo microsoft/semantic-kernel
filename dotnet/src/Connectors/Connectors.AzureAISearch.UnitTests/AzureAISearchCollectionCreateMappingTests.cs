@@ -218,7 +218,6 @@ public class AzureAISearchCollectionCreateMappingTests
         yield return new object[] { typeof(DateTimeOffset), SearchFieldDataType.DateTimeOffset };
 
         yield return new object[] { typeof(string[]), SearchFieldDataType.Collection(SearchFieldDataType.String) };
-        yield return new object[] { typeof(IEnumerable<string>), SearchFieldDataType.Collection(SearchFieldDataType.String) };
         yield return new object[] { typeof(List<string>), SearchFieldDataType.Collection(SearchFieldDataType.String) };
     }
 }

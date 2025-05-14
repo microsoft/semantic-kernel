@@ -18,8 +18,8 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 [Experimental("MEVD9001")]
 public sealed class CollectionModel
 {
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
     private readonly Type _recordType;
+    private readonly IRecordCreator _recordCreator;
 
     private KeyPropertyModel? _singleKeyProperty;
     private VectorPropertyModel? _singleVectorProperty;
@@ -52,12 +52,15 @@ public sealed class CollectionModel
 
     internal CollectionModel(
         Type recordType,
+        IRecordCreator recordCreator,
         IReadOnlyList<KeyPropertyModel> keyProperties,
         IReadOnlyList<DataPropertyModel> dataProperties,
         IReadOnlyList<VectorPropertyModel> vectorProperties,
         IReadOnlyDictionary<string, PropertyModel> propertyMap)
     {
         this._recordType = recordType;
+        this._recordCreator = recordCreator;
+
         this.KeyProperties = keyProperties;
         this.DataProperties = dataProperties;
         this.VectorProperties = vectorProperties;
@@ -88,7 +91,7 @@ public sealed class CollectionModel
     {
         Debug.Assert(typeof(TRecord) == this._recordType, "Type mismatch between record type and model type.");
 
-        return Activator.CreateInstance<TRecord>() ?? throw new InvalidOperationException($"Failed to instantiate record of type '{typeof(TRecord).Name}'.");
+        return this._recordCreator.Create<TRecord>();
     }
 
     /// <summary>

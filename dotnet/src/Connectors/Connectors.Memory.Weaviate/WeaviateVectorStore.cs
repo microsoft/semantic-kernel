@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -9,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -51,6 +53,8 @@ public sealed class WeaviateVectorStore : VectorStore
     /// It's also possible to provide these parameters via <see cref="WeaviateVectorStoreOptions"/>.
     /// </param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
     public WeaviateVectorStore(HttpClient httpClient, WeaviateVectorStoreOptions? options = null)
     {
         Verify.NotNull(httpClient);
@@ -72,12 +76,37 @@ public sealed class WeaviateVectorStore : VectorStore
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
     /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
+    [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
     public override WeaviateCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #else
     public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
 #endif
-        => new WeaviateCollection<TKey, TRecord>(
+        => typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
+            : new WeaviateCollection<TKey, TRecord>(
+                this._httpClient,
+                name,
+                new()
+                {
+                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    Endpoint = this._endpoint,
+                    ApiKey = this._apiKey,
+                    HasNamedVectors = this._hasNamedVectors,
+                    EmbeddingGenerator = this._embeddingGenerator
+                });
+
+    /// <inheritdoc />
+    // TODO: The provider uses unsafe JSON serialization in many places, #11963
+    [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
+#if NET8_0_OR_GREATER
+    public override WeaviateDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#else
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+#endif
+        => new WeaviateDynamicCollection(
             this._httpClient,
             name,
             new()
@@ -126,14 +155,14 @@ public sealed class WeaviateVectorStore : VectorStore
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.DeleteCollectionAsync(cancellationToken);
     }
 

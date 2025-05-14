@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -13,6 +14,9 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class SqliteServiceCollectionExtensions
 {
+    private const string DynamicCodeMessage = "This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
+    private const string UnreferencedCodeMessage = "This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
+
     /// <summary>
     /// Registers a <see cref="SqliteVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
     /// </summary>
@@ -73,6 +77,8 @@ public static class SqliteServiceCollectionExtensions
     /// Registers a <see cref="SqliteCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
     /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, SqliteCollectionOptions}?, ServiceLifetime)"/>
+    [RequiresDynamicCode(DynamicCodeMessage)]
+    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddSqliteCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -84,6 +90,8 @@ public static class SqliteServiceCollectionExtensions
         => AddCollection<TKey, TRecord>(services, serviceKey: null, collectionName, connectionStringProvider, optionsProvider, lifetime);
 
     /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, SqliteCollectionOptions}?, ServiceLifetime)"/>
+    [RequiresDynamicCode(DynamicCodeMessage)]
+    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddKeyedSqliteCollection<TKey, TRecord>(
         this IServiceCollection services,
         object serviceKey,
@@ -109,6 +117,8 @@ public static class SqliteServiceCollectionExtensions
     /// <param name="optionsProvider">Options provider to further configure the collection.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
+    [RequiresDynamicCode(DynamicCodeMessage)]
+    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     private static IServiceCollection AddCollection<TKey, TRecord>(
         this IServiceCollection services,
         object? serviceKey,
@@ -146,6 +156,8 @@ public static class SqliteServiceCollectionExtensions
     /// Registers a <see cref="SqliteCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
     /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, string, SqliteCollectionOptions?, ServiceLifetime)"/>/>
+    [RequiresDynamicCode(DynamicCodeMessage)]
+    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddSqliteCollection<TKey, TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -157,6 +169,8 @@ public static class SqliteServiceCollectionExtensions
         => AddCollection<TKey, TRecord>(services, serviceKey: null, collectionName, connectionString, options, lifetime);
 
     /// <inheritdoc cref="AddCollection{TKey, TRecord}(IServiceCollection, object?, string, string, SqliteCollectionOptions?, ServiceLifetime)"/>/>
+    [RequiresDynamicCode(DynamicCodeMessage)]
+    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddKeyedSqliteCollection<TKey, TRecord>(
         this IServiceCollection services,
         object serviceKey,
@@ -182,6 +196,8 @@ public static class SqliteServiceCollectionExtensions
     /// <param name="options">Options to further configure the collection.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
+    [RequiresDynamicCode(DynamicCodeMessage)]
+    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
     private static IServiceCollection AddCollection<TKey, TRecord>(
         this IServiceCollection services,
         object? serviceKey,

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,9 +32,19 @@ public abstract class VectorStore : IDisposable
     /// <seealso cref="VectorStoreKeyAttribute"/>
     /// <seealso cref="VectorStoreDataAttribute"/>
     /// <seealso cref="VectorStoreVectorAttribute"/>
+    [RequiresDynamicCode("This API is not compatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, use GetCollectionDynamic() instead.")]
+    [RequiresUnreferencedCode("This API is not compatible with trimming. For dynamic mapping via Dictionary<string, object?>, use GetCollectionDynamic() instead.")]
     public abstract VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
         where TRecord : class;
+
+    /// <summary>
+    /// Gets a collection from the vector store, using dynamic mapping; the record type is represented as a <see cref="Dictionary{TKey, TValue}"/>.
+    /// </summary>
+    /// <param name="name">The name of the collection.</param>
+    /// <param name="vectorStoreRecordDefinition">The schema of the record type.</param>
+    /// <returns>A new <see cref="VectorStoreCollection{TKey, TRecord}"/> instance for managing the records in the collection.</returns>
+    public abstract VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition);
 
     /// <summary>
     /// Retrieves the names of all the collections in the vector store.

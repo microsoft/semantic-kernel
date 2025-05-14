@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
@@ -25,24 +26,13 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="Guid"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
+public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
-
-    /// <summary>Default JSON serializer options.</summary>
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters =
-        {
-            new WeaviateDateTimeOffsetConverter(),
-            new WeaviateNullableDateTimeOffsetConverter()
-        }
-    };
 
     /// <summary>The default options for vector search.</summary>
     private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -82,10 +72,24 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
     /// <param name="name">The name of the collection that this <see cref="WeaviateCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
+    [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
     public WeaviateCollection(
         HttpClient httpClient,
         string name,
         WeaviateCollectionOptions? options = default)
+        : this(
+            httpClient,
+            name,
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(WeaviateDynamicCollection)))
+                : new WeaviateModelBuilder(options.HasNamedVectors)
+                    .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, WeaviateConstants.s_jsonSerializerOptions),
+            options)
+    {
+    }
+
+    internal WeaviateCollection(HttpClient httpClient, string name, Func<WeaviateCollectionOptions, CollectionModel> modelFactory, WeaviateCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(httpClient);
@@ -98,22 +102,20 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         var endpoint = (options?.Endpoint ?? httpClient.BaseAddress) ?? throw new ArgumentException($"Weaviate endpoint should be provided via HttpClient.BaseAddress property or {nameof(WeaviateCollectionOptions)} options parameter.");
 
+        options ??= WeaviateCollectionOptions.Default;
+
         // Assign.
         this._httpClient = httpClient;
         this._endpoint = endpoint;
         this.Name = name;
-
-        options ??= WeaviateCollectionOptions.Default;
+        this._model = modelFactory(options);
         this._apiKey = options.ApiKey;
         this._hasNamedVectors = options.HasNamedVectors;
 
-        this._model = new WeaviateModelBuilder(options.HasNamedVectors)
-            .Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator, s_jsonSerializerOptions);
-
         // Assign mapper.
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
-            ? (new WeaviateDynamicMapper(this.Name, options.HasNamedVectors, this._model, s_jsonSerializerOptions) as IWeaviateMapper<TRecord>)!
-            : new WeaviateMapper<TRecord>(this.Name, options.HasNamedVectors, this._model, s_jsonSerializerOptions);
+            ? (new WeaviateDynamicMapper(this.Name, options.HasNamedVectors, this._model, WeaviateConstants.s_jsonSerializerOptions) as IWeaviateMapper<TRecord>)!
+            : new WeaviateMapper<TRecord>(this.Name, options.HasNamedVectors, this._model, WeaviateConstants.s_jsonSerializerOptions);
 
         this._collectionMetadata = new()
         {
@@ -344,7 +346,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
 
             default:
                 throw new InvalidOperationException(
-                    WeaviateModelBuilder.s_supportedVectorTypes.Contains(typeof(TInput))
+                    WeaviateModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
                         ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                         : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }
@@ -386,7 +388,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
             vector,
             this.Name,
             vectorProperty.StorageName,
-            s_jsonSerializerOptions,
+            WeaviateConstants.s_jsonSerializerOptions,
             top,
             options,
             this._model,
@@ -438,7 +440,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
             this._model,
             vectorProperty,
             textDataProperty,
-            s_jsonSerializerOptions,
+            WeaviateConstants.s_jsonSerializerOptions,
             options,
             this._hasNamedVectors);
 
@@ -531,7 +533,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
         var responseModel = VectorStoreErrorHandler.RunOperation<TResponse?, JsonException>(
             this._collectionMetadata,
             $"{request.Method} {request.RequestUri}",
-            () => JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions));
+            () => JsonSerializer.Deserialize<TResponse>(responseContent, WeaviateConstants.s_jsonSerializerOptions));
 
         return (responseModel, responseContent);
     }
@@ -559,7 +561,7 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
         var responseModel = VectorStoreErrorHandler.RunOperation<TResponse?, JsonException>(
             this._collectionMetadata,
             $"{request.Method} {request.RequestUri}",
-            () => JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions));
+            () => JsonSerializer.Deserialize<TResponse>(responseContent, WeaviateConstants.s_jsonSerializerOptions));
 
         return responseModel;
     }
@@ -570,11 +572,10 @@ public sealed class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TK
 
         var vectorType = vector.GetType();
 
-        if (!WeaviateModelBuilder.s_supportedVectorTypes.Contains(vectorType))
+        if (!WeaviateModelBuilder.IsVectorPropertyTypeValidCore(vectorType, out var supportedTypes))
         {
             throw new NotSupportedException(
-                $"The provided vector type {vectorType.FullName} is not supported by the Weaviate connector. " +
-                $"Supported types are: {string.Join(", ", WeaviateModelBuilder.s_supportedVectorTypes.Select(l => l.FullName))}");
+                $"The provided vector type {vectorType.FullName} is not supported by the Weaviate connector. Supported types are: {supportedTypes}");
         }
     }
 

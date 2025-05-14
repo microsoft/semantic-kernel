@@ -15,7 +15,7 @@ namespace SemanticKernel.Connectors.Redis.UnitTests;
 public sealed class RedisHashSetMapperTests
 {
     private static readonly CollectionModel s_model
-        = new CollectionModelBuilder(RedisHashSetCollection<string, AllTypesModel>.ModelBuildingOptions)
+        = new RedisModelBuilder(RedisHashSetCollection<string, AllTypesModel>.ModelBuildingOptions)
             .Build(typeof(AllTypesModel), RedisHashSetMappingTestHelpers.s_vectorStoreRecordDefinition, defaultEmbeddingGenerator: null);
 
     [Fact]

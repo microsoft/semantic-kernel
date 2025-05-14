@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -70,7 +71,7 @@ public class CollectionModelBuilderTests
             ]
         };
 
-        var model = new CustomModelBuilder().Build(typeof(Dictionary<string, object?>), recordDefinition, embeddingGenerator);
+        var model = new CustomModelBuilder().BuildDynamic(recordDefinition, embeddingGenerator);
 
         // The embedding's .NET type (Embedding<float>) is inferred from the embedding generator.
         Assert.Same(embeddingGenerator, model.VectorProperty.EmbeddingGenerator);
@@ -96,7 +97,7 @@ public class CollectionModelBuilderTests
             ]
         };
 
-        var model = new CustomModelBuilder().Build(typeof(Dictionary<string, object?>), recordDefinition, embeddingGenerator);
+        var model = new CustomModelBuilder().BuildDynamic(recordDefinition, embeddingGenerator);
 
         Assert.Same(embeddingGenerator, model.VectorProperty.EmbeddingGenerator);
         Assert.Same(typeof(string), model.VectorProperty.Type);
@@ -122,7 +123,7 @@ public class CollectionModelBuilderTests
             ]
         };
 
-        var model = new CustomModelBuilder().Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator);
+        var model = new CustomModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator);
 
         Assert.Same(propertyEmbeddingGenerator, model.VectorProperty.EmbeddingGenerator);
     }
@@ -135,8 +136,7 @@ public class CollectionModelBuilderTests
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<float>>();
 
         var model = dynamic
-            ? new CustomModelBuilder().Build(
-                typeof(Dictionary<string, object?>),
+            ? new CustomModelBuilder().BuildDynamic(
                 new VectorStoreRecordDefinition
                 {
                     Properties =
@@ -172,7 +172,7 @@ public class CollectionModelBuilderTests
         };
 
         var model = dynamic
-            ? new CustomModelBuilder().Build(typeof(Dictionary<string, object?>), recordDefinition, embeddingGenerator)
+            ? new CustomModelBuilder().BuildDynamic(recordDefinition, embeddingGenerator)
             : new CustomModelBuilder().Build(typeof(RecordWithCustomerVectorProperty), recordDefinition, embeddingGenerator);
 
         var vectorProperty = model.VectorProperty;
@@ -290,13 +290,42 @@ public class CollectionModelBuilderTests
         {
             SupportsMultipleKeys = false,
             SupportsMultipleVectors = true,
-            RequiresAtLeastOneVector = false,
-
-            SupportedKeyPropertyTypes = [typeof(string), typeof(int)],
-            SupportedDataPropertyTypes = [typeof(string), typeof(int)],
-            SupportedEnumerableDataPropertyElementTypes = [typeof(string), typeof(int)],
-            SupportedVectorPropertyTypes = [typeof(ReadOnlyMemory<float>), typeof(ReadOnlyMemory<Half>)]
+            RequiresAtLeastOneVector = false
         };
+
+        protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+        {
+            supportedTypes = "string, int";
+
+            return type == typeof(string) || type == typeof(int);
+        }
+
+        protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+        {
+            supportedTypes = "string, int";
+
+            if (Nullable.GetUnderlyingType(type) is Type underlyingType)
+            {
+                type = underlyingType;
+            }
+
+            return type == typeof(string) || type == typeof(int);
+        }
+
+        protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+            => IsVectorPropertyTypeValidCore(type, out supportedTypes);
+
+        internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
+        {
+            supportedTypes = "ReadOnlyMemory<float>";
+
+            if (Nullable.GetUnderlyingType(type) is Type underlyingType)
+            {
+                type = underlyingType;
+            }
+
+            return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<Half>);
+        }
 
         protected override void SetupEmbeddingGeneration(
             VectorPropertyModel vectorProperty,

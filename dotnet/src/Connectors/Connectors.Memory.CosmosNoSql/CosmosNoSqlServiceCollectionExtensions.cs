@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.AI;
@@ -23,6 +24,8 @@ public static class CosmosNoSqlServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddCosmosNoSqlVectorStore(
         this IServiceCollection services,
         CosmosNoSqlVectorStoreOptions? options = default,
@@ -56,6 +59,8 @@ public static class CosmosNoSqlServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddCosmosNoSqlVectorStore(
         this IServiceCollection services,
         string connectionString,
@@ -98,6 +103,8 @@ public static class CosmosNoSqlServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddCosmosNoSqlVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
@@ -135,6 +142,8 @@ public static class CosmosNoSqlServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="VectorStoreCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
     public static IServiceCollection AddCosmosNoSqlVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,

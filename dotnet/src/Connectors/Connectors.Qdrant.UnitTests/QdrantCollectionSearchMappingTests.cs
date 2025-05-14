@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
@@ -18,9 +17,8 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests;
 public class QdrantCollectionSearchMappingTests
 {
     private readonly CollectionModel _model =
-        new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
-        .Build(
-            typeof(Dictionary<string, object?>),
+        new QdrantModelBuilder(hasNamedVectors: false)
+        .BuildDynamic(
             new()
             {
                 Properties =
@@ -118,7 +116,7 @@ public class QdrantCollectionSearchMappingTests
             Score = 0.5f
         };
 
-        var model = new CollectionModelBuilder(QdrantFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
+        var model = new QdrantModelBuilder(hasNamedVectors: false)
             .Build(
                 typeof(DataModel),
                 new()

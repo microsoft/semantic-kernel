@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.VectorData;
@@ -33,8 +32,7 @@ public sealed class WeaviateQueryBuilderTests
     };
 
     private readonly CollectionModel _model = new WeaviateModelBuilder(hasNamedVectors: true)
-        .Build(
-            typeof(Dictionary<string, object?>),
+        .BuildDynamic(
             new()
             {
                 Properties =

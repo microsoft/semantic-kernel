@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -23,7 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 /// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
+public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -70,10 +71,23 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
     /// <param name="mongoDatabase"><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</param>
     /// <param name="name">The name of the collection that this <see cref="CosmosMongoCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate CosmosMongoDynamicCollection instead.")]
+    [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate CosmosMongoDynamicCollection instead.")]
     public CosmosMongoCollection(
         IMongoDatabase mongoDatabase,
         string name,
         CosmosMongoCollectionOptions? options = default)
+        : this(
+            mongoDatabase,
+            name,
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(CosmosMongoDynamicCollection)))
+                : new MongoModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
+            options)
+    {
+    }
+
+    internal CosmosMongoCollection(IMongoDatabase mongoDatabase, string name, Func<CosmosMongoCollectionOptions, CollectionModel> modelFactory, CosmosMongoCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
@@ -84,17 +98,17 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
             throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
         }
 
+        options ??= CosmosMongoCollectionOptions.Default;
+
         // Assign.
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
         this.Name = name;
-
-        options ??= CosmosMongoCollectionOptions.Default;
+        this._model = modelFactory(options);
         this._numLists = options.NumLists;
         this._efConstruction = options.EfConstruction;
         this._efSearch = options.EfSearch;
 
-        this._model = new MongoModelBuilder().Build(typeof(TRecord), options?.VectorStoreRecordDefinition, options?.EmbeddingGenerator);
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? (new MongoDynamicMapper(this._model) as IMongoMapper<TRecord>)!
             : new MongoMapper<TRecord>(this._model);
@@ -323,7 +337,7 @@ public sealed class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection
 
             default:
                 throw new InvalidOperationException(
-                    MongoConstants.SupportedVectorTypes.Contains(typeof(TInput))
+                    MongoModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
                         ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                         : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }

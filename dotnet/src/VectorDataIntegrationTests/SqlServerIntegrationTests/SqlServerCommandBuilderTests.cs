@@ -345,9 +345,6 @@ public class SqlServerCommandBuilderTests
         => new("Server=localhost;Database=master;Integrated Security=True;");
 
     private static CollectionModel BuildModel(List<VectorStoreProperty> properties)
-        => new CollectionModelBuilder(SqlServerConstants.ModelBuildingOptions)
-            .Build(
-                typeof(Dictionary<string, object?>),
-                new() { Properties = properties },
-                defaultEmbeddingGenerator: null);
+        => new SqlServerModelBuilder()
+            .BuildDynamic(new() { Properties = properties }, defaultEmbeddingGenerator: null);
 }

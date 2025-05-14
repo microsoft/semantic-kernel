@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 /// </remarks>
 /// <param name="dataSource">Postgres data source.</param>
 /// <param name="schema">Schema of collection tables.</param>
-/// <param name="ownsDataSource">A value indicating whether <paramref name="dataSource"/> is disposed after the collection is disposed.</param>
+/// <param name="ownsDataSource">A value indicating whether <paramref name="dataSource"/> is disposed when the collection is disposed.</param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
 internal sealed class PostgresDbClient(NpgsqlDataSource dataSource, string? schema, bool ownsDataSource) : IDisposable
 {

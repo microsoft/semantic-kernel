@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -19,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// An implementation of <see cref="VectorStoreCollection{TKey, TRecord}"/> backed by a SQL Server or Azure SQL database.
 /// </summary>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
-public sealed class SqlServerCollection<TKey, TRecord>
+public class SqlServerCollection<TKey, TRecord>
 #pragma warning restore CA1711
     : VectorStoreCollection<TKey, TRecord>
     where TKey : notnull
@@ -43,10 +44,23 @@ public sealed class SqlServerCollection<TKey, TRecord>
     /// <param name="connectionString">Database connection string.</param>
     /// <param name="name">The name of the collection.</param>
     /// <param name="options">Optional configuration options.</param>
+    [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
     public SqlServerCollection(
         string connectionString,
         string name,
         SqlServerCollectionOptions? options = null)
+        : this(
+            connectionString,
+            name,
+            static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
+                ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(SqlServerDynamicCollection)))
+                : new SqlServerModelBuilder().Build(typeof(TRecord), options.RecordDefinition, options.EmbeddingGenerator),
+            options)
+    {
+    }
+
+    internal SqlServerCollection(string connectionString, string name, Func<SqlServerCollectionOptions, CollectionModel> modelFactory, SqlServerCollectionOptions? options)
     {
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNull(name);
@@ -54,11 +68,9 @@ public sealed class SqlServerCollection<TKey, TRecord>
         options ??= SqlServerCollectionOptions.Default;
         this._schema = options.Schema;
 
-        this._model = new CollectionModelBuilder(SqlServerConstants.ModelBuildingOptions)
-            .Build(typeof(TRecord), options.RecordDefinition, options.EmbeddingGenerator);
-
         this._connectionString = connectionString;
         this.Name = name;
+        this._model = modelFactory(options);
 
         this._mapper = new SqlServerMapper<TRecord>(this._model);
 
@@ -523,7 +535,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
 
             default:
                 throw new InvalidOperationException(
-                    SqlServerConstants.SupportedVectorTypes.Contains(typeof(TInput))
+                    SqlServerModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
                         ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
                         : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
         }
@@ -557,8 +569,7 @@ public sealed class SqlServerCollection<TKey, TRecord>
         if (vector is not ReadOnlyMemory<float> allowed)
         {
             throw new NotSupportedException(
-                $"The provided vector type {vector.GetType().FullName} is not supported by the SQL Server connector. " +
-                $"Supported types are: {string.Join(", ", SqlServerConstants.SupportedVectorTypes.Select(l => l.FullName))}");
+                $"The provided vector type {vector.GetType().FullName} is not supported by the SQL Server connector. Supported types are: ReadOnlyMemory<float>.");
         }
 #pragma warning disable CS0618 // Type or member is obsolete
         else if (options.OldFilter is not null)
