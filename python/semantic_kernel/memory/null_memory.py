@@ -6,7 +6,7 @@ from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 
 if sys.version_info >= (3, 13):
-    from warning import deprecated
+    from warnings import deprecated
 else:
     from typing_extensions import deprecated
 

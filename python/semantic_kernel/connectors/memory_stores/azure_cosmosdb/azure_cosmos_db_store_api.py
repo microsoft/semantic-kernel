@@ -8,7 +8,7 @@ from numpy import ndarray
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 if sys.version_info >= (3, 13):
-    from warning import deprecated
+    from warnings import deprecated
 else:
     from typing_extensions import deprecated
 

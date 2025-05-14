@@ -14,7 +14,7 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
 if sys.version_info >= (3, 13):
-    from warning import deprecated
+    from warnings import deprecated
 else:
     from typing_extensions import deprecated
 

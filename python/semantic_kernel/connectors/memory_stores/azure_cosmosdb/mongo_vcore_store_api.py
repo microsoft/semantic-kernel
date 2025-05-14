@@ -18,7 +18,7 @@ if sys.version >= "3.12":
 else:
     from typing_extensions import override  # pragma: no cover
 if sys.version_info >= (3, 13):
-    from warning import deprecated
+    from warnings import deprecated
 else:
     from typing_extensions import deprecated
 
