@@ -10,7 +10,14 @@ from typing import Generic, TypeVar
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
-from semantic_kernel.agents.orchestration.orchestration_base import DefaultTypeAlias, OrchestrationBase, TIn, TOut
+from semantic_kernel.agents.orchestration.orchestration_base import (
+    DefaultTypeAlias,
+    OrchestrationBase,
+    TIn,
+    TOut,
+    is_chat_message_content,
+    is_chat_message_content_list,
+)
 from semantic_kernel.agents.runtime.core.cancellation_token import CancellationToken
 from semantic_kernel.agents.runtime.core.core_runtime import CoreRuntime
 from semantic_kernel.agents.runtime.core.message_context import MessageContext
@@ -105,12 +112,12 @@ class GroupChatAgentActor(AgentActorBase):
     async def _handle_start_message(self, message: GroupChatStartMessage, ctx: MessageContext) -> None:
         """Handle the start message for the group chat."""
         logger.debug(f"{self.id}: Received group chat start message.")
-        if isinstance(message.body, ChatMessageContent):
+        if is_chat_message_content(message.body):
             if self._agent_thread:
                 await self._agent_thread.on_new_message(message.body)
             else:
                 self._chat_history.add_message(message.body)
-        elif isinstance(message.body, list) and all(isinstance(m, ChatMessageContent) for m in message.body):
+        elif is_chat_message_content_list(message.body):
             if self._agent_thread:
                 for m in message.body:
                     await self._agent_thread.on_new_message(m)
@@ -202,14 +209,22 @@ class GroupChatManager(KernelBaseModel, ABC):
         """
         ...
 
-    @abstractmethod
     async def should_terminate(self, chat_history: ChatHistory) -> BooleanResult:
         """Check if the group chat should terminate.
 
         Args:
             chat_history (ChatHistory): The chat history of the group chat.
         """
-        ...
+        self.current_round += 1
+
+        if self.max_rounds is not None:
+            return BooleanResult(
+                result=self.current_round > self.max_rounds,
+                reason="Maximum rounds reached."
+                if self.current_round > self.max_rounds
+                else "Not reached maximum rounds.",
+            )
+        return BooleanResult(result=False, reason="No maximum rounds set.")
 
     @abstractmethod
     async def select_next_agent(
@@ -254,18 +269,6 @@ class RoundRobinGroupChatManager(GroupChatManager):
         )
 
     @override
-    async def should_terminate(self, chat_history: ChatHistory) -> BooleanResult:
-        """Check if the group chat should terminate."""
-        if self.max_rounds is not None:
-            return BooleanResult(
-                result=self.current_round >= self.max_rounds,
-                reason="Maximum rounds reached."
-                if self.current_round >= self.max_rounds
-                else "Not reached maximum rounds.",
-            )
-        return BooleanResult(result=False, reason="No maximum rounds set.")
-
-    @override
     async def select_next_agent(
         self,
         chat_history: ChatHistory,
@@ -274,7 +277,6 @@ class RoundRobinGroupChatManager(GroupChatManager):
         """Select the next agent to speak."""
         next_agent = list(participant_descriptions.keys())[self.current_index]
         self.current_index = (self.current_index + 1) % len(participant_descriptions)
-        self.current_round += 1
         return StringResult(result=next_agent, reason="Round-robin selection.")
 
     @override
@@ -327,9 +329,9 @@ class GroupChatManagerActor(ActorBase):
     async def _handle_start_message(self, message: GroupChatStartMessage, ctx: MessageContext) -> None:
         """Handle the start message for the group chat."""
         logger.debug(f"{self.id}: Received group chat start message.")
-        if isinstance(message.body, ChatMessageContent):
+        if is_chat_message_content(message.body):
             self._chat_history.add_message(message.body)
-        elif isinstance(message.body, list) and all(isinstance(m, ChatMessageContent) for m in message.body):
+        elif is_chat_message_content_list(message.body):
             for m in message.body:
                 self._chat_history.add_message(m)
         else:

@@ -241,19 +241,12 @@ async def test_round_robin_group_chat_manager_should_terminate():
     """Test the should_terminate method of the RoundRobinGroupChatManager."""
     manager = RoundRobinGroupChatManager(max_rounds=3)
 
-    participant_descriptions = {
-        "agent_1": "Agent 1",
-        "agent_2": "Agent 2",
-        "agent_3": "Agent 3",
-    }
-
     result = await manager.should_terminate(ChatHistory())
     assert result.result is False
-
-    await manager.select_next_agent(ChatHistory(), participant_descriptions)
-    await manager.select_next_agent(ChatHistory(), participant_descriptions)
-    await manager.select_next_agent(ChatHistory(), participant_descriptions)
-
+    result = await manager.should_terminate(ChatHistory())
+    assert result.result is False
+    result = await manager.should_terminate(ChatHistory())
+    assert result.result is False
     result = await manager.should_terminate(ChatHistory())
     assert result.result is True
 
@@ -276,10 +269,15 @@ async def test_round_robin_group_chat_manager_select_next_agent():
         "agent_3": "Agent 3",
     }
 
+    await manager.should_terminate(ChatHistory())
     result = await manager.select_next_agent(ChatHistory(), participant_descriptions)
     assert result.result == "agent_1"
+
+    await manager.should_terminate(ChatHistory())
     result = await manager.select_next_agent(ChatHistory(), participant_descriptions)
     assert result.result == "agent_2"
+
+    await manager.should_terminate(ChatHistory())
     result = await manager.select_next_agent(ChatHistory(), participant_descriptions)
     assert result.result == "agent_3"
 

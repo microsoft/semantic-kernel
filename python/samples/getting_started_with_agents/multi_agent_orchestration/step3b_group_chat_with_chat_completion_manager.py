@@ -183,13 +183,9 @@ class ChatCompletionGroupChatManager(GroupChatManager):
         The manager will check if the conversation should be terminated after each agent message
         or human input (if applicable).
         """
-        if self.max_rounds is not None and self.current_round >= self.max_rounds:
-            return BooleanResult(
-                result=True,
-                reason=f"Maximum rounds reached: {self.max_rounds}.",
-            )
-
-        self.current_round += 1
+        should_terminate = await super().should_terminate(chat_history)
+        if should_terminate.result:
+            return should_terminate
 
         chat_history.messages.insert(
             0,

@@ -146,7 +146,7 @@ class SequentialOrchestration(OrchestrationBase[TIn, TOut]):
             str: The first actor type in the sequence.
         """
         next_actor_type = self._get_collection_actor_type(internal_topic_type)
-        for index, agent in enumerate(reversed(self._members)):
+        for agent in reversed(self._members):
             await SequentialAgentActor.register(
                 runtime,
                 self._get_agent_actor_type(agent, internal_topic_type),
