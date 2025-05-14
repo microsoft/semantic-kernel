@@ -200,7 +200,7 @@ public class LocalProcessTests
     }
 
     /// <summary>
-    /// Verify tha the process runs correctly when using the context factory with process key.
+    /// Verify that the process runs correctly when using the context factory with process key.
     /// </summary>
     /// <returns></returns>
     [Fact]
