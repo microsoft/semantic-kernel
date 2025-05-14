@@ -17,10 +17,12 @@ internal static class OpenAIChatResponseFormatBuilder
     /// </summary>
     private static readonly Microsoft.Extensions.AI.AIJsonSchemaCreateOptions s_jsonSchemaCreateOptions = new()
     {
-        IncludeSchemaKeyword = false,
-        IncludeTypeInEnumSchemas = true,
-        DisallowAdditionalProperties = true,
-        RequireAllProperties = true,
+        TransformOptions = new()
+        {
+            DisallowAdditionalProperties = true,
+            RequireAllProperties = true,
+            MoveDefaultKeywordToDescription = true,
+        }
     };
 
     /// <summary>
