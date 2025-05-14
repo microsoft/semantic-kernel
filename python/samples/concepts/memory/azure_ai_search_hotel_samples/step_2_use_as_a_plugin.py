@@ -39,8 +39,8 @@ records = load_records()
 # get the set of cities
 cities: set[str] = set()
 for record in records:
-    if record.address.country == "USA" and record.address.city:
-        cities.add(record.address.city)
+    if record.Address.Country == "USA" and record.Address.City:
+        cities.add(record.Address.City)
 
 
 # Before we create the plugin, we want to create a function that will help the plugin work the way we want it to.
@@ -65,7 +65,7 @@ def filter_update(
         city = kwargs["city"]
         if city not in cities:
             raise ValueError(f"City '{city}' is not in the list of cities: {', '.join(cities)}")
-        new_filter = f"lambda x: x.address.city == '{city}'"
+        new_filter = f"lambda x: x.Address.City == '{city}'"
         if filter is None:
             filter = new_filter
         elif isinstance(filter, list):
@@ -110,7 +110,7 @@ use it to get more information.""",
                     # Next to the dynamic filters based on parameters, I can specify options that are always used.
                     # this can include the `top` and `skip` parameters, but also filters that are always applied.
                     # In this case, I am filtering by country, so only hotels in the USA are returned.
-                    filter=lambda x: x.address.country == "USA",
+                    filter=lambda x: x.Address.Country == "USA",
                     parameters=[
                         KernelParameterMetadata(
                             name="query",
@@ -138,17 +138,17 @@ use it to get more information.""",
                     filter_update_function=filter_update,
                     # finally, we specify the `string_mapper` function that is used to convert the record to a string.
                     # This is used to make sure the relevant information from the record is passed to the LLM.
-                    string_mapper=lambda x: f"(hotel_id :{x.record.hotel_id}) {x.record.hotel_name} (rating {x.record.rating}) - {x.record.description}. Address: {x.record.address.street_address}, {x.record.address.city}, {x.record.address.state_province}, {x.record.address.country}. Number of room types: {len(x.record.rooms)}. Last renovated: {x.record.last_renovation_date}.",  # noqa: E501
+                    string_mapper=lambda x: f"(hotel_id :{x.record.HotelId}) {x.record.HotelName} (rating {x.record.Rating}) - {x.record.Description}. Address: {x.record.Address.StreetAddress}, {x.record.Address.City}, {x.record.Address.StateProvince}, {x.record.Address.Country}. Number of room types: {len(x.record.Rooms)}. Last renovated: {x.record.LastRenovationDate}.",  # noqa: E501
                 ),
                 collection.create_search_function(
-                    # This second function is a more detailed one, that uses a `hotel_id` to get details about a hotel.
+                    # This second function is a more detailed one, that uses a `HotelId` to get details about a hotel.
                     # we set the top to 1, so that only 1 record is returned.
                     function_name="get_details",
                     description="Get details about a hotel, by ID, use the generic search function to get the ID.",
                     top=1,
                     parameters=[
                         KernelParameterMetadata(
-                            name="hotel_id",
+                            name="HotelId",
                             description="The hotel ID to get details for.",
                             type="str",
                             is_required=True,
@@ -185,6 +185,7 @@ async def chat():
             await collection.create_collection(index=custom_index)
         if not await collection.get(top=1):
             await collection.upsert(records)
+        thread: AgentThread | None = None
         while True:
             try:
                 user_input = input("User:> ")
@@ -199,7 +200,6 @@ async def chat():
                 print("\n\nExiting chat...")
                 break
 
-            thread: AgentThread | None = None
             result = await travel_agent.get_response(messages=user_input, thread=thread)
             print(f"Agent: {result.content}")
             thread = result.thread

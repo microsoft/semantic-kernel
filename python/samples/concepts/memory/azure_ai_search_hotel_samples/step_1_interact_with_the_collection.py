@@ -29,12 +29,12 @@ async def main(query: str):
             await collection.create_collection(index=custom_index)
         await collection.upsert(records)
         # get the first five records to check the upsert worked.
-        results = await collection.get(order_by={"field": "hotel_name", "ascending": True}, top=5)
+        results = await collection.get(order_by={"field": "HotelName", "ascending": True}, top=5)
         print("Get first five records: ")
         if results:
             for result in results:
                 print(
-                    f"    {result.hotel_id} (in {result.address.city}, {result.address.country}): {result.description}"
+                    f"    {result.HotelId} (in {result.Address.City}, {result.Address.Country}): {result.Description}"
                 )
 
         print("\n")
@@ -42,23 +42,23 @@ async def main(query: str):
         # Use search to search using the vector.
         results = await collection.search(
             query,
-            vector_property_name="description_vector",
+            vector_property_name="DescriptionVector",
         )
         async for result in results.results:
             print(
-                f"    {result.record.hotel_id} (in {result.record.address.city}, "
-                f"{result.record.address.country}): {result.record.description} (score: {result.score})"
+                f"    {result.record.HotelId} (in {result.record.Address.City}, "
+                f"{result.record.Address.Country}): {result.record.Description} (score: {result.score})"
             )
         print("\n")
         print("Search results using hybrid: ")
         # Use hybrid search to search using the vector.
         results = await collection.hybrid_search(
-            query, vector_property_name="description_vector", additional_property_name="description"
+            query, vector_property_name="DescriptionVector", additional_property_name="Description"
         )
         async for result in results.results:
             print(
-                f"    {result.record.hotel_id} (in {result.record.address.city}, "
-                f"{result.record.address.country}): {result.record.description} (score: {result.score})"
+                f"    {result.record.HotelId} (in {result.record.Address.City}, "
+                f"{result.record.Address.Country}): {result.record.Description} (score: {result.score})"
             )
 
         await collection.delete_collection()
