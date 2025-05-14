@@ -20,10 +20,8 @@ from openai.types.shared_params.compound_filter import CompoundFilter
 from openai.types.shared_params.response_format_json_object import ResponseFormatJSONObject
 from pydantic import BaseModel, Field, ValidationError
 
-from semantic_kernel.agents import Agent
-from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
+from semantic_kernel.agents import Agent, AgentResponseItem, AgentThread, RunPollingOptions
 from semantic_kernel.agents.open_ai.responses_agent_thread_actions import ResponsesAgentThreadActions
-from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.contents.chat_history import ChatHistory
