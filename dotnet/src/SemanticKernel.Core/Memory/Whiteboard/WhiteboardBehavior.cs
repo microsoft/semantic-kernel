@@ -150,7 +150,7 @@ public class WhiteboardBehavior : AIContextBehavior
             cancellationToken).ConfigureAwait(false);
 
         // Update the current whiteboard content with the LLM result.
-        var newWhiteboardResponse = JsonSerializer.Deserialize(result.ToString(), WhiteboardBehaviorSourceGenerationContext.Default.NewWhiteboardReponse);
+        var newWhiteboardResponse = JsonSerializer.Deserialize(result.ToString(), WhiteboardBehaviorSourceGenerationContext.Default.NewWhiteboardResponse);
         this._currentWhiteboardContent = newWhiteboardResponse?.NewWhiteboard ?? [];
     }
 
@@ -290,7 +290,7 @@ public class WhiteboardBehavior : AIContextBehavior
     /// <summary>
     /// Represents the response from the LLM when updating the whiteboard.
     /// </summary>
-    internal class NewWhiteboardReponse
+    internal class NewWhiteboardResponse
     {
         [JsonPropertyName("newWhiteboard")]
         public List<string> NewWhiteboard { get; set; } = [];
@@ -308,7 +308,7 @@ public class WhiteboardBehavior : AIContextBehavior
 [JsonSerializable(typeof(IEnumerable<WhiteboardBehavior.BasicMessage>))]
 [JsonSerializable(typeof(WhiteboardBehavior.BasicMessage))]
 [JsonSerializable(typeof(List<string>))]
-[JsonSerializable(typeof(WhiteboardBehavior.NewWhiteboardReponse))]
+[JsonSerializable(typeof(WhiteboardBehavior.NewWhiteboardResponse))]
 internal partial class WhiteboardBehaviorSourceGenerationContext : JsonSerializerContext
 {
 }
