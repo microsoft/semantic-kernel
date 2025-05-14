@@ -39,8 +39,7 @@ public abstract class GroupChatManager
     /// <summary>
     /// Gets the number of times the group chat manager has been invoked.
     /// </summary>
-    public int InvocationCount => this._invocationCount
-        ;
+    public int InvocationCount => this._invocationCount;
 
     /// <summary>
     /// Gets or sets the maximum number of invocations allowed for the group chat manager.
