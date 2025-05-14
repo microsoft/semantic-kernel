@@ -64,7 +64,10 @@ class CustomRoundRobinGroupChatManager(RoundRobinGroupChatManager):
 
     @override
     async def should_request_user_input(self, chat_history: ChatHistory) -> BooleanResult:
-        """Check if the group chat should request user input."""
+        """Override the default behavior to request user input after the reviewer's message.
+
+        The manager will check if input from human is needed after each agent message.
+        """
         if len(chat_history.messages) == 0:
             return BooleanResult(
                 result=False,

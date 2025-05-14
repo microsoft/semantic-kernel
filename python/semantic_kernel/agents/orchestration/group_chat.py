@@ -8,8 +8,6 @@ from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
 from typing import Generic, TypeVar
 
-from pydantic import BaseModel
-
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
 from semantic_kernel.agents.orchestration.orchestration_base import DefaultTypeAlias, OrchestrationBase, TIn, TOut
@@ -57,7 +55,7 @@ class GroupChatResponseMessage(KernelBaseModel):
 _TGroupChatManagerResult = TypeVar("_TGroupChatManagerResult", ChatMessageContent, str, bool)
 
 
-class GroupChatManagerResult(BaseModel, Generic[_TGroupChatManagerResult]):
+class GroupChatManagerResult(KernelBaseModel, Generic[_TGroupChatManagerResult]):
     """A result message type from the group chat manager."""
 
     result: _TGroupChatManagerResult
@@ -192,7 +190,7 @@ class GroupChatManager(KernelBaseModel, ABC):
         Args:
             chat_history (ChatHistory): The chat history of the group chat.
         """
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     async def should_terminate(self, chat_history: ChatHistory) -> BooleanResult:
@@ -201,7 +199,7 @@ class GroupChatManager(KernelBaseModel, ABC):
         Args:
             chat_history (ChatHistory): The chat history of the group chat.
         """
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     async def select_next_agent(
@@ -215,7 +213,7 @@ class GroupChatManager(KernelBaseModel, ABC):
             chat_history (ChatHistory): The chat history of the group chat.
             participant_descriptions (dict[str, str]): The descriptions of the participants in the group chat.
         """
-        raise NotImplementedError
+        ...
 
     @abstractmethod
     async def filter_results(
@@ -228,7 +226,7 @@ class GroupChatManager(KernelBaseModel, ABC):
             chat_history (ChatHistory): The chat history of the group chat.
             participant_descriptions (dict[str, str]): The descriptions of the participants in the group chat.
         """
-        raise NotImplementedError
+        ...
 
 
 class RoundRobinGroupChatManager(GroupChatManager):

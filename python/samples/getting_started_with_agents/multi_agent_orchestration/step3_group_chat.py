@@ -2,8 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents import Agent, ChatCompletionAgent, GroupChatOrchestration
-from semantic_kernel.agents.orchestration.group_chat import RoundRobinGroupChatManager
+from semantic_kernel.agents import Agent, ChatCompletionAgent, GroupChatOrchestration, RoundRobinGroupChatManager
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatMessageContent

@@ -167,7 +167,10 @@ class ChatCompletionGroupChatManager(GroupChatManager):
 
     @override
     async def should_request_user_input(self, chat_history: ChatHistory) -> BooleanResult:
-        """Check if the group chat should request user input."""
+        """Provide concrete implementation for determining if user input is needed.
+
+        The manager will check if input from human is needed after each agent message.
+        """
         return BooleanResult(
             result=False,
             reason="This group chat manager does not require user input.",
@@ -175,7 +178,11 @@ class ChatCompletionGroupChatManager(GroupChatManager):
 
     @override
     async def should_terminate(self, chat_history: ChatHistory) -> BooleanResult:
-        """Check if the group chat should terminate."""
+        """Provide concrete implementation for determining if the discussion should end.
+
+        The manager will check if the conversation should be terminated after each agent message
+        or human input (if applicable).
+        """
         if self.max_rounds is not None and self.current_round >= self.max_rounds:
             return BooleanResult(
                 result=True,
@@ -217,7 +224,11 @@ class ChatCompletionGroupChatManager(GroupChatManager):
         chat_history: ChatHistory,
         participant_descriptions: dict[str, str],
     ) -> StringResult:
-        """Select the next agent to speak."""
+        """Provide concrete implementation for selecting the next agent to speak.
+
+        The manager will select the next agent to speak after each agent message
+        or human input (if applicable) if the conversation is not terminated.
+        """
         chat_history.messages.insert(
             0,
             ChatMessageContent(
@@ -258,7 +269,10 @@ class ChatCompletionGroupChatManager(GroupChatManager):
         self,
         chat_history: ChatHistory,
     ) -> MessageResult:
-        """Filter the results of the group chat."""
+        """Provide concrete implementation for filtering the results of the discussion.
+
+        The manager will filter the results of the conversation after the conversation is terminated.
+        """
         if not chat_history.messages:
             raise RuntimeError("No messages in the chat history.")
 
@@ -289,7 +303,7 @@ class ChatCompletionGroupChatManager(GroupChatManager):
 
 
 def agent_response_callback(message: ChatMessageContent) -> None:
-    """Observer function to print the messages from the agents."""
+    """Callback function to retrieve agent responses."""
     print(f"**{message.name}**\n{message.content}")
 
 
