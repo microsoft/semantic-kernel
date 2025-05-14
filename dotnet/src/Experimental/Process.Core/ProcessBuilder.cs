@@ -231,12 +231,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// Adds a step to the process from a declarative agent.
     /// </summary>
     /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
     /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
-    /// <param name="aliases"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder<TProcessState> AddStepFromAgent<TProcessState>(AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null) where TProcessState : class, new()
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgent<TProcessState>(AgentDefinition agentDefinition, string? id = null, IReadOnlyList<string>? aliases = null, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never) where TProcessState : class, new()
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
 
@@ -252,7 +251,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode };
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder, id) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -260,12 +259,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// Adds a step to the process from a declarative agent.
     /// </summary>
     /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
     /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
-    /// <param name="aliases"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? id = null, IReadOnlyList<string>? aliases = null, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never)
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
 
@@ -281,7 +279,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode };
+        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this.ProcessBuilder, id) { HumanInLoopMode = humanInLoopMode };
         return this.AddStep(stepBuilder, aliases);
     }
 

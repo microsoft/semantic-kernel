@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using System.Threading;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process.Internal;
 using YamlDotNet.Serialization;
@@ -142,11 +141,6 @@ public class VariableDefinition
     /// Gets or sets the name of the variable.
     /// </summary>
     public VariableType Type { get; set; } = VariableType.UserDefined;
-
-    /// <summary>
-    /// Gets or sets the mutability of the variable.
-    /// </summary>
-    public bool IsMutable { get; set; }
 
     /// <summary>
     /// Gets or sets the default value of the variable.

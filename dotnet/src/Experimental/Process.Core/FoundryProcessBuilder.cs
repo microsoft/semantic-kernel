@@ -46,12 +46,11 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// Adds a step to the process from a declarative agent.
     /// </summary>
     /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <param name="defaultThread">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
     /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
-    /// <param name="aliases"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder<TProcessState> AddStepFromAgent(AgentDefinition agentDefinition, string? defaultThread = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgent(AgentDefinition agentDefinition, string? id = null, IReadOnlyList<string>? aliases = null, string? defaultThread = null, HITLMode humanInLoopMode = HITLMode.Never)
     {
         Verify.NotNull(agentDefinition);
         if (agentDefinition.Type != AzureAIAgentFactory.AzureAIAgentType)
@@ -59,7 +58,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
             throw new ArgumentException($"The agent type '{agentDefinition.Type}' is not supported. Only '{AzureAIAgentFactory.AzureAIAgentType}' is supported.");
         }
 
-        return this._processBuilder.AddStepFromAgent<TProcessState>(agentDefinition, defaultThread, humanInLoopMode, aliases);
+        return this._processBuilder.AddStepFromAgent<TProcessState>(agentDefinition, id, aliases, defaultThread, humanInLoopMode);
     }
 
     /// <summary>
@@ -152,7 +151,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// <summary>
     /// Deploys the process to Azure Foundry.
     /// </summary>
-    /// <param name="process"></param> 
+    /// <param name="process"></param>
     /// <param name="endpoint"></param>
     /// <returns></returns>
     public async Task DeployToFoundryAsync(KernelProcess process, string endpoint)

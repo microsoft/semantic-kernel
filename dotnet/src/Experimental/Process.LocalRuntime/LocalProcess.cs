@@ -424,7 +424,6 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     var stateJson = JsonDocument.Parse(JsonSerializer.Serialize(state));
                     stateJson = JMESUpdate.UpdateState(stateJson, stateTarget.VariableUpdate.Path, stateTarget.VariableUpdate.Operation, stateTarget.VariableUpdate.Value);
                     return Task.FromResult(stateJson.Deserialize(stateType));
-
                 })).ConfigureAwait(false);
             }
             else if (edge.OutputTarget is KernelProcessEmitTarget emitTarget)
