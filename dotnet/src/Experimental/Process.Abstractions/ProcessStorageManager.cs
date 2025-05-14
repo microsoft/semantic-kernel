@@ -151,7 +151,7 @@ public class ProcessStorageManager
     /// <param name="stepName"></param>
     /// <param name="stepId"></param>
     /// <returns></returns>
-    public async Task<(bool, Dictionary<string, Dictionary<string, KernelProcessEventData?>?>?)> GetStepEdgeDataAsync(string stepName, string stepId)
+    public async Task<(bool, Dictionary<string, Dictionary<string, KernelProcessEventData?>>?)> GetStepEdgeDataAsync(string stepName, string stepId)
     {
         var entryId = this.GetStepEdgesId(stepName, stepId);
         var data = await this._storageConnector.GetEntryAsync<StorageStepEdgesData>(entryId).ConfigureAwait(false);
