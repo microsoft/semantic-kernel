@@ -110,7 +110,7 @@ public static class CommonSteps
     /// </summary>
     public sealed class DelayedEchoStep : KernelProcessStep
     {
-        public static class Events
+        public static class OutputEvents
         {
             public const string DelayedEcho = nameof(DelayedEcho);
         }
@@ -123,7 +123,7 @@ public static class CommonSteps
             // Simulate a delay
             Thread.Sleep(this._delayInMs);
             Console.WriteLine($"[DELAYED_ECHO-{this.StepName}]: {message}");
-            await context.EmitEventAsync(Events.DelayedEcho, data: message);
+            await context.EmitEventAsync(OutputEvents.DelayedEcho, data: message);
             return message;
         }
     }

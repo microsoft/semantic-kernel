@@ -131,17 +131,17 @@ public static class CommonProcesses
         process
             .ListenFor()
             .AllOf([
-                new(messageType: CommonSteps.DelayedEchoStep.Events.DelayedEcho, echoStep1),
-                new(messageType: CommonSteps.DelayedEchoStep.Events.DelayedEcho, echoStep22),
-                new(messageType: CommonSteps.DelayedEchoStep.Events.DelayedEcho, echoStep33),
+                new(messageType: CommonSteps.DelayedEchoStep.OutputEvents.DelayedEcho, echoStep1),
+                new(messageType: CommonSteps.DelayedEchoStep.OutputEvents.DelayedEcho, echoStep22),
+                new(messageType: CommonSteps.DelayedEchoStep.OutputEvents.DelayedEcho, echoStep33),
             ])
             .SendEventTo(new ProcessStepTargetBuilder(mergeStep, inputMapping: (inputEvents) =>
             {
                 return new()
                 {
-                    { "str1", inputEvents[echoStep1.GetFullEventId(CommonSteps.DelayedEchoStep.Events.DelayedEcho)] },
-                    { "str2", inputEvents[echoStep22.GetFullEventId(CommonSteps.DelayedEchoStep.Events.DelayedEcho)] },
-                    { "str3", inputEvents[echoStep33.GetFullEventId(CommonSteps.DelayedEchoStep.Events.DelayedEcho)] },
+                    { "str1", inputEvents[echoStep1.GetFullEventId(CommonSteps.DelayedEchoStep.OutputEvents.DelayedEcho)] },
+                    { "str2", inputEvents[echoStep22.GetFullEventId(CommonSteps.DelayedEchoStep.OutputEvents.DelayedEcho)] },
+                    { "str3", inputEvents[echoStep33.GetFullEventId(CommonSteps.DelayedEchoStep.OutputEvents.DelayedEcho)] },
                 };
             }));
 
