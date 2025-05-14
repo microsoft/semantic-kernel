@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Process.TestsShared.Services;
@@ -100,6 +102,39 @@ public static class CommonSteps
         {
             Console.WriteLine($"[ECHO] {message}");
             return message;
+        }
+    }
+
+    /// <summary>
+    /// A step that echos its input. Delays input for a specified amount of time.
+    /// </summary>
+    public sealed class DelayedEchoStep : KernelProcessStep
+    {
+        public static class Events
+        {
+            public const string DelayedEcho = nameof(DelayedEcho);
+        }
+
+        private readonly int _delayInMs = 1000;
+
+        [KernelFunction]
+        public async Task<string> EchoAsync(KernelProcessStepContext context, string message)
+        {
+            // Simulate a delay
+            Thread.Sleep(this._delayInMs);
+            Console.WriteLine($"[DELAYED_ECHO-{this.StepName}]: {message}");
+            await context.EmitEventAsync(Events.DelayedEcho, data: message);
+            return message;
+        }
+    }
+
+    public sealed class MergeStringsStep : KernelProcessStep
+    {
+        [KernelFunction]
+        public IList<string> MergeStrings(string str1, string str2, string str3)
+        {
+            Console.WriteLine($"[MERGE_STRINGS-{this.StepName}] {str1} {str2} {str3}");
+            return [str1, str2, str3];
         }
     }
 }

@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Process.Models.Storage;
 using SemanticKernel.Process.TestsShared.Services;
 using SemanticKernel.Process.TestsShared.Setup;
 using SemanticKernel.Process.TestsShared.Steps;
@@ -164,32 +167,10 @@ public class LocalProcessTests
         Assert.IsType<KernelProcessError>(kernel.Data["error-function"]);
     }
 
-    [Fact]
-    public async Task StartProcessWithKeyedProcessDictSuccessfullyAsync()
-    {
-        // Arrange
-        var processId = "myProcessId";
-        var processKey = CommonProcesses.ProcessKeys.CounterProcess;
-
-        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
-
-        CounterService counterService = new();
-        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
-
-        // Act
-        await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
-            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
-            {
-                Id = CommonProcesses.ProcessEvents.StartProcess,
-            });
-
-        // Assert
-        var processState = await runningProcess.GetStateAsync();
-        Assert.NotNull(processState);
-        Assert.Equal(processId, processState.State.Id);
-        Assert.Equal(processKey, processState.State.Name);
-    }
-
+    /// <summary>
+    /// Verify that the process level error handler is called when a function fails.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task StartProcessWithKeyedProcessDictFailDueMissingKeyAsync()
     {
@@ -216,6 +197,156 @@ public class LocalProcessTests
             // Assert
             Assert.Equal($"The process with key '{processKey}' is not registered.", ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Verify tha the process runs correctly when using the context factory with process key.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task StartProcessWithKeyedProcessDictSuccessfullyAsync()
+    {
+        // Arrange
+        var processId = "myProcessId";
+        var processKey = CommonProcesses.ProcessKeys.CounterProcess;
+
+        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
+
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
+
+        // Act
+        await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
+            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            {
+                Id = CommonProcesses.ProcessEvents.StartProcess,
+            });
+
+        // Assert
+        var processState = await runningProcess.GetStateAsync();
+        Assert.NotNull(processState);
+        Assert.Equal(processId, processState.State.Id);
+        Assert.Equal(processKey, processState.State.Name);
+    }
+
+    /// <summary>
+    /// Verify that the process runs correctly when using the context factory with process key and a storage manager.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task StartProcessWithKeyedProcessDictAndStoreManagerAsync()
+    {
+        // Arrange
+        var processId = "myProcessId";
+        var processKey = CommonProcesses.ProcessKeys.CounterProcess;
+        var counterName = "counterStep";
+
+        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
+        var processStorage = new MockStorage();
+
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
+
+        // Act - 1
+        await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
+            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            {
+                Id = CommonProcesses.ProcessEvents.StartProcess,
+            }, storageConnector: processStorage);
+
+        // Assert - 1
+        var processState = await runningProcess.GetStateAsync();
+        Assert.NotNull(processState);
+        var counterState = processState.Steps.Where(s => s.State.Name == counterName).FirstOrDefault();
+        Assert.NotNull(counterState);
+        Assert.Equal(1, ((KernelProcessStepState<CommonSteps.CounterState>)counterState.State).State?.Count);
+
+        Assert.Equal(processId, processState.State.Id);
+        Assert.Equal(processKey, processState.State.Name);
+
+        // Act - 2
+        counterService.SetCount(0);
+        await using LocalKernelProcessContext runningProcess2 = await LocalKernelProcessFactory.StartAsync(
+            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            {
+                Id = CommonProcesses.ProcessEvents.StartProcess,
+            }, storageConnector: processStorage);
+
+        // Assert - 2
+        var processState2 = await runningProcess2.GetStateAsync();
+        Assert.NotNull(processState2);
+        var counterState2 = processState2.Steps.Where(s => s.State.Name == counterName).FirstOrDefault();
+        Assert.NotNull(counterState2);
+        Assert.Equal(2, ((KernelProcessStepState<CommonSteps.CounterState>)counterState2.State).State?.Count);
+
+        Assert.Equal(processId, processState.State.Id);
+        Assert.Equal(processKey, processState.State.Name);
+    }
+
+    /// <summary>
+    /// Verify that the process runs correctly when using the context factory with process key and a storage manager.
+    /// Running same process twice to verify step parameters get persisted.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task StartProcessWithKeyedProcessAndUseOfAllOfAsync()
+    {
+        // Arrange
+        var processId = "myProcessId";
+        var mergeStepStorageEntry = "MergeStringsStep.MergeStringsStep.StepEdgesData";
+        var processKey = CommonProcesses.ProcessKeys.DelayedMergeProcess;
+
+        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
+        var processStorage = new MockStorage();
+        // To use local storage, comment line above and uncomment line below + replacing <TEST_DIR> with existing directory path
+        //var processStorage = new JsonFileStorage("<TEST_DIR>");
+
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
+
+        // Act - 1
+        await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
+            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            {
+                Id = CommonProcesses.ProcessEvents.StartProcess,
+                Data = "Hello",
+            }, storageConnector: processStorage);
+
+        // Assert - 1
+        var processState = await runningProcess.GetStateAsync();
+        Assert.NotNull(processState);
+        processStorage._dbMock.TryGetValue(mergeStepStorageEntry, out var entry);
+        Assert.NotNull(entry?.Content);
+        Assert.IsType<string>(entry?.Content);
+
+        var edgeData = JsonSerializer.Deserialize<StorageStepEdgesData>(entry.Content);
+        Assert.NotNull(edgeData);
+        Assert.Single(edgeData.EdgesData);
+        // Only 2/3 parameters in merge step should have arrived and persisted in stepEdgesData
+        Assert.Equal(2, edgeData.EdgesData.First().Value?.Count);
+        Assert.True(edgeData.EdgesData.First().Value?.ContainsKey("DelayedEchoStep22.DelayedEcho"));
+        Assert.True(edgeData.EdgesData.First().Value?.ContainsKey("DelayedEchoStep33.DelayedEcho"));
+
+        // Act - 2
+        await using LocalKernelProcessContext runningProcess2 = await LocalKernelProcessFactory.StartAsync(
+            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            {
+                Id = CommonProcesses.ProcessEvents.OtherEvent,
+                Data = "World",
+            }, storageConnector: processStorage);
+
+        // Assert - 2
+        var processState2 = await runningProcess2.GetStateAsync();
+        Assert.NotNull(processState2);
+        processStorage._dbMock.TryGetValue(mergeStepStorageEntry, out var entry2);
+        Assert.NotNull(entry2?.Content);
+        Assert.IsType<string>(entry2?.Content);
+
+        var edgeData2 = JsonSerializer.Deserialize<StorageStepEdgesData>(entry2.Content);
+        Assert.NotNull(edgeData2);
+        Assert.Single(edgeData2.EdgesData);
+        // All parameters in merge step should have been processed and edge data should be empty
+        Assert.Empty(edgeData2.EdgesData.First().Value!);
     }
 
     /// <summary>

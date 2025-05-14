@@ -187,6 +187,12 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
 
+        // Initialize Storage Manager
+        if (this.StorageManager != null)
+        {
+            await this.StorageManager.InitializeAsync().ConfigureAwait(false);
+        }
+
         // TODO: Pull user state from persisted state on resume.
         this._processStateManager = new ProcessStateManager(this._process.UserStateype, null);
 
@@ -244,6 +250,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         RootProcessId = this.RootProcessId,
                         EventProxy = this.EventProxy,
                         ExternalMessageChannel = this.ExternalMessageChannel,
+                        StorageManager = this.StorageManager,
                     };
             }
             else if (step is KernelProcessMap mapStep)
@@ -282,7 +289,8 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     new LocalStep(step, this._kernel)
                     {
                         ParentProcessId = this.Id,
-                        EventProxy = this.EventProxy
+                        EventProxy = this.EventProxy,
+                        StorageManager = this.StorageManager,
                     };
             }
 
@@ -464,6 +472,11 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (this.StorageManager != null)
+        {
+            await this.StorageManager.CloseAsync().ConfigureAwait(false);
+        }
+
         this._externalEventChannel.Writer.Complete();
         this._joinableTaskContext.Dispose();
         foreach (var step in this._steps)

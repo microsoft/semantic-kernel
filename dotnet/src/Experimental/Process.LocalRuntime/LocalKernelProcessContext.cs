@@ -12,17 +12,25 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAs
     private readonly LocalProcess _localProcess;
     private readonly Kernel _kernel;
 
-    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventProxy? eventProxy = null, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
+    private readonly ProcessStorageManager? _storageConnector;
+
+    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventProxy? eventProxy = null, IExternalKernelProcessMessageChannel? externalMessageChannel = null, IProcessStorageConnector? storageConnector = null)
     {
         Verify.NotNull(process, nameof(process));
         Verify.NotNull(kernel, nameof(kernel));
         Verify.NotNullOrWhiteSpace(process.State?.Name);
+
+        if (storageConnector != null)
+        {
+            this._storageConnector = new(storageConnector);
+        }
 
         this._kernel = kernel;
         this._localProcess = new LocalProcess(process, kernel)
         {
             EventProxy = eventProxy,
             ExternalMessageChannel = externalMessageChannel,
+            StorageManager = this._storageConnector,
         };
     }
 

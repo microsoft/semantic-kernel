@@ -37,6 +37,7 @@ public static class LocalKernelProcessFactory
     /// <param name="processId">Required: id to be assigined to the running process</param>
     /// <param name="initialEvent">Required: The initial event to start the process.</param>
     /// <param name="externalMessageChannel">Optional: an instance of <see cref="IExternalKernelProcessMessageChannel"/>.</param>
+    /// <param name="storageConnector">Optional: an instance of <see cref="IProcessStorageConnector"/>.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     public static async Task<LocalKernelProcessContext> StartAsync(
@@ -45,7 +46,8 @@ public static class LocalKernelProcessFactory
         string processKey,
         string processId,
         KernelProcessEvent initialEvent,
-        IExternalKernelProcessMessageChannel? externalMessageChannel = null)
+        IExternalKernelProcessMessageChannel? externalMessageChannel = null,
+        IProcessStorageConnector? storageConnector = null)
     {
         Verify.NotNullOrWhiteSpace(processKey, nameof(processKey));
         Verify.NotNullOrWhiteSpace(processId, nameof(processId));
@@ -62,7 +64,7 @@ public static class LocalKernelProcessFactory
             process = process with { State = process.State with { Id = processId, Name = processKey } };
         }
 
-        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel);
+        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel, storageConnector);
         await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
         return processContext;
     }

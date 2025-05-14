@@ -17,12 +17,15 @@ public static class CommonProcesses
         /// Start Process Event
         /// </summary>
         public const string StartProcess = nameof(StartProcess);
+        public const string OtherEvent = nameof(OtherEvent);
     }
 
     public static class ProcessKeys
     {
         public const string CounterProcess = nameof(CounterProcess);
         public const string CounterWithEvenNumberDetectionProcess = nameof(CounterWithEvenNumberDetectionProcess);
+        public const string DelayedMergeProcess = nameof(DelayedMergeProcess);
+        public const string DelayedMergeProcess2 = nameof(DelayedMergeProcess2);
     }
 
     public static KernelProcess GetCounterProcess(string processName = "counterProcess")
@@ -66,11 +69,95 @@ public static class CommonProcesses
         return process.Build();
     }
 
+    /// <summary>
+    /// Process that delays the merge of three strings until all three are available.
+    /// Helps test make use of ListenFor() and AlOf() methods.
+    /// <code>
+    ///         ┌────────┐
+    /// Other ─►│ echo1  ├───────────────────────────────┐   ┌───────┐
+    ///         └────────┘                               │   │       │
+    ///                                                  └──►│       │
+    ///                                                      │       │
+    ///         ┌────────┐     ┌────────┐                    │       │    ┌───────────┐
+    ///    ┌──► │ echo21 ├────►│ echo22 ├───────────────────►│ merge ├───►│ finalEcho │
+    ///    │    └────────┘     └────────┘                    │       │    └───────────┘
+    /// Start                                                │       │
+    /// Process                                          ┌──►│       │
+    ///    │    ┌────────┐     ┌────────┐    ┌────────┐  │   │       │
+    ///    └──► │ echo31 ├────►│ echo32 ├───►│ echo33 ├──┘   └───────┘
+    ///         └────────┘     └────────┘    └────────┘
+    /// </code>
+    /// </summary>
+    /// <param name="processName"></param>
+    /// <returns></returns>
+    public static KernelProcess GetDelayedMergeProcess(string processName = "DelayedMergeProcess")
+    {
+        ProcessBuilder process = new(processName);
+
+        var echoStep1 = process.AddStepFromType<CommonSteps.DelayedEchoStep>(id: $"{nameof(CommonSteps.DelayedEchoStep)}1");
+        var echoStep21 = process.AddStepFromType<CommonSteps.DelayedEchoStep>(id: $"{nameof(CommonSteps.DelayedEchoStep)}21");
+        var echoStep22 = process.AddStepFromType<CommonSteps.DelayedEchoStep>(id: $"{nameof(CommonSteps.DelayedEchoStep)}22");
+        var echoStep31 = process.AddStepFromType<CommonSteps.DelayedEchoStep>(id: $"{nameof(CommonSteps.DelayedEchoStep)}31");
+        var echoStep32 = process.AddStepFromType<CommonSteps.DelayedEchoStep>(id: $"{nameof(CommonSteps.DelayedEchoStep)}32");
+        var echoStep33 = process.AddStepFromType<CommonSteps.DelayedEchoStep>(id: $"{nameof(CommonSteps.DelayedEchoStep)}33");
+
+        var mergeStep = process.AddStepFromType<CommonSteps.MergeStringsStep>(id: nameof(CommonSteps.MergeStringsStep));
+
+        var finalEchoStep = process.AddStepFromType<CommonSteps.EchoStep>(id: nameof(CommonSteps.EchoStep));
+
+        process
+            .OnInputEvent(ProcessEvents.StartProcess)
+            //.SendEventTo(new(echoStep1))
+            .SendEventTo(new(echoStep21))
+            .SendEventTo(new(echoStep31));
+
+        process
+            .OnInputEvent(ProcessEvents.OtherEvent)
+            .SendEventTo(new(echoStep1));
+
+        echoStep21
+            .OnFunctionResult()
+            .SendEventTo(new(echoStep22));
+
+        echoStep31
+            .OnFunctionResult()
+            .SendEventTo(new(echoStep32));
+
+        echoStep32
+            .OnFunctionResult()
+            .SendEventTo(new(echoStep33));
+
+        // merging inputs
+        process
+            .ListenFor()
+            .AllOf([
+                new(messageType: CommonSteps.DelayedEchoStep.Events.DelayedEcho, echoStep1),
+                new(messageType: CommonSteps.DelayedEchoStep.Events.DelayedEcho, echoStep22),
+                new(messageType: CommonSteps.DelayedEchoStep.Events.DelayedEcho, echoStep33),
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(mergeStep, inputMapping: (inputEvents) =>
+            {
+                return new()
+                {
+                    { "str1", inputEvents[echoStep1.GetFullEventId(CommonSteps.DelayedEchoStep.Events.DelayedEcho)] },
+                    { "str2", inputEvents[echoStep22.GetFullEventId(CommonSteps.DelayedEchoStep.Events.DelayedEcho)] },
+                    { "str3", inputEvents[echoStep33.GetFullEventId(CommonSteps.DelayedEchoStep.Events.DelayedEcho)] },
+                };
+            }));
+
+        mergeStep
+            .OnFunctionResult()
+            .SendEventTo(new(finalEchoStep));
+
+        return process.Build();
+    }
+
     public static IReadOnlyDictionary<string, KernelProcess> GetCommonProcessesKeyedDictionary()
     {
         return new Dictionary<string, KernelProcess>() {
             { ProcessKeys.CounterProcess, GetCounterProcess() },
             { ProcessKeys.CounterWithEvenNumberDetectionProcess, GetCounterWithEventDetectionProcess() },
+            { ProcessKeys.DelayedMergeProcess, GetDelayedMergeProcess() },
         };
     }
 }
