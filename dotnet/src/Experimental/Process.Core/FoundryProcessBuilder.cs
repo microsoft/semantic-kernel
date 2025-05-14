@@ -2,6 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Process.Models;
@@ -14,6 +18,7 @@ namespace Microsoft.SemanticKernel;
 public class FoundryProcessBuilder<TProcessState> where TProcessState : class, new()
 {
     private readonly ProcessBuilder _processBuilder;
+    private static readonly string[] s_scopes = new[] { "https://management.azure.com/" };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
@@ -88,13 +93,58 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
         return this._processBuilder.OnInputEvent(eventId);
     }
 
+    ///// <summary>
+    ///// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
+    ///// </summary>
+    ///// <returns></returns>
+    //public FoundryListenForBuilder ListenFor()
+    //{
+    //    return new FoundryListenForBuilder(this._processBuilder);
+    //}
+
     /// <summary>
     /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
     /// </summary>
+    /// <param name="step"> The process step from which the message originates.</param>
+    /// <param name="condition"></param>
     /// <returns></returns>
-    public FoundryListenForBuilder ListenFor()
+    public ListenForTargetBuilder OnResultFromStep(ProcessStepBuilder step, string? condition = null)
     {
-        return new FoundryListenForBuilder(this._processBuilder);
+        Verify.NotNull(step);
+        return new FoundryListenForBuilder(this._processBuilder).ResultFrom(step, condition);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for when the process step is entered.
+    /// </summary>
+    /// <param name="step"></param>
+    /// <param name="condition"></param>
+    /// <returns></returns>
+    public ListenForTargetBuilder OnStepEnter(ProcessStepBuilder step, string? condition = null)
+    {
+        Verify.NotNull(step);
+        return new FoundryListenForBuilder(this._processBuilder).OnEnter(step, condition);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for when the process step is exited.
+    /// </summary>
+    /// <param name="step"></param>
+    /// <param name="condition"></param>
+    /// <returns></returns>
+    public ListenForTargetBuilder OnStepExit(ProcessStepBuilder step, string? condition = null)
+    {
+        Verify.NotNull(step);
+        return new FoundryListenForBuilder(this._processBuilder).OnExit(step, condition);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for when the process starts.
+    /// </summary>
+    /// <returns></returns>
+    public ListenForTargetBuilder OnProcessEnter()
+    {
+        return new FoundryListenForBuilder(this._processBuilder).ProcessStart();
     }
 
     /// <summary>
@@ -105,6 +155,29 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     public KernelProcess Build(KernelProcessStateMetadata? stateMetadata = null)
     {
         return this._processBuilder.Build(stateMetadata);
+    }
+
+    public async Task DeployToFoundryAsync(KernelProcess process, string endpoint)
+    {
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {(await new DefaultAzureCredential().GetTokenAsync(new Azure.Core.TokenRequestContext(s_scopes)).ConfigureAwait(false)).Token}");
+
+
+        var workflow = await WorkflowBuilder.BuildWorkflow(process).ConfigureAwait(false);
+        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
+        using var content = new StringContent(yaml, System.Text.Encoding.UTF8, "application/json");
+        var response = await httpClient.PostAsync(new Uri($"{endpoint}/agents?api-version=2025-05-01-preview"), content).ConfigureAwait(false);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Process deployed successfully.");
+        }
+        else
+        {
+            Console.WriteLine($"Failed to deploy process. Status code: {response.StatusCode}");
+            var errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            Console.WriteLine($"Error content: {errorContent}");
+        }
     }
 }
 

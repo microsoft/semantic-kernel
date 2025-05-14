@@ -105,6 +105,7 @@ public sealed class TestConfiguration
 
     public class AzureAIConfig
     {
+        public string WorkflowEndpoint { get; set; }
         public string ConnectionString { get; set; }
         public string ChatModelId { get; set; }
         public string BingConnectionId { get; set; }

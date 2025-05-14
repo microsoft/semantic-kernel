@@ -39,9 +39,9 @@ public class FoundryListenForBuilder
     /// </summary>
     /// <param name="condition"></param>
     /// <returns></returns>
-    public ListenForTargetBuilder ProcessEnter(KernelProcessEdgeCondition? condition = null)
+    public ListenForTargetBuilder ProcessStart(KernelProcessEdgeCondition? condition = null)
     {
-        return this.InputEvent("Invoke.OnEnter", condition);
+        return this.InputEvent(ProcessConstants.Declarative.OnEnterEvent, condition);
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public class FoundryListenForBuilder
     /// <param name="from">The process step from which the message originates.</param>
     /// <param name="condition">Condition that must be met for the message to be processed</param>
     /// <returns>A builder for defining the target of the message.</returns>
-    public ListenForTargetBuilder OnResult(ProcessStepBuilder from, string? condition = null)
+    public ListenForTargetBuilder ResultFrom(ProcessStepBuilder from, string? condition = null)
     {
         KernelProcessEdgeCondition? edgeCondition = null;
         if (!string.IsNullOrWhiteSpace(condition))

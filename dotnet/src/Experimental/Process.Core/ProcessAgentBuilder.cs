@@ -109,23 +109,23 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
     /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
     /// </summary>
     /// <returns></returns>
-    public ProcessAgentBuilder<TProcessState> OnComplete(List<DeclarativeProcessCondition> conditions)
+    internal ProcessAgentBuilder<TProcessState> OnComplete(List<DeclarativeProcessCondition> conditions)
     {
         var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
         this.OnCompleteBuilder = builder;
         return this;
     }
 
-    /// <summary>
-    /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
-    /// </summary>
-    /// <returns></returns>
-    public ProcessAgentBuilder<TProcessState> OnError(List<DeclarativeProcessCondition> conditions)
-    {
-        var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
-        this.OnErrorBuilder = builder;
-        return this;
-    }
+    ///// <summary>
+    ///// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
+    ///// </summary>
+    ///// <returns></returns>
+    //public ProcessAgentBuilder<TProcessState> OnError(List<DeclarativeProcessCondition> conditions)
+    //{
+    //    var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
+    //    this.OnErrorBuilder = builder;
+    //    return this;
+    //}
 
     /// <summary>
     /// Sets the inputs for this agent.

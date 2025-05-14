@@ -35,16 +35,12 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         var processBuilder = new FoundryProcessBuilder("foundry_agents");
 
-        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1)
-            .OnComplete([new DeclarativeProcessCondition { Type = DeclarativeProcessConditionType.Default, Emits = [new EventEmission() { EventType = "Agent1Complete" }] }]);
+        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1);
+        var agent2 = processBuilder.AddStepFromAgent(foundryAgentDefinition2);
 
-        var agent2 = processBuilder.AddStepFromAgent(foundryAgentDefinition2)
-            .OnComplete([new DeclarativeProcessCondition { Type = DeclarativeProcessConditionType.Default, Emits = [new EventEmission() { EventType = "Agent2Complete" }] }]);
-
-        processBuilder.OnInputEvent("start").SendEventTo(new(agent1)); // Change to ListenForInput?
-
-        processBuilder.ListenFor().Message("Agent1Complete", agent1).SendEventTo(new(agent2, (output) => output));
-        processBuilder.ListenFor().Message("Agent2Complete", agent2).StopProcess();
+        processBuilder.OnProcessEnter().SendEventToAgent(agent1);
+        processBuilder.OnResultFromStep(agent1).SendEventToAgent(agent2);
+        processBuilder.OnResultFromStep(agent2).StopProcess();
 
         var process = processBuilder.Build();
 
@@ -56,7 +52,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         kernelBuilder.Services.AddSingleton(foundryClient);
         var kernel = kernelBuilder.Build();
 
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" });
+        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "What is the best programming language and why?" });
         var agent1Result = await context.GetStateAsync();
 
         Assert.NotNull(context);
@@ -73,16 +69,13 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
 
-        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, defaultThread: "shared_thread")
-            .OnComplete([new DeclarativeProcessCondition { Type = DeclarativeProcessConditionType.Default, Emits = [new EventEmission() { EventType = "Agent1Complete" }] }]);
-
-        var agent2 = processBuilder.AddStepFromAgent(foundryAgentDefinition2, defaultThread: "shared_thread")
-            .OnComplete([new DeclarativeProcessCondition { Type = DeclarativeProcessConditionType.Default, Emits = [new EventEmission() { EventType = "Agent2Complete" }] }]);
+        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, defaultThread: "shared_thread");
+        var agent2 = processBuilder.AddStepFromAgent(foundryAgentDefinition2, defaultThread: "shared_thread");
 
         processBuilder.OnInputEvent("start").SendEventTo(new(agent1));
 
-        processBuilder.ListenFor().Message("Agent1Complete", agent1).SendEventTo(new(agent2, (output) => output));
-        processBuilder.ListenFor().Message("Agent2Complete", agent2).StopProcess();
+        processBuilder.OnResultFromStep(agent2);
+        processBuilder.OnResultFromStep(agent2).StopProcess();
 
         var process = processBuilder.Build();
 
@@ -112,30 +105,14 @@ public class Step06_FoundryAgentProcess : BaseTest
         var processBuilder = new FoundryProcessBuilder<ProcessStateWithCounter>("foundry_agents");
         processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
 
-        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, defaultThread: "shared_thread")
-            .OnComplete([
-            new DeclarativeProcessCondition
-            {
-                Type = DeclarativeProcessConditionType.Eval,
-                Expression = "Counter < `3`",
-                Updates = [new VariableUpdate() { Path = "Counter", Operation = StateUpdateOperations.Increment, Value = 1 }],
-                Emits = [new EventEmission() { EventType = "Agent1Retry" }]
-            },
-            new DeclarativeProcessCondition
-            {
-                Type = DeclarativeProcessConditionType.Eval,
-                Expression = "Counter >= `3`",
-                Emits = [new EventEmission() { EventType = "Agent1Complete" }]
-            }]);
-
-        var agent2 = processBuilder.AddStepFromAgent(foundryAgentDefinition2, defaultThread: "shared_thread")
-            .OnComplete([new DeclarativeProcessCondition { Type = DeclarativeProcessConditionType.Default, Emits = [new EventEmission() { EventType = "Agent2Complete" }] }]);
+        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, defaultThread: "shared_thread");
+        var agent2 = processBuilder.AddStepFromAgent(foundryAgentDefinition2, defaultThread: "shared_thread");
 
         processBuilder.OnInputEvent("start").SendEventTo(new(agent1));
 
-        processBuilder.ListenFor().Message("Agent1Retry", agent1).SendEventTo(new(agent1));
-        processBuilder.ListenFor().Message("Agent1Complete", agent1).SendEventTo(new(agent2));
-        processBuilder.ListenFor().Message("Agent2Complete", agent2).StopProcess();
+        processBuilder.OnResultFromStep(agent1, condition: "_variables_.Counter < `3`").SendEventTo(new(agent1));
+        processBuilder.OnResultFromStep(agent1, condition: "_variables_.Counter >= `3`").SendEventTo(new(agent2));
+        processBuilder.OnResultFromStep(agent2).StopProcess();
 
         var process = processBuilder.Build();
 
@@ -169,26 +146,24 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
 
         // Agent1 will increment the Counter state variable every time it runs
-        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, defaultThread: "shared_thread")
-            .OnComplete([
-            new DeclarativeProcessCondition
-            {
-                Type = DeclarativeProcessConditionType.Default,
-                Updates = [new VariableUpdate() { Path = "Counter", Operation = StateUpdateOperations.Increment, Value = 1 }],
-            }]);
+        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, defaultThread: "shared_thread");
 
         var agent2 = processBuilder.AddStepFromAgent(foundryAgentDefinition2, defaultThread: "shared_thread");
 
+        // TODO: Model worklfow on_enter properly
         processBuilder.OnInputEvent("start").SendEventTo(new(agent1));
 
+        // Increment the counter every time the step runs
+        processBuilder.OnStepEnter(agent1, condition: "always").UpdateProcessState("Counter", StateUpdateOperations.Increment, 1);
+
         // Agent1 should run as long as the Counter is less than 3
-        processBuilder.ListenFor().OnResult(agent1, condition: "_variables_.Counter < `3`").SendEventTo(new(agent1));
+        processBuilder.OnResultFromStep(agent1, condition: "_variables_.Counter < `3`").SendEventToAgent(agent1);
 
         // When the Counter is 3, Agent1 should stop and Agent2 should start
-        processBuilder.ListenFor().OnResult(agent1, condition: "_variables_.Counter >= `3`").SendEventTo(new(agent2));
+        processBuilder.OnResultFromStep(agent1, condition: "_variables_.Counter >= `3`").SendEventToAgent(agent2);
 
         // When Agent2 is done, the process should stop
-        processBuilder.ListenFor().OnResult(agent2).StopProcess();
+        processBuilder.OnResultFromStep(agent2).StopProcess();
 
         var process = processBuilder.Build();
 
@@ -222,26 +197,23 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.AddThread("shared_thread", KernelProcessThreadLifetime.Scoped);
 
         // Agent1 will increment the Counter state variable every time it runs
-        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, defaultThread: "shared_thread")
-            .OnComplete([
-            new DeclarativeProcessCondition
-            {
-                Type = DeclarativeProcessConditionType.Default,
-                Updates = [new VariableUpdate() { Path = "Counter", Operation = StateUpdateOperations.Increment, Value = 1 }],
-            }]);
+        var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, defaultThread: "shared_thread");
 
         var agent2 = processBuilder.AddStepFromAgentProxy(stepId: "dynamicAgent", foundryAgentDefinition2, threadName: "shared_thread");
 
         processBuilder.OnInputEvent("start").SendEventTo(new(agent1));
 
+        // Increment the counter every time the step runs
+        processBuilder.OnStepEnter(agent1, condition: "always").UpdateProcessState("Counter", StateUpdateOperations.Increment, 1);
+
         // Agent1 should run as long as the Counter is less than 3
-        processBuilder.ListenFor().OnResult(agent1, condition: "_variables_.Counter < `3`").SendEventTo(new(agent1));
+        processBuilder.OnResultFromStep(agent1, condition: "_variables_.Counter < `3`").SendEventToAgent(agent1);
 
         // When the Counter is 3, Agent1 should stop and Agent2 should start
-        processBuilder.ListenFor().OnResult(agent1, condition: "_variables_.Counter >= `3`").SendEventTo(new(agent2));
+        processBuilder.OnResultFromStep(agent1, condition: "_variables_.Counter >= `3`").SendEventToAgent(agent2);
 
         // When Agent2 is done, the process should stop
-        processBuilder.ListenFor().OnResult(agent2).StopProcess();
+        processBuilder.OnResultFromStep(agent2).StopProcess();
 
         var process = processBuilder.Build();
 
@@ -283,7 +255,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         var teacher = processBuilder.AddStepFromAgent(teacherDefinition);
 
         // Orchestrate
-        processBuilder.ListenFor().ProcessEnter().SendEventToAgent(
+        processBuilder.OnProcessEnter().SendEventToAgent(
             student,
             thread: "_variables_.StudentThread",
             messagesIn: "_variables_.TeacherMessages",
@@ -292,15 +264,15 @@ public class Step06_FoundryAgentProcess : BaseTest
                 { "InteractionCount", "_variables_.StudentState.InteractionCount" }
             });
 
-        processBuilder.ListenFor().OnResult(student)
-            .Update(new() { Path = "_variables_.StudentMessages", Operation = StateUpdateOperations.Set, Value = "_agent_.messages_out" })
-            .Update(new() { Path = "_variables_.UserMessages", Operation = StateUpdateOperations.Increment, Value = "_agent_.user_messages" })
-            .Update(new() { Path = "_variables_.InteractionCount", Operation = StateUpdateOperations.Increment, Value = "_agent_.student_messages" })
-            .Update(new() { Path = "_variables_.StudentState.InteractionCount", Operation = StateUpdateOperations.Increment, Value = "_agent_.student_messages" })
-            .Update(new() { Path = "_variables_.StudentState.Name", Operation = StateUpdateOperations.Set, Value = "Runhan" })
+        processBuilder.OnResultFromStep(student)
+            .UpdateProcessState(path: "StudentMessages", operation: StateUpdateOperations.Set, value: "_agent_.messages_out")
+            .UpdateProcessState(path: "UserMessages", operation: StateUpdateOperations.Increment, value: "_agent_.user_messages")
+            .UpdateProcessState(path: "InteractionCount", operation: StateUpdateOperations.Increment, value: "_agent_.student_messages")
+            .UpdateProcessState(path: "StudentState.InteractionCount", operation: StateUpdateOperations.Increment, value: "_agent_.student_messages")
+            .UpdateProcessState(path: "StudentState.Name", operation: StateUpdateOperations.Set, value: "Runhan")
             .SendEventToAgent(teacher, messagesIn: "_variables_.StudentMessages");
 
-        processBuilder.ListenFor().OnExit(teacher, condition: "contains(to_string(_agent_.messages_out), '[COMPLETE]')")
+        processBuilder.OnStepExit(teacher, condition: "contains(to_string(_agent_.messages_out), '[COMPLETE]')")
             .EmitEvent(
                 eventName: "correct_answer",
                 payload: new Dictionary<string, string>
@@ -308,10 +280,10 @@ public class Step06_FoundryAgentProcess : BaseTest
                     { "Question", "_variables_.TeacherMessages" },
                     { "Answer", "_variables_.StudentMessages" }
                 })
-            .Update(new() { Path = "_variables_.TeacherMessages", Operation = StateUpdateOperations.Set, Value = "_agent_.messages_out" })
-            .Update(new() { Path = "_variables_.InteractionCount", Operation = StateUpdateOperations.Increment, Value = 1 });
+            .UpdateProcessState(path: "_variables_.TeacherMessages", operation: StateUpdateOperations.Set, value: "_agent_.messages_out")
+            .UpdateProcessState(path: "_variables_.InteractionCount", operation: StateUpdateOperations.Increment, value: 1);
 
-        processBuilder.ListenFor().OnExit(teacher, condition: "_default_")
+        processBuilder.OnStepExit(teacher, condition: "_default_")
             .SendEventToAgent(student);
 
         var process = processBuilder.Build();
@@ -332,6 +304,7 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         var workflow = await WorkflowBuilder.BuildWorkflow(process);
         string yaml = WorkflowSerializer.SerializeToYaml(workflow);
+        await processBuilder.DeployToFoundryAsync(process, TestConfiguration.AzureAI.WorkflowEndpoint);
     }
 
     public class TwoAgentMathState
@@ -374,79 +347,21 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         // Define the steps
         var gatherFactsStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = ledgerFactsAgentId, Name = "LedgerFacts", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "plan")
-            .WithUserStateInput((state) => state.Instructions)
-            .OnComplete([
-                new DeclarativeProcessCondition {
-                    Type = DeclarativeProcessConditionType.Default,
-                    Updates = [
-                        new() { Operation = StateUpdateOperations.Set, Path = "Tasks", Value = "_agent_.outputs.tasks" },
-                        new() { Operation = StateUpdateOperations.Set, Path = "Facts", Value = "_agent_.outputs.facts" }
-                    ],
-                }
-            ]);
+            .WithUserStateInput((state) => state.Instructions);
 
-        var plannerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = ledgerPlannerAgentId, Name = "LedgerPlanner", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "plan")
-            .OnComplete([
-                new DeclarativeProcessCondition {
-                    Type = DeclarativeProcessConditionType.Default,
-                    Updates = [
-                        new() { Operation = StateUpdateOperations.Set, Path = "plan", Value = "_agent_.outputs.Plan" },
-                        new() { Operation = StateUpdateOperations.Set, Path = "nextStep", Value = "_agent_.outputs.NextStep" }
-                    ],
-                }
-            ]);
+        var plannerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = ledgerPlannerAgentId, Name = "LedgerPlanner", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "plan");
 
-        var progressManagerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = progressManagerAgentId, Name = "ProgressManager", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run")
-            .OnComplete([
-                new DeclarativeProcessCondition {
-                    Type = DeclarativeProcessConditionType.Default,
-                    Updates = [
-                        new() { Operation = StateUpdateOperations.Set, Path = "NextStep", Value = "_agent_.outputs" }
-                    ],
-                }
-            ]);
+        var progressManagerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = progressManagerAgentId, Name = "ProgressManager", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run");
 
-        var routerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = actionRouterAgentId, Name = "ActionRouter", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run")
-            .OnComplete([
-                new DeclarativeProcessCondition {
-                    Type = DeclarativeProcessConditionType.Default,
-                    Updates = [
-                        new() { Operation = StateUpdateOperations.Set, Path = "NextAgentId", Value = "_agent_.outputs.targetAgentId" }
-                    ],
-                }
-            ]);
+        var routerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = actionRouterAgentId, Name = "ActionRouter", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run");
 
         // Dynamic Step
-        var dynamicStep = processBuilder.AddStepFromAgentProxy(stepId: "dynamicAgent", new AgentDefinition { Id = "_variables_.NextAgentId", Name = "DynamicStep", Type = AzureAIAgentFactory.AzureAIAgentType }, threadName: "run")
-            .OnComplete([
-                new DeclarativeProcessCondition {
-                    Type = DeclarativeProcessConditionType.Default,
-                    Updates = [
-                        new() { Operation = StateUpdateOperations.Set, Path = "NextAgentId", Value = "_agent_.outputs.targetAgentId" }
-                    ],
-                }
-            ]);
+        var dynamicStep = processBuilder.AddStepFromAgentProxy(stepId: "dynamicAgent", new AgentDefinition { Id = "_variables_.NextAgentId", Name = "DynamicStep", Type = AzureAIAgentFactory.AzureAIAgentType }, threadName: "run");
 
         // UserAgentStep
-        var userAgentStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = userAgentId, Name = "UserAgent", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run", humanInLoopMode: HITLMode.Always)
-            .OnComplete([
-                new DeclarativeProcessCondition {
-                    Type = DeclarativeProcessConditionType.Default,
-                    Updates = [
-                        new() { Operation = StateUpdateOperations.Set, Path = "NextAgentId", Value = "_agent_.outputs.targetAgentId" }
-                    ],
-                }
-            ]);
+        var userAgentStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = userAgentId, Name = "UserAgent", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run", humanInLoopMode: HITLMode.Always);
 
-        var summarizerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = summarizerAgentId, Name = "Summarizer", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run")
-            .OnComplete([
-                new DeclarativeProcessCondition {
-                    Type = DeclarativeProcessConditionType.Default,
-                    Updates = [
-                        new() { Operation = StateUpdateOperations.Set, Path = "Summary", Value = "_agent_.outputs.summary" }
-                    ],
-                }
-            ]);
+        var summarizerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = summarizerAgentId, Name = "Summarizer", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run");
 
         var factUpdateStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = ledgerFactsUpdateAgentId, Name = "LedgerFactsUpdate", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run");
 
@@ -457,40 +372,56 @@ public class Step06_FoundryAgentProcess : BaseTest
             .SendEventTo(new(gatherFactsStep));
 
         //Gather Facts -> Planner
-        processBuilder.ListenFor().OnResult(gatherFactsStep).SendEventToAgent(plannerStep);
+        processBuilder.OnResultFromStep(gatherFactsStep)
+            .UpdateProcessState("Tasks", StateUpdateOperations.Set, "_agent_.outputs.tasks")
+            .UpdateProcessState("Facts", StateUpdateOperations.Set, "_agent_.outputs.facts")
+            .SendEventToAgent(plannerStep);
 
         //Planner -> Progress Manager
-        processBuilder.ListenFor().OnResult(plannerStep).SendEventToAgent(progressManagerStep);
+        processBuilder.OnResultFromStep(plannerStep)
+            .UpdateProcessState("Plan", StateUpdateOperations.Set, "_agent_.outputs.Plan")
+            .UpdateProcessState("NextSteps", StateUpdateOperations.Set, "_agent_.outputs.NextStep")
+            .SendEventToAgent(progressManagerStep);
 
         //Progress Manager -> Router
-        processBuilder.ListenFor().OnResult(progressManagerStep).SendEventToAgent(routerStep);
+        processBuilder.OnResultFromStep(progressManagerStep)
+            .UpdateProcessState("NextSteps", StateUpdateOperations.Set, "_agent_.outputs")
+            .SendEventToAgent(routerStep);
 
         //Router -> Progress Manager
-        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_variables_.NextAgentId, 'UnknownAgent')").SendEventToAgent(progressManagerStep, inputs: new Dictionary<string, string> { { "arg1", "_variables_.NextAgentId" } }, messagesIn: "_variables_.Plan");
+        processBuilder.OnResultFromStep(routerStep, condition: "contains(_variables_.NextAgentId, 'UnknownAgent')")
+            .UpdateProcessState("NextAgentId", StateUpdateOperations.Set, "_agent_.outputs.targetAgentId")
+            .SendEventToAgent(progressManagerStep, inputs: new Dictionary<string, string> { { "arg1", "_variables_.NextAgentId" } }, messagesIn: "_variables_.Plan");
 
         //Router -> Facts Update
-        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_variables_.NextAgentId, 'LedgerFactsUpdate')").SendEventToAgent(factUpdateStep);
+        processBuilder.OnResultFromStep(routerStep, condition: "contains(_variables_.NextAgentId, 'LedgerFactsUpdate')")
+            .SendEventToAgent(factUpdateStep);
 
         //Router -> User Agent
-        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_variables_.NextAgentId, 'UserAgent')").SendEventToAgent(userAgentStep);
+        processBuilder.OnResultFromStep(routerStep, condition: "contains(_variables_.NextAgentId, 'UserAgent')")
+            .SendEventToAgent(userAgentStep);
 
         //Router -> Summarizer
-        processBuilder.ListenFor().OnResult(routerStep, condition: "contains(_variables_.NextAgentId, 'Summarizer')").SendEventToAgent(summarizerStep);
+        processBuilder.OnResultFromStep(routerStep, condition: "contains(_variables_.NextAgentId, 'Summarizer')")
+            .SendEventToAgent(summarizerStep);
 
         //Router -> Dynamic Step
-        processBuilder.ListenFor().OnResult(routerStep, condition: "!contains(_variables_.NextAgentId, 'FinalStepAgent')").SendEventToAgent(dynamicStep);
+        processBuilder.OnResultFromStep(routerStep, condition: "!contains(_variables_.NextAgentId, 'FinalStepAgent')")
+            .SendEventToAgent(dynamicStep);
 
         //Dynamic Step -> Progress Manager
-        processBuilder.ListenFor().OnResult(dynamicStep).SendEventToAgent(progressManagerStep);
+        processBuilder.OnResultFromStep(dynamicStep)
+            .UpdateProcessState("NextAgentId", StateUpdateOperations.Set, "_agent_.outputs.targetAgentId")
+            .SendEventToAgent(progressManagerStep);
 
         //Facts Update -> Plan Update
-        processBuilder.ListenFor().OnResult(factUpdateStep).SendEventToAgent(planUpdateStep);
+        processBuilder.OnResultFromStep(planUpdateStep);
 
         //PlanUpdate -> Progress Manager
-        processBuilder.ListenFor().OnResult(planUpdateStep).SendEventToAgent(progressManagerStep);
+        processBuilder.OnResultFromStep(progressManagerStep);
 
         //Summarizer -> End
-        processBuilder.ListenFor().OnResult(summarizerStep).StopProcess();
+        processBuilder.OnResultFromStep(summarizerStep).StopProcess();
 
         var process = processBuilder.Build();
 

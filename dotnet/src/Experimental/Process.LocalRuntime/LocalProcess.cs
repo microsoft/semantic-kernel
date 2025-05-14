@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -328,6 +329,8 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
         try
         {
+            this.EnqueueOnEnterMessagesAsync();
+
             // Run the Pregel algorithm until there are no more messages being sent.
             LocalStep? finalStep = null;
             for (int superstep = 0; superstep < maxSupersteps; superstep++)
@@ -389,6 +392,17 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         return;
     }
 
+    private Task EnqueueOnEnterMessagesAsync()
+    {
+        // TODO: Process edges for the OnProcessStart event
+        foreach (var edge in this._process.Edges.Where(e => e.Key.Equals(ProcessConstants.Declarative.OnEnterEvent, StringComparison.OrdinalIgnoreCase)))
+        {
+
+        }
+
+        return Task.CompletedTask;
+    }
+
     /// <summary>
     /// Processes external events that have been sent to the process, translates them to <see cref="ProcessMessage"/>s, and enqueues
     /// them to the provided message channel so that they can be processed in the next superstep.
@@ -428,17 +442,55 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
             // Get the edges for the event and queue up the messages to be sent to the next steps.
             bool foundEdge = false;
+            List<KernelProcessEdge> defaultConditionedEdges = [];
             foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
             {
+                // TODO: Make this not a string comparison
+                // Save default conditions for the end
+                if (edge.Condition.DeclarativeDefinition?.Equals(ProcessConstants.Declarative.DefaultCondition, StringComparison.OrdinalIgnoreCase) ?? false)
+                {
+                    defaultConditionedEdges.Add(edge);
+                    continue;
+                }
+
                 bool isConditionMet = await edge.Condition.Callback(stepEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
                 if (!isConditionMet)
                 {
                     continue;
                 }
 
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
-                messageChannel.Enqueue(message);
+                // Handle different target types
+                if (edge.OutputTarget is KernelProcessStateTarget stateTarget)
+                {
+                    // TODO: Update state
+                }
+                else if (edge.OutputTarget is KernelProcessEmitTarget emitTarget)
+                {
+                    // Emit target from process
+                }
+                else if (edge.OutputTarget is KernelProcessFunctionTarget functionTarget)
+                {
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
+                    messageChannel.Enqueue(message);
+                }
+                else
+                {
+                    throw new KernelException("Failed to process edge type.");
+                }
+
                 foundEdge = true;
+            }
+
+            // If no edges were found for the event, check if there are any default conditioned edges to process.
+            if (!foundEdge && defaultConditionedEdges.Count > 0)
+            {
+                foreach (KernelProcessEdge edge in defaultConditionedEdges)
+                {
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
+                    messageChannel.Enqueue(message);
+
+                    // TODO: Handle state here as well
+                }
             }
 
             // Error event was raised with no edge to handle it, send it to an edge defined as the global error target.

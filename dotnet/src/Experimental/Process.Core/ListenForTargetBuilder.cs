@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
 
@@ -51,14 +52,23 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
     }
 
     /// <summary>
-    /// Signals the specified variable update to be performed.
+    /// Signals that the specified state variable should be updated in the process state.
     /// </summary>
-    /// <param name="variableUpdate"></param>
+    /// <param name="path"></param>
+    /// <param name="operation"></param>
+    /// <param name="value"></param>
     /// <returns></returns>
-    public ListenForTargetBuilder Update(VariableUpdate variableUpdate)
+    public ListenForTargetBuilder UpdateProcessState(string path, StateUpdateOperations operation, object? value)
     {
-        Verify.NotNull(variableUpdate, nameof(variableUpdate));
-        this.VariableUpdate = variableUpdate;
+        Verify.NotNullOrWhiteSpace(path);
+
+        if (!path.StartsWith(ProcessConstants.Declarative.VariablePrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            path = $"{ProcessConstants.Declarative.VariablePrefix}.{path}";
+        }
+
+        // TODO: Should metadata go into the target now?
+        this.VariableUpdate = new VariableUpdate { Path = path, Operation = operation, Value = value };
         this.SendEventTo_Internal(new ProcessStateTargetBuilder(this.VariableUpdate), this.Metadata);
 
         return new ListenForTargetBuilder(this._messageSources, this._processBuilder, this.EdgeGroupBuilder);
