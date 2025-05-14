@@ -65,6 +65,7 @@ def filter_update(
         city = kwargs["city"]
         if city not in cities:
             raise ValueError(f"City '{city}' is not in the list of cities: {', '.join(cities)}")
+        # we need the actual value and not a named param, otherwise the parser will not be able to find it.
         new_filter = f"lambda x: x.Address.City == '{city}'"
         if filter is None:
             filter = new_filter
