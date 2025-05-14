@@ -9,10 +9,6 @@
     <NoWarn>$(NoWarn);CS1591;VSTHRD111;CA2007;SKEXP0110</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <SkipBuild Condition="'$(NETSdkVersion)' == '8.0.x'">true</SkipBuild>
-  </PropertyGroup>
-  
   <ItemGroup>
     <PackageReference Include="SharpA2A.Core" />
     <PackageReference Include="SharpA2A.AspNetCore" />
