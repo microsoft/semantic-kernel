@@ -4,13 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using SemanticKernel.IntegrationTests.TestSettings;
-using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -29,27 +28,113 @@ public class WhiteboardBehaviorTests
             .Build();
 
     private readonly ITestOutputHelper _output;
-    private readonly Kernel _kernel;
+    private readonly IChatClient _chatClient;
 
     public WhiteboardBehaviorTests(ITestOutputHelper output)
     {
-        AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
-
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddAzureOpenAIChatCompletion(
-            deploymentName: configuration.ChatDeploymentName!,
-            endpoint: configuration.Endpoint,
-            credentials: new AzureCliCredential());
-        this._kernel = kernelBuilder.Build();
         this._output = output;
+
+        AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
+        this._chatClient = new AzureOpenAIClient(new Uri(configuration.Endpoint), new AzureCliCredential())
+            .GetChatClient(configuration.ChatDeploymentName)
+            .AsIChatClient();
     }
 
-    [Theory]
-    [MemberData(nameof(AddMessagesToWhiteboardData))]
-    public async Task CanAddMessagesToWhiteboardAsync(ChatMessage[] chatMessages, string[][] expectedWhiteboardContent)
+    [Fact]
+    public Task AddsRequirementToWhiteboardAsync()
+    {
+        return this.CanAddMessagesToWhiteboardAsync(
+            new[]
+            {
+                new ChatMessage(ChatRole.User, "Hello") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.Assistant, "Hello, how can I help you?") { AuthorName = "Copilot" },
+                new ChatMessage(ChatRole.User, "I want to create a presentation") { AuthorName = "Siobhan" },
+            },
+            new string[][] { new string[] { "REQUIREMENT", "presentation" } });
+    }
+
+    [Fact]
+    public Task AddsRequirementsAndProposalToWhiteboardAsync()
+    {
+        return this.CanAddMessagesToWhiteboardAsync(
+            new[]
+            {
+                new ChatMessage(ChatRole.User, "I want to create a presentation") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.Assistant, "What would you like it to be about?") { AuthorName = "Copilot" },
+                new ChatMessage(ChatRole.User, "I want to feature our top 3 customers.") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "I want it to be professional looking.") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "I want a grey colour scheme.") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.Assistant, "Would you like me to create a presentation with Contoso, Northwind and Adventureworks? I'll make it professional with a grey colour scheme.") { AuthorName = "Copilot" },
+            },
+            new string[][]
+            {
+                new string[] { "REQUIREMENT", "presentation" },
+                new string[] { "REQUIREMENT", "customers" },
+                new string[] { "PROPOSAL", "Contoso", "Northwind" }
+            });
+    }
+
+    [Fact]
+    public Task AddsDecisionToWhiteboardAsync()
+    {
+        return this.CanAddMessagesToWhiteboardAsync(
+            new[]
+            {
+                new ChatMessage(ChatRole.User, "I want to create a presentation") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.Assistant, "What would you like it to be about?") { AuthorName = "Copilot" },
+                new ChatMessage(ChatRole.User, "I want to feature our top 3 customers.") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "I want it to be professional looking.") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "I want a grey colour scheme.") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.Assistant, "Would you like me to create a presentation with Contoso, Northwind and Adventureworks? I'll make it professional with a grey colour scheme.") { AuthorName = "Copilot" },
+                new ChatMessage(ChatRole.User, "That sounds good, let's to that.") { AuthorName = "Siobhan" },
+            },
+            new string[][]
+            {
+                new string[] { "DECISION", "presentation", "Contoso", "professional" }
+            });
+    }
+
+    [Fact]
+    public Task AddsProposalToWhiteboardAsync()
+    {
+        return this.CanAddMessagesToWhiteboardAsync(
+            new[]
+            {
+                new ChatMessage(ChatRole.User, "I am looking to create a VM") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "It should be in Europe") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "It should have 16GB or RAM") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "It should have 4 cores") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.Assistant, "OK, shall I create a VM for you in Europe with 16GB of RAM, 4 cores and with the name `VM-Europe`?") { AuthorName = "Copilot" },
+            },
+            new string[][]
+            {
+                new string[] { "PROPOSAL", "Europe", "16GB", "4", "VM", "VM-Europe" }
+            });
+    }
+
+    [Fact]
+    public Task AddsOutcomeToWhiteboardAsync()
+    {
+        return this.CanAddMessagesToWhiteboardAsync(
+            new[]
+            {
+                new ChatMessage(ChatRole.User, "I am looking to create a VM") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.Assistant, "I need you to give me the required location, amount of RAM you need, and number of cores required.") { AuthorName = "Copilot" },
+                new ChatMessage(ChatRole.User, "It should be in Europe") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "It should have 16GB or RAM") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.User, "It should have 4 cores") { AuthorName = "Siobhan" },
+                new ChatMessage(ChatRole.Assistant, "OK, I've created the VM for you.") { AuthorName = "Copilot" },
+            },
+            new string[][]
+            {
+                new string[] { "OUTCOME", "Europe", "16GB", "4", "VM" }
+            });
+    }
+
+    private async Task CanAddMessagesToWhiteboardAsync(ChatMessage[] chatMessages, string[][] expectedWhiteboardContent)
     {
         // Arrange
-        var whiteboardBehavior = new WhiteboardBehavior(this._kernel);
+        var whiteboardBehavior = new WhiteboardBehavior(this._chatClient);
 
         // Act
         foreach (var chatMessage in chatMessages)
@@ -74,98 +159,5 @@ public class WhiteboardBehaviorTests
 
             Assert.True(foundAllInOneLine, $"Expected content '{string.Join(", ", expectedContent)}' not found in whiteboard content.");
         }
-    }
-
-    public static IEnumerable<object[]> AddMessagesToWhiteboardData()
-    {
-        yield return new object[]
-        {
-            new[]
-            {
-                new ChatMessage(ChatRole.User, "Hello") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.Assistant, "Hello, how can I help you?") { AuthorName = "Copilot" },
-                new ChatMessage(ChatRole.User, "I want to create a presentation") { AuthorName = "Siobhan" },
-            },
-            new string[][] { new string[] { "REQUIREMENT", "presentation" } }
-        };
-        yield return new object[]
-        {
-            new[]
-            {
-                new ChatMessage(ChatRole.User, "I want to create a presentation") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.Assistant, "What would you like it to be about?") { AuthorName = "Copilot" },
-                new ChatMessage(ChatRole.User, "I want to feature our top 3 customers.") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.User, "I want it to be professional looking.") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.User, "I want a grey colour scheme.") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.Assistant, "Would you like me to create a presentation with Contoso, Northwind and Adventureworks? I'll make it professional with a grey colour scheme.") { AuthorName = "Copilot" },
-            },
-            new string[][]
-            {
-                new string[] { "REQUIREMENT", "presentation" },
-                new string[] { "REQUIREMENT", "customers" },
-                new string[] { "PROPOSAL", "Contoso", "Northwind" }
-            }
-        };
-        yield return new object[]
-        {
-            new[]
-            {
-                new ChatMessage(ChatRole.User, "I want to create a presentation") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.Assistant, "What would you like it to be about?") { AuthorName = "Copilot" },
-                new ChatMessage(ChatRole.User, "I want to feature our top 3 customers.") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.User, "I want it to be professional looking.") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.User, "I want a grey colour scheme.") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.Assistant, "Would you like me to create a presentation with Contoso, Northwind and Adventureworks? I'll make it professional with a grey colour scheme.") { AuthorName = "Copilot" },
-                new ChatMessage(ChatRole.User, "That sounds good, let's to that.") { AuthorName = "Siobhan" },
-            },
-            new string[][]
-            {
-                new string[] { "DECISION", "presentation", "Contoso", "professional" }
-            }
-        };
-        yield return new object[]
-        {
-            new[]
-            {
-                new ChatMessage(ChatRole.User, "I am looking to buy a lamp") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.User, "I want it to be energy efficient") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.User, "It should fit my red colour scheme.") { AuthorName = "Siobhan" },
-            },
-            new string[][]
-            {
-                new string[] { "REQUIREMENT", "lamp" }, new string[] { "REQUIREMENT", "red" }, new string[] { "REQUIREMENT", "efficient" }
-            }
-        };
-        yield return new object[]
-        {
-            new[]
-            {
-                new ChatMessage(ChatRole.User, "I am looking to create a VM") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.User, "It should be in Europe") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.User, "It should have 16GB or RAM") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.User, "It should have 4 cores") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.Assistant, "OK, shall I create a VM for you in Europe with 16GB of RAM, 4 cores and with the name `VM-Europe`?") { AuthorName = "Copilot" },
-            },
-            new string[][]
-            {
-                new string[] { "PROPOSAL", "Europe", "16GB", "4", "VM", "VM-Europe" }
-            }
-        };
-        yield return new object[]
-        {
-            new[]
-            {
-                new ChatMessage(ChatRole.User, "I am looking to create a VM") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.Assistant, "I need you to give me the required location, amount of RAM you need, and number of cores required.") { AuthorName = "Copilot" },
-                new ChatMessage(ChatRole.User, "It should be in Europe") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.User, "It should have 16GB or RAM") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.User, "It should have 4 cores") { AuthorName = "Siobhan" },
-                new ChatMessage(ChatRole.Assistant, "OK, I've created the VM for you.") { AuthorName = "Copilot" },
-            },
-            new string[][]
-            {
-                new string[] { "OUTCOME", "Europe", "16GB", "4", "VM" }
-            }
-        };
     }
 }

@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.AI.OpenAI;
+using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -27,11 +30,15 @@ public class ChatCompletion_Whiteboard(ITestOutputHelper output) : BaseTest(outp
     [Fact]
     private async Task UseWhiteboardAsync()
     {
-        // Create our agent and add our finance plugin with auto function invocation.
-        Kernel kernel = this.CreateKernelWithChatCompletion();
+        var chatClient = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), new AzureCliCredential())
+            .GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName)
+            .AsIChatClient();
 
         // Create the whiteboard.
-        var whiteboardBehavior = new WhiteboardBehavior(kernel.Clone());
+        var whiteboardBehavior = new WhiteboardBehavior(chatClient);
+
+        // Create our agent and add our finance plugin with auto function invocation.
+        Kernel kernel = this.CreateKernelWithChatCompletion();
 
         // Create the agent with our sample plugin.
         kernel.Plugins.AddFromType<VMPlugin>();

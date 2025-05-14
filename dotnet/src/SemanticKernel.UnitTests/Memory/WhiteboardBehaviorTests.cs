@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
@@ -15,43 +13,34 @@ namespace SemanticKernel.UnitTests.Memory;
 
 public class WhiteboardBehaviorTests
 {
-    private readonly Mock<IChatCompletionService> _mockChatCompletionService;
-    private readonly Kernel _kernel;
+    private readonly Mock<IChatClient> _mockChatClient;
 
     public WhiteboardBehaviorTests()
     {
-        this._mockChatCompletionService = new Mock<IChatCompletionService>();
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddKeyedSingleton<IChatCompletionService>(null, this._mockChatCompletionService.Object);
-        this._kernel = kernelBuilder.Build();
+        this._mockChatClient = new Mock<IChatClient>();
     }
 
     [Fact]
     public async Task ShouldInvokeAIAndReturnWhiteboardMessagesInContextAsync()
     {
         // Arrange
-        var sut = new WhiteboardBehavior(this._kernel);
+        var sut = new WhiteboardBehavior(this._mockChatClient.Object);
         var chatMessage = new ChatMessage(ChatRole.User, "I want to create a presentation");
 
-        this._mockChatCompletionService
-            .Setup(service => service.GetChatMessageContentsAsync(
-                It.IsAny<ChatHistory>(),
-                It.IsAny<PromptExecutionSettings?>(),
-                It.IsAny<Kernel?>(),
+        this._mockChatClient
+            .Setup(service => service.GetResponseAsync(
+                It.IsAny<IEnumerable<ChatMessage>>(),
+                It.IsAny<ChatOptions?>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ChatMessageContent>
-            {
-                new() { Content = """["REQUIREMENT - User wants to create a presentation."]""" },
-            });
+            .ReturnsAsync(new ChatResponse(new ChatMessage(ChatRole.Assistant, """{"newWhiteboard":["REQUIREMENT - User wants to create a presentation."]}""")));
 
         // Act
         await sut.OnNewMessageAsync(null, chatMessage);
 
         // Assert
-        this._mockChatCompletionService.Verify(service => service.GetChatMessageContentsAsync(
-            It.Is<ChatHistory>(x => x.Count == 1 && x[0].ToString().Contains("I want to create a presentation")),
-            It.IsAny<PromptExecutionSettings?>(),
-            It.IsAny<Kernel?>(),
+        this._mockChatClient.Verify(service => service.GetResponseAsync(
+            It.Is<IEnumerable<ChatMessage>>(x => x.Count() == 1 && x.First().Text.Contains("I want to create a presentation")),
+            It.IsAny<ChatOptions?>(),
             It.IsAny<CancellationToken>()), Times.Once);
 
         await sut.WhenProcessingCompleteAsync();

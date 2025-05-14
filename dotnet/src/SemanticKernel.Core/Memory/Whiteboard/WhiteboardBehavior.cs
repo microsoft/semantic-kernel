@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -19,6 +20,7 @@ namespace Microsoft.SemanticKernel.Memory;
 [Experimental("SKEXP0130")]
 public class WhiteboardBehavior : AIContextBehavior
 {
+    private readonly static JsonDocument s_structuredOutputSchema = JsonDocument.Parse("""{"type":"object","properties":{"newWhiteboard":{"type":"array","items":{"type":"string"}}}}""");
     private const string DefaultContextPrompt = "## Whiteboard\nThe following list of messages are currently on the whiteboard:";
     private const string DefaultWhiteboardEmptyPrompt = "## Whiteboard\nThe whiteboard is currently empty.";
     private const int MaxQueueSize = 3;
@@ -27,7 +29,7 @@ public class WhiteboardBehavior : AIContextBehavior
     private readonly string _contextPrompt;
     private readonly string _whiteboardEmptyPrompt;
 
-    private readonly Kernel _kernel;
+    private readonly IChatClient _chatClient;
 
     private List<string> _currentWhiteboardContent = [];
 
@@ -38,13 +40,13 @@ public class WhiteboardBehavior : AIContextBehavior
     /// <summary>
     /// Initializes a new instance of the <see cref="WhiteboardBehavior"/> class.
     /// </summary>
-    /// <param name="kernel">A kernel to use for making chat completion calls.</param>
+    /// <param name="chatClient">A <see cref="IChatClient"/> to use for making chat completion calls.</param>
     /// <param name="options">Options for configuring the behavior.</param>
-    public WhiteboardBehavior(Kernel kernel, WhiteboardBehaviorOptions? options = default)
+    public WhiteboardBehavior(IChatClient chatClient, WhiteboardBehaviorOptions? options = default)
     {
-        Verify.NotNull(kernel);
+        Verify.NotNull(chatClient);
 
-        this._kernel = kernel;
+        this._chatClient = chatClient;
         this._maxWhiteboardMessages = options?.MaxWhiteboardMessages ?? 10;
         this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
         this._whiteboardEmptyPrompt = options?.WhiteboardEmptyPrompt ?? DefaultWhiteboardEmptyPrompt;
@@ -139,21 +141,26 @@ public class WhiteboardBehavior : AIContextBehavior
         var currentWhiteboardJson = JsonSerializer.Serialize(this._currentWhiteboardContent, WhiteboardBehaviorSourceGenerationContext.Default.ListString);
 
         // Inovke the LLM to extract the latest information from the input messages and update the whiteboard.
-        var result = await this._kernel.InvokePromptAsync(
-            new JsonSerializerOptions(),
-            MaintenancePromptTemplate,
-            new KernelArguments()
+        var result = await this._chatClient.GetResponseAsync(
+            FormatPromptTemplate(inputMessagesJson, currentWhiteboardJson, this._maxWhiteboardMessages),
+            new()
             {
-                ["formattedMessages"] = inputMessagesJson,
-                ["newMessageAuthorName"] = newMessage.AuthorName,
-                ["newMessageRole"] = newMessage.Role.ToString(),
-                ["currentWhiteboard"] = currentWhiteboardJson,
-                ["maxWhiteboardMessages"] = this._maxWhiteboardMessages,
+                ResponseFormat = new ChatResponseFormatJson(s_structuredOutputSchema.RootElement),
             },
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         // Update the current whiteboard content with the LLM result.
-        this._currentWhiteboardContent = JsonSerializer.Deserialize(result.ToString(), WhiteboardBehaviorSourceGenerationContext.Default.ListString) ?? [];
+        var newWhiteboardResponse = JsonSerializer.Deserialize(result.ToString(), WhiteboardBehaviorSourceGenerationContext.Default.NewWhiteboardReponse);
+        this._currentWhiteboardContent = newWhiteboardResponse?.NewWhiteboard ?? [];
+    }
+
+    private static string FormatPromptTemplate(string inputMessagesJson, string currentWhiteboardJson, int maxWhiteboardMessages)
+    {
+        var sb = new StringBuilder(MaintenancePromptTemplate);
+        sb.Replace("{{$inputMessages}}", inputMessagesJson);
+        sb.Replace("{{$currentWhiteboard}}", currentWhiteboardJson);
+        sb.Replace("{{$maxWhiteboardMessages}}", maxWhiteboardMessages.ToString());
+        return sb.ToString();
     }
 
     /// <summary>
@@ -193,7 +200,7 @@ public class WhiteboardBehavior : AIContextBehavior
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to create a presentation."]
         New Whiteboard:
-        ["REQUIREMENT - Mary wants to create a presentation.", "REQUIREMENT - The presentation colour schema should be green and brown."]
+        {"newWhiteboard":["REQUIREMENT - Mary wants to create a presentation.", "REQUIREMENT - The presentation colour schema should be green and brown."]}
 
         ### Example 2:
 
@@ -202,7 +209,7 @@ public class WhiteboardBehavior : AIContextBehavior
         Current Whiteboard:
         []
         New Whiteboard:
-        ["REQUIREMENT - John wants help with homework."]
+        {"newWhiteboard":["REQUIREMENT - John wants help with homework."]}
 
         ### Example 3:
 
@@ -211,7 +218,7 @@ public class WhiteboardBehavior : AIContextBehavior
         Current Whiteboard:
         []
         New Whiteboard:
-        []
+        {"newWhiteboard":[]}
 
         ### Example 4:
 
@@ -220,7 +227,7 @@ public class WhiteboardBehavior : AIContextBehavior
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris."]
         New Whiteboard:
-        ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to London."]
+        {"newWhiteboard":["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to London."]}
 
         ### Example 5:
 
@@ -229,7 +236,7 @@ public class WhiteboardBehavior : AIContextBehavior
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025."]
         New Whiteboard:
-        ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
+        {"newWhiteboard":["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]}
 
         ### Example 6:
 
@@ -238,7 +245,7 @@ public class WhiteboardBehavior : AIContextBehavior
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
         New Whiteboard:
-        [""DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
+        {"newWhiteboard":[""DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]}
 
         ### Example 7:
         
@@ -247,7 +254,7 @@ public class WhiteboardBehavior : AIContextBehavior
         Current Whiteboard:
         [""DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
         New Whiteboard:
-        [""OUTCOME - TravelAgent booked a flight for Mary departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir for EUR 243."]
+        {"newWhiteboard":[""OUTCOME - TravelAgent booked a flight for Mary departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir for EUR 243."]}
         
         ### Example 8:
 
@@ -256,14 +263,14 @@ public class WhiteboardBehavior : AIContextBehavior
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
         New Whiteboard:
-        ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "REQUIREMENT - Mary does not want to fly with NotsocheapoAir."]
+        {"newWhiteboard":["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "REQUIREMENT - Mary does not want to fly with NotsocheapoAir."]}
 
         ## Action
 
         Now return a new whiteboard for the following inputs like shown in the examples above and using the previously mentioned instructions:
 
         New Message:
-        {{$formattedMessages}}
+        {{$inputMessages}}
         Current Whiteboard:
         {{$currentWhiteboard}}
         New Whiteboard:
@@ -279,6 +286,15 @@ public class WhiteboardBehavior : AIContextBehavior
         public string Role { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;
     }
+
+    /// <summary>
+    /// Represents the response from the LLM when updating the whiteboard.
+    /// </summary>
+    internal class NewWhiteboardReponse
+    {
+        [JsonPropertyName("newWhiteboard")]
+        public List<string> NewWhiteboard { get; set; } = [];
+    }
 }
 
 /// <summary>
@@ -292,6 +308,7 @@ public class WhiteboardBehavior : AIContextBehavior
 [JsonSerializable(typeof(IEnumerable<WhiteboardBehavior.BasicMessage>))]
 [JsonSerializable(typeof(WhiteboardBehavior.BasicMessage))]
 [JsonSerializable(typeof(List<string>))]
+[JsonSerializable(typeof(WhiteboardBehavior.NewWhiteboardReponse))]
 internal partial class WhiteboardBehaviorSourceGenerationContext : JsonSerializerContext
 {
 }
