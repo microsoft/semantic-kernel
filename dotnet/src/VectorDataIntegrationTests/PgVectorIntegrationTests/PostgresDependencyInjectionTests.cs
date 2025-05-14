@@ -7,7 +7,7 @@ using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Models;
 using Xunit;
 
-namespace PostgresIntegrationTests;
+namespace PostgresIntegrationTests.DependencyInjection;
 
 public class PostgresDependencyInjectionTests
     : DependencyInjectionTests<PostgresVectorStore, PostgresCollection<string, SimpleRecord<string>>, string, SimpleRecord<string>>
@@ -53,6 +53,12 @@ public class PostgresDependencyInjectionTests
                     ConnectionString, lifetime: lifetime)
                 : services.AddKeyedPostgresVectorStore(
                     serviceKey, ConnectionString, lifetime: lifetime);
+
+            yield return (services, serviceKey, lifetime) => serviceKey is null
+                ? services.AddPostgresVectorStore(
+                    connectionStringProvider: ConnectionStringProvider, lifetime: lifetime)
+                : services.AddKeyedPostgresVectorStore(
+                    serviceKey, connectionStringProvider: sp => ConnectionStringProvider(sp, serviceKey), lifetime: lifetime);
         }
     }
 

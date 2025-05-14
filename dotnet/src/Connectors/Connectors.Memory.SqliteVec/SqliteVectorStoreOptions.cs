@@ -18,10 +18,10 @@ public sealed class SqliteVectorStoreOptions
     {
     }
 
-    internal SqliteVectorStoreOptions(SqliteVectorStoreOptions? source, IEmbeddingGenerator embeddingGenerator)
+    internal SqliteVectorStoreOptions(SqliteVectorStoreOptions? source)
     {
         this.VectorVirtualTableName = source?.VectorVirtualTableName;
-        this.EmbeddingGenerator = embeddingGenerator;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
     }
 
     /// <summary>

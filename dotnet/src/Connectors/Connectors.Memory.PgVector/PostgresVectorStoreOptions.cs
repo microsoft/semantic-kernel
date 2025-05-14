@@ -18,10 +18,10 @@ public sealed class PostgresVectorStoreOptions
     {
     }
 
-    internal PostgresVectorStoreOptions(PostgresVectorStoreOptions? source, IEmbeddingGenerator embeddingGenerator)
+    internal PostgresVectorStoreOptions(PostgresVectorStoreOptions? source)
     {
         this.Schema = source?.Schema ?? Default.Schema;
-        this.EmbeddingGenerator = embeddingGenerator;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
     }
 
     /// <summary>

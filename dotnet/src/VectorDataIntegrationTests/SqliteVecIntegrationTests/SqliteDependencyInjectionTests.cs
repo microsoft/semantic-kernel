@@ -7,7 +7,7 @@ using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Models;
 using Xunit;
 
-namespace SqliteIntegrationTests;
+namespace SqliteIntegrationTests.DependencyInjection;
 
 public class SqliteDependencyInjectionTests
    : DependencyInjectionTests<SqliteVectorStore, SqliteCollection<string, SimpleRecord<string>>, string, SimpleRecord<string>>

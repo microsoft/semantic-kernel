@@ -224,7 +224,7 @@ public static class SqliteServiceCollectionExtensions
         var embeddingGenerator = sp.GetService<IEmbeddingGenerator>();
         return embeddingGenerator is null
             ? options // There is nothing to change.
-            : new(options, embeddingGenerator); // Create a brand new copy in order to avoid modifying the original options.
+            : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
 
     private static SqliteCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, SqliteCollectionOptions?>? optionsProvider)
@@ -238,6 +238,6 @@ public static class SqliteServiceCollectionExtensions
         var embeddingGenerator = sp.GetService<IEmbeddingGenerator>();
         return embeddingGenerator is null
             ? options // There is nothing to change.
-            : new(options, embeddingGenerator); // Create a brand new copy in order to avoid modifying the original options.
+            : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
 }

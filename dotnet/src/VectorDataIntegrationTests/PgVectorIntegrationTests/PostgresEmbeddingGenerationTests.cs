@@ -36,6 +36,8 @@ public class PostgresEmbeddingGenerationTests(PostgresEmbeddingGenerationTests.F
                 .AddPostgresVectorStore(lifetime: ServiceLifetime.Transient),
             services => services
                 .AddPostgresVectorStore(PostgresTestStore.Instance.ConnectionString),
+            services => services
+                .AddPostgresVectorStore(_ => PostgresTestStore.Instance.ConnectionString),
         ];
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>

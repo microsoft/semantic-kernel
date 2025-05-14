@@ -21,7 +21,7 @@ public static class PostgresServiceCollectionExtensions
     /// <summary>
     /// Register a <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, where the <see cref="NpgsqlDataSource"/> is retrieved from the dependency injection container.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStore"/> on.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="PostgresVectorStore"/> on.</param>
     /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="lifetime">The service lifetime for the store. It needs to match <see cref="NpgsqlDataSource"/> lifetime. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
@@ -50,7 +50,7 @@ public static class PostgresServiceCollectionExtensions
     /// <summary>
     /// Registers a <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
     /// </summary>
-    /// <inheritdoc cref="AddKeyedPostgresVectorStore"/>
+    /// <inheritdoc cref="AddKeyedPostgresVectorStore(IServiceCollection, object, string, PostgresVectorStoreOptions?, ServiceLifetime)"/>
     public static IServiceCollection AddPostgresVectorStore(
         this IServiceCollection services,
         string connectionString,
@@ -65,10 +65,10 @@ public static class PostgresServiceCollectionExtensions
     /// <summary>
     /// Registers a keyed <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStore"/> on.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="PostgresVectorStore"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the vector store.</param>
     /// <param name="connectionString">Postgres database connection string.</param>
-    /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
+    /// <param name="options">Optional options to further configure the <see cref="PostgresVectorStore"/>.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddKeyedPostgresVectorStore(
@@ -84,6 +84,39 @@ public static class PostgresServiceCollectionExtensions
         return AddVectorStore(services, serviceKey, sp => connectionString, sp => options, lifetime);
     }
 
+    /// <summary>
+    /// Registers a <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
+    /// </summary>
+    /// <inheritdoc cref="AddVectorStore(IServiceCollection, object?, Func{IServiceProvider, string}, Func{IServiceProvider, PostgresVectorStoreOptions?}?, ServiceLifetime)"/>
+    public static IServiceCollection AddPostgresVectorStore(
+        this IServiceCollection services,
+        Func<IServiceProvider, string> connectionStringProvider,
+        Func<IServiceProvider, PostgresVectorStoreOptions?>? optionsProvider = null,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        => AddVectorStore(services, serviceKey: null, connectionStringProvider, optionsProvider, lifetime);
+
+    /// <inheritdoc cref="AddVectorStore(IServiceCollection, object?, Func{IServiceProvider, string}, Func{IServiceProvider, PostgresVectorStoreOptions?}?, ServiceLifetime)"/>
+    public static IServiceCollection AddKeyedPostgresVectorStore(
+        this IServiceCollection services,
+        object serviceKey,
+        Func<IServiceProvider, string> connectionStringProvider,
+        Func<IServiceProvider, PostgresVectorStoreOptions?>? optionsProvider = null,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    {
+        Verify.NotNull(serviceKey);
+
+        return AddVectorStore(services, serviceKey, connectionStringProvider, optionsProvider, lifetime);
+    }
+
+    /// <summary>
+    /// Registers a keyed <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="PostgresVectorStore"/> on.</param>
+    /// <param name="serviceKey">The key with which to associate the store.</param>
+    /// <param name="connectionStringProvider">The connection string provider.</param>
+    /// <param name="optionsProvider">Options provider to further configure the <see cref="PostgresVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>The service collection.</returns>
     private static IServiceCollection AddVectorStore(
         IServiceCollection services,
         object? serviceKey,
@@ -292,7 +325,7 @@ public static class PostgresServiceCollectionExtensions
         var embeddingGenerator = sp.GetService<IEmbeddingGenerator>();
         return embeddingGenerator is null
             ? options // There is nothing to change.
-            : new(options, embeddingGenerator); // Create a brand new copy in order to avoid modifying the original options.
+            : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
 
     private static PostgresCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, PostgresCollectionOptions?>? optionsProvider)
@@ -306,6 +339,6 @@ public static class PostgresServiceCollectionExtensions
         var embeddingGenerator = sp.GetService<IEmbeddingGenerator>();
         return embeddingGenerator is null
             ? options // There is nothing to change.
-            : new(options, embeddingGenerator); // Create a brand new copy in order to avoid modifying the original options.
+            : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
 }
