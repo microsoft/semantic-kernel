@@ -36,7 +36,7 @@ public class Step02a_SequentialCancellation(ITestOutputHelper output) : BaseOrch
 
         OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
 
-        await result.CancelAsync();
+        result.Cancel();
         await Task.Delay(TimeSpan.FromSeconds(3));
 
         try

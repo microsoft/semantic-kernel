@@ -29,7 +29,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
         : base(OrchestrationName, agents)
     {
         // Extract agent names
-        HashSet<string> agentNames = agents.Select(a => a.Name ?? a.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> agentNames = new(agents.Select(a => a.Name ?? a.Id), StringComparer.OrdinalIgnoreCase);
         // Extract names from handoffs that don't align with a member agent.
         string[] badNames = [.. handoffs.Keys.Concat(handoffs.Values.SelectMany(h => h.Keys)).Where(name => !agentNames.Contains(name))];
         // Fail fast if invalid names are present.
@@ -75,11 +75,18 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
                 await runtime.RegisterAgentFactoryAsync(
                     this.GetAgentType(context.Topic, index),
                     (agentId, runtime) =>
-                        ValueTask.FromResult<IHostableAgent>(
-                            new HandoffActor(agentId, runtime, context, agent, map, outputType, context.LoggerFactory.CreateLogger<HandoffActor>())
+                    {
+                        HandoffActor actor =
+                            new(agentId, runtime, context, agent, map, outputType, context.LoggerFactory.CreateLogger<HandoffActor>())
                             {
                                 InteractiveCallback = this.InteractiveCallback
-                            })).ConfigureAwait(false);
+                            };
+#if !NETCOREAPP
+                        return actor.AsValueTask<IHostableAgent>();
+#else
+                        return ValueTask.FromResult<IHostableAgent>(actor);
+#endif
+                    }).ConfigureAwait(false);
             agentMap[agent.Name ?? agent.Id] = agentType;
 
             await runtime.SubscribeAsync(agentType, context.Topic).ConfigureAwait(false);
@@ -88,14 +95,14 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
         }
 
         // Complete the handoff model
-        foreach ((string agentName, AgentHandoffs handoffs) in this._handoffs)
+        foreach (KeyValuePair<string, AgentHandoffs> handoffs in this._handoffs)
         {
             // Retrieve the map for the agent (every agent had an empty map created)
-            HandoffLookup agentHandoffs = handoffMap[agentName];
-            foreach ((string handoffName, string description) in handoffs)
+            HandoffLookup agentHandoffs = handoffMap[handoffs.Key];
+            foreach (KeyValuePair<string, string> handoff in handoffs.Value)
             {
                 // name = (type,description)
-                agentHandoffs[handoffName] = (agentMap[handoffName], description);
+                agentHandoffs[handoff.Key] = (agentMap[handoff.Key], handoff.Value);
             }
         }
 

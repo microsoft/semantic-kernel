@@ -38,7 +38,11 @@ internal sealed class GroupChatAgentActor :
     {
         this._cache.AddRange(item.Messages);
 
+#if !NETCOREAPP
+        return Task.CompletedTask.AsValueTask();
+#else
         return ValueTask.CompletedTask;
+#endif
     }
 
     /// <inheritdoc/>

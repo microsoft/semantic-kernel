@@ -82,7 +82,12 @@ internal sealed class HandoffActor :
     {
         this._taskSummary = null;
         this._cache.AddRange(item.Messages);
+
+#if !NETCOREAPP
+        return Task.CompletedTask.AsValueTask();
+#else
         return ValueTask.CompletedTask;
+#endif
     }
 
     /// <inheritdoc/>
@@ -90,7 +95,11 @@ internal sealed class HandoffActor :
     {
         this._cache.Add(item.Message);
 
+#if !NETCOREAPP
+        return Task.CompletedTask.AsValueTask();
+#else
         return ValueTask.CompletedTask;
+#endif
     }
 
     /// <inheritdoc/>
@@ -144,13 +153,13 @@ internal sealed class HandoffActor :
                 functionName: "end_task_with_summary",
                 description: "End the task with a summary when there is no further action to take.");
 
-            foreach ((string name, (AgentType type, string description)) in this._handoffs)
+            foreach (KeyValuePair<string, (AgentType _, string Description)> handoff in this._handoffs)
             {
                 KernelFunction kernelFunction =
                     KernelFunctionFactory.CreateFromMethod(
-                        (CancellationToken cancellationToken) => this.HandoffAsync(name, cancellationToken),
-                        functionName: $"transfer_to_{name}",
-                        description: description);
+                        (CancellationToken cancellationToken) => this.HandoffAsync(handoff.Key, cancellationToken),
+                        functionName: $"transfer_to_{handoff.Key}",
+                        description: handoff.Value.Description);
 
                 yield return kernelFunction;
             }
@@ -161,7 +170,12 @@ internal sealed class HandoffActor :
     {
         this.Logger.LogHandoffFunctionCall(this.Id, agentName);
         this._handoffAgent = agentName;
+
+#if !NETCOREAPP
+        return Task.CompletedTask.AsValueTask();
+#else
         return ValueTask.CompletedTask;
+#endif
     }
 
     private async ValueTask EndAsync(string summary, CancellationToken cancellationToken)

@@ -60,7 +60,14 @@ public sealed class OrchestrationResult<TValue> : IDisposable
     /// <exception cref="TimeoutException">Thrown if the orchestration does not complete within the specified timeout period.</exception>
     public async ValueTask<TValue> GetValueAsync(TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
+#if !NETCOREAPP
+        if (this._isDisposed)
+        {
+            throw new ObjectDisposedException(this.GetType().Name);
+        }
+#else
         ObjectDisposedException.ThrowIf(this._isDisposed, this);
+#endif
 
         this._logger.LogOrchestrationResultAwait(this.Orchestration, this.Topic);
 
@@ -82,21 +89,25 @@ public sealed class OrchestrationResult<TValue> : IDisposable
     /// <summary>
     /// Cancel the orchestration associated with this result.
     /// </summary>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <exception cref="ObjectDisposedException">Thrown if this instance has been disposed.</exception>
     /// <remarks>
     /// Cancellation is not expected to immediately halt the orchestration.  Messages that
     /// are already in-flight may still be processed.
     /// </remarks>
-    public ValueTask CancelAsync(CancellationToken cancellationToken = default)
+    public void Cancel()
     {
+#if !NETCOREAPP
+        if (this._isDisposed)
+        {
+            throw new ObjectDisposedException(this.GetType().Name);
+        }
+#else
         ObjectDisposedException.ThrowIf(this._isDisposed, this);
+#endif
 
         this._logger.LogOrchestrationResultCancelled(this.Orchestration, this.Topic);
         this._cancelSource.Cancel();
-        this._completion.SetCanceled(cancellationToken);
-
-        return ValueTask.CompletedTask;
+        this._completion.SetCanceled();
     }
 
     private void Dispose(bool disposing)

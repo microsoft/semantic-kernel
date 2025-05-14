@@ -176,10 +176,22 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
         AgentType orchestrationEntry =
             await runtime.RegisterAgentFactoryAsync(
                 this.FormatAgentType(context.Topic, "Boot"),
-                (agentId, runtime) =>
-                    ValueTask.FromResult<IHostableAgent>(
-                        new RequestActor(agentId, runtime, context, this.InputTransform, completion, StartAsync, context.LoggerFactory.CreateLogger<RequestActor>()))
-            ).ConfigureAwait(false);
+                    (agentId, runtime) =>
+                    {
+                        RequestActor actor =
+                            new(agentId,
+                                runtime,
+                                context,
+                                this.InputTransform,
+                                completion,
+                                StartAsync,
+                                context.LoggerFactory.CreateLogger<RequestActor>());
+#if !NETCOREAPP
+                        return actor.AsValueTask<IHostableAgent>();
+#else
+                        return ValueTask.FromResult<IHostableAgent>(actor);
+#endif
+                    }).ConfigureAwait(false);
 
         logger.LogOrchestrationRegistrationDone(context.Orchestration, context.Topic);
 
@@ -208,15 +220,21 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
                 await runtime.RegisterAgentFactoryAsync(
                     agentType,
                     (agentId, runtime) =>
-                        ValueTask.FromResult<IHostableAgent>(
-                            new ResultActor<TResult>(
-                                agentId,
+                    {
+                        ResultActor<TResult> actor =
+                            new(agentId,
                                 runtime,
                                 context,
                                 resultTransform,
                                 outputTransform,
                                 completion,
-                                context.LoggerFactory.CreateLogger<ResultActor<TResult>>()))).ConfigureAwait(false);
+                                context.LoggerFactory.CreateLogger<ResultActor<TResult>>());
+#if !NETCOREAPP
+                        return actor.AsValueTask<IHostableAgent>();
+#else
+                        return ValueTask.FromResult<IHostableAgent>(actor);
+#endif
+                    }).ConfigureAwait(false);
         }
     }
 }

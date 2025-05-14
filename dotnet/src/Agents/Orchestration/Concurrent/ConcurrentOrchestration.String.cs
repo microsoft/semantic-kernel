@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
+
+#if NETCOREAPP
 using System.Threading.Tasks;
+#endif
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 
@@ -17,6 +20,15 @@ public sealed class ConcurrentOrchestration : ConcurrentOrchestration<string, st
     public ConcurrentOrchestration(params Agent[] members)
         : base(members)
     {
-        this.ResultTransform = (response, cancellationToken) => ValueTask.FromResult<string[]>([.. response.Select(r => r.Content ?? string.Empty)]);
+        this.ResultTransform =
+            (response, cancellationToken) =>
+            {
+                string[] result = [.. response.Select(r => r.Content ?? string.Empty)];
+#if !NETCOREAPP
+                return result.AsValueTask();
+#else
+                return ValueTask.FromResult(result);
+#endif
+            };
     }
 }

@@ -69,8 +69,14 @@ public class GroupChatOrchestration<TInput, TOutput> :
             await runtime.RegisterAgentFactoryAsync(
                 this.FormatAgentType(context.Topic, "Manager"),
                 (agentId, runtime) =>
-                    ValueTask.FromResult<IHostableAgent>(
-                        new GroupChatManagerActor(agentId, runtime, context, this._manager, team, outputType, context.LoggerFactory.CreateLogger<GroupChatManagerActor>()))).ConfigureAwait(false);
+                {
+                    GroupChatManagerActor actor = new(agentId, runtime, context, this._manager, team, outputType, context.LoggerFactory.CreateLogger<GroupChatManagerActor>());
+#if !NETCOREAPP
+                    return actor.AsValueTask<IHostableAgent>();
+#else
+                    return ValueTask.FromResult<IHostableAgent>(actor);
+#endif
+                }).ConfigureAwait(false);
         logger.LogRegisterActor(OrchestrationName, managerType, "MANAGER");
 
         await runtime.SubscribeAsync(managerType, context.Topic).ConfigureAwait(false);
@@ -81,6 +87,13 @@ public class GroupChatOrchestration<TInput, TOutput> :
             runtime.RegisterAgentFactoryAsync(
                 this.FormatAgentType(context.Topic, $"Agent_{agentCount}"),
                 (agentId, runtime) =>
-                    ValueTask.FromResult<IHostableAgent>(new GroupChatAgentActor(agentId, runtime, context, agent, context.LoggerFactory.CreateLogger<GroupChatAgentActor>())));
+                {
+                    GroupChatAgentActor actor = new(agentId, runtime, context, agent, context.LoggerFactory.CreateLogger<GroupChatAgentActor>());
+#if !NETCOREAPP
+                    return actor.AsValueTask<IHostableAgent>();
+#else
+                    return ValueTask.FromResult<IHostableAgent>(actor);
+#endif
+                });
     }
 }

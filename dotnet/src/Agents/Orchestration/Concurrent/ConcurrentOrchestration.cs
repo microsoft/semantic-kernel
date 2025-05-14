@@ -45,8 +45,14 @@ public class ConcurrentOrchestration<TInput, TOutput>
         await runtime.RegisterAgentFactoryAsync(
             resultType,
             (agentId, runtime) =>
-                ValueTask.FromResult<IHostableAgent>(
-                    new ConcurrentResultActor(agentId, runtime, context, outputType, this.Members.Count, context.LoggerFactory.CreateLogger<ConcurrentResultActor>()))).ConfigureAwait(false);
+            {
+                ConcurrentResultActor actor = new(agentId, runtime, context, outputType, this.Members.Count, context.LoggerFactory.CreateLogger<ConcurrentResultActor>());
+#if !NETCOREAPP
+                return actor.AsValueTask<IHostableAgent>();
+#else
+                return ValueTask.FromResult<IHostableAgent>(actor);
+#endif
+            }).ConfigureAwait(false);
         logger.LogRegisterActor(OrchestrationName, resultType, "RESULTS");
 
         // Register member actors - All agents respond to the same message.
@@ -59,7 +65,14 @@ public class ConcurrentOrchestration<TInput, TOutput>
                 await runtime.RegisterAgentFactoryAsync(
                     this.FormatAgentType(context.Topic, $"Agent_{agentCount}"),
                     (agentId, runtime) =>
-                        ValueTask.FromResult<IHostableAgent>(new ConcurrentActor(agentId, runtime, context, agent, resultType, context.LoggerFactory.CreateLogger<ConcurrentActor>()))).ConfigureAwait(false);
+                    {
+                        ConcurrentActor actor = new(agentId, runtime, context, agent, resultType, context.LoggerFactory.CreateLogger<ConcurrentActor>());
+#if !NETCOREAPP
+                        return actor.AsValueTask<IHostableAgent>();
+#else
+                        return ValueTask.FromResult<IHostableAgent>(actor);
+#endif
+                    }).ConfigureAwait(false);
 
             logger.LogRegisterActor(OrchestrationName, agentType, "MEMBER", agentCount);
 
