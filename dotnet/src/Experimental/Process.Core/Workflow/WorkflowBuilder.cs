@@ -185,7 +185,7 @@ public class WorkflowBuilder
     {
         Verify.NotNull(node);
 
-        if (node.Agent is null || string.IsNullOrEmpty(node.Agent.Type) || string.IsNullOrEmpty(node.Agent.Id))
+        if (node.Agent is null || string.IsNullOrEmpty(node.Agent.Type))
         {
             throw new ArgumentException($"The agent specified in the Node with id {node.Id} is not fully specified.");
         }

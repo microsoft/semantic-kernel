@@ -8,7 +8,6 @@ workflow:
       description: Gets product information
       agent:
         type: SemanticKernel.Process.UnitTests.Steps.ProductInfoProvider, SemanticKernel.Process.UnitTests
-        id: GetProductInfoAgent
       on_complete:
         - on_condition:
             type: default
