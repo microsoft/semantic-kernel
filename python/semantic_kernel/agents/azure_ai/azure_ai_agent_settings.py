@@ -20,6 +20,10 @@ class AzureAIAgentSettings(KernelBaseSettings):
         subscription_id: Azure AI Agent Subscription ID (Env var AZURE_AI_AGENT_SUBSCRIPTION_ID)
         resource_group_name: Azure AI Agent Resource Group Name (Env var AZURE_AI_AGENT_RESOURCE_GROUP_NAME)
         project_name: Azure AI Agent Project Name (Env var AZURE_AI_AGENT_PROJECT_NAME)
+        bing_connection_id: Azure AI Agent Bing Connection ID (Env var AZURE_AI_AGENT_BING_CONNECTION_ID)
+        azure_ai_search_connection_id: Azure AI Agent Azure AI Search Connection ID
+            (Env var AZURE_AI_AGENT_AZURE_AI_SEARCH_CONNECTION_ID)
+        azure_ai_search_index_name: Azure AI Agent Azure AI Search Index Name
     """
 
     env_prefix: ClassVar[str] = "AZURE_AI_AGENT_"
@@ -30,3 +34,6 @@ class AzureAIAgentSettings(KernelBaseSettings):
     subscription_id: str | None = None
     resource_group_name: str | None = None
     project_name: str | None = None
+    bing_connection_id: str | None = None
+    azure_ai_search_connection_id: str | None = None
+    azure_ai_search_index_name: str | None = None
