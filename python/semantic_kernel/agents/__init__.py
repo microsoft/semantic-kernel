@@ -37,6 +37,7 @@ _AGENTS = {
     "ToolSpec": ".agent",
     "ConcurrentOrchestration": ".orchestration.concurrent",
     "SequentialOrchestration": ".orchestration.sequential",
+    "GroupChatOrchestration": ".orchestration.group_chat",
 }
 
 
