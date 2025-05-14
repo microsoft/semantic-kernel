@@ -47,10 +47,10 @@ public class ProcessSerializationTests
         // Assert
         Assert.NotNull(process);
 
-        var stepKickoff = process.Steps.FirstOrDefault(s => s.State.Id == "kickoff_agent");
-        var stepA = process.Steps.FirstOrDefault(s => s.State.Id == "a_step_agent");
-        var stepB = process.Steps.FirstOrDefault(s => s.State.Id == "b_step_agent");
-        var stepC = process.Steps.FirstOrDefault(s => s.State.Id == "c_step_agent");
+        var stepKickoff = process.Steps.FirstOrDefault(s => s.State.Id == "kickoff");
+        var stepA = process.Steps.FirstOrDefault(s => s.State.Id == "a_step");
+        var stepB = process.Steps.FirstOrDefault(s => s.State.Id == "b_step");
+        var stepC = process.Steps.FirstOrDefault(s => s.State.Id == "c_step");
 
         Assert.NotNull(stepKickoff);
         Assert.NotNull(stepA);
@@ -59,32 +59,32 @@ public class ProcessSerializationTests
 
         // kickoff step has outgoing edge to aStep and bStep on event startAStep
         Assert.Single(stepKickoff.Edges);
-        var kickoffStartEdges = stepKickoff.Edges["kickoff_agent.StartARequested"];
+        var kickoffStartEdges = stepKickoff.Edges["kickoff.StartARequested"];
         Assert.Equal(2, kickoffStartEdges.Count);
-        Assert.Contains(kickoffStartEdges, e => e.OutputTarget.StepId == "a_step_agent");
-        Assert.Contains(kickoffStartEdges, e => e.OutputTarget.StepId == "b_step_agent");
+        Assert.Contains(kickoffStartEdges, e => e.OutputTarget.StepId == "a_step");
+        Assert.Contains(kickoffStartEdges, e => e.OutputTarget.StepId == "b_step");
 
         // aStep and bStep have grouped outgoing edges to cStep on event aStepDone and bStepDone
         Assert.Single(stepA.Edges);
-        var aStepDoneEdges = stepA.Edges["a_step_agent.AStepDone"];
+        var aStepDoneEdges = stepA.Edges["a_step.AStepDone"];
         Assert.Single(aStepDoneEdges);
         var aStepDoneEdge = aStepDoneEdges.First();
-        Assert.Equal("c_step_agent", aStepDoneEdge.OutputTarget.StepId);
+        Assert.Equal("c_step", aStepDoneEdge.OutputTarget.StepId);
         Assert.NotEmpty(aStepDoneEdge.GroupId ?? "");
 
         Assert.Single(stepB.Edges);
-        var bStepDoneEdges = stepB.Edges["b_step_agent.BStepDone"];
+        var bStepDoneEdges = stepB.Edges["b_step.BStepDone"];
         Assert.Single(bStepDoneEdges);
         var bStepDoneEdge = bStepDoneEdges.First();
-        Assert.Equal("c_step_agent", bStepDoneEdge.OutputTarget.StepId);
+        Assert.Equal("c_step", bStepDoneEdge.OutputTarget.StepId);
         Assert.NotEmpty(bStepDoneEdge.GroupId ?? "");
 
         // cStep has outgoing edge to kickoff step on event cStepDone and one to end the process on event exitRequested
         Assert.Equal(2, stepC.Edges.Count);
-        var cStepDoneEdges = stepC.Edges["c_step_agent.CStepDone"];
+        var cStepDoneEdges = stepC.Edges["c_step.CStepDone"];
         Assert.Single(cStepDoneEdges);
         var cStepDoneEdge = cStepDoneEdges.First();
-        Assert.Equal("kickoff_agent", cStepDoneEdge.OutputTarget.StepId);
+        Assert.Equal("kickoff", cStepDoneEdge.OutputTarget.StepId);
         Assert.Null(cStepDoneEdge.GroupId);
 
         var exitRequestedEdges = stepC.Edges["Microsoft.SemanticKernel.Process.EndStep"];
@@ -123,6 +123,24 @@ public class ProcessSerializationTests
         string yaml = WorkflowSerializer.SerializeToYaml(workflow);
 
         Assert.NotNull(workflow);
+    }
+
+    /// <summary>
+    /// Verify initialization of <see cref="KernelProcessState"/> from a YAML file that contains references to C# class and chat completion agent.
+    /// </summary>
+    [Fact]
+    public async Task KernelProcessFromCombinedWorkflowYamlAsync()
+    {
+        // Arrange
+        var yaml = this.ReadResource("combined-workflow.yaml");
+
+        // Act
+        var process = await ProcessBuilder.LoadFromYamlAsync(yaml);
+
+        // Assert
+        Assert.NotNull(process);
+        Assert.Contains(process.Steps, step => step.State.Id == "GetProductInfo");
+        Assert.Contains(process.Steps, step => step.State.Id == "Summarize");
     }
 
     private KernelProcess GetProcess()

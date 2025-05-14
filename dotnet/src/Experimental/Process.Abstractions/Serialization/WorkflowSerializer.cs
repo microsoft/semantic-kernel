@@ -33,13 +33,27 @@ public static class WorkflowSerializer
                 .IgnoreUnmatchedProperties()
                 .Build();
 
-        //var wrapper = deserializer.Deserialize<WorkflowWrapper>(yaml);
-        var workflow = deserializer.Deserialize<Workflow>(yaml);
-        return workflow;
+        Workflow? workflow = null;
 
-        //return wrapper?.Workflow == null
-        //    ? throw new KernelException("Failed to deserialize provided YAML to a Processes.")
-        //    : wrapper.Workflow;
+        try
+        {
+            // Try to deserialize workflow wrapper version first.
+            var wrapper = deserializer.Deserialize<WorkflowWrapper>(yaml);
+            workflow = wrapper?.Workflow;
+        }
+#pragma warning disable CA1031 // Do not catch general exception types
+        catch
+#pragma warning restore CA1031 // Do not catch general exception types
+        {
+            // If it's not a workflow wrapper version, continue with parsing non-wrapper version.
+        }
+
+        if (workflow is null)
+        {
+            workflow = deserializer.Deserialize<Workflow>(yaml);
+        }
+
+        return workflow;
     }
 
     /// <summary>

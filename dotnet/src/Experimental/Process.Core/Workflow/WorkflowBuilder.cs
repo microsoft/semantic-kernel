@@ -136,7 +136,7 @@ public class WorkflowBuilder
         }
 
         AgentDefinition? agentDefinition = node.Agent ?? throw new KernelException("Declarative steps must have an agent defined.");
-        var stepBuilder = processBuilder.AddStepFromAgent(agentDefinition);
+        var stepBuilder = processBuilder.AddStepFromAgent(agentDefinition, node.Id);
         if (stepBuilder is not ProcessAgentBuilder agentBuilder)
         {
             throw new KernelException($"Failed to build step from agent definition: {node.Id}");
@@ -206,7 +206,7 @@ public class WorkflowBuilder
             throw new KernelException("The agent type specified in the node is not found.");
         }
 
-        var stepBuilder = processBuilder.AddStepFromType(dotnetAgentType, id: node.Agent.Id);
+        var stepBuilder = processBuilder.AddStepFromType(dotnetAgentType, id: node.Id);
         this._stepBuilders[node.Id] = stepBuilder;
         return Task.CompletedTask;
     }
