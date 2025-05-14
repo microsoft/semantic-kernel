@@ -13,6 +13,22 @@ public sealed class CosmosMongoCollectionOptions
     internal static readonly CosmosMongoCollectionOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="CosmosMongoCollectionOptions"/> class.
+    /// </summary>
+    public CosmosMongoCollectionOptions()
+    {
+    }
+
+    internal CosmosMongoCollectionOptions(CosmosMongoCollectionOptions? source)
+    {
+        this.VectorStoreRecordDefinition = source?.VectorStoreRecordDefinition;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+        this.NumLists = source?.NumLists ?? Default.NumLists;
+        this.EfConstruction = source?.EfConstruction ?? Default.EfConstruction;
+        this.EfSearch = source?.EfSearch ?? Default.EfSearch;
+    }
+
+    /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>
     /// <remarks>

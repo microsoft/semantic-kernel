@@ -77,7 +77,7 @@ switch (appConfig.RagConfig.VectorStoreType)
             new AzureKeyCredential(appConfig.AzureAISearchConfig.ApiKey));
         break;
     case "CosmosMongoDB":
-        kernelBuilder.Services.AddCosmosMongoVectorStoreRecordCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddCosmosMongoCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             appConfig.CosmosMongoConfig.ConnectionString,
             appConfig.CosmosMongoConfig.DatabaseName);
