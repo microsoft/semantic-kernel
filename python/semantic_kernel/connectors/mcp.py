@@ -188,13 +188,17 @@ class MCPPluginBase:
         self,
         name: str,
         description: str | None = None,
+        load_tools: bool = True,
+        load_prompts: bool = True,
         session: ClientSession | None = None,
         kernel: Kernel | None = None,
-        request_timeout: int = 30,
+        request_timeout: int | None = None,
     ) -> None:
         """Initialize the MCP Plugin Base."""
         self.name = name
         self.description = description
+        self.load_tools_flag = load_tools
+        self.load_prompts_flag = load_prompts
         self._exit_stack = AsyncExitStack()
         self.session = session
         self.kernel = kernel or None
@@ -215,7 +219,7 @@ class MCPPluginBase:
                     ClientSession(
                         read_stream=transport[0],
                         write_stream=transport[1],
-                        read_timeout_seconds=timedelta(seconds=self.request_timeout),
+                        read_timeout_seconds=timedelta(seconds=self.request_timeout) if self.request_timeout else None,
                         message_handler=self.message_handler,
                         logging_callback=self.logging_callback,
                         sampling_callback=self.sampling_callback,
@@ -232,8 +236,10 @@ class MCPPluginBase:
             # If the session is not initialized, we need to reinitialize it
             await self.session.initialize()
         logger.debug("Connected to MCP server: %s", self.session)
-        await self.load_tools()
-        await self.load_prompts()
+        if self.load_tools_flag:
+            await self.load_tools()
+        if self.load_prompts_flag:
+            await self.load_prompts()
 
         if logger.level != logging.NOTSET:
             try:
@@ -394,6 +400,10 @@ class MCPPluginBase:
             raise KernelPluginInvalidConfigurationError(
                 "MCP server not connected, please call connect() before using this method."
             )
+        if not self.load_tools_flag:
+            raise KernelPluginInvalidConfigurationError(
+                "Tools are not loaded for this server, please set load_tools=True in the constructor."
+            )
         try:
             return _mcp_call_tool_result_to_kernel_contents(await self.session.call_tool(tool_name, arguments=kwargs))
         except McpError:
@@ -406,6 +416,10 @@ class MCPPluginBase:
         if not self.session:
             raise KernelPluginInvalidConfigurationError(
                 "MCP server not connected, please call connect() before using this method."
+            )
+        if not self.load_prompts_flag:
+            raise KernelPluginInvalidConfigurationError(
+                "Prompts are not loaded for this server, please set load_prompts=True in the constructor."
             )
         try:
             prompt_result = await self.session.get_prompt(prompt_name, arguments=kwargs)
@@ -447,6 +461,9 @@ class MCPStdioPlugin(MCPPluginBase):
         self,
         name: str,
         command: str,
+        *,
+        load_tools: bool = True,
+        load_prompts: bool = True,
         request_timeout: int | None = None,
         session: ClientSession | None = None,
         description: str | None = None,
@@ -466,6 +483,8 @@ class MCPStdioPlugin(MCPPluginBase):
         Args:
             name: The name of the plugin.
             command: The command to run the MCP server.
+            load_tools: Whether to load tools from the MCP server.
+            load_prompts: Whether to load prompts from the MCP server.
             request_timeout: The default timeout used for all requests.
             session: The session to use for the MCP connection.
             description: The description of the plugin.
@@ -476,15 +495,15 @@ class MCPStdioPlugin(MCPPluginBase):
             kwargs: Any extra arguments to pass to the stdio client.
 
         """
-        super_args: dict[str, Any] = {
-            "name": name,
-            "description": description,
-            "session": session,
-            "kernel": kernel,
-        }
-        if request_timeout is not None:
-            super_args["request_timeout"] = request_timeout
-        super().__init__(**super_args)
+        super().__init__(
+            name=name,
+            description=description,
+            session=session,
+            kernel=kernel,
+            load_tools=load_tools,
+            load_prompts=load_prompts,
+            request_timeout=request_timeout,
+        )
         self.command = command
         self.args = args or []
         self.env = env
@@ -512,6 +531,9 @@ class MCPSsePlugin(MCPPluginBase):
         self,
         name: str,
         url: str,
+        *,
+        load_tools: bool = True,
+        load_prompts: bool = True,
         request_timeout: int | None = None,
         session: ClientSession | None = None,
         description: str | None = None,
@@ -532,6 +554,8 @@ class MCPSsePlugin(MCPPluginBase):
         Args:
             name: The name of the plugin.
             url: The URL of the MCP server.
+            load_tools: Whether to load tools from the MCP server.
+            load_prompts: Whether to load prompts from the MCP server.
             request_timeout: The default timeout used for all requests.
             session: The session to use for the MCP connection.
             description: The description of the plugin.
@@ -542,15 +566,15 @@ class MCPSsePlugin(MCPPluginBase):
             kwargs: Any extra arguments to pass to the sse client.
 
         """
-        args: dict[str, Any] = {
-            "name": name,
-            "description": description,
-            "session": session,
-            "kernel": kernel,
-        }
-        if request_timeout is not None:
-            args["request_timeout"] = request_timeout
-        super().__init__(**args)
+        super().__init__(
+            name=name,
+            description=description,
+            session=session,
+            kernel=kernel,
+            load_tools=load_tools,
+            load_prompts=load_prompts,
+            request_timeout=request_timeout,
+        )
         self.url = url
         self.headers = headers or {}
         self.timeout = timeout
@@ -580,6 +604,9 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
         self,
         name: str,
         url: str,
+        *,
+        load_tools: bool = True,
+        load_prompts: bool = True,
         request_timeout: int | None = None,
         session: ClientSession | None = None,
         description: str | None = None,
@@ -601,6 +628,8 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
         Args:
             name: The name of the plugin.
             url: The URL of the MCP server.
+            load_tools: Whether to load tools from the MCP server.
+            load_prompts: Whether to load prompts from the MCP server.
             request_timeout: The default timeout used for all requests.
             session: The session to use for the MCP connection.
             description: The description of the plugin.
@@ -611,15 +640,15 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
             kernel: The kernel instance with one or more Chat Completion clients.
             kwargs: Any extra arguments to pass to the sse client.
         """
-        args: dict[str, Any] = {
-            "name": name,
-            "description": description,
-            "session": session,
-            "kernel": kernel,
-        }
-        if request_timeout is not None:
-            args["request_timeout"] = request_timeout
-        super().__init__(**args)
+        super().__init__(
+            name=name,
+            description=description,
+            session=session,
+            kernel=kernel,
+            load_tools=load_tools,
+            load_prompts=load_prompts,
+            request_timeout=request_timeout,
+        )
         self.url = url
         self.headers = headers or {}
         self.timeout = timeout
@@ -652,6 +681,9 @@ class MCPWebsocketPlugin(MCPPluginBase):
         self,
         name: str,
         url: str,
+        *,
+        load_tools: bool = True,
+        load_prompts: bool = True,
         request_timeout: int | None = None,
         session: ClientSession | None = None,
         description: str | None = None,
@@ -669,6 +701,8 @@ class MCPWebsocketPlugin(MCPPluginBase):
         Args:
             name: The name of the plugin.
             url: The URL of the MCP server.
+            load_tools: Whether to load tools from the MCP server.
+            load_prompts: Whether to load prompts from the MCP server.
             request_timeout: The default timeout used for all requests.
             session: The session to use for the MCP connection.
             description: The description of the plugin.
@@ -676,15 +710,15 @@ class MCPWebsocketPlugin(MCPPluginBase):
             kwargs: Any extra arguments to pass to the websocket client.
 
         """
-        args: dict[str, Any] = {
-            "name": name,
-            "description": description,
-            "session": session,
-            "kernel": kernel,
-        }
-        if request_timeout is not None:
-            args["request_timeout"] = request_timeout
-        super().__init__(**args)
+        super().__init__(
+            name=name,
+            description=description,
+            session=session,
+            kernel=kernel,
+            load_tools=load_tools,
+            load_prompts=load_prompts,
+            request_timeout=request_timeout,
+        )
         self.url = url
         self._client_kwargs = kwargs
 
