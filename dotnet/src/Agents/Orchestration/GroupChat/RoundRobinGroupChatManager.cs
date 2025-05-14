@@ -20,7 +20,7 @@ public class RoundRobinGroupChatManager : GroupChatManager
     /// <inheritdoc/>
     public override ValueTask<GroupChatManagerResult<string>> FilterResults(ChatHistory history, CancellationToken cancellationToken = default)
     {
-        GroupChatManagerResult<string> result = new (history.LastOrDefault()?.Content ?? string.Empty) { Reason = "Default result filter provides the final chat message." };
+        GroupChatManagerResult<string> result = new(history.LastOrDefault()?.Content ?? string.Empty) { Reason = "Default result filter provides the final chat message." };
 #if !NETCOREAPP
         return result.AsValueTask();
 #else
