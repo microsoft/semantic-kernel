@@ -85,8 +85,8 @@ public class Mem0BehaviorTests : IDisposable
     }
 
     [Theory]
-    [InlineData(false, "test-thread-id", null, "Consider the following memories when answering user questions:{0}Name is Caoimhe")]
-    [InlineData(true, "test-thread-id-1", "Custom Prompt:", "Custom Prompt:{0}Name is Caoimhe")]
+    [InlineData(false, "test-thread-id", null, "## Memories\nConsider the following memories when answering user questions:\nName is Caoimhe")]
+    [InlineData(true, "test-thread-id-1", "Custom Prompt:", "Custom Prompt:\nName is Caoimhe")]
     public async Task SearchesForMemoriesOnModelInvoke(bool scopePerOperationThread, string expectedThreadId, string? customContextPrompt, string expectedAdditionalInstructions)
     {
         // Arrange
@@ -123,7 +123,7 @@ public class Mem0BehaviorTests : IDisposable
             """;
         this._mockMessageHandler.Verify(x => x.MockableSendAsync(HttpMethod.Post, "https://localhost/v1/memories/search/", expectedPayload, It.IsAny<CancellationToken>()), Times.Once);
 
-        Assert.Equal(string.Format(expectedAdditionalInstructions, Environment.NewLine), actual);
+        Assert.Equal(expectedAdditionalInstructions, actual);
     }
 
     [Theory]

@@ -21,7 +21,7 @@ public sealed class TextSearchBehavior : AIContextBehavior
 {
     private const string DefaultPluginSearchFunctionName = "Search";
     private const string DefaultPluginSearchFunctionDescription = "Allows searching for additional information to help answer the user question.";
-    private const string DefaultContextPrompt = "Consider the following information from source documents when responding to the user:";
+    private const string DefaultContextPrompt = "## Additional Context\nConsider the following information from source documents when responding to the user:";
     private const string DefaultIncludeCitationsPrompt = "Include citations to the source document with document name and link if document name and link is available.";
 
     private readonly ITextSearch _textSearch;

@@ -70,7 +70,7 @@ public sealed class TextSearchBehaviorOptions
     /// to those chunks, in order to instruct the model to include citations.
     /// </summary>
     /// <value>
-    /// Defaults to &quot;Include citations to the source document with document name and link if document name and link is available.:&quot;
+    /// Defaults to &quot;## Additional Context\nInclude citations to the source document with document name and link if document name and link is available.:&quot;
     /// </value>
     public string? IncludeCitationsPrompt { get; init; }
 

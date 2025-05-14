@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -19,10 +20,16 @@ namespace Microsoft.SemanticKernel.Memory;
 [Experimental("SKEXP0130")]
 public class WhiteboardBehavior : AIContextBehavior
 {
+    private readonly static JsonDocument s_structuredOutputSchema = JsonDocument.Parse("""{"type":"object","properties":{"newWhiteboard":{"type":"array","items":{"type":"string"}}}}""");
+    private const string DefaultContextPrompt = "## Whiteboard\nThe following list of messages are currently on the whiteboard:";
+    private const string DefaultWhiteboardEmptyPrompt = "## Whiteboard\nThe whiteboard is currently empty.";
     private const int MaxQueueSize = 3;
-    private readonly int _maxWhiteboardMessages;
 
-    private readonly Kernel _kernel;
+    private readonly int _maxWhiteboardMessages;
+    private readonly string _contextPrompt;
+    private readonly string _whiteboardEmptyPrompt;
+
+    private readonly IChatClient _chatClient;
 
     private List<string> _currentWhiteboardContent = [];
 
@@ -33,12 +40,16 @@ public class WhiteboardBehavior : AIContextBehavior
     /// <summary>
     /// Initializes a new instance of the <see cref="WhiteboardBehavior"/> class.
     /// </summary>
-    /// <param name="kernel">A kernel to use for making chat completion calls.</param>
+    /// <param name="chatClient">A <see cref="IChatClient"/> to use for making chat completion calls.</param>
     /// <param name="options">Options for configuring the behavior.</param>
-    public WhiteboardBehavior(Kernel kernel, WhiteboardBehaviorOptions? options = default)
+    public WhiteboardBehavior(IChatClient chatClient, WhiteboardBehaviorOptions? options = default)
     {
-        this._kernel = kernel;
+        Verify.NotNull(chatClient);
+
+        this._chatClient = chatClient;
         this._maxWhiteboardMessages = options?.MaxWhiteboardMessages ?? 10;
+        this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
+        this._whiteboardEmptyPrompt = options?.WhiteboardEmptyPrompt ?? DefaultWhiteboardEmptyPrompt;
     }
 
     /// <inheritdoc/>
@@ -86,12 +97,12 @@ public class WhiteboardBehavior : AIContextBehavior
     {
         if (this._currentWhiteboardContent.Count == 0)
         {
-            return Task.FromResult("The whiteboard is currently empty.");
+            return Task.FromResult(this._whiteboardEmptyPrompt);
         }
 
         var numberedMessages = this._currentWhiteboardContent.Select((x, i) => $"{i} {x}");
         var joinedMessages = string.Join(Environment.NewLine, numberedMessages);
-        return Task.FromResult($"The following list has all messages currently on the whiteboard:\n{joinedMessages}");
+        return Task.FromResult($"{this._contextPrompt}\n{joinedMessages}");
     }
 
     /// <summary>
@@ -130,21 +141,27 @@ public class WhiteboardBehavior : AIContextBehavior
         var currentWhiteboardJson = JsonSerializer.Serialize(this._currentWhiteboardContent, WhiteboardBehaviorSourceGenerationContext.Default.ListString);
 
         // Inovke the LLM to extract the latest information from the input messages and update the whiteboard.
-        var result = await this._kernel.InvokePromptAsync(
-            new JsonSerializerOptions(),
-            MaintenancePromptTemplate,
-            new KernelArguments()
+        var result = await this._chatClient.GetResponseAsync(
+            FormatPromptTemplate(inputMessagesJson, currentWhiteboardJson, this._maxWhiteboardMessages),
+            new()
             {
-                ["formattedMessages"] = inputMessagesJson,
-                ["newMessageAuthorName"] = newMessage.AuthorName,
-                ["newMessageRole"] = newMessage.Role.ToString(),
-                ["currentWhiteboard"] = currentWhiteboardJson,
-                ["maxWhiteboardMessages"] = this._maxWhiteboardMessages,
+                Temperature = 0,
+                ResponseFormat = new ChatResponseFormatJson(s_structuredOutputSchema.RootElement),
             },
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
 
         // Update the current whiteboard content with the LLM result.
-        this._currentWhiteboardContent = JsonSerializer.Deserialize(result.ToString(), WhiteboardBehaviorSourceGenerationContext.Default.ListString) ?? [];
+        var newWhiteboardResponse = JsonSerializer.Deserialize(result.ToString(), WhiteboardBehaviorSourceGenerationContext.Default.NewWhiteboardResponse);
+        this._currentWhiteboardContent = newWhiteboardResponse?.NewWhiteboard ?? [];
+    }
+
+    private static string FormatPromptTemplate(string inputMessagesJson, string currentWhiteboardJson, int maxWhiteboardMessages)
+    {
+        var sb = new StringBuilder(MaintenancePromptTemplate);
+        sb.Replace("{{$inputMessages}}", inputMessagesJson);
+        sb.Replace("{{$currentWhiteboard}}", currentWhiteboardJson);
+        sb.Replace("{{$maxWhiteboardMessages}}", maxWhiteboardMessages.ToString());
+        return sb.ToString();
     }
 
     /// <summary>
@@ -152,78 +169,109 @@ public class WhiteboardBehavior : AIContextBehavior
     /// </summary>
     private const string MaintenancePromptTemplate =
         """
-        You are an expert in maintaining a whiteboard during a conversation.
-        The whiteboard should maintain the requirements that the user is trying to meet, the latest proposal and any decisions that have been made by the users.
-        A proposal is a suggested solution to requirements provided by the user or the assistant.
-        Existing information on the whiteboard should be updated with new information as requirements change and new proposals and decisions are made.
-        Decisions should contain all information about the decision made.
-        When a decision is made, the proposals and requirements that led to the decision should be removed from the whiteboard.
-        Whiteboard entries should be concise and to the point.
-        The whiteboard can contain more than one piece of information for each category.
-        The maximum number of messages allowed on the whiteboard at one time is {{$maxWhiteboardMessages}}.
-        Combine messages or remove the least important messages from the list if the maximum number of messages is reached.
-        Prioritize keeping detailed decisions for longer than requirements and proposals.
-        Categorize whiteboard entries with a prefix of REQUIREMENT, PROPOSAL or DECISION.
-        
-        Here are 7 few shot examples:
+        You are an expert in maintaining a whiteboard during a conversation.The whiteboard should capture:
+        - **Requirements**: Goals or needs expressed by the user.
+        - **Proposals**: Suggested solutions to the requirements, provided by the assistant.
+        - **Decisions**: Decisions made by the user, including all relevant details.
+        - **Actions**: Actions that had been taken to implement a proposal or decision, including all relevant details.
 
-        EXAMPLES START
+        ## Transitions:
+        - **Requirements -> Proposal**: When a proposal is made to satisfy one or more requirements.
+        - **Proposal -> Decision**: When a proposal is accepted by the user.
+        - **Proposal -> Actions**: When an action has been taken to execute a proposal.
+        - **Decision -> Actions**: When an action has been taken to implement a decision.
+
+        ## Guidelines:
+        1. **Update Existing Entries**: Modify whiteboard entries as requirements change or new proposals and decisions are made.
+        2. **User is decision maker**: Only users can make decisions. The assistant can only make proposals and execute them.
+        3. **Remove Redundant Information**: When a decision is made or an action is taken, remove the requirements and proposals that led to it.
+        4. **Keep Requirements Concise**: Ensure requirements are clear and to the point.
+        5. **Keep Decisions, Proposals and Actions Detailed**: Ensure decisions, proposals and actions are comprehensive and include all requirements that went into the decision, proposal or action.
+        6. **Keep Decisions, Proposals and Actions Self Contained**: Ensure decisions, proposals and actions are self-contained and do not reference other entries, e.g. output "ACTION - The agent booked flight going out, COA 1133 DUB to CDG, 14 April 2025 and return, COA 1134 CDG to DUB, 16 April 2025", instead of "ACTION - The agent booked the flights as defined in requirements.".
+        7. **Categorize Entries**: Prefix each entry with `REQUIREMENT`, `PROPOSAL`, `DECISION` or `ACTION`.
+        8. **Prioritize Decisions and Actions**: Retain detailed decisions and actions longer than requirements or proposals.
+        9. **Limit Entries**: Maintain a maximum of {{$maxWhiteboardMessages}} entries. If the limit is exceeded, combine or remove the least important entries, prioritize keeping decisions and actions.
+
+        ## Examples:
+
+        ### Example 1:
 
         New Message:
         [{"AuthorName":"Mary","Role":"user","Text":"I want the colour scheme to be green and brown."}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to create a presentation."]
         New Whiteboard:
-        ["REQUIREMENT - Mary wants to create a presentation.", "REQUIREMENT - The presentation colour schema should be green and brown."]
-        
+        {"newWhiteboard":["REQUIREMENT - Mary wants to create a presentation.", "REQUIREMENT - The presentation colour schema should be green and brown."]}
+
+        ### Example 2:
+
         New Message:
         [{"AuthorName":"John","Role":"user","Text":"I need you to help me with my homework."}]
         Current Whiteboard:
         []
         New Whiteboard:
-        ["REQUIREMENT - John wants help with homework."]
+        {"newWhiteboard":["REQUIREMENT - John wants help with homework."]}
+
+        ### Example 3:
 
         New Message:
         [{"AuthorName":"John","Role":"user","Text":"Hello"}]
         Current Whiteboard:
         []
         New Whiteboard:
-        []
-        
+        {"newWhiteboard":[]}
+
+        ### Example 4:
+
         New Message:
         [{"AuthorName":"Mary","Role":"user","Text":"I've changed my mind, I want to go to London instead."}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris."]
         New Whiteboard:
-        ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to London."]
-        
+        {"newWhiteboard":["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to London."]}
+
+        ### Example 5:
+
         New Message:
         [{"AuthorName":"TravelAgent","Role":"assistant","Text":"Here is an itinerary for your trip to Paris. Departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025."]
         New Whiteboard:
-        ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
-        
+        {"newWhiteboard":["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]}
+
+        ### Example 6:
+
         New Message:
         [{"AuthorName":"Mary","Role":"user","Text":"That sounds good, let's book that."}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
         New Whiteboard:
+        {"newWhiteboard":["DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]}
+
+        ### Example 7:
+        
+        New Message:
+        [{"AuthorName":"TravelAgent","Role":"assistant","Text":"OK, I've booked that for you."}]
+        Current Whiteboard:
         [""DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
+        New Whiteboard:
+        {"newWhiteboard":["ACTION - TravelAgent booked a flight for Mary departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir for EUR 243."]}
+        
+        ### Example 8:
 
         New Message:
         [{"AuthorName":"Mary","Role":"user","Text":"I don't like the suggested option. Can I leave a day earlier and fly with anyone but NotsocheapoAir?"}]
         Current Whiteboard:
         ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "PROPOSAL - The current proposed itinerary by the TravelAgent Assistant is to depart on the 17th of June at 10:00 AM and return on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
         New Whiteboard:
-        ["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "REQUIREMENT - Mary does not want to fly with NotsocheapoAir."]
-        
-        EXAMPLES END
+        {"newWhiteboard":["REQUIREMENT - Mary wants to book a flight.", "REQUIREMENT - The flight should be to Paris during the week of 16th of June 2025.", "REQUIREMENT - Mary does not want to fly with NotsocheapoAir."]}
 
-        Return a new whiteboard for the following inputs like shown in the examples above:
+        ## Action
+
+        Now return a new whiteboard for the following inputs like shown in the examples above and using the previously mentioned instructions:
 
         New Message:
-        {{$formattedMessages}}
+        {{$inputMessages}}
         Current Whiteboard:
         {{$currentWhiteboard}}
         New Whiteboard:
@@ -239,6 +287,15 @@ public class WhiteboardBehavior : AIContextBehavior
         public string Role { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;
     }
+
+    /// <summary>
+    /// Represents the response from the LLM when updating the whiteboard.
+    /// </summary>
+    internal class NewWhiteboardResponse
+    {
+        [JsonPropertyName("newWhiteboard")]
+        public List<string> NewWhiteboard { get; set; } = [];
+    }
 }
 
 /// <summary>
@@ -252,6 +309,7 @@ public class WhiteboardBehavior : AIContextBehavior
 [JsonSerializable(typeof(IEnumerable<WhiteboardBehavior.BasicMessage>))]
 [JsonSerializable(typeof(WhiteboardBehavior.BasicMessage))]
 [JsonSerializable(typeof(List<string>))]
+[JsonSerializable(typeof(WhiteboardBehavior.NewWhiteboardResponse))]
 internal partial class WhiteboardBehaviorSourceGenerationContext : JsonSerializerContext
 {
 }
