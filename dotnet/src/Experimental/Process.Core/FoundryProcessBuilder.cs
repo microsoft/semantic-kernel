@@ -44,7 +44,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <param name="defaultThread">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
     /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
-    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? id = null, IReadOnlyList<string>? aliases = null, string? defaultThread = null, HITLMode humanInLoopMode = HITLMode.Never)
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgent(AgentDefinition agentDefinition, string? id = null, IReadOnlyList<string>? aliases = null, string? defaultThread = null, HITLMode humanInLoopMode = HITLMode.Never)
     {
         Verify.NotNull(agentDefinition);
         if (agentDefinition.Type != AzureAIAgentFactory.AzureAIAgentType)
@@ -52,7 +52,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
             throw new ArgumentException($"The agent type '{agentDefinition.Type}' is not supported. Only '{AzureAIAgentFactory.AzureAIAgentType}' is supported.");
         }
 
-        return this._processBuilder.AddStepFromAgent(agentDefinition, id, aliases, defaultThread, humanInLoopMode);
+        return this._processBuilder.AddStepFromAgent<TProcessState>(agentDefinition, id, aliases, defaultThread, humanInLoopMode);
     }
 
     /// <summary>

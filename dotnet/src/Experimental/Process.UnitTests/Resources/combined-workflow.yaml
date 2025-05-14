@@ -1,7 +1,11 @@
 workflow:
   name: ProductSummarization
   inputs:
-    messages: {}
+    events:
+      cloud_events:
+        - type: input_message_received
+          data_schema: 
+            type: string
   nodes:
     - id: GetProductInfo
       type: dotnet
@@ -28,8 +32,8 @@ workflow:
               - event_type: ProcessCompleted
   orchestration:
     - listen_for:
-        from: $.inputs.events
-        event: input_message_received
+        event: input_message_received    
+        from: _workflow_
       then:
         - node: GetProductInfo
     - listen_for:
