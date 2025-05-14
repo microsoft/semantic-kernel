@@ -7,13 +7,13 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a kernel function that provides the plugin name as part of the original function name.
 /// </summary>
-public abstract class IntermediateKernelFunction : AIFunction
+public abstract class FullyQualifiedAIFunction : AIFunction
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="IntermediateKernelFunction"/> class.
+    /// Initializes a new instance of the <see cref="FullyQualifiedAIFunction"/> class.
     /// </summary>
     /// <param name="metadata">The metadata describing the function.</param>
-    internal IntermediateKernelFunction(KernelFunctionMetadata metadata)
+    internal FullyQualifiedAIFunction(KernelFunctionMetadata metadata)
     {
         this.Metadata = metadata;
     }

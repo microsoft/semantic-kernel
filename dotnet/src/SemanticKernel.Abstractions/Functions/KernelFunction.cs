@@ -26,7 +26,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a function that can be invoked as part of a Semantic Kernel workload.
 /// </summary>
-public abstract class KernelFunction : IntermediateKernelFunction
+public abstract class KernelFunction : FullyQualifiedAIFunction
 {
     private static readonly JsonElement s_defaultSchema = JsonDocument.Parse("{}").RootElement;
 
@@ -457,7 +457,7 @@ public abstract class KernelFunction : IntermediateKernelFunction
     /// <list type="number">
     /// <item>From the <see cref="AIFunctionArguments"/> dictionary with the <see cref="AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey"/> key.</item>
     /// <item>From the <see cref="AIFunctionArguments"/>.<see cref="AIFunctionArguments.Services"/> service provider.</item>
-    /// <item>From the <see cref="Kernel"/> provided in <see cref="KernelFunctionExtensions.Clone"/> when Cloning the <see cref="KernelFunction"/>.</item>
+    /// <item>From the <see cref="Kernel"/> provided in <see cref="KernelFunctionExtensions.WithKernel"/> when Cloning the <see cref="KernelFunction"/>.</item>
     /// <item>A new <see cref="Kernel"/> instance will be created using the same service provider in the <see cref="AIFunctionArguments"/>.<see cref="AIFunctionArguments.Services"/>.</item>
     /// </list>
     /// </remarks>
