@@ -7,6 +7,7 @@ import sys
 from abc import abstractmethod
 from collections.abc import Callable, Sequence
 from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager
+from datetime import timedelta
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
@@ -189,6 +190,7 @@ class MCPPluginBase:
         description: str | None = None,
         session: ClientSession | None = None,
         kernel: Kernel | None = None,
+        request_timeout: int = 30,
     ) -> None:
         """Initialize the MCP Plugin Base."""
         self.name = name
@@ -196,6 +198,7 @@ class MCPPluginBase:
         self._exit_stack = AsyncExitStack()
         self.session = session
         self.kernel = kernel or None
+        self.request_timeout = request_timeout
 
     async def connect(self) -> None:
         """Connect to the MCP server."""
@@ -212,6 +215,7 @@ class MCPPluginBase:
                     ClientSession(
                         read_stream=transport[0],
                         write_stream=transport[1],
+                        read_timeout_seconds=timedelta(seconds=self.request_timeout),
                         message_handler=self.message_handler,
                         logging_callback=self.logging_callback,
                         sampling_callback=self.sampling_callback,
@@ -443,6 +447,7 @@ class MCPStdioPlugin(MCPPluginBase):
         self,
         name: str,
         command: str,
+        request_timeout: int | None = None,
         session: ClientSession | None = None,
         description: str | None = None,
         args: list[str] | None = None,
@@ -461,6 +466,7 @@ class MCPStdioPlugin(MCPPluginBase):
         Args:
             name: The name of the plugin.
             command: The command to run the MCP server.
+            request_timeout: The default timeout used for all requests.
             session: The session to use for the MCP connection.
             description: The description of the plugin.
             args: The arguments to pass to the command.
@@ -470,7 +476,15 @@ class MCPStdioPlugin(MCPPluginBase):
             kwargs: Any extra arguments to pass to the stdio client.
 
         """
-        super().__init__(name, description, session, kernel)
+        super_args: dict[str, Any] = {
+            "name": name,
+            "description": description,
+            "session": session,
+            "kernel": kernel,
+        }
+        if request_timeout is not None:
+            super_args["request_timeout"] = request_timeout
+        super().__init__(**super_args)
         self.command = command
         self.args = args or []
         self.env = env
@@ -479,7 +493,7 @@ class MCPStdioPlugin(MCPPluginBase):
 
     def get_mcp_client(self) -> _AsyncGeneratorContextManager[Any, None]:
         """Get an MCP stdio client."""
-        args = {
+        args: dict[str, Any] = {
             "command": self.command,
             "args": self.args,
             "env": self.env,
@@ -498,6 +512,7 @@ class MCPSsePlugin(MCPPluginBase):
         self,
         name: str,
         url: str,
+        request_timeout: int | None = None,
         session: ClientSession | None = None,
         description: str | None = None,
         headers: dict[str, Any] | None = None,
@@ -517,6 +532,7 @@ class MCPSsePlugin(MCPPluginBase):
         Args:
             name: The name of the plugin.
             url: The URL of the MCP server.
+            request_timeout: The default timeout used for all requests.
             session: The session to use for the MCP connection.
             description: The description of the plugin.
             headers: The headers to send with the request.
@@ -526,7 +542,15 @@ class MCPSsePlugin(MCPPluginBase):
             kwargs: Any extra arguments to pass to the sse client.
 
         """
-        super().__init__(name=name, description=description, session=session, kernel=kernel)
+        args: dict[str, Any] = {
+            "name": name,
+            "description": description,
+            "session": session,
+            "kernel": kernel,
+        }
+        if request_timeout is not None:
+            args["request_timeout"] = request_timeout
+        super().__init__(**args)
         self.url = url
         self.headers = headers or {}
         self.timeout = timeout
@@ -556,6 +580,7 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
         self,
         name: str,
         url: str,
+        request_timeout: int | None = None,
         session: ClientSession | None = None,
         description: str | None = None,
         headers: dict[str, Any] | None = None,
@@ -576,6 +601,7 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
         Args:
             name: The name of the plugin.
             url: The URL of the MCP server.
+            request_timeout: The default timeout used for all requests.
             session: The session to use for the MCP connection.
             description: The description of the plugin.
             headers: The headers to send with the request.
@@ -585,7 +611,15 @@ class MCPStreamableHttpPlugin(MCPPluginBase):
             kernel: The kernel instance with one or more Chat Completion clients.
             kwargs: Any extra arguments to pass to the sse client.
         """
-        super().__init__(name=name, description=description, session=session, kernel=kernel)
+        args: dict[str, Any] = {
+            "name": name,
+            "description": description,
+            "session": session,
+            "kernel": kernel,
+        }
+        if request_timeout is not None:
+            args["request_timeout"] = request_timeout
+        super().__init__(**args)
         self.url = url
         self.headers = headers or {}
         self.timeout = timeout
@@ -618,6 +652,7 @@ class MCPWebsocketPlugin(MCPPluginBase):
         self,
         name: str,
         url: str,
+        request_timeout: int | None = None,
         session: ClientSession | None = None,
         description: str | None = None,
         kernel: Kernel | None = None,
@@ -634,13 +669,22 @@ class MCPWebsocketPlugin(MCPPluginBase):
         Args:
             name: The name of the plugin.
             url: The URL of the MCP server.
+            request_timeout: The default timeout used for all requests.
             session: The session to use for the MCP connection.
             description: The description of the plugin.
             kernel: The kernel instance with one or more Chat Completion clients.
             kwargs: Any extra arguments to pass to the websocket client.
 
         """
-        super().__init__(name=name, description=description, session=session, kernel=kernel)
+        args: dict[str, Any] = {
+            "name": name,
+            "description": description,
+            "session": session,
+            "kernel": kernel,
+        }
+        if request_timeout is not None:
+            args["request_timeout"] = request_timeout
+        super().__init__(**args)
         self.url = url
         self._client_kwargs = kwargs
 
