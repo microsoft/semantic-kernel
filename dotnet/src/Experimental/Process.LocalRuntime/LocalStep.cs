@@ -460,9 +460,9 @@ internal class LocalStep : IKernelProcessMessageChannel
     {
         bool fromEdgeGroup = false;
         Dictionary<string, Dictionary<string, object?>?>? stepEdgesData = this._inputs;
-        if (this._edgeGroupProcessors != null)
+        if (this._edgeGroupProcessors != null && this._edgeGroupProcessors.Count > 0)
         {
-            stepEdgesData = this._edgeGroupProcessors.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.MessageData);
+            stepEdgesData = this._edgeGroupProcessors.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.MessageData)!;
             fromEdgeGroup = true;
         }
 

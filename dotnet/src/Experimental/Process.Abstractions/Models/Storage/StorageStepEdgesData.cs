@@ -18,7 +18,7 @@ public record StorageStepEdgesData
     /// </summary>
     [DataMember]
     [JsonPropertyName("edgesData")]
-    public Dictionary<string, Dictionary<string, KernelProcessEventData?>?> EdgesData { get; set; } = [];
+    public Dictionary<string, Dictionary<string, KernelProcessEventData?>> EdgesData { get; set; } = [];
 
     /// <summary>
     /// Indicates if the edge is a group edge

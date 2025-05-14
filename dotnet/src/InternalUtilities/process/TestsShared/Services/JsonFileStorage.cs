@@ -61,15 +61,15 @@ internal sealed class JsonFileStorage : IProcessStorageConnector
         return true;
     }
 
-    public async Task<bool> DeleteEntryAsync(string id)
+    public Task<bool> DeleteEntryAsync(string id)
     {
         string filePath = this.GetFilePath(id);
         if (File.Exists(filePath))
         {
             File.Delete(filePath);
-            return true;
+            return Task.FromResult(true);
         }
 
-        return false;
+        return Task.FromResult(false);
     }
 }

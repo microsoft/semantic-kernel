@@ -169,7 +169,7 @@ public class ProcessStorageManager
     public async Task<bool> SaveStepEdgeDataAsync(string stepName, string stepId, Dictionary<string, Dictionary<string, object?>?> stepEdgesData, bool isGroupEdge)
     {
         var entryId = this.GetStepEdgesId(stepName, stepId);
-        var entryData = new StorageStepEdgesData() { EdgesData = stepEdgesData.PackStepEdgesValues(), IsGroupEdge = isGroupEdge };
+        var entryData = new StorageStepEdgesData() { EdgesData = stepEdgesData.PackStepEdgesValues() ?? [], IsGroupEdge = isGroupEdge };
         return await this._storageConnector.SaveEntryAsync(entryId, StorageKeywords.StepEdgesData, entryData).ConfigureAwait(false);
     }
 

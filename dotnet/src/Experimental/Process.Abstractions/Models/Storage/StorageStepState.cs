@@ -42,8 +42,16 @@ public record StorageStepState
     public KernelProcessEventData? State { get; set; } = null;
 }
 
+/// <summary>
+/// Extension methods for converting between StorageStepState and KernelProcessStepStateMetadata.
+/// </summary>
 public static class StorageProcessExtension
 {
+    /// <summary>
+    /// Converts a <see cref="StorageStepState"/> to a <see cref="KernelProcessStepStateMetadata"/>.
+    /// </summary>
+    /// <param name="storageStateData"></param>
+    /// <returns></returns>
     public static KernelProcessStepStateMetadata ToKernelStepMetadata(this StorageStepState storageStateData)
     {
         return new KernelProcessStepStateMetadata()
@@ -55,6 +63,11 @@ public static class StorageProcessExtension
         };
     }
 
+    /// <summary>
+    /// Converts a <see cref="KernelProcessStepStateMetadata"/> to a <see cref="StorageStepState"/>.
+    /// </summary>
+    /// <param name="stepMetadata"></param>
+    /// <returns></returns>
     public static StorageStepState ToKernelStorageStepState(this KernelProcessStepStateMetadata stepMetadata)
     {
         return new StorageStepState()
