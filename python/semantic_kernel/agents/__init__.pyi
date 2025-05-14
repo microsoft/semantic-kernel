@@ -1,6 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from .agent import Agent, AgentResponseItem, AgentThread
+from .agent import (
+    Agent,
+    AgentRegistry,
+    AgentResponseItem,
+    AgentSpec,
+    AgentThread,
+    DeclarativeSpecMixin,
+    ModelConnection,
+    ModelSpec,
+    ToolSpec,
+    register_agent_type,
+)
 from .autogen.autogen_conversable_agent import AutoGenConversableAgent, AutoGenConversableAgentThread
 from .azure_ai.azure_ai_agent import AzureAIAgent, AzureAIAgentThread
 from .azure_ai.azure_ai_agent_settings import AzureAIAgentSettings
@@ -15,12 +26,16 @@ from .open_ai.azure_responses_agent import AzureResponsesAgent
 from .open_ai.open_ai_assistant_agent import AssistantAgentThread, OpenAIAssistantAgent
 from .open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
 from .open_ai.run_polling_options import RunPollingOptions
+from .orchestration.concurrent import ConcurrentOrchestration
+from .orchestration.sequential import SequentialOrchestration
 
 __all__ = [
     "Agent",
     "AgentChat",
     "AgentGroupChat",
+    "AgentRegistry",
     "AgentResponseItem",
+    "AgentSpec",
     "AgentThread",
     "AssistantAgentThread",
     "AutoGenConversableAgent",
@@ -34,12 +49,19 @@ __all__ = [
     "BedrockAgentThread",
     "ChatCompletionAgent",
     "ChatHistoryAgentThread",
+    "ConcurrentOrchestration",
     "CopilotStudioAgent",
     "CopilotStudioAgentAuthMode",
     "CopilotStudioAgentSettings",
     "CopilotStudioAgentThread",
+    "DeclarativeSpecMixin",
+    "ModelConnection",
+    "ModelSpec",
     "OpenAIAssistantAgent",
     "OpenAIResponsesAgent",
     "ResponsesAgentThread",
     "RunPollingOptions",
+    "SequentialOrchestration",
+    "ToolSpec",
+    "register_agent_type",
 ]

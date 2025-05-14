@@ -52,6 +52,8 @@ dependencies = [
     "aiortc>=1.9.0",
     # Protobuf
     "protobuf",
+    # explicit typing extensions
+    "typing-extensions>=4.13",
 ]
 
 ### Optional dependencies
@@ -63,7 +65,7 @@ autogen = [
     "autogen-agentchat >= 0.2, <0.4"
 ]
 aws = [
-    "boto3>=1.36.4,<1.38.0",
+    "boto3>=1.36.4,<1.39.0",
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
@@ -99,7 +101,7 @@ hugging_face = [
     "torch == 2.7.0"
 ]
 mcp = [
-    "mcp ~= 1.6"
+    "mcp~=1.8",
 ]
 milvus = [
     "pymilvus >= 2.3,< 2.6",
@@ -119,7 +121,8 @@ ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
-    "onnxruntime-genai ~= 0.5; python_version < '3.13'"
+    "onnxruntime-genai ~= 0.5; python_version < '3.13' and platform_system != 'Windows'",
+    "onnxruntime == 1.21.0; platform_system == 'Windows'"
 ]
 pandas = [
     "pandas ~= 2.2"
@@ -210,7 +213,7 @@ select = [
     "RET", #flake8-return check
     "SIM", #flake8-simplify check
     "TD", #todos
-    "FIX", #fixme checks 
+    "FIX", #fixme checks
     "ERA", #remove connected out code
     "RUF" #RUF specific rules
 ]
