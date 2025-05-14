@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <SkipBuild Condition="'$(TargetFramework)' == 'net9.0' And '$(BuildingDotNet8)' == 'true'">true</SkipBuild>
+    <SkipBuild Condition="'$(NETSdkVersion)' == '8.0.x'">true</SkipBuild>
   </PropertyGroup>
   
   <ItemGroup>
