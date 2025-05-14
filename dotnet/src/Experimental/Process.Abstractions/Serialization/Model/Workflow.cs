@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Process.Internal;
 using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -25,6 +26,13 @@ public class WorkflowWrapper
 /// </summary>
 public class Workflow
 {
+    /// <summary>
+    /// Gets or sets the unique identifier of the workflow.
+    /// </summary>
+    [YamlMember(Alias = "id")]
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets the format version.
     /// </summary>
@@ -72,7 +80,7 @@ public class Workflow
     /// </summary>
     [YamlMember(Alias = "variables")]
     [JsonPropertyName("variables")]
-    public Dictionary<string, Variable>? Variables { get; set; }
+    public Dictionary<string, object>? Variables { get; set; }
 
     /// <summary>
     /// Gets or sets the schemas for the workflow.
@@ -172,7 +180,7 @@ public class InputEvents
 /// <summary>
 /// Messages for the workflow inputs.
 /// </summary>
-public class Messages
+public class Messages : List<object>
 {
 }
 
@@ -385,11 +393,32 @@ public class Node
     public AgentDefinition? Agent { get; set; }
 
     /// <summary>
+    /// Gets or sets the Human In The Loop (HITL) mode of the node.
+    /// </summary>
+    [YamlMember(Alias = "human_in_loop_type")]
+    [JsonPropertyName("human_in_loop_type")]
+    public HITLMode HumanInLoopType { get; set; } = HITLMode.Never;
+
+    /// <summary>
     /// Gets or sets the inputs of the node.
     /// </summary>
     [YamlMember(Alias = "inputs")]
     [JsonPropertyName("inputs")]
-    public NodeInputs? Inputs { get; set; }
+    public Dictionary<string, object>? Inputs { get; set; }
+
+    /// <summary>
+    /// The name of the thread the agent will run on.
+    /// </summary>
+    [YamlMember(Alias = "thread")]
+    [JsonPropertyName("thread")]
+    public string Thread { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The input messages
+    /// </summary>
+    [YamlMember(Alias = "messages_in", DefaultValuesHandling = DefaultValuesHandling.Preserve)]
+    [JsonPropertyName("messages_in")]
+    public Messages MessagesIn { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the agent input mapping of the node.
@@ -455,25 +484,11 @@ public enum AgentInputType
 public class NodeInputs
 {
     /// <summary>
-    /// Gets or sets the type of the node input.
-    /// </summary>
-    [YamlMember(Alias = "type")]
-    [JsonPropertyName("type")]
-    public AgentInputType Type { get; set; }
-
-    /// <summary>
     /// Gets or sets the inputs of the node.
     /// </summary>
-    [YamlMember(Alias = "structured_input_schema")]
-    [JsonPropertyName("structured_input_schema")]
-    public string? StructuredInputSchema { get; set; }
-
-    /// <summary>
-    /// Gets or sets the schema of the node input.
-    /// </summary>
-    [YamlMember(Alias = "default")]
-    [JsonPropertyName("default")]
-    public object? Default { get; set; }
+    [YamlMember(Alias = "schema")]
+    [JsonPropertyName("schema")]
+    public string? Schema { get; set; }
 }
 
 /// <summary>
@@ -488,26 +503,6 @@ public class SchemaReference
     [JsonPropertyName("$ref")]
     public string? Ref { get; set; }
 }
-
-///// <summary>
-///// Hook for the node.
-///// </summary>
-//public class NodeHook
-//{
-//    /// <summary>
-//    /// Gets or sets the events emitted by the hook.
-//    /// </summary>
-//    [YamlMember(Alias = "emits")]
-//    [JsonPropertyName("emits")]
-//    public List<EventEmission>? Emits { get; set; }
-
-//    /// <summary>
-//    /// Gets or sets the variable updates by the hook.
-//    /// </summary>
-//    [YamlMember(Alias = "updates")]
-//    [JsonPropertyName("updates")]
-//    public List<VariableUpdate>? Updates { get; set; }
-//}
 
 /// <summary>
 /// Action to be taken on completion.
@@ -530,17 +525,12 @@ public enum DeclarativeProcessConditionType
     /// <summary>
     /// Condition on the process state.
     /// </summary>
-    State,
-
-    /// <summary>
-    /// Condition on the output of an agent or step.
-    /// </summary>
-    Output,
+    Eval,
 
     /// <summary>
     /// Condition on the input to an agent or step.
     /// </summary>
-    Semantic,
+    Always,
 
     /// <summary>
     /// Condition that activates when no other condition is met.
@@ -558,7 +548,7 @@ public class DeclarativeProcessCondition
     /// </summary>
     [YamlMember(Alias = "type")]
     [JsonPropertyName("type")]
-    public DeclarativeProcessConditionType Type { get; set; } = DeclarativeProcessConditionType.State;
+    public DeclarativeProcessConditionType Type { get; set; } = DeclarativeProcessConditionType.Eval;
 
     /// <summary>
     /// Gets or sets the expression of the condition.
@@ -669,15 +659,43 @@ public enum StateUpdateOperations
     /// <summary>
     /// Set operation.
     /// </summary>
+    [YamlMember(Alias = "set")]
+    [JsonPropertyName("set")]
     Set,
+
     /// <summary>
     /// Increment operation.
     /// </summary>
+    [YamlMember(Alias = "increment")]
+    [JsonPropertyName("increment")]
     Increment,
+
     /// <summary>
     /// Decrement operation.
     /// </summary>
+    [YamlMember(Alias = "decrement")]
+    [JsonPropertyName("decrement")]
     Decrement
+}
+
+/// <summary>
+/// Mode for human-in-the-loop (HITL) interaction.
+/// </summary>
+public enum HITLMode
+{
+    /// <summary>
+    /// Always ask the user for input.
+    /// </summary>
+    [YamlMember(Alias = "always")]
+    [JsonPropertyName("always")]
+    Always,
+
+    /// <summary>
+    /// Never ask the user for input.
+    /// </summary>
+    [YamlMember(Alias = "never")]
+    [JsonPropertyName("never")]
+    Never,
 }
 
 /// <summary>
@@ -688,8 +706,8 @@ public class VariableUpdate
     /// <summary>
     /// Gets or sets the variable to be updated.
     /// </summary>
-    [YamlMember(Alias = "variable")]
-    [JsonPropertyName("variable")]
+    [YamlMember(Alias = "path")]
+    [JsonPropertyName("path")]
     public string Path { get; set; } = string.Empty;
 
     /// <summary>
@@ -787,11 +805,18 @@ public class ListenEvent
 public class ThenAction
 {
     /// <summary>
+    /// Gets or sets the type.
+    /// </summary>
+    [YamlMember(Alias = "type")]
+    [JsonPropertyName("type")]
+    public ActionType Type { get; set; }
+
+    /// <summary>
     /// Gets or sets the node to execute.
     /// </summary>
     [YamlMember(Alias = "node")]
     [JsonPropertyName("node")]
-    public string Node { get; set; } = string.Empty;
+    public string? Node { get; set; }
 
     /// <summary>
     /// Gets or sets the inputs for the node.
@@ -799,6 +824,134 @@ public class ThenAction
     [YamlMember(Alias = "inputs")]
     [JsonPropertyName("inputs")]
     public Dictionary<string, string>? Inputs { get; set; }
+
+    /// <summary>
+    /// Gets or sets the messages to be sent to the node.
+    /// </summary>
+    [YamlMember(Alias = "messages_in")]
+    [JsonPropertyName("messages_in")]
+    public string? MessagesIn { get; set; }
+
+    /// <summary>
+    /// Gets or sets the thread to send the event to.
+    /// </summary>
+    [YamlMember(Alias = "thread")]
+    [JsonPropertyName("thread")]
+    public string? Thread { get; set; }
+
+    /// <summary>
+    /// Gets or sets the variable to be updated.
+    /// </summary>
+    [YamlMember(Alias = "path")]
+    [JsonPropertyName("path")]
+    public string? Path { get; set; }
+
+    /// <summary>
+    /// Gets or sets the operation to be performed on the variable.
+    /// </summary>
+    [YamlMember(Alias = "operation")]
+    [JsonPropertyName("operation")]
+    public StateUpdateOperations? Operation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the value to be assigned to the variable.
+    /// </summary>
+    [YamlMember(Alias = "value")]
+    [JsonPropertyName("value")]
+    public object? Value { get; set; }
+
+    /// <summary>
+    /// Gets or sets the type of message to emit.
+    /// </summary>
+    [YamlMember(Alias = "emit")]
+    [JsonPropertyName("emit")]
+    public string? EmitMessageType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the payload of the message to emit.
+    /// </summary>
+    [YamlMember(Alias = "payload")]
+    [JsonPropertyName("payload")]
+    public Dictionary<string, string>? EmitMessagePayload { get; set; }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="ThenAction"/> class from a <see cref="KernelProcessEdge"/>.
+    /// </summary>
+    /// <param name="edge"></param>
+    /// <param name="defaultThread"></param>
+    /// <returns></returns>
+    /// <exception cref="KernelException"></exception>
+    public static ThenAction FromKernelProcessEdge(KernelProcessEdge edge, string? defaultThread)
+    {
+        if (edge.OutputTarget is KernelProcessStateTarget stateTarget)
+        {
+            return new ThenAction
+            {
+                Type = ActionType.Update,
+                Path = stateTarget.VariableUpdate.Path,
+                Operation = stateTarget.VariableUpdate.Operation,
+                Value = stateTarget.VariableUpdate.Value
+            };
+        }
+        if (edge.OutputTarget is KernelProcessFunctionTarget functionTarget)
+        {
+            if (!edge.Metadata.TryGetValue("foundryAgent.inputs", out object? inputsObj) || inputsObj is null || inputsObj is not Dictionary<string, string> inputsDict)
+            {
+                inputsDict = [];
+            }
+
+            if (!edge.Metadata.TryGetValue("foundryAgent.messagesIn", out object? messagesInObj) || messagesInObj is not string messagesIn)
+            {
+                messagesIn = null!;
+            }
+
+            if (!edge.Metadata.TryGetValue("foundryAgent.thread", out object? threadObj) || threadObj is null || threadObj is not string thread)
+            {
+                thread = defaultThread ?? "";
+            }
+
+            return new ThenAction()
+            {
+                Type = ActionType.NodeInvocation,
+                Node = functionTarget.StepId == ProcessConstants.EndStepName ? "End" : functionTarget.StepId,
+                Inputs = inputsDict,
+                MessagesIn = messagesIn,
+                Thread = thread
+            };
+        }
+        if (edge.OutputTarget is KernelProcessEmitTarget emitTarget)
+        {
+            return new ThenAction
+            {
+                Type = ActionType.Emit,
+                EmitMessageType = emitTarget.EventName,
+                EmitMessagePayload = emitTarget.Payload,
+            };
+        }
+
+        throw new KernelException("Unsupported target type");
+    }
+}
+
+/// <summary>
+/// The types of action
+/// </summary>
+public enum ActionType
+{
+    /// <summary>
+    /// An action type for invoking a Node.
+    /// </summary>
+    NodeInvocation,
+
+    /// <summary>
+    /// An action to apply an update to user state.
+    /// </summary>
+    Update,
+
+    /// <summary>
+    /// An action to emit an event.
+    /// </summary>
+    Emit
 }
 
 /// <summary>

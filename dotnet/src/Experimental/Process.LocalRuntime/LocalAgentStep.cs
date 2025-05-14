@@ -107,7 +107,7 @@ internal class LocalAgentStep : LocalStep
     private async Task ProcessDeclarativeConditionsAsync(object? result, KernelProcessDeclarativeConditionHandler conditionHandler)
     {
         int executedConditionCount = 0;
-        foreach (var onCompleteStateCondition in conditionHandler.StateConditions ?? [])
+        foreach (var onCompleteStateCondition in conditionHandler.EvalConditions ?? [])
         {
             // process state conditions
             await this.ProcessConditionsAsync(result, onCompleteStateCondition).ConfigureAwait(false);
@@ -115,15 +115,17 @@ internal class LocalAgentStep : LocalStep
             // Test condition
             // TODO: Apply state conditions to the result and emit events
         }
-        foreach (var onCompleteSemanticCondition in conditionHandler.SemanticConditions ?? [])
+
+        var alwaysCondition = conditionHandler.AlwaysCondition;
+        if (alwaysCondition != null)
         {
             // process semantic conditions
-            await this.ProcessConditionsAsync(result, onCompleteSemanticCondition).ConfigureAwait(false);
+            await this.ProcessConditionsAsync(result, alwaysCondition).ConfigureAwait(false);
             executedConditionCount++;
             // TODO: Apply state conditions to the result and emit events
         }
 
-        var defaultCondition = conditionHandler.Default;
+        var defaultCondition = conditionHandler.DefaultCondition;
         if (executedConditionCount == 0 && defaultCondition != null)
         {
             await this.ProcessConditionsAsync(result, defaultCondition).ConfigureAwait(false);

@@ -24,7 +24,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     private readonly List<ProcessStepBuilder> _entrySteps = [];
 
     /// <summary>Maps external input event Ids to the target entry step for the event.</summary>
-    private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
+    private readonly Dictionary<string, ProcessTargetBuilder> _externalEventTargetMap = [];
 
     /// <summary>
     /// The collection of threads within this process.
@@ -47,15 +47,23 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     public Type? StateType { get; init; } = null;
 
     /// <summary>
+    /// The description of the process.
+    /// </summary>
+    public string Description { get; init; } = string.Empty;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
     /// </summary>
     /// <param name="id">The name of the process. This is required.</param>
+    /// <param name="description">The semantic description of the Process being built.</param>
+    /// <param name="processBuilder">ProcessBuilder to copy from</param>
     /// <param name="stateType">The type of the state. This is optional.</param>
-    public ProcessBuilder(string id, Type? stateType = null)
-        : base(id)
+    public ProcessBuilder(string id, string? description = null, ProcessBuilder? processBuilder = null, Type? stateType = null)
+        : base(id, processBuilder)
     {
         Verify.NotNullOrWhiteSpace(id, nameof(id));
         this.StateType = stateType;
+        this.Description = description ?? string.Empty;
     }
 
     /// <summary>
@@ -120,9 +128,10 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <summary>
     /// Builds the step.
     /// </summary>
+    /// <param name="processBuilder">ProcessBuilder to build the step for</param>
     /// <param name="stateMetadata">State to apply to the step on the build process</param>
     /// <returns></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
     {
         // The step is a, process so we can return the step info directly.
         return this.Build(stateMetadata as KernelProcessStateMetadata);
@@ -183,7 +192,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType<TStep>(string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id: id ?? typeof(TStep).Name);
+        ProcessStepBuilder<TStep> stepBuilder = new(id: id ?? typeof(TStep).Name, this.ProcessBuilder);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -197,7 +206,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType(Type stepType, string? id = null, IReadOnlyList<string>? aliases = null)
     {
-        ProcessStepBuilderTyped stepBuilder = new(stepType: stepType, id: id ?? stepType.Name);
+        ProcessStepBuilderTyped stepBuilder = new(stepType: stepType, id: id ?? stepType.Name, this.ProcessBuilder);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -213,7 +222,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, initialState: initialState);
+        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this.ProcessBuilder, initialState: initialState);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -225,7 +234,8 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
-    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? id = null, IReadOnlyList<string>? aliases = null, string? threadName = null)
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgent<TProcessState>(AgentDefinition agentDefinition, string? id = null, IReadOnlyList<string>? aliases = null, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never) where TProcessState : class, new()
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
 
@@ -241,7 +251,35 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             threadName = agentDefinition.Name;
         }
 
-        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName, new NodeInputs(), id); // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder, id) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        return this.AddStep(stepBuilder, aliases);
+    }
+
+    /// <summary>
+    /// Adds a step to the process from a declarative agent.
+    /// </summary>
+    /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
+    /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
+    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? id = null, IReadOnlyList<string>? aliases = null, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never)
+    {
+        Verify.NotNull(agentDefinition, nameof(agentDefinition));
+
+        if (string.IsNullOrWhiteSpace(agentDefinition.Name))
+        {
+            throw new ArgumentException("AgentDefinition.Name cannot be null or empty.", nameof(agentDefinition));
+        }
+
+        if (string.IsNullOrWhiteSpace(threadName))
+        {
+            // No thread name was specified so add a new thread for the agent.
+            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            threadName = agentDefinition.Name;
+        }
+
+        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this.ProcessBuilder) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -251,10 +289,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
     /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
     /// <param name="stepId">Id of the step. If not provided, the Id will come from the agent Id.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessAgentBuilder AddStepFromAgentProxy(AgentDefinition agentDefinition, string? threadName = null, string? stepId = null, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgentProxy<TProcessState>(AgentDefinition agentDefinition, string? threadName = null, string? stepId = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null) where TProcessState : class, new()
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
 
@@ -282,7 +321,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             return Task.FromResult(result);
         });
 
-        ProcessAgentBuilder stepBuilder = new(agentDefinition, threadName: threadName, new NodeInputs(), stepId) { AgentIdResolver = agentIdResolver }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder, stepId) { AgentIdResolver = agentIdResolver, HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -318,7 +357,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
     public ProcessMapBuilder AddMapStepFromType<TStep>(string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name);
+        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this.ProcessBuilder);
 
         ProcessMapBuilder mapBuilder = new(stepBuilder);
 
@@ -336,7 +375,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
     public ProcessMapBuilder AddMapStepFromType<TStep, TState>(TState initialState, string id, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(id, initialState: initialState);
+        ProcessStepBuilder<TStep> stepBuilder = new(id, this.ProcessBuilder, initialState: initialState);
 
         ProcessMapBuilder mapBuilder = new(stepBuilder);
 
@@ -371,7 +410,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessProxyBuilder"/></returns>
     public ProcessProxyBuilder AddProxyStep(string id, IReadOnlyList<string> externalTopics, IReadOnlyList<string>? aliases = null)
     {
-        ProcessProxyBuilder proxyBuilder = new(externalTopics, id ?? nameof(KernelProxyStep));
+        ProcessProxyBuilder proxyBuilder = new(externalTopics, id ?? nameof(KernelProxyStep), this);
 
         return this.AddStep(proxyBuilder, aliases);
     }
@@ -415,13 +454,6 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         this._threads[threadName] = processThread;
         return this;
     }
-
-    //public ProcessBuilder Add<T>(string variableName, T initialValue)
-    //{
-    //    Verify.NotNullOrWhiteSpace(variableName, nameof(variableName));
-    //    //this.Variables[variableName] = initialValue;
-    //    return this;
-    //}
 
     /// <summary>
     /// Provides an instance of <see cref="ProcessEdgeBuilder"/> for defining an input edge to a process.
@@ -470,8 +502,13 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             throw new KernelException($"The process named '{this.Name}' does not expose an event with Id '{eventId}'.");
         }
 
+        if (target is not ProcessFunctionTargetBuilder functionTargetBuilder)
+        {
+            throw new KernelException($"The process named '{this.Name}' does not expose an event with Id '{eventId}'.");
+        }
+
         // Targets for external events on a process should be scoped to the process itself rather than the step inside the process.
-        var processTarget = target with { Step = this, TargetEventId = eventId };
+        var processTarget = functionTargetBuilder with { Step = this, TargetEventId = eventId };
         return processTarget;
     }
 
@@ -489,8 +526,8 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         var builtSteps = this.BuildWithStateMetadata(stateMetadata);
 
         // Create the process
-        KernelProcessState state = new(this.Name, version: this.Version, id: this.HasParentProcess ? this.Id : null);
-        KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads, UserStateype = this.StateType };
+        KernelProcessState state = new(this.Name, version: this.Version, id: this.Id);
+        KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads, UserStateype = this.StateType, Description = this.Description };
 
         return process;
     }

@@ -5,7 +5,12 @@ description:
   A workflow that has student and teacher that does question answering
   about math
 inputs:
-  messages: {}
+  messages:
+  events:
+    cloud_events:
+      - type: "input_message_received"
+        data_schema: 
+          type: string
 variables: {}
 schemas: {}
 nodes:
@@ -61,7 +66,7 @@ nodes:
 orchestration:
   - listen_for:
       event: input_message_received
-      from: $.inputs.events
+      from: _workflow_
     then:
       - node: Student
   - listen_for:
