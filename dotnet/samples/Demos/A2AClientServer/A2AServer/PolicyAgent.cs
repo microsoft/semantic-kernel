@@ -7,7 +7,7 @@ using SharpA2A.Core;
 
 namespace A2A;
 
-internal class PolicyAgent : A2AHostAgent
+internal sealed class PolicyAgent : A2AHostAgent
 {
     internal PolicyAgent(string modelId, string apiKey, ILogger logger) : base(logger)
     {

@@ -8,7 +8,7 @@ using SharpA2A.Core;
 
 namespace A2A;
 
-internal class InvoiceAgent : A2AHostAgent
+internal sealed class InvoiceAgent : A2AHostAgent
 {
     internal InvoiceAgent(string modelId, string apiKey, ILogger logger) : base(logger)
     {

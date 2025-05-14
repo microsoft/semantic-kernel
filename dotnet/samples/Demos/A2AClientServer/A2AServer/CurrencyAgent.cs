@@ -11,7 +11,7 @@ using SharpA2A.Core;
 
 namespace A2A;
 
-internal class CurrencyAgent : A2AHostAgent, IDisposable
+internal sealed class CurrencyAgent : A2AHostAgent, IDisposable
 {
     internal CurrencyAgent(string modelId, string apiKey, ILogger logger) : base(logger)
     {
