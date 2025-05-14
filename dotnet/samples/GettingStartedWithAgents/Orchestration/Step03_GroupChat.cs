@@ -54,7 +54,7 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
         GroupChatOrchestration orchestration =
             new(new RoundRobinGroupChatManager()
             {
-                MaximumInvocations = 5
+                MaximumInvocationCount = 5
             },
             writer,
             editor)

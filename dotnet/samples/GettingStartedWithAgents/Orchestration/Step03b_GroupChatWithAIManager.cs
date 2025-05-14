@@ -116,7 +116,7 @@ public class Step03b_GroupChatWithAIManager(ITestOutputHelper output) : BaseOrch
                     topic,
                     kernel.GetRequiredService<IChatCompletionService>())
                 {
-                    MaximumInvocations = 5
+                    MaximumInvocationCount = 5
                 },
                 farmer,
                 developer,

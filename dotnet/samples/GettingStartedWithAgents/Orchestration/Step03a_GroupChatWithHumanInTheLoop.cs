@@ -48,7 +48,7 @@ public class Step03a_GroupChatWithHumanInTheLoop(ITestOutputHelper output) : Bas
             new(
                 new CustomRoundRobinGroupChatManager()
                 {
-                    MaximumInvocations = 5,
+                    MaximumInvocationCount = 5,
                     InteractiveCallback = () =>
                     {
                         ChatMessageContent input = new(AuthorRole.User, "I like it");

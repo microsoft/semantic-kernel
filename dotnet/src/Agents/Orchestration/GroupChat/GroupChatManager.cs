@@ -29,7 +29,7 @@ public sealed class GroupChatManagerResult<TValue>(TValue value)
 /// </summary>
 public abstract class GroupChatManager
 {
-    private int _invocationsCount;
+    private int _invocationCount;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatManager"/> class.
@@ -39,12 +39,13 @@ public abstract class GroupChatManager
     /// <summary>
     /// Gets the number of times the group chat manager has been invoked.
     /// </summary>
-    public int InvocationsCount => this._invocationsCount;
+    public int InvocationCount => this._invocationCount
+        ;
 
     /// <summary>
     /// Gets or sets the maximum number of invocations allowed for the group chat manager.
     /// </summary>
-    public int MaximumInvocations { get; init; } = int.MaxValue;
+    public int MaximumInvocationCount { get; init; } = int.MaxValue;
 
     /// <summary>
     /// Gets or sets the callback to be invoked for interactive input.
@@ -84,11 +85,11 @@ public abstract class GroupChatManager
     /// <returns>A <see cref="GroupChatManagerResult{TValue}"/> indicating whether the chat should be terminated.</returns>
     public virtual ValueTask<GroupChatManagerResult<bool>> ShouldTerminate(ChatHistory history, CancellationToken cancellationToken = default)
     {
-        Interlocked.Increment(ref this._invocationsCount);
+        Interlocked.Increment(ref this._invocationCount);
 
         bool resultValue = false;
         string reason = "Maximum number of invocations has not been reached.";
-        if (this.InvocationsCount > this.MaximumInvocations)
+        if (this.InvocationCount > this.MaximumInvocationCount)
         {
             resultValue = true;
             reason = "Maximum number of invocations reached.";
