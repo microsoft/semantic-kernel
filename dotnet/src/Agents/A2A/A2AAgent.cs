@@ -24,6 +24,8 @@ public sealed class A2AAgent : Agent
     {
         this.Client = client;
         this.AgentCard = agentCard;
+        this.Name = agentCard.Name;
+        this.Description = agentCard.Description;
     }
 
     /// <summary>

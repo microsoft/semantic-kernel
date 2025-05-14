@@ -1,0 +1,51 @@
+﻿@host = http://localhost:5000
+
+### Query agent card for the invoice agent
+GET {{host}}/invoice/.well-known/agent.json
+
+### Send a task to the invoice agent
+POST {{host}}/invoice
+Content-Type: application/json
+
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "method": "task/send",
+    "params": {
+        "id": "12345",
+        "message": {
+            "role": "user",
+            "parts": [
+                {
+                    "type": "text",
+                    "text": "Show me all invoices for Contoso?"
+                }
+            ]
+        }
+    }
+}
+
+### Query agent card for the currency agent
+GET {{host}}/currency/.well-known/agent.json
+
+### Send a task to the currency agent
+POST {{host}}/currency
+Content-Type: application/json
+
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "method": "task/send",
+    "params": {
+        "id": "12345",
+        "message": {
+            "role": "user",
+            "parts": [
+                {
+                    "type": "text",
+                    "text": "What is the current exchange rather for Dollars to Euro?"
+                }
+            ]
+        }
+    }
+}
