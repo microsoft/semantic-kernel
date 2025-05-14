@@ -29,6 +29,7 @@ from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMet
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -51,6 +52,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 AgentHandoffs = dict[str, str]
 
 
+@experimental
 class OrchestrationHandoffs(dict[str, AgentHandoffs]):
     """A dictionary mapping agent names to their handoff connections.
 
@@ -120,18 +122,21 @@ class OrchestrationHandoffs(dict[str, AgentHandoffs]):
         return self
 
 
+@experimental
 class HandoffStartMessage(KernelBaseModel):
     """A start message type to kick off a handoff group chat."""
 
     body: DefaultTypeAlias
 
 
+@experimental
 class HandoffRequestMessage(KernelBaseModel):
     """A request message type for agents in a handoff group chat."""
 
     agent_name: str
 
 
+@experimental
 class HandoffResponseMessage(KernelBaseModel):
     """A response message type from agents in a handoff group chat."""
 
@@ -146,6 +151,7 @@ HANDOFF_PLUGIN_NAME = "Handoff"
 # region HandoffAgentActor
 
 
+@experimental
 class HandoffAgentActor(AgentActorBase):
     """An agent actor that handles handoff messages in a group chat."""
 
@@ -346,6 +352,7 @@ class HandoffAgentActor(AgentActorBase):
 # region HandoffOrchestration
 
 
+@experimental
 class HandoffOrchestration(OrchestrationBase[TIn, TOut]):
     """An orchestration class for managing handoff agents in a group chat."""
 
