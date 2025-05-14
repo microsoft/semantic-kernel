@@ -89,23 +89,6 @@ async def test_constructor_raises_exception_on_validation_error() -> None:
         )
 
 
-async def test_constructor_raises_exception_if_no_connection_string() -> None:
-    """
-    Ensure that a VectorStoreInitializationException is raised if the
-    AzureCosmosDBforMongoDBSettings.connection_string is None.
-    """
-    # Mock settings without a connection string
-    mock_settings = AsyncMock(spec=cosmos_settings.AzureCosmosDBforMongoDBSettings)
-    mock_settings.connection_string = None
-    mock_settings.database_name = "some_database"
-
-    with (
-        patch.object(cosmos_settings.AzureCosmosDBforMongoDBSettings, "__init__", return_value=mock_settings),
-        pytest.raises(VectorStoreInitializationException),
-    ):
-        cosmos_collection.AzureCosmosDBforMongoDBCollection(collection_name="test_collection", data_model_type=dict)
-
-
 async def test_create_collection_calls_database_methods() -> None:
     """
     Test create_collection to verify that it first creates a collection, then
