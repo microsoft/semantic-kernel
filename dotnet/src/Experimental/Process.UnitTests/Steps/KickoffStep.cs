@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
+using System;
+using System.Threading.Tasks;
 
-namespace ProcessWithDapr.ProcessSteps;
+namespace Microsoft.SemanticKernel.Process.UnitTests.Steps;
 
 /// <summary>
 /// Kick off step for the process.
 /// </summary>
-internal sealed class KickoffStep : KernelProcessStep
+public sealed class KickoffStep : KernelProcessStep
 {
     public static class ProcessFunctions
     {

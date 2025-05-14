@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Microsoft.SemanticKernel.Process;
 
 namespace Microsoft.SemanticKernel;
 

@@ -10,17 +10,17 @@ namespace Microsoft.SemanticKernel;
 public class KernelProcessDeclarativeConditionHandler
 {
     /// <summary>
-    /// The optional default handler.
+    /// An optional handler that will always be executed.
     /// </summary>
-    public DeclarativeProcessCondition? Default { get; init; }
+    public DeclarativeProcessCondition? AlwaysCondition { get; init; }
 
     /// <summary>
-    /// The list of state-based handlers.
+    /// An optional handler that will be executed if no other condition is met.
     /// </summary>
-    public List<DeclarativeProcessCondition>? StateConditions { get; init; } = [];
+    public DeclarativeProcessCondition? DefaultCondition { get; init; }
 
     /// <summary>
-    /// The list of semantic-based handlers.
+    /// The list of eval-based handlers.
     /// </summary>
-    public List<DeclarativeProcessCondition>? SemanticConditions { get; init; } = [];
+    public List<DeclarativeProcessCondition>? EvalConditions { get; init; } = [];
 }

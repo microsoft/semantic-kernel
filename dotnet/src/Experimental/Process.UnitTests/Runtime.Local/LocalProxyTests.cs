@@ -245,12 +245,12 @@ public class LocalProxyTests
         counterStep
             .OnFunctionResult()
             .EmitExternalEvent(proxyStep, this._topic1)
-            .SendEventTo(new(evenNumberStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(evenNumberStep));
 
         // request another number if number is odd
         evenNumberStep
             .OnEvent(CommonSteps.EvenNumberDetectorStep.OutputEvents.OddNumber)
-            .SendEventTo(new(counterStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep));
 
         evenNumberStep
             .OnEvent(CommonSteps.EvenNumberDetectorStep.OutputEvents.EvenNumber)

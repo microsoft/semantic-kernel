@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Azure;
 using System;
-using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Agents.AzureAI;
+using Azure;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.AzureAI;
 
 namespace Microsoft.SemanticKernel.Process.Internal;
 

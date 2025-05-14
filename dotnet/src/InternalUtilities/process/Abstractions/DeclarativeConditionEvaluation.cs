@@ -1,39 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
 using System;
 using System.Text.Json;
-using System.Threading.Tasks;
 using DevLab.JmesPath;
 
-namespace Microsoft.SemanticKernel.Process;
-internal class ProcessStateManager
-{
-    private readonly Type? _stateType;
-    private object? _instance;
-
-    public ProcessStateManager(Type? stateType, object? initialState = null)
-    {
-        this._stateType = stateType;
-        this._instance = initialState;
-
-        if (initialState is null && stateType is not null)
-        {
-            // Create an instance of the state type if not provided
-            this._instance = Activator.CreateInstance(stateType);
-        }
-    }
-
-    public async Task ReduceAsync(Func<Type, object?, Task<object?>> func)
-    {
-        Verify.NotNull(func);
-        if (this._stateType is null)
-        {
-            throw new KernelException("State type is not defined.");
-        }
-
-        this._instance = await func(this._stateType, this._instance).ConfigureAwait(false);
-    }
-}
+namespace Microsoft.SemanticKernel.Process.Internal;
 
 internal static class JMESPathConditionEvaluator
 {
@@ -102,6 +72,58 @@ internal static class JMESPathConditionEvaluator
             // Log the exception if needed
             Console.WriteLine($"Error evaluating JMESPath expression: {ex.Message}");
             return false;
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
+    }
+
+    /// <summary>
+    /// Evaluates a JMESPath expression on a state object and returns the result as a string.
+    /// </summary>
+    /// <param name="data">The state object to evaluate against</param>
+    /// <param name="jmesPathExpression">The JMESPath expression</param>
+    /// <returns>The string result, or null if the result is null or cannot be converted to a string</returns>
+    public static string? EvaluateToString(object data, string jmesPathExpression)
+    {
+        if (data == null || string.IsNullOrEmpty(jmesPathExpression))
+        {
+            return null;
+        }
+
+        JmesPath _jmesPath = new();
+
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            // Convert your state object to a JSON string
+            string jsonState = JsonSerializer.Serialize(data);
+
+            // Evaluate the JMESPath expression
+            string result = _jmesPath.Transform(jsonState, jmesPathExpression);
+
+            // Handle different result scenarios
+            if (string.IsNullOrEmpty(result) || result == "null")
+            {
+                return null;
+            }
+
+            // Parse the result to handle string escape sequences properly
+            using JsonDocument doc = JsonDocument.Parse(result);
+            JsonElement root = doc.RootElement;
+
+            // Check if the result is a JSON string
+            if (root.ValueKind == JsonValueKind.String)
+            {
+                // Return the string value without quotes
+                return root.GetString();
+            }
+            // For non-string results, convert to string representation
+            return root.ToString();
+        }
+        catch (Exception ex)
+        {
+            // Log the exception if needed
+            Console.WriteLine($"Error evaluating JMESPath expression: {ex.Message}");
+            return null;
         }
 #pragma warning restore CA1031 // Do not catch general exception types
     }

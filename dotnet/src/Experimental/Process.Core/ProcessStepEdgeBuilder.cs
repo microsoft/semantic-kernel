@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public class ProcessStepEdgeBuilder
 {
-    internal ProcessFunctionTargetBuilder? Target { get; set; }
+    internal ProcessTargetBuilder? Target { get; set; }
 
     /// <summary>
     /// The event data that the edge fires on.
@@ -30,13 +30,30 @@ public class ProcessStepEdgeBuilder
     internal KernelProcessEdgeGroupBuilder? EdgeGroupBuilder { get; set; }
 
     /// <summary>
+    /// The condition that must be met for the edge to fire.
+    /// </summary>
+    internal KernelProcessEdgeCondition? Condition { get; set; }
+
+    /// <summary>
+    /// Optional metadata to include with the edge.
+    /// </summary>
+    internal Dictionary<string, object?> Metadata { get; set; }
+
+    /// <summary>
+    /// An optional variable update to be performed when the edge fires.
+    /// </summary>
+    internal VariableUpdate? VariableUpdate { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ProcessStepEdgeBuilder"/> class.
     /// </summary>
     /// <param name="source">The source step.</param>
     /// <param name="eventId">The Id of the event.</param>
     /// <param name="eventName"></param>
     /// <param name="edgeGroupBuilder">The group Id for the edge.</param>
-    internal ProcessStepEdgeBuilder(ProcessStepBuilder source, string eventId, string eventName, KernelProcessEdgeGroupBuilder? edgeGroupBuilder = null)
+    /// <param name="condition">The condition that must be met for the edge to fire.</param>
+    /// <param name="metadata"> Optional metadata to include with the event.</param>
+    internal ProcessStepEdgeBuilder(ProcessStepBuilder source, string eventId, string eventName, KernelProcessEdgeGroupBuilder? edgeGroupBuilder = null, KernelProcessEdgeCondition? condition = null, Dictionary<string, object?>? metadata = null)
     {
         Verify.NotNull(source, nameof(source));
         Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
@@ -44,6 +61,8 @@ public class ProcessStepEdgeBuilder
         this.Source = source;
         this.EventData = new() { EventId = eventId, EventName = eventName };
         this.EdgeGroupBuilder = edgeGroupBuilder;
+        this.Condition = condition;
+        this.Metadata = metadata ?? [];
     }
 
     /// <summary>
@@ -52,51 +71,75 @@ public class ProcessStepEdgeBuilder
     internal KernelProcessEdge Build(ProcessBuilder? processBuilder = null)
     {
         Verify.NotNull(this.Source?.Id);
-        Verify.NotNull(this.Target);
 
-        if (this.EdgeGroupBuilder is not null && this.Target is ProcessStepTargetBuilder stepTargetBuilder)
+        if (this.Target is null || this.Source?.Id is null)
         {
-            var messageSources = this.EdgeGroupBuilder.MessageSources.Select(e => new KernelProcessMessageSource(e.MessageType, e.Source.Id)).ToList();
-            var edgeGroup = new KernelProcessEdgeGroup(this.EdgeGroupBuilder.GroupId, messageSources, stepTargetBuilder.InputMapping);
-            this.Target.Step.RegisterGroupInputMapping(edgeGroup);
+            throw new InvalidOperationException("A target and Source must be specified before building the edge.");
         }
 
-        return new KernelProcessEdge(this.Source.Id, this.Target.Build(processBuilder), groupId: this.EdgeGroupBuilder?.GroupId);
+        if (this.Target is ProcessFunctionTargetBuilder functionTargetBuilder)
+        {
+            if (this.EdgeGroupBuilder is not null && this.Target is ProcessStepTargetBuilder stepTargetBuilder)
+            {
+                var messageSources = this.EdgeGroupBuilder.MessageSources.Select(e => new KernelProcessMessageSource(e.MessageType, e.Source.Id)).ToList();
+                var edgeGroup = new KernelProcessEdgeGroup(this.EdgeGroupBuilder.GroupId, messageSources, stepTargetBuilder.InputMapping);
+                functionTargetBuilder.Step.RegisterGroupInputMapping(edgeGroup);
+            }
+        }
+
+        return new KernelProcessEdge(this.Source.Id, this.Target.Build(processBuilder), groupId: this.EdgeGroupBuilder?.GroupId, this.Condition, this.Metadata, this.VariableUpdate);
     }
 
     /// <summary>
     /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
     /// </summary>
     /// <param name="target">The output target.</param>
+    /// <param name="metadata"> Optional metadata to include with the event.</param>
     /// <returns>A fresh builder instance for fluid definition</returns>
-    public ProcessStepEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder target)
+    public ProcessStepEdgeBuilder SendEventTo(ProcessTargetBuilder target, Dictionary<string, object?>? metadata = null)
     {
-        return this.SendEventTo_Internal(target);
+        return this.SendEventTo_Internal(target, metadata);
+    }
+
+    /// <summary>
+    /// Sets the condition for the edge.
+    /// </summary>
+    /// <param name="condition"></param>
+    /// <returns></returns>
+    public ProcessStepEdgeBuilder OnCondition(KernelProcessEdgeCondition condition)
+    {
+        Verify.NotNull(condition, nameof(condition));
+        this.Condition = condition;
+        return this;
     }
 
     /// <summary>
     /// Internally overridable implementation: Signals that the output of the source step should be sent to the specified target when the associated event fires.
     /// </summary>
     /// <param name="target">The output target.</param>
+    /// <param name="metadata"> Optional metadata to include with the event.</param>
     /// <returns>A fresh builder instance for fluid definition</returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="ArgumentException"></exception>
-    internal virtual ProcessStepEdgeBuilder SendEventTo_Internal(ProcessFunctionTargetBuilder target)
+    internal virtual ProcessStepEdgeBuilder SendEventTo_Internal(ProcessTargetBuilder target, Dictionary<string, object?>? metadata = null)
     {
         if (this.Target is not null)
         {
             throw new InvalidOperationException("An output target has already been set.");
         }
 
-        if (this.Source is ProcessMapBuilder && target.Step is ProcessMapBuilder)
+        if (target is ProcessFunctionTargetBuilder functionTargetBuilder)
         {
-            throw new ArgumentException($"{nameof(ProcessMapBuilder)} may not target another {nameof(ProcessMapBuilder)}.", nameof(target));
+            if (functionTargetBuilder.Step is ProcessMapBuilder && this.Source is ProcessMapBuilder)
+            {
+                throw new ArgumentException($"{nameof(ProcessMapBuilder)} may not target another {nameof(ProcessMapBuilder)}.", nameof(target));
+            }
         }
 
         this.Target = target;
         this.Source.LinkTo(this.EventData.EventId, this);
 
-        return new ProcessStepEdgeBuilder(this.Source, this.EventData.EventId, this.EventData.EventName, this.EdgeGroupBuilder);
+        return new ProcessStepEdgeBuilder(this.Source, this.EventData.EventId, this.EventData.EventName, this.EdgeGroupBuilder, this.Condition, metadata);
     }
 
     /// <summary>

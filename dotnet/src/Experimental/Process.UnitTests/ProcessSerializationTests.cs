@@ -4,8 +4,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Process.UnitTests.Steps;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.UnitTests;
@@ -47,10 +47,10 @@ public class ProcessSerializationTests
         // Assert
         Assert.NotNull(process);
 
-        var stepKickoff = process.Steps.FirstOrDefault(s => s.State.Id == "kickoff_agent");
-        var stepA = process.Steps.FirstOrDefault(s => s.State.Id == "a_step_agent");
-        var stepB = process.Steps.FirstOrDefault(s => s.State.Id == "b_step_agent");
-        var stepC = process.Steps.FirstOrDefault(s => s.State.Id == "c_step_agent");
+        var stepKickoff = process.Steps.FirstOrDefault(s => s.State.Id == "kickoff");
+        var stepA = process.Steps.FirstOrDefault(s => s.State.Id == "a_step");
+        var stepB = process.Steps.FirstOrDefault(s => s.State.Id == "b_step");
+        var stepC = process.Steps.FirstOrDefault(s => s.State.Id == "c_step");
 
         Assert.NotNull(stepKickoff);
         Assert.NotNull(stepA);
@@ -59,32 +59,38 @@ public class ProcessSerializationTests
 
         // kickoff step has outgoing edge to aStep and bStep on event startAStep
         Assert.Single(stepKickoff.Edges);
-        var kickoffStartEdges = stepKickoff.Edges["kickoff_agent.StartARequested"];
+        var kickoffStartEdges = stepKickoff.Edges["kickoff.StartARequested"];
         Assert.Equal(2, kickoffStartEdges.Count);
-        Assert.Contains(kickoffStartEdges, e => e.OutputTarget.StepId == "a_step_agent");
-        Assert.Contains(kickoffStartEdges, e => e.OutputTarget.StepId == "b_step_agent");
+        Assert.Contains(kickoffStartEdges, e => (e.OutputTarget as KernelProcessFunctionTarget)!.StepId == "a_step");
+        Assert.Contains(kickoffStartEdges, e => (e.OutputTarget as KernelProcessFunctionTarget)!.StepId == "b_step");
 
         // aStep and bStep have grouped outgoing edges to cStep on event aStepDone and bStepDone
         Assert.Single(stepA.Edges);
-        var aStepDoneEdges = stepA.Edges["a_step_agent.AStepDone"];
+        var aStepDoneEdges = stepA.Edges["a_step.AStepDone"];
         Assert.Single(aStepDoneEdges);
         var aStepDoneEdge = aStepDoneEdges.First();
-        Assert.Equal("c_step_agent", aStepDoneEdge.OutputTarget.StepId);
+        Assert.Equal("c_step", (aStepDoneEdge.OutputTarget as KernelProcessFunctionTarget)!.StepId);
         Assert.NotEmpty(aStepDoneEdge.GroupId ?? "");
 
         Assert.Single(stepB.Edges);
-        var bStepDoneEdges = stepB.Edges["b_step_agent.BStepDone"];
+        var bStepDoneEdges = stepB.Edges["b_step.BStepDone"];
         Assert.Single(bStepDoneEdges);
         var bStepDoneEdge = bStepDoneEdges.First();
-        Assert.Equal("c_step_agent", bStepDoneEdge.OutputTarget.StepId);
+        Assert.Equal("c_step", (bStepDoneEdge.OutputTarget as KernelProcessFunctionTarget)!.StepId);
         Assert.NotEmpty(bStepDoneEdge.GroupId ?? "");
 
-        Assert.Single(stepC.Edges);
-        var cStepDoneEdges = stepC.Edges["c_step_agent.CStepDone"];
+        // cStep has outgoing edge to kickoff step on event cStepDone and one to end the process on event exitRequested
+        Assert.Equal(2, stepC.Edges.Count);
+        var cStepDoneEdges = stepC.Edges["c_step.CStepDone"];
         Assert.Single(cStepDoneEdges);
         var cStepDoneEdge = cStepDoneEdges.First();
-        Assert.Equal("kickoff_agent", cStepDoneEdge.OutputTarget.StepId);
+        Assert.Equal("kickoff", (cStepDoneEdge.OutputTarget as KernelProcessFunctionTarget)!.StepId);
         Assert.Null(cStepDoneEdge.GroupId);
+
+        var exitRequestedEdges = stepC.Edges["Microsoft.SemanticKernel.Process.EndStep"];
+        Assert.Single(exitRequestedEdges);
+        var exitRequestedEdge = exitRequestedEdges.First();
+        Assert.Equal("Microsoft.SemanticKernel.Process.EndStep", (exitRequestedEdge.OutputTarget as KernelProcessFunctionTarget)!.StepId);
 
         // edges to cStep are in the same group
         Assert.Equal(aStepDoneEdge.GroupId, bStepDoneEdge.GroupId);
@@ -119,6 +125,24 @@ public class ProcessSerializationTests
         Assert.NotNull(workflow);
     }
 
+    /// <summary>
+    /// Verify initialization of <see cref="KernelProcessState"/> from a YAML file that contains references to C# class and chat completion agent.
+    /// </summary>
+    [Fact]
+    public async Task KernelProcessFromCombinedWorkflowYamlAsync()
+    {
+        // Arrange
+        var yaml = this.ReadResource("combined-workflow.yaml");
+
+        // Act
+        var process = await ProcessBuilder.LoadFromYamlAsync(yaml);
+
+        // Assert
+        Assert.NotNull(process);
+        Assert.Contains(process.Steps, step => step.State.Id == "GetProductInfo");
+        Assert.Contains(process.Steps, step => step.State.Id == "Summarize");
+    }
+
     private KernelProcess GetProcess()
     {
         // Create the process builder.
@@ -133,7 +157,7 @@ public class ProcessSerializationTests
         // For demonstration purposes, we add the CStep and configure its initial state with a CurrentCycle of 1.
         // Initializing state in a step can be useful for when you need a step to start out with a predetermines
         // configuration that is not easily accomplished with dependency injection.
-        var myCStep = processBuilder.AddStepFromType<CStep, CStepState>(initialState: new() { CurrentCycle = 1 });
+        var myCStep = processBuilder.AddStepFromType<CStep, CStep.CStepState>(initialState: new() { CurrentCycle = 1 });
 
         // Setup the input event that can trigger the process to run and specify which step and function it should be routed to.
         processBuilder
@@ -204,116 +228,4 @@ public class ProcessSerializationTests
             }
         }
     }
-
-    /// <summary>
-    /// Kick off step for the process.
-    /// </summary>
-    private sealed class KickoffStep : KernelProcessStep
-    {
-        public static class Functions
-        {
-            public const string KickOff = nameof(KickOff);
-        }
-
-        [KernelFunction(Functions.KickOff)]
-        public async ValueTask PrintWelcomeMessageAsync(KernelProcessStepContext context)
-        {
-            Console.WriteLine("##### Kickoff ran.");
-            await context.EmitEventAsync(new() { Id = CommonEvents.StartARequested, Data = "Get Going" });
-        }
-    }
-
-    /// <summary>
-    /// A step in the process.
-    /// </summary>
-    private sealed class AStep : KernelProcessStep
-    {
-        [KernelFunction]
-        public async ValueTask DoItAsync(KernelProcessStepContext context)
-        {
-            Console.WriteLine("##### AStep ran.");
-            await Task.Delay(TimeSpan.FromSeconds(1));
-            await context.EmitEventAsync(CommonEvents.AStepDone, "I did A");
-        }
-    }
-
-    /// <summary>
-    /// A step in the process.
-    /// </summary>
-    private sealed class BStep : KernelProcessStep
-    {
-        [KernelFunction]
-        public async ValueTask DoItAsync(KernelProcessStepContext context)
-        {
-            Console.WriteLine("##### BStep ran.");
-            await Task.Delay(TimeSpan.FromSeconds(2));
-            await context.EmitEventAsync(new() { Id = CommonEvents.BStepDone, Data = "I did B" });
-        }
-    }
-
-    /// <summary>
-    /// A stateful step in the process. This step uses <see cref="CStepState"/> as the persisted
-    /// state object and overrides the ActivateAsync method to initialize the state when activated.
-    /// </summary>
-    private sealed class CStep : KernelProcessStep<CStepState>
-    {
-        private CStepState? _state;
-
-        // ################ Using persisted state #################
-        // CStep has state that we want to be persisted in the process. To ensure that the step always
-        // starts with the previously persisted or configured state, we need to override the ActivateAsync
-        // method and use the state object it provides.
-        public override ValueTask ActivateAsync(KernelProcessStepState<CStepState> state)
-        {
-            this._state = state.State!;
-            Console.WriteLine($"##### CStep activated with Cycle = '{state.State?.CurrentCycle}'.");
-            return base.ActivateAsync(state);
-        }
-
-        [KernelFunction]
-        public async ValueTask DoItAsync(KernelProcessStepContext context, string astepdata, string bstepdata)
-        {
-            // ########### This method will restart the process in a loop until CurrentCycle >= 3 ###########
-            this._state!.CurrentCycle++;
-            if (this._state.CurrentCycle >= 3)
-            {
-                // Exit the processes
-                Console.WriteLine("##### CStep run cycle 3 - exiting.");
-                await context.EmitEventAsync(new() { Id = CommonEvents.ExitRequested });
-                return;
-            }
-
-            // Cycle back to the start
-            Console.WriteLine($"##### CStep run cycle {this._state.CurrentCycle}.");
-            await context.EmitEventAsync(new() { Id = CommonEvents.CStepDone });
-        }
-    }
-
-    /// <summary>
-    /// A state object for the CStep.
-    /// </summary>
-    [DataContract]
-    private sealed record CStepState
-    {
-        [DataMember]
-        public int CurrentCycle { get; set; }
-    }
-
-    /// <summary>
-    /// Common Events used in the process.
-    /// </summary>
-    private static class CommonEvents
-    {
-        public const string UserInputReceived = nameof(UserInputReceived);
-        public const string CompletionResponseGenerated = nameof(CompletionResponseGenerated);
-        public const string WelcomeDone = nameof(WelcomeDone);
-        public const string AStepDone = nameof(AStepDone);
-        public const string BStepDone = nameof(BStepDone);
-        public const string CStepDone = nameof(CStepDone);
-        public const string StartARequested = nameof(StartARequested);
-        public const string StartBRequested = nameof(StartBRequested);
-        public const string ExitRequested = nameof(ExitRequested);
-        public const string StartProcess = nameof(StartProcess);
-    }
-#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 }

@@ -29,6 +29,25 @@ public static class LocalKernelProcessFactory
     }
 
     /// <summary>
+    /// Starts the specified process and runs it to completion.
+    /// </summary>
+    /// <param name="process"></param>
+    /// <param name="kernel"></param>
+    /// <param name="initialEvent"></param>
+    /// <param name="timeout"></param>
+    /// <param name="externalMessageChannel"></param>
+    /// <returns></returns>
+    public static async Task<LocalKernelProcessContext> RunToEndAsync(this KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, TimeSpan? timeout = null, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
+    {
+        Verify.NotNull(initialEvent, nameof(initialEvent));
+        TimeSpan timeoutValue = timeout ?? TimeSpan.FromSeconds(60);
+
+        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel);
+        await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
+        return processContext;
+    }
+
+    /// <summary>
     /// Starts a specific process using registered processes
     /// </summary>
     /// <param name="kernel">Required: An instance of <see cref="Kernel"/></param>

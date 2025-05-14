@@ -38,7 +38,7 @@ app.MapGet("/api/processdoc", async (Kernel kernel) =>
 
     translateDocumentStep
         .OnEvent(ProcessEvents.DocumentTranslated)
-        .SendEventTo(new(summarizeDocumentStep, SummarizeStep.ProcessFunctions.Summarize, parameterName: "textToSummarize"));
+        .SendEventTo(new ProcessFunctionTargetBuilder(summarizeDocumentStep, SummarizeStep.ProcessFunctions.Summarize, parameterName: "textToSummarize"));
 
     summarizeDocumentStep
         .OnEvent(ProcessEvents.DocumentSummarized)

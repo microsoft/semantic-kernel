@@ -12,10 +12,11 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a step in a process that executes an agent.
 /// </summary>
-public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProcessAgentExecutorState>
+internal sealed class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProcessAgentExecutorState>
 {
     private readonly KernelProcessAgentStep _agentStep;
     private readonly KernelProcessAgentThread _processThread;
+    private readonly ProcessStateManager _stateManager;
 
     internal KernelProcessAgentExecutorState _state = new();
 
@@ -24,13 +25,15 @@ public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProces
     /// </summary>
     /// <param name="agentStep"></param>
     /// <param name="processThread"></param>
-    public KernelProcessAgentExecutorInternal(KernelProcessAgentStep agentStep, KernelProcessAgentThread processThread)
+    /// <param name="stateManager"></param>
+    public KernelProcessAgentExecutorInternal(KernelProcessAgentStep agentStep, KernelProcessAgentThread processThread, ProcessStateManager stateManager)
     {
         Verify.NotNull(agentStep);
-        Verify.NotNull(agentStep.AgentDefinition); // TODO: Fix issue
+        Verify.NotNull(agentStep.AgentDefinition);
 
         this._agentStep = agentStep;
         this._processThread = processThread;
+        this._stateManager = stateManager;
     }
 
     /// <inheritdoc/>
@@ -46,36 +49,44 @@ public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProces
     /// </summary>
     /// <param name="kernel">instance of <see cref="Kernel"/></param>
     /// <param name="message">incoming message to be processed by agent</param>
+    /// <param name="writtenToThread"> <see langword="true"/> if the message has already been written to the thread</param>
     /// <returns></returns>
     [KernelFunction]
-    public async Task<ChatMessageContent?> InvokeAsync(Kernel kernel, object? message = null)
+    public async Task<ChatMessageContent?> InvokeAsync(Kernel kernel, object? message = null, bool writtenToThread = false)
     {
+        ChatMessageContent? inputMessageContent = null;
         try
         {
-            ChatMessageContent? inputMessageContent = null;
-            if (message is ChatMessageContent chatMessage)
+            if (!writtenToThread)
             {
-                // if receiving a chat message content, passing as is
-                inputMessageContent = chatMessage;
+                inputMessageContent = null;
+                if (message is ChatMessageContent chatMessage)
+                {
+                    // if receiving a chat message content, passing as is
+                    inputMessageContent = chatMessage;
+                }
+                else
+                {
+                    // else wrapping it up assuming it is serializable
+                    // todo: add try catch and use shared serialization logic
+                    inputMessageContent = new ChatMessageContent(
+                        ChatCompletion.AuthorRole.User,
+                        JsonSerializer.Serialize(message)
+                    );
+                }
             }
-            else
+
+            if (this._agentStep.AgentIdResolver is not null)
             {
-                // else wrapping it up assuming it is serializable
-                // todo: add try catch and use shared serialization logic
-                inputMessageContent = new ChatMessageContent(
-                    ChatCompletion.AuthorRole.User,
-                    JsonSerializer.Serialize(message)
-                );
+                var state = this._stateManager.GetState();
+                this._agentStep.AgentDefinition.Id = await this._agentStep.AgentIdResolver(state).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(this._agentStep.AgentDefinition.Id))
+                {
+                    throw new KernelException("AgentIdResolver returned an empty agent ID");
+                }
             }
 
             List<ChatMessageContent> agentResponses = [];
-
-            // TODO: Is this needed?
-            //if (this._state != null && this._state.AgentId != null)
-            //{
-            //    this._agentStep.AgentDefinition.Id = this._state.AgentId;
-            //}
-
             AgentFactory agentFactory = ProcessAgentFactory.CreateAgentFactoryAsync(this._agentStep.AgentDefinition);
             Agent agent = await agentFactory.CreateAsync(kernel, this._agentStep.AgentDefinition).ConfigureAwait(false);
             this._state!.AgentId = agent.Id;
@@ -84,10 +95,21 @@ public class KernelProcessAgentExecutorInternal : KernelProcessStep<KernelProces
             var agentThread = await this._processThread.CreateAgentThreadAsync(kernel).ConfigureAwait(false);
             this._state.ThreadId = agentThread.Id;
 
-            await foreach (var response in agent.InvokeAsync(inputMessageContent, agentThread).ConfigureAwait(false))
+            if (inputMessageContent is null)
             {
-                agentThread = response.Thread;
-                agentResponses.Add(response.Message);
+                await foreach (var response in agent.InvokeAsync(agentThread).ConfigureAwait(false))
+                {
+                    agentThread = response.Thread;
+                    agentResponses.Add(response.Message);
+                }
+            }
+            else
+            {
+                await foreach (var response in agent.InvokeAsync(inputMessageContent, agentThread).ConfigureAwait(false))
+                {
+                    agentThread = response.Thread;
+                    agentResponses.Add(response.Message);
+                }
             }
 
             return agentResponses.FirstOrDefault();

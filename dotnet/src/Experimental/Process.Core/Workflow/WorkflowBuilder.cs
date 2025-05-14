@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -52,7 +53,7 @@ public class WorkflowBuilder
         // TODO: Process variables
         // TODO: Process schemas
 
-        ProcessBuilder processBuilder = new(workflow.Name);
+        ProcessBuilder processBuilder = new(workflow.Name, null);
 
         if (workflow.Inputs.Events?.CloudEvents is not null)
         {
@@ -136,7 +137,7 @@ public class WorkflowBuilder
         }
 
         AgentDefinition? agentDefinition = node.Agent ?? throw new KernelException("Declarative steps must have an agent defined.");
-        var stepBuilder = processBuilder.AddStepFromAgent(agentDefinition);
+        var stepBuilder = processBuilder.AddStepFromAgent(agentDefinition, node.Id);
         if (stepBuilder is not ProcessAgentBuilder agentBuilder)
         {
             throw new KernelException($"Failed to build step from agent definition: {node.Id}");
@@ -169,7 +170,7 @@ public class WorkflowBuilder
         if (node.Inputs != null)
         {
             var inputMapping = this.ExtractNodeInputs(node.Id);
-            agentBuilder.WithNodeInputs(node.Inputs);
+            //agentBuilder.WithNodeInputs(node.Inputs); TODO: What to do here?
         }
 
         this._stepBuilders[node.Id] = stepBuilder;
@@ -185,7 +186,7 @@ public class WorkflowBuilder
     {
         Verify.NotNull(node);
 
-        if (node.Agent is null || string.IsNullOrEmpty(node.Agent.Type) || string.IsNullOrEmpty(node.Agent.Id))
+        if (node.Agent is null || string.IsNullOrEmpty(node.Agent.Type))
         {
             throw new ArgumentException($"The agent specified in the Node with id {node.Id} is not fully specified.");
         }
@@ -206,7 +207,7 @@ public class WorkflowBuilder
             throw new KernelException("The agent type specified in the node is not found.");
         }
 
-        var stepBuilder = processBuilder.AddStepFromType(dotnetAgentType, id: node.Agent.Id);
+        var stepBuilder = processBuilder.AddStepFromType(dotnetAgentType, id: node.Id);
         this._stepBuilders[node.Id] = stepBuilder;
         return Task.CompletedTask;
     }
@@ -248,7 +249,8 @@ public class WorkflowBuilder
                     return new MessageSourceBuilder
                     (
                         messageType: listenEvent.Event,
-                        source: this._stepBuilders[listenEvent.From]
+                        source: this._stepBuilders[listenEvent.From],
+                        null // TODO: Pass through condition.
                     );
                 }
 
@@ -263,14 +265,14 @@ public class WorkflowBuilder
                     // The source is a step.
                     edgeBuilder = sourceStepBuilder.OnEvent(listenCondition.Event);
                 }
-                else if (listenCondition.From.Equals("$.inputs.events", StringComparison.OrdinalIgnoreCase) && this._inputEvents.ContainsKey(listenCondition.Event))
+                else if (listenCondition.From.Equals("_workflow_", StringComparison.OrdinalIgnoreCase) && this._inputEvents.ContainsKey(listenCondition.Event))
                 {
                     // The source is an input event.
                     edgeBuilder = processBuilder.OnInputEvent(listenCondition.Event);
                 }
                 else
                 {
-                    throw new ArgumentException($"An orchestration is referencing a node with Id {listenCondition.From} that does not exist.");
+                    throw new ArgumentException($"An orchestration is referencing a node with Id `{listenCondition.From}` that does not exist.");
                 }
             }
             else
@@ -288,11 +290,17 @@ public class WorkflowBuilder
 
                 if (!this._stepBuilders.TryGetValue(action.Node, out ProcessStepBuilder? destinationStepBuilder))
                 {
-                    throw new ArgumentException($"An orchestration is referencing a node with Id {action.Node} that does not exist.");
+                    if (action.Node.Equals("End", StringComparison.OrdinalIgnoreCase))
+                    {
+                        edgeBuilder.StopProcess();
+                        continue;
+                    }
+
+                    throw new ArgumentException($"An orchestration is referencing a node with Id `{action.Node}` that does not exist.");
                 }
 
                 // Add the edge to the node
-                edgeBuilder = edgeBuilder.SendEventTo(new(destinationStepBuilder));
+                edgeBuilder = edgeBuilder.SendEventTo(new ProcessFunctionTargetBuilder(destinationStepBuilder));
             }
         }
 
@@ -314,6 +322,10 @@ public class WorkflowBuilder
 
         Workflow workflow = new()
         {
+            Id = process.State.Id ?? throw new KernelException("The process must have an Id set"),
+            Description = process.Description,
+            FormatVersion = "1.0",
+            Name = process.State.Name,
             Nodes = [],
             Variables = [],
         };
@@ -323,16 +335,44 @@ public class WorkflowBuilder
         {
             workflow.Variables.Add(thread.Key, new Variable()
             {
-                Type = "messages"
+                Type = "thread"
             });
         }
 
         if (process.UserStateype != null)
         {
-            workflow.Variables.Add("user_state", new Variable()
+            // Get all public properties
+            PropertyInfo[] properties = process.UserStateype.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            // Loop through each property and output its type
+            foreach (PropertyInfo property in properties)
             {
-                Type = "object"
-            });
+                if (property.PropertyType == typeof(List<ChatMessageContent>))
+                {
+                    workflow.Variables.Add(property.Name, new Variable()
+                    {
+                        Type = "messages"
+                    });
+
+                    continue;
+                }
+
+                var schema = KernelJsonSchemaBuilder.Build(property.PropertyType);
+                var schemaJson = JsonSerializer.Serialize(schema.RootElement);
+
+                var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .IgnoreUnmatchedProperties()
+                .Build();
+
+                var yamlSchema = deserializer.Deserialize(schemaJson);
+                if (yamlSchema is null)
+                {
+                    throw new KernelException("Failed to deserialize schema.");
+                }
+
+                workflow.Variables.Add(property.Name, yamlSchema);
+            }
         }
 
         // Add edges
@@ -344,13 +384,10 @@ public class WorkflowBuilder
             {
                 ListenFor = new ListenCondition()
                 {
-                    From = "$.inputs.events",
-                    Event = edge.Key
+                    From = "_workflow_",
+                    Event = ResolveEventName(edge.Key)
                 },
-                Then = [.. edge.Value.Select(e => new ThenAction()
-                {
-                    Node = e.OutputTarget.StepId
-                })]
+                Then = [.. edge.Value.Select(e => ThenAction.FromKernelProcessEdge(e, null))]
             };
 
             orchestration.Add(orchestrationStep);
@@ -399,15 +436,24 @@ public class WorkflowBuilder
                 ListenFor = new ListenCondition()
                 {
                     From = step.State.Id,
-                    Event = edge.Key
+                    Event = edge.Key,
+                    Condition = edge.Value.FirstOrDefault()?.Condition.DeclarativeDefinition
                 },
-                Then = [.. edge.Value.Select(e => new ThenAction()
+                Then = [.. edge.Value.Select(e =>
                 {
-                    Node = e.OutputTarget.StepId switch
+                    if (e.OutputTarget is KernelProcessFunctionTarget functionTarget)
                     {
-                        ProcessConstants.EndStepName => "End",
-                        string s => s
+                        return new ThenAction()
+                        {
+                            Node = functionTarget.StepId switch
+                            {
+                                ProcessConstants.EndStepName => "End",
+                                string s => s
+                            }
+                        };
                     }
+
+                    throw new KernelException($"The edge target is not a function target: {e.OutputTarget}");
                 })]
             };
 
@@ -431,30 +477,78 @@ public class WorkflowBuilder
             Id = agentStep.State.Id!,
             Type = agentStep.AgentDefinition.Type!,
             Agent = agentStep.AgentDefinition,
+            HumanInLoopType = agentStep.HumanInLoopMode,
+            Thread = agentStep.ThreadName,
             OnComplete = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnComplete),
             OnError = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnError),
-            Inputs = agentStep.Inputs
+            Inputs = agentStep.Inputs.ToDictionary((kvp) => kvp.Key, (kvp) =>
+            {
+                var value = kvp.Value;
+                var schema = KernelJsonSchemaBuilder.Build(value);
+                var schemaJson = JsonSerializer.Serialize(schema.RootElement);
+
+                var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .IgnoreUnmatchedProperties()
+                .Build();
+
+                var yamlSchema = deserializer.Deserialize(schemaJson);
+                if (yamlSchema is null)
+                {
+                    throw new KernelException("Failed to deserialize schema.");
+                }
+
+                return yamlSchema;
+            })
         };
 
-        foreach (var edge in agentStep.Edges)
+        // re-group the edges to account for different conditions
+        var conditionGroupedEdges = agentStep.Edges
+            .SelectMany(kvp => kvp.Value, (kvp, k) => new { key = kvp.Key, edge = k })
+            .GroupBy(e => new { e.key, e.edge.Condition?.DeclarativeDefinition })
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        foreach (var edge in conditionGroupedEdges)
         {
             OrchestrationStep orchestrationStep = new()
             {
                 ListenFor = new ListenCondition()
                 {
                     From = agentStep.State.Id,
-                    Event = edge.Key
+                    Event = ResolveEventName(edge.Key.key),
+                    Condition = edge.Key.DeclarativeDefinition
                 },
-                Then = [.. edge.Value.Select(e => new ThenAction()
-                {
-                    Node = e.OutputTarget.StepId
-                })]
+                Then = [.. edge.Value.Select(e => ThenAction.FromKernelProcessEdge(e.edge, defaultThread: agentStep.ThreadName))]
             };
 
             orchestrationSteps.Add(orchestrationStep);
         }
 
         return node;
+    }
+
+    private static string ResolveEventName(string eventName)
+    {
+        Verify.NotNullOrWhiteSpace(eventName);
+
+        if (eventName.EndsWith("Invoke.OnResult", StringComparison.Ordinal))
+        {
+            return "_on_complete_";
+        }
+        if (eventName.EndsWith("Invoke.OnError", StringComparison.Ordinal))
+        {
+            return "_on_error_";
+        }
+        if (eventName.EndsWith("Invoke.OnEnter", StringComparison.Ordinal))
+        {
+            return "_on_enter_";
+        }
+        if (eventName.EndsWith("Invoke.OnExit", StringComparison.Ordinal))
+        {
+            return "_on_exit_";
+        }
+
+        return eventName;
     }
 
     private static List<OnEventAction> ToEventActions(KernelProcessDeclarativeConditionHandler? handler)
@@ -465,15 +559,15 @@ public class WorkflowBuilder
         }
 
         List<OnEventAction> actions = [];
-        if (handler.StateConditions is not null && handler.StateConditions.Count > 0)
+        if (handler.EvalConditions is not null && handler.EvalConditions.Count > 0)
         {
-            actions.AddRange(handler.StateConditions.Select(h =>
+            actions.AddRange(handler.EvalConditions.Select(h =>
             {
                 return new OnEventAction
                 {
                     OnCondition = new DeclarativeProcessCondition
                     {
-                        Type = "state",
+                        Type = DeclarativeProcessConditionType.Eval,
                         Expression = h.Expression,
                         Emits = h.Emits,
                         Updates = h.Updates
@@ -482,34 +576,32 @@ public class WorkflowBuilder
             }));
         }
 
-        if (handler.SemanticConditions is not null && handler.SemanticConditions.Count > 0)
-        {
-            actions.AddRange(handler.SemanticConditions.Select(h =>
-            {
-                return new OnEventAction
-                {
-                    OnCondition = new DeclarativeProcessCondition
-                    {
-                        Type = "semantic",
-                        Expression = h.Expression,
-                        Emits = h.Emits,
-                        Updates = h.Updates
-                    }
-                };
-            }));
-        }
-
-        if (handler.Default is not null)
+        if (handler.AlwaysCondition is not null)
         {
             actions.Add(
                 new OnEventAction
                 {
                     OnCondition = new DeclarativeProcessCondition
                     {
-                        Type = "default",
-                        Expression = handler.Default.Expression,
-                        Emits = handler.Default.Emits,
-                        Updates = handler.Default.Updates
+                        Type = DeclarativeProcessConditionType.Always,
+                        Expression = handler.AlwaysCondition.Expression,
+                        Emits = handler.AlwaysCondition.Emits,
+                        Updates = handler.AlwaysCondition.Updates
+                    }
+                });
+        }
+
+        if (handler.DefaultCondition is not null)
+        {
+            actions.Add(
+                new OnEventAction
+                {
+                    OnCondition = new DeclarativeProcessCondition
+                    {
+                        Type = DeclarativeProcessConditionType.Default,
+                        Expression = handler.DefaultCondition.Expression,
+                        Emits = handler.DefaultCondition.Emits,
+                        Updates = handler.DefaultCondition.Updates
                     }
                 });
         }
@@ -543,7 +635,7 @@ public class WorkflowBuilder
         }
         else
         {
-            throw new ArgumentException($"An orchestration is referencing a node with Id {listenCondition.From} that does not exist.");
+            throw new ArgumentException($"An orchestration is referencing a node with Id `{listenCondition.From}` that does not exist.");
         }
 
         return edgeBuilder;

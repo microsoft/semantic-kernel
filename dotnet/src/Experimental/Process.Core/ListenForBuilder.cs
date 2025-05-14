@@ -14,6 +14,7 @@ namespace Microsoft.SemanticKernel;
 public sealed class ListenForBuilder
 {
     private readonly ProcessBuilder _processBuilder;
+    private ListenForTargetBuilder? _targetBuilder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ListenForBuilder"/> class.
@@ -25,17 +26,45 @@ public sealed class ListenForBuilder
     }
 
     /// <summary>
+    /// Listens for an input event.
+    /// </summary>
+    /// <param name="eventName"></param>
+    /// <param name="condition"></param>
+    /// <returns></returns>
+    internal ListenForTargetBuilder InputEvent(string eventName, KernelProcessEdgeCondition? condition = null)
+    {
+        this._targetBuilder = new ListenForTargetBuilder([new(eventName, this._processBuilder, condition)], this._processBuilder);
+        return this._targetBuilder;
+    }
+
+    /// <summary>
     /// Defines a message to listen for from a specific process step.
     /// </summary>
     /// <param name="messageType">The type of the message.</param>
     /// <param name="from">The process step from which the message originates.</param>
+    /// <param name="condition">Condition that must be met for the message to be processed</param>
     /// <returns>A builder for defining the target of the message.</returns>
-    public ListenForTargetBuilder Message(string messageType, ProcessStepBuilder from)
+    public ListenForTargetBuilder Message(string messageType, ProcessStepBuilder from, KernelProcessEdgeCondition? condition = null)
     {
         Verify.NotNullOrWhiteSpace(messageType, nameof(messageType));
         Verify.NotNull(from, nameof(from));
 
-        return new ListenForTargetBuilder(new List<MessageSourceBuilder> { new(messageType, from) }, this._processBuilder);
+        this._targetBuilder = new ListenForTargetBuilder([new(messageType, from, condition)], this._processBuilder);
+        return this._targetBuilder;
+    }
+
+    /// <summary>
+    /// Defines a message to listen for from a specific process step.
+    /// </summary>
+    /// <param name="from">The process step from which the message originates.</param>
+    /// <param name="condition">Condition that must be met for the message to be processed</param>
+    /// <returns>A builder for defining the target of the message.</returns>
+    public ListenForTargetBuilder OnResult(ProcessStepBuilder from, KernelProcessEdgeCondition? condition = null)
+    {
+        Verify.NotNull(from, nameof(from));
+
+        this._targetBuilder = new ListenForTargetBuilder([new("Invoke.OnResult", from, condition)], this._processBuilder);
+        return this._targetBuilder;
     }
 
     /// <summary>
@@ -48,7 +77,8 @@ public sealed class ListenForBuilder
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
 
         var edgeGroup = new KernelProcessEdgeGroupBuilder(this.GetGroupId(messageSources), messageSources);
-        return new ListenForTargetBuilder(messageSources, this._processBuilder, edgeGroup: edgeGroup);
+        this._targetBuilder = new ListenForTargetBuilder(messageSources, this._processBuilder, edgeGroup: edgeGroup);
+        return this._targetBuilder;
     }
 
     private string GetGroupId(List<MessageSourceBuilder> messageSources)

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel.Process;
@@ -26,7 +27,7 @@ internal class LocalAgentStep : LocalStep
 
     protected override ValueTask InitializeStepAsync()
     {
-        this._stepInstance = new KernelProcessAgentExecutorInternal(this._stepInfo, this._agentThread);
+        this._stepInstance = new KernelProcessAgentExecutorInternal(this._stepInfo, this._agentThread, this._processStateManager);
         var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
 
         // Load the kernel functions
@@ -45,7 +46,7 @@ internal class LocalAgentStep : LocalStep
         await this._initializeTask.Value.ConfigureAwait(false);
 
         string targetFunction = "Invoke";
-        KernelArguments arguments = new() { { "message", message.TargetEventData } };
+        KernelArguments arguments = new() { { "message", message.TargetEventData }, { "writtenToThread", message.writtenToThread == this._agentThread.ThreadId } };
         if (!this._functions.TryGetValue(targetFunction, out KernelFunction? function) || function == null)
         {
             throw new ArgumentException($"Function Invoke not found in plugin {this.Name}");
@@ -64,7 +65,8 @@ internal class LocalAgentStep : LocalStep
                     result,
                     this._eventNamespace,
                     sourceId: $"{targetFunction}.OnResult",
-                    eventVisibility: KernelProcessEventVisibility.Public));
+                    eventVisibility: KernelProcessEventVisibility.Public,
+                    writtenToThread: this._agentThread.ThreadId)); // TODO: This is keeping track of the thread the message has been written to, clean it up, name it better, etc. 
         }
         catch (Exception ex)
         {
@@ -105,7 +107,7 @@ internal class LocalAgentStep : LocalStep
     private async Task ProcessDeclarativeConditionsAsync(object? result, KernelProcessDeclarativeConditionHandler conditionHandler)
     {
         int executedConditionCount = 0;
-        foreach (var onCompleteStateCondition in conditionHandler.StateConditions ?? [])
+        foreach (var onCompleteStateCondition in conditionHandler.EvalConditions ?? [])
         {
             // process state conditions
             await this.ProcessConditionsAsync(result, onCompleteStateCondition).ConfigureAwait(false);
@@ -113,15 +115,17 @@ internal class LocalAgentStep : LocalStep
             // Test condition
             // TODO: Apply state conditions to the result and emit events
         }
-        foreach (var onCompleteSemanticCondition in conditionHandler.SemanticConditions ?? [])
+
+        var alwaysCondition = conditionHandler.AlwaysCondition;
+        if (alwaysCondition != null)
         {
             // process semantic conditions
-            await this.ProcessConditionsAsync(result, onCompleteSemanticCondition).ConfigureAwait(false);
+            await this.ProcessConditionsAsync(result, alwaysCondition).ConfigureAwait(false);
             executedConditionCount++;
             // TODO: Apply state conditions to the result and emit events
         }
 
-        var defaultCondition = conditionHandler.Default;
+        var defaultCondition = conditionHandler.DefaultCondition;
         if (executedConditionCount == 0 && defaultCondition != null)
         {
             await this.ProcessConditionsAsync(result, defaultCondition).ConfigureAwait(false);
