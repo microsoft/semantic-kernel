@@ -454,7 +454,7 @@ class OpenAIAssistantAgent(Agent):
         tool_resources = _build_tool_resources(tool_objs)
 
         try:
-            agent_definition = await client.agents.create_agent(
+            agent_definition = await client.beta.assistants.create(
                 model=spec.model.id,
                 name=spec.name,
                 description=spec.description,
