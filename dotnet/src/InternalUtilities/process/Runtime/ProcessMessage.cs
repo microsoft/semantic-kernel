@@ -42,4 +42,19 @@ public record ProcessMessage(
     /// The Id of the group that the message belongs to. This may be null if the message is not part of a group.
     /// </summary>
     public string? GroupId { get; init; }
+
+    /// <summary>
+    /// An evaluation string that will be evaluated to determine the thread to run on.
+    /// </summary>
+    public string? ThreadEval { get; init; }
+
+    /// <summary>
+    /// An evaluation string that will be evaluated to determine the messages to send to the target.
+    /// </summary>
+    public string? MessagesInEval { get; init; }
+
+    /// <summary>
+    /// An evaluation string that will be evaluated to determine the inputs to send to the target.
+    /// </summary>
+    public Dictionary<string, string>? InputEvals { get; init; }
 }

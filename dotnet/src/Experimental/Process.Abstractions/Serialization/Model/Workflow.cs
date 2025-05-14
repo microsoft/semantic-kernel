@@ -81,7 +81,7 @@ public class Workflow
     /// </summary>
     [YamlMember(Alias = "variables")]
     [JsonPropertyName("variables")]
-    public Dictionary<string, object>? Variables { get; set; }
+    public Dictionary<string, VariableDefinition>? Variables { get; set; }
 
     /// <summary>
     /// Gets or sets the schemas for the workflow.
@@ -110,6 +110,53 @@ public class Workflow
     [YamlMember(Alias = "error_handling")]
     [JsonPropertyName("error_handling")]
     public ErrorHandling? ErrorHandling { get; set; }
+}
+
+/// <summary>
+/// All possible values for workflow variable types
+/// </summary>
+public enum VariableType
+{
+    /// <summary>
+    /// A thread type variable.
+    /// </summary>
+    Thread,
+
+    /// <summary>
+    /// A message type variable.
+    /// </summary>
+    Messages,
+
+    /// <summary>
+    /// A user-defined variable.
+    /// </summary>
+    UserDefined
+}
+
+/// <summary>
+/// Definition of a variable.
+/// </summary>
+public class VariableDefinition
+{
+    /// <summary>
+    /// Gets or sets the name of the variable.
+    /// </summary>
+    public VariableType Type { get; set; } = VariableType.UserDefined;
+
+    /// <summary>
+    /// Gets or sets the mutability of the variable.
+    /// </summary>
+    public bool IsMutable { get; set; }
+
+    /// <summary>
+    /// Gets or sets the default value of the variable.
+    /// </summary>
+    public object? DefaultValue { get; set; }
+
+    /// <summary>
+    /// Gets or sets the schema of the variable.
+    /// </summary>
+    public object? Schema { get; set; }
 }
 
 /// <summary>
@@ -408,20 +455,6 @@ public class Node
     public Dictionary<string, object>? Inputs { get; set; }
 
     /// <summary>
-    /// The name of the thread the agent will run on.
-    /// </summary>
-    [YamlMember(Alias = "thread")]
-    [JsonPropertyName("thread")]
-    public string Thread { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The input messages
-    /// </summary>
-    [YamlMember(Alias = "messages_in", DefaultValuesHandling = DefaultValuesHandling.Preserve)]
-    [JsonPropertyName("messages_in")]
-    public Messages MessagesIn { get; set; } = [];
-
-    /// <summary>
     /// Gets or sets the agent input mapping of the node.
     /// </summary>
     [YamlMember(Alias = "agent_input_mapping")]
@@ -433,14 +466,14 @@ public class Node
     /// </summary>
     [YamlMember(Alias = "on_error")]
     [JsonPropertyName("on_error")]
-    public List<OnEventAction>? OnError { get; set; }
+    public List<OnEventAction>? OnError { get; set; } = null;
 
     /// <summary>
     /// Gets or sets the on complete actions of the node.
     /// </summary>
     [YamlMember(Alias = "on_complete")]
     [JsonPropertyName("on_complete")]
-    public List<OnEventAction>? OnComplete { get; set; }
+    public List<OnEventAction>? OnComplete { get; set; } = null;
 }
 
 /// <summary>

@@ -330,9 +330,9 @@ public class WorkflowBuilder
         // Add variables
         foreach (var thread in process.Threads)
         {
-            workflow.Variables.Add(thread.Key, new Variable()
+            workflow.Variables.Add(thread.Key, new VariableDefinition()
             {
-                Type = "thread"
+                Type = VariableType.Thread,
             });
         }
 
@@ -346,9 +346,9 @@ public class WorkflowBuilder
             {
                 if (property.PropertyType == typeof(List<ChatMessageContent>))
                 {
-                    workflow.Variables.Add(property.Name, new Variable()
+                    workflow.Variables.Add(property.Name, new VariableDefinition()
                     {
-                        Type = "messages"
+                        Type = VariableType.Messages,
                     });
 
                     continue;
@@ -362,13 +362,8 @@ public class WorkflowBuilder
                 .IgnoreUnmatchedProperties()
                 .Build();
 
-                var yamlSchema = deserializer.Deserialize(schemaJson);
-                if (yamlSchema is null)
-                {
-                    throw new KernelException("Failed to deserialize schema.");
-                }
-
-                workflow.Variables.Add(property.Name, yamlSchema);
+                var yamlSchema = deserializer.Deserialize(schemaJson) ?? throw new KernelException("Failed to deserialize schema.");
+                workflow.Variables.Add(property.Name, new VariableDefinition { Type = VariableType.UserDefined, Schema = yamlSchema, IsMutable = property.CanWrite });
             }
         }
 
@@ -475,7 +470,6 @@ public class WorkflowBuilder
             Type = agentStep.AgentDefinition.Type!,
             Agent = agentStep.AgentDefinition,
             HumanInLoopType = agentStep.HumanInLoopMode,
-            Thread = agentStep.ThreadName,
             OnComplete = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnComplete),
             OnError = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnError),
             Inputs = agentStep.Inputs.ToDictionary((kvp) => kvp.Key, (kvp) =>
@@ -530,7 +524,7 @@ public class WorkflowBuilder
 
         if (eventName.EndsWith("Invoke.OnResult", StringComparison.Ordinal) || eventName.EndsWith(ProcessConstants.Declarative.OnCompleteEvent, StringComparison.OrdinalIgnoreCase))
         {
-            return ProcessConstants.Declarative.OnCompleteEvent;
+            return ProcessConstants.Declarative.OnExitEvent;
         }
         if (eventName.EndsWith(ProcessConstants.Declarative.OnErrorEvent, StringComparison.Ordinal))
         {

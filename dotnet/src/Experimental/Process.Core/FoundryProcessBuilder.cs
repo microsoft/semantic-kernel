@@ -152,7 +152,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// <summary>
     /// Deploys the process to Azure Foundry.
     /// </summary>
-    /// <param name="process"></param>
+    /// <param name="process"></param> 
     /// <param name="endpoint"></param>
     /// <returns></returns>
     public async Task DeployToFoundryAsync(KernelProcess process, string endpoint)

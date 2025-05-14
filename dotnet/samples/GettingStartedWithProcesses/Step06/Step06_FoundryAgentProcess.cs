@@ -238,8 +238,8 @@ public class Step06_FoundryAgentProcess : BaseTest
     public async Task ProcessWithTwoAgentMathChat()
     {
         // Define the agents
-        var studentDefinition = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Student", Type = AzureAIAgentFactory.AzureAIAgentType };
-        var teacherDefinition = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Teacher", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var studentDefinition = new AgentDefinition { Id = "asst_lGAOawWKaDEZp8XwNCF3ORlb", Name = "Student", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var teacherDefinition = new AgentDefinition { Id = "asst_7CPOY8YXbqNviklLKqylkEDD", Name = "Teacher", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
         var processBuilder = new FoundryProcessBuilder<TwoAgentMathState>("two_agent_math_chat");
@@ -287,7 +287,7 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         var process = processBuilder.Build();
 
-        //var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
+        //var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new DefaultAzureCredential());
         //var agentsClient = foundryClient.GetAgentsClient();
 
         //var kernelBuilder = Kernel.CreateBuilder();

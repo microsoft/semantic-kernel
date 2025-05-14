@@ -1,9 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using YamlDotNet.Core;
+using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -63,6 +67,7 @@ public static class WorkflowSerializer
     {
         var serializer = new SerializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
+            .WithTypeConverter(new SnakeCaseEnumConverter())
             .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull | DefaultValuesHandling.OmitEmptyCollections)
             .Build();
 
@@ -123,5 +128,31 @@ public static class WorkflowSerializer
         var json = SerializeToJson(workflow);
         using var writer = new StreamWriter(filePath);
         await writer.WriteAsync(json).ConfigureAwait(false);
+    }
+
+    internal class SnakeCaseEnumConverter : IYamlTypeConverter
+    {
+        public bool Accepts(Type type) => type.IsEnum;
+
+        public object ReadYaml(IParser parser, Type type)
+        {
+            var value = parser.Consume<Scalar>().Value;
+            return Enum.Parse(type, value.Replace("_", ""), true);
+        }
+
+        public void WriteYaml(IEmitter emitter, object? value, Type type)
+        {
+            var enumValue = value?.ToString();
+            if (enumValue == null)
+            {
+                return;
+            }
+
+#pragma warning disable CA1308 // Normalize strings to uppercase
+            var snakeCaseValue = string.Concat(enumValue.Select((x, i) =>
+                i > 0 && char.IsUpper(x) ? "_" + x : x.ToString())).ToLowerInvariant();
+#pragma warning restore CA1308 // Normalize strings to uppercase
+            emitter.Emit(new Scalar(snakeCaseValue));
+        }
     }
 }
