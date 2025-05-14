@@ -105,7 +105,6 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
         foreach (KernelFunction function in this)
         {
             var functionClone = function.Clone(kernel);
-            functionClone.UseFullyQualifiedName = true;
             yield return functionClone;
         }
     }

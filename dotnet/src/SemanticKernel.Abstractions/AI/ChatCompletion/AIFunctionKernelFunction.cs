@@ -16,12 +16,16 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// <summary>Provides a <see cref="KernelFunction"/> that wraps an <see cref="AIFunction"/>.</summary>
 internal sealed class AIFunctionKernelFunction : KernelFunction
 {
+    private readonly string? _pluginName;
     private readonly AIFunction _aiFunction;
+
+    public override string Name => ((AIFunction)this).Name;
+
+    public override string? PluginName => (this._pluginName is null && this._aiFunction is KernelFunction kf) ? kf.PluginName : this._pluginName;
 
     public AIFunctionKernelFunction(AIFunction aiFunction) :
         base(
             name: aiFunction.Name,
-            pluginName: aiFunction is KernelFunction kf ? kf.PluginName : null,
             description: aiFunction.Description,
             parameters: MapParameterMetadata(aiFunction),
             jsonSerializerOptions: aiFunction.JsonSerializerOptions,
@@ -33,26 +37,33 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
             })
     {
         // Kernel functions created from AI functions are always fully qualified
-        this.UseFullyQualifiedName = true;
         this._aiFunction = aiFunction;
     }
 
     private AIFunctionKernelFunction(AIFunctionKernelFunction other, string pluginName) :
         base(other.Name, pluginName, other.Description, other.Metadata.Parameters, AbstractionsJsonContext.Default.Options, other.Metadata.ReturnParameter)
     {
-        this.UseFullyQualifiedName = other.UseFullyQualifiedName;
+        this._pluginName = pluginName;
         this._aiFunction = other._aiFunction;
     }
 
     public override KernelFunction Clone(string? pluginName = null)
     {
         Verify.NotNullOrWhiteSpace(pluginName);
+
         return new AIFunctionKernelFunction(this, pluginName);
     }
+
+    public override string ToString() => this.Name;
 
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
+        if (this._aiFunction is KernelFunction kernelFunction)
+        {
+            return await kernelFunction.InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        }
+
         object? result = await this._aiFunction.InvokeAsync(new(arguments), cancellationToken).ConfigureAwait(false);
         return new FunctionResult(this, result);
     }
@@ -66,6 +77,11 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
 
     private static IReadOnlyList<KernelParameterMetadata> MapParameterMetadata(AIFunction aiFunction)
     {
+        if (aiFunction is KernelFunction kernelFunction)
+        {
+            return kernelFunction.Metadata.Parameters;
+        }
+
         if (!aiFunction.JsonSchema.TryGetProperty("properties", out JsonElement properties))
         {
             return Array.Empty<KernelParameterMetadata>();

@@ -26,7 +26,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a function that can be invoked as part of a Semantic Kernel workload.
 /// </summary>
-public abstract class KernelFunction : AIFunction
+public abstract class KernelFunction : IntermediateKernelFunction
 {
     private static readonly JsonElement s_defaultSchema = JsonDocument.Parse("{}").RootElement;
 
@@ -54,11 +54,6 @@ public abstract class KernelFunction : AIFunction
     /// <remarks>This will be normally used when the function is invoked using the <see cref="AIFunction.InvokeAsync(AIFunctionArguments?, CancellationToken)"/> interface.</remarks>
     internal Kernel? Kernel { get; set; }
 
-    /// <summary>
-    /// Indicates when retrieving the <see cref="KernelFunction.Name"/> it should be fully qualified (including plugin name) just the function name.
-    /// </summary>
-    internal bool UseFullyQualifiedName { get; set; } = false;
-
     /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
         name: "semantic_kernel.function.invocation.duration",
@@ -83,10 +78,7 @@ public abstract class KernelFunction : AIFunction
     /// should be invoked when, or as part of lookups in a plugin's function collection. Function names are generally
     /// handled in an ordinal case-insensitive manner.
     /// </remarks>
-    public override string Name
-        => this.UseFullyQualifiedName && !string.IsNullOrWhiteSpace(this.Metadata.PluginName)
-            ? $"{this.Metadata.PluginName}_{this.Metadata.Name}"
-            : this.Metadata.Name;
+    public virtual new string Name => this.Metadata.Name;
 
     /// <summary>
     /// Gets the name of the plugin this function was added to.
@@ -95,7 +87,7 @@ public abstract class KernelFunction : AIFunction
     /// The plugin name will be null if the function has not been added to a plugin.
     /// When a function is added to a plugin it will be cloned and the plugin name will be set.
     /// </remarks>
-    public string? PluginName => this.Metadata.PluginName;
+    public virtual string? PluginName => this.Metadata.PluginName;
 
     /// <summary>
     /// Gets a description of the function.
@@ -105,12 +97,6 @@ public abstract class KernelFunction : AIFunction
     /// in case it may be beneficial for the model to recommend invoking the function.
     /// </remarks>
     public override string Description => this.Metadata.Description;
-
-    /// <summary>
-    /// Gets the metadata describing the function.
-    /// </summary>
-    /// <returns>An instance of <see cref="KernelFunctionMetadata"/> describing the function</returns>
-    public KernelFunctionMetadata Metadata { get; init; }
 
     /// <summary>
     /// Gets the prompt execution settings.
@@ -171,19 +157,15 @@ public abstract class KernelFunction : AIFunction
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
-    {
-        Verify.NotNull(name);
-        KernelVerify.ParametersUniqueness(parameters);
-
-        this.Metadata = new KernelFunctionMetadata(name)
+        : base(new KernelFunctionMetadata(Throw.IfNull(name))
         {
             PluginName = pluginName,
             Description = description,
-            Parameters = parameters,
+            Parameters = KernelVerify.ParametersUniqueness(parameters),
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
             AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary,
-        };
-
+        })
+    {
         this.BuildFunctionSchema();
 
         if (executionSettings is not null)
@@ -212,19 +194,16 @@ public abstract class KernelFunction : AIFunction
     /// </param>
     /// <param name="additionalMetadata">Properties/metadata associated with the function itself rather than its parameters and return type.</param>
     internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, JsonSerializerOptions jsonSerializerOptions, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
-    {
-        Verify.NotNull(name);
-        KernelVerify.ParametersUniqueness(parameters);
-        Verify.NotNull(jsonSerializerOptions);
-
-        this.Metadata = new KernelFunctionMetadata(name)
+        : base(new KernelFunctionMetadata(Throw.IfNull(name))
         {
             PluginName = pluginName,
             Description = description,
-            Parameters = parameters,
+            Parameters = KernelVerify.ParametersUniqueness(parameters),
             ReturnParameter = returnParameter ?? KernelReturnParameterMetadata.Empty,
             AdditionalProperties = additionalMetadata ?? KernelFunctionMetadata.s_emptyDictionary,
-        };
+        })
+    {
+        Verify.NotNull(jsonSerializerOptions);
 
         this.BuildFunctionSchema();
 
@@ -454,11 +433,9 @@ public abstract class KernelFunction : AIFunction
     public abstract KernelFunction Clone(string? pluginName = null);
 
     /// <inheritdoc/>
-    public override string ToString() => this.UseFullyQualifiedName && !string.IsNullOrWhiteSpace(this.Metadata.PluginName)
-            ? $"{this.Metadata.PluginName}_{this.Metadata.Name}"
-            : string.IsNullOrWhiteSpace(this.PluginName)
-            ? this.Name
-            : $"{this.PluginName}.{this.Name}";
+    public override string ToString() => string.IsNullOrWhiteSpace(this.PluginName) ?
+        this.Name :
+        $"{this.PluginName}.{this.Name}";
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.

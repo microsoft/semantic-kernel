@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 public static class AIFunctionExtensions
 {
     /// <summary>
-    /// Converts an <see cref="AIFunction"/> to a <see cref="KernelFunction"/>.
+    /// Converts an <see cref="AIFunction"/> to a <see cref="KernelFunction"/> if it is not already one.
     /// </summary>
     /// <param name="aiFunction">The AI function to convert.</param>
     /// <returns>The converted <see cref="KernelFunction"/>.</returns>
@@ -22,7 +22,9 @@ public static class AIFunctionExtensions
     public static KernelFunction AsKernelFunction(this AIFunction aiFunction)
     {
         Verify.NotNull(aiFunction);
-        return new AIFunctionKernelFunction(aiFunction);
+        return aiFunction is KernelFunction kf
+            ? kf
+            : new AIFunctionKernelFunction(aiFunction);
     }
 
     /// <summary>
