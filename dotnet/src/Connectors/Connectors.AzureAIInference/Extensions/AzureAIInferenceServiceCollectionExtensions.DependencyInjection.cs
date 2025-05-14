@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Provides extension methods for <see cref="IServiceCollection"/> to configure Azure AI Inference connectors.
 /// </summary>
-public static class AzureAIInferenceServiceCollectionExtensions2
+public static class AzureAIInferenceServiceCollectionExtensions
 {
     /// <summary>
     /// Add an Azure AI Inference <see cref="IEmbeddingGenerator"/> to the <see cref="IServiceCollection"/>.
