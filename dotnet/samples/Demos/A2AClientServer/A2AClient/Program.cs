@@ -3,8 +3,6 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Reflection;
-using System.Text.Encodings.Web;
-using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -41,11 +39,6 @@ public static class Program
                 "--agent",
                 getDefaultValue: () => "http://localhost:10000",
                 description: "Agent URL");
-
-    private static readonly JsonSerializerOptions s_jsonOptions = new JsonSerializerOptions
-    {
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-    };
 
     private static async System.Threading.Tasks.Task RunCliAsync(string agentUrl)
     {

@@ -8,7 +8,7 @@ using SharpA2A.Core;
 
 namespace A2A;
 
-internal class HostClientAgent
+internal sealed class HostClientAgent
 {
     internal HostClientAgent(ILogger logger)
     {

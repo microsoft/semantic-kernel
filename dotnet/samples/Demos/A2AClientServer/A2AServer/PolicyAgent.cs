@@ -12,7 +12,6 @@ internal class PolicyAgent : A2AHostAgent
     internal PolicyAgent(string modelId, string apiKey, ILogger logger) : base(logger)
     {
         this._logger = logger;
-        this._httpClient = new HttpClient();
 
         // Add TextSearch over the shipping policies
 
@@ -53,7 +52,6 @@ internal class PolicyAgent : A2AHostAgent
     }
 
     #region private
-    private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
 
     private ChatCompletionAgent InitializeAgent(string modelId, string apiKey)
@@ -122,21 +120,10 @@ public class ShippingPolicies
         };
     }
 
+    public List<ShippingPolicy> GetPolicies => this._policies;
+
     public void AddPolicy(ShippingPolicy policy)
     {
         this._policies.Add(policy);
-    }
-
-    public List<ShippingPolicy> GetPolicies()
-    {
-        return this._policies;
-    }
-
-    public void DisplayPolicies()
-    {
-        foreach (var policy in this._policies)
-        {
-            Console.WriteLine(policy);
-        }
     }
 }

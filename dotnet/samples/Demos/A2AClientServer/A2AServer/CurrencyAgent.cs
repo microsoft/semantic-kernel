@@ -6,11 +6,12 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.A2A;
 using Polly;
+using Polly.Retry;
 using SharpA2A.Core;
 
 namespace A2A;
 
-internal class CurrencyAgent : A2AHostAgent
+internal class CurrencyAgent : A2AHostAgent, IDisposable
 {
     internal CurrencyAgent(string modelId, string apiKey, ILogger logger) : base(logger)
     {
@@ -22,6 +23,11 @@ internal class CurrencyAgent : A2AHostAgent
             httpClient: this._httpClient);
 
         this.Agent = this.InitializeAgent(modelId, apiKey);
+    }
+
+    public void Dispose()
+    {
+        this._httpClient.Dispose();
     }
 
     public override AgentCard GetAgentCard(string agentUrl)
@@ -101,7 +107,7 @@ public class CurrencyPlugin
 {
     private readonly ILogger<CurrencyPlugin> _logger;
     private readonly HttpClient _httpClient;
-    private readonly IAsyncPolicy<HttpResponseMessage> _retryPolicy;
+    private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
 
     /// <summary>
     /// Initialize a new instance of the CurrencyPlugin
@@ -139,10 +145,10 @@ public class CurrencyPlugin
                 currencyFrom, currencyTo, date);
 
             // Build request URL with query parameters
-            var requestUri = $"https://api.frankfurter.app/{date}?from={Uri.EscapeDataString(currencyFrom)}&to={Uri.EscapeDataString(currencyTo)}";
+            var requestUri = new Uri($"https://api.frankfurter.app/{date}?from={Uri.EscapeDataString(currencyFrom)}&to={Uri.EscapeDataString(currencyTo)}");
 
             // Use retry policy for resilience
-            var response = await this._retryPolicy.ExecuteAsync(() => _httpClient.GetAsync(requestUri)).ConfigureAwait(false);
+            var response = await this._retryPolicy.ExecuteAsync(() => this._httpClient.GetAsync(requestUri)).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var jsonContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
