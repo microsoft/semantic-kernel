@@ -1,6 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from .agent import Agent, AgentResponseItem, AgentThread
+from .agent import (
+    Agent,
+    AgentRegistry,
+    AgentResponseItem,
+    AgentSpec,
+    AgentThread,
+    DeclarativeSpecMixin,
+    ModelConnection,
+    ModelSpec,
+    ToolSpec,
+    register_agent_type,
+)
 from .autogen.autogen_conversable_agent import AutoGenConversableAgent, AutoGenConversableAgentThread
 from .azure_ai.azure_ai_agent import AzureAIAgent, AzureAIAgentThread
 from .azure_ai.azure_ai_agent_settings import AzureAIAgentSettings
@@ -23,7 +34,9 @@ __all__ = [
     "Agent",
     "AgentChat",
     "AgentGroupChat",
+    "AgentRegistry",
     "AgentResponseItem",
+    "AgentSpec",
     "AgentThread",
     "AssistantAgentThread",
     "AutoGenConversableAgent",
@@ -42,10 +55,15 @@ __all__ = [
     "CopilotStudioAgentAuthMode",
     "CopilotStudioAgentSettings",
     "CopilotStudioAgentThread",
+    "DeclarativeSpecMixin",
     "HandoffOrchestration",
+    "ModelConnection",
+    "ModelSpec",
     "OpenAIAssistantAgent",
     "OpenAIResponsesAgent",
     "ResponsesAgentThread",
     "RunPollingOptions",
     "SequentialOrchestration",
+    "ToolSpec",
+    "register_agent_type",
 ]
