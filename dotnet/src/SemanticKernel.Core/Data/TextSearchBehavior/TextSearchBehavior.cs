@@ -56,25 +56,14 @@ public sealed class TextSearchBehavior : AIContextBehavior
     public TextSearchBehaviorOptions Options { get; }
 
     /// <inheritdoc/>
-    public override IReadOnlyCollection<AIFunction> AIFunctions
-    {
-        get
-        {
-            if (this.Options.SearchTime != TextSearchBehaviorOptions.RagBehavior.ViaPlugin)
-            {
-                return Array.Empty<AIFunction>();
-            }
-
-            return this._aIFunctions;
-        }
-    }
-
-    /// <inheritdoc/>
-    public override async Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override async Task<AIContextAdditions> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         if (this.Options.SearchTime != TextSearchBehaviorOptions.RagBehavior.BeforeAIInvoke)
         {
-            return string.Empty;
+            return new()
+            {
+                AIFunctions = this._aIFunctions.ToList(),
+            };
         }
 
         Verify.NotNull(newMessages);
@@ -88,7 +77,7 @@ public sealed class TextSearchBehavior : AIContextBehavior
 
         var results = await searchResults.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        return this.FormatResults(results);
+        return new() { AdditionalInstructions = this.FormatResults(results) };
     }
 
     /// <summary>

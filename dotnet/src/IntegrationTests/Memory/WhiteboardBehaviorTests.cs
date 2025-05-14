@@ -146,7 +146,8 @@ public class WhiteboardBehaviorTests
 
         // Assert
         await whiteboardBehavior.WhenProcessingCompleteAsync();
-        var whiteboardContent = await whiteboardBehavior.OnModelInvokeAsync(new List<ChatMessage> { new(ChatRole.User, string.Empty) });
+        var aiContextAdditions = await whiteboardBehavior.OnModelInvokeAsync(new List<ChatMessage> { new(ChatRole.User, string.Empty) });
+        var whiteboardContent = aiContextAdditions.AdditionalInstructions!;
         this._output.WriteLine(string.Join(Environment.NewLine, whiteboardContent));
 
         var whiteboardLines = whiteboardContent.Split('\n');

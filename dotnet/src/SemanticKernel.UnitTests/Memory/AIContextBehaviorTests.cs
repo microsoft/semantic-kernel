@@ -15,20 +15,6 @@ namespace SemanticKernel.UnitTests.Memory;
 public class AIContextBehaviorTests
 {
     [Fact]
-    public void AIFunctionsBaseImplementationIsEmpty()
-    {
-        // Arrange.
-        var mockPart = new Mock<AIContextBehavior>() { CallBase = true };
-
-        // Act.
-        var functions = mockPart.Object.AIFunctions;
-
-        // Assert.
-        Assert.NotNull(functions);
-        Assert.Empty(functions);
-    }
-
-    [Fact]
     public async Task OnThreadCreatedBaseImplementationSucceeds()
     {
         // Arrange.

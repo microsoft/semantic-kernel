@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// Options for configuring the <see cref="WhiteboardBehavior"/>.
 /// </summary>
 [Experimental("SKEXP0130")]
-public class WhiteboardBehaviorOptions
+public sealed class WhiteboardBehaviorOptions
 {
     /// <summary>
     /// The maximum number of messages to keep on the whiteboard.

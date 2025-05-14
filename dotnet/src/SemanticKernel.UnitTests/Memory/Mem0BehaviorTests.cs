@@ -47,20 +47,6 @@ public class Mem0BehaviorTests : IDisposable
         Assert.Equal("The BaseAddress of the provided httpClient parameter must be set. (Parameter 'httpClient')", exception.Message);
     }
 
-    [Fact]
-    public void AIFunctionsAreSetCorrectly()
-    {
-        // Arrange
-        var sut = new Mem0Behavior(this._httpClient, new() { ApplicationId = "test-app-id" });
-
-        // Act
-        var aiFunctions = sut.AIFunctions;
-
-        // Assert
-        Assert.NotNull(aiFunctions);
-        Assert.Empty(aiFunctions);
-    }
-
     [Theory]
     [InlineData(false, "test-thread-id")]
     [InlineData(true, "test-thread-id-1")]
@@ -123,7 +109,7 @@ public class Mem0BehaviorTests : IDisposable
             """;
         this._mockMessageHandler.Verify(x => x.MockableSendAsync(HttpMethod.Post, "https://localhost/v1/memories/search/", expectedPayload, It.IsAny<CancellationToken>()), Times.Once);
 
-        Assert.Equal(expectedAdditionalInstructions, actual);
+        Assert.Equal(expectedAdditionalInstructions, actual.AdditionalInstructions);
     }
 
     [Theory]

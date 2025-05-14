@@ -69,20 +69,20 @@ public class TextSearchBehaviorTests
         var result = await component.OnModelInvokeAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
 
         // Assert
-        Assert.Contains(expectedContextPrompt, result);
-        Assert.Contains("SourceDocName: Doc1", result);
-        Assert.Contains("SourceDocLink: http://example.com/doc1", result);
-        Assert.Contains("Contents: Content of Doc1", result);
-        Assert.Contains("SourceDocName: Doc2", result);
-        Assert.Contains("SourceDocLink: http://example.com/doc2", result);
-        Assert.Contains("Contents: Content of Doc2", result);
-        Assert.Contains(expectedCitationsPrompt, result);
+        Assert.Contains(expectedContextPrompt, result.AdditionalInstructions);
+        Assert.Contains("SourceDocName: Doc1", result.AdditionalInstructions);
+        Assert.Contains("SourceDocLink: http://example.com/doc1", result.AdditionalInstructions);
+        Assert.Contains("Contents: Content of Doc1", result.AdditionalInstructions);
+        Assert.Contains("SourceDocName: Doc2", result.AdditionalInstructions);
+        Assert.Contains("SourceDocLink: http://example.com/doc2", result.AdditionalInstructions);
+        Assert.Contains("Contents: Content of Doc2", result.AdditionalInstructions);
+        Assert.Contains(expectedCitationsPrompt, result.AdditionalInstructions);
     }
 
     [Theory]
     [InlineData(null, null, "Search", "Allows searching for additional information to help answer the user question.")]
     [InlineData("CustomSearch", "CustomDescription", "CustomSearch", "CustomDescription")]
-    public void AIFunctionsShouldBeRegisteredCorrectly(
+    public async Task AIFunctionsShouldBeRegisteredCorrectly(
         string? overridePluginFunctionName,
         string? overridePluginFunctionDescription,
         string expectedPluginFunctionName,
@@ -100,9 +100,10 @@ public class TextSearchBehaviorTests
         var component = new TextSearchBehavior(mockTextSearch.Object, options);
 
         // Act
-        var aiFunctions = component.AIFunctions;
+        var aiContextAdditions = await component.OnModelInvokeAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
 
         // Assert
+        var aiFunctions = aiContextAdditions.AIFunctions;
         Assert.NotNull(aiFunctions);
         Assert.Single(aiFunctions);
         var aiFunction = aiFunctions.First();
@@ -218,6 +219,6 @@ public class TextSearchBehaviorTests
         var result = await component.OnModelInvokeAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
 
         // Assert
-        Assert.Equal("Custom formatted context with 2 results.", result);
+        Assert.Equal("Custom formatted context with 2 results.", result.AdditionalInstructions);
     }
 }

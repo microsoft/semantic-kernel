@@ -191,10 +191,10 @@ public sealed partial class AzureAIAgent : Agent
         // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var extensionsContext = await azureAIAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        azureAIAgentThread.AIContextBehaviors.RegisterPlugins(kernel);
+        extensionsContext.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext);
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext.AdditionalInstructions);
         var extensionsContextOptions = options is null ?
             new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
@@ -321,10 +321,10 @@ public sealed partial class AzureAIAgent : Agent
         // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var extensionsContext = await azureAIAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        azureAIAgentThread.AIContextBehaviors.RegisterPlugins(kernel);
+        extensionsContext.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext);
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext.AdditionalInstructions);
         var extensionsContextOptions = options is null ?
             new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
@@ -464,7 +464,7 @@ public sealed partial class AzureAIAgent : Agent
         return new AzureAIChannel(this.Client, thread.Id);
     }
 
-    private static string MergeAdditionalInstructions(string? optionsAdditionalInstructions, string extensionsContext) =>
+    private static string MergeAdditionalInstructions(string? optionsAdditionalInstructions, string? extensionsContext) =>
         (optionsAdditionalInstructions, extensionsContext) switch
         {
             (string ai, string ec) when !string.IsNullOrWhiteSpace(ai) && !string.IsNullOrWhiteSpace(ec) => string.Concat(

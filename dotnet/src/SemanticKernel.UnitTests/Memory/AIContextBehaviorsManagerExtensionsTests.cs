@@ -49,34 +49,13 @@ public class AIContextBehaviorsManagerExtensionsTests
 
         partMock
             .Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync("Combined Context");
+            .ReturnsAsync(new AIContextAdditions { AdditionalInstructions = "Combined Context" });
 
         // Act
         var result = await manager.OnModelInvokeAsync(messages);
 
         // Assert
-        Assert.Equal("Combined Context", result);
+        Assert.Equal("Combined Context", result.AdditionalInstructions);
         partMock.Verify(x => x.OnModelInvokeAsync(It.Is<ICollection<ChatMessage>>(m => m.Count == 2), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public void RegisterPluginsShouldConvertAIFunctionsAndRegisterAsPlugins()
-    {
-        // Arrange
-        var kernel = new Kernel();
-        var manager = new AIContextBehaviorsManager();
-        var partMock = new Mock<AIContextBehavior>();
-        var aiFunctionMock = AIFunctionFactory.Create(() => "Hello", "TestFunction");
-        partMock
-            .Setup(x => x.AIFunctions)
-            .Returns(new List<AIFunction> { aiFunctionMock });
-        manager.Add(partMock.Object);
-
-        // Act
-        manager.RegisterPlugins(kernel);
-
-        // Assert
-        var registeredFunction = kernel.Plugins.GetFunction("Tools", aiFunctionMock.Name);
-        Assert.NotNull(registeredFunction);
     }
 }

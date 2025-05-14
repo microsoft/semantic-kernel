@@ -19,8 +19,6 @@ public sealed class AIContextBehaviorsManager
 {
     private readonly List<AIContextBehavior> _behaviors = new();
 
-    private List<AIFunction>? _currentAIFunctions = null;
-
     /// <summary>
     /// Gets the list of registered <see cref="AIContextBehavior"/> objects.
     /// </summary>
@@ -43,30 +41,12 @@ public sealed class AIContextBehaviorsManager
     }
 
     /// <summary>
-    /// Gets the list of AI functions that all contained parts expose
-    /// and which should be used by the consuming AI when using these parts.
-    /// </summary>
-    public IReadOnlyCollection<AIFunction> AIFunctions
-    {
-        get
-        {
-            if (this._currentAIFunctions == null)
-            {
-                this._currentAIFunctions = this.Behaviors.SelectMany(x => x.AIFunctions).ToList();
-            }
-
-            return this._currentAIFunctions;
-        }
-    }
-
-    /// <summary>
     /// Adds a new <see cref="AIContextBehavior"/> objects.
     /// </summary>
     /// <param name="aiContextBehavior">The <see cref="AIContextBehavior"/> object to register.</param>
     public void Add(AIContextBehavior aiContextBehavior)
     {
         this._behaviors.Add(aiContextBehavior);
-        this._currentAIFunctions = null;
     }
 
     /// <summary>
@@ -79,7 +59,6 @@ public sealed class AIContextBehaviorsManager
         {
             this.Add(behavior);
         }
-        this._currentAIFunctions = null;
     }
 
     /// <summary>
@@ -122,10 +101,15 @@ public sealed class AIContextBehaviorsManager
     /// <param name="newMessages">The most recent messages that the Model/Agent/etc. is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation, containing the combined context from all <see cref="AIContextBehavior"/> objects.</returns>
-    public async Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public async Task<AIContextAdditions> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         var subContexts = await Task.WhenAll(this.Behaviors.Select(x => x.OnModelInvokeAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
-        return string.Join("\n", subContexts);
+        subContexts = subContexts.Where(x => x != null).ToArray();
+
+        var combinedContext = new AIContextAdditions();
+        combinedContext.AIFunctions = subContexts.Where(x => x.AIFunctions != null).SelectMany(x => x.AIFunctions).ToList();
+        combinedContext.AdditionalInstructions = string.Join("\n", subContexts.Where(x => !string.IsNullOrWhiteSpace(x.AdditionalInstructions)).Select(x => x.AdditionalInstructions));
+        return combinedContext;
     }
 
     /// <summary>
