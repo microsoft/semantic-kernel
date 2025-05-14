@@ -21,6 +21,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -34,18 +35,21 @@ logger: logging.Logger = logging.getLogger(__name__)
 # region Messages and Types
 
 
+@experimental
 class GroupChatStartMessage(KernelBaseModel):
     """A message type to start a group chat."""
 
     body: DefaultTypeAlias
 
 
+@experimental
 class GroupChatRequestMessage(KernelBaseModel):
     """A request message type for agents in a group chat."""
 
     agent_name: str
 
 
+@experimental
 class GroupChatResponseMessage(KernelBaseModel):
     """A response message type from agents in a group chat."""
 
@@ -55,6 +59,7 @@ class GroupChatResponseMessage(KernelBaseModel):
 _TGroupChatManagerResult = TypeVar("_TGroupChatManagerResult", ChatMessageContent, str, bool)
 
 
+@experimental
 class GroupChatManagerResult(KernelBaseModel, Generic[_TGroupChatManagerResult]):
     """A result message type from the group chat manager."""
 
@@ -66,18 +71,21 @@ class GroupChatManagerResult(KernelBaseModel, Generic[_TGroupChatManagerResult])
 # we need to change the names of the classes to remove the generic type parameters.
 # Many model services (e.g. OpenAI) do not support generic type parameters in the
 # class name (e.g. "GroupChatManagerResult[bool]").
+@experimental
 class BooleanResult(GroupChatManagerResult[bool]):
     """A result message type from the group chat manager with a boolean result."""
 
     pass
 
 
+@experimental
 class StringResult(GroupChatManagerResult[str]):
     """A result message type from the group chat manager with a string result."""
 
     pass
 
 
+@experimental
 class MessageResult(GroupChatManagerResult[ChatMessageContent]):
     """A result message type from the group chat manager with a message result."""
 
@@ -89,6 +97,7 @@ class MessageResult(GroupChatManagerResult[ChatMessageContent]):
 # region GroupChatAgentActor
 
 
+@experimental
 class GroupChatAgentActor(AgentActorBase):
     """An agent actor that process messages in a group chat."""
 
@@ -175,6 +184,7 @@ class GroupChatAgentActor(AgentActorBase):
 # region GroupChatManager
 
 
+@experimental
 class GroupChatManager(KernelBaseModel, ABC):
     """A group chat manager that manages the flow of a group chat."""
 
@@ -229,6 +239,7 @@ class GroupChatManager(KernelBaseModel, ABC):
         ...
 
 
+@experimental
 class RoundRobinGroupChatManager(GroupChatManager):
     """A round-robin group chat manager."""
 
@@ -283,6 +294,7 @@ class RoundRobinGroupChatManager(GroupChatManager):
 # region GroupChatManagerActor
 
 
+@experimental
 class GroupChatManagerActor(ActorBase):
     """A group chat manager actor."""
 
@@ -395,6 +407,7 @@ class GroupChatManagerActor(ActorBase):
 # region GroupChatOrchestration
 
 
+@experimental
 class GroupChatOrchestration(OrchestrationBase[TIn, TOut]):
     """A group chat multi-agent pattern orchestration."""
 
