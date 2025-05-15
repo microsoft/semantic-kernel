@@ -51,6 +51,7 @@ class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase)
         ad_token: str | None = None,
         ad_token_provider: AsyncAzureADTokenProvider | None = None,
         token_endpoint: str | None = None,
+        websocket_base_url: str | None = None,
         default_headers: Mapping[str, str] | None = None,
         async_client: AsyncAzureOpenAI | None = None,
         env_file_path: str | None = None,
@@ -81,6 +82,8 @@ class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase)
             ad_token: The Azure Active Directory token. (Optional)
             ad_token_provider: The Azure Active Directory token provider. (Optional)
             token_endpoint: The token endpoint to request an Azure token. (Optional)
+            websocket_base_url: The base URL for the WebSocket connection. (Optional)
+                If not provided, the default URL will be used.
             default_headers: The default headers mapping of string keys to
                 string values for HTTP requests. (Optional)
             async_client: An existing client to use. (Optional)
@@ -125,6 +128,7 @@ class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase)
             service_id=service_id,
             default_headers=default_headers,
             client=async_client,
+            websocket_base_url=websocket_base_url,
             **kwargs,
         )
 
