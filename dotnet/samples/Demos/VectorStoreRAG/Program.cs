@@ -93,7 +93,7 @@ switch (appConfig.RagConfig.VectorStoreType)
             appConfig.RagConfig.CollectionName);
         break;
     case "Qdrant":
-        kernelBuilder.Services.AddQdrantVectorStoreRecordCollection<Guid, TextSnippet<Guid>>(
+        kernelBuilder.Services.AddQdrantCollection<Guid, TextSnippet<Guid>>(
             appConfig.RagConfig.CollectionName,
             appConfig.QdrantConfig.Host,
             appConfig.QdrantConfig.Port,

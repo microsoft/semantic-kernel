@@ -27,9 +27,7 @@ public class PineconeDependencyInjectionTests
     private static string ApiKeyProvider(IServiceProvider sp, object? serviceKey = null)
         => sp.GetRequiredService<IConfiguration>().GetRequiredSection(CreateConfigKey("Pinecone", serviceKey, "ApiKey")).Value!;
 
-    private static ClientOptions ClientOptionsProvider(IServiceProvider sp) => s_clientOptions;
-
-    private static ClientOptions ClientOptionsProvider(IServiceProvider sp, object serviceKey) => s_clientOptions;
+    private static ClientOptions ClientOptionsProvider(IServiceProvider sp, object? serviceKey = null) => s_clientOptions;
 
     public override IEnumerable<Func<IServiceCollection, object?, string, ServiceLifetime, IServiceCollection>> CollectionDelegates
     {
@@ -78,7 +76,7 @@ public class PineconeDependencyInjectionTests
     }
 
     [Fact]
-    public void ApiKeyBeNullOrEmpty()
+    public void ApiKeyCantBeNullOrEmpty()
     {
         IServiceCollection services = new ServiceCollection();
 
