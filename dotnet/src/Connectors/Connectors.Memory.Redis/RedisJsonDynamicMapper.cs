@@ -36,28 +36,53 @@ internal class RedisJsonDynamicMapper(CollectionModel model, JsonSerializerOptio
         {
             var property = model.VectorProperties[i];
 
-            if (generatedEmbeddings?[i] is IReadOnlyList<Embedding> propertyEmbedding)
+            // Don't create a property if it doesn't exist in the dictionary
+            if (dataModel.TryGetValue(property.ModelName, out var vectorValue))
             {
-                Debug.Assert(property.EmbeddingGenerator is not null);
+                var vector = generatedEmbeddings?[i]?[recordIndex] is Embedding ge
+                    ? ge
+                    : vectorValue;
 
-                jsonObject.Add(
-                    property.StorageName,
-                    propertyEmbedding[recordIndex] switch
-                    {
-                        Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        Embedding<double> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        _ => throw new UnreachableException()
-                    });
-            }
-            else
-            {
-                // No generated embedding, read the vector directly from the data model
-                if (dataModel.TryGetValue(property.ModelName, out var sourceValue))
+                if (vector is null)
                 {
-                    jsonObject.Add(property.StorageName, sourceValue is null
-                        ? null
-                        : JsonSerializer.SerializeToNode(sourceValue, property.Type, jsonSerializerOptions));
+                    jsonObject[property.StorageName] = null;
+                    continue;
                 }
+
+                var jsonArray = new JsonArray();
+
+                if (vector switch
+                {
+                    ReadOnlyMemory<float> m => m,
+                    Embedding<float> e => e.Vector,
+                    float[] a => new ReadOnlyMemory<float>(a),
+                    _ => (ReadOnlyMemory<float>?)null
+                } is ReadOnlyMemory<float> floatMemory)
+                {
+                    foreach (var item in floatMemory.Span)
+                    {
+                        jsonArray.Add(JsonValue.Create(item));
+                    }
+                }
+                else if (vector switch
+                {
+                    ReadOnlyMemory<double> m => m,
+                    Embedding<double> e => e.Vector,
+                    double[] a => new ReadOnlyMemory<double>(a),
+                    _ => null
+                } is ReadOnlyMemory<double> doubleMemory)
+                {
+                    foreach (var item in doubleMemory.Span)
+                    {
+                        jsonArray.Add(JsonValue.Create(item));
+                    }
+                }
+                else
+                {
+                    throw new UnreachableException();
+                }
+
+                jsonObject.Add(property.StorageName, jsonArray);
             }
         }
 
@@ -93,25 +118,50 @@ internal class RedisJsonDynamicMapper(CollectionModel model, JsonSerializerOptio
             }
         }
 
-        foreach (var vectorProperty in model.VectorProperties)
+        if (includeVectors)
         {
-            // For vector properties which have embedding generation configured, we need to remove the embeddings before deserializing
-            // (we can't go back from an embedding to e.g. string).
-            // For other cases (no embedding generation), we leave the properties even if IncludeVectors is false.
-            if (vectorProperty.EmbeddingGenerator is not null)
+            foreach (var vectorProperty in model.VectorProperties)
             {
-                continue;
-            }
+                // Replicate null if the property exists but is null.
+                if (jsonObject.TryGetPropertyValue(vectorProperty.StorageName, out var sourceValue))
+                {
+                    if (sourceValue is null)
+                    {
+                        dataModel.Add(vectorProperty.ModelName, null);
+                        continue;
+                    }
 
-            // Replicate null if the property exists but is null.
-            if (jsonObject.TryGetPropertyValue(vectorProperty.StorageName, out var sourceValue))
-            {
-                dataModel.Add(vectorProperty.ModelName, sourceValue is null
-                   ? null
-                   : JsonSerializer.Deserialize(sourceValue, vectorProperty.Type, jsonSerializerOptions));
+                    dataModel.Add(
+                        vectorProperty.ModelName,
+                        (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch
+                        {
+                            Type t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(ToArray<float>(sourceValue)),
+                            Type t when t == typeof(Embedding<float>) => new Embedding<float>(ToArray<float>(sourceValue)),
+                            Type t when t == typeof(float[]) => ToArray<float>(sourceValue),
+
+                            Type t when t == typeof(ReadOnlyMemory<double>) => new ReadOnlyMemory<double>(ToArray<double>(sourceValue)),
+                            Type t when t == typeof(Embedding<double>) => new Embedding<double>(ToArray<double>(sourceValue)),
+                            Type t when t == typeof(double[]) => ToArray<double>(sourceValue),
+
+                            _ => throw new UnreachableException()
+                        });
+                }
             }
         }
 
         return dataModel;
+
+        static T[] ToArray<T>(JsonNode jsonNode)
+        {
+            var jsonArray = jsonNode.AsArray();
+            var array = new T[jsonArray.Count];
+
+            for (var i = 0; i < jsonArray.Count; i++)
+            {
+                array[i] = jsonArray[i]!.GetValue<T>();
+            }
+
+            return array;
+        }
     }
 }

@@ -17,5 +17,6 @@ public class InMemoryEmbeddingTypeTests(InMemoryEmbeddingTypeTests.Fixture fixtu
         public override TestStore TestStore => InMemoryTestStore.Instance;
 
         public override bool RecreateCollection => true;
+        public override bool AssertNoVectorsLoadedWithEmbeddingGeneration => false;
     }
 }

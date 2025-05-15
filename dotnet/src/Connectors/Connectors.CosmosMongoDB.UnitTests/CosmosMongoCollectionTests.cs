@@ -412,8 +412,8 @@ public sealed class CosmosMongoCollectionTests
     }
 
     [Theory]
-    [MemberData(nameof(SearchEmbeddingVectorTypeData))]
-    public async Task SearchEmbeddingThrowsExceptionWithInvalidVectorTypeAsync(object vector, bool exceptionExpected)
+    [MemberData(nameof(SearchVectorTypeData))]
+    public async Task SearchThrowsExceptionWithInvalidVectorTypeAsync(object vector, bool exceptionExpected)
     {
         // Arrange
         this.MockCollectionForSearch();
@@ -425,18 +425,18 @@ public sealed class CosmosMongoCollectionTests
         // Act & Assert
         if (exceptionExpected)
         {
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await sut.SearchEmbeddingAsync(vector, top: 3).ToListAsync());
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await sut.SearchAsync(vector, top: 3).ToListAsync());
         }
         else
         {
-            Assert.NotNull(await sut.SearchEmbeddingAsync(vector, top: 3).FirstOrDefaultAsync());
+            Assert.NotNull(await sut.SearchAsync(vector, top: 3).FirstOrDefaultAsync());
         }
     }
 
     [Theory]
     [InlineData("TestEmbedding1", "TestEmbedding1", 3, 3)]
     [InlineData("TestEmbedding2", "test_embedding_2", 4, 4)]
-    public async Task SearchEmbeddingUsesValidQueryAsync(
+    public async Task SearchUsesValidQueryAsync(
         string? vectorPropertyName,
         string expectedVectorPropertyName,
         int actualTop,
@@ -488,7 +488,7 @@ public sealed class CosmosMongoCollectionTests
         };
 
         // Act
-        var actual = await sut.SearchEmbeddingAsync(vector, top: actualTop, new()
+        var actual = await sut.SearchAsync(vector, top: actualTop, new()
         {
             VectorProperty = vectorSelector,
         }).FirstOrDefaultAsync();
@@ -504,7 +504,7 @@ public sealed class CosmosMongoCollectionTests
     }
 
     [Fact]
-    public async Task SearchEmbeddingThrowsExceptionWithNonExistentVectorPropertyNameAsync()
+    public async Task SearchThrowsExceptionWithNonExistentVectorPropertyNameAsync()
     {
         // Arrange
         this.MockCollectionForSearch();
@@ -516,11 +516,11 @@ public sealed class CosmosMongoCollectionTests
         var options = new RecordSearchOptions<CosmosMongoHotelModel> { VectorProperty = r => "non-existent-property" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, options).FirstOrDefaultAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await sut.SearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, options).FirstOrDefaultAsync());
     }
 
     [Fact]
-    public async Task SearchEmbeddingReturnsRecordWithScoreAsync()
+    public async Task SearchReturnsRecordWithScoreAsync()
     {
         // Arrange
         this.MockCollectionForSearch();
@@ -530,7 +530,7 @@ public sealed class CosmosMongoCollectionTests
             "collection");
 
         // Act
-        var result = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3).FirstOrDefaultAsync();
+        var result = await sut.SearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3).FirstOrDefaultAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -551,7 +551,7 @@ public sealed class CosmosMongoCollectionTests
         { [], 1 }
     };
 
-    public static TheoryData<object, bool> SearchEmbeddingVectorTypeData => new()
+    public static TheoryData<object, bool> SearchVectorTypeData => new()
     {
         { new ReadOnlyMemory<float>([1f, 2f, 3f]), false },
         { new ReadOnlyMemory<float>?(new([1f, 2f, 3f])), false },

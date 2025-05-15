@@ -161,75 +161,36 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
-        TInput value,
-        int top,
-        RecordSearchOptions<TRecord>? options = default,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        switch (vectorProperty.EmbeddingGenerator)
-        {
-            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
-                var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
-
-                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
-                {
-                    yield return record;
-                }
-
-                yield break;
-
-            case null:
-                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
-
-            default:
-                throw new InvalidOperationException(
-                    SqliteModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
-                        ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
-                        : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
-        }
-    }
-
-    /// <inheritdoc />
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
-        TVector vector,
+        TInput searchValue,
         int top,
         RecordSearchOptions<TRecord>? options = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
-    }
-
-    private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
-        TVector vector,
-        int top,
-        VectorPropertyModel vectorProperty,
-        string operationName,
-        RecordSearchOptions<TRecord> options,
-        CancellationToken cancellationToken = default)
-        where TVector : notnull
-    {
-        const string LimitPropertyName = "k";
-
-        Verify.NotNull(vector);
+        Verify.NotNull(searchValue);
         Verify.NotLessThan(top, 1);
 
-        var vectorType = vector.GetType();
-        if (!SqliteModelBuilder.IsVectorPropertyTypeValidCore(vectorType, out var supportedTypes))
-        {
-            throw new NotSupportedException(
-                $"The provided vector type {vectorType.FullName} is not supported by the SQLite connector. Supported types are: {supportedTypes}");
-        }
+        const string LimitPropertyName = "k";
 
+        options ??= s_defaultVectorSearchOptions;
         if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
+
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        ReadOnlyMemory<float> vector = searchValue switch
+        {
+            ReadOnlyMemory<float> r => r,
+            float[] f => new ReadOnlyMemory<float>(f),
+            Embedding<float> e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), SqliteModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
 
         var mappedArray = SqlitePropertyMapping.MapVectorForStorageModel(vector);
 
@@ -271,12 +232,16 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
-        return this.EnumerateAndMapSearchResultsAsync(
+        await foreach (var record in this.EnumerateAndMapSearchResultsAsync(
             conditions,
             extraWhereFilter,
             extraParameters,
             options,
-            cancellationToken);
+            cancellationToken)
+            .ConfigureAwait(false))
+        {
+            yield return record;
+        }
     }
 
     #endregion Search

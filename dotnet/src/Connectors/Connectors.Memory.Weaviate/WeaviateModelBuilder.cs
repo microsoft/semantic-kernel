@@ -3,21 +3,22 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelBuilder(GetModelBuildingOptions(hasNamedVectors))
 {
+    internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[]";
+
     private static CollectionModelBuildingOptions GetModelBuildingOptions(bool hasNamedVectors)
     {
         return new()
         {
             RequiresAtLeastOneVector = !hasNamedVectors,
             SupportsMultipleKeys = false,
-            SupportsMultipleVectors = hasNamedVectors,
-            UsesExternalSerializer = true,
-            ReservedKeyStorageName = WeaviateConstants.ReservedKeyPropertyName
+            SupportsMultipleVectors = hasNamedVectors
         };
     }
 
@@ -63,8 +64,11 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "ReadOnlyMemory<float>";
+        supportedTypes = SupportedVectorTypes;
 
-        return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<float>?);
+        return type == typeof(ReadOnlyMemory<float>)
+            || type == typeof(ReadOnlyMemory<float>?)
+            || type == typeof(Embedding<float>)
+            || type == typeof(float[]);
     }
 }

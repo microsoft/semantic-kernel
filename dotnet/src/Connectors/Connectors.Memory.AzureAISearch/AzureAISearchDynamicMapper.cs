@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using MEAI = Microsoft.Extensions.AI;
 
@@ -46,27 +47,36 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
         {
             var property = model.VectorProperties[i];
 
-            if (generatedEmbeddings?[i]?[recordIndex] is MEAI.Embedding embedding)
+            // Don't create a property if it doesn't exist in the dictionary
+            if (dataModel.TryGetValue(property.ModelName, out var vectorValue))
             {
-                Debug.Assert(property.EmbeddingGenerator is not null);
+                var vector = generatedEmbeddings?[i]?[recordIndex] is Embedding ge
+                    ? ge
+                    : vectorValue;
 
-                jsonObject.Add(
-                    property.StorageName,
-                    embedding switch
-                    {
-                        MEAI.Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        _ => throw new UnreachableException()
-                    });
-            }
-            else
-            {
-                // No generated embedding, read the vector directly from the data model
-                if (dataModel.TryGetValue(property.ModelName, out var sourceValue))
+                if (vector is null)
                 {
-                    jsonObject.Add(property.StorageName, sourceValue is null
-                        ? null
-                        : JsonSerializer.SerializeToNode(sourceValue, property.Type, jsonSerializerOptions));
+                    jsonObject[property.StorageName] = null;
+                    continue;
                 }
+
+                var memory = vector switch
+                {
+                    ReadOnlyMemory<float> m => m,
+                    Embedding<float> e => e.Vector,
+                    float[] a => a,
+
+                    _ => throw new UnreachableException()
+                };
+
+                var jsonArray = new JsonArray();
+
+                foreach (var item in memory.Span)
+                {
+                    jsonArray.Add(JsonValue.Create(item));
+                }
+
+                jsonObject.Add(property.StorageName, jsonArray);
             }
         }
 
@@ -105,15 +115,23 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
                 {
                     if (storageModel.TryGetPropertyValue(vectorProperty.StorageName, out var value))
                     {
-                        if (value is not null)
-                        {
-                            ReadOnlyMemory<float> vector = value.AsArray().Select(x => (float)x!).ToArray();
-                            result.Add(vectorProperty.ModelName, vector);
-                        }
-                        else
+                        if (value is null)
                         {
                             result.Add(vectorProperty.ModelName, null);
+                            continue;
                         }
+
+                        var vector = value.AsArray().Select(x => (float)x!).ToArray();
+                        result.Add(
+                            vectorProperty.ModelName,
+                            (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch
+                            {
+                                Type t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(vector),
+                                Type t when t == typeof(Embedding<float>) => new Embedding<float>(vector),
+                                Type t when t == typeof(float[]) => vector,
+
+                                _ => throw new UnreachableException()
+                            });
                     }
 
                     continue;

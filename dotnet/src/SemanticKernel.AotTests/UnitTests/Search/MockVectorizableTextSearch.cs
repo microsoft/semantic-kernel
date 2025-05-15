@@ -14,7 +14,7 @@ internal sealed class MockVectorizableTextSearch<TRecord> : IVectorSearchable<TR
     }
 
     public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
-        TInput value,
+        TInput searchValue,
         int top,
         RecordSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)

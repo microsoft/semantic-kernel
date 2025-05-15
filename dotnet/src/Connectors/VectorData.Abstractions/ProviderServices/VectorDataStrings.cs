@@ -20,9 +20,6 @@ public static class VectorDataStrings
     public static string EmbeddingPropertyTypeIncompatibleWithEmbeddingGenerator(VectorPropertyModel vectorProperty)
         => $"Property '{vectorProperty.ModelName}' has embedding type '{TypeName(vectorProperty.Type)}', but an embedding generator is configured on the property. Remove the embedding generator or change the property's .NET type to a non-embedding input type to the generator (e.g. string).";
 
-    public static string EmbeddingTypePassedToSearchAsync
-        => "'SearchAsync' performs embedding generation, and does not accept Embedding types directly. To search for an Embedding directly, use 'SearchEmbeddingAsync'.";
-
     public static string GetCollectionWithDictionaryNotSupported
         => "Dynamic mapping via Dictionary<string, object?> is not supported via this method, call GetDynamicCollection() instead.";
 
@@ -35,8 +32,8 @@ public static class VectorDataStrings
     public static string IncompatibleEmbeddingGeneratorWasConfiguredForInputType(Type inputType, Type embeddingGeneratorType)
         => $"An input of type '{TypeName(inputType)}' was provided, but an incompatible embedding generator of type '{TypeName(embeddingGeneratorType)}' was configured.";
 
-    public static string NoEmbeddingGeneratorWasConfiguredForSearch
-        => "'SearchAsync' requires an embedding generator to be configured. To pass an embedding directly, use 'SearchEmbeddingAsync', otherwise configure an embedding generator with your vector store connector.";
+    public static string InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(Type inputType, string supportedVectorTypes)
+        => $"A value of type '{TypeName(inputType)}' was passed to 'SearchAsync', but that isn't a supported vector type by your provider and no embedding generator was configured. The supported vector types are: {supportedVectorTypes}.";
 
     public static string NonEmbeddingVectorPropertyWithoutEmbeddingGenerator(VectorPropertyModel vectorProperty)
         => $"Property '{vectorProperty.ModelName}' has non-Embedding type '{TypeName(vectorProperty.EmbeddingType)}', but no embedding generator is configured.";

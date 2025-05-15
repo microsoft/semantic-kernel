@@ -33,10 +33,11 @@ public sealed class WeaviateMapperTests
     [InlineData(false)]
     public void MapFromDataToStorageModelReturnsValidObject(bool hasNamedVectors)
     {
+        var key = new Guid("55555555-5555-5555-5555-555555555555");
         // Arrange
         var hotel = new WeaviateHotel
         {
-            HotelId = new Guid("55555555-5555-5555-5555-555555555555"),
+            HotelId = key,
             HotelName = "Test Name",
             Tags = ["tag1", "tag2"],
             DescriptionEmbedding = new ReadOnlyMemory<float>([1f, 2f, 3f])
@@ -50,7 +51,7 @@ public sealed class WeaviateMapperTests
         // Assert
         Assert.NotNull(document);
 
-        Assert.Equal("55555555-5555-5555-5555-555555555555", document["id"]!.GetValue<string>());
+        Assert.Equal(key, document["id"]!.GetValue<Guid>());
         Assert.Equal("Test Name", document["properties"]!["hotelName"]!.GetValue<string>());
         Assert.Equal(["tag1", "tag2"], document["properties"]!["tags"]!.AsArray().Select(l => l!.GetValue<string>()));
 
@@ -64,10 +65,12 @@ public sealed class WeaviateMapperTests
     [InlineData(false)]
     public void MapFromStorageToDataModelReturnsValidObject(bool hasNamedVectors)
     {
+        var key = new Guid("55555555-5555-5555-5555-555555555555");
+
         // Arrange
         var document = new JsonObject
         {
-            ["id"] = "55555555-5555-5555-5555-555555555555",
+            ["id"] = key,
             ["properties"] = new JsonObject(),
             ["vectors"] = new JsonObject()
         };
@@ -94,7 +97,7 @@ public sealed class WeaviateMapperTests
         // Assert
         Assert.NotNull(hotel);
 
-        Assert.Equal(new Guid("55555555-5555-5555-5555-555555555555"), hotel.HotelId);
+        Assert.Equal(key, hotel.HotelId);
         Assert.Equal("Test Name", hotel.HotelName);
         Assert.Equal(["tag1", "tag2"], hotel.Tags);
         Assert.True(new ReadOnlyMemory<float>([1f, 2f, 3f]).Span.SequenceEqual(hotel.DescriptionEmbedding!.Value.Span));
@@ -106,19 +109,20 @@ public sealed class WeaviateMapperTests
             "CollectionName",
             hasNamedVectors,
             new WeaviateModelBuilder(hasNamedVectors)
-            .BuildDynamic(
-                new VectorStoreRecordDefinition
-                {
-                    Properties =
-                    [
-                        new VectorStoreKeyProperty("HotelId", typeof(Guid)),
-                        new VectorStoreDataProperty("HotelName", typeof(string)),
-                        new VectorStoreDataProperty("Tags", typeof(List<string>)),
-                        new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>), 10)
-                    ]
-                },
-                defaultEmbeddingGenerator: null,
-                s_jsonSerializerOptions),
+                .Build(
+                    typeof(WeaviateHotel),
+                    new VectorStoreRecordDefinition
+                    {
+                        Properties =
+                        [
+                            new VectorStoreKeyProperty("HotelId", typeof(Guid)),
+                            new VectorStoreDataProperty("HotelName", typeof(string)),
+                            new VectorStoreDataProperty("Tags", typeof(List<string>)),
+                            new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>), 10)
+                        ]
+                    },
+                    defaultEmbeddingGenerator: null,
+                    s_jsonSerializerOptions),
             s_jsonSerializerOptions);
 
     #endregion

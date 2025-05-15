@@ -3,12 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelBuildingOptions)
 {
+    internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[]";
+
     internal static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
@@ -61,8 +64,11 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
         // Azure AI Search is adding support for more types than just float32, but these are not available for use via the
         // SDK yet. We will update this list as the SDK is updated.
         // <see href="https://learn.microsoft.com/en-us/rest/api/searchservice/supported-data-types#edm-data-types-for-vector-fields"/>
-        supportedTypes = "ReadOnlyMemory<float>";
+        supportedTypes = SupportedVectorTypes;
 
-        return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<float>?);
+        return type == typeof(ReadOnlyMemory<float>)
+            || type == typeof(ReadOnlyMemory<float>?)
+            || type == typeof(Embedding<float>)
+            || type == typeof(float[]);
     }
 }

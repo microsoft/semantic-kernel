@@ -24,10 +24,6 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
     protected CollectionJsonModelBuilder(CollectionModelBuildingOptions options)
         : base(options)
     {
-        if (!options.UsesExternalSerializer)
-        {
-            throw new ArgumentNullException(nameof(options), $"{nameof(options.UsesExternalSerializer)} must be set when using this model builder.");
-        }
     }
 
     /// <summary>

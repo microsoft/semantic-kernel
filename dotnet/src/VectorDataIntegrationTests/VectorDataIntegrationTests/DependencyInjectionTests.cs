@@ -259,8 +259,7 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
         public override Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override object? GetService(Type serviceType, object? serviceKey = null) => throw new NotImplementedException();
-        public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(TInput value, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-        public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(TVector vector, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(TInput searchValue, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }

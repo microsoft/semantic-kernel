@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using MongoDB.Bson.Serialization.Attributes;
@@ -16,6 +17,8 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// </summary>
 internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
 {
+    internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[]";
+
     private static readonly CollectionModelBuildingOptions s_validationOptions = new()
     {
         RequiresAtLeastOneVector = false,
@@ -74,8 +77,11 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "ReadOnlyMemory<float>";
+        supportedTypes = SupportedVectorTypes;
 
-        return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<float>?);
+        return type == typeof(ReadOnlyMemory<float>)
+            || type == typeof(ReadOnlyMemory<float>?)
+            || type == typeof(Embedding<float>)
+            || type == typeof(float[]);
     }
 }

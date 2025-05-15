@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using NRedisStack.Search;
@@ -170,12 +171,15 @@ internal static class RedisCollectionCreateMapping
     /// <returns>The SDK required vector type.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the property data type is not supported by the connector.</exception>
     public static string GetSDKVectorType(VectorPropertyModel vectorProperty)
-        => vectorProperty.EmbeddingType switch
+        => (Nullable.GetUnderlyingType(vectorProperty.EmbeddingType) ?? vectorProperty.EmbeddingType) switch
         {
             Type t when t == typeof(ReadOnlyMemory<float>) => "FLOAT32",
-            Type t when t == typeof(ReadOnlyMemory<float>?) => "FLOAT32",
+            Type t when t == typeof(Embedding<float>) => "FLOAT32",
+            Type t when t == typeof(float[]) => "FLOAT32",
             Type t when t == typeof(ReadOnlyMemory<double>) => "FLOAT64",
-            Type t when t == typeof(ReadOnlyMemory<double>?) => "FLOAT64",
+            Type t when t == typeof(Embedding<double>) => "FLOAT64",
+            Type t when t == typeof(double[]) => "FLOAT64",
+
             null => throw new UnreachableException("null embedding type"),
             _ => throw new InvalidOperationException($"Vector data type '{vectorProperty.Type.Name}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Redis VectorStore.")
         };

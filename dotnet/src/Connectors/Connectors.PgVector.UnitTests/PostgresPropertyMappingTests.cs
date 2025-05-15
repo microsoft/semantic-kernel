@@ -19,7 +19,7 @@ public sealed class PostgresPropertyMappingTests
     public void MapVectorForStorageModelWithInvalidVectorTypeThrowsException()
     {
         // Arrange
-        var vector = new float[] { 1f, 2f, 3f };
+        var vector = new List<float> { 1f, 2f, 3f };
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => PostgresPropertyMapping.MapVectorForStorageModel(vector));

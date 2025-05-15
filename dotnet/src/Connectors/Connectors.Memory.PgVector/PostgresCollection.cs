@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Npgsql;
+using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -344,90 +346,55 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
-        TInput value,
-        int top,
-        RecordSearchOptions<TRecord>? options = default,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        switch (vectorProperty.EmbeddingGenerator)
-        {
-            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
-            {
-                var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
-
-                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
-                {
-                    yield return record;
-                }
-
-                yield break;
-            }
-
-#if NET8_0_OR_GREATER
-            case IEmbeddingGenerator<TInput, Embedding<Half>> generator:
-            {
-                var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
-
-                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
-                {
-                    yield return record;
-                }
-
-                yield break;
-            }
-#endif
-
-            case null:
-                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
-
-            default:
-                throw new InvalidOperationException(
-                    PostgresModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
-                        ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
-                        : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
-        }
-    }
-
-    /// <inheritdoc />
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
-        TVector vector,
+        TInput searchValue,
         int top,
         RecordSearchOptions<TRecord>? options = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
-    }
-
-    private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
-        TVector vector,
-        int top,
-        VectorPropertyModel vectorProperty,
-        string operationName,
-        RecordSearchOptions<TRecord> options,
-        CancellationToken cancellationToken = default)
-        where TVector : notnull
-    {
-        Verify.NotNull(vector);
+        Verify.NotNull(searchValue);
         Verify.NotLessThan(top, 1);
 
-        var vectorType = vector.GetType();
-
-        if (!PostgresModelBuilder.IsVectorPropertyTypeValidCore(vectorType, out var supportedTypes))
-        {
-            throw new NotSupportedException(
-                $"The provided vector type {vectorType.Name} is not supported by the PostgreSQL connector. Supported types are: {supportedTypes}");
-        }
-
+        options ??= s_defaultVectorSearchOptions;
         if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
+
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        object vector = searchValue switch
+        {
+            // Dense float32
+            ReadOnlyMemory<float> r => r,
+            float[] f => new ReadOnlyMemory<float>(f),
+            Embedding<float> e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+
+#if NET8_0_OR_GREATER
+            // Dense float16
+            ReadOnlyMemory<Half> r => r,
+            Half[] f => new ReadOnlyMemory<Half>(f),
+            Embedding<Half> e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<Half>> generator
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+#endif
+
+            // Dense Binary
+            BitArray b => b,
+            // TODO: Uncomment once we sync to the latest MEAI
+            // BinaryEmbedding e => e.Vector,
+            // _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TVector, BinaryEmbedding> generator
+            //     => (await generator.GenerateEmbeddingAsync(value, cancellationToken: cancellationToken).ConfigureAwait(false)).Vector,
+
+            // Sparse
+            SparseVector sv => sv,
+            // TODO: Add a PG-specific SparseVectorEmbedding type
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), PostgresModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
 
         var pgVector = PostgresPropertyMapping.MapVectorForStorageModel(vector);
 
@@ -437,17 +404,21 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
         var limit = top + options.Skip;
 
-        return PostgresUtils.WrapAsyncEnumerableAsync(
-            this._client.GetNearestMatchesAsync(this.Name, this._model, vectorProperty, pgVector, top, options, cancellationToken)
-                .SelectAsync(result =>
-                {
-                    var record = this._mapper.MapFromStorageToDataModel(result.Row, options.IncludeVectors);
+        var records = PostgresUtils.WrapAsyncEnumerableAsync(
+            this._client
+                .GetNearestMatchesAsync(this.Name, this._model, vectorProperty, pgVector, top, options, cancellationToken)
+                .SelectAsync(result => new VectorSearchResult<TRecord>(
+                    this._mapper.MapFromStorageToDataModel(result.Row, options.IncludeVectors),
+                    result.Distance),
+                cancellationToken),
+            operationName: "Search",
+            this._collectionMetadata)
+            .ConfigureAwait(false);
 
-                    return new VectorSearchResult<TRecord>(record, result.Distance);
-                }, cancellationToken),
-            operationName,
-            this._collectionMetadata
-        );
+        await foreach (var record in records)
+        {
+            yield return record;
+        }
     }
 
     #endregion Search

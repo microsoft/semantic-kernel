@@ -33,15 +33,6 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<double>),
-        typeof(ReadOnlyMemory<float>?),
-        typeof(ReadOnlyMemory<double>?)
-    ];
-
     internal static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
@@ -330,80 +321,42 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
-        TInput value,
-        int top,
-        RecordSearchOptions<TRecord>? options = default,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        switch (vectorProperty.EmbeddingGenerator)
-        {
-            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
-            {
-                var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
-
-                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
-                {
-                    yield return record;
-                }
-
-                yield break;
-            }
-
-            case IEmbeddingGenerator<TInput, Embedding<double>> generator:
-            {
-                var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
-
-                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
-                {
-                    yield return record;
-                }
-
-                yield break;
-            }
-
-            case null:
-                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
-
-            default:
-                throw new InvalidOperationException(
-                    s_supportedVectorTypes.Contains(typeof(TInput))
-                        ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
-                        : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
-        }
-    }
-
-    /// <inheritdoc />
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
-        TVector vector,
+        TInput searchValue,
         int top,
         RecordSearchOptions<TRecord>? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
-    }
-
-    private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
-        TVector vector,
-        int top,
-        VectorPropertyModel vectorProperty,
-        string operationName,
-        RecordSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        where TVector : notnull
     {
-        Verify.NotNull(vector);
+        Verify.NotNull(searchValue);
         Verify.NotLessThan(top, 1);
 
+        options ??= s_defaultVectorSearchOptions;
         if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
+
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        object vector = searchValue switch
+        {
+            // float32
+            ReadOnlyMemory<float> r => r,
+            float[] f => new ReadOnlyMemory<float>(f),
+            Embedding<float> e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+
+            // float64
+            ReadOnlyMemory<double> r => r,
+            double[] f => new ReadOnlyMemory<double>(f),
+            Embedding<double> e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<double>> generator
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), RedisModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
 
         // Build query & search.
         var selectFields = options.IncludeVectors ? null : this._dataStoragePropertyNamesWithScore;

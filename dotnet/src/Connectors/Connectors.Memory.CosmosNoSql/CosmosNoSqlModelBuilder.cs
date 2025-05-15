@@ -3,12 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 
 internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBuildingOptions)
 {
+    internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<byte>, Embedding<byte>, byte[], ReadOnlyMemory<sbyte>, Embedding<sbyte>, sbyte[]";
+
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
@@ -54,13 +57,21 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "ReadOnlyMemory<float>, ReadOnlyMemory<byte>, ReadOnlyMemory<sbyte>";
+        supportedTypes = SupportedVectorTypes;
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
             type = underlyingType;
         }
 
-        return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<byte>) || type == typeof(ReadOnlyMemory<sbyte>);
+        return type == typeof(ReadOnlyMemory<float>)
+            || type == typeof(Embedding<float>)
+            || type == typeof(float[])
+            || type == typeof(ReadOnlyMemory<byte>)
+            || type == typeof(Embedding<byte>)
+            || type == typeof(byte[])
+            || type == typeof(ReadOnlyMemory<sbyte>)
+            || type == typeof(Embedding<sbyte>)
+            || type == typeof(sbyte[]);
     }
 }

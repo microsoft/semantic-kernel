@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
@@ -16,6 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
 internal sealed class CosmosNoSqlMapper<TRecord>(CollectionModel model, JsonSerializerOptions? jsonSerializerOptions)
     : ICosmosNoSqlMapper<TRecord>
+    where TRecord : class
 {
     private readonly KeyPropertyModel _keyProperty = model.KeyProperty;
 
@@ -28,27 +30,81 @@ internal sealed class CosmosNoSqlMapper<TRecord>(CollectionModel model, JsonSeri
         // account e.g. naming policies. TemporaryStorageName gets populated in the model builder - containing that name - once VectorStoreModelBuildingOptions.ReservedKeyPropertyName is set
         RenameJsonProperty(jsonObject, this._keyProperty.TemporaryStorageName!, CosmosNoSqlConstants.ReservedKeyPropertyName);
 
-        // Go over the vector properties; those which have an embedding generator configured on them will have embedding generators, overwrite
-        // the value in the JSON object with that.
-        if (generatedEmbeddings is not null)
+        // Go over the vector properties; inject any generated embeddings to overwrite the JSON serialized above.
+        // Also, for Embedding<T> properties we also need to overwrite with a simple array (since Embedding<T> gets serialized as a complex object).
+        for (var i = 0; i < model.VectorProperties.Count; i++)
         {
-            for (var i = 0; i < model.VectorProperties.Count; i++)
+            var property = model.VectorProperties[i];
+
+            Embedding? embedding = generatedEmbeddings?[i]?[recordIndex] is Embedding ge ? ge : null;
+
+            if (embedding is null)
             {
-                if (generatedEmbeddings?[i]?[recordIndex] is MEAI.Embedding embedding)
+                switch (Nullable.GetUnderlyingType(property.Type) ?? property.Type)
                 {
-                    var property = model.VectorProperties[i];
+                    case var t when t == typeof(ReadOnlyMemory<float>):
+                    case var t2 when t2 == typeof(float[]):
+                        // The .NET vector property is a ReadOnlyMemory<float> or float[] (not an Embedding), which means that JsonSerializer
+                        // already serialized it correctly above.
+                        // In addition, there's no generated embedding (which would be an Embedding which we'd need to handle manually).
+                        // So there's nothing for us to do.
+                        continue;
 
-                    Debug.Assert(property.EmbeddingGenerator is not null);
+                    // byte/sbyte is a special case, since it gets serialized as base64 by default; handle manually here.
+                    case var t3 when t3 == typeof(ReadOnlyMemory<byte>):
+                        embedding = new Embedding<byte>((ReadOnlyMemory<byte>)property.GetValueAsObject(dataModel)!);
+                        break;
+                    case var t4 when t4 == typeof(byte[]):
+                        embedding = new Embedding<byte>((byte[])property.GetValueAsObject(dataModel)!);
+                        break;
+                    case var t5 when t5 == typeof(ReadOnlyMemory<sbyte>):
+                        embedding = new Embedding<sbyte>((ReadOnlyMemory<sbyte>)property.GetValueAsObject(dataModel)!);
+                        break;
+                    case var t6 when t6 == typeof(sbyte[]):
+                        embedding = new Embedding<sbyte>((sbyte[])property.GetValueAsObject(dataModel)!);
+                        break;
 
-                    jsonObject[property.StorageName] = embedding switch
-                    {
-                        Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        Embedding<byte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        Embedding<sbyte> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        _ => throw new UnreachableException()
-                    };
+                    case var t when t == typeof(Embedding<float>):
+                    case var t1 when t1 == typeof(Embedding<byte>):
+                    case var t2 when t2 == typeof(Embedding<sbyte>):
+                        embedding = (Embedding)property.GetValueAsObject(dataModel)!;
+                        break;
+
+                    default:
+                        throw new UnreachableException();
                 }
             }
+
+            var jsonArray = new JsonArray();
+
+            switch (embedding)
+            {
+                case Embedding<float> e:
+                    foreach (var item in e.Vector.Span)
+                    {
+                        jsonArray.Add(JsonValue.Create(item));
+                    }
+                    break;
+
+                case Embedding<byte> e:
+                    foreach (var item in e.Vector.Span)
+                    {
+                        jsonArray.Add(JsonValue.Create(item));
+                    }
+                    break;
+
+                case Embedding<sbyte> e:
+                    foreach (var item in e.Vector.Span)
+                    {
+                        jsonArray.Add(JsonValue.Create(item));
+                    }
+                    break;
+
+                default:
+                    throw new UnreachableException();
+            }
+
+            jsonObject[property.StorageName] = jsonArray;
         }
 
         return jsonObject;
@@ -58,6 +114,23 @@ internal sealed class CosmosNoSqlMapper<TRecord>(CollectionModel model, JsonSeri
     {
         // See above comment.
         RenameJsonProperty(storageModel, CosmosNoSqlConstants.ReservedKeyPropertyName, this._keyProperty.TemporaryStorageName!);
+
+        if (includeVectors)
+        {
+            foreach (var vectorProperty in model.VectorProperties)
+            {
+                if (vectorProperty.Type == typeof(Embedding<float>))
+                {
+                    var arrayNode = storageModel[vectorProperty.StorageName];
+                    if (arrayNode is not null)
+                    {
+                        var embeddingNode = new JsonObject();
+                        embeddingNode[nameof(Embedding<float>.Vector)] = arrayNode.DeepClone();
+                        storageModel[vectorProperty.StorageName] = embeddingNode;
+                    }
+                }
+            }
+        }
 
         return storageModel.Deserialize<TRecord>(jsonSerializerOptions)!;
     }

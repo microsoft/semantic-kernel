@@ -533,7 +533,7 @@ public sealed class CosmosNoSqlCollectionTests
             "collection");
 
         // Act
-        var results = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3).ToListAsync();
+        var results = await sut.SearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3).ToListAsync();
         var result = results[0];
 
         // Assert
@@ -553,7 +553,7 @@ public sealed class CosmosNoSqlCollectionTests
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
-            await sut.SearchEmbeddingAsync(new List<double>([1, 2, 3]), top: 3).ToListAsync());
+            await sut.SearchAsync(new List<double>([1, 2, 3]), top: 3).ToListAsync());
     }
 
     [Fact]
@@ -568,7 +568,7 @@ public sealed class CosmosNoSqlCollectionTests
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, searchOptions).ToListAsync());
+            await sut.SearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, searchOptions).ToListAsync());
     }
 
     public static TheoryData<List<string>, string, bool> CollectionExistsData => new()

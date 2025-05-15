@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics;
 using Microsoft.Extensions.AI;
 using Pinecone;
 
@@ -30,9 +31,12 @@ internal sealed class PineconeMapper<TRecord>(Extensions.VectorData.ProviderServ
             }
         }
 
-        var values = (generatedEmbedding?.Vector ?? model.VectorProperty!.GetValueAsObject(dataModel!)) switch
+        var values = (generatedEmbedding ?? model.VectorProperty!.GetValueAsObject(dataModel!)) switch
         {
-            ReadOnlyMemory<float> floats => floats,
+            ReadOnlyMemory<float> m => m,
+            Embedding<float> e => e.Vector,
+            float[] a => a,
+
             null => throw new InvalidOperationException($"Vector property '{model.VectorProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null."),
             _ => throw new InvalidOperationException($"Unsupported vector type '{model.VectorProperty.Type.Name}' for vector property '{model.VectorProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
         };
@@ -58,9 +62,20 @@ internal sealed class PineconeMapper<TRecord>(Extensions.VectorData.ProviderServ
 
         if (includeVectors is true)
         {
-            model.VectorProperty.SetValueAsObject(
+            var vectorProperty = model.VectorProperty;
+
+            vectorProperty.SetValueAsObject(
                 outputRecord,
-                storageModel.Values);
+                storageModel.Values is null
+                    ? null
+                    : (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch
+                    {
+                        var t when t == typeof(ReadOnlyMemory<float>) => storageModel.Values,
+                        var t when t == typeof(Embedding<float>) => new Embedding<float>(storageModel.Values.Value),
+                        var t when t == typeof(float[]) => storageModel.Values.Value.ToArray(),
+
+                        _ => throw new UnreachableException()
+                    });
         }
 
         if (storageModel.Metadata != null)

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using MongoDB.Bson;
@@ -48,22 +49,26 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
         {
             var property = model.VectorProperties[i];
 
-            if (generatedEmbeddings?[i]?[recordIndex] is Embedding embedding)
+            // Don't create a property if it doesn't exist in the dictionary
+            if (dataModel.TryGetValue(property.ModelName, out var vectorValue))
             {
-                Debug.Assert(property.EmbeddingGenerator is not null);
-                document[property.StorageName] = embedding switch
-                {
-                    Embedding<float> e => BsonArray.Create(e.Vector.ToArray()),
-                    _ => throw new UnreachableException()
-                };
-            }
-            else
-            {
-                // No generated embedding, read the vector directly from the data model
-                if (dataModel.TryGetValue(property.ModelName, out var vectorValue))
-                {
-                    document[property.StorageName] = BsonArray.Create(GetVectorArray(vectorValue));
-                }
+                var vector = generatedEmbeddings?[i]?[recordIndex] is Embedding ge
+                    ? ge
+                    : vectorValue;
+
+                document[property.StorageName] = BsonArray.Create(
+                    vector switch
+                    {
+                        ReadOnlyMemory<float> m
+                            => MemoryMarshal.TryGetArray(m, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length ? segment.Array : m.ToArray(),
+                        Embedding<float> e
+                            => MemoryMarshal.TryGetArray(e.Vector, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length ? segment.Array : e.Vector.ToArray(),
+                        float[] a => a,
+
+                        null => Array.Empty<object>(),
+
+                        _ => throw new UnreachableException()
+                    });
             }
         }
 
@@ -98,7 +103,18 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
                 case VectorPropertyModel vectorProperty:
                     if (includeVectors && storageModel.TryGetValue(vectorProperty.StorageName, out var vectorValue))
                     {
-                        result.Add(vectorProperty.ModelName, GetVectorPropertyValue(property.ModelName, property.Type, vectorValue));
+                        result.Add(
+                            vectorProperty.ModelName,
+                            vectorValue.IsBsonNull
+                                ? null
+                                : (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
+                                {
+                                    Type t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(vectorValue.AsBsonArray.Select(item => (float)item.AsDouble).ToArray()),
+                                    Type t when t == typeof(Embedding<float>) => new Embedding<float>(vectorValue.AsBsonArray.Select(item => (float)item.AsDouble).ToArray()),
+                                    Type t when t == typeof(float[]) => vectorValue.AsBsonArray.Select(item => (float)item.AsDouble).ToArray(),
+
+                                    _ => throw new UnreachableException()
+                                });
                     }
                     continue;
 
@@ -194,35 +210,6 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
         }
 
         throw new NotSupportedException($"Mapping for property {propertyName} with type {propertyType.FullName} is not supported in dynamic data model.");
-    }
-
-    private static ReadOnlyMemory<float>? GetVectorPropertyValue(string propertyName, Type propertyType, BsonValue value)
-    {
-        if (value.IsBsonNull)
-        {
-            return null;
-        }
-
-        return propertyType switch
-        {
-            Type t when t == typeof(ReadOnlyMemory<float>) || t == typeof(ReadOnlyMemory<float>?) =>
-                new ReadOnlyMemory<float>(value.AsBsonArray.Select(item => (float)item.AsDouble).ToArray()),
-            _ => throw new NotSupportedException($"Mapping for property {propertyName} with type {propertyType.FullName} is not supported in dynamic data model.")
-        };
-    }
-
-    private static object GetVectorArray(object? vector)
-    {
-        if (vector is null)
-        {
-            return Array.Empty<object>();
-        }
-
-        return vector switch
-        {
-            ReadOnlyMemory<float> memoryFloat => memoryFloat.ToArray(),
-            _ => throw new NotSupportedException($"Mapping for type {vector.GetType().FullName} is not supported in dynamic data model.")
-        };
     }
 
     #endregion

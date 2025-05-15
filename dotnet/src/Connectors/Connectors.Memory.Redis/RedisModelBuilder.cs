@@ -9,6 +9,8 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 internal class RedisModelBuilder(CollectionModelBuildingOptions options) : CollectionModelBuilder(options)
 {
+    internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<double>, Embedding<double>, double[]";
+
     /// <inheritdoc />
     protected override void SetupEmbeddingGeneration(
         VectorPropertyModel vectorProperty,
@@ -62,13 +64,18 @@ internal class RedisModelBuilder(CollectionModelBuildingOptions options) : Colle
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "ReadOnlyMemory<float>, ReadOnlyMemory<double>";
+        supportedTypes = SupportedVectorTypes;
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
             type = underlyingType;
         }
 
-        return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<double>);
+        return type == typeof(ReadOnlyMemory<float>)
+            || type == typeof(Embedding<float>)
+            || type == typeof(float[])
+            || type == typeof(ReadOnlyMemory<double>)
+            || type == typeof(Embedding<double>)
+            || type == typeof(double[]);
     }
 }

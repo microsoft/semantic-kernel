@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Extensions.AI;
@@ -14,46 +15,48 @@ namespace Microsoft.Extensions.VectorData;
 public interface IVectorSearchable<TRecord>
 {
     /// <summary>
-    /// Searches the vector store for records that are similar to given value.
+    /// Searches the vector store for records that are similar to the given value.
     /// </summary>
-    /// <remarks>
-    /// When using this method, <paramref name="value"/> is converted to an embedding internally; depending on your database, you may need to configure an embedding generator.
-    /// </remarks>
     /// <typeparam name="TInput">The type of the input value on which to perform the similarity search.</typeparam>
-    /// <param name="value">The value on which to perform the similarity search.</param>
+    /// <param name="searchValue">The value on which to perform the similarity search. See the remarks section for more details.</param>
     /// <param name="top">The maximum number of results to return.</param>
     /// <param name="options">The options that control the behavior of the search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The records found by the vector search, including their result scores.</returns>
+    /// <remarks>
+    /// The types supported for the <paramref name="searchValue"/> vary based on the provider being used and the embedding generation configured:
+    ///
+    /// <list type="bullet">
+    ///   <item>
+    ///     A <see cref="string"/> or <see cref="DataContent"/> (for images, sound...) if an appropriate <see cref="IEmbeddingGenerator"/> has been configured that accepts that type as input.
+    ///     For example, register an <see cref="IEmbeddingGenerator"/> that accepts <see cref="string"/> as input in your dependency injection container, and then pass in a
+    ///     <see cref="string"/> argument to this method; the argument will be automatically passed to the <see cref="IEmbeddingGenerator"/> to generate the embedding and perform the search.
+    ///     Some databases support generating embeddings at the database side. In this case, you can pass in a <see cref="string"/> or <see cref="DataContent"/> without configuring an
+    ///     <see cref="IEmbeddingGenerator"/> with Microsoft.Extensions.VectorData. The provider will simply send your argument to the database as-is for embedding generation.
+    ///   </item>
+    ///   <item>
+    ///     Arbitrary .NET types can also be passed in as long as an appropriate <see cref="IEmbeddingGenerator"/> has been configured; for example, you can create your own <see cref="IEmbeddingGenerator"/>
+    ///     that accepts your own custom types as input, and uses another <see cref="IEmbeddingGenerator"/> to generate embedding from multiple properties. For .NET types beyond <see cref="string"/> and
+    ///     <see cref="DataContent"/>, you must use the generic <see cref="VectorStoreVectorProperty{TInput}"/> in your record definition.
+    ///   </item>
+    ///   <item>
+    ///     To work with embeddings directly, pass in a <see cref="ReadOnlyMemory{T}"/> or a .NET array of the appropriate type. Most providers support at least <c>ReadOnlyMemory&lt;float&gt;</c> and <c>float[]</c>,
+    ///     but some support other types (e.g. <c>ReadOnlyMemory&lt;Half&gt;</c>, <see cref="BitArray"/>). Some providers may also support their own custom types as well, e.g. to represent sparse embeddings.
+    ///     Consult your provider's documentation for supported types.
+    ///   </item>
+    ///   <item>
+    ///     If you're using <see cref="IEmbeddingGenerator"/> directly in your code, that type returns an <see cref="Embedding"/> (e.g. <c>Embedding{float}</c>),
+    ///     which can also be passed in directly, as long as the provider supports the specific embedding type. However, consider registering your <see cref="IEmbeddingGenerator"/> with the provider
+    ///     instead and pass in the input type (e.g. <see cref="string"/>).
+    ///   </item>
+    /// </list>
+    /// </remarks>
     IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
-        TInput value,
+        TInput searchValue,
         int top,
         RecordSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
         where TInput : notnull;
-
-    /// <summary>
-    /// Searches the vector store for records that are similar to given embedding.
-    /// </summary>
-    /// <remarks>
-    /// This is a low-level method that requires embedding generation to be handled manually.
-    /// Consider configuring an <see cref="IEmbeddingGenerator"/> and using <see cref="SearchAsync"/> to have embeddings generated automatically.
-    /// </remarks>
-    /// <typeparam name="TVector">The type of the vector.</typeparam>
-    /// <param name="vector">The vector to search the store with.</param>
-    /// <param name="top">The maximum number of results to return.</param>
-    /// <param name="options">The options that control the behavior of the search.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The records found by the vector search, including their result scores.</returns>
-    // TODO: We may also want to consider allowing the user to pass Embedding<float>, rather than just ReadOnlyMemory<float> (#11701).
-    // TODO: However, if they have an Embedding, they likely got it from an IEmbeddingGenerator, at which point why not wire that up into MEVD and use SearchAsync?
-    // TODO: So this raw embedding API is likely more for users who already have a ReadOnlyMemory<float> at hand and we don't want to force them to wrap it with Embedding.
-    IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
-        TVector vector,
-        int top,
-        RecordSearchOptions<TRecord>? options = default,
-        CancellationToken cancellationToken = default)
-        where TVector : notnull;
 
     /// <summary>Asks the <see cref="IVectorSearchable{TRecord}"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>

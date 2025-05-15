@@ -510,78 +510,40 @@ public class SqlServerCollection<TKey, TRecord>
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
-        TInput value,
-        int top,
-        RecordSearchOptions<TRecord>? options = default,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        switch (vectorProperty.EmbeddingGenerator)
-        {
-            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
-                var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
-
-                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
-                {
-                    yield return record;
-                }
-
-                yield break;
-
-            case null:
-                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
-
-            default:
-                throw new InvalidOperationException(
-                    SqlServerModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
-                        ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
-                        : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
-        }
-    }
-
-    /// <inheritdoc />
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
-        TVector vector,
+        TInput searchValue,
         int top,
         RecordSearchOptions<TRecord>? options = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
-    }
-
-    private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
-        TVector vector,
-        int top,
-        VectorPropertyModel vectorProperty,
-        string operationName,
-        RecordSearchOptions<TRecord> options,
-        CancellationToken cancellationToken = default)
-        where TVector : notnull
-    {
-        Verify.NotNull(vector);
+        Verify.NotNull(searchValue);
         Verify.NotLessThan(top, 1);
 
-        if (vector is not ReadOnlyMemory<float> allowed)
-        {
-            throw new NotSupportedException(
-                $"The provided vector type {vector.GetType().FullName} is not supported by the SQL Server connector. Supported types are: ReadOnlyMemory<float>.");
-        }
-#pragma warning disable CS0618 // Type or member is obsolete
-        else if (options.OldFilter is not null)
-#pragma warning restore CS0618 // Type or member is obsolete
-        {
-            throw new NotSupportedException("The obsolete Filter is not supported by the SQL Server connector, use NewFilter instead.");
-        }
-
+        options ??= s_defaultVectorSearchOptions;
         if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
+#pragma warning disable CS0618 // Type or member is obsolete
+        if (options.OldFilter is not null)
+        {
+            throw new NotSupportedException("The obsolete Filter is not supported by the SQL Server connector, use NewFilter instead.");
+        }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        ReadOnlyMemory<float> vector = searchValue switch
+        {
+            ReadOnlyMemory<float> r => r,
+            float[] f => new ReadOnlyMemory<float>(f),
+            Embedding<float> e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), SqlServerModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // Connection and command are going to be disposed by the ReadVectorSearchResultsAsync,
@@ -595,10 +557,13 @@ public class SqlServerCollection<TKey, TRecord>
             this._model,
             top,
             options,
-            allowed);
+            vector);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        return this.ReadVectorSearchResultsAsync(connection, command, options.IncludeVectors, cancellationToken);
+        await foreach (var record in this.ReadVectorSearchResultsAsync(connection, command, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
+        {
+            yield return record;
+        }
     }
 
     #endregion Search

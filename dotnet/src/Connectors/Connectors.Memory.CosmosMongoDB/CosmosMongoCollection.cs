@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -192,7 +193,8 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     {
         Verify.NotNull(keys);
 
-        if (options?.IncludeVectors == true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        var includeVectors = options?.IncludeVectors ?? false;
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -200,7 +202,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
 
         using var cursor = await this
-            .FindAsync(this.GetFilterByIds(stringKeys), top: null, skip: null, options?.IncludeVectors ?? false, sortDefinition: null, cancellationToken)
+            .FindAsync(this.GetFilterByIds(stringKeys), top: null, skip: null, includeVectors, sortDefinition: null, cancellationToken)
             .ConfigureAwait(false);
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
@@ -209,7 +211,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             {
                 if (record is not null)
                 {
-                    yield return this._mapper.MapFromStorageToDataModel(record, new());
+                    yield return this._mapper.MapFromStorageToDataModel(record, includeVectors);
                 }
             }
         }
@@ -310,76 +312,35 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
-        TInput value,
-        int top,
-        RecordSearchOptions<TRecord>? options = default,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        switch (vectorProperty.EmbeddingGenerator)
-        {
-            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
-            {
-                var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
-
-                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
-                {
-                    yield return record;
-                }
-
-                yield break;
-            }
-
-            case null:
-                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
-
-            default:
-                throw new InvalidOperationException(
-                    MongoModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
-                        ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
-                        : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
-        }
-    }
-
-    /// <inheritdoc />
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
-        TVector vector,
+        TInput searchValue,
         int top,
         RecordSearchOptions<TRecord>? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
-    }
-
-    private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
-        TVector vector,
-        int top,
-        VectorPropertyModel vectorProperty,
-        string operationName,
-        RecordSearchOptions<TRecord> options,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        where TVector : notnull
     {
-        Verify.NotNull(vector);
+        Verify.NotNull(searchValue);
         Verify.NotLessThan(top, 1);
 
-        Array vectorArray = vector switch
-        {
-            ReadOnlyMemory<float> memoryFloat => memoryFloat.ToArray(),
-            _ => throw new NotSupportedException(
-                $"The provided vector type {vector.GetType().FullName} is not supported by the Azure CosmosDB for MongoDB connector. " +
-                $"Supported types are: {typeof(ReadOnlyMemory<float>).FullName}")
-        };
-
+        options ??= s_defaultVectorSearchOptions;
         if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
+
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        float[] vector = searchValue switch
+        {
+            ReadOnlyMemory<float> r => Unwrap(r),
+            float[] f => f,
+            Embedding<float> e => Unwrap(e.Vector),
+
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
+                => Unwrap(await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false)),
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), MongoModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = options switch
@@ -400,13 +361,13 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         var searchQuery = vectorPropertyIndexKind switch
         {
             IndexKind.Hnsw => CosmosMongoCollectionSearchMapping.GetSearchQueryForHnswIndex(
-                vectorArray,
+                vector,
                 vectorProperty.StorageName,
                 itemsAmount,
                 this._efSearch,
                 filter),
             IndexKind.IvfFlat => CosmosMongoCollectionSearchMapping.GetSearchQueryForIvfIndex(
-                vectorArray,
+                vector,
                 vectorProperty.StorageName,
                 itemsAmount,
                 filter),
@@ -431,6 +392,11 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         {
             yield return result;
         }
+
+        static float[] Unwrap(ReadOnlyMemory<float> memory)
+            => MemoryMarshal.TryGetArray(memory, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
+                ? segment.Array
+                : memory.ToArray();
     }
 
     #endregion Search
@@ -580,7 +546,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
                 if (skipCounter >= searchOptions.Skip)
                 {
                     var score = response[ScorePropertyName].AsDouble;
-                    var record = this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new());
+                    var record = this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, includeVectors: searchOptions.IncludeVectors);
 
                     yield return new VectorSearchResult<TRecord>(record, score);
                 }

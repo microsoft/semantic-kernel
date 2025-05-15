@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
-using VectorDataSpecificationTests.Xunit;
 using Xunit;
 
 namespace AzureAISearchIntegrationTests;
@@ -14,11 +13,9 @@ namespace AzureAISearchIntegrationTests;
 public class AzureAISearchEmbeddingGenerationTests(AzureAISearchEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, AzureAISearchEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
     : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<AzureAISearchEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<AzureAISearchEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
-    [ConditionalFact(Skip = "SearchAsync without a generator delegates to the service for AzureAISearch")]
-    public override Task SearchAsync_without_generator_throws()
-    {
-        return base.SearchAsync_without_generator_throws();
-    }
+    // SearchAsync without a generator delegates to the service for AzureAISearch
+    public override Task SearchAsync_string_without_generator_throws()
+        => Task.CompletedTask;
 
     public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
     {
