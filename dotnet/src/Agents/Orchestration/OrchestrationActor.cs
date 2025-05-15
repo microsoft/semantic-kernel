@@ -33,15 +33,19 @@ public abstract class OrchestrationActor : BaseAgent
     /// <param name="message">The message object to send.</param>
     /// <param name="agentType">The recipient agent's type.</param>
     /// <param name="cancellationToken">A token used to cancel the operation if needed.</param>
-    protected async ValueTask SendMessageAsync(
+    /// <returns>The agent identifier, if it exists.</returns>
+    protected async ValueTask<AgentId?> SendMessageAsync(
         object message,
         AgentType agentType,
         CancellationToken cancellationToken = default)
     {
         AgentId? agentId = await this.GetAgentAsync(agentType, cancellationToken).ConfigureAwait(false);
+
         if (agentId.HasValue)
         {
             await this.SendMessageAsync(message, agentId.Value, messageId: null, cancellationToken).ConfigureAwait(false);
         }
+
+        return agentId;
     }
 }
