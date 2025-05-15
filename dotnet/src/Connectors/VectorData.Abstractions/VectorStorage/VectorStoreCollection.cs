@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -82,6 +83,8 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <exception cref="VectorStoreException">The command fails to execute for any reason.</exception>
     public virtual async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, RecordRetrievalOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(keys);
+
         foreach (var key in keys)
         {
             var record = await this.GetAsync(key, options, cancellationToken).ConfigureAwait(false);
@@ -121,6 +124,8 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <exception cref="VectorStoreException">The command fails to execute for any reason other than that a record does not exist.</exception>
     public virtual async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(keys);
+
         foreach (var key in keys)
         {
             await this.DeleteAsync(key, cancellationToken).ConfigureAwait(false);
