@@ -15,6 +15,23 @@ public sealed class CosmosNoSqlCollectionOptions
     internal static readonly CosmosNoSqlCollectionOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="CosmosNoSqlVectorStoreOptions"/> class.
+    /// </summary>
+    public CosmosNoSqlCollectionOptions()
+    {
+    }
+
+    internal CosmosNoSqlCollectionOptions(CosmosNoSqlCollectionOptions? source)
+    {
+        this.VectorStoreRecordDefinition = source?.VectorStoreRecordDefinition;
+        this.JsonSerializerOptions = source?.JsonSerializerOptions;
+        this.PartitionKeyPropertyName = source?.PartitionKeyPropertyName;
+        this.IndexingMode = source?.IndexingMode ?? Default.IndexingMode;
+        this.Automatic = source?.Automatic ?? Default.Automatic;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+    }
+
+    /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.
     /// </summary>
     /// <remarks>

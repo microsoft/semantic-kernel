@@ -100,6 +100,11 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
             Verify<VectorStoreCollection<TKey, TRecord>>(serviceProvider, lifetime, serviceKey);
             // And the IVectorSearchable abstraction.
             Verify<IVectorSearchable<TRecord>>(serviceProvider, lifetime, serviceKey);
+
+            if (typeof(IKeywordHybridSearchable<TRecord>).IsAssignableFrom(typeof(TCollection)))
+            {
+                Verify<IKeywordHybridSearchable<TRecord>>(serviceProvider, lifetime, serviceKey);
+            }
         }
     }
 
