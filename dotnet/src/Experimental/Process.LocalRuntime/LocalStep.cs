@@ -56,7 +56,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._stepInfo = stepInfo;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
 
-        if (stepInfo is not KernelProcess)
+        if (stepInfo is not KernelProcess and not KernelProcessMap)
         {
             this.InitializeStepInitialInputs();
         }
