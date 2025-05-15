@@ -5,8 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
+using Pinecone;
 using Xunit;
-using Sdk = Pinecone;
 
 namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
@@ -26,8 +26,8 @@ public class PineconeServiceCollectionExtensionsTests
     public void AddVectorStoreRegistersClass()
     {
         // Arrange.
-        var client = new Sdk.PineconeClient("fake api key");
-        this._serviceCollection.AddSingleton<Sdk.PineconeClient>(client);
+        var client = new PineconeClient("fake api key");
+        this._serviceCollection.AddSingleton<PineconeClient>(client);
 
         // Act.
         this._serviceCollection.AddPineconeVectorStore();
@@ -49,8 +49,8 @@ public class PineconeServiceCollectionExtensionsTests
     public void AddVectorStoreRecordCollectionRegistersClass()
     {
         // Arrange.
-        var client = new Sdk.PineconeClient("fake api key");
-        this._serviceCollection.AddSingleton<Sdk.PineconeClient>(client);
+        var client = new PineconeClient("fake api key");
+        this._serviceCollection.AddSingleton<PineconeClient>(client);
 
         // Act.
         this._serviceCollection.AddPineconeVectorStoreRecordCollection<TestRecord>("testcollection");
@@ -72,7 +72,7 @@ public class PineconeServiceCollectionExtensionsTests
     private void AssertVectorStoreCreated()
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
         Assert.NotNull(vectorStore);
         Assert.IsType<PineconeVectorStore>(vectorStore);
     }
@@ -81,23 +81,23 @@ public class PineconeServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<PineconeVectorStoreRecordCollection<string, TestRecord>>(collection);
+        Assert.IsType<PineconeCollection<string, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearchable<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<PineconeVectorStoreRecordCollection<string, TestRecord>>(vectorizedSearch);
+        Assert.IsType<PineconeCollection<string, TestRecord>>(vectorizedSearch);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float> Vector { get; set; }
     }
 }

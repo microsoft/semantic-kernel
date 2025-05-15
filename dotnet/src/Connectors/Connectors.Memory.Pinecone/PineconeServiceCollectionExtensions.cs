@@ -1,34 +1,35 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Sdk = Pinecone;
+using Pinecone;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Extension methods to register Pinecone <see cref="IVectorStore"/> instances on an <see cref="IServiceCollection"/>.
+/// Extension methods to register Pinecone <see cref="VectorStore"/> instances on an <see cref="IServiceCollection"/>.
 /// </summary>
 public static class PineconeServiceCollectionExtensions
 {
     /// <summary>
-    /// Register a Pinecone <see cref="IVectorStore"/> with the specified service ID and where <see cref="Sdk.PineconeClient"/> is retrieved from the dependency injection container.
+    /// Register a Pinecone <see cref="VectorStore"/> with the specified service ID and where <see cref="PineconeClient"/> is retrieved from the dependency injection container.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStore"/> on.</param>
+    /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddPineconeVectorStore(this IServiceCollection services, PineconeVectorStoreOptions? options = default, string? serviceId = default)
     {
         // If we are not constructing the PineconeClient, add the IVectorStore as transient, since we
         // cannot make assumptions about how PineconeClient is being managed.
-        services.AddKeyedTransient<IVectorStore>(
+        services.AddKeyedTransient<VectorStore>(
             serviceId,
             (sp, obj) =>
             {
-                var pineconeClient = sp.GetRequiredService<Sdk.PineconeClient>();
+                var pineconeClient = sp.GetRequiredService<PineconeClient>();
                 options ??= sp.GetService<PineconeVectorStoreOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
@@ -41,20 +42,20 @@ public static class PineconeServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Pinecone <see cref="IVectorStore"/> with the specified service ID and where <see cref="Sdk.PineconeClient"/> is constructed using the provided apikey.
+    /// Register a Pinecone <see cref="VectorStore"/> with the specified service ID and where <see cref="PineconeClient"/> is constructed using the provided apikey.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStore"/> on.</param>
     /// <param name="apiKey">The api key for Pinecone.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddPineconeVectorStore(this IServiceCollection services, string apiKey, PineconeVectorStoreOptions? options = default, string? serviceId = default)
     {
-        services.AddKeyedSingleton<IVectorStore>(
+        services.AddKeyedSingleton<VectorStore>(
             serviceId,
             (sp, obj) =>
             {
-                var pineconeClient = new Sdk.PineconeClient(apiKey);
+                var pineconeClient = new PineconeClient(apiKey);
                 options ??= sp.GetService<PineconeVectorStoreOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
@@ -67,35 +68,37 @@ public static class PineconeServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Pinecone <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the
-    /// specified service ID and where <see cref="Sdk.PineconeClient"/> is retrieved from the dependency injection container.
+    /// Register a Pinecone <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the
+    /// specified service ID and where <see cref="PineconeClient"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
-    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="PineconeCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresDynamicCode("This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
+    [RequiresUnreferencedCode("This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
     public static IServiceCollection AddPineconeVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
-        PineconeVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        PineconeCollectionOptions? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
         // If we are not constructing the PineconeClient, add the IVectorStore as transient, since we
         // cannot make assumptions about how PineconeClient is being managed.
-        services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
+        services.AddKeyedTransient<VectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
-                var pineconeClient = sp.GetRequiredService<Sdk.PineconeClient>();
-                options ??= sp.GetService<PineconeVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                var pineconeClient = sp.GetRequiredService<PineconeClient>();
+                options ??= sp.GetService<PineconeCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return new PineconeVectorStoreRecordCollection<string, TRecord>(pineconeClient, collectionName, options);
+                return new PineconeCollection<string, TRecord>(pineconeClient, collectionName, options);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -104,35 +107,37 @@ public static class PineconeServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Register a Pinecone <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorSearch{TRecord}"/> with the
-    /// provided <see cref="Sdk.PineconeClient"/> and the specified service ID.
+    /// Register a Pinecone <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the
+    /// provided <see cref="PineconeClient"/> and the specified service ID.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="PineconeCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="apiKey">The api key for Pinecone.</param>
-    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
+    [RequiresDynamicCode("This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
+    [RequiresUnreferencedCode("This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.")]
     public static IServiceCollection AddPineconeVectorStoreRecordCollection<TRecord>(
         this IServiceCollection services,
         string collectionName,
         string apiKey,
-        PineconeVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        PineconeCollectionOptions? options = default,
         string? serviceId = default)
-        where TRecord : notnull
+        where TRecord : class
     {
-        services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
+        services.AddKeyedSingleton<VectorStoreCollection<string, TRecord>>(
             serviceId,
             (sp, obj) =>
             {
-                var pineconeClient = new Sdk.PineconeClient(apiKey);
-                options ??= sp.GetService<PineconeVectorStoreRecordCollectionOptions<TRecord>>() ?? new()
+                var pineconeClient = new PineconeClient(apiKey);
+                options ??= sp.GetService<PineconeCollectionOptions>() ?? new()
                 {
                     EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                 };
 
-                return new PineconeVectorStoreRecordCollection<string, TRecord>(pineconeClient, collectionName, options);
+                return new PineconeCollection<string, TRecord>(pineconeClient, collectionName, options);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -141,18 +146,18 @@ public static class PineconeServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearch{TRecord}"/>.
+    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearchable{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : class
     {
-        services.AddKeyedTransient<IVectorSearch<TRecord>>(
+        services.AddKeyedTransient<IVectorSearchable<TRecord>>(
             serviceId,
             (sp, obj) =>
             {
-                return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceId);
+                return sp.GetRequiredKeyedService<VectorStoreCollection<string, TRecord>>(serviceId);
             });
     }
 }

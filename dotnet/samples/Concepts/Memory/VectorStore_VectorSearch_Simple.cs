@@ -33,7 +33,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<ulong, Glossary>("skglossary");
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateGlossaryEntries().ToList();
@@ -44,8 +44,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         await Task.WhenAll(tasks);
 
         // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => collection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        await collection.UpsertAsync(glossaryEntries);
 
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
@@ -87,19 +86,19 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
     /// </remarks>
     private sealed class Glossary
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public ulong Key { get; set; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string Category { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Term { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Definition { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 

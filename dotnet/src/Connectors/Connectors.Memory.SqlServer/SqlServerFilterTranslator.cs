@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -15,7 +15,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
     private int _parameterIndex;
 
     internal SqlServerFilterTranslator(
-        VectorStoreRecordModel model,
+        CollectionModel model,
         LambdaExpression lambdaExpression,
         StringBuilder sql,
         int startParamIndex)

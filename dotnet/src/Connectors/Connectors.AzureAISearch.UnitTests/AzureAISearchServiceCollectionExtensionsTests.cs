@@ -94,7 +94,7 @@ public class AzureAISearchServiceCollectionExtensionsTests
     private void AssertVectorStoreCreated()
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
         Assert.NotNull(vectorStore);
         Assert.IsType<AzureAISearchVectorStore>(vectorStore);
     }
@@ -103,20 +103,20 @@ public class AzureAISearchServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<AzureAISearchVectorStoreRecordCollection<string, TestRecord>>(collection);
+        Assert.IsType<AzureAISearchCollection<string, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearchable<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<AzureAISearchVectorStoreRecordCollection<string, TestRecord>>(vectorizedSearch);
+        Assert.IsType<AzureAISearchCollection<string, TestRecord>>(vectorizedSearch);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; } = string.Empty;
     }
 }

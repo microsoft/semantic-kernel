@@ -4,6 +4,7 @@
     <AssemblyName>Microsoft.Extensions.VectorData.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
     <!-- temporarily disabled due to mysterious build issue -->
     <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
@@ -61,21 +62,5 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/RequiresUnreferencedCodeAttribute.cs" Link="Shared/Diagnostics/RequiresUnreferencedCodeAttribute.cs" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnconditionalSuppressMessageAttribute.cs" Link="Shared/Diagnostics/UnconditionalSuppressMessageAttribute.cs" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnreachableException.cs" Link="Shared/Diagnostics/UnreachableException.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\VectorDataStrings.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>VectorDataStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Properties\VectorDataStrings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>VectorDataStrings.resx</DependentUpon>
-      <NoWarn>$(NoWarn);1591</NoWarn>
-    </Compile>
   </ItemGroup>
 </Project>

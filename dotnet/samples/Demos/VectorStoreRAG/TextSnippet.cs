@@ -11,19 +11,19 @@ namespace VectorStoreRAG;
 /// <typeparam name="TKey">The type of the data model key.</typeparam>
 internal sealed class TextSnippet<TKey>
 {
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     public required TKey Key { get; set; }
 
     [TextSearchResultValue]
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public string? Text { get; set; }
 
     [TextSearchResultName]
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public string? ReferenceDescription { get; set; }
 
     [TextSearchResultLink]
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public string? ReferenceLink { get; set; }
 
     /// <summary>
@@ -31,6 +31,6 @@ internal sealed class TextSnippet<TKey>
     /// While this is a string property it has the vector attribute, which means whatever
     /// text it contains will be converted to a vector and stored as a vector in the vector store.
     /// </summary>
-    [VectorStoreRecordVector(1536)]
+    [VectorStoreVector(1536)]
     public string? TextEmbedding => this.Text;
 }

@@ -10,24 +10,44 @@ using Xunit;
 
 namespace SqlServerIntegrationTests;
 
-public class SqlServerEmbeddingGenerationTests(SqlServerEmbeddingGenerationTests.Fixture fixture)
-    : EmbeddingGenerationTests<int>(fixture), IClassFixture<SqlServerEmbeddingGenerationTests.Fixture>
+public class SqlServerEmbeddingGenerationTests(SqlServerEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, SqlServerEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<int>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<SqlServerEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<SqlServerEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
-    public new class Fixture : EmbeddingGenerationTests<int>.Fixture
+    public new class StringVectorFixture : EmbeddingGenerationTests<int>.StringVectorFixture
     {
         public override TestStore TestStore => SqlServerTestStore.Instance;
 
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
             => SqlServerTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
         [
-            // TODO: Implement DI registration for SqlServer (https://github.com/microsoft/semantic-kernel/issues/10948)
+            services => services.AddSqlServerVectorStore(sp => SqlServerTestEnvironment.ConnectionString!)
         ];
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
         [
-            // TODO: Implement DI registration for SqlServer (https://github.com/microsoft/semantic-kernel/issues/10948)
+            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, sp => SqlServerTestEnvironment.ConnectionString!),
+            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, SqlServerTestEnvironment.ConnectionString!),
+        ];
+    }
+
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<int>.RomOfFloatVectorFixture
+    {
+        public override TestStore TestStore => SqlServerTestStore.Instance;
+
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+            => SqlServerTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
+        [
+            services => services.AddSqlServerVectorStore(sp => SqlServerTestEnvironment.ConnectionString!)
+        ];
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
+        [
+            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, sp => SqlServerTestEnvironment.ConnectionString!),
+            services => services.AddSqlServerCollection<int, RecordWithAttributes>(this.CollectionName, SqlServerTestEnvironment.ConnectionString!),
         ];
     }
 }

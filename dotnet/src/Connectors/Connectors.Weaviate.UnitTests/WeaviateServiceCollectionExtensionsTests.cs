@@ -28,7 +28,7 @@ public sealed class WeaviateServiceCollectionExtensionsTests
         this._serviceCollection.AddWeaviateVectorStore();
 
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
 
         // Assert
         Assert.NotNull(vectorStore);
@@ -53,20 +53,20 @@ public sealed class WeaviateServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<Guid, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<Guid, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<WeaviateVectorStoreRecordCollection<Guid, TestRecord>>(collection);
+        Assert.IsType<WeaviateCollection<Guid, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearchable<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<WeaviateVectorStoreRecordCollection<Guid, TestRecord>>(vectorizedSearch);
+        Assert.IsType<WeaviateCollection<Guid, TestRecord>>(vectorizedSearch);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public Guid Id { get; set; }
     }
 }

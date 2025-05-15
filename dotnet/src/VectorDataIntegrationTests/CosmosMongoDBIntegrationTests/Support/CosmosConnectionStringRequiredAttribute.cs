@@ -10,9 +10,9 @@ namespace CosmosMongoDBIntegrationTests.Support;
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly)]
 public sealed class CosmosConnectionStringRequiredAttribute : Attribute, ITestCondition
 {
-    public ValueTask<bool> IsMetAsync() => new(CosmosMongoDBTestEnvironment.IsConnectionStringDefined);
+    public ValueTask<bool> IsMetAsync() => new(CosmosMongoTestEnvironment.IsConnectionStringDefined);
 
-    public string Skip { get; set; } = "The Cosmos connection string hasn't been configured (AzureCosmosDBMongoDB:ConnectionString).";
+    public string Skip { get; set; } = "The Cosmos connection string hasn't been configured (CosmosMongo:ConnectionString).";
 
     public string SkipReason
         => this.Skip;

@@ -4,7 +4,7 @@ using Microsoft.Extensions.VectorData;
 
 namespace SemanticKernel.AotTests.UnitTests.Search;
 
-internal sealed class MockVectorizableTextSearch<TRecord> : IVectorSearch<TRecord>
+internal sealed class MockVectorizableTextSearch<TRecord> : IVectorSearchable<TRecord>
 {
     private readonly IAsyncEnumerable<VectorSearchResult<TRecord>> _searchResults;
 
@@ -16,7 +16,7 @@ internal sealed class MockVectorizableTextSearch<TRecord> : IVectorSearch<TRecor
     public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput value,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
         where TInput : notnull
     {
@@ -26,7 +26,7 @@ internal sealed class MockVectorizableTextSearch<TRecord> : IVectorSearch<TRecor
     public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        VectorSearchOptions<TRecord>? options = default,
+        RecordSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {

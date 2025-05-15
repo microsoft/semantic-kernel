@@ -63,8 +63,7 @@ public abstract class DynamicDataModelConformanceTests<TKey>(DynamicDataModelFix
         };
 
         Assert.Null(await collection.GetAsync(expectedKey));
-        var key = await collection.UpsertAsync(inserted);
-        Assert.Equal(expectedKey, key);
+        await collection.UpsertAsync(inserted);
 
         var received = await collection.GetAsync(expectedKey, new() { IncludeVectors = true });
         AssertEquivalent(inserted, received, includeVectors: true, fixture.TestStore.VectorsComparable);
@@ -84,8 +83,7 @@ public abstract class DynamicDataModelConformanceTests<TKey>(DynamicDataModelFix
         };
 
         Assert.NotNull(await collection.GetAsync((TKey)existingRecord[DynamicDataModelFixture<TKey>.KeyPropertyName]!));
-        var key = await collection.UpsertAsync(updated);
-        Assert.Equal(existingRecord[DynamicDataModelFixture<TKey>.KeyPropertyName], key);
+        await collection.UpsertAsync(updated);
 
         var received = await collection.GetAsync((TKey)existingRecord[DynamicDataModelFixture<TKey>.KeyPropertyName]!, new() { IncludeVectors = true });
         AssertEquivalent(updated, received, includeVectors: true, fixture.TestStore.VectorsComparable);

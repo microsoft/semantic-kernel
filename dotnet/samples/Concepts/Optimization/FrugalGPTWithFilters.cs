@@ -168,7 +168,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
     /// which are similar to original request.
     /// </summary>
     private sealed class FewShotPromptOptimizationFilter(
-        IVectorStore vectorStore,
+        VectorStore vectorStore,
         ITextEmbeddingGenerationService textEmbeddingGenerationService) : IPromptRenderFilter
     {
         /// <summary>
@@ -208,7 +208,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
                 // Create collection and upsert all vector store records for search.
                 // It's possible to do it only once and re-use the same examples for future requests.
                 var collection = vectorStore.GetCollection<string, ExampleRecord>(CollectionName);
-                await collection.CreateCollectionIfNotExistsAsync(context.CancellationToken);
+                await collection.EnsureCollectionExistsAsync(context.CancellationToken);
 
                 await collection.UpsertAsync(exampleRecords, cancellationToken: context.CancellationToken);
 
@@ -317,13 +317,13 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
 
     private sealed class ExampleRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Example { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> ExampleEmbedding { get; set; }
     }
 }

@@ -33,7 +33,7 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<int, Product>("skproducts");
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create product records and generate embeddings for them.
         var productRecords = CreateProductRecords().ToList();
@@ -47,9 +47,8 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
         }));
         await Task.WhenAll(tasks);
 
-        // Upsert the product records into the collection and return their keys.
-        var upsertedKeysTasks = productRecords.Select(x => collection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        // Upsert the product records into the collection.
+        await collection.UpsertAsync(productRecords);
 
         // Search the store using the description embedding.
         var searchString = "I am looking for a reasonably priced coffee maker";
@@ -126,19 +125,19 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
     /// </remarks>
     private sealed class Product
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public int Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Description { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public List<string> FeatureList { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DescriptionEmbedding { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> FeatureListEmbedding { get; set; }
     }
 }

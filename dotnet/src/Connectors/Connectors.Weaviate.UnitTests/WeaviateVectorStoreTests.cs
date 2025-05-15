@@ -7,9 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Weaviate.UnitTests;
@@ -31,7 +29,7 @@ public sealed class WeaviateVectorStoreTests : IDisposable
     public void GetCollectionWithNotSupportedKeyThrowsException()
     {
         // Arrange
-        var sut = new WeaviateVectorStore(this._mockHttpClient);
+        using var sut = new WeaviateVectorStore(this._mockHttpClient);
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<string, WeaviateHotel>("Collection"));
@@ -41,7 +39,7 @@ public sealed class WeaviateVectorStoreTests : IDisposable
     public void GetCollectionWithSupportedKeyReturnsCollection()
     {
         // Arrange
-        var sut = new WeaviateVectorStore(this._mockHttpClient);
+        using var sut = new WeaviateVectorStore(this._mockHttpClient);
 
         // Act
         var collection = sut.GetCollection<Guid, WeaviateHotel>("Collection1");
@@ -49,37 +47,6 @@ public sealed class WeaviateVectorStoreTests : IDisposable
         // Assert
         Assert.NotNull(collection);
     }
-
-#pragma warning disable CS0618 // IWeaviateVectorStoreRecordCollectionFactory is obsolete
-    [Fact]
-    public void GetCollectionWithFactoryReturnsCustomCollection()
-    {
-        // Arrange
-        var mockFactory = new Mock<IWeaviateVectorStoreRecordCollectionFactory>();
-        var mockRecordCollection = new Mock<IVectorStoreRecordCollection<Guid, WeaviateHotel>>();
-
-        mockFactory
-            .Setup(l => l.CreateVectorStoreRecordCollection<Guid, WeaviateHotel>(
-                this._mockHttpClient,
-                "collection",
-                It.IsAny<VectorStoreRecordDefinition>()))
-            .Returns(mockRecordCollection.Object);
-
-        var sut = new WeaviateVectorStore(
-            this._mockHttpClient,
-            new WeaviateVectorStoreOptions { VectorStoreCollectionFactory = mockFactory.Object });
-
-        // Act
-        var collection = sut.GetCollection<Guid, WeaviateHotel>("collection");
-
-        // Assert
-        Assert.Same(mockRecordCollection.Object, collection);
-        mockFactory.Verify(l => l.CreateVectorStoreRecordCollection<Guid, WeaviateHotel>(
-            this._mockHttpClient,
-            "collection",
-            It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
-    }
-#pragma warning restore CS0618
 
     [Fact]
     public async Task ListCollectionNamesReturnsCollectionNamesAsync()
@@ -96,7 +63,7 @@ public sealed class WeaviateVectorStoreTests : IDisposable
             Content = new StringContent(JsonSerializer.Serialize(response))
         };
 
-        var sut = new WeaviateVectorStore(this._mockHttpClient);
+        using var sut = new WeaviateVectorStore(this._mockHttpClient);
 
         // Act
         var actualCollectionNames = await sut.ListCollectionNamesAsync().ToListAsync();

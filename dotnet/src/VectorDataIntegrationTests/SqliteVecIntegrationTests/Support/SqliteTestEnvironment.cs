@@ -1,0 +1,50 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Data;
+using Microsoft.Data.Sqlite;
+
+namespace SqliteVecIntegrationTests.Support;
+
+internal static class SqliteTestEnvironment
+{
+    private static bool? s_isSqliteVecInstalled;
+
+    internal static bool TryLoadSqliteVec(SqliteConnection connection)
+    {
+        if (!s_isSqliteVecInstalled.HasValue)
+        {
+            if (connection.State != ConnectionState.Open)
+            {
+                throw new ArgumentException("Connection must be open");
+            }
+
+            try
+            {
+                connection.LoadVector();
+                s_isSqliteVecInstalled = true;
+            }
+            catch (SqliteException)
+            {
+                s_isSqliteVecInstalled = false;
+            }
+        }
+
+        return s_isSqliteVecInstalled.Value;
+    }
+
+    internal static bool IsSqliteVecInstalled
+    {
+        get
+        {
+            if (!s_isSqliteVecInstalled.HasValue)
+            {
+                using var connection = new SqliteConnection("Data Source=:memory:;");
+                connection.Open();
+
+                s_isSqliteVecInstalled = TryLoadSqliteVec(connection);
+            }
+
+            return s_isSqliteVecInstalled.Value;
+        }
+    }
+}

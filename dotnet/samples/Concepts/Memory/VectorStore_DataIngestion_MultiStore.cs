@@ -55,16 +55,16 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         if (databaseType == "Redis")
         {
             await redisFixture.ManualInitializeAsync();
-            kernelBuilder.AddRedisVectorStore("localhost:6379");
+            kernelBuilder.Services.AddRedisVectorStore("localhost:6379");
         }
         else if (databaseType == "Qdrant")
         {
             await qdrantFixture.ManualInitializeAsync();
-            kernelBuilder.AddQdrantVectorStore("localhost");
+            kernelBuilder.Services.AddQdrantVectorStore("localhost");
         }
         else if (databaseType == "InMemory")
         {
-            kernelBuilder.AddInMemoryVectorStore();
+            kernelBuilder.Services.AddInMemoryVectorStore();
         }
 
         // Register the DataIngestor with the DI container.
@@ -105,7 +105,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
                 TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
 
         // Construct the chosen vector store and initialize docker containers via the fixtures where needed.
-        IVectorStore vectorStore;
+        VectorStore vectorStore;
         if (databaseType == "Redis")
         {
             await redisFixture.ManualInitializeAsync();
@@ -116,7 +116,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         {
             await qdrantFixture.ManualInitializeAsync();
             var qdrantClient = new QdrantClient("localhost");
-            vectorStore = new QdrantVectorStore(qdrantClient);
+            vectorStore = new QdrantVectorStore(qdrantClient, ownsClient: true);
         }
         else if (databaseType == "InMemory")
         {
@@ -161,7 +161,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
     /// </summary>
     /// <param name="vectorStore">The vector store to ingest data into.</param>
     /// <param name="textEmbeddingGenerationService">Used to generate embeddings for the data being ingested.</param>
-    private sealed class DataIngestor(IVectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService)
+    private sealed class DataIngestor(VectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService)
     {
         /// <summary>
         /// Create some glossary entries and upsert them into the vector store.
@@ -173,7 +173,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         {
             // Get and create collection if it doesn't exist.
             var collection = vectorStore.GetCollection<TKey, Glossary<TKey>>("skglossary");
-            await collection.CreateCollectionIfNotExistsAsync();
+            await collection.EnsureCollectionExistsAsync();
 
             // Create glossary entries and generate embeddings for them.
             var glossaryEntries = CreateGlossaryEntries(uniqueKeyGenerator).ToList();
@@ -184,8 +184,9 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
             await Task.WhenAll(tasks);
 
             // Upsert the glossary entries into the collection and return their keys.
-            var upsertedKeys = glossaryEntries.Select(x => collection.UpsertAsync(x));
-            return await Task.WhenAll(upsertedKeys);
+            await collection.UpsertAsync(glossaryEntries);
+
+            return glossaryEntries.Select(entry => entry.Key);
         }
 
         /// <summary>
@@ -242,16 +243,16 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
     /// <typeparam name="TKey">The type of the model key.</typeparam>
     private sealed class Glossary<TKey>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public TKey Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Term { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Definition { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 }

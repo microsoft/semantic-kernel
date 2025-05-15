@@ -93,7 +93,7 @@ public class QdrantServiceCollectionExtensionsTests
     private void AssertVectorStoreCreated()
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
         Assert.NotNull(vectorStore);
         Assert.IsType<QdrantVectorStore>(vectorStore);
     }
@@ -102,23 +102,23 @@ public class QdrantServiceCollectionExtensionsTests
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
 
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<ulong, TestRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<ulong, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<QdrantVectorStoreRecordCollection<ulong, TestRecord>>(collection);
+        Assert.IsType<QdrantCollection<ulong, TestRecord>>(collection);
 
-        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearch<TestRecord>>();
+        var vectorizedSearch = serviceProvider.GetRequiredService<IVectorSearchable<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<QdrantVectorStoreRecordCollection<ulong, TestRecord>>(vectorizedSearch);
+        Assert.IsType<QdrantCollection<ulong, TestRecord>>(vectorizedSearch);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public ulong Id { get; set; }
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float> Vector { get; set; }
     }
 }

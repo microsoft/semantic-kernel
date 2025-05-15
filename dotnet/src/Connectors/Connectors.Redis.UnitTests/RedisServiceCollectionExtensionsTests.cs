@@ -64,32 +64,32 @@ public class RedisServiceCollectionExtensionsTests
     private void AssertVectorStoreCreated()
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var vectorStore = serviceProvider.GetRequiredService<IVectorStore>();
+        var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
         Assert.NotNull(vectorStore);
         Assert.IsType<RedisVectorStore>(vectorStore);
     }
 
-    private void AssertHashSetVectorStoreRecordCollectionCreated<TRecord>() where TRecord : notnull
+    private void AssertHashSetVectorStoreRecordCollectionCreated<TRecord>() where TRecord : class
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<RedisHashSetVectorStoreRecordCollection<string, TRecord>>(collection);
+        Assert.IsType<RedisHashSetCollection<string, TRecord>>(collection);
     }
 
-    private void AssertJsonVectorStoreRecordCollectionCreated<TRecord>() where TRecord : notnull
+    private void AssertJsonVectorStoreRecordCollectionCreated<TRecord>() where TRecord : class
     {
         var serviceProvider = this._serviceCollection.BuildServiceProvider();
-        var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TRecord>>();
+        var collection = serviceProvider.GetRequiredService<VectorStoreCollection<string, TRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<RedisJsonVectorStoreRecordCollection<string, TRecord>>(collection);
+        Assert.IsType<RedisJsonCollection<string, TRecord>>(collection);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
     private sealed class TestRecord
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; } = string.Empty;
     }
 }

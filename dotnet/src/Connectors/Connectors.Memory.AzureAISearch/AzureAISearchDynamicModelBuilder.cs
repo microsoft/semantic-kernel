@@ -1,36 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Linq;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using System.Diagnostics.CodeAnalysis;
+
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
-internal class AzureAISearchDynamicModelBuilder() : VectorStoreRecordModelBuilder(s_modelBuildingOptions)
+internal class AzureAISearchDynamicModelBuilder() : CollectionModelBuilder(s_modelBuildingOptions)
 {
-    internal static readonly VectorStoreRecordModelBuildingOptions s_modelBuildingOptions = new()
+    internal static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
-
-        SupportedKeyPropertyTypes = AzureAISearchConstants.SupportedKeyTypes,
-        SupportedDataPropertyTypes = AzureAISearchConstants.SupportedDataTypes,
-        SupportedEnumerableDataPropertyElementTypes = AzureAISearchConstants.SupportedDataTypes,
-        SupportedVectorPropertyTypes = AzureAISearchConstants.SupportedVectorTypes,
-
         UsesExternalSerializer = true
     };
 
-    protected override void Validate(Type type)
-    {
-        base.Validate(type);
+    protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+        => AzureAISearchModelBuilder.IsKeyPropertyTypeValidCore(type, out supportedTypes);
 
-        if (this.VectorProperties.FirstOrDefault(p => p.EmbeddingGenerator is not null) is VectorStoreRecordPropertyModel property)
-        {
-            throw new NotSupportedException(
-                $"The Azure AI Search connector does not currently support a custom embedding generator (configured for property '{property.ModelName}' on type '{type.Name}'). " +
-                "However, you can configure embedding generation in Azure AI Search itself, without requiring a .NET IEmbeddingGenerator.");
-        }
-    }
+    protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+        => AzureAISearchModelBuilder.IsDataPropertyTypeValidCore(type, out supportedTypes);
+
+    protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
+        => AzureAISearchModelBuilder.IsVectorPropertyTypeValidCore(type, out supportedTypes);
 }

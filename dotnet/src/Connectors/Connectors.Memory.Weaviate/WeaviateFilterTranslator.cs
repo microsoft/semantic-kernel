@@ -8,19 +8,19 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
-using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData.ProviderServices.Filter;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 // https://weaviate.io/developers/weaviate/api/graphql/filters#filter-structure
 internal class WeaviateFilterTranslator
 {
-    private VectorStoreRecordModel _model = null!;
+    private CollectionModel _model = null!;
     private ParameterExpression _recordParameter = null!;
     private readonly StringBuilder _filter = new();
 
-    internal string Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
+    internal string Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
         Debug.Assert(this._filter.Length == 0);
 
@@ -29,8 +29,8 @@ internal class WeaviateFilterTranslator
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = true };
-        var preprocessedExpression = preprocessor.Visit(lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = false };
+        var preprocessedExpression = preprocessor.Preprocess(lambdaExpression.Body);
 
         this.Translate(preprocessedExpression);
         return this._filter.ToString();
@@ -87,6 +87,11 @@ internal class WeaviateFilterTranslator
                         throw new NotSupportedException("Weaviate does not support the NOT operator (see https://github.com/weaviate/weaviate/issues/3683)");
                 }
             }
+
+            // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
+            case UnaryExpression { NodeType: ExpressionType.Convert } convert when Nullable.GetUnderlyingType(convert.Type) == convert.Operand.Type:
+                this.Translate(convert.Operand);
+                return;
 
             // Special handling for bool constant as the filter expression (r => r.Bool)
             case Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property):
@@ -231,17 +236,15 @@ internal class WeaviateFilterTranslator
         throw new NotSupportedException("Contains supported only over tag field");
     }
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
     {
-        Type? convertedClrType = null;
-
-        if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
+        var unwrappedExpression = expression;
+        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
-            expression = unary.Operand;
-            convertedClrType = unary.Type;
+            unwrappedExpression = convert.Operand;
         }
 
-        var modelName = expression switch
+        var modelName = unwrappedExpression switch
         {
             // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
             MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
@@ -269,9 +272,17 @@ internal class WeaviateFilterTranslator
             throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
         }
 
-        if (convertedClrType is not null && convertedClrType != property.Type)
+        // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
+        unwrappedExpression = expression;
+        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
-            throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convertedClrType.Name}', but its configured type is '{property.Type.Name}'.");
+            var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
+            if (convertType != property.Type && convertType != typeof(object))
+            {
+                throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
+            }
+
+            unwrappedExpression = convert.Operand;
         }
 
         return true;

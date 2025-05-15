@@ -2,7 +2,7 @@
 
 namespace Microsoft.Extensions.VectorData;
 
-/// <summary>Provides metadata about an <see cref="IVectorStore"/>.</summary>
+/// <summary>Provides metadata about an <see cref="VectorStore"/>.</summary>
 public class VectorStoreMetadata
 {
     /// <summary>The name of the vector store system.</summary>

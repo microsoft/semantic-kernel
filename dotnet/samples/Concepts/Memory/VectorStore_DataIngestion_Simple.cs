@@ -36,14 +36,15 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
 
         // Initiate the docker container and construct the vector store.
         await qdrantFixture.ManualInitializeAsync();
-        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"));
+        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"), ownsClient: true);
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<ulong, Glossary>("skglossary");
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateGlossaryEntries().ToList();
+        var keys = glossaryEntries.Select(entry => entry.Key).ToList();
         var tasks = glossaryEntries.Select(entry => Task.Run(async () =>
         {
             entry.DefinitionEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(entry.Definition);
@@ -51,14 +52,12 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
         await Task.WhenAll(tasks);
 
         // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => collection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        await collection.UpsertAsync(glossaryEntries);
 
         // Retrieve one of the upserted records from the collection.
-        var upsertedRecord = await collection.GetAsync(upsertedKeys.First(), new() { IncludeVectors = true });
+        var upsertedRecord = await collection.GetAsync(keys.First(), new() { IncludeVectors = true });
 
         // Write upserted keys and one of the upserted records to the console.
-        Console.WriteLine($"Upserted keys: {string.Join(", ", upsertedKeys)}");
         Console.WriteLine($"Upserted record: {JsonSerializer.Serialize(upsertedRecord)}");
     }
 
@@ -71,16 +70,16 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
     /// </remarks>
     private sealed class Glossary
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public ulong Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Term { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Definition { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 
