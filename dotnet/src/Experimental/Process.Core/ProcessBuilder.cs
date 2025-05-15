@@ -426,7 +426,6 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     public ProcessBuilder AddThread<T>(string threadName, KernelProcessThreadLifetime threadPolicy, string? threadId = null) where T : AgentThread
     {
         Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
-        Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
 
         var threadType = typeof(T) switch
         {

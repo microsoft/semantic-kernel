@@ -28,7 +28,7 @@ public static class AgentThreadFactory
             case KernelProcessThreadType.AzureAI:
                 return await CreateAzureAIThreadAsync(threadDefinition.ThreadId, kernel).ConfigureAwait(false);
             case KernelProcessThreadType.ChatCompletion:
-                return new ChatHistoryAgentThread();
+                return new ChatHistoryAgentThread([]);
             default:
                 throw new KernelException($"Thread type {threadDefinition.ThreadType} is not supported.");
 

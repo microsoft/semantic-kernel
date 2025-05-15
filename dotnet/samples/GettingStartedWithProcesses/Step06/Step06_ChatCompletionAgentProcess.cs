@@ -15,7 +15,7 @@ public class Step06_ChatCompletionAgentProcess(ITestOutputHelper output) : BaseT
         var agentDefinition1 = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Agent1", Type = ChatCompletionAgentFactory.ChatCompletionAgentType };
         var agentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = ChatCompletionAgentFactory.ChatCompletionAgentType };
 
-        var processBuilder = new ProcessBuilder("chat_completion_agents");
+        var processBuilder = new ProcessBuilder("chat_completion_agents", stateType: typeof(DefaultProcessState));
 
         var agent1 = processBuilder.AddStepFromAgent(agentDefinition1)
             .OnComplete([new DeclarativeProcessCondition { Type = DeclarativeProcessConditionType.Default, Emits = [new EventEmission() { EventType = "Agent1Complete" }] }]);

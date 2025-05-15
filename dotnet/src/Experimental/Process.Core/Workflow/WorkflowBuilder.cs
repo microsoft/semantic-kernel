@@ -52,7 +52,7 @@ public class WorkflowBuilder
         // TODO: Process variables
         // TODO: Process schemas
 
-        ProcessBuilder processBuilder = new(workflow.Name, null);
+        ProcessBuilder processBuilder = new(workflow.Name, null, stateType: typeof(DefaultProcessState));
 
         if (workflow.Inputs.Events?.CloudEvents is not null)
         {
