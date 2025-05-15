@@ -225,7 +225,7 @@ public class LocalProcessTests
         // Assert
         var processState = await runningProcess.GetStateAsync();
         Assert.NotNull(processState);
-        Assert.Equal(processId, processState.State.Id);
+        Assert.Equal(processKey, processState.State.Id);
         Assert.Equal(processKey, processState.State.Name);
     }
 
@@ -261,7 +261,7 @@ public class LocalProcessTests
         Assert.NotNull(counterState);
         Assert.Equal(1, ((KernelProcessStepState<CommonSteps.CounterState>)counterState.State).State?.Count);
 
-        Assert.Equal(processId, processState.State.Id);
+        Assert.Equal(processKey, processState.State.Id);
         Assert.Equal(processKey, processState.State.Name);
 
         // Act - 2
@@ -279,7 +279,7 @@ public class LocalProcessTests
         Assert.NotNull(counterState2);
         Assert.Equal(2, ((KernelProcessStepState<CommonSteps.CounterState>)counterState2.State).State?.Count);
 
-        Assert.Equal(processId, processState.State.Id);
+        Assert.Equal(processKey, processState.State.Id);
         Assert.Equal(processKey, processState.State.Name);
     }
 
