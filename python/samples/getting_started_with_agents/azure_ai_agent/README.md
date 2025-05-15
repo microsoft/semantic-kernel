@@ -67,7 +67,7 @@ Once the client is initialized, you can define the agent:
 ```python
 # Create agent definition
 agent_definition = await client.agents.create_agent(
-    model=ai_agent_settings.deployment_name,
+    model=ai_agent_settings.model_deployment_name,
     name=AGENT_NAME,
     instructions=AGENT_INSTRUCTIONS,
 )
