@@ -102,8 +102,8 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             options?.KernelArguments,
             kernel,
             options?.AdditionalInstructions == null ?
-                extensionsContext.AdditionalInstructions :
-                string.Concat(options.AdditionalInstructions, Environment.NewLine, Environment.NewLine, extensionsContext.AdditionalInstructions),
+                extensionsContext.Instructions :
+                string.Concat(options.AdditionalInstructions, Environment.NewLine, Environment.NewLine, extensionsContext.Instructions),
             cancellationToken);
 
         // Notify the thread of new messages and return them to the caller.
@@ -196,7 +196,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             options?.KernelArguments,
             kernel,
             options?.AdditionalInstructions == null ?
-                extensionsContext.AdditionalInstructions :
+                extensionsContext.Instructions :
                 string.Concat(options.AdditionalInstructions, Environment.NewLine, Environment.NewLine, extensionsContext),
             cancellationToken);
 

@@ -69,14 +69,14 @@ public class TextSearchBehaviorTests
         var result = await component.OnModelInvokeAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
 
         // Assert
-        Assert.Contains(expectedContextPrompt, result.AdditionalInstructions);
-        Assert.Contains("SourceDocName: Doc1", result.AdditionalInstructions);
-        Assert.Contains("SourceDocLink: http://example.com/doc1", result.AdditionalInstructions);
-        Assert.Contains("Contents: Content of Doc1", result.AdditionalInstructions);
-        Assert.Contains("SourceDocName: Doc2", result.AdditionalInstructions);
-        Assert.Contains("SourceDocLink: http://example.com/doc2", result.AdditionalInstructions);
-        Assert.Contains("Contents: Content of Doc2", result.AdditionalInstructions);
-        Assert.Contains(expectedCitationsPrompt, result.AdditionalInstructions);
+        Assert.Contains(expectedContextPrompt, result.Instructions);
+        Assert.Contains("SourceDocName: Doc1", result.Instructions);
+        Assert.Contains("SourceDocLink: http://example.com/doc1", result.Instructions);
+        Assert.Contains("Contents: Content of Doc1", result.Instructions);
+        Assert.Contains("SourceDocName: Doc2", result.Instructions);
+        Assert.Contains("SourceDocLink: http://example.com/doc2", result.Instructions);
+        Assert.Contains("Contents: Content of Doc2", result.Instructions);
+        Assert.Contains(expectedCitationsPrompt, result.Instructions);
     }
 
     [Theory]
@@ -219,6 +219,6 @@ public class TextSearchBehaviorTests
         var result = await component.OnModelInvokeAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
 
         // Assert
-        Assert.Equal("Custom formatted context with 2 results.", result.AdditionalInstructions);
+        Assert.Equal("Custom formatted context with 2 results.", result.Instructions);
     }
 }

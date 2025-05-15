@@ -49,13 +49,13 @@ public class AIContextBehaviorsManagerExtensionsTests
 
         partMock
             .Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AIContextAdditions { AdditionalInstructions = "Combined Context" });
+            .ReturnsAsync(new AIContextPart { Instructions = "Combined Context" });
 
         // Act
         var result = await manager.OnModelInvokeAsync(messages);
 
         // Assert
-        Assert.Equal("Combined Context", result.AdditionalInstructions);
+        Assert.Equal("Combined Context", result.Instructions);
         partMock.Verify(x => x.OnModelInvokeAsync(It.Is<ICollection<ChatMessage>>(m => m.Count == 2), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

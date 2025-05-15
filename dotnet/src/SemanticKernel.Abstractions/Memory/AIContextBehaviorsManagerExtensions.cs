@@ -35,7 +35,7 @@ public static class AIContextBehaviorsManagerExtensions
     /// <param name="newMessages">The most recent messages that the Model/Agent/etc. is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation, containing the combined context from all <see cref="AIContextBehavior"/> objects.</returns>
-    public static Task<AIContextAdditions> OnModelInvokeAsync(this AIContextBehaviorsManager aiContextBehaviorsManager, ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
+    public static Task<AIContextPart> OnModelInvokeAsync(this AIContextBehaviorsManager aiContextBehaviorsManager, ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
     {
         return aiContextBehaviorsManager.OnModelInvokeAsync(newMessages.Select(ChatCompletionServiceExtensions.ToChatMessage).ToList(), cancellationToken);
     }

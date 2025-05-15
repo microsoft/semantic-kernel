@@ -72,7 +72,7 @@ public abstract class AIContextBehavior
     /// <param name="newMessages">The most recent messages that the Model/Agent/etc. is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been rendered and returned.</returns>
-    public abstract Task<AIContextAdditions> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
+    public abstract Task<AIContextPart> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Called when the current conversion is temporarily suspended and any state should be saved.

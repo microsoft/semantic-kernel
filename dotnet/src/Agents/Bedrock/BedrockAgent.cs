@@ -128,7 +128,7 @@ public sealed class BedrockAgent : Agent
 
         // Build session state with conversation history and override instructions if needed
         SessionState sessionState = this.ExtractSessionState(messages);
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext.AdditionalInstructions);
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext.Instructions);
         sessionState.PromptSessionAttributes = new() { ["AdditionalInstructions"] = mergedAdditionalInstructions };
 
         // Configure the agent request with the provided options
@@ -364,7 +364,7 @@ public sealed class BedrockAgent : Agent
 
         // Build session state with conversation history and override instructions if needed
         SessionState sessionState = this.ExtractSessionState(messages);
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext.AdditionalInstructions);
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext.Instructions);
         sessionState.PromptSessionAttributes = new() { ["AdditionalInstructions"] = mergedAdditionalInstructions };
 
         // Configure the agent request with the provided options

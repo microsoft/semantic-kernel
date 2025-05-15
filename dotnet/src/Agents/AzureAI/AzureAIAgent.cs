@@ -194,7 +194,7 @@ public sealed partial class AzureAIAgent : Agent
         extensionsContext.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext.AdditionalInstructions);
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext.Instructions);
         var extensionsContextOptions = options is null ?
             new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
@@ -324,7 +324,7 @@ public sealed partial class AzureAIAgent : Agent
         extensionsContext.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext.AdditionalInstructions);
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, extensionsContext.Instructions);
         var extensionsContextOptions = options is null ?
             new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };

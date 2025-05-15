@@ -90,18 +90,18 @@ public sealed class WhiteboardBehavior : AIContextBehavior
     }
 
     /// <inheritdoc/>
-    public override Task<AIContextAdditions> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override Task<AIContextPart> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         if (this._currentWhiteboardContent.Count == 0)
         {
-            return Task.FromResult(new AIContextAdditions() { AdditionalInstructions = this._whiteboardEmptyPrompt });
+            return Task.FromResult(new AIContextPart() { Instructions = this._whiteboardEmptyPrompt });
         }
 
         var numberedMessages = this._currentWhiteboardContent.Select((x, i) => $"{i} {x}");
         var joinedMessages = string.Join(Environment.NewLine, numberedMessages);
-        return Task.FromResult(new AIContextAdditions()
+        return Task.FromResult(new AIContextPart()
         {
-            AdditionalInstructions = $"{this._contextPrompt}\n{joinedMessages}"
+            Instructions = $"{this._contextPrompt}\n{joinedMessages}"
         });
     }
 

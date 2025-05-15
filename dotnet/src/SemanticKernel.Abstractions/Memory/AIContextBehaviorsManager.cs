@@ -101,14 +101,14 @@ public sealed class AIContextBehaviorsManager
     /// <param name="newMessages">The most recent messages that the Model/Agent/etc. is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation, containing the combined context from all <see cref="AIContextBehavior"/> objects.</returns>
-    public async Task<AIContextAdditions> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public async Task<AIContextPart> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         var subContexts = await Task.WhenAll(this.Behaviors.Select(x => x.OnModelInvokeAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
         subContexts = subContexts.Where(x => x != null).ToArray();
 
-        var combinedContext = new AIContextAdditions();
+        var combinedContext = new AIContextPart();
         combinedContext.AIFunctions = subContexts.Where(x => x.AIFunctions != null).SelectMany(x => x.AIFunctions).ToList();
-        combinedContext.AdditionalInstructions = string.Join("\n", subContexts.Where(x => !string.IsNullOrWhiteSpace(x.AdditionalInstructions)).Select(x => x.AdditionalInstructions));
+        combinedContext.Instructions = string.Join("\n", subContexts.Where(x => !string.IsNullOrWhiteSpace(x.Instructions)).Select(x => x.Instructions));
         return combinedContext;
     }
 

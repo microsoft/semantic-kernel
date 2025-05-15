@@ -109,7 +109,7 @@ public class Mem0BehaviorTests : IDisposable
             """;
         this._mockMessageHandler.Verify(x => x.MockableSendAsync(HttpMethod.Post, "https://localhost/v1/memories/search/", expectedPayload, It.IsAny<CancellationToken>()), Times.Once);
 
-        Assert.Equal(expectedAdditionalInstructions, actual.AdditionalInstructions);
+        Assert.Equal(expectedAdditionalInstructions, actual.Instructions);
     }
 
     [Theory]

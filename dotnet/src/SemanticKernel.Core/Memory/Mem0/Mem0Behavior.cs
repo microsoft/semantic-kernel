@@ -123,7 +123,7 @@ public sealed class Mem0Behavior : AIContextBehavior
     }
 
     /// <inheritdoc/>
-    public override async Task<AIContextAdditions> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override async Task<AIContextPart> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessages);
 
@@ -143,7 +143,7 @@ public sealed class Mem0Behavior : AIContextBehavior
         var lineSeparatedMemories = string.Join(Environment.NewLine, memories);
         return new()
         {
-            AdditionalInstructions =
+            Instructions =
                 $"""
                 {this._contextPrompt}
                 {lineSeparatedMemories}
