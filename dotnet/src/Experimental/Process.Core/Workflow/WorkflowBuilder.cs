@@ -28,11 +28,10 @@ public class WorkflowBuilder
     /// <summary>
     /// Builds a process from a workflow definition.
     /// </summary>
-    /// <param name="workflow"></param>
-    /// <param name="yaml"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public async Task<KernelProcess?> BuildProcessAsync(Workflow workflow, string yaml)
+    /// <param name="workflow">An instance of <see cref="Workflow"/>.</param>
+    /// <param name="yaml">Workflow definition in YAML format.</param>
+    /// <param name="stepTypes">Collection of preloaded step types.</param>
+    public async Task<KernelProcess?> BuildProcessAsync(Workflow workflow, string yaml, Dictionary<string, Type>? stepTypes = null)
     {
         this._yaml = yaml;
         var stepBuilders = new Dictionary<string, ProcessStepBuilder>();
@@ -71,7 +70,7 @@ public class WorkflowBuilder
         // Process the nodes
         foreach (var step in workflow.Nodes)
         {
-            await this.AddStepAsync(step, processBuilder).ConfigureAwait(false);
+            await this.AddStepAsync(step, processBuilder, stepTypes).ConfigureAwait(false);
         }
 
         // Process the orchestration
@@ -102,13 +101,13 @@ public class WorkflowBuilder
 
     #region Nodes and Steps
 
-    internal async Task AddStepAsync(Node node, ProcessBuilder processBuilder)
+    internal async Task AddStepAsync(Node node, ProcessBuilder processBuilder, Dictionary<string, Type>? stepTypes = null)
     {
         Verify.NotNull(node);
 
         if (node.Type == "dotnet")
         {
-            await this.BuildDotNetStepAsync(node, processBuilder).ConfigureAwait(false);
+            await this.BuildDotNetStepAsync(node, processBuilder, stepTypes).ConfigureAwait(false);
         }
         else if (node.Type == "python")
         {
@@ -182,7 +181,7 @@ public class WorkflowBuilder
         throw new KernelException("Python nodes are not supported in the dotnet runtime.");
     }
 
-    private Task BuildDotNetStepAsync(Node node, ProcessBuilder processBuilder)
+    private Task BuildDotNetStepAsync(Node node, ProcessBuilder processBuilder, Dictionary<string, Type>? stepTypes = null)
     {
         Verify.NotNull(node);
 
@@ -195,7 +194,14 @@ public class WorkflowBuilder
         Type? dotnetAgentType = null;
         try
         {
-            dotnetAgentType = Type.GetType(node.Agent.Type);
+            if (stepTypes is not null && stepTypes.TryGetValue(node.Agent.Type, out var type) && type is not null)
+            {
+                dotnetAgentType = type;
+            }
+            else
+            {
+                dotnetAgentType = Type.GetType(node.Agent.Type);
+            }
         }
         catch (TypeLoadException tle)
         {
@@ -339,10 +345,10 @@ public class WorkflowBuilder
             });
         }
 
-        if (process.UserStateype != null)
+        if (process.UserStateType != null)
         {
             // Get all public properties
-            PropertyInfo[] properties = process.UserStateype.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            PropertyInfo[] properties = process.UserStateType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             // Loop through each property and output its type
             foreach (PropertyInfo property in properties)

@@ -207,7 +207,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
 
         // TODO: Pull user state from persisted state on resume.
-        this._processStateManager = new ProcessStateManager(this._process.UserStateype, null);
+        this._processStateManager = new ProcessStateManager(this._process.UserStateType, null);
 
         // Initialize threads. TODO: Need to implement state management here.
         foreach (var kvp in this._process.Threads)
