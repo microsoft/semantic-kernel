@@ -101,7 +101,7 @@ switch (appConfig.RagConfig.VectorStoreType)
             appConfig.QdrantConfig.ApiKey);
         break;
     case "Redis":
-        kernelBuilder.Services.AddRedisJsonVectorStoreRecordCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddRedisJsonCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             appConfig.RedisConfig.ConnectionConfiguration);
         break;

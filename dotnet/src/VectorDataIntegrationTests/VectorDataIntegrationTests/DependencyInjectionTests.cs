@@ -107,6 +107,10 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
             {
                 Verify<IKeywordHybridSearchable<TRecord>>(serviceProvider, lifetime, serviceKey);
             }
+            else
+            {
+                Assert.Null(serviceProvider.GetService<IKeywordHybridSearchable<TRecord>>());
+            }
         }
     }
 
