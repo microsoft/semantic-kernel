@@ -219,7 +219,7 @@ internal static class WorkflowSerializer
     {
         private readonly Dictionary<string, string> _dictionary;
 
-        public DictionaryLookupNamingPolicy(Dictionary<string, string> dictionary, JsonNamingPolicy? underlyingNamingPolicy) : base(underlyingNamingPolicy) => this._dictionary = dictionary ?? throw new ArgumentNullException();
+        public DictionaryLookupNamingPolicy(Dictionary<string, string> dictionary, JsonNamingPolicy? underlyingNamingPolicy) : base(underlyingNamingPolicy) => this._dictionary = dictionary ?? throw new KernelException("Failed to serialize Enum Name");
         public override string ConvertName(string name) => this._dictionary.TryGetValue(name, out var value) ? value : base.ConvertName(name);
     }
 }
