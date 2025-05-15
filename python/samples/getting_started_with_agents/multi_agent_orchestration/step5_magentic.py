@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import logging
 
 from semantic_kernel.agents import Agent, ChatCompletionAgent, MagenticOrchestration, OpenAIAssistantAgent
 from semantic_kernel.agents.orchestration.magentic import StandardMagenticManager
@@ -22,6 +23,9 @@ orchestration, and finally waiting for the results.
 
 The Magentic manager requires a chat completion model that supports structured output.
 """
+# Set up logging to see the invocation process
+logging.basicConfig(level=logging.WARNING)  # Set default level to WARNING
+logging.getLogger("semantic_kernel.agents.orchestration.magentic").setLevel(logging.DEBUG)
 
 
 async def agents() -> list[Agent]:
@@ -32,7 +36,7 @@ async def agents() -> list[Agent]:
     research_agent = ChatCompletionAgent(
         name="ResearchAgent",
         description="A helpful assistant with access to web search. Ask it to perform web searches.",
-        instructions=("You are a Researcher. You find information."),
+        instructions=("You are a Researcher. You find information and provide it as it is without any processing."),
         service=OpenAIChatCompletion(ai_model_id="gpt-4o-search-preview"),
     )
 
@@ -80,9 +84,9 @@ async def main():
     # 3. Invoke the orchestration with a task and the runtime
     orchestration_result = await magentic_orchestration.invoke(
         task=(
-            "What are the 50 tallest buildings in the world? Create a table with their names"
-            " and heights grouped by country with a column of the average height of the buildings"
-            " in each country."
+            "What are the 50 tallest buildings in the world? Create a table showing the average height "
+            "of the buildings in each country, in descending order, along with the names of the tallest "
+            "buildings in that country and the counts of buildings that make top 50 in that country."
         ),
         runtime=runtime,
     )

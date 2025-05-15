@@ -1,15 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from unittest.mock import AsyncMock, patch
-from uuid import uuid4
 
 import pytest
 
 from semantic_kernel.agents.orchestration.magentic import (
-    MagenticManager,
+    MagenticContext,
     MagenticOrchestration,
     ProgressLedger,
     ProgressLedgerItem,
+    StandardMagenticManager,
 )
 from semantic_kernel.agents.orchestration.orchestration_base import DefaultTypeAlias, OrchestrationResult
 from semantic_kernel.agents.orchestration.prompts._magentic_prompts import (
@@ -47,7 +48,7 @@ async def test_init_member_without_description_throws():
     with pytest.raises(ValueError):
         MagenticOrchestration(
             members=[agent_a, agent_b],
-            manager=MagenticManager(
+            manager=StandardMagenticManager(
                 chat_completion_service=MockChatCompletionService(ai_model_id="test"),
                 prompt_execution_settings=PromptExecutionSettings(),
             ),
@@ -70,7 +71,7 @@ async def test_prepare():
     ):
         orchestration = MagenticOrchestration(
             members=[agent_a, agent_b],
-            manager=MagenticManager(
+            manager=StandardMagenticManager(
                 chat_completion_service=MockChatCompletionService(ai_model_id="test"),
                 prompt_execution_settings=PromptExecutionSettings(),
             ),
@@ -155,6 +156,10 @@ ManagerProgressListUnknownSpeaker = [
 ]
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
+)
 async def test_invoke():
     """Test the invoke method of the MagenticOrchestration."""
     with (
@@ -163,14 +168,14 @@ async def test_invoke():
             MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
         ) as mock_get_chat_message_content,
         patch.object(
-            MagenticManager, "create_progress_ledger", new_callable=AsyncMock, side_effect=ManagerProgressList
+            StandardMagenticManager, "create_progress_ledger", new_callable=AsyncMock, side_effect=ManagerProgressList
         ),
     ):
         mock_get_chat_message_content.return_value = ChatMessageContent(role="assistant", content="mock_response")
         chat_completion_service = MockChatCompletionService(ai_model_id="test")
         prompt_execution_settings = PromptExecutionSettings()
 
-        manager = MagenticManager(
+        manager = StandardMagenticManager(
             chat_completion_service=chat_completion_service,
             prompt_execution_settings=prompt_execution_settings,
         )
@@ -202,7 +207,7 @@ async def test_invoke_with_list_error():
     chat_completion_service = MockChatCompletionService(ai_model_id="test")
     prompt_execution_settings = PromptExecutionSettings()
 
-    manager = MagenticManager(
+    manager = StandardMagenticManager(
         chat_completion_service=chat_completion_service,
         prompt_execution_settings=prompt_execution_settings,
     )
@@ -229,6 +234,10 @@ async def test_invoke_with_list_error():
         await orchestration_result.get()
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
+)
 async def test_invoke_with_response_callback():
     """Test the invoke method of the MagenticOrchestration with a response callback."""
 
@@ -242,7 +251,7 @@ async def test_invoke_with_response_callback():
             MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
         ) as mock_get_chat_message_content,
         patch.object(
-            MagenticManager, "create_progress_ledger", new_callable=AsyncMock, side_effect=ManagerProgressList
+            StandardMagenticManager, "create_progress_ledger", new_callable=AsyncMock, side_effect=ManagerProgressList
         ),
     ):
         mock_get_chat_message_content.return_value = ChatMessageContent(role="assistant", content="mock_response")
@@ -253,7 +262,7 @@ async def test_invoke_with_response_callback():
         try:
             orchestration = MagenticOrchestration(
                 members=[agent_a, agent_b],
-                manager=MagenticManager(
+                manager=StandardMagenticManager(
                     chat_completion_service=MockChatCompletionService(ai_model_id="test"),
                     prompt_execution_settings=PromptExecutionSettings(),
                 ),
@@ -269,6 +278,10 @@ async def test_invoke_with_response_callback():
         assert all(item.content == "mock_response" for item in responses)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
+)
 async def test_invoke_with_max_stall_count_exceeded():
     """ "Test the invoke method of the MagenticOrchestration with max stall count exceeded."""
     runtime = InProcessRuntime()
@@ -280,7 +293,7 @@ async def test_invoke_with_max_stall_count_exceeded():
             MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
         ) as mock_get_chat_message_content,
         patch.object(
-            MagenticManager,
+            StandardMagenticManager,
             "create_progress_ledger",
             new_callable=AsyncMock,
             side_effect=ManagerProgressListStalling,
@@ -294,7 +307,7 @@ async def test_invoke_with_max_stall_count_exceeded():
         try:
             orchestration = MagenticOrchestration(
                 members=[agent_a, agent_b],
-                manager=MagenticManager(
+                manager=StandardMagenticManager(
                     chat_completion_service=MockChatCompletionService(ai_model_id="test"),
                     prompt_execution_settings=PromptExecutionSettings(),
                     max_stall_count=1,
@@ -311,6 +324,103 @@ async def test_invoke_with_max_stall_count_exceeded():
         assert mock_get_chat_message_content.call_count == 5
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
+)
+async def test_invoke_with_max_round_count_exceeded():
+    """ "Test the invoke method of the MagenticOrchestration with max round count exceeded."""
+    runtime = InProcessRuntime()
+    runtime.start()
+
+    with (
+        patch.object(MockAgent, "get_response", wraps=MockAgent.get_response, autospec=True) as mock_get_response,
+        patch.object(
+            MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
+        ) as mock_get_chat_message_content,
+        patch.object(
+            StandardMagenticManager,
+            "create_progress_ledger",
+            new_callable=AsyncMock,
+            side_effect=ManagerProgressListStalling,
+        ),
+    ):
+        mock_get_chat_message_content.return_value = ChatMessageContent(role="assistant", content="mock_response")
+
+        agent_a = MockAgent(name="agent_a", description="test agent")
+        agent_b = MockAgent(name="agent_b", description="test agent")
+
+        try:
+            orchestration = MagenticOrchestration(
+                members=[agent_a, agent_b],
+                manager=StandardMagenticManager(
+                    chat_completion_service=MockChatCompletionService(ai_model_id="test"),
+                    prompt_execution_settings=PromptExecutionSettings(),
+                    max_round_count=1,
+                ),
+            )
+            orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
+            result = await orchestration_result.get(1.0)
+        finally:
+            await runtime.stop_when_idle()
+
+        assert result.content == "Max round count reached."
+        assert mock_get_response.call_count == 1
+        # Planning will be called once, so the facts and plan will be created once.
+        assert mock_get_chat_message_content.call_count == 2
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
+)
+async def test_invoke_with_max_reset_count_exceeded():
+    """ "Test the invoke method of the MagenticOrchestration with max reset count exceeded."""
+    runtime = InProcessRuntime()
+    runtime.start()
+
+    with (
+        patch.object(MockAgent, "get_response", wraps=MockAgent.get_response, autospec=True) as mock_get_response,
+        patch.object(
+            MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
+        ) as mock_get_chat_message_content,
+        patch.object(
+            StandardMagenticManager,
+            "create_progress_ledger",
+            new_callable=AsyncMock,
+            side_effect=ManagerProgressListStalling,
+        ),
+    ):
+        mock_get_chat_message_content.return_value = ChatMessageContent(role="assistant", content="mock_response")
+
+        agent_a = MockAgent(name="agent_a", description="test agent")
+        agent_b = MockAgent(name="agent_b", description="test agent")
+
+        try:
+            orchestration = MagenticOrchestration(
+                members=[agent_a, agent_b],
+                manager=StandardMagenticManager(
+                    chat_completion_service=MockChatCompletionService(ai_model_id="test"),
+                    prompt_execution_settings=PromptExecutionSettings(),
+                    max_stall_count=0,  # No stall allowed
+                    max_reset_count=0,  # No reset allowed
+                ),
+            )
+            orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
+            result = await orchestration_result.get(1.0)
+        finally:
+            await runtime.stop_when_idle()
+
+        assert result.content == "Max reset count reached."
+        assert mock_get_response.call_count == 1
+        # Planning and replanning will be each called once, so the facts and plan will be created twice.
+        assert mock_get_chat_message_content.call_count == 4
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="Python 3.10 doesn't bound the original function provided to the wraps argument of the patch object.",
+)
 async def test_invoke_with_unknown_speaker():
     """Test the invoke method of the MagenticOrchestration with an unknown speaker."""
     runtime = InProcessRuntime()
@@ -322,7 +432,7 @@ async def test_invoke_with_unknown_speaker():
             MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
         ) as mock_get_chat_message_content,
         patch.object(
-            MagenticManager,
+            StandardMagenticManager,
             "create_progress_ledger",
             new_callable=AsyncMock,
             side_effect=ManagerProgressListUnknownSpeaker,
@@ -337,7 +447,7 @@ async def test_invoke_with_unknown_speaker():
         try:
             orchestration = MagenticOrchestration(
                 members=[agent_a, agent_b],
-                manager=MagenticManager(
+                manager=StandardMagenticManager(
                     chat_completion_service=MockChatCompletionService(ai_model_id="test"),
                     prompt_execution_settings=PromptExecutionSettings(),
                 ),
@@ -350,20 +460,22 @@ async def test_invoke_with_unknown_speaker():
 
 # endregion MagenticOrchestration
 
-# region MagenticManager
+# region StandardMagenticManager
 
 
-def test_magentic_manager_init():
-    """Test the initialization of the MagenticManager."""
+def test_standard_magentic_manager_init():
+    """Test the initialization of the StandardMagenticManager."""
     chat_completion_service = MockChatCompletionService(ai_model_id="test")
     prompt_execution_settings = PromptExecutionSettings()
 
-    manager = MagenticManager(
+    manager = StandardMagenticManager(
         chat_completion_service=chat_completion_service,
         prompt_execution_settings=prompt_execution_settings,
     )
 
     assert manager.max_stall_count > 0
+    assert manager.max_reset_count is None
+    assert manager.max_round_count is None
     assert (
         manager.task_ledger_facts_prompt is not None
         and manager.task_ledger_facts_prompt == ORCHESTRATOR_TASK_LEDGER_FACTS_PROMPT
@@ -391,12 +503,12 @@ def test_magentic_manager_init():
     assert manager.final_answer_prompt is not None and manager.final_answer_prompt == ORCHESTRATOR_FINAL_ANSWER_PROMPT
 
 
-def test_magentic_manager_init_with_custom_prompts():
-    """Test the initialization of the MagenticManager with custom prompts."""
+def test_standard_magentic_manager_init_with_custom_prompts():
+    """Test the initialization of the StandardMagenticManager with custom prompts."""
     chat_completion_service = MockChatCompletionService(ai_model_id="test")
     prompt_execution_settings = PromptExecutionSettings()
 
-    manager = MagenticManager(
+    manager = StandardMagenticManager(
         chat_completion_service=chat_completion_service,
         prompt_execution_settings=prompt_execution_settings,
         task_ledger_facts_prompt="custom_task_ledger_facts_prompt",
@@ -417,8 +529,8 @@ def test_magentic_manager_init_with_custom_prompts():
     assert manager.final_answer_prompt == "custom_final_answer_prompt"
 
 
-async def test_magentic_manager_create_facts_and_prompt():
-    """Test the create_facts_and_prompt method of the MagenticManager."""
+async def test_standard_magentic_manager_plan():
+    """Test the plan method of the StandardMagenticManager."""
 
     with patch.object(
         MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
@@ -427,21 +539,25 @@ async def test_magentic_manager_create_facts_and_prompt():
         chat_completion_service = MockChatCompletionService(ai_model_id="test")
         prompt_execution_settings = PromptExecutionSettings()
 
-        manager = MagenticManager(
+        manager = StandardMagenticManager(
             chat_completion_service=chat_completion_service,
             prompt_execution_settings=prompt_execution_settings,
             task_ledger_facts_prompt="custom_task_ledger_facts_prompt",
             task_ledger_plan_prompt="custom_task_ledger_plan_prompt {{$team}}",
         )
 
-        facts, prompt = await manager.create_facts_and_plan(
-            ChatHistory(),
-            ChatMessageContent(role="user", content="test_message"),
-            {"agent_a": "test_agent_a", "agent_b": "test_agent_b"},
+        magentic_context = MagenticContext(
+            chat_history=ChatHistory(),
+            task=ChatMessageContent(role="user", content="test_message"),
+            participant_descriptions={"agent_a": "test_agent_a", "agent_b": "test_agent_b"},
         )
 
-        assert isinstance(facts, ChatMessageContent) and facts.content == "mock_response"
-        assert isinstance(prompt, ChatMessageContent) and prompt.content == "mock_response"
+        task_ledger = await manager.plan(magentic_context.model_copy(deep=True))
+
+        assert isinstance(task_ledger, ChatMessageContent)
+        assert task_ledger.content.count("mock_response") == 2
+        assert "test_message" in task_ledger.content
+        assert "{'agent_a': 'test_agent_a', 'agent_b': 'test_agent_b'}" in task_ledger.content
 
         assert mock_get_chat_message_content.call_count == 2
         assert (
@@ -454,8 +570,8 @@ async def test_magentic_manager_create_facts_and_prompt():
         )
 
 
-async def test_magentic_manager_create_facts_and_prompt_with_old_facts():
-    """Test the create_facts_and_prompt method of the MagenticManager with old facts."""
+async def test_standard_magentic_manager_replan():
+    """Test the replan method of the StandardMagenticManager."""
 
     with patch.object(
         MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
@@ -465,60 +581,62 @@ async def test_magentic_manager_create_facts_and_prompt_with_old_facts():
         chat_completion_service = MockChatCompletionService(ai_model_id="test")
         prompt_execution_settings = PromptExecutionSettings()
 
-        manager = MagenticManager(
+        manager = StandardMagenticManager(
             chat_completion_service=chat_completion_service,
             prompt_execution_settings=prompt_execution_settings,
             task_ledger_facts_update_prompt="custom_task_ledger_facts_prompt {{$old_facts}}",
             task_ledger_plan_update_prompt="custom_task_ledger_plan_prompt {{$team}}",
         )
 
-        facts, prompt = await manager.create_facts_and_plan(
-            ChatHistory(),
-            ChatMessageContent(role="user", content="test_message"),
-            {"agent_a": "test_agent_a", "agent_b": "test_agent_b"},
-            old_facts=ChatMessageContent(role="user", content="old_facts"),
+        magentic_context = MagenticContext(
+            chat_history=ChatHistory(),
+            task=ChatMessageContent(role="user", content="test_message"),
+            participant_descriptions={"agent_a": "test_agent_a", "agent_b": "test_agent_b"},
         )
 
-        assert isinstance(facts, ChatMessageContent) and facts.content == "mock_response"
-        assert isinstance(prompt, ChatMessageContent) and prompt.content == "mock_response"
+        # Need to plan before replanning
+        _ = await manager.plan(magentic_context.model_copy(deep=True))
+        task_ledger = await manager.replan(magentic_context.model_copy(deep=True))
 
-        assert mock_get_chat_message_content.call_count == 2
+        assert isinstance(task_ledger, ChatMessageContent)
+        assert task_ledger.content.count("mock_response") == 2
+        assert "test_message" in task_ledger.content
+        assert "{'agent_a': 'test_agent_a', 'agent_b': 'test_agent_b'}" in task_ledger.content
+
+        assert mock_get_chat_message_content.call_count == 4
         assert (
-            mock_get_chat_message_content.call_args_list[0][0][0].messages[0].content
-            == "custom_task_ledger_facts_prompt old_facts"
+            mock_get_chat_message_content.call_args_list[2][0][0].messages[0].content
+            == "custom_task_ledger_facts_prompt mock_response"
         )
         assert (
-            mock_get_chat_message_content.call_args_list[1][0][0].messages[2].content
+            mock_get_chat_message_content.call_args_list[3][0][0].messages[2].content
             == "custom_task_ledger_plan_prompt {'agent_a': 'test_agent_a', 'agent_b': 'test_agent_b'}"
         )
 
 
-async def test_magentic_manager_create_task_ledger():
-    """Test the create_task_ledger method of the MagenticManager."""
+async def test_standard_magentic_manager_replan_without_plan():
+    """Test the replan method of the StandardMagenticManager."""
 
     chat_completion_service = MockChatCompletionService(ai_model_id="test")
     prompt_execution_settings = PromptExecutionSettings()
 
-    manager = MagenticManager(
+    manager = StandardMagenticManager(
         chat_completion_service=chat_completion_service,
         prompt_execution_settings=prompt_execution_settings,
     )
 
-    task = ChatMessageContent(role="user", content=uuid4().hex)
-    facts = ChatMessageContent(role="user", content=uuid4().hex)
-    plan = ChatMessageContent(role="user", content=uuid4().hex)
-    participants = {"agent_a": "test_agent_a", "agent_b": "test_agent_b"}
+    magentic_context = MagenticContext(
+        chat_history=ChatHistory(),
+        task=ChatMessageContent(role="user", content="test_message"),
+        participant_descriptions={"agent_a": "test_agent_a", "agent_b": "test_agent_b"},
+    )
 
-    task_ledger = await manager.create_task_ledger(task, facts, plan, participants)
-
-    assert task.content in task_ledger
-    assert facts.content in task_ledger
-    assert plan.content in task_ledger
-    assert "{'agent_a': 'test_agent_a', 'agent_b': 'test_agent_b'}" in task_ledger
+    with pytest.raises(RuntimeError):
+        _ = await manager.replan(magentic_context.model_copy(deep=True))
 
 
-async def test_magentic_manager_create_progress_ledger():
-    """Test the create_progress_ledger method of the MagenticManager."""
+async def test_standard_magentic_manager_create_progress_ledger():
+    """Test the create_progress_ledger method of the StandardMagenticManager."""
 
     mock_progress_ledger = ProgressLedger(
         is_request_satisfied=ProgressLedgerItem(answer=False, reason="mock_reasoning"),
@@ -527,9 +645,6 @@ async def test_magentic_manager_create_progress_ledger():
         next_speaker=ProgressLedgerItem(answer="agent_a", reason="mock_reasoning"),
         instruction_or_question=ProgressLedgerItem(answer="mock_instruction", reason="mock_reasoning"),
     )
-
-    task = ChatMessageContent(role="user", content=uuid4().hex)
-    participants = {"agent_a": "test_agent_a", "agent_b": "test_agent_b"}
 
     with patch.object(
         MockChatCompletionService, "get_chat_message_content", new_callable=AsyncMock
@@ -541,23 +656,29 @@ async def test_magentic_manager_create_progress_ledger():
         chat_completion_service = MockChatCompletionService(ai_model_id="test")
         prompt_execution_settings = PromptExecutionSettings()
 
-        manager = MagenticManager(
+        manager = StandardMagenticManager(
             chat_completion_service=chat_completion_service,
             prompt_execution_settings=prompt_execution_settings,
         )
 
-        chat_history = ChatHistory()
-        progress_ledger = await manager.create_progress_ledger(chat_history, task, participants)
+        magentic_context = MagenticContext(
+            chat_history=ChatHistory(),
+            task=ChatMessageContent(role="user", content="test_message"),
+            participant_descriptions={"agent_a": "test_agent_a", "agent_b": "test_agent_b"},
+        )
+
+        progress_ledger = await manager.create_progress_ledger(magentic_context.model_copy(deep=True))
 
         assert isinstance(progress_ledger, ProgressLedger)
         assert progress_ledger == mock_progress_ledger
 
-        assert task.content in chat_history.messages[0].content
-        assert "{'agent_a': 'test_agent_a', 'agent_b': 'test_agent_b'}" in chat_history.messages[0].content
-        assert "agent_a, agent_b" in chat_history.messages[0].content
         assert (
-            chat_history.messages[0].content
-            == mock_get_chat_message_content.call_args_list[0][0][0].messages[0].content
+            "{'agent_a': 'test_agent_a', 'agent_b': 'test_agent_b'}"
+            in mock_get_chat_message_content.call_args_list[0][0][0].messages[0].content
+        )
+        assert "agent_a, agent_b" in mock_get_chat_message_content.call_args_list[0][0][0].messages[0].content
+        assert (
+            magentic_context.task.content in mock_get_chat_message_content.call_args_list[0][0][0].messages[0].content
         )
         assert mock_get_chat_message_content.call_args_list[0][0][1].extension_data["response_format"] == ProgressLedger
 

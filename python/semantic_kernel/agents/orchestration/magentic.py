@@ -5,6 +5,9 @@ import logging
 import sys
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
+from typing import Annotated
+
+from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
@@ -87,6 +90,31 @@ class ProgressLedger(KernelBaseModel):
     instruction_or_question: ProgressLedgerItem
 
 
+class MagenticContext(KernelBaseModel):
+    """Context for the Magentic manager."""
+
+    task: Annotated[ChatMessageContent, Field(description="The task to be completed.")]
+    chat_history: Annotated[
+        ChatHistory, Field(description="The chat history to be used to generate the facts and plan.")
+    ] = ChatHistory()
+    participant_descriptions: Annotated[
+        dict[str, str], Field(description="The descriptions of the participants in the group.")
+    ]
+    round_count: Annotated[int, Field(description="The number of rounds completed.")] = 0
+    stall_count: Annotated[int, Field(description="The number of stalls detected.")] = 0
+    reset_count: Annotated[int, Field(description="The number of resets detected.")] = 0
+
+    def reset(self) -> None:
+        """Reset the context.
+
+        This will clear the chat history and reset the stall count.
+        This won't reset the task, round count, or participant descriptions.
+        """
+        self.chat_history.clear()
+        self.stall_count = 0
+        self.reset_count += 1
+
+
 # endregion Messages and Types
 
 # region MagenticManager
@@ -95,62 +123,46 @@ class ProgressLedger(KernelBaseModel):
 class MagenticManager(KernelBaseModel, ABC):
     """Base class for the Magentic One manager."""
 
+    max_stall_count: Annotated[int, Field(description="The maximum number of stalls allowed before a reset.", ge=0)] = 3
+    max_reset_count: Annotated[int | None, Field(description="The maximum number of resets allowed.", ge=0)] = None
+    max_round_count: Annotated[
+        int | None, Field(description="The maximum number of rounds (agent responses) allowed.", gt=0)
+    ] = None
+
     @abstractmethod
-    async def create_facts_and_plan(
-        self,
-        chat_history: ChatHistory,
-        task: ChatMessageContent,
-        participant_descriptions: dict[str, str],
-        old_facts: ChatMessageContent | None = None,
-    ) -> tuple[ChatMessageContent, ChatMessageContent]:
-        """Create facts and plan for the task.
+    async def plan(self, magentic_context: MagenticContext) -> ChatMessageContent:
+        """Create a plan for the task.
+
+        This is called when the task is first started.
 
         Args:
-            chat_history (ChatHistory): The chat history. This chat history will be modified by the function.
-            task (ChatMessageContent): The task.
-            participant_descriptions (dict[str, str]): The participant descriptions.
-            old_facts (ChatMessageContent | None): The old facts. If provided, the facts and plan update
-                prompts will be used.
+            magentic_context (MagenticContext): The context for the Magentic manager.
 
         Returns:
-            tuple[ChatMessageContent, ChatMessageContent]: The facts and plan.
+            ChatMessageContent: The task ledger.
         """
         ...
 
     @abstractmethod
-    async def create_task_ledger(
-        self,
-        task: ChatMessageContent,
-        facts: ChatMessageContent,
-        plan: ChatMessageContent,
-        participant_descriptions: dict[str, str],
-    ) -> str:
-        """Create a task ledger.
+    async def replan(self, magentic_context: MagenticContext) -> ChatMessageContent:
+        """Replan for the task.
+
+        This is called when the task is stalled or looping.
 
         Args:
-            task (ChatMessageContent): The task.
-            facts (ChatMessageContent): The facts.
-            plan (ChatMessageContent): The plan.
-            participant_descriptions (dict[str, str]): The participant descriptions.
+            magentic_context (MagenticContext): The context for the Magentic manager.
 
         Returns:
-            str: The task ledger.
+            ChatMessageContent: The updated task ledger.
         """
         ...
 
     @abstractmethod
-    async def create_progress_ledger(
-        self,
-        chat_history: ChatHistory,
-        task: ChatMessageContent,
-        participant_descriptions: dict[str, str],
-    ) -> ProgressLedger:
+    async def create_progress_ledger(self, magentic_context: MagenticContext) -> ProgressLedger:
         """Create a progress ledger.
 
         Args:
-            chat_history (ChatHistory): The chat history. This chat history will be modified by the function.
-            task (ChatMessageContent): The task.
-            participant_descriptions (dict[str, str]): The participant descriptions.
+            magentic_context (MagenticContext): The context for the Magentic manager.
 
         Returns:
             ProgressLedger: The progress ledger.
@@ -158,12 +170,11 @@ class MagenticManager(KernelBaseModel, ABC):
         ...
 
     @abstractmethod
-    async def prepare_final_answer(self, chat_history: ChatHistory, task: ChatMessageContent) -> ChatMessageContent:
+    async def prepare_final_answer(self, magentic_context: MagenticContext) -> ChatMessageContent:
         """Prepare the final answer.
 
         Args:
-            chat_history (ChatHistory): The chat history. This chat history will be modified by the function.
-            task (ChatMessageContent): The task.
+            magentic_context (MagenticContext): The context for the Magentic manager.
 
         Returns:
             ChatMessageContent: The final answer.
@@ -172,12 +183,16 @@ class MagenticManager(KernelBaseModel, ABC):
 
 
 class StandardMagenticManager(MagenticManager):
-    """Container for the Magentic pattern."""
+    """Standard Magentic manager implementation.
+
+    This is the default implementation of the Magentic manager.
+    It uses the task ledger to keep track of the facts and plan for the task.
+
+    This implementation is requires structured outputs.
+    """
 
     chat_completion_service: ChatCompletionClientBase
     prompt_execution_settings: PromptExecutionSettings
-
-    max_stall_count: int = 3
 
     task_ledger_facts_prompt: str = ORCHESTRATOR_TASK_LEDGER_FACTS_PROMPT
     task_ledger_plan_prompt: str = ORCHESTRATOR_TASK_LEDGER_PLAN_PROMPT
@@ -187,119 +202,153 @@ class StandardMagenticManager(MagenticManager):
     progress_ledger_prompt: str = ORCHESTRATOR_PROGRESS_LEDGER_PROMPT
     final_answer_prompt: str = ORCHESTRATOR_FINAL_ANSWER_PROMPT
 
+    class TaskLedger(KernelBaseModel):
+        """Task ledger for the Standard Magentic manager."""
+
+        facts: Annotated[ChatMessageContent, Field(description="The facts about the task.")]
+        plan: Annotated[ChatMessageContent, Field(description="The plan for the task.")]
+
+    task_ledger: TaskLedger | None = None
+
     @override
-    async def create_facts_and_plan(
-        self,
-        chat_history: ChatHistory,
-        task: ChatMessageContent,
-        participant_descriptions: dict[str, str],
-        old_facts: ChatMessageContent | None = None,
-    ) -> tuple[ChatMessageContent, ChatMessageContent]:
-        """Create facts and plan for the task.
+    async def plan(self, magentic_context: MagenticContext) -> ChatMessageContent:
+        """Plan the task.
 
         Args:
-            chat_history (ChatHistory): The chat history. This chat history will be modified by the function.
-            task (ChatMessageContent): The task.
-            participant_descriptions (dict[str, str]): The participant descriptions.
-            old_facts (ChatMessageContent | None): The old facts. If provided, the facts and plan update
-                prompts will be used.
+            magentic_context (MagenticContext): The context for the Magentic manager.
 
         Returns:
-            tuple[ChatMessageContent, ChatMessageContent]: The facts and plan.
+            ChatMessageContent: The task ledger.
         """
-        # 1. Update the facts
+        # 1. Gather the facts
         prompt_template = KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(
-                template=self.task_ledger_facts_update_prompt if old_facts else self.task_ledger_facts_prompt
-            )
+            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_facts_prompt)
         )
-        chat_history.add_message(
+        magentic_context.chat_history.add_message(
             ChatMessageContent(
                 role=AuthorRole.USER,
-                content=await prompt_template.render(
-                    Kernel(),
-                    KernelArguments(task=task.content, old_facts=old_facts.content)
-                    if old_facts
-                    else KernelArguments(task=task.content),
-                ),
+                content=await prompt_template.render(Kernel(), KernelArguments(task=magentic_context.task.content)),
             )
         )
         facts = await self.chat_completion_service.get_chat_message_content(
-            chat_history,
+            magentic_context.chat_history,
             self.prompt_execution_settings,
         )
         assert facts is not None  # nosec B101
-        chat_history.add_message(facts)
+        magentic_context.chat_history.add_message(facts)
 
-        # 2. Update the plan
+        # 2. Create the plan
         prompt_template = KernelPromptTemplate(
-            prompt_template_config=PromptTemplateConfig(
-                template=self.task_ledger_plan_update_prompt if old_facts else self.task_ledger_plan_prompt
-            )
+            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_plan_prompt)
         )
-        chat_history.add_message(
+        magentic_context.chat_history.add_message(
             ChatMessageContent(
                 role=AuthorRole.USER,
                 content=await prompt_template.render(
                     Kernel(),
-                    KernelArguments(team=participant_descriptions),
+                    KernelArguments(team=magentic_context.participant_descriptions),
                 ),
             )
         )
         plan = await self.chat_completion_service.get_chat_message_content(
-            chat_history,
+            magentic_context.chat_history,
             self.prompt_execution_settings,
         )
         assert plan is not None  # nosec B101
 
-        return facts, plan
+        self.task_ledger = self.TaskLedger(facts=facts, plan=plan)
+        return await self._render_task_ledger(magentic_context)
 
     @override
-    async def create_task_ledger(
-        self,
-        task: ChatMessageContent,
-        facts: ChatMessageContent,
-        plan: ChatMessageContent,
-        participant_descriptions: dict[str, str],
-    ) -> str:
-        """Create a task ledger.
+    async def replan(self, magentic_context: MagenticContext) -> ChatMessageContent:
+        """Replan the task.
 
         Args:
-            task (ChatMessageContent): The task.
-            facts (ChatMessageContent): The facts.
-            plan (ChatMessageContent): The plan.
-            participant_descriptions (dict[str, str]): The participant descriptions.
+            magentic_context (MagenticContext): The context for the Magentic manager.
 
         Returns:
-            str: The task ledger.
+            ChatMessageContent: The updated task ledger.
         """
+        if self.task_ledger is None:
+            raise RuntimeError("The task ledger is not initialized. Planning needs to happen first.")
+
+        # 1. Update the facts
+        prompt_template = KernelPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_facts_update_prompt)
+        )
+        magentic_context.chat_history.add_message(
+            ChatMessageContent(
+                role=AuthorRole.USER,
+                content=await prompt_template.render(
+                    Kernel(),
+                    KernelArguments(task=magentic_context.task.content, old_facts=self.task_ledger.facts.content),
+                ),
+            )
+        )
+        facts = await self.chat_completion_service.get_chat_message_content(
+            magentic_context.chat_history,
+            self.prompt_execution_settings,
+        )
+        assert facts is not None  # nosec B101
+        magentic_context.chat_history.add_message(facts)
+
+        # 2. Update the plan
+        prompt_template = KernelPromptTemplate(
+            prompt_template_config=PromptTemplateConfig(template=self.task_ledger_plan_update_prompt)
+        )
+        magentic_context.chat_history.add_message(
+            ChatMessageContent(
+                role=AuthorRole.USER,
+                content=await prompt_template.render(
+                    Kernel(),
+                    KernelArguments(team=magentic_context.participant_descriptions),
+                ),
+            )
+        )
+        plan = await self.chat_completion_service.get_chat_message_content(
+            magentic_context.chat_history,
+            self.prompt_execution_settings,
+        )
+        assert plan is not None  # nosec B101
+
+        self.task_ledger.facts = facts
+        self.task_ledger.plan = plan
+        return await self._render_task_ledger(magentic_context)
+
+    async def _render_task_ledger(self, magentic_context: MagenticContext) -> ChatMessageContent:
+        """Render the task ledger to a string.
+
+        Args:
+            magentic_context (MagenticContext): The context for the Magentic manager.
+
+        Returns:
+            ChatMessageContent: The rendered task ledger.
+        """
+        if self.task_ledger is None:
+            raise RuntimeError("The task ledger is not initialized. Planning needs to happen first.")
+
         prompt_template = KernelPromptTemplate(
             prompt_template_config=PromptTemplateConfig(template=self.task_ledger_full_prompt)
         )
 
-        return await prompt_template.render(
+        rendered_task_ledger = await prompt_template.render(
             Kernel(),
             KernelArguments(
-                task=task.content,
-                team=participant_descriptions,
-                facts=facts.content,
-                plan=plan.content,
+                task=magentic_context.task.content,
+                team=magentic_context.participant_descriptions,
+                facts=self.task_ledger.facts.content,
+                plan=self.task_ledger.plan.content,
             ),
         )
 
+        return ChatMessageContent(role=AuthorRole.ASSISTANT, content=rendered_task_ledger)
+
     @override
-    async def create_progress_ledger(
-        self,
-        chat_history: ChatHistory,
-        task: ChatMessageContent,
-        participant_descriptions: dict[str, str],
-    ) -> ProgressLedger:
+    async def create_progress_ledger(self, magentic_context: MagenticContext) -> ProgressLedger:
         """Create a progress ledger.
 
         Args:
-            chat_history (ChatHistory): The chat history. This chat history will be modified by the function.
-            task (ChatMessageContent): The task.
-            participant_descriptions (dict[str, str]): The participant descriptions.
+            magentic_context (MagenticContext): The context for the Magentic manager.
 
         Returns:
             ProgressLedger: The progress ledger.
@@ -310,12 +359,14 @@ class StandardMagenticManager(MagenticManager):
         progress_ledger_prompt = await prompt_template.render(
             Kernel(),
             KernelArguments(
-                task=task.content,
-                team=participant_descriptions,
-                names=", ".join(participant_descriptions.keys()),
+                task=magentic_context.task.content,
+                team=magentic_context.participant_descriptions,
+                names=", ".join(magentic_context.participant_descriptions.keys()),
             ),
         )
-        chat_history.add_message(ChatMessageContent(role=AuthorRole.USER, content=progress_ledger_prompt))
+        magentic_context.chat_history.add_message(
+            ChatMessageContent(role=AuthorRole.USER, content=progress_ledger_prompt)
+        )
 
         prompt_execution_settings_clone = PromptExecutionSettings.from_prompt_execution_settings(
             self.prompt_execution_settings
@@ -326,7 +377,7 @@ class StandardMagenticManager(MagenticManager):
         )
 
         response = await self.chat_completion_service.get_chat_message_content(
-            chat_history,
+            magentic_context.chat_history,
             prompt_execution_settings_clone,
         )
         assert response is not None  # nosec B101
@@ -334,12 +385,11 @@ class StandardMagenticManager(MagenticManager):
         return ProgressLedger.model_validate_json(response.content)
 
     @override
-    async def prepare_final_answer(self, chat_history: ChatHistory, task: ChatMessageContent) -> ChatMessageContent:
+    async def prepare_final_answer(self, magentic_context: MagenticContext) -> ChatMessageContent:
         """Prepare the final answer.
 
         Args:
-            chat_history (ChatHistory): The chat history. This chat history will be modified by the function.
-            task (ChatMessageContent): The task.
+            magentic_context (MagenticContext): The context for the Magentic manager.
 
         Returns:
             ChatMessageContent: The final answer.
@@ -347,15 +397,15 @@ class StandardMagenticManager(MagenticManager):
         prompt_template = KernelPromptTemplate(
             prompt_template_config=PromptTemplateConfig(template=self.final_answer_prompt)
         )
-        chat_history.add_message(
+        magentic_context.chat_history.add_message(
             ChatMessageContent(
                 role=AuthorRole.USER,
-                content=await prompt_template.render(Kernel(), KernelArguments(task=task)),
+                content=await prompt_template.render(Kernel(), KernelArguments(task=magentic_context.task)),
             )
         )
 
         response = await self.chat_completion_service.get_chat_message_content(
-            chat_history,
+            magentic_context.chat_history,
             self.prompt_execution_settings,
         )
         assert response is not None  # nosec B101
@@ -388,11 +438,10 @@ class MagenticManagerActor(ActorBase):
         """
         self._manager = manager
         self._internal_topic_type = internal_topic_type
-        self._chat_history = ChatHistory()
-        self._participant_descriptions = participant_descriptions
         self._result_callback = result_callback
-        self._round_count = 0
-        self._stall_count = 0
+        self._participant_descriptions = participant_descriptions
+        self._context: MagenticContext | None = None
+        self._task_ledger: ChatMessageContent | None = None
 
         super().__init__(description="Magentic One Manager")
 
@@ -400,71 +449,74 @@ class MagenticManagerActor(ActorBase):
     async def _handle_start_message(self, message: MagenticStartMessage, ctx: MessageContext) -> None:
         """Handle the start message for the Magentic One manager."""
         logger.debug(f"{self.id}: Received Magentic One start message.")
-        self._task = message.body
-        self._facts, self._plan = await self._manager.create_facts_and_plan(
-            self._chat_history.model_copy(deep=True),
-            self._task,
-            self._participant_descriptions,
+
+        self._context = MagenticContext(
+            task=message.body,
+            participant_descriptions=self._participant_descriptions,
         )
+
+        # Initial planning
+        self._task_ledger = await self._manager.plan(self._context.model_copy(deep=True))
 
         await self._run_outer_loop(ctx.cancellation_token)
 
     @message_handler
     async def _handle_response_message(self, message: MagenticResponseMessage, ctx: MessageContext) -> None:
+        """Handle the response message for the Magentic One manager."""
+        if self._context is None or self._task_ledger is None:
+            raise RuntimeError("The Magentic manager is not started yet. Make sure to send a start message first.")
+
         if message.body.role != AuthorRole.USER:
-            self._chat_history.add_message(
+            self._context.chat_history.add_message(
                 ChatMessageContent(
                     role=AuthorRole.USER,
                     content=f"Transferred to {message.body.name}",
                 )
             )
-        self._chat_history.add_message(message.body)
+        self._context.chat_history.add_message(message.body)
 
         logger.debug(f"{self.id}: Running inner loop.")
         await self._run_inner_loop(ctx.cancellation_token)
 
     async def _run_outer_loop(self, cancellation_token: CancellationToken) -> None:
-        # 1. Create a task ledger.
-        task_ledger = await self._manager.create_task_ledger(
-            self._task,
-            self._facts,
-            self._plan,
-            self._participant_descriptions,
-        )
+        if self._context is None or self._task_ledger is None:
+            raise RuntimeError("The Magentic manager is not started yet. Make sure to send a start message first.")
 
-        # 2. Publish the task ledger to the group chat.
+        # 1. Publish the rendered task ledger to the group chat.
         # Need to add the task ledger to the orchestrator's chat history
         # since the publisher won't receive the message it sends even though
         # the publisher also subscribes to the topic.
-        self._chat_history.add_message(
+        self._context.chat_history.add_message(
             ChatMessageContent(
                 role=AuthorRole.ASSISTANT,
-                content=task_ledger,
+                content=self._task_ledger.content,
                 name=self.__class__.__name__,
             )
         )
 
-        logger.debug(f"Initial task ledger:\n{task_ledger}")
+        logger.debug(f"Initial task ledger:\n{self._task_ledger.content}")
         await self.publish_message(
             MagenticResponseMessage(
-                body=self._chat_history.messages[-1],
+                body=self._context.chat_history.messages[-1],
             ),
             TopicId(self._internal_topic_type, self.id.key),
             cancellation_token=cancellation_token,
         )
 
-        # 3. Start the inner loop.
+        # 2. Start the inner loop.
         await self._run_inner_loop(cancellation_token)
 
     async def _run_inner_loop(self, cancellation_token: CancellationToken) -> None:
-        self._round_count += 1
+        if self._context is None or self._task_ledger is None:
+            raise RuntimeError("The Magentic manager is not started yet. Make sure to send a start message first.")
+
+        within_limits = await self._check_within_limits()
+        if not within_limits:
+            return
+        self._context.round_count += 1
 
         # 1. Create a progress ledger
-        current_progress_ledger = await self._manager.create_progress_ledger(
-            self._chat_history.model_copy(deep=True),
-            self._task,
-            self._participant_descriptions,
-        )
+        current_progress_ledger = await self._manager.create_progress_ledger(self._context.model_copy(deep=True))
         logger.debug(f"Current progress ledger:\n{current_progress_ledger.model_dump_json(indent=2)}")
 
         # 2. Process the progress ledger
@@ -475,18 +527,13 @@ class MagenticManagerActor(ActorBase):
             return
         # 2.2 Check for stalling or looping
         if not current_progress_ledger.is_progress_being_made.answer or current_progress_ledger.is_in_loop.answer:
-            self._stall_count += 1
+            self._context.stall_count += 1
         else:
-            self._stall_count = max(0, self._stall_count - 1)
+            self._context.stall_count = max(0, self._context.stall_count - 1)
 
-        if self._stall_count > self._manager.max_stall_count:
+        if self._context.stall_count > self._manager.max_stall_count:
             logger.debug("Stalling detected. Resetting the task.")
-            self._facts, self._plan = await self._manager.create_facts_and_plan(
-                self._chat_history.model_copy(deep=True),
-                self._task,
-                self._participant_descriptions,
-                old_facts=self._facts,
-            )
+            self._task_ledger = await self._manager.replan(self._context.model_copy(deep=True))
             await self._reset_for_outer_loop(cancellation_token)
             logger.debug("Restarting outer loop.")
             await self._run_outer_loop(cancellation_token)
@@ -494,7 +541,7 @@ class MagenticManagerActor(ActorBase):
 
         # 2.3 Publish for next step
         next_step = current_progress_ledger.instruction_or_question.answer
-        self._chat_history.add_message(
+        self._context.chat_history.add_message(
             ChatMessageContent(
                 role=AuthorRole.ASSISTANT,
                 content=next_step if isinstance(next_step, str) else str(next_step),
@@ -503,7 +550,7 @@ class MagenticManagerActor(ActorBase):
         )
         await self.publish_message(
             MagenticResponseMessage(
-                body=self._chat_history.messages[-1],
+                body=self._context.chat_history.messages[-1],
             ),
             TopicId(self._internal_topic_type, self.id.key),
             cancellation_token=cancellation_token,
@@ -523,22 +570,48 @@ class MagenticManagerActor(ActorBase):
         )
 
     async def _reset_for_outer_loop(self, cancellation_token: CancellationToken) -> None:
+        """Reset the context for the outer loop."""
+        if self._context is None:
+            raise RuntimeError("The Magentic manager is not started yet. Make sure to send a start message first.")
+
         await self.publish_message(
             MagenticResetMessage(),
             TopicId(self._internal_topic_type, self.id.key),
             cancellation_token=cancellation_token,
         )
-        self._chat_history.clear()
-        self._stall_count = 0
+        self._context.reset()
 
     async def _prepare_final_answer(self) -> None:
-        final_answer = await self._manager.prepare_final_answer(
-            self._chat_history.model_copy(deep=True),
-            self._task,
-        )
+        """Prepare the final answer and send it to the result callback."""
+        if self._context is None:
+            raise RuntimeError("The Magentic manager is not started yet. Make sure to send a start message first.")
+
+        final_answer = await self._manager.prepare_final_answer(self._context.model_copy(deep=True))
 
         if self._result_callback:
             await self._result_callback(final_answer)
+
+    async def _check_within_limits(self) -> bool:
+        """Check if the manager is within the limits."""
+        if self._context is None:
+            raise RuntimeError("The Magentic manager is not started yet. Make sure to send a start message first.")
+
+        if (
+            self._manager.max_round_count is not None and self._context.round_count >= self._manager.max_round_count
+        ) or (self._manager.max_reset_count is not None and self._context.reset_count > self._manager.max_reset_count):
+            message = (
+                "Max round count reached."
+                if self._manager.max_round_count and self._context.round_count >= self._manager.max_round_count
+                else "Max reset count reached."
+            )
+            logger.debug(message)
+            if self._result_callback:
+                await self._result_callback(
+                    ChatMessageContent(role=AuthorRole.ASSISTANT, content=message, name=self.__class__.__name__)
+                )
+            return False
+
+        return True
 
 
 # endregion MagenticManagerActor
@@ -667,27 +740,10 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
         internal_topic_type: str,
         cancellation_token: CancellationToken,
     ) -> None:
-        """Start the Magentic One pattern.
-
-        This ensures that all initial messages are sent to the individual actors
-        and processed before the group chat begins. It's important because if the
-        manager actor processes its start message too quickly (or other actors are
-        too slow), it might send a request to the next agent before the other actors
-        have the necessary context.
-        """
+        """Start the Magentic pattern."""
         if not isinstance(task, ChatMessageContent):
             # Magentic One only supports ChatMessageContent as input.
             raise ValueError("The task must be a ChatMessageContent object.")
-
-        async def send_start_message(agent: Agent) -> None:
-            target_actor_id = await runtime.get(self._get_agent_actor_type(agent, internal_topic_type))
-            await runtime.send_message(
-                MagenticStartMessage(body=task),
-                target_actor_id,
-                cancellation_token=cancellation_token,
-            )
-
-        await asyncio.gather(*[send_start_message(agent) for agent in self._members])
 
         target_actor_id = await runtime.get(self._get_manager_actor_type(internal_topic_type))
         await runtime.send_message(
