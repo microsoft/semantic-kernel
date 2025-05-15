@@ -11,6 +11,7 @@ from semantic_kernel.agents.orchestration.orchestration_base import DefaultTypeA
 from semantic_kernel.agents.runtime.core.message_context import MessageContext
 from semantic_kernel.agents.runtime.core.routed_agent import RoutedAgent
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -18,6 +19,7 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 
+@experimental
 class ActorBase(RoutedAgent):
     """A base class for actors running in the AgentRuntime."""
 
@@ -33,6 +35,7 @@ class ActorBase(RoutedAgent):
         return await super().on_message_impl(message, ctx)
 
 
+@experimental
 class AgentActorBase(ActorBase):
     """A agent actor for multi-agent orchestration running on Agent runtime."""
 

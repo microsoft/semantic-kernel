@@ -35,6 +35,7 @@ from samples.concepts.images.image_generation import main as image_generation
 from samples.concepts.local_models.lm_studio_chat_completion import main as lm_studio_chat_completion
 from samples.concepts.local_models.lm_studio_text_embedding import main as lm_studio_text_embedding
 from samples.concepts.local_models.ollama_chat_completion import main as ollama_chat_completion
+from samples.concepts.mcp.agent_with_mcp_agent import main as agent_with_mcp_agent
 from samples.concepts.memory.simple_memory import main as simple_memory
 from samples.concepts.plugins.openai_function_calling_with_custom_plugin import (
     main as openai_function_calling_with_custom_plugin,
@@ -213,6 +214,14 @@ concepts = [
         azure_chat_gpt_api_jinja2,
         ["What is 3+3?", "exit"],
         id="azure_chat_gpt_api_jinja2",
+        marks=pytest.mark.skipif(
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
+        ),
+    ),
+    param(
+        agent_with_mcp_agent,
+        ["what restaurants can I choose from?", "the farm sounds nice, what are the specials there?", "exit"],
+        id="agent_with_mcp_agent",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),
