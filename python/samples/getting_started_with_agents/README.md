@@ -71,6 +71,20 @@ Example|Description
 [step6_responses_agent_vision](../getting_started_with_agents/openai_responses/step6_responses_agent_vision.py)|How to provide an image as input to an OpenAI Responses agent.
 [step7_responses_agent_structured_outputs](../getting_started_with_agents/openai_responses/step7_responses_agent_structured_outputs.py)|How to use have an OpenAI Responses agent use structured outputs.
 
+## Multi-Agent Orchestration
+Example|Description
+---|---
+[step1_concurrent](../getting_started_with_agents/multi_agent_orchestration/step1_concurrent.py)|How to run agents in parallel on the same task.
+[step1a_concurrent_structure_output](../getting_started_with_agents/multi_agent_orchestration/step1a_concurrent_structure_output.py)|How to run agents in parallel on the same task and return structured output.
+[step2_sequential](../getting_started_with_agents/multi_agent_orchestration/step2_sequential.py)|How to run agents in sequence to complete a task.
+[step2a_sequential_cancellation_token](../getting_started_with_agents/multi_agent_orchestration/step2a_sequential_cancellation_token.py)|How to cancel an invocation while it is in progress.
+[step3_group_chat](../getting_started_with_agents/multi_agent_orchestration/step3_group_chat.py)|How to run agents in a group chat to complete a task.
+[step3a_group_chat_human_in_the_loop](../getting_started_with_agents/multi_agent_orchestration/step3a_group_chat_human_in_the_loop.py)|How to run agents in a group chat with human in the loop.
+[step3b_group_chat_with_chat_completion_manager](../getting_started_with_agents/multi_agent_orchestration/step3b_group_chat_with_chat_completion_manager.py)|How to run agents in a group chat with a more dynamic manager.
+[step4_handoff](../getting_started_with_agents/multi_agent_orchestration/step4_handoff.py)|How to run agents in a handoff orchestration to complete a task.
+[step4a_handoff_structure_input](../getting_started_with_agents/multi_agent_orchestration/step4a_handoff_structure_input.py)|How to run agents in a handoff orchestration to complete a task with structured input.
+[step5_magentic](../getting_started_with_agents/multi_agent_orchestration/step5_magentic.py)|How to run agents in a Magentic orchestration to complete a task.
+
 ## Configuring the Kernel
 
 Similar to the Semantic Kernel Python concept samples, it is necessary to configure the secrets
