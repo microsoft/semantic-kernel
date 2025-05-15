@@ -383,6 +383,29 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
 
+        # Check for missing or unexpected parameters
+        required_param_names = {param.name for param in function_to_call.parameters if param.is_required}
+        received_param_names = set(parsed_args or {})
+
+        missing_params = required_param_names - received_param_names
+        unexpected_params = received_param_names - {param.name for param in function_to_call.parameters}
+
+        if missing_params or unexpected_params:
+            msg_parts = []
+            if missing_params:
+                msg_parts.append(f"Missing required argument(s): {sorted(missing_params)}.")
+            if unexpected_params:
+                msg_parts.append(f"Received unexpected argument(s): {sorted(unexpected_params)}.")
+            msg = " ".join(msg_parts) + " Please revise the arguments to match the function signature."
+
+            logger.info(msg)
+            frc = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=function_call,
+                result=msg,
+            )
+            chat_history.add_message(message=frc.to_chat_message_content())
+            return None
+
         logger.info(f"Calling {function_call.name} function with args: {function_call.arguments}")
 
         _rebuild_auto_function_invocation_context()
