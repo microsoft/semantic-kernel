@@ -66,7 +66,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(30, new RecordRetrievalOptions { IncludeVectors = true });
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
-        var searchResults = await sut.SearchEmbeddingAsync(
+        var searchResults = await sut.SearchAsync(
             vector,
             top: 3,
             new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 30).AnyTagEqualTo("Tags", "t2") }).ToListAsync();
@@ -378,7 +378,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         // Act.
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "My Hotel 13").EqualTo("LastRenovationDate", new DateTimeOffset(2020, 02, 01, 0, 0, 0, TimeSpan.Zero)) : new VectorSearchFilter().AnyTagEqualTo("Tags", "t13.2");
-        var searchResults = await sut.SearchEmbeddingAsync(
+        var searchResults = await sut.SearchAsync(
             vector,
             top: 3,
             new()

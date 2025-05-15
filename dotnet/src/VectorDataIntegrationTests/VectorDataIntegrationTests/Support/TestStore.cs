@@ -98,7 +98,7 @@ public abstract class TestStore
 
         for (var i = 0; i < 20; i++)
         {
-            var results = collection.SearchEmbeddingAsync(
+            var results = collection.SearchAsync(
                 vector,
                 top: recordCount,
                 new() { Filter = filter });

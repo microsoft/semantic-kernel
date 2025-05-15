@@ -12,6 +12,8 @@ namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
 internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuilder.ModelBuildingOptions)
 {
+    internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<Half>, Embedding<Half>, Half[], BitArray, or SparseVector";
+
     public static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
@@ -62,7 +64,7 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "ReadOnlyMemory<float>, ReadOnlyMemory<Half>, BitArray, or SparseVector";
+        supportedTypes = SupportedVectorTypes;
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -70,8 +72,12 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
         }
 
         return type == typeof(ReadOnlyMemory<float>) ||
+            type == typeof(Embedding<float>) ||
+            type == typeof(float[]) ||
 #if NET8_0_OR_GREATER
             type == typeof(ReadOnlyMemory<Half>) ||
+            type == typeof(Embedding<Half>) ||
+            type == typeof(Half[]) ||
 #endif
             type == typeof(BitArray) ||
             type == typeof(SparseVector);

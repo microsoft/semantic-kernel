@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,7 +11,8 @@ using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-internal sealed class WeaviateMapper<TRecord> : IWeaviateMapper<TRecord>
+internal sealed class WeaviateMapper<TRecord>
+    where TRecord : class
 {
     private readonly string _collectionName;
     private readonly bool _hasNamedVectors;
@@ -37,139 +39,164 @@ internal sealed class WeaviateMapper<TRecord> : IWeaviateMapper<TRecord>
 
     public JsonObject MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
-        Verify.NotNull(dataModel);
-
-        var jsonNodeDataModel = JsonSerializer.SerializeToNode(dataModel, this._jsonSerializerOptions)!;
-
-        // Transform data model to Weaviate object model.
-        var weaviateObjectModel = new JsonObject
+        var keyNode = this._model.KeyProperty.GetValueAsObject(dataModel) switch
         {
-            { WeaviateConstants.CollectionPropertyName, JsonValue.Create(this._collectionName) },
-            // The key property in Weaviate is always named 'id'.
-            // But the external JSON serializer used just above isn't aware of that, and will produce a JSON object with another name, taking into
-            // account e.g. naming policies. TemporaryStorageName gets populated in the model builder - containing that name - once VectorStoreModelBuildingOptions.ReservedKeyPropertyName is set
-            { WeaviateConstants.ReservedKeyPropertyName, jsonNodeDataModel[this._model.KeyProperty.TemporaryStorageName!]!.DeepClone() },
-            { WeaviateConstants.ReservedDataPropertyName, new JsonObject() },
-            { this._vectorPropertyName, new JsonObject() },
+            Guid g => JsonValue.Create(g),
+
+            null => throw new InvalidOperationException("Key property must not be nulL"),
+            _ => throw new InvalidOperationException("Key property must be a Guid")
         };
 
         // Populate data properties.
+        var dataNode = new JsonObject();
         foreach (var property in this._model.DataProperties)
         {
-            var node = jsonNodeDataModel[property.StorageName];
-
-            if (node is not null)
+            if (property.GetValueAsObject(dataModel) is object value)
             {
-                weaviateObjectModel[WeaviateConstants.ReservedDataPropertyName]![property.StorageName] = node.DeepClone();
+                // TODO: NativeAOT support, #11963
+                dataNode[property.StorageName] = JsonSerializer.SerializeToNode(value, property.Type, this._jsonSerializerOptions);
             }
         }
 
         // Populate vector properties.
+        JsonNode? vectorNode = null;
+
         if (this._hasNamedVectors)
         {
+            vectorNode = new JsonObject();
+
             for (var i = 0; i < this._model.VectorProperties.Count; i++)
             {
                 var property = this._model.VectorProperties[i];
 
-                if (generatedEmbeddings?[i] is IReadOnlyList<Embedding> e)
-                {
-                    weaviateObjectModel[this._vectorPropertyName]![property.StorageName] = e[recordIndex] switch
-                    {
-                        Embedding<float> fe => JsonValue.Create(fe.Vector.ToArray()),
-                        Embedding<double> de => JsonValue.Create(de.Vector.ToArray()),
-                        _ => throw new UnreachableException()
-                    };
-                }
-                else
-                {
-                    var node = jsonNodeDataModel[property.StorageName];
+                var vector = generatedEmbeddings?[i] is IReadOnlyList<Embedding> ge
+                    ? ge[recordIndex]
+                    : property.GetValueAsObject(dataModel);
 
-                    if (node is not null)
-                    {
-                        weaviateObjectModel[this._vectorPropertyName]![property.StorageName] = node.DeepClone();
-                    }
-                }
+                vectorNode[property.StorageName] = vector switch
+                {
+                    ReadOnlyMemory<float> e => BuildJsonArray(e),
+                    Embedding<float> e => BuildJsonArray(e.Vector),
+                    float[] a => BuildJsonArray(a),
+
+                    null => null,
+
+                    _ => throw new UnreachableException()
+                };
             }
         }
         else
         {
-            var property = this._model.VectorProperty;
+            var vector = generatedEmbeddings?[0] is IReadOnlyList<Embedding> ge
+                ? ge[recordIndex]
+                : this._model.VectorProperty.GetValueAsObject(dataModel);
 
-            if (generatedEmbeddings?.Single() is IReadOnlyList<Embedding> e)
+            vectorNode = vector switch
             {
-                weaviateObjectModel[this._vectorPropertyName] = e[recordIndex] switch
-                {
-                    Embedding<float> fe => JsonValue.Create(fe.Vector.ToArray()),
-                    Embedding<double> de => JsonValue.Create(de.Vector.ToArray()),
-                    _ => throw new UnreachableException()
-                };
-            }
-            else
-            {
-                var node = jsonNodeDataModel[property.StorageName];
+                ReadOnlyMemory<float> e => BuildJsonArray(e),
+                Embedding<float> e => BuildJsonArray(e.Vector),
+                float[] a => BuildJsonArray(a),
 
-                if (node is not null)
-                {
-                    weaviateObjectModel[this._vectorPropertyName] = node.DeepClone();
-                }
-            }
+                null => null,
+
+                _ => throw new UnreachableException()
+            };
         }
 
-        return weaviateObjectModel;
+        return new JsonObject
+        {
+            { WeaviateConstants.CollectionPropertyName, JsonValue.Create(this._collectionName) },
+            { WeaviateConstants.ReservedKeyPropertyName, keyNode },
+            { WeaviateConstants.ReservedDataPropertyName, dataNode },
+            { this._vectorPropertyName, vectorNode },
+        };
+
+        static JsonArray BuildJsonArray(ReadOnlyMemory<float> memory)
+        {
+            var jsonArray = new JsonArray();
+
+            foreach (var item in memory.Span)
+            {
+                jsonArray.Add(JsonValue.Create(item));
+            }
+
+            return jsonArray;
+        }
     }
 
     public TRecord MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
         Verify.NotNull(storageModel);
 
-        // TemporaryStorageName gets populated in the model builder once VectorStoreModelBuildingOptions.ReservedKeyPropertyName is set
-        Debug.Assert(this._model.KeyProperty.TemporaryStorageName is not null);
+        var record = this._model.CreateRecord<TRecord>()!;
 
-        // Transform Weaviate object model to data model.
-        var jsonNodeDataModel = new JsonObject
+        if (storageModel[WeaviateConstants.ReservedKeyPropertyName]?.GetValue<Guid>() is not Guid key)
         {
-            // See comment above on TemporaryStorageName
-            { this._model.KeyProperty.TemporaryStorageName!, storageModel[WeaviateConstants.ReservedKeyPropertyName]?.DeepClone() },
-        };
+            throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
+        }
+
+        this._model.KeyProperty.SetValueAsObject(record, key);
 
         // Populate data properties.
-        foreach (var property in this._model.DataProperties)
+        if (storageModel[WeaviateConstants.ReservedDataPropertyName] is JsonObject dataPropertiesJson)
         {
-            var node = storageModel[WeaviateConstants.ReservedDataPropertyName]?[property.StorageName];
-
-            if (node is not null)
+            foreach (var property in this._model.DataProperties)
             {
-                jsonNodeDataModel[property.StorageName] = node.DeepClone();
+                if (dataPropertiesJson.TryGetPropertyValue(property.StorageName, out var dataValue))
+                {
+                    // TODO: NativeAOT support, #11963
+                    property.SetValueAsObject(record, dataValue.Deserialize(property.Type, this._jsonSerializerOptions));
+                }
             }
         }
 
         // Populate vector properties.
         if (includeVectors)
         {
-            if (this._hasNamedVectors)
+            if (this._hasNamedVectors && storageModel[this._vectorPropertyName] is JsonObject vectorPropertiesJson)
             {
                 foreach (var property in this._model.VectorProperties)
                 {
-                    var node = storageModel[this._vectorPropertyName]?[property.StorageName];
-
-                    if (node is not null)
+                    if (vectorPropertiesJson.TryGetPropertyValue(property.StorageName, out var node))
                     {
-                        jsonNodeDataModel[property.StorageName] = node.DeepClone();
+                        PopulateVectorProperty(record, node, property);
                     }
                 }
             }
             else
             {
-                var vectorProperty = this._model.VectorProperty;
-                var node = storageModel[this._vectorPropertyName];
-
-                if (node is not null)
+                if (this._model.VectorProperties is [var property]
+                    && storageModel.TryGetPropertyValue(this._vectorPropertyName, out var node))
                 {
-                    jsonNodeDataModel[vectorProperty.StorageName] = node.DeepClone();
+                    PopulateVectorProperty(record, node, property);
                 }
             }
         }
 
-        return jsonNodeDataModel.Deserialize<TRecord>(this._jsonSerializerOptions)!;
+        return record;
+
+        static void PopulateVectorProperty(TRecord record, object? value, VectorPropertyModel property)
+        {
+            switch (value)
+            {
+                case null:
+                    property.SetValueAsObject(record, null);
+                    return;
+
+                case JsonArray jsonArray:
+                    property.SetValueAsObject(record, (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
+                    {
+                        var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(jsonArray.GetValues<float>().ToArray()),
+                        var t when t == typeof(float[]) => jsonArray.GetValues<float>().ToArray(),
+                        var t when t == typeof(Embedding<float>) => new Embedding<float>(jsonArray.GetValues<float>().ToArray()),
+
+                        _ => throw new UnreachableException()
+                    });
+                    return;
+
+                default:
+                    throw new InvalidOperationException("Non-array JSON node received for vector property");
+            }
+        }
     }
 }

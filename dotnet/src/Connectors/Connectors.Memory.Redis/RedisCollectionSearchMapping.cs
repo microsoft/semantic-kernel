@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using NRedisStack.Search;
@@ -26,8 +27,14 @@ internal static class RedisCollectionSearchMapping
     public static byte[] ValidateVectorAndConvertToBytes<TVector>(TVector vector, string connectorTypeName)
         => vector switch
         {
-            ReadOnlyMemory<float> floatVector => MemoryMarshal.AsBytes(floatVector.Span).ToArray(),
-            ReadOnlyMemory<double> doubleVector => MemoryMarshal.AsBytes(doubleVector.Span).ToArray(),
+            ReadOnlyMemory<float> m => MemoryMarshal.AsBytes(m.Span).ToArray(),
+            Embedding<float> e => MemoryMarshal.AsBytes(e.Vector.Span).ToArray(),
+            float[] a => MemoryMarshal.AsBytes(a.AsSpan()).ToArray(),
+
+            ReadOnlyMemory<double> m => MemoryMarshal.AsBytes(m.Span).ToArray(),
+            Embedding<double> e => MemoryMarshal.AsBytes(e.Vector.Span).ToArray(),
+            double[] a => MemoryMarshal.AsBytes(a.AsSpan()).ToArray(),
+
             _ => throw new NotSupportedException($"The provided vector type {vector?.GetType().FullName} is not supported by the Redis {connectorTypeName} connector.")
         };
 

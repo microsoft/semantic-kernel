@@ -4,9 +4,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
-using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -39,27 +39,8 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                 property.StorageName,
                 PostgresPropertyMapping.MapVectorForStorageModel(
                     generatedEmbeddings?[i] is IReadOnlyList<Embedding> e
-                        ? e[recordIndex] switch
-                        {
-                            Embedding<float> fe => fe.Vector,
-#if NET8_0_OR_GREATER
-                            Embedding<Half> fe => fe.Vector,
-#endif
-                            _ => throw new UnreachableException()
-                        }
-                        : property.GetValueAsObject(dataModel!) switch
-                        {
-                            ReadOnlyMemory<float> f => f,
-
-#if NET8_0_OR_GREATER
-                            ReadOnlyMemory<Half> h => h,
-#endif
-
-                            BitArray b => b,
-                            SparseVector v => v,
-
-                            _ => throw new UnreachableException()
-                        }));
+                        ? e[recordIndex]
+                        : property.GetValueAsObject(dataModel!)));
         }
 
         return properties;
@@ -84,14 +65,38 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
             {
                 switch (storageModel[vectorProperty.StorageName])
                 {
-                    case Pgvector.Vector pgVector:
-                        vectorProperty.SetValueAsObject(record, pgVector.Memory);
+                    case Pgvector.Vector { Memory: ReadOnlyMemory<float> memory }:
+                    {
+                        vectorProperty.SetValueAsObject(record, (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch
+                        {
+                            var t when t == typeof(ReadOnlyMemory<float>) => memory,
+                            var t when t == typeof(Embedding<float>) => new Embedding<float>(memory),
+                            var t when t == typeof(float[])
+                                => MemoryMarshal.TryGetArray(memory, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
+                                    ? segment.Array
+                                    : memory.ToArray(),
+
+                            _ => throw new UnreachableException()
+                        });
                         continue;
+                    }
 
 #if NET8_0_OR_GREATER
-                    case Pgvector.HalfVector pgHalfVector:
-                        vectorProperty.SetValueAsObject(record, pgHalfVector.Memory);
+                    case Pgvector.HalfVector { Memory: ReadOnlyMemory<Half> memory }:
+                    {
+                        vectorProperty.SetValueAsObject(record, (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch
+                        {
+                            var t when t == typeof(ReadOnlyMemory<Half>) => memory,
+                            var t when t == typeof(Embedding<Half>) => new Embedding<Half>(memory),
+                            var t when t == typeof(Half[])
+                                => MemoryMarshal.TryGetArray(memory, out ArraySegment<Half> segment) && segment.Count == segment.Array!.Length
+                                    ? segment.Array
+                                    : memory.ToArray(),
+
+                            _ => throw new UnreachableException()
+                        });
                         continue;
+                    }
 #endif
 
                     case BitArray bitArray:

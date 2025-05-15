@@ -19,6 +19,7 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
     CollectionModel model,
     JsonSerializerOptions jsonSerializerOptions)
     : IRedisJsonMapper<TConsumerDataModel>
+    where TConsumerDataModel : class
 {
     /// <summary>The key property.</summary>
     private readonly string _keyPropertyStorageName = model.KeyProperty.StorageName;
@@ -40,24 +41,61 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
         var keyValue = jsonValue.ToString();
         jsonNode.Remove(this._keyPropertyStorageName);
 
-        // Go over the vector properties; those which have an embedding generator configured on them will have embedding generators, overwrite
-        // the value in the JSON object with that.
-        if (generatedEmbeddings is not null)
+        // Go over the vector properties; inject any generated embeddings to overwrite the JSON serialized above.
+        // Also, for Embedding<T> properties we also need to overwrite with a simple array (since Embedding<T> gets serialized as a complex object).
+        for (var i = 0; i < model.VectorProperties.Count; i++)
         {
-            for (var i = 0; i < model.VectorProperties.Count; i++)
+            var property = model.VectorProperties[i];
+
+            Embedding? embedding = generatedEmbeddings?[i]?[recordIndex] is Embedding ge ? ge : null;
+
+            if (embedding is null)
             {
-                if (generatedEmbeddings[i] is IReadOnlyList<Embedding> propertyEmbeddings)
+                switch (Nullable.GetUnderlyingType(property.Type) ?? property.Type)
                 {
-                    var property = model.VectorProperties[i];
-                    Debug.Assert(property.EmbeddingGenerator is not null);
-                    jsonNode[property.StorageName] = propertyEmbeddings[recordIndex] switch
-                    {
-                        Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        Embedding<double> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        _ => throw new UnreachableException()
-                    };
+                    case var t when t == typeof(ReadOnlyMemory<float>):
+                    case var t2 when t2 == typeof(float[]):
+                    case var t3 when t3 == typeof(ReadOnlyMemory<double>):
+                    case var t4 when t4 == typeof(double[]):
+                        // The .NET vector property is a ReadOnlyMemory<T> or T[] (not an Embedding), which means that JsonSerializer
+                        // already serialized it correctly above.
+                        // In addition, there's no generated embedding (which would be an Embedding which we'd need to handle manually).
+                        // So there's nothing for us to do.
+                        continue;
+
+                    case var t when t == typeof(Embedding<float>):
+                    case var t1 when t1 == typeof(Embedding<double>):
+                        embedding = (Embedding)property.GetValueAsObject(dataModel)!;
+                        break;
+
+                    default:
+                        throw new UnreachableException();
                 }
             }
+
+            var jsonArray = new JsonArray();
+
+            switch (embedding)
+            {
+                case Embedding<float> e:
+                    foreach (var item in e.Vector.Span)
+                    {
+                        jsonArray.Add(JsonValue.Create(item));
+                    }
+                    break;
+
+                case Embedding<double> e:
+                    foreach (var item in e.Vector.Span)
+                    {
+                        jsonArray.Add(JsonValue.Create(item));
+                    }
+                    break;
+
+                default:
+                    throw new UnreachableException();
+            }
+
+            jsonNode[property.StorageName] = jsonArray;
         }
 
         return (keyValue, jsonNode);
@@ -92,15 +130,27 @@ internal sealed class RedisJsonMapper<TConsumerDataModel>(
 
         // For vector properties which have embedding generation configured, we need to remove the embeddings before deserializing
         // (we can't go back from an embedding to e.g. string).
-        // For other cases (no embedding generation), we leave the properties even if IncludeVectors is false.
-        if (!includeVectors)
+        if (includeVectors)
         {
             foreach (var vectorProperty in model.VectorProperties)
             {
-                if (vectorProperty.EmbeddingGenerator is not null)
+                if (vectorProperty.Type == typeof(Embedding<float>) || vectorProperty.Type == typeof(Embedding<double>))
                 {
-                    jsonObject.Remove(vectorProperty.StorageName);
+                    var arrayNode = jsonObject[vectorProperty.StorageName];
+                    if (arrayNode is not null)
+                    {
+                        var embeddingNode = new JsonObject();
+                        embeddingNode[nameof(Embedding<float>.Vector)] = arrayNode.DeepClone();
+                        jsonObject[vectorProperty.StorageName] = embeddingNode;
+                    }
                 }
+            }
+        }
+        else
+        {
+            foreach (var vectorProperty in model.VectorProperties)
+            {
+                jsonObject.Remove(vectorProperty.StorageName);
             }
         }
 

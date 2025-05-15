@@ -2,12 +2,15 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOptions)
 {
+    internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[]";
+
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
@@ -50,8 +53,11 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "ReadOnlyMemory<float>";
+        supportedTypes = SupportedVectorTypes;
 
-        return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<float>?);
+        return type == typeof(ReadOnlyMemory<float>)
+            || type == typeof(ReadOnlyMemory<float>?)
+            || type == typeof(Embedding<float>)
+            || type == typeof(float[]);
     }
 }

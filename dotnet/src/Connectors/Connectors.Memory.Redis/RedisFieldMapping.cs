@@ -21,9 +21,9 @@ internal static class RedisFieldMapping
     /// </summary>
     /// <param name="vector">The vector to convert.</param>
     /// <returns>The byte array.</returns>
-    public static byte[] ConvertVectorToBytes(ReadOnlyMemory<float> vector)
+    public static byte[] ConvertVectorToBytes(ReadOnlySpan<float> vector)
     {
-        return MemoryMarshal.AsBytes(vector.Span).ToArray();
+        return MemoryMarshal.AsBytes(vector).ToArray();
     }
 
     /// <summary>
@@ -31,9 +31,9 @@ internal static class RedisFieldMapping
     /// </summary>
     /// <param name="vector">The vector to convert.</param>
     /// <returns>The byte array.</returns>
-    public static byte[] ConvertVectorToBytes(ReadOnlyMemory<double> vector)
+    public static byte[] ConvertVectorToBytes(ReadOnlySpan<double> vector)
     {
-        return MemoryMarshal.AsBytes(vector.Span).ToArray();
+        return MemoryMarshal.AsBytes(vector).ToArray();
     }
 
     internal static async ValueTask<(IEnumerable<TRecord> records, IReadOnlyList<Embedding>?[]?)> ProcessEmbeddingsAsync<TRecord>(

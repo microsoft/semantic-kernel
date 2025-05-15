@@ -43,7 +43,7 @@ public abstract class VectorSearchWithFilterConformanceTests<TKey>(VectorStoreFi
 
             await fixture.TestStore.WaitForDataAsync(collection, records.Count);
 
-            var vectorSearchResults = await collection.SearchEmbeddingAsync(new ReadOnlyMemory<float>([10f, 20f, 35f]), 1, new()
+            var vectorSearchResults = await collection.SearchAsync(new ReadOnlyMemory<float>([10f, 20f, 35f]), 1, new()
             {
                 Filter = r => r.Text == "apples"
             }).ToListAsync();

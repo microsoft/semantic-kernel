@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -25,14 +26,18 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
         {
             var property = model.VectorProperties[i];
 
-            // We restrict the vector properties to ReadOnlyMemory<float> in model validation
-            map[property.StorageName] = generatedEmbeddings?[i] is IReadOnlyList<Embedding> e
-                ? e[recordIndex] switch
-                {
-                    Embedding<float> fe => fe.Vector,
-                    _ => throw new UnreachableException()
-                }
-                : (ReadOnlyMemory<float>)property.GetValueAsObject(dataModel!)!;
+            var vector = generatedEmbeddings?[i] is IReadOnlyList<Embedding> ge
+                ? ge[recordIndex]
+                : property.GetValueAsObject(dataModel!)!;
+
+            map[property.StorageName] = vector switch
+            {
+                ReadOnlyMemory<float> m => m,
+                Embedding<float> e => e.Vector,
+                float[] a => a,
+
+                _ => throw new UnreachableException()
+            };
         }
 
         return map;
@@ -59,7 +64,17 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
                 {
                     if (value is ReadOnlyMemory<float> floats)
                     {
-                        SetValue(storageModel, record, property, floats);
+                        property.SetValueAsObject(record, property.Type switch
+                        {
+                            var t when t == typeof(ReadOnlyMemory<float>) => value,
+                            var t when t == typeof(Embedding<float>) => new Embedding<float>(floats),
+                            var t when t == typeof(float[])
+                                => MemoryMarshal.TryGetArray(floats, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
+                                    ? segment.Array
+                                    : floats.ToArray(),
+
+                            _ => throw new UnreachableException()
+                        });
                     }
                     else
                     {

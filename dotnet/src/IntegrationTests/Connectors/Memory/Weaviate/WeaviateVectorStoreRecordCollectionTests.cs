@@ -222,7 +222,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
+        var searchResults = await sut.SearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
         {
             IncludeVectors = includeVectors
         }).ToListAsync();
@@ -259,7 +259,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
+        var searchResults = await sut.SearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
         {
             Skip = 2
         }).ToListAsync();
@@ -291,7 +291,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 4, new()
+        var searchResults = await sut.SearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 4, new()
         {
             OldFilter = filter,
         }).ToListAsync();
@@ -334,7 +334,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel5, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([40f, 40f, 40f, 40f]), top: 4, new()
+        var searchResults = await sut.SearchAsync(new ReadOnlyMemory<float>([40f, 40f, 40f, 40f]), top: 4, new()
         {
             OldFilter = filter,
         }).ToListAsync();

@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using MEAI = Microsoft.Extensions.AI;
 
@@ -18,30 +20,71 @@ internal sealed class AzureAISearchMapper<TRecord>(CollectionModel model, JsonSe
 
         var jsonObject = JsonSerializer.SerializeToNode(dataModel, jsonSerializerOptions)!.AsObject();
 
-        // Go over the vector properties; those which have an embedding generator configured on them will have embedding generators, overwrite
-        // the value in the JSON object with that.
-        if (generatedEmbeddings is not null)
+        // Go over the vector properties; inject any generated embeddings to overwrite the JSON serialized above.
+        // Also, for Embedding<T> properties we also need to overwrite with a simple array (since Embedding<T> gets serialized as a complex object).
+        for (var i = 0; i < model.VectorProperties.Count; i++)
         {
-            for (var i = 0; i < model.VectorProperties.Count; i++)
+            var property = model.VectorProperties[i];
+
+            Embedding<float>? embedding = generatedEmbeddings?[i]?[recordIndex] is Embedding ge ? (Embedding<float>)ge : null;
+
+            if (embedding is null)
             {
-                if (generatedEmbeddings?[i]?[recordIndex] is MEAI.Embedding embedding)
+                switch (Nullable.GetUnderlyingType(property.Type) ?? property.Type)
                 {
-                    var property = model.VectorProperties[i];
+                    case var t when t == typeof(ReadOnlyMemory<float>):
+                    case var t2 when t2 == typeof(float[]):
+                        // The .NET vector property is a ReadOnlyMemory<float> or float[] (not an Embedding), which means that JsonSerializer
+                        // already serialized it correctly above.
+                        // In addition, there's no generated embedding (which would be an Embedding which we'd need to handle manually).
+                        // So there's nothing for us to do.
+                        continue;
 
-                    Debug.Assert(property.EmbeddingGenerator is not null);
+                    case var t when t == typeof(Embedding<float>):
+                        embedding = (Embedding<float>)property.GetValueAsObject(dataModel)!;
+                        break;
 
-                    jsonObject[property.StorageName] = embedding switch
-                    {
-                        MEAI.Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
-                        _ => throw new UnreachableException()
-                    };
+                    default:
+                        throw new UnreachableException();
                 }
             }
+
+            var jsonArray = new JsonArray();
+
+            foreach (var item in embedding.Vector.Span)
+            {
+                jsonArray.Add(JsonValue.Create(item));
+            }
+
+            jsonObject[property.StorageName] = jsonArray;
         }
 
         return jsonObject;
     }
 
     public TRecord MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
-        => storageModel.Deserialize<TRecord>(jsonSerializerOptions)!;
+    {
+        if (includeVectors)
+        {
+            foreach (var vectorProperty in model.VectorProperties)
+            {
+                // If the vector property .NET type is Embedding<float>, we need to create the JSON structure for it
+                // (JSON array embedded inside an object representing the embedding), so that the deserialization below
+                // works correctly.
+                if (vectorProperty.Type == typeof(Embedding<float>))
+                {
+                    var arrayNode = storageModel[vectorProperty.StorageName];
+                    if (arrayNode is not null)
+                    {
+                        storageModel[vectorProperty.StorageName] = new JsonObject
+                        {
+                            [nameof(Embedding<float>.Vector)] = arrayNode.DeepClone()
+                        };
+                    }
+                }
+            }
+        }
+
+        return storageModel.Deserialize<TRecord>(jsonSerializerOptions)!;
+    }
 }

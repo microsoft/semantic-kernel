@@ -3,7 +3,6 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 using VectorDataSpecificationTests.Support;
 using VectorDataSpecificationTests.Xunit;
 using Xunit;
@@ -144,15 +143,17 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     }
 
     [ConditionalFact]
-    public virtual async Task SearchAsync_without_generator_throws()
+    public virtual async Task SearchAsync_string_without_generator_throws()
     {
         // The database doesn't support embedding generation, and no client-side generator has been configured at any level,
-        // so SearchAsync should throw.
+        // so SearchAsync should throw for string.
         var collection = stringVectorFixture.GetCollection<RawRecord>(stringVectorFixture.TestStore.DefaultVectorStore, stringVectorFixture.CollectionName + "withoutgenerator");
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => collection.SearchAsync("foo", top: 1).ToListAsync().AsTask());
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(() => collection.SearchAsync("foo", top: 1).ToListAsync().AsTask());
 
-        Assert.Equal(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch, exception.Message);
+        Assert.StartsWith(
+            "A value of type 'String' was passed to 'SearchAsync', but that isn't a supported vector type by your provider and no embedding generator was configured. The supported vector types are:",
+            exception.Message);
     }
 
     public class RawRecord
@@ -161,16 +162,6 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         public TKey Key { get; set; } = default!;
         [VectorStoreVector(Dimensions: 3)]
         public ReadOnlyMemory<float> Embedding { get; set; }
-    }
-
-    [ConditionalFact]
-    public virtual async Task SearchAsync_with_embedding_argument_throws()
-    {
-        var collection = this.GetCollection<Record>(storeGenerator: true, collectionGenerator: true, propertyGenerator: true);
-
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => collection.SearchAsync(new ReadOnlyMemory<float>([1, 2, 3]), top: 1).ToListAsync().AsTask());
-
-        Assert.Equal(VectorDataStrings.EmbeddingTypePassedToSearchAsync, exception.Message);
     }
 
     [ConditionalFact]
@@ -208,7 +199,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         await stringVectorFixture.TestStore.WaitForDataAsync(collection, 1, filter: r => r.Counter == counter);
 
-        var result = await collection.SearchEmbeddingAsync(new ReadOnlyMemory<float>([100, 1, 3]), top: 1).SingleAsync();
+        var result = await collection.SearchAsync(new ReadOnlyMemory<float>([100, 1, 3]), top: 1).SingleAsync();
         Assert.Equal(counter, result.Record.Counter);
     }
 
@@ -232,7 +223,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         await stringVectorFixture.TestStore.WaitForDataAsync(collection, 1, filter: r => (int)r[nameof(Record.Counter)] == counter);
 
-        var result = await collection.SearchEmbeddingAsync(new ReadOnlyMemory<float>([200, 1, 3]), top: 1).SingleAsync();
+        var result = await collection.SearchAsync(new ReadOnlyMemory<float>([200, 1, 3]), top: 1).SingleAsync();
         Assert.Equal(counter, result.Record[nameof(Record.Counter)]);
     }
 
@@ -265,10 +256,10 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         await stringVectorFixture.TestStore.WaitForDataAsync(collection, 2, filter: r => (int)r.Counter == counter1 || (int)r.Counter == counter2);
 
-        var result = await collection.SearchEmbeddingAsync(new ReadOnlyMemory<float>([300, 1, 3]), top: 1).SingleAsync();
+        var result = await collection.SearchAsync(new ReadOnlyMemory<float>([300, 1, 3]), top: 1).SingleAsync();
         Assert.Equal(counter1, result.Record.Counter);
 
-        result = await collection.SearchEmbeddingAsync(new ReadOnlyMemory<float>([400, 1, 3]), top: 1).SingleAsync();
+        result = await collection.SearchAsync(new ReadOnlyMemory<float>([400, 1, 3]), top: 1).SingleAsync();
         Assert.Equal(counter2, result.Record.Counter);
     }
 
@@ -301,10 +292,10 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         await stringVectorFixture.TestStore.WaitForDataAsync(collection, 2, filter: r => (int)r[nameof(Record.Counter)] == counter1 || (int)r[nameof(Record.Counter)] == counter2);
 
-        var result = await collection.SearchEmbeddingAsync(new ReadOnlyMemory<float>([500, 1, 3]), top: 1).SingleAsync();
+        var result = await collection.SearchAsync(new ReadOnlyMemory<float>([500, 1, 3]), top: 1).SingleAsync();
         Assert.Equal(counter1, result.Record[nameof(Record.Counter)]);
 
-        result = await collection.SearchEmbeddingAsync(new ReadOnlyMemory<float>([600, 1, 3]), top: 1).SingleAsync();
+        result = await collection.SearchAsync(new ReadOnlyMemory<float>([600, 1, 3]), top: 1).SingleAsync();
         Assert.Equal(counter2, result.Record[nameof(Record.Counter)]);
     }
 

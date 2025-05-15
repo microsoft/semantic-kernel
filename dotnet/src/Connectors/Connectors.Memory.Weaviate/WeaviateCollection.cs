@@ -47,7 +47,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     private readonly CollectionModel _model;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
-    private readonly IWeaviateMapper<TRecord> _mapper;
+    private readonly WeaviateMapper<TRecord> _mapper;
 
     /// <summary>Weaviate endpoint.</summary>
     private readonly Uri _endpoint;
@@ -113,9 +113,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         this._hasNamedVectors = options.HasNamedVectors;
 
         // Assign mapper.
-        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
-            ? (new WeaviateDynamicMapper(this.Name, options.HasNamedVectors, this._model, WeaviateConstants.s_jsonSerializerOptions) as IWeaviateMapper<TRecord>)!
-            : new WeaviateMapper<TRecord>(this.Name, options.HasNamedVectors, this._model, WeaviateConstants.s_jsonSerializerOptions);
+        this._mapper = new WeaviateMapper<TRecord>(this.Name, options.HasNamedVectors, this._model, WeaviateConstants.s_jsonSerializerOptions);
 
         this._collectionMetadata = new()
         {
@@ -319,70 +317,34 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
-        TInput value,
-        int top,
-        RecordSearchOptions<TRecord>? options = default,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        switch (vectorProperty.EmbeddingGenerator)
-        {
-            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
-            {
-                var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
-
-                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
-                {
-                    yield return record;
-                }
-
-                yield break;
-            }
-
-            case null:
-                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
-
-            default:
-                throw new InvalidOperationException(
-                    WeaviateModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
-                        ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
-                        : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
-        }
-    }
-
-    /// <inheritdoc />
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
-        TVector vector,
+        TInput searchValue,
         int top,
         RecordSearchOptions<TRecord>? options = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
-    }
-
-    private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
-        TVector vector,
-        int top,
-        VectorPropertyModel vectorProperty,
-        string operationName,
-        RecordSearchOptions<TRecord> options,
-        CancellationToken cancellationToken = default)
-        where TVector : notnull
-    {
-        const string OperationName = "VectorSearch";
-
-        VerifyVectorParam(vector);
+        Verify.NotNull(searchValue);
         Verify.NotLessThan(top, 1);
 
+        options ??= s_defaultVectorSearchOptions;
         if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
+
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        ReadOnlyMemory<float> vector = searchValue switch
+        {
+            ReadOnlyMemory<float> r => r,
+            float[] f => new ReadOnlyMemory<float>(f),
+            Embedding<float> e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
+                => await generator.GenerateVectorAsync(searchValue, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false),
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), WeaviateModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
 
         var query = WeaviateQueryBuilder.BuildSearchQuery(
             vector,
@@ -394,7 +356,10 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             this._model,
             this._hasNamedVectors);
 
-        return this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken);
+        await foreach (var record in this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, operationName: "VectorSearch", cancellationToken).ConfigureAwait(false))
+        {
+            yield return record;
+        }
     }
 
     #endregion Search

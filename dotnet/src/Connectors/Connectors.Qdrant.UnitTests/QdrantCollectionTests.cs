@@ -474,7 +474,7 @@ public class QdrantCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel<TKey>.Data), "data 1");
 
         // Act.
-        var results = await sut.SearchEmbeddingAsync(
+        var results = await sut.SearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
             top: 5,
             new() { IncludeVectors = true, OldFilter = filter, Skip = 2 },

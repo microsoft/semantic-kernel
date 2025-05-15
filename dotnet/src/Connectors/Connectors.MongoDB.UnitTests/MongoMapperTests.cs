@@ -74,7 +74,7 @@ public sealed class MongoMapperTests
         };
 
         // Act
-        var hotel = this._sut.MapFromStorageToDataModel(document, new());
+        var hotel = this._sut.MapFromStorageToDataModel(document, includeVectors: true);
 
         // Assert
         Assert.NotNull(hotel);

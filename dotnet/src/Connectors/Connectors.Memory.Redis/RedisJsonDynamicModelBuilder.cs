@@ -16,8 +16,7 @@ internal class RedisJsonDynamicModelBuilder(CollectionModelBuildingOptions optio
         Type? embeddingType)
     {
         if (!vectorProperty.TrySetupEmbeddingGeneration<Embedding<float>, ReadOnlyMemory<float>>(embeddingGenerator, embeddingType)
-            && !vectorProperty.TrySetupEmbeddingGeneration<Embedding<double>, ReadOnlyMemory<double>>(embeddingGenerator, embeddingType)
-            )
+            && !vectorProperty.TrySetupEmbeddingGeneration<Embedding<double>, ReadOnlyMemory<double>>(embeddingGenerator, embeddingType))
         {
             throw new InvalidOperationException(
                 VectorDataStrings.IncompatibleEmbeddingGenerator(
@@ -52,13 +51,18 @@ internal class RedisJsonDynamicModelBuilder(CollectionModelBuildingOptions optio
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "ReadOnlyMemory<float>, ReadOnlyMemory<double>";
+        supportedTypes = RedisModelBuilder.SupportedVectorTypes;
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
             type = underlyingType;
         }
 
-        return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<double>);
+        return type == typeof(ReadOnlyMemory<float>)
+            || type == typeof(Embedding<float>)
+            || type == typeof(float[])
+            || type == typeof(ReadOnlyMemory<double>)
+            || type == typeof(Embedding<double>)
+            || type == typeof(double[]);
     }
 }

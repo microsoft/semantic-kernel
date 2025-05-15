@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 [ExcludeFromCodeCoverage]
 internal sealed class MongoMapper<TRecord> : IMongoMapper<TRecord>
+    where TRecord : class
 {
     private readonly CollectionModel _model;
 
@@ -64,23 +65,34 @@ internal sealed class MongoMapper<TRecord> : IMongoMapper<TRecord>
 
         // Go over the vector properties; those which have an embedding generator configured on them will have embedding generators, overwrite
         // the value in the JSON object with that.
-        if (generatedEmbeddings is not null)
+        for (var i = 0; i < this._model.VectorProperties.Count; i++)
         {
-            for (var i = 0; i < this._model.VectorProperties.Count; i++)
+            var property = this._model.VectorProperties[i];
+
+            Embedding<float>? embedding = generatedEmbeddings?[i]?[recordIndex] is Embedding e ? (Embedding<float>)e : null;
+
+            if (embedding is null)
             {
-                if (generatedEmbeddings?[i]?[recordIndex] is Embedding embedding)
+                switch (Nullable.GetUnderlyingType(property.Type) ?? property.Type)
                 {
-                    var property = this._model.VectorProperties[i];
+                    case var t when t == typeof(ReadOnlyMemory<float>):
+                    case var t2 when t2 == typeof(float[]):
+                        // The .NET vector property is a ReadOnlyMemory<float> or float[] (not an Embedding<float>), which means that ToBsonDocument()
+                        // already serialized it correctly above.
+                        // In addition, there's no generated embedding (which would be an Embedding<float> which we'd need to handle manually).
+                        // So there's nothing for us to do.
+                        continue;
 
-                    Debug.Assert(property.EmbeddingGenerator is not null);
+                    case var t when t == typeof(Embedding<float>):
+                        embedding = (Embedding<float>)property.GetValueAsObject(dataModel)!;
+                        break;
 
-                    document[property.StorageName] = embedding switch
-                    {
-                        Embedding<float> e => BsonArray.Create(e.Vector.ToArray()),
-                        _ => throw new UnreachableException()
-                    };
+                    default:
+                        throw new UnreachableException();
                 }
             }
+
+            document[property.StorageName] = BsonArray.Create(embedding.Vector.ToArray());
         }
 
         return document;
@@ -99,17 +111,29 @@ internal sealed class MongoMapper<TRecord> : IMongoMapper<TRecord>
             storageModel[this._keyPropertyModelName] = value;
         }
 
-        // For vector properties which have embedding generation configured, we need to remove the embeddings before deserializing
-        // (we can't go back from an embedding to e.g. string).
-        // For other cases (no embedding generation), we leave the properties even if IncludeVectors is false.
-        if (!includeVectors)
+        if (includeVectors)
         {
             foreach (var vectorProperty in this._model.VectorProperties)
             {
-                if (vectorProperty.EmbeddingGenerator is not null)
+                // If the vector property .NET type is Embedding<float>, we need to create the BSON structure for it
+                // (BSON array embedded inside an object representing the embedding), so that the deserialization below
+                // works correctly.
+                if (vectorProperty.Type == typeof(Embedding<float>))
                 {
-                    storageModel.Remove(vectorProperty.StorageName);
+                    storageModel[vectorProperty.StorageName] = new BsonDocument
+                    {
+                        [nameof(Embedding<float>.Vector)] = BsonArray.Create(storageModel[vectorProperty.StorageName])
+                    };
                 }
+            }
+        }
+        else
+        {
+            // If includeVectors is false, remove the values; this allows us to not project them out of Mongo in the future
+            // (more efficient) without introducing a breaking change.
+            foreach (var vectorProperty in this._model.VectorProperties)
+            {
+                storageModel.Remove(vectorProperty.StorageName);
             }
         }
 

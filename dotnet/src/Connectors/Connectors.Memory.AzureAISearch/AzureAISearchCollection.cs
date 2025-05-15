@@ -383,94 +383,45 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
-        TInput value,
-        int top,
-        RecordSearchOptions<TRecord>? options = default,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        // Resolve options.
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        // The user configured an embedding generator so let's use it to generate the vector.
-        if (vectorProperty.EmbeddingGenerator is not null)
-        {
-            switch (vectorProperty.EmbeddingGenerator)
-            {
-                case IEmbeddingGenerator<TInput, Embedding<float>> generator:
-                {
-                    var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
-
-                    await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, options, cancellationToken).ConfigureAwait(false))
-                    {
-                        yield return record;
-                    }
-
-                    yield break;
-                }
-
-                default:
-                    throw new InvalidOperationException(
-                        AzureAISearchModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
-                            ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
-                            : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
-            }
-        }
-
-        // The user didn't configure an embedding generator so the following section
-        // calls the service with the string value and the service will generate the embedding.
-        var searchText = value switch
-        {
-            string s => s,
-            null => throw new ArgumentNullException(nameof(value)),
-            _ => throw new ArgumentException($"The provided search type '{value?.GetType().Name}' is not supported by the Azure AI Search connector, pass a string.")
-        };
-
-        Verify.NotNull(searchText);
-        Verify.NotLessThan(top, 1);
-
-        var searchOptions = BuildSearchOptions(
-            this._model,
-            options,
-            top,
-            new VectorizableTextQuery(searchText) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
-
-        await foreach (var result in this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
-        {
-            yield return result;
-        }
-    }
-
-    /// <inheritdoc />
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
-        TVector vector,
+        TInput searchValue,
         int top,
         RecordSearchOptions<TRecord>? options = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(searchValue);
+        Verify.NotLessThan(top, 1);
+
         options ??= s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
 
-        return this.SearchCoreAsync(vector, top, vectorProperty, options, cancellationToken);
-    }
+        ReadOnlyMemory<float>? floatVector = searchValue switch
+        {
+            ReadOnlyMemory<float> r => r,
+            float[] f => new ReadOnlyMemory<float>(f),
+            Embedding<float> e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
+                => await generator.GenerateVectorAsync(searchValue, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false),
 
-    private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
-        TVector vector,
-        int top,
-        VectorPropertyModel vectorProperty,
-        RecordSearchOptions<TRecord> options,
-        CancellationToken cancellationToken = default)
-    {
-        var floatVector = VerifyVectorParam(vector);
-        Verify.NotLessThan(top, 1);
+            // A string was passed without an embedding generator being configured; send the string to Azure AI Search for backend embedding generation.
+            string when vectorProperty.EmbeddingGenerator is null => (ReadOnlyMemory<float>?)null,
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), AzureAISearchModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
 
         var searchOptions = BuildSearchOptions(
             this._model,
             options,
             top,
-            new VectorizedQuery(floatVector) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
+            floatVector is null
+                ? new VectorizableTextQuery((string)(object)searchValue) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } }
+                : new VectorizedQuery(floatVector.Value) { KNearestNeighborsCount = top, Fields = { vectorProperty.StorageName } });
 
-        return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken);
+        await foreach (var record in this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
+        {
+            yield return record;
+        }
     }
 
     /// <inheritdoc />

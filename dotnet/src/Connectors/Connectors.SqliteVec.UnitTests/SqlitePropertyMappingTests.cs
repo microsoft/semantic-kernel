@@ -15,16 +15,6 @@ namespace SemanticKernel.Connectors.SqliteVec.UnitTests;
 public sealed class SqlitePropertyMappingTests
 {
     [Fact]
-    public void MapVectorForStorageModelWithInvalidVectorTypeThrowsException()
-    {
-        // Arrange
-        var vector = new float[] { 1f, 2f, 3f };
-
-        // Act & Assert
-        Assert.Throws<NotSupportedException>(() => SqlitePropertyMapping.MapVectorForStorageModel(vector));
-    }
-
-    [Fact]
     public void MapVectorForStorageModelReturnsByteArray()
     {
         // Arrange

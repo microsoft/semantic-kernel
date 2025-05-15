@@ -62,7 +62,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         await sut.UpsertAsync(hotel);
         var getResult = await sut.GetAsync("Upsert-1", new() { IncludeVectors = true });
         var embedding = fixture.Embedding;
-        var searchResults = await sut.SearchEmbeddingAsync(
+        var searchResults = await sut.SearchAsync(
             embedding,
             top: 3,
             new()
@@ -310,7 +310,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act.
         var filter = option == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "Hotel 3") : new VectorSearchFilter().AnyTagEqualTo("Tags", "bar");
-        var searchResults = await sut.SearchEmbeddingAsync(
+        var searchResults = await sut.SearchAsync(
             fixture.Embedding,
             top: 3,
             new()

@@ -3,8 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using MEAI = Microsoft.Extensions.AI;
 
@@ -16,12 +18,6 @@ namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerializerOptions jsonSerializerOptions)
     : ICosmosNoSqlMapper<Dictionary<string, object?>>
 {
-    /// <summary>A default <see cref="JsonSerializerOptions"/> for serialization/deserialization of vector properties.</summary>
-    private static readonly JsonSerializerOptions s_vectorJsonSerializerOptions = new()
-    {
-        Converters = { new CosmosNoSqlReadOnlyMemoryByteConverter() }
-    };
-
     public JsonObject MapFromDataToStorageModel(Dictionary<string, object?> dataModel, int recordIndex, IReadOnlyList<MEAI.Embedding>?[]? generatedEmbeddings)
     {
         Verify.NotNull(dataModel);
@@ -51,33 +47,66 @@ internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerial
         {
             var property = model.VectorProperties[i];
 
-            if (generatedEmbeddings?[i]?[recordIndex] is MEAI.Embedding embedding)
+            // Don't create a property if it doesn't exist in the dictionary
+            if (dataModel.TryGetValue(property.ModelName, out var vectorValue))
             {
-                Debug.Assert(property.EmbeddingGenerator is not null);
+                var vector = generatedEmbeddings?[i]?[recordIndex] is Embedding ge
+                    ? ge
+                    : vectorValue;
 
-                jsonObject.Add(
-                    property.StorageName,
-                    embedding switch
-                    {
-                        MEAI.Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, s_vectorJsonSerializerOptions),
-                        MEAI.Embedding<byte> e => JsonSerializer.SerializeToNode(e.Vector, s_vectorJsonSerializerOptions),
-                        MEAI.Embedding<sbyte> e => JsonSerializer.SerializeToNode(e.Vector, s_vectorJsonSerializerOptions),
-                        _ => throw new UnreachableException()
-                    });
-            }
-            else
-            {
-                // No generated embedding, read the vector directly from the data model
-                if (dataModel.TryGetValue(property.ModelName, out var sourceValue))
+                if (vector is null)
                 {
-                    jsonObject.Add(property.StorageName, sourceValue is null
-                        ? null
-                        : JsonSerializer.SerializeToNode(sourceValue, property.Type, s_vectorJsonSerializerOptions));
+                    jsonObject[property.StorageName] = null;
+                    continue;
                 }
+
+                var jsonArray = new JsonArray();
+
+                switch (vector)
+                {
+                    case var _ when TryGetReadOnlyMemory<float>(vector, out var floatMemory):
+                        foreach (var item in floatMemory.Value.Span)
+                        {
+                            jsonArray.Add(JsonValue.Create(item));
+                        }
+                        break;
+
+                    case var _ when TryGetReadOnlyMemory<byte>(vector, out var byteMemory):
+                        foreach (var item in byteMemory.Value.Span)
+                        {
+                            jsonArray.Add(JsonValue.Create(item));
+                        }
+                        break;
+
+                    case var _ when TryGetReadOnlyMemory<sbyte>(vector, out var sbyteMemory):
+                        foreach (var item in sbyteMemory.Value.Span)
+                        {
+                            jsonArray.Add(JsonValue.Create(item));
+                        }
+                        break;
+
+                    default:
+                        throw new UnreachableException();
+                }
+
+                jsonObject.Add(property.StorageName, jsonArray);
             }
         }
 
         return jsonObject;
+
+        static bool TryGetReadOnlyMemory<T>(object value, [NotNullWhen(true)] out ReadOnlyMemory<T>? memory)
+        {
+            memory = value switch
+            {
+                ReadOnlyMemory<T> m => m,
+                Embedding<T> e => e.Vector,
+                T[] a => a,
+                _ => (ReadOnlyMemory<T>?)null
+            };
+
+            return memory is not null;
+        }
     }
 
     public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
@@ -107,7 +136,31 @@ internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerial
                 case VectorPropertyModel vectorProperty:
                     if (includeVectors && storageModel.TryGetPropertyValue(vectorProperty.StorageName, out var vectorValue))
                     {
-                        result.Add(property.ModelName, vectorValue.Deserialize(property.Type, s_vectorJsonSerializerOptions));
+                        if (vectorValue is not null)
+                        {
+                            result.Add(
+                                vectorProperty.ModelName,
+                                (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch
+                                {
+                                    Type t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(ToArray<float>(vectorValue)),
+                                    Type t when t == typeof(Embedding<float>) => new Embedding<float>(ToArray<float>(vectorValue)),
+                                    Type t when t == typeof(float[]) => ToArray<float>(vectorValue),
+
+                                    Type t when t == typeof(ReadOnlyMemory<byte>) => new ReadOnlyMemory<byte>(ToArray<byte>(vectorValue)),
+                                    Type t when t == typeof(Embedding<byte>) => new Embedding<byte>(ToArray<byte>(vectorValue)),
+                                    Type t when t == typeof(byte[]) => ToArray<byte>(vectorValue),
+
+                                    Type t when t == typeof(ReadOnlyMemory<sbyte>) => new ReadOnlyMemory<sbyte>(ToArray<sbyte>(vectorValue)),
+                                    Type t when t == typeof(Embedding<sbyte>) => new Embedding<sbyte>(ToArray<sbyte>(vectorValue)),
+                                    Type t when t == typeof(sbyte[]) => ToArray<sbyte>(vectorValue),
+
+                                    _ => throw new UnreachableException()
+                                });
+                        }
+                        else
+                        {
+                            result.Add(vectorProperty.ModelName, null);
+                        }
                     }
                     continue;
 
@@ -117,5 +170,18 @@ internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerial
         }
 
         return result;
+
+        static T[] ToArray<T>(JsonNode jsonNode)
+        {
+            var jsonArray = jsonNode.AsArray();
+            var array = new T[jsonArray.Count];
+
+            for (var i = 0; i < jsonArray.Count; i++)
+            {
+                array[i] = jsonArray[i]!.GetValue<T>();
+            }
+
+            return array;
+        }
     }
 }

@@ -101,11 +101,11 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
         {
             await collection.UpsertAsync(insertedRecords);
 
-            var searchResult = collection.SearchEmbeddingAsync(baseVector, top: 3);
+            var searchResult = collection.SearchAsync(baseVector, top: 3);
             var results = await searchResult.ToListAsync();
             VerifySearchResults(expectedRecords, expectedScores, results, includeVectors: false);
 
-            searchResult = collection.SearchEmbeddingAsync(baseVector, top: 3, new() { IncludeVectors = true });
+            searchResult = collection.SearchAsync(baseVector, top: 3, new() { IncludeVectors = true });
             results = await searchResult.ToListAsync();
             VerifySearchResults(expectedRecords, expectedScores, results, includeVectors: true);
 
@@ -113,7 +113,7 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
             {
                 for (int top = Math.Max(1, skip); top <= insertedRecords.Count; top++)
                 {
-                    searchResult = collection.SearchEmbeddingAsync(baseVector,
+                    searchResult = collection.SearchAsync(baseVector,
                         top: top,
                         new()
                         {
