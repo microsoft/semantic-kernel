@@ -12,7 +12,7 @@ public record ProcessStartRequest
     /// <summary>
     /// The process to start.
     /// </summary>
-    public DaprProcessInfo? Process { get; set; }
+    public required DaprProcessInfo Process { get; set; }
 
     /// <summary>
     /// The initial event to send to the process.

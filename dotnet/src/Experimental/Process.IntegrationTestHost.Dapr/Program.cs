@@ -20,22 +20,13 @@ builder.Services.AddKernel();
 builder.Services.AddSingleton<IExternalKernelProcessMessageChannel>(MockCloudEventClient.Instance);
 builder.Services.AddSingleton(MockCloudEventClient.Instance);
 
-// Configure the Process Framework and Dapr
-builder.Services.AddDaprKernelProcesses();
+// Configure Dapr
 builder.Services.AddActors(static options =>
 {
     // Register the actors required to run Processes
     options.AddProcessActors();
     options.Actors.RegisterActor<HealthActor>();
 });
-
-builder.Services.AddKeyedSingleton<KernelProcess>("cStep", (sp, key) =>
-{
-    return ProcessResources.GetCStepProcess();
-});
-
-// Register our processes
-builder.Services.AddSingleton<DaprKernelProcessFactory>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

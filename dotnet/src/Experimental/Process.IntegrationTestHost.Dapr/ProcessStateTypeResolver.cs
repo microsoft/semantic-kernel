@@ -82,8 +82,7 @@ public class ProcessStateTypeResolver<T> : DefaultJsonTypeInfoResolver where T :
                 {
                     new JsonDerivedType(typeof(DaprProcessInfo), nameof(DaprProcessInfo)),
                     new JsonDerivedType(typeof(DaprMapInfo), nameof(DaprMapInfo)),
-                    new JsonDerivedType(typeof(DaprAgentStepInfo), nameof(DaprAgentStepInfo)),
-                    new JsonDerivedType(typeof(DaprProxyInfo), nameof(DaprProxyInfo))
+                    new JsonDerivedType(typeof(DaprProxyInfo), nameof(DaprProxyInfo)),
                 }
             };
         }
