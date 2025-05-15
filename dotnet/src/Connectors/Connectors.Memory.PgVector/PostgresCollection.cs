@@ -369,7 +369,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             float[] f => new ReadOnlyMemory<float>(f),
             Embedding<float> e => e.Vector,
             _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false),
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
 #if NET8_0_OR_GREATER
             // Dense float16
@@ -377,7 +377,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             Half[] f => new ReadOnlyMemory<Half>(f),
             Embedding<Half> e => e.Vector,
             _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<Half>> generator
-                => await generator.GenerateVectorAsync(searchValue, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false),
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 #endif
 
             // Dense Binary
@@ -385,7 +385,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             // TODO: Uncomment once we sync to the latest MEAI
             // BinaryEmbedding e => e.Vector,
             // _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TVector, BinaryEmbedding> generator
-            //     => (await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false)).Vector,
+            //     => (await generator.GenerateEmbeddingAsync(value, cancellationToken: cancellationToken).ConfigureAwait(false)).Vector,
 
             // Sparse
             SparseVector sv => sv,

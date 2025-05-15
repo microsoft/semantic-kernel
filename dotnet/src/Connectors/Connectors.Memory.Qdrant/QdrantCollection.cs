@@ -540,7 +540,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             float[] f => new ReadOnlyMemory<float>(f),
             Embedding<float> e => e.Vector,
             _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false),
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), QdrantModelBuilder.SupportedVectorTypes))

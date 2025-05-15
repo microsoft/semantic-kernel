@@ -333,8 +333,9 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             ReadOnlyMemory<float> r => Unwrap(r),
             float[] f => f,
             Embedding<float> e => Unwrap(e.Vector),
+
             _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => Unwrap(await generator.GenerateVectorAsync(searchValue, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false)),
+                => Unwrap(await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false)),
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), MongoModelBuilder.SupportedVectorTypes))
