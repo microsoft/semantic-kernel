@@ -56,7 +56,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._stepInfo = stepInfo;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
 
-        if (stepInfo is not KernelProcess and not KernelProcessMap)
+        if (stepInfo is not KernelProcess and not KernelProcessMap and not KernelProcessProxy)
         {
             this.InitializeStepInitialInputs();
         }
@@ -71,7 +71,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._edgeGroupProcessors = this._stepInfo.IncomingEdgeGroups?.ToDictionary(kvp => kvp.Key, kvp => new LocalEdgeGroupProcessor(kvp.Value)) ?? [];
     }
 
-    private void InitializeStepInitialInputs()
+    internal void InitializeStepInitialInputs()
     {
         // Instantiate an instance of the inner step object
         this._stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
@@ -87,6 +87,11 @@ internal class LocalStep : IKernelProcessMessageChannel
         }
 
         // Initialize the input channels
+        this.PopulateInitialInputs();
+    }
+
+    internal virtual void PopulateInitialInputs()
+    {
         if (this._stepInfo is KernelProcessAgentStep agentStep)
         {
             this._initialInputs = this.FindInputChannels(this._functions, this._logger, this.ExternalMessageChannel, agentStep.AgentDefinition);
