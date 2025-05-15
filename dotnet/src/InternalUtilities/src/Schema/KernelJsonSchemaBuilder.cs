@@ -24,13 +24,7 @@ namespace Microsoft.SemanticKernel;
 internal static class KernelJsonSchemaBuilder
 {
     private static JsonSerializerOptions? s_options;
-    internal static readonly AIJsonSchemaCreateOptions s_schemaOptions = new()
-    {
-        IncludeSchemaKeyword = false,
-        IncludeTypeInEnumSchemas = true,
-        RequireAllProperties = false,
-        DisallowAdditionalProperties = false,
-    };
+    internal static readonly AIJsonSchemaCreateOptions s_schemaOptions = new();
 
     private static readonly JsonElement s_trueSchemaAsObject = JsonDocument.Parse("{}").RootElement;
     private static readonly JsonElement s_falseSchemaAsObject = JsonDocument.Parse("""{"not":true}""").RootElement;
