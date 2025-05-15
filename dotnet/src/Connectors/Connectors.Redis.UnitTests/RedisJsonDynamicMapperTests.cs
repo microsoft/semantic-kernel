@@ -100,7 +100,7 @@ public class RedisJsonDynamicMapperTests
             { "IntData", 1 },
             { "NullableIntData", 2 },
             { "ComplexObjectData", new JsonObject(new KeyValuePair<string, JsonNode?>[] { new("Prop1", JsonValue.Create("prop 1")), new("Prop2", JsonValue.Create("prop 2")) }) },
-            { "FloatVector", new JsonArray(new[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()) }
+            { "FloatVector", new JsonArray(new float[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()) }
         };
 
         // Act.

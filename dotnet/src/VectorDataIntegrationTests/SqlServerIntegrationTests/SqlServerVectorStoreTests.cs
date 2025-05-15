@@ -79,14 +79,14 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             received = await collection.GetAsync(updated.Id, new() { IncludeVectors = true });
             AssertEquality(updated, received);
 
-            VectorSearchResult<TestModel> vectorSearchResult = await (collection.SearchEmbeddingAsync(inserted.Floats, top: 3, new()
+            VectorSearchResult<TestModel> vectorSearchResult = await (collection.SearchAsync(inserted.Floats, top: 3, new()
             {
                 VectorProperty = r => r.Floats,
                 IncludeVectors = true
             })).SingleAsync();
             AssertEquality(updated, vectorSearchResult.Record);
 
-            vectorSearchResult = await (collection.SearchEmbeddingAsync(inserted.Floats, top: 3, new()
+            vectorSearchResult = await (collection.SearchAsync(inserted.Floats, top: 3, new()
             {
                 VectorProperty = r => r.Floats,
                 IncludeVectors = false

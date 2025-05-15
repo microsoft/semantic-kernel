@@ -97,7 +97,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
         await Task.Delay(this.DelayAfterUploadInMilliseconds);
 
         // Act
-        var results = await sut.SearchEmbeddingAsync(baseVector, top: 3).ToListAsync();
+        var results = await sut.SearchAsync(baseVector, top: 3).ToListAsync();
 
         // Assert
         Assert.Equal(3, results.Count);

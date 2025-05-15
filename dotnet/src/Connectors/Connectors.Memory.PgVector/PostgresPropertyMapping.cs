@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Npgsql;
@@ -19,16 +19,14 @@ internal static class PostgresPropertyMapping
     public static object? MapVectorForStorageModel(object? vector)
         => vector switch
         {
-            ReadOnlyMemory<float> floatMemory
-                => new Pgvector.Vector(
-                    MemoryMarshal.TryGetArray(floatMemory, out ArraySegment<float> segment) &&
-                    segment.Count == segment.Array!.Length ? segment.Array : floatMemory.ToArray()),
+            ReadOnlyMemory<float> m => new Pgvector.Vector(m),
+            Embedding<float> e => new Pgvector.Vector(e.Vector),
+            float[] a => new Pgvector.Vector(a),
 
 #if NET8_0_OR_GREATER
-            ReadOnlyMemory<Half> halfMemory
-                => new Pgvector.HalfVector(
-                    MemoryMarshal.TryGetArray(halfMemory, out ArraySegment<Half> segment) &&
-                    segment.Count == segment.Array!.Length ? segment.Array : halfMemory.ToArray()),
+            ReadOnlyMemory<Half> m => new Pgvector.HalfVector(m),
+            Embedding<Half> e => new Pgvector.HalfVector(e.Vector),
+            Half[] a => new Pgvector.HalfVector(a),
 #endif
 
             BitArray bitArray => bitArray,
@@ -160,10 +158,16 @@ internal static class PostgresPropertyMapping
 
         var pgType = unwrappedEmbeddingType switch
         {
-            Type t when t == typeof(ReadOnlyMemory<float>) => "VECTOR",
+            Type t when t == typeof(ReadOnlyMemory<float>)
+                || t == typeof(Embedding<float>)
+                || t == typeof(float[])
+                => "VECTOR",
 
 #if NET8_0_OR_GREATER
-            Type t when t == typeof(ReadOnlyMemory<Half>) => "HALFVEC",
+            Type t when t == typeof(ReadOnlyMemory<Half>)
+                || t == typeof(Embedding<Half>)
+                || t == typeof(Half[])
+                => "HALFVEC",
 #endif
 
             Type t when t == typeof(SparseVector) => "SPARSEVEC",

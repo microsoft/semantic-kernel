@@ -413,7 +413,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     protected virtual async Task<List<FilterRecord>> GetRecords(
         Expression<Func<FilterRecord, bool>> filter, int top, ReadOnlyMemory<float> vector)
-        => await fixture.Collection.SearchEmbeddingAsync(
+        => await fixture.Collection.SearchAsync(
                 vector,
                 top: top,
                 new() { Filter = filter })
@@ -421,7 +421,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     protected virtual async Task<List<Dictionary<string, object?>>> GetDynamicRecords(
         Expression<Func<Dictionary<string, object?>, bool>> dynamicFilter, int top, ReadOnlyMemory<float> vector)
-        => await fixture.DynamicCollection.SearchEmbeddingAsync(
+        => await fixture.DynamicCollection.SearchAsync(
                 vector,
                 top: top,
                 new() { Filter = dynamicFilter })
@@ -502,7 +502,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             Assert.Fail("The test returns all results, and so is unreliable");
         }
 
-        var actual = await fixture.Collection.SearchEmbeddingAsync(
+        var actual = await fixture.Collection.SearchAsync(
                 new ReadOnlyMemory<float>([1, 2, 3]),
                 top: fixture.TestData.Count,
                 new()

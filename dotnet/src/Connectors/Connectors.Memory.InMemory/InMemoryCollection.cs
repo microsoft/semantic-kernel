@@ -250,73 +250,34 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
-        TInput value,
-        int top,
-        RecordSearchOptions<TRecord>? options = default,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        switch (vectorProperty.EmbeddingGenerator)
-        {
-            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
-            {
-                var embedding = await generator.GenerateAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
-
-                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
-                {
-                    yield return record;
-                }
-
-                yield break;
-            }
-
-            case null:
-                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
-
-            default:
-                throw new InvalidOperationException(
-                    InMemoryModelBuilder.IsVectorPropertyTypeValidCore(typeof(TInput), out _)
-                        ? VectorDataStrings.EmbeddingTypePassedToSearchAsync
-                        : VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()));
-        }
-    }
-
-    /// <inheritdoc />
-    public override IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
-        TVector vector,
+        TInput searchValue,
         int top,
         RecordSearchOptions<TRecord>? options = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        options ??= s_defaultVectorSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
-    }
-
-    private IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
-        TVector vector,
-        int top,
-        VectorPropertyModel vectorProperty,
-        string operationName,
-        RecordSearchOptions<TRecord> options,
-        CancellationToken cancellationToken = default)
-        where TVector : notnull
-    {
-        Verify.NotNull(vector);
+        Verify.NotNull(searchValue);
         Verify.NotLessThan(top, 1);
 
-        if (vector is not ReadOnlyMemory<float> floatVector)
-        {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the InMemory Vector Store.");
-        }
-
+        options ??= s_defaultVectorSearchOptions;
         if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
+
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+
+        ReadOnlyMemory<float> inputVector = searchValue switch
+        {
+            ReadOnlyMemory<float> r => r,
+            float[] f => new ReadOnlyMemory<float>(f),
+            Embedding<float> e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
+                => await generator.GenerateVectorAsync(searchValue, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false),
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), InMemoryModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Filter records using the provided filter before doing the vector comparison.
@@ -333,22 +294,31 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         // Compare each vector in the filtered results with the provided vector.
         var results = filteredRecords.Select<InMemoryRecordWrapper<TRecord>, (TRecord record, float score)?>(wrapper =>
         {
-            ReadOnlyMemory<float> vector;
+            ReadOnlySpan<float> vector = null;
 
             if (vectorProperty.EmbeddingGenerator is null)
             {
-                if (vectorProperty.GetValueAsObject(wrapper.Record) is not ReadOnlyMemory<float> dbVector)
+                var value = vectorProperty.GetValueAsObject(wrapper.Record);
+                if (value is null)
                 {
                     return null;
                 }
-                vector = dbVector;
+
+                vector = value switch
+                {
+                    ReadOnlyMemory<float> m => m.Span,
+                    Embedding<float> e => e.Vector.Span,
+                    float[] a => a,
+
+                    _ => throw new UnreachableException()
+                };
             }
             else
             {
-                vector = wrapper.EmbeddingGeneratedVectors[vectorProperty.ModelName];
+                vector = wrapper.EmbeddingGeneratedVectors[vectorProperty.ModelName].Span;
             }
 
-            var score = InMemoryCollectionSearchMapping.CompareVectors(floatVector.Span, vector.Span, vectorProperty.DistanceFunction);
+            var score = InMemoryCollectionSearchMapping.CompareVectors(inputVector.Span, vector, vectorProperty.DistanceFunction);
             var convertedscore = InMemoryCollectionSearchMapping.ConvertScore(score, vectorProperty.DistanceFunction);
             return (wrapper.Record, convertedscore);
         });
@@ -363,7 +333,10 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         var resultsPage = sortedScoredResults.Skip(options.Skip).Take(top);
 
         // Build the response.
-        return resultsPage.Select(x => new VectorSearchResult<TRecord>((TRecord)x.record, x.score)).ToAsyncEnumerable();
+        foreach (var record in resultsPage.Select(x => new VectorSearchResult<TRecord>((TRecord)x.record, x.score)))
+        {
+            yield return record;
+        }
     }
 
     #endregion Search

@@ -3,12 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 internal class QdrantModelBuilder(bool hasNamedVectors) : CollectionModelBuilder(GetModelBuildOptions(hasNamedVectors))
 {
+    internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[]";
+
     private static CollectionModelBuildingOptions GetModelBuildOptions(bool hasNamedVectors)
         => new()
         {
@@ -52,8 +55,11 @@ internal class QdrantModelBuilder(bool hasNamedVectors) : CollectionModelBuilder
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "ReadOnlyMemory<float>";
+        supportedTypes = "ReadOnlyMemory<float>, Embedding<float>, or float[]";
 
-        return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<float>?);
+        return type == typeof(ReadOnlyMemory<float>)
+            || type == typeof(ReadOnlyMemory<float>?)
+            || type == typeof(Embedding<float>)
+            || type == typeof(float[]);
     }
 }

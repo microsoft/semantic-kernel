@@ -109,12 +109,24 @@ public sealed class CollectionModel
         }
 
         // If vector property name is not provided, check if there is a single vector property, or throw if there are no vectors or more than one.
-        return this._singleVectorProperty ??= this.VectorProperties switch
+        // TODO: Make a single switch expression + coalesce from the following - dotnet format fails on it for now
+        if (this._singleVectorProperty is null)
         {
-            [var singleProperty] => singleProperty,
-            { Count: 0 } => throw new InvalidOperationException($"The '{this._recordType.Name}' type does not have any vector properties."),
-            _ => throw new InvalidOperationException($"The '{this._recordType.Name}' type has multiple vector properties, please specify your chosen property via options.")
-        };
+            switch (this.VectorProperties)
+            {
+                case [var singleProperty]:
+                    this._singleVectorProperty = singleProperty;
+                    break;
+
+                case { Count: 0 }:
+                    throw new InvalidOperationException($"The '{this._recordType.Name}' type does not have any vector properties.");
+
+                default:
+                    throw new InvalidOperationException($"The '{this._recordType.Name}' type has multiple vector properties, please specify your chosen property via options.");
+            }
+        }
+
+        return this._singleVectorProperty;
     }
 
     /// <summary>
@@ -143,12 +155,21 @@ public sealed class CollectionModel
                 .ToList();
 
             // If text data property name is not provided, check if a single full text indexed text property exists or throw otherwise.
-            this._singleFullTextSearchProperty = fullTextStringProperties switch
+            switch (fullTextStringProperties)
             {
-                [var singleProperty] => singleProperty,
-                { Count: 0 } => throw new InvalidOperationException($"The '{this._recordType.Name}' type does not have any text data properties that have full text indexing enabled."),
-                _ => throw new InvalidOperationException($"The '{this._recordType.Name}' type has multiple text data properties that have full text indexing enabled, please specify your chosen property via options.")
-            };
+                // If there is a single property, use it.
+                // If there are no properties, throw.
+                // If there are multiple properties, throw.
+                case [var singleProperty]:
+                    this._singleFullTextSearchProperty = singleProperty;
+                    break;
+
+                case { Count: 0 }:
+                    throw new InvalidOperationException($"The '{this._recordType.Name}' type does not have any text data properties that have full text indexing enabled.");
+
+                default:
+                    throw new InvalidOperationException($"The '{this._recordType.Name}' type has multiple text data properties that have full text indexing enabled, please specify your chosen property via options.");
+            }
         }
 
         return this._singleFullTextSearchProperty;

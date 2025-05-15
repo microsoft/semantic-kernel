@@ -383,10 +383,10 @@ public sealed class WeaviateCollectionTests : IDisposable
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task SearchEmbeddingReturnsValidRecordAsync(bool includeVectors)
+    public async Task SearchReturnsValidRecordAsync(bool includeVectors)
     {
         // Arrange
-        const string CollectionName = "SearchEmbeddingCollection";
+        const string CollectionName = "SearchCollection";
         var id = new Guid("55555555-5555-5555-5555-555555555555");
         var vector = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]);
 
@@ -430,7 +430,7 @@ public sealed class WeaviateCollectionTests : IDisposable
         using var sut = new WeaviateCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
-        var results = await sut.SearchEmbeddingAsync(vector, top: 3, new()
+        var results = await sut.SearchAsync(vector, top: 3, new()
         {
             IncludeVectors = includeVectors
         }).ToListAsync();
@@ -464,25 +464,25 @@ public sealed class WeaviateCollectionTests : IDisposable
     }
 
     [Fact]
-    public async Task SearchEmbeddingWithUnsupportedVectorTypeThrowsExceptionAsync()
+    public async Task SearchWithUnsupportedVectorTypeThrowsExceptionAsync()
     {
         // Arrange
         using var sut = new WeaviateCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
-            await sut.SearchEmbeddingAsync(new List<double>([1, 2, 3]), top: 3).ToListAsync());
+            await sut.SearchAsync(new List<double>([1, 2, 3]), top: 3).ToListAsync());
     }
 
     [Fact]
-    public async Task SearchEmbeddingWithNonExistentVectorPropertyNameThrowsExceptionAsync()
+    public async Task SearchWithNonExistentVectorPropertyNameThrowsExceptionAsync()
     {
         // Arrange
         using var sut = new WeaviateCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await sut.SearchEmbeddingAsync(
+            await sut.SearchAsync(
                 new ReadOnlyMemory<float>([1f, 2f, 3f]),
                 top: 3,
                 new() { VectorProperty = r => "non-existent-property" })

@@ -72,7 +72,7 @@ public sealed class RedisJsonMapperTests
         jsonObject.Add("Data2", "data 2");
         jsonObject.Add("Vector1", new JsonArray(new[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()));
         jsonObject.Add("Vector2", new JsonArray(new[] { 5, 6, 7, 8 }.Select(x => JsonValue.Create(x)).ToArray()));
-        var actual = sut.MapFromStorageToDataModel(("test key", jsonObject), new());
+        var actual = sut.MapFromStorageToDataModel(("test key", jsonObject), includeVectors: true);
 
         // Assert.
         Assert.NotNull(actual);
@@ -98,7 +98,7 @@ public sealed class RedisJsonMapperTests
         jsonObject.Add("data2", "data 2");
         jsonObject.Add("vector1", new JsonArray(new[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()));
         jsonObject.Add("vector2", new JsonArray(new[] { 5, 6, 7, 8 }.Select(x => JsonValue.Create(x)).ToArray()));
-        var actual = sut.MapFromStorageToDataModel(("test key", jsonObject), new());
+        var actual = sut.MapFromStorageToDataModel(("test key", jsonObject), includeVectors: true);
 
         // Assert.
         Assert.NotNull(actual);

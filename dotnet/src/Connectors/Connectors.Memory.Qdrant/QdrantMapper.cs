@@ -15,6 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
 internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamedVectors)
+    where TRecord : class
 {
     /// <inheritdoc />
     public PointStruct MapFromDataToStorageModel(TRecord dataModel, int recordIndex, GeneratedEmbeddings<Embedding<float>>?[]? generatedEmbeddings)
@@ -64,7 +65,7 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
                     GetVector(
                         property,
                         generatedEmbeddings?[i] is GeneratedEmbeddings<Embedding<float>> e
-                            ? e[recordIndex].Vector
+                            ? e[recordIndex]
                             : property.GetValueAsObject(dataModel!)));
             }
 
@@ -80,7 +81,7 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
                 model.VectorProperty,
                 generatedEmbeddings is null
                     ? model.VectorProperty.GetValueAsObject(dataModel!)
-                    : generatedEmbeddings[0]![recordIndex].Vector);
+                    : generatedEmbeddings[0]![recordIndex]);
         }
 
         return pointStruct;
@@ -88,7 +89,10 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
         Vector GetVector(PropertyModel property, object? embedding)
             => embedding switch
             {
-                ReadOnlyMemory<float> floatVector => floatVector.ToArray(),
+                ReadOnlyMemory<float> m => m.ToArray(),
+                Embedding<float> e => e.Vector.ToArray(),
+                float[] a => a,
+
                 null => throw new InvalidOperationException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null when not using named vectors."),
                 var unknownEmbedding => throw new InvalidOperationException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' has unsupported embedding type '{unknownEmbedding.GetType().Name}'.")
             };
@@ -116,16 +120,26 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
 
                 foreach (var vectorProperty in model.VectorProperties)
                 {
-                    vectorProperty.SetValueAsObject(
-                        outputRecord,
-                        new ReadOnlyMemory<float>(storageVectors[vectorProperty.StorageName].Data.ToArray()));
+                    PopulateVectorProperty(outputRecord, storageVectors[vectorProperty.StorageName], vectorProperty);
                 }
             }
             else
             {
-                model.VectorProperty.SetValueAsObject(
-                    outputRecord,
-                    new ReadOnlyMemory<float>(vectorsOutput.Vector.Data.ToArray()));
+                PopulateVectorProperty(outputRecord, vectorsOutput.Vector, model.VectorProperty);
+            }
+
+            static void PopulateVectorProperty(TRecord record, VectorOutput value, VectorPropertyModel property)
+            {
+                property.SetValueAsObject(
+                    record,
+                    (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
+                    {
+                        var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(value.Data.ToArray()),
+                        var t when t == typeof(Embedding<float>) => new Embedding<float>(value.Data.ToArray()),
+                        var t when t == typeof(float[]) => value.Data.ToArray(),
+
+                        _ => throw new UnreachableException()
+                    });
             }
         }
 

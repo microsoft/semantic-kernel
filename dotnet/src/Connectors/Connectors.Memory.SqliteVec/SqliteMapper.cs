@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -28,14 +30,17 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
         for (var i = 0; i < model.VectorProperties.Count; i++)
         {
             var property = model.VectorProperties[i];
-            var vector = generatedEmbeddings?[i] is IReadOnlyList<Embedding> e ? ((Embedding<float>)e[recordIndex]).Vector : property.GetValueAsObject(dataModel!);
+            var vector = generatedEmbeddings?[i] is IReadOnlyList<Embedding> ge ? ((Embedding<float>)ge[recordIndex]).Vector : property.GetValueAsObject(dataModel!);
 
             properties.Add(
                 property.StorageName,
                 vector switch
                 {
-                    ReadOnlyMemory<float> floats => SqlitePropertyMapping.MapVectorForStorageModel(floats),
+                    ReadOnlyMemory<float> m => SqlitePropertyMapping.MapVectorForStorageModel(m),
+                    Embedding<float> e => SqlitePropertyMapping.MapVectorForStorageModel(e.Vector),
+                    float[] a => SqlitePropertyMapping.MapVectorForStorageModel(a),
                     null => null,
+
                     _ => throw new InvalidOperationException($"Retrieved value for vector property '{property.StorageName}' which is not a ReadOnlyMemory<float> ('{vector?.GetType().Name}').")
                 });
         }
@@ -64,7 +69,19 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
                     throw new InvalidOperationException($"Retrieved value for vector property '{property.StorageName}' which is not a byte array ('{storageModel[property.StorageName]?.GetType().Name}').");
                 }
 
-                property.SetValueAsObject(record, SqlitePropertyMapping.MapVectorForDataModel(vectorBytes));
+                var memory = SqlitePropertyMapping.MapVectorForDataModel(vectorBytes);
+
+                property.SetValueAsObject(record, property.Type switch
+                {
+                    var t when t == typeof(ReadOnlyMemory<float>) => memory,
+                    var t when t == typeof(Embedding<float>) => new Embedding<float>(memory),
+                    var t when t == typeof(float[])
+                        => MemoryMarshal.TryGetArray(memory, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
+                            ? segment.Array
+                            : memory.ToArray(),
+
+                    _ => throw new UnreachableException()
+                });
             }
         }
 

@@ -33,7 +33,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// </summary>
     /// <remarks>
     /// If not set, embedding generation will be performed in the database, if supported by your connector.
-    /// If not supported, only pre-generated embeddings can be used, e.g. via <see cref="IVectorSearchable{TRecord}.SearchEmbeddingAsync{TVector}"/>.
+    /// Otherwise, if your database does not support embedding generation, only pre-generated embeddings can be used (e.g. <c>ReadOnlyMemory&lt;float&gt;</c>).
     /// </remarks>
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 

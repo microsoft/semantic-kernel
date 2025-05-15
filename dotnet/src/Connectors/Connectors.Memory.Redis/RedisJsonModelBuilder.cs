@@ -52,13 +52,18 @@ internal class RedisJsonModelBuilder(CollectionModelBuildingOptions options) : C
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "ReadOnlyMemory<float>, ReadOnlyMemory<double>";
+        supportedTypes = RedisModelBuilder.SupportedVectorTypes;
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
             type = underlyingType;
         }
 
-        return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<double>);
+        return type == typeof(ReadOnlyMemory<float>)
+            || type == typeof(Embedding<float>)
+            || type == typeof(float[])
+            || type == typeof(ReadOnlyMemory<double>)
+            || type == typeof(Embedding<double>)
+            || type == typeof(double[]);
     }
 }

@@ -14,7 +14,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.Weaviate.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="WeaviateDynamicMapper"/> class.
+/// Unit tests for dynamic mapping.
 /// </summary>
 public sealed class WeaviateDynamicMapperTests
 {
@@ -79,7 +79,7 @@ public sealed class WeaviateDynamicMapperTests
     {
         // Arrange
         var key = new Guid("55555555-5555-5555-5555-555555555555");
-        var sut = new WeaviateDynamicMapper("Collection", HasNamedVectors, s_model, s_jsonSerializerOptions);
+        var sut = new WeaviateMapper<Dictionary<string, object?>>("Collection", HasNamedVectors, s_model, s_jsonSerializerOptions);
 
         var dataModel = new Dictionary<string, object?>
         {
@@ -177,7 +177,7 @@ public sealed class WeaviateDynamicMapperTests
             ["NullableFloatVector"] = null
         };
 
-        var sut = new WeaviateDynamicMapper("Collection", HasNamedVectors, s_model, s_jsonSerializerOptions);
+        var sut = new WeaviateMapper<Dictionary<string, object?>>("Collection", HasNamedVectors, s_model, s_jsonSerializerOptions);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
@@ -193,7 +193,7 @@ public sealed class WeaviateDynamicMapperTests
     {
         // Arrange
         var key = new Guid("55555555-5555-5555-5555-555555555555");
-        var sut = new WeaviateDynamicMapper("Collection", HasNamedVectors, s_model, s_jsonSerializerOptions);
+        var sut = new WeaviateMapper<Dictionary<string, object?>>("Collection", HasNamedVectors, s_model, s_jsonSerializerOptions);
 
         var storageModel = new JsonObject
         {
@@ -272,17 +272,6 @@ public sealed class WeaviateDynamicMapperTests
         var key = new Guid("55555555-5555-5555-5555-555555555555");
         var keyProperty = new VectorStoreKeyProperty("Key", typeof(Guid));
 
-        var dataProperties = new List<VectorStoreDataProperty>
-        {
-            new("StringDataProp", typeof(string)),
-            new("NullableIntDataProp", typeof(int?)),
-        };
-
-        var vectorProperties = new List<VectorStoreVectorProperty>
-        {
-            new("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10)
-        };
-
         var storageModel = new JsonObject
         {
             ["id"] = key,
@@ -297,7 +286,7 @@ public sealed class WeaviateDynamicMapperTests
             }
         };
 
-        var sut = new WeaviateDynamicMapper("Collection", HasNamedVectors, s_model, s_jsonSerializerOptions);
+        var sut = new WeaviateMapper<Dictionary<string, object?>>("Collection", HasNamedVectors, s_model, s_jsonSerializerOptions);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, includeVectors: true);
@@ -313,7 +302,7 @@ public sealed class WeaviateDynamicMapperTests
     public void MapFromStorageToDataModelThrowsForMissingKey()
     {
         // Arrange
-        var sut = new WeaviateDynamicMapper("Collection", HasNamedVectors, s_model, s_jsonSerializerOptions);
+        var sut = new WeaviateMapper<Dictionary<string, object?>>("Collection", HasNamedVectors, s_model, s_jsonSerializerOptions);
 
         var storageModel = new JsonObject();
 
@@ -342,7 +331,7 @@ public sealed class WeaviateDynamicMapperTests
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 
         var record = new Dictionary<string, object?> { ["Key"] = key };
-        var sut = new WeaviateDynamicMapper("Collection", HasNamedVectors, model, s_jsonSerializerOptions);
+        var sut = new WeaviateMapper<Dictionary<string, object?>>("Collection", HasNamedVectors, model, s_jsonSerializerOptions);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings: null);
@@ -372,7 +361,7 @@ public sealed class WeaviateDynamicMapperTests
 
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 
-        var sut = new WeaviateDynamicMapper("Collection", HasNamedVectors, model, s_jsonSerializerOptions);
+        var sut = new WeaviateMapper<Dictionary<string, object?>>("Collection", HasNamedVectors, model, s_jsonSerializerOptions);
 
         var storageModel = new JsonObject
         {
@@ -408,7 +397,7 @@ public sealed class WeaviateDynamicMapperTests
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 
         var record = new Dictionary<string, object?> { ["Key"] = key, ["FloatVector"] = new ReadOnlyMemory<float>(s_floatVector) };
-        var sut = new WeaviateDynamicMapper("Collection", hasNamedVectors, model, s_jsonSerializerOptions);
+        var sut = new WeaviateMapper<Dictionary<string, object?>>("Collection", hasNamedVectors, model, s_jsonSerializerOptions);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings: null);
@@ -439,7 +428,7 @@ public sealed class WeaviateDynamicMapperTests
 
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 
-        var sut = new WeaviateDynamicMapper("Collection", hasNamedVectors, model, s_jsonSerializerOptions);
+        var sut = new WeaviateMapper<Dictionary<string, object?>>("Collection", hasNamedVectors, model, s_jsonSerializerOptions);
 
         var storageModel = new JsonObject { ["id"] = key };
 

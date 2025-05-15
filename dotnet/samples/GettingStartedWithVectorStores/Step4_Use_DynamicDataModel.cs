@@ -56,7 +56,7 @@ public class Step4_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFi
         var searchVector = await fixture.TextEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
 
         // Search the generic data model collection and get the single most relevant result.
-        var searchResultItems = await dynamicDataModelCollection.SearchEmbeddingAsync(
+        var searchResultItems = await dynamicDataModelCollection.SearchAsync(
             searchVector,
             top: 1).ToListAsync();
 

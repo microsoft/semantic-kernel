@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -15,20 +16,13 @@ namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 /// </summary>
 internal static class SqlitePropertyMapping
 {
-    public static byte[] MapVectorForStorageModel<TVector>(TVector vector)
+    public static byte[] MapVectorForStorageModel(ReadOnlyMemory<float> memory)
     {
-        if (vector is ReadOnlyMemory<float> floatMemory)
-        {
-            ReadOnlySpan<float> floatSpan = floatMemory.Span;
+        ReadOnlySpan<float> floatSpan = memory.Span;
+        byte[] byteArray = new byte[floatSpan.Length * sizeof(float)];
+        MemoryMarshal.AsBytes(floatSpan).CopyTo(byteArray);
 
-            byte[] byteArray = new byte[floatSpan.Length * sizeof(float)];
-
-            MemoryMarshal.AsBytes(floatSpan).CopyTo(byteArray);
-
-            return byteArray;
-        }
-
-        throw new NotSupportedException($"Mapping for type {typeof(TVector).FullName} to a vector is not supported.");
+        return byteArray;
     }
 
     public static ReadOnlyMemory<float> MapVectorForDataModel(byte[] byteArray)
@@ -114,20 +108,23 @@ internal static class SqlitePropertyMapping
             return null;
         }
 
-        return propertyType switch
+        return (Nullable.GetUnderlyingType(propertyType) ?? propertyType) switch
         {
-            Type t when t == typeof(int) || t == typeof(int?) => reader.GetInt32(propertyIndex),
-            Type t when t == typeof(long) || t == typeof(long?) => reader.GetInt64(propertyIndex),
-            Type t when t == typeof(ulong) || t == typeof(ulong?) => (ulong)reader.GetInt64(propertyIndex),
-            Type t when t == typeof(short) || t == typeof(short?) => reader.GetInt16(propertyIndex),
-            Type t when t == typeof(ushort) || t == typeof(ushort?) => (ushort)reader.GetInt16(propertyIndex),
-            Type t when t == typeof(bool) || t == typeof(bool?) => reader.GetBoolean(propertyIndex),
-            Type t when t == typeof(float) || t == typeof(float?) => reader.GetFloat(propertyIndex),
-            Type t when t == typeof(double) || t == typeof(double?) => reader.GetDouble(propertyIndex),
-            Type t when t == typeof(decimal) || t == typeof(decimal?) => reader.GetDecimal(propertyIndex),
+            Type t when t == typeof(int) => reader.GetInt32(propertyIndex),
+            Type t when t == typeof(long) => reader.GetInt64(propertyIndex),
+            Type t when t == typeof(ulong) => (ulong)reader.GetInt64(propertyIndex),
+            Type t when t == typeof(short) => reader.GetInt16(propertyIndex),
+            Type t when t == typeof(ushort) => (ushort)reader.GetInt16(propertyIndex),
+            Type t when t == typeof(bool) => reader.GetBoolean(propertyIndex),
+            Type t when t == typeof(float) => reader.GetFloat(propertyIndex),
+            Type t when t == typeof(double) => reader.GetDouble(propertyIndex),
+            Type t when t == typeof(decimal) => reader.GetDecimal(propertyIndex),
             Type t when t == typeof(string) => reader.GetString(propertyIndex),
             Type t when t == typeof(byte[]) => (byte[])reader[propertyIndex],
-            Type t when t == typeof(ReadOnlyMemory<float>) || t == typeof(ReadOnlyMemory<float>?) => (byte[])reader[propertyIndex],
+            Type t when t == typeof(ReadOnlyMemory<float>) => (byte[])reader[propertyIndex],
+            Type t when t == typeof(Embedding<float>) => (byte[])reader[propertyIndex],
+            Type t when t == typeof(float[]) => (byte[])reader[propertyIndex],
+
             _ => throw new NotSupportedException($"Unsupported type: {propertyType} for property: {propertyName}")
         };
     }

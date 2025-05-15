@@ -102,6 +102,7 @@ internal static class QdrantCollectionSearchMapping
         string? vectorStoreName,
         string collectionName,
         string operationName)
+        where TRecord : class
     {
         // Do the mapping with error handling.
         return new VectorSearchResult<TRecord>(
@@ -117,6 +118,7 @@ internal static class QdrantCollectionSearchMapping
         string? vectorStoreName,
         string collectionName,
         string operationName)
+        where TRecord : class
     {
         // Do the mapping with error handling.
         return mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, includeVectors);

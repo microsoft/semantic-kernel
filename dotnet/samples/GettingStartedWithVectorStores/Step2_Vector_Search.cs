@@ -43,7 +43,7 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
 
         // Search the store and get the single most relevant result.
-        var searchResultItems = await collection.SearchEmbeddingAsync(
+        var searchResultItems = await collection.SearchAsync(
             searchVector,
             top: 1).ToListAsync();
         return searchResultItems.First();
@@ -62,7 +62,7 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
         var searchVector = await fixture.TextEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
 
         // Search the store with a filter and get the single most relevant result.
-        var searchResultItems = await collection.SearchEmbeddingAsync(
+        var searchResultItems = await collection.SearchAsync(
             searchVector,
             top: 1,
             new()

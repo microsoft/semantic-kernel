@@ -50,7 +50,7 @@ public class VectorStore_VectorSearch_MultiStore_Common(VectorStore vectorStore,
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var resultRecords = await collection.SearchEmbeddingAsync(searchVector, top: 1).ToListAsync();
+        var resultRecords = await collection.SearchAsync(searchVector, top: 1).ToListAsync();
 
         output.WriteLine("Search string: " + searchString);
         output.WriteLine("Result: " + resultRecords.First().Record.Definition);
@@ -59,7 +59,7 @@ public class VectorStore_VectorSearch_MultiStore_Common(VectorStore vectorStore,
         // Search the collection using a vector search.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        resultRecords = await collection.SearchEmbeddingAsync(searchVector, top: 1).ToListAsync();
+        resultRecords = await collection.SearchAsync(searchVector, top: 1).ToListAsync();
 
         output.WriteLine("Search string: " + searchString);
         output.WriteLine("Result: " + resultRecords.First().Record.Definition);
@@ -68,7 +68,7 @@ public class VectorStore_VectorSearch_MultiStore_Common(VectorStore vectorStore,
         // Search the collection using a vector search with pre-filtering.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        resultRecords = await collection.SearchEmbeddingAsync(searchVector, top: 3, new() { Filter = g => g.Category == "External Definitions" }).ToListAsync();
+        resultRecords = await collection.SearchAsync(searchVector, top: 3, new() { Filter = g => g.Category == "External Definitions" }).ToListAsync();
 
         output.WriteLine("Search string: " + searchString);
         output.WriteLine("Number of results: " + resultRecords.Count);

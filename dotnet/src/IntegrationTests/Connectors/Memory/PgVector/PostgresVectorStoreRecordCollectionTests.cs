@@ -356,7 +356,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var results = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([0.9f, 0.1f, 0.5f, 0.8f]), top: 3, new()
+        var results = await sut.SearchAsync(new ReadOnlyMemory<float>([0.9f, 0.1f, 0.5f, 0.8f]), top: 3, new()
         {
             IncludeVectors = includeVectors
         }).ToListAsync();
@@ -392,7 +392,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var results = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
+        var results = await sut.SearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
         {
             IncludeVectors = false,
             OldFilter = new([
@@ -422,7 +422,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var results = await sut.SearchEmbeddingAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
+        var results = await sut.SearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
         {
             IncludeVectors = false,
             OldFilter = new([
