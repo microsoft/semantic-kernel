@@ -20,24 +20,28 @@ public static class PineconeServiceCollectionExtensions
 
     /// <summary>
     /// Registers a <see cref="PineconeVectorStore"/> as <see cref="VectorStore"/>
-    /// with <see cref="PineconeClient"/> retrieved from the dependency injection container.
+    /// with <see cref="PineconeClient"/> returned by <paramref name="clientProvider"/>
+    /// or retrieved from the dependency injection container if <paramref name="clientProvider"/> was not provided.
     /// </summary>
-    /// <inheritdoc cref="AddKeyedPineconeVectorStore(IServiceCollection, object?, PineconeVectorStoreOptions?, ServiceLifetime)"/>
+    /// <inheritdoc cref="AddKeyedPineconeVectorStore(IServiceCollection, object?, Func{IServiceProvider, PineconeClient}?, Func{IServiceProvider, PineconeVectorStoreOptions}?, ServiceLifetime)"/>
     [RequiresUnreferencedCode(DynamicCodeMessage)]
     [RequiresDynamicCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddPineconeVectorStore(
         this IServiceCollection services,
-        PineconeVectorStoreOptions? options = default,
+        Func<IServiceProvider, PineconeClient>? clientProvider = default,
+        Func<IServiceProvider, PineconeVectorStoreOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedPineconeVectorStore(services, serviceKey: null, options, lifetime);
+        => AddKeyedPineconeVectorStore(services, serviceKey: null, clientProvider, optionsProvider, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="PineconeVectorStore"/> as <see cref="VectorStore"/>
-    /// with <see cref="PineconeClient"/> retrieved from the dependency injection container.
+    /// with <see cref="PineconeClient"/> returned by <paramref name="clientProvider"/>
+    /// or retrieved from the dependency injection container if <paramref name="clientProvider"/> was not provided.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="PineconeVectorStore"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the vector store.</param>
-    /// <param name="options">Optional options to further configure the <see cref="PineconeVectorStore"/>.</param>
+    /// <param name="clientProvider">The <see cref="PineconeClient"/> provider.</param>
+    /// <param name="optionsProvider">Options provider to further configure the <see cref="PineconeVectorStore"/>.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>Service collection.</returns>
     [RequiresUnreferencedCode(DynamicCodeMessage)]
@@ -45,15 +49,16 @@ public static class PineconeServiceCollectionExtensions
     public static IServiceCollection AddKeyedPineconeVectorStore(
         this IServiceCollection services,
         object? serviceKey,
-        PineconeVectorStoreOptions? options = default,
+        Func<IServiceProvider, PineconeClient>? clientProvider = default,
+        Func<IServiceProvider, PineconeVectorStoreOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
         Verify.NotNull(services);
 
         services.Add(new ServiceDescriptor(typeof(PineconeVectorStore), serviceKey, (sp, _) =>
         {
-            var database = sp.GetRequiredService<PineconeClient>();
-            options = GetStoreOptions(sp, _ => options);
+            var database = clientProvider is not null ? clientProvider(sp) : sp.GetRequiredService<PineconeClient>();
+            var options = GetStoreOptions(sp, optionsProvider);
 
             return new PineconeVectorStore(database, options);
         }, lifetime));
@@ -103,44 +108,36 @@ public static class PineconeServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        services.Add(new ServiceDescriptor(typeof(PineconeVectorStore), serviceKey, (sp, _) =>
-        {
-            options = GetStoreOptions(sp, _ => options);
-            PineconeClient client = new(apiKey, clientOptions);
-
-            return new PineconeVectorStore(client, options);
-        }, lifetime));
-
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<PineconeVectorStore>(key), lifetime));
-
-        return services;
+        return AddKeyedPineconeVectorStore(services, serviceKey, _ => new PineconeClient(apiKey, clientOptions), _ => options!, lifetime);
     }
 
     /// <summary>
     /// Registers a <see cref="PineconeCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
     /// with <see cref="PineconeClient"/> retrieved from the dependency injection container.
     /// </summary>
-    /// <inheritdoc cref="AddKeyedPineconeVectorStore(IServiceCollection, object?, PineconeVectorStoreOptions?, ServiceLifetime)"/>
+    /// <inheritdoc cref="AddKeyedPineconeVectorStore(IServiceCollection, object?, Func{IServiceProvider, PineconeClient}?, Func{IServiceProvider, PineconeVectorStoreOptions}?, ServiceLifetime)"/>
     [RequiresUnreferencedCode(DynamicCodeMessage)]
     [RequiresDynamicCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddPineconeCollection<TRecord>(
         this IServiceCollection services,
         string name,
-        PineconeCollectionOptions? options = default,
+        Func<IServiceProvider, PineconeClient>? clientProvider = default,
+        Func<IServiceProvider, PineconeCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedPineconeCollection<TRecord>(services, serviceKey: null, name, options, lifetime);
+        => AddKeyedPineconeCollection<TRecord>(services, serviceKey: null, name, clientProvider, optionsProvider, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="PineconeCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
-    /// with <see cref="PineconeClient"/> retrieved from the dependency injection container.
+    /// with <see cref="PineconeClient"/> returned by <paramref name="clientProvider"/>
+    /// or retrieved from the dependency injection container if <paramref name="clientProvider"/> was not provided.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="PineconeCollection{TKey, TRecord}"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the collection.</param>
     /// <param name="name">The name of the collection.</param>
-    /// <param name="options">Optional options to further configure the <see cref="PineconeCollection{TKey, TRecord}"/>.</param>
+    /// <param name="clientProvider">The <see cref="PineconeClient"/> provider.</param>
+    /// <param name="optionsProvider">Options provider to further configure the <see cref="PineconeCollection{TKey, TRecord}"/>.</param>
     /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>Service collection.</returns>
     [RequiresUnreferencedCode(DynamicCodeMessage)]
@@ -149,7 +146,8 @@ public static class PineconeServiceCollectionExtensions
         this IServiceCollection services,
         object? serviceKey,
         string name,
-        PineconeCollectionOptions? options = default,
+        Func<IServiceProvider, PineconeClient>? clientProvider = default,
+        Func<IServiceProvider, PineconeCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
     {
@@ -158,10 +156,10 @@ public static class PineconeServiceCollectionExtensions
 
         services.Add(new ServiceDescriptor(typeof(PineconeCollection<string, TRecord>), serviceKey, (sp, _) =>
         {
-            var database = sp.GetRequiredService<PineconeClient>();
-            options = GetCollectionOptions(sp, _ => options);
+            var client = clientProvider is not null ? clientProvider(sp) : sp.GetRequiredService<PineconeClient>();
+            var options = GetCollectionOptions(sp, optionsProvider);
 
-            return new PineconeCollection<string, TRecord>(database, name, options);
+            return new PineconeCollection<string, TRecord>(client, name, options);
         }, lifetime));
 
         AddAbstractions<string, TRecord>(services, serviceKey, lifetime);
@@ -213,66 +211,7 @@ public static class PineconeServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return AddKeyedPineconeCollection<TRecord>(services, serviceKey, name, _ => apiKey, _ => clientOptions!, _ => options!, lifetime);
-    }
-
-    /// <summary>
-    /// Registers a <see cref="PineconeCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
-    /// using the provided <paramref name="apiKeyProvider"/> and <paramref name="clientOptionsProvider"/>.
-    /// </summary>
-    /// <inheritdoc cref="AddKeyedPineconeCollection{TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, string}, Func{IServiceProvider, ClientOptions}, Func{IServiceProvider, PineconeCollectionOptions}?, ServiceLifetime)"/>
-    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
-    [RequiresDynamicCode(DynamicCodeMessage)]
-    public static IServiceCollection AddPineconeCollection<TRecord>(
-        this IServiceCollection services,
-        string name,
-        Func<IServiceProvider, string> apiKeyProvider,
-        Func<IServiceProvider, ClientOptions>? clientOptionsProvider = default,
-        Func<IServiceProvider, PineconeCollectionOptions>? optionsProvider = default,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        where TRecord : class
-        => AddKeyedPineconeCollection<TRecord>(services, serviceKey: null, name, apiKeyProvider, clientOptionsProvider, optionsProvider, lifetime);
-
-    /// <summary>
-    /// Registers a keyed <see cref="PineconeCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
-    /// using the provided <paramref name="apiKeyProvider"/> and <paramref name="clientOptionsProvider"/>.
-    /// </summary>
-    /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="serviceKey">The key with which to associate the collection.</param>
-    /// <param name="name">The name of the collection.</param>
-    /// <param name="apiKeyProvider">The API Key provider.</param>
-    /// <param name="clientOptionsProvider">The <see cref="ClientOptions" /> provider to configure <see cref="PineconeClient"/>.</param>
-    /// <param name="optionsProvider">Options provider to further configure the collection.</param>
-    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
-    /// <returns>Service collection.</returns>
-    [RequiresUnreferencedCode(UnreferencedCodeMessage)]
-    [RequiresDynamicCode(DynamicCodeMessage)]
-    public static IServiceCollection AddKeyedPineconeCollection<TRecord>(
-        this IServiceCollection services,
-        object? serviceKey,
-        string name,
-        Func<IServiceProvider, string> apiKeyProvider,
-        Func<IServiceProvider, ClientOptions>? clientOptionsProvider = default,
-        Func<IServiceProvider, PineconeCollectionOptions>? optionsProvider = default,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        where TRecord : class
-    {
-        Verify.NotNull(services);
-        Verify.NotNullOrWhiteSpace(name);
-        Verify.NotNull(apiKeyProvider);
-
-        services.Add(new ServiceDescriptor(typeof(PineconeCollection<string, TRecord>), serviceKey, (sp, _) =>
-        {
-            var options = GetCollectionOptions(sp, optionsProvider);
-            PineconeClient client = new(apiKeyProvider(sp), clientOptionsProvider?.Invoke(sp));
-
-            return new PineconeCollection<string, TRecord>(client, name, options);
-        }, lifetime));
-
-        AddAbstractions<string, TRecord>(services, serviceKey, lifetime);
-
-        return services;
+        return AddKeyedPineconeCollection<TRecord>(services, serviceKey, name, _ => new PineconeClient(apiKey, clientOptions), _ => options!, lifetime);
     }
 
     private static void AddAbstractions<TKey, TRecord>(IServiceCollection services, object? serviceKey, ServiceLifetime lifetime)

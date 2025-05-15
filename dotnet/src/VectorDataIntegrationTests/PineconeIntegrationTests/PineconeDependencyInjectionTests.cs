@@ -24,10 +24,7 @@ public class PineconeDependencyInjectionTests
             new(CreateConfigKey("Pinecone", serviceKey, "ApiKey"), ApiKey),
         ]);
 
-    private static string ApiKeyProvider(IServiceProvider sp)
-        => sp.GetRequiredService<IConfiguration>().GetRequiredSection("Pinecone:ApiKey").Value!;
-
-    private static string ApiKeyProvider(IServiceProvider sp, object serviceKey)
+    private static string ApiKeyProvider(IServiceProvider sp, object? serviceKey = null)
         => sp.GetRequiredService<IConfiguration>().GetRequiredSection(CreateConfigKey("Pinecone", serviceKey, "ApiKey")).Value!;
 
     private static ClientOptions ClientOptionsProvider(IServiceProvider sp) => s_clientOptions;
@@ -54,9 +51,9 @@ public class PineconeDependencyInjectionTests
 
             yield return (services, serviceKey, name, lifetime) => serviceKey is null
                 ? services.AddPineconeCollection<SimpleRecord<string>>(
-                    name, ApiKeyProvider, lifetime: lifetime)
+                    name, sp => new PineconeClient(ApiKeyProvider(sp), ClientOptionsProvider(sp)), lifetime: lifetime)
                 : services.AddKeyedPineconeCollection<SimpleRecord<string>>(
-                    serviceKey, name, sp => ApiKeyProvider(sp, serviceKey), lifetime: lifetime);
+                    serviceKey, name, sp => new PineconeClient(ApiKeyProvider(sp, serviceKey), ClientOptionsProvider(sp, serviceKey)), lifetime: lifetime);
         }
     }
 
@@ -78,17 +75,6 @@ public class PineconeDependencyInjectionTests
                     .AddSingleton<PineconeClient>(sp => new PineconeClient(ApiKey))
                     .AddKeyedPineconeVectorStore(serviceKey, lifetime: lifetime);
         }
-    }
-
-    [Fact]
-    public void ApiKeyProviderCantBeNull()
-    {
-        IServiceCollection services = new ServiceCollection();
-
-        Assert.Throws<ArgumentNullException>(() => services.AddPineconeCollection<SimpleRecord<string>>(
-            name: "notNull", apiKeyProvider: null!, clientOptionsProvider: ClientOptionsProvider));
-        Assert.Throws<ArgumentNullException>(() => services.AddKeyedPineconeCollection<SimpleRecord<string>>(
-            serviceKey: "notNull", name: "notNull", apiKeyProvider: null!, clientOptionsProvider: ClientOptionsProvider));
     }
 
     [Fact]

@@ -26,21 +26,23 @@ public static class AzureAISearchServiceCollectionExtensions
 
     /// <summary>
     /// Registers a <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
-    /// with <see cref="SearchIndexClient"/> returned by <paramref name="clientProvider"/>.
+    /// with <see cref="SearchIndexClient"/> returned by <paramref name="clientProvider"/>
+    /// or retrieved from the dependency injection container if <paramref name="clientProvider"/> was not provided.
     /// </summary>
     /// <inheritdoc cref="AddKeyedAzureAISearchVectorStore(IServiceCollection, object?, Func{IServiceProvider, SearchIndexClient}, Func{IServiceProvider, AzureAISearchVectorStoreOptions}?, ServiceLifetime)"/>
     [RequiresUnreferencedCode(DynamicCodeMessage)]
     [RequiresDynamicCode(UnreferencedCodeMessage)]
     public static IServiceCollection AddAzureAISearchVectorStore(
         this IServiceCollection services,
-        Func<IServiceProvider, SearchIndexClient> clientProvider,
+        Func<IServiceProvider, SearchIndexClient>? clientProvider = default,
         Func<IServiceProvider, AzureAISearchVectorStoreOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         => AddKeyedAzureAISearchVectorStore(services, serviceKey: null, clientProvider, optionsProvider, lifetime);
 
     /// <summary>
     /// Registers a keyed <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
-    /// with <see cref="SearchIndexClient"/> returned by <paramref name="clientProvider"/>.
+    /// with <see cref="SearchIndexClient"/> returned by <paramref name="clientProvider"/>
+    /// or retrieved from the dependency injection container if <paramref name="clientProvider"/> was not provided.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="AzureAISearchVectorStore"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the vector store.</param>
@@ -53,16 +55,15 @@ public static class AzureAISearchServiceCollectionExtensions
     public static IServiceCollection AddKeyedAzureAISearchVectorStore(
         this IServiceCollection services,
         object? serviceKey,
-        Func<IServiceProvider, SearchIndexClient> clientProvider,
+        Func<IServiceProvider, SearchIndexClient>? clientProvider = default,
         Func<IServiceProvider, AzureAISearchVectorStoreOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
         Verify.NotNull(services);
-        Verify.NotNull(clientProvider);
 
         services.Add(new ServiceDescriptor(typeof(AzureAISearchVectorStore), serviceKey, (sp, _) =>
         {
-            var client = clientProvider(sp);
+            var client = clientProvider is not null ? clientProvider(sp) : sp.GetRequiredService<SearchIndexClient>();
             var options = GetStoreOptions(sp, optionsProvider);
 
             return new AzureAISearchVectorStore(client, options);
@@ -73,37 +74,6 @@ public static class AzureAISearchServiceCollectionExtensions
 
         return services;
     }
-
-    /// <summary>
-    /// Registers a <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
-    /// with <see cref="SearchIndexClient"/> retrieved from the dependency injection container.
-    /// </summary>
-    /// <inheritdoc cref="AddKeyedAzureAISearchVectorStore(IServiceCollection, object?, AzureAISearchVectorStoreOptions?, ServiceLifetime)"/>
-    [RequiresUnreferencedCode(DynamicCodeMessage)]
-    [RequiresDynamicCode(UnreferencedCodeMessage)]
-    public static IServiceCollection AddAzureAISearchVectorStore(
-        this IServiceCollection services,
-        AzureAISearchVectorStoreOptions? options = default,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedAzureAISearchVectorStore(services, serviceKey: null, options, lifetime);
-
-    /// <summary>
-    /// Registers a keyed <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
-    /// with <see cref="SearchIndexClient"/> retrieved from the dependency injection container.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="AzureAISearchVectorStore"/> on.</param>
-    /// <param name="serviceKey">The key with which to associate the vector store.</param>
-    /// <param name="options">Optional options to further configure the <see cref="AzureAISearchVectorStore"/>.</param>
-    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
-    /// <returns>Service collection.</returns>
-    [RequiresUnreferencedCode(DynamicCodeMessage)]
-    [RequiresDynamicCode(UnreferencedCodeMessage)]
-    public static IServiceCollection AddKeyedAzureAISearchVectorStore(
-        this IServiceCollection services,
-        object? serviceKey,
-        AzureAISearchVectorStoreOptions? options = default,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedAzureAISearchVectorStore(services, serviceKey, sp => sp.GetRequiredService<SearchIndexClient>(), _ => options!, lifetime);
 
     /// <summary>
     /// Registers a <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
@@ -199,7 +169,8 @@ public static class AzureAISearchServiceCollectionExtensions
 
     /// <summary>
     /// Registers a <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
-    /// with <see cref="SearchIndexClient"/> returned by <paramref name="clientProvider"/>.
+    /// with <see cref="SearchIndexClient"/> returned by <paramref name="clientProvider"/>
+    /// or retrieved from the dependency injection container if <paramref name="clientProvider"/> was not provided.
     /// </summary>
     /// <inheritdoc cref="AddKeyedAzureAISearchCollection{TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, SearchIndexClient}, Func{IServiceProvider, AzureAISearchCollectionOptions}?, ServiceLifetime)"/>
     [RequiresUnreferencedCode(DynamicCodeMessage)]
@@ -207,7 +178,7 @@ public static class AzureAISearchServiceCollectionExtensions
     public static IServiceCollection AddAzureAISearchCollection<TRecord>(
         this IServiceCollection services,
         string name,
-        Func<IServiceProvider, SearchIndexClient> clientProvider,
+        Func<IServiceProvider, SearchIndexClient>? clientProvider = default,
         Func<IServiceProvider, AzureAISearchCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
@@ -215,7 +186,8 @@ public static class AzureAISearchServiceCollectionExtensions
 
     /// <summary>
     /// Registers a keyed <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
-    /// with <see cref="SearchIndexClient"/> retrieved from the dependency injection container.
+    /// with <see cref="SearchIndexClient"/> returned by <paramref name="clientProvider"/>
+    /// or retrieved from the dependency injection container if <paramref name="clientProvider"/> was not provided.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="AzureAISearchCollection{TKey, TRecord}"/> on.</param>
     /// <param name="serviceKey">The key with which to associate the collection.</param>
@@ -230,18 +202,17 @@ public static class AzureAISearchServiceCollectionExtensions
         this IServiceCollection services,
         object? serviceKey,
         string name,
-        Func<IServiceProvider, SearchIndexClient> clientProvider,
+        Func<IServiceProvider, SearchIndexClient>? clientProvider = default,
         Func<IServiceProvider, AzureAISearchCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
     {
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(name);
-        Verify.NotNull(clientProvider);
 
         services.Add(new ServiceDescriptor(typeof(AzureAISearchCollection<string, TRecord>), serviceKey, (sp, _) =>
         {
-            var client = clientProvider(sp);
+            var client = clientProvider is not null ? clientProvider(sp) : sp.GetRequiredService<SearchIndexClient>();
             var options = GetCollectionOptions(sp, optionsProvider);
 
             return new AzureAISearchCollection<string, TRecord>(client, name, options);
@@ -258,42 +229,6 @@ public static class AzureAISearchServiceCollectionExtensions
 
         return services;
     }
-
-    /// <summary>
-    /// Registers a <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
-    /// with <see cref="SearchIndexClient"/> retrieved from the dependency injection container.
-    /// </summary>
-    /// <inheritdoc cref="AddKeyedAzureAISearchCollection(IServiceCollection, object?, string, AzureAISearchCollectionOptions?, ServiceLifetime)"/>
-    [RequiresUnreferencedCode(DynamicCodeMessage)]
-    [RequiresDynamicCode(UnreferencedCodeMessage)]
-    public static IServiceCollection AddAzureAISearchCollection<TRecord>(
-        this IServiceCollection services,
-        string name,
-        AzureAISearchCollectionOptions? options = default,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        where TRecord : class
-        => AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey: null, name, options, lifetime);
-
-    /// <summary>
-    /// Registers a keyed <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
-    /// with <see cref="SearchIndexClient"/> retrieved from the dependency injection container.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="AzureAISearchCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="serviceKey">The key with which to associate the collection.</param>
-    /// <param name="name">The name of the collection.</param>
-    /// <param name="options">Optional options to further configure the <see cref="AzureAISearchCollection{TKey, TRecord}"/>.</param>
-    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
-    /// <returns>Service collection.</returns>
-    [RequiresUnreferencedCode(DynamicCodeMessage)]
-    [RequiresDynamicCode(UnreferencedCodeMessage)]
-    public static IServiceCollection AddKeyedAzureAISearchCollection<TRecord>(
-        this IServiceCollection services,
-        object? serviceKey,
-        string name,
-        AzureAISearchCollectionOptions? options = default,
-        ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        where TRecord : class
-        => AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey, name, sp => sp.GetRequiredService<SearchIndexClient>(), _ => options!, lifetime);
 
     /// <summary>
     /// Registers a <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>

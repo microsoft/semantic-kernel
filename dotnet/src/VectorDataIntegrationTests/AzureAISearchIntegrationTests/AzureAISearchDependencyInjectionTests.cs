@@ -85,22 +85,6 @@ public class AzureAISearchDependencyInjectionTests
     }
 
     [Fact]
-    public void ClientProviderCantBeNull()
-    {
-        IServiceCollection services = new ServiceCollection();
-
-        Assert.Throws<ArgumentNullException>(
-            () => services.AddAzureAISearchCollection<SimpleRecord<string>>(this.CollectionName, clientProvider: null!));
-        Assert.Throws<ArgumentNullException>(
-            () => services.AddKeyedAzureAISearchCollection<SimpleRecord<string>>("serviceKey", this.CollectionName, clientProvider: null!));
-
-        Assert.Throws<ArgumentNullException>(
-            () => services.AddAzureAISearchVectorStore(clientProvider: null!));
-        Assert.Throws<ArgumentNullException>(
-            () => services.AddKeyedAzureAISearchVectorStore("serviceKey", clientProvider: null!));
-    }
-
-    [Fact]
     public void EndpointCantBeNull()
     {
         IServiceCollection services = new ServiceCollection();

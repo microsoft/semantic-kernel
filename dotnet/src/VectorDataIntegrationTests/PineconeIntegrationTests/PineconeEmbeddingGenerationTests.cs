@@ -4,7 +4,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
-using Microsoft.SemanticKernel;
+using Pinecone;
 using PineconeIntegrationTests.Support;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
@@ -54,7 +54,7 @@ public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.S
             services => services
                 .AddPineconeCollection<RecordWithAttributes>(this.CollectionName, "ForPineconeLocalTheApiKeysAreIgnored", PineconeTestStore.Instance.ClientOptions),
             services => services
-                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName, _ => "ForPineconeLocalTheApiKeysAreIgnored", _ => PineconeTestStore.Instance.ClientOptions)
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName, _ => new PineconeClient("ForPineconeLocalTheApiKeysAreIgnored", PineconeTestStore.Instance.ClientOptions))
         ];
     }
 
