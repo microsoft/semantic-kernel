@@ -420,7 +420,7 @@ public class AzureAISearchCollectionTests
         using var sut = new AzureAISearchCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
     }
 
     [Fact]
@@ -515,7 +515,7 @@ public class AzureAISearchCollectionTests
             TestCollectionName,
             new()
             {
-                VectorStoreRecordDefinition = useDefinition ? this._multiPropsDefinition : null,
+                Definition = useDefinition ? this._multiPropsDefinition : null,
                 JsonSerializerOptions = useCustomJsonSerializerOptions ? this._customJsonSerializerOptions : null
             });
     }

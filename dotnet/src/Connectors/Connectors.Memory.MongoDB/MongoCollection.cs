@@ -90,7 +90,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(MongoDynamicCollection)))
-                : new MongoModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
+                : new MongoModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }

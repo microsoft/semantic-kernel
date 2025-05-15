@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -9,19 +8,9 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// <summary>
 /// Options when creating a <see cref="WeaviateCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class WeaviateCollectionOptions
+public sealed class WeaviateCollectionOptions : VectorStoreCollectionOptions
 {
     internal static readonly WeaviateCollectionOptions Default = new();
-
-    /// <summary>
-    /// Gets or sets an optional record definition that defines the schema of the record type.
-    /// </summary>
-    /// <remarks>
-    /// If not provided, the schema will be inferred from the record model class using reflection.
-    /// In this case, the record model properties must be annotated with the appropriate attributes to indicate their usage.
-    /// See <see cref="VectorStoreKeyAttribute"/>, <see cref="VectorStoreDataAttribute"/> and <see cref="VectorStoreVectorAttribute"/>.
-    /// </remarks>
-    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; set; }
 
     /// <summary>
     /// Weaviate endpoint for remote or local cluster.
@@ -42,9 +31,4 @@ public sealed class WeaviateCollectionOptions
     /// <see href="https://weaviate.io/developers/weaviate/config-refs/schema/multi-vector"/>.
     /// </summary>
     public bool HasNamedVectors { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
-    /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

@@ -70,7 +70,7 @@ public sealed class WeaviateCollectionTests : IDisposable
         using var collection = new WeaviateCollection<Guid, TestModel>(
             this._mockHttpClient,
             "Collection",
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
 
         // Assert
         Assert.NotNull(collection);

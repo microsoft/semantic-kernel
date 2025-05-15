@@ -457,7 +457,7 @@ public class QdrantCollectionTests
         using var sut = new QdrantCollection<ulong, SinglePropsModel<ulong>>(
             () => this._qdrantClientMock.Object,
             TestCollectionName,
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
     }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
@@ -688,7 +688,7 @@ public class QdrantCollectionTests
             TestCollectionName,
             new()
             {
-                VectorStoreRecordDefinition = useDefinition ? CreateSinglePropsDefinition(typeof(T)) : null,
+                Definition = useDefinition ? CreateSinglePropsDefinition(typeof(T)) : null,
                 HasNamedVectors = hasNamedVectors
             }) as VectorStoreCollection<T, SinglePropsModel<T>>;
         return store!;

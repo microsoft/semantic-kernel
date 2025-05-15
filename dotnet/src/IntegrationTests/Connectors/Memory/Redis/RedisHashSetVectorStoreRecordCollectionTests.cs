@@ -56,7 +56,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var options = new RedisHashSetCollectionOptions
         {
             PrefixCollectionNameToKeyNames = true,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
         using var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, testCollectionName, options);
 
@@ -128,7 +128,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var options = new RedisHashSetCollectionOptions
         {
             PrefixCollectionNameToKeyNames = true,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
         using var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
         var record = CreateTestHotel("HUpsert-2", 2);
@@ -159,7 +159,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var options = new RedisHashSetCollectionOptions
         {
             PrefixCollectionNameToKeyNames = true,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
         using var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
 
@@ -183,7 +183,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var options = new RedisHashSetCollectionOptions
         {
             PrefixCollectionNameToKeyNames = true,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
         using var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
 
@@ -242,7 +242,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var options = new RedisHashSetCollectionOptions
         {
             PrefixCollectionNameToKeyNames = true,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.BasicVectorStoreRecordDefinition : null
         };
         using var sut = new RedisHashSetCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
         var record = new RedisBasicFloat32Hotel
@@ -413,7 +413,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var options = new RedisHashSetCollectionOptions
         {
             PrefixCollectionNameToKeyNames = true,
-            VectorStoreRecordDefinition = fixture.BasicVectorStoreRecordDefinition
+            Definition = fixture.BasicVectorStoreRecordDefinition
         };
         using var sut = new RedisHashSetCollection<object, Dictionary<string, object?>>(fixture.Database, TestCollectionName, options);
 

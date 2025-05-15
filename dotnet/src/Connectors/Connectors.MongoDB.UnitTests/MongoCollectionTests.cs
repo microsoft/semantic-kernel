@@ -64,7 +64,7 @@ public sealed class MongoCollectionTests
         using var collection = new MongoCollection<string, TestModel>(
             this._mockMongoDatabase.Object,
             "collection",
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
 
         // Assert
         Assert.NotNull(collection);
@@ -605,7 +605,7 @@ public sealed class MongoCollectionTests
         var expectedDefinition = Builders<BsonDocument>.Filter.Eq(document => document["_id"], "key");
 
         MongoCollectionOptions? options = definition != null ?
-            new() { VectorStoreRecordDefinition = definition } :
+            new() { Definition = definition } :
             null;
 
         using var sut = new MongoCollection<string, TDataModel>(

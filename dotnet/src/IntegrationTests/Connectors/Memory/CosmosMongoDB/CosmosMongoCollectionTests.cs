@@ -70,7 +70,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
 
         var options = new CosmosMongoCollectionOptions
         {
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
 
         using var sut = new CosmosMongoCollection<string, CosmosMongoHotel>(fixture.MongoDatabase, collectionName);
@@ -224,7 +224,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
         using var sut = new CosmosMongoCollection<string, TestModel>(
             fixture.MongoDatabase,
             fixture.TestCollection,
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
 
         // Act
         await sut.UpsertAsync(model);
@@ -272,7 +272,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
         using var sut = new CosmosMongoCollection<string, BsonTestModel>(
             fixture.MongoDatabase,
             fixture.TestCollection,
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
 
         // Act
         await sut.UpsertAsync(model);
@@ -418,7 +418,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
         // Arrange
         var options = new CosmosMongoCollectionOptions
         {
-            VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
+            Definition = fixture.HotelVectorStoreRecordDefinition
         };
 
         using var sut = new CosmosMongoCollection<object, Dictionary<string, object?>>(fixture.MongoDatabase, fixture.TestCollection, options);

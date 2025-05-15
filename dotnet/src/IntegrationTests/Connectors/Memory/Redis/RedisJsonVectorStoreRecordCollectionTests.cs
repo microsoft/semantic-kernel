@@ -56,7 +56,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var options = new RedisJsonCollectionOptions
         {
             PrefixCollectionNameToKeyNames = true,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
         using var sut = new RedisJsonCollection<string, RedisHotel>(fixture.Database, testCollectionName, options);
 
@@ -137,7 +137,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var options = new RedisJsonCollectionOptions
         {
             PrefixCollectionNameToKeyNames = true,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
         using var sut = new RedisJsonCollection<string, RedisHotel>(fixture.Database, TestCollectionName, options);
         RedisHotel record = CreateTestHotel("Upsert-2", 2);
@@ -173,7 +173,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var options = new RedisJsonCollectionOptions
         {
             PrefixCollectionNameToKeyNames = true,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
         using var sut = new RedisJsonCollection<string, RedisHotel>(fixture.Database, TestCollectionName, options);
 
@@ -197,7 +197,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var options = new RedisJsonCollectionOptions
         {
             PrefixCollectionNameToKeyNames = true,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
         using var sut = new RedisJsonCollection<string, RedisHotel>(fixture.Database, TestCollectionName, options);
 
@@ -271,7 +271,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var options = new RedisJsonCollectionOptions
         {
             PrefixCollectionNameToKeyNames = true,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
         using var sut = new RedisJsonCollection<string, RedisHotel>(fixture.Database, TestCollectionName, options);
         var address = new RedisHotelAddress { City = "Seattle", Country = "USA" };
@@ -432,7 +432,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var options = new RedisJsonCollectionOptions
         {
             PrefixCollectionNameToKeyNames = true,
-            VectorStoreRecordDefinition = fixture.VectorStoreRecordDefinition
+            Definition = fixture.VectorStoreRecordDefinition
         };
         using var sut = new RedisJsonCollection<object, Dictionary<string, object?>>(fixture.Database, TestCollectionName, options);
 

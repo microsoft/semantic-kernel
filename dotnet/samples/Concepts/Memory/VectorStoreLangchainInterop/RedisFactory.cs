@@ -59,7 +59,7 @@ public static class RedisFactory
                 name,
                 new()
                 {
-                    VectorStoreRecordDefinition = s_recordDefinition
+                    Definition = s_recordDefinition
                 }) as VectorStoreCollection<TKey, TRecord>)!;
         }
 
@@ -74,7 +74,7 @@ public static class RedisFactory
                 name,
                 new()
                 {
-                    VectorStoreRecordDefinition = s_recordDefinition
+                    Definition = s_recordDefinition
                 });
         }
 

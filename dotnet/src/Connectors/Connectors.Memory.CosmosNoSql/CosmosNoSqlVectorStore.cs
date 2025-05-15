@@ -114,7 +114,7 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
                 name,
                 new()
                 {
-                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    Definition = vectorStoreRecordDefinition,
                     JsonSerializerOptions = this._jsonSerializerOptions,
                     EmbeddingGenerator = this._embeddingGenerator
                 });
@@ -133,7 +133,7 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
             name,
             new()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 JsonSerializerOptions = this._jsonSerializerOptions,
                 EmbeddingGenerator = this._embeddingGenerator
             }

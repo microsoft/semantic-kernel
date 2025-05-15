@@ -65,7 +65,7 @@ public sealed class PineconeVectorStore : VectorStore
                 name,
                 new PineconeCollectionOptions()
                 {
-                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    Definition = vectorStoreRecordDefinition,
                     EmbeddingGenerator = this._embeddingGenerator
                 });
 
@@ -80,7 +80,7 @@ public sealed class PineconeVectorStore : VectorStore
             name,
             new()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator
             }
         );

@@ -25,7 +25,7 @@ public class CommonRedisHashsetVectorStoreRecordCollectionTests(RedisVectorStore
     {
         return new RedisHashSetCollection<string, TRecord>(fixture.Database, recordCollectionName + "hashset", new()
         {
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            Definition = vectorStoreRecordDefinition
         });
     }
 

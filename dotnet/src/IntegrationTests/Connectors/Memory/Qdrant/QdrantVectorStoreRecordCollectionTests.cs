@@ -55,7 +55,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
         using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, testCollectionName, ownsClient: false, options);
 
@@ -130,7 +130,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
         using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, ownsClient: false, options);
 
@@ -205,7 +205,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
         using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, ownsClient: false, options);
 
@@ -247,7 +247,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var options = new QdrantCollectionOptions
         {
             HasNamedVectors = false,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelWithGuidIdVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelWithGuidIdVectorStoreRecordDefinition : null
         };
         using var sut = new QdrantCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", ownsClient: false, options);
 
@@ -305,7 +305,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
         using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, ownsClient: false, options);
 
@@ -331,7 +331,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
         using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, ownsClient: false, options);
 
@@ -371,7 +371,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
         using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, ownsClient: false, options);
 
@@ -404,7 +404,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         // Arrange
         var options = new QdrantCollectionOptions
         {
-            VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
+            Definition = fixture.HotelVectorStoreRecordDefinition
         };
         using var sut = new QdrantCollection<object, Dictionary<string, object?>>(fixture.QdrantClient, "singleVectorHotels", ownsClient: false, options);
 

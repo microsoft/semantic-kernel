@@ -76,13 +76,13 @@ public sealed class RedisVectorStore : VectorStore
         {
             RedisStorageType.HashSet => new RedisHashSetCollection<TKey, TRecord>(this._database, name, new RedisHashSetCollectionOptions()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator
             }),
 
             RedisStorageType.Json => new RedisJsonCollection<TKey, TRecord>(this._database, name, new RedisJsonCollectionOptions()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator
             }),
 
@@ -99,13 +99,13 @@ public sealed class RedisVectorStore : VectorStore
         {
             RedisStorageType.HashSet => new RedisHashSetDynamicCollection(this._database, name, new RedisHashSetCollectionOptions()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator
             }),
 
             RedisStorageType.Json => new RedisJsonDynamicCollection(this._database, name, new RedisJsonCollectionOptions()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator
             }),
 

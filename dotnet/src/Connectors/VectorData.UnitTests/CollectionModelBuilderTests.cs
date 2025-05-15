@@ -21,7 +21,7 @@ public class CollectionModelBuilderTests
     public void Default_embedding_generator_without_record_definition()
     {
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<float>>();
-        var model = new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), vectorStoreRecordDefinition: null, embeddingGenerator);
+        var model = new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), definition: null, embeddingGenerator);
 
         // The embedding's .NET type (Embedding<float>) is inferred from the embedding generator.
         Assert.Same(embeddingGenerator, model.VectorProperty.EmbeddingGenerator);
@@ -147,7 +147,7 @@ public class CollectionModelBuilderTests
                     ]
                 },
                 embeddingGenerator)
-            : new CustomModelBuilder().Build(typeof(RecordWithEmbeddingVectorProperty), vectorStoreRecordDefinition: null, embeddingGenerator);
+            : new CustomModelBuilder().Build(typeof(RecordWithEmbeddingVectorProperty), definition: null, embeddingGenerator);
 
         Assert.Null(model.VectorProperty.EmbeddingGenerator);
         Assert.Same(typeof(ReadOnlyMemory<float>), model.VectorProperty.Type);
@@ -189,7 +189,7 @@ public class CollectionModelBuilderTests
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<long>>();
 
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), vectorStoreRecordDefinition: null, embeddingGenerator));
+            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), definition: null, embeddingGenerator));
 
         Assert.Equal($"Embedding generator '{typeof(FakeEmbeddingGenerator<,>).Name}' is incompatible with the required input and output types. The property input type must be 'String, DataContent', and the output type must be 'ReadOnlyMemory<Single>, ReadOnlyMemory<Half>'.", exception.Message);
     }
@@ -201,7 +201,7 @@ public class CollectionModelBuilderTests
         using var embeddingGenerator = new FakeEmbeddingGenerator<int, Embedding<float>>();
 
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), vectorStoreRecordDefinition: null, embeddingGenerator));
+            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), definition: null, embeddingGenerator));
 
         Assert.Equal($"Embedding generator '{typeof(FakeEmbeddingGenerator<,>).Name}' is incompatible with the required input and output types. The property input type must be 'String, DataContent', and the output type must be 'ReadOnlyMemory<Single>, ReadOnlyMemory<Half>'.", exception.Message);
     }
@@ -210,7 +210,7 @@ public class CollectionModelBuilderTests
     public void Non_embedding_vector_property_without_embedding_generator_throws()
     {
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), vectorStoreRecordDefinition: null, defaultEmbeddingGenerator: null));
+            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), definition: null, defaultEmbeddingGenerator: null));
 
         Assert.Equal($"Property '{nameof(RecordWithStringVectorProperty.Embedding)}' has non-Embedding type 'String', but no embedding generator is configured.", exception.Message);
     }

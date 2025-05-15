@@ -70,7 +70,7 @@ public sealed class InMemoryVectorStore : VectorStore
             name,
             new()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator
             });
         return collection!;
@@ -90,7 +90,7 @@ public sealed class InMemoryVectorStore : VectorStore
             name,
             new()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator,
             }
         );

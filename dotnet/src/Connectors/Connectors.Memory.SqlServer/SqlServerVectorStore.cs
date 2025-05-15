@@ -74,7 +74,7 @@ public sealed class SqlServerVectorStore : VectorStore
                 new()
                 {
                     Schema = this._schema,
-                    RecordDefinition = vectorStoreRecordDefinition,
+                    Definition = vectorStoreRecordDefinition,
                     EmbeddingGenerator = this._embeddingGenerator
                 });
 
@@ -93,7 +93,7 @@ public sealed class SqlServerVectorStore : VectorStore
             new()
             {
                 Schema = this._schema,
-                RecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator,
             }
         );

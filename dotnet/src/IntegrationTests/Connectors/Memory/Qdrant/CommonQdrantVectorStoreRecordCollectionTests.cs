@@ -24,7 +24,7 @@ public class CommonQdrantVectorStoreRecordCollectionTests(QdrantVectorStoreFixtu
         return new QdrantCollection<ulong, TRecord>(fixture.QdrantClient, recordCollectionName, ownsClient: false, new()
         {
             HasNamedVectors = true,
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            Definition = vectorStoreRecordDefinition
         });
     }
 

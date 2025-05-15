@@ -20,7 +20,7 @@ public class CommonInMemoryVectorStoreRecordCollectionTests() : BaseVectorStoreR
     {
         return new InMemoryCollection<string, TRecord>(recordCollectionName, new()
         {
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            Definition = vectorStoreRecordDefinition
         });
     }
 

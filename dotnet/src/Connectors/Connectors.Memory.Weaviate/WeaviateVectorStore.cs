@@ -90,7 +90,7 @@ public sealed class WeaviateVectorStore : VectorStore
                 name,
                 new()
                 {
-                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    Definition = vectorStoreRecordDefinition,
                     Endpoint = this._endpoint,
                     ApiKey = this._apiKey,
                     HasNamedVectors = this._hasNamedVectors,
@@ -111,7 +111,7 @@ public sealed class WeaviateVectorStore : VectorStore
             name,
             new()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 Endpoint = this._endpoint,
                 ApiKey = this._apiKey,
                 HasNamedVectors = this._hasNamedVectors,

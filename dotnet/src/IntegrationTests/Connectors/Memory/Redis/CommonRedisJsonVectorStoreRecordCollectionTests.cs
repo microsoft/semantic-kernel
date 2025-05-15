@@ -25,7 +25,7 @@ public class CommonRedisJsonVectorStoreRecordCollectionTests(RedisVectorStoreFix
     {
         return new RedisJsonCollection<string, TRecord>(fixture.Database, recordCollectionName + "json", new()
         {
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            Definition = vectorStoreRecordDefinition
         });
     }
 

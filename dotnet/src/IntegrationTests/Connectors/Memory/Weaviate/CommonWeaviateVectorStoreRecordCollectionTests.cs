@@ -32,7 +32,7 @@ public class CommonWeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreF
 
         return new WeaviateCollection<Guid, TRecord>(fixture.HttpClient!, new string(recordCollectionNameChars), new()
         {
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            Definition = vectorStoreRecordDefinition
         });
     }
 

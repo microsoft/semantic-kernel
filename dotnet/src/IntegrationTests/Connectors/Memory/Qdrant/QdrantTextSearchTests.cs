@@ -28,7 +28,7 @@ public class QdrantTextSearchTests(QdrantVectorStoreFixture fixture) : BaseVecto
         var options = new QdrantCollectionOptions
         {
             HasNamedVectors = true,
-            VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition,
+            Definition = fixture.HotelVectorStoreRecordDefinition,
         };
         using var collection = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", ownsClient: false, options);
         var stringMapper = new HotelInfoTextSearchStringMapper();

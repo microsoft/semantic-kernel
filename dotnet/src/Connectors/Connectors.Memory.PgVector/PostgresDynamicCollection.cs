@@ -41,7 +41,7 @@ public sealed class PostgresDynamicCollection : PostgresCollection<object, Dicti
             clientFactory,
             name,
             static options => new PostgresModelBuilder().BuildDynamic(
-                options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                options.Definition ?? throw new ArgumentException("Definition is required for dynamic collections"),
                 options.EmbeddingGenerator),
             options)
     {

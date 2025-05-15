@@ -62,7 +62,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         var options = new WeaviateCollectionOptions
         {
-            VectorStoreRecordDefinition = useRecordDefinition ? this.GetTestHotelRecordDefinition() : null
+            Definition = useRecordDefinition ? this.GetTestHotelRecordDefinition() : null
         };
 
         using var sut = new WeaviateCollection<Guid, WeaviateHotel>(fixture.HttpClient!, collectionName, options);
@@ -354,7 +354,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         var hotelId = new Guid("55555555-5555-5555-5555-555555555555");
         var options = new WeaviateCollectionOptions
         {
-            VectorStoreRecordDefinition = this.GetTestHotelRecordDefinition()
+            Definition = this.GetTestHotelRecordDefinition()
         };
 
         using var sut = new WeaviateCollection<object, Dictionary<string, object?>>(fixture.HttpClient!, "TestDynamicMapper", options);

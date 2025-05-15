@@ -28,7 +28,7 @@ public sealed class SqlServerDynamicCollection : SqlServerCollection<object, Dic
             name,
             static options => new SqlServerModelBuilder()
                 .BuildDynamic(
-                    options.RecordDefinition ?? throw new ArgumentException("RecordDefinition is required for dynamic collections"),
+                    options.Definition ?? throw new ArgumentException("RecordDefinition is required for dynamic collections"),
                     options.EmbeddingGenerator),
             options)
     {

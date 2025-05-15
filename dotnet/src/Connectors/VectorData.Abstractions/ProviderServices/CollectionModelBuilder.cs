@@ -67,11 +67,11 @@ public abstract class CollectionModelBuilder
     }
 
     /// <summary>
-    /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="vectorStoreRecordDefinition"/>.
+    /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="definition"/>.
     /// </summary>
     [RequiresDynamicCode("This model building variant is not compatible with NativeAOT. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     [RequiresUnreferencedCode("This model building variant is not compatible with trimming. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
-    public virtual CollectionModel Build(Type type, VectorStoreRecordDefinition? vectorStoreRecordDefinition, IEmbeddingGenerator? defaultEmbeddingGenerator)
+    public virtual CollectionModel Build(Type type, VectorStoreRecordDefinition? definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
     {
         if (type == typeof(Dictionary<string, object?>))
         {
@@ -80,11 +80,11 @@ public abstract class CollectionModelBuilder
 
         this.DefaultEmbeddingGenerator = defaultEmbeddingGenerator;
 
-        this.ProcessTypeProperties(type, vectorStoreRecordDefinition);
+        this.ProcessTypeProperties(type, definition);
 
-        if (vectorStoreRecordDefinition is not null)
+        if (definition is not null)
         {
-            this.ProcessRecordDefinition(vectorStoreRecordDefinition, type);
+            this.ProcessRecordDefinition(definition, type);
         }
 
         // Go over the properties, set the PropertyInfos to point to the .NET type's properties and validate type compatibility.
@@ -115,17 +115,17 @@ public abstract class CollectionModelBuilder
     }
 
     /// <summary>
-    /// Builds and returns an <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="vectorStoreRecordDefinition"/>.
+    /// Builds and returns an <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="definition"/>.
     /// </summary>
-    public virtual CollectionModel BuildDynamic(VectorStoreRecordDefinition vectorStoreRecordDefinition, IEmbeddingGenerator? defaultEmbeddingGenerator)
+    public virtual CollectionModel BuildDynamic(VectorStoreRecordDefinition definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
     {
-        if (vectorStoreRecordDefinition is null)
+        if (definition is null)
         {
             throw new ArgumentException("Vector store record definition must be provided for dynamic mapping.");
         }
 
         this.DefaultEmbeddingGenerator = defaultEmbeddingGenerator;
-        this.ProcessRecordDefinition(vectorStoreRecordDefinition, type: null);
+        this.ProcessRecordDefinition(definition, type: null);
         this.Customize();
         this.Validate(type: null);
 
@@ -140,7 +140,7 @@ public abstract class CollectionModelBuilder
     // TODO: We could put [DynamicallyAccessedMembers] to preserve all properties, but that approach wouldn't
     // TODO: work with hierarchical data models (#10957).
     [RequiresUnreferencedCode("Traverses the CLR type's properties with reflection, so not compatible with trimming")]
-    protected virtual void ProcessTypeProperties(Type type, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected virtual void ProcessTypeProperties(Type type, VectorStoreRecordDefinition? definition)
     {
         // We want to allow the user-provided record definition to override anything configured via attributes
         // (allowing the same CLR type + attributes to be used with different record definitions).
@@ -185,7 +185,7 @@ public abstract class CollectionModelBuilder
 
                 // If a record definition exists for the property, we must instantiate it via that definition, as the user may be using
                 // a generic VectorStoreRecordVectorProperty<TInput> for a custom input type.
-                var vectorProperty = vectorStoreRecordDefinition?.Properties.FirstOrDefault(p => p.DataModelPropertyName == clrProperty.Name) is VectorStoreVectorProperty definitionVectorProperty
+                var vectorProperty = definition?.Properties.FirstOrDefault(p => p.DataModelPropertyName == clrProperty.Name) is VectorStoreVectorProperty definitionVectorProperty
                     ? definitionVectorProperty.CreatePropertyModel()
                     : new VectorPropertyModel(clrProperty.Name, clrProperty.PropertyType);
 
@@ -231,11 +231,11 @@ public abstract class CollectionModelBuilder
     }
 
     /// <summary>
-    /// As part of building the model, this method processes the given <paramref name="vectorStoreRecordDefinition"/>.
+    /// As part of building the model, this method processes the given <paramref name="definition"/>.
     /// </summary>
-    protected virtual void ProcessRecordDefinition(VectorStoreRecordDefinition vectorStoreRecordDefinition, Type? type)
+    protected virtual void ProcessRecordDefinition(VectorStoreRecordDefinition definition, Type? type)
     {
-        foreach (VectorStoreProperty definitionProperty in vectorStoreRecordDefinition.Properties)
+        foreach (VectorStoreProperty definitionProperty in definition.Properties)
         {
             if (!this.PropertyMap.TryGetValue(definitionProperty.DataModelPropertyName, out var property))
             {
@@ -333,10 +333,10 @@ public abstract class CollectionModelBuilder
                     }
                     // If a default embedding generator is defined (at the collection or store level), configure that on the property, but only if the property type is not an embedding type.
                     // If the property type is an embedding type, just ignore the default embedding generator.
-                    else if ((vectorStoreRecordDefinition.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator) is IEmbeddingGenerator defaultEmbeddingGenerator
+                    else if ((definition.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator) is IEmbeddingGenerator defaultEmbeddingGenerator
                         && !this.IsVectorPropertyTypeValid(vectorProperty.Type, out _))
                     {
-                        embeddingGenerator = vectorStoreRecordDefinition.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator;
+                        embeddingGenerator = definition.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator;
                     }
 
                     if (embeddingGenerator is null)

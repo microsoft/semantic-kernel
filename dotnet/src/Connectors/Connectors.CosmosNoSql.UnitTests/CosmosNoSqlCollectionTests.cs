@@ -84,7 +84,7 @@ public sealed class CosmosNoSqlCollectionTests
         using var collection = new CosmosNoSqlCollection<string, TestModel>(
             this._mockDatabase.Object,
             "collection",
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
 
         // Assert
         Assert.NotNull(collection);

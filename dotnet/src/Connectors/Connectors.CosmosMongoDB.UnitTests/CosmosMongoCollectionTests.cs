@@ -64,7 +64,7 @@ public sealed class CosmosMongoCollectionTests
         using var collection = new CosmosMongoCollection<string, TestModel>(
             this._mockMongoDatabase.Object,
             "collection",
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
 
         // Assert
         Assert.NotNull(collection);
@@ -609,7 +609,7 @@ public sealed class CosmosMongoCollectionTests
         var expectedDefinition = Builders<BsonDocument>.Filter.Eq(document => document["_id"], "key");
 
         CosmosMongoCollectionOptions? options = definition != null ?
-            new() { VectorStoreRecordDefinition = definition } :
+            new() { Definition = definition } :
             null;
 
         using var sut = new CosmosMongoCollection<string, TDataModel>(
