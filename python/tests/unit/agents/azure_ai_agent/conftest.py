@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from azure.ai.agents.models import Agent as AzureAIAgentModel
@@ -9,7 +9,12 @@ from azure.ai.projects.aio import AIProjectClient
 
 @pytest.fixture
 def ai_project_client() -> AsyncMock:
-    return AsyncMock(spec=AIProjectClient)
+    client = AsyncMock(spec=AIProjectClient)
+
+    agents_mock = MagicMock()
+    client.agents = agents_mock
+
+    return client
 
 
 @pytest.fixture
