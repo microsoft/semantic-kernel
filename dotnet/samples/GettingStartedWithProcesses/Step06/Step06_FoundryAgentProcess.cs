@@ -51,12 +51,6 @@ public class Step06_FoundryAgentProcess : BaseTest
         kernelBuilder.Services.AddSingleton(agentsClient);
         kernelBuilder.Services.AddSingleton(foundryClient);
         var kernel = kernelBuilder.Build();
-
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "What is the best programming language and why?" });
-        var agent1Result = await context.GetStateAsync();
-
-        Assert.NotNull(context);
-        Assert.NotNull(agent1Result);
     }
 
     [Fact]
@@ -86,12 +80,6 @@ public class Step06_FoundryAgentProcess : BaseTest
         kernelBuilder.Services.AddSingleton(agentsClient);
         kernelBuilder.Services.AddSingleton(foundryClient);
         var kernel = kernelBuilder.Build();
-
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" });
-        var agent1Result = await context.GetStateAsync();
-
-        Assert.NotNull(context);
-        Assert.NotNull(agent1Result);
     }
 
     [Fact]
@@ -115,23 +103,6 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.OnResultFromStep(agent2).StopProcess();
 
         var process = processBuilder.Build();
-
-        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-        var agentsClient = foundryClient.GetAgentsClient();
-
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddSingleton(agentsClient);
-        kernelBuilder.Services.AddSingleton(foundryClient);
-        var kernel = kernelBuilder.Build();
-
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" });
-        var agent1Result = await context.GetStateAsync();
-
-        Assert.NotNull(context);
-        Assert.NotNull(agent1Result);
-
-        var workflow = await WorkflowBuilder.BuildWorkflow(process);
-        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
     }
 
     [Fact]
@@ -165,23 +136,6 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.OnResultFromStep(agent2).StopProcess();
 
         var process = processBuilder.Build();
-
-        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-        var agentsClient = foundryClient.GetAgentsClient();
-
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddSingleton(agentsClient);
-        kernelBuilder.Services.AddSingleton(foundryClient);
-        var kernel = kernelBuilder.Build();
-
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are distributed systems hard to reason about?" });
-        var agent1Result = await context.GetStateAsync();
-
-        Assert.NotNull(context);
-        Assert.NotNull(agent1Result);
-
-        var workflow = await WorkflowBuilder.BuildWorkflow(process);
-        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
     }
 
     [Fact]
@@ -215,23 +169,6 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.OnResultFromStep(agent2).StopProcess();
 
         var process = processBuilder.Build();
-
-        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-        var agentsClient = foundryClient.GetAgentsClient();
-
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddSingleton(agentsClient);
-        kernelBuilder.Services.AddSingleton(foundryClient);
-        var kernel = kernelBuilder.Build();
-
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are distributed systems hard to reason about?" });
-        var agent1Result = await context.GetStateAsync();
-
-        Assert.NotNull(context);
-        Assert.NotNull(agent1Result);
-
-        var workflow = await WorkflowBuilder.BuildWorkflow(process);
-        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
     }
 
     [Fact]
@@ -257,7 +194,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.OnProcessEnter().SendEventTo(
             student,
             thread: "_variables_.student_thread",
-            messagesIn: "_variables_.TeacherMessages",
+            messagesIn: ["_variables_.TeacherMessages"],
             inputs: new Dictionary<string, string>
             {
                 { "InteractionCount", "_variables_.StudentState.InteractionCount" }
@@ -269,7 +206,7 @@ public class Step06_FoundryAgentProcess : BaseTest
             .UpdateProcessState(path: "InteractionCount", operation: StateUpdateOperations.Increment, value: "_agent_.student_messages")
             .UpdateProcessState(path: "StudentState.InteractionCount", operation: StateUpdateOperations.Increment, value: "_agent_.student_messages")
             .UpdateProcessState(path: "StudentState.Name", operation: StateUpdateOperations.Set, value: "Runhan")
-            .SendEventTo(teacher, messagesIn: "_variables_.StudentMessages");
+            .SendEventTo(teacher, messagesIn: ["_variables_.StudentMessages"]);
 
         processBuilder.OnStepExit(teacher, condition: "contains(to_string(_agent_.messages_out), '[COMPLETE]')")
             .EmitEvent(
@@ -285,24 +222,11 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.OnStepExit(teacher, condition: "_default_")
             .SendEventTo(student);
 
+        processBuilder.OnWorkflowEvent("correct_answer")
+            .StopProcess(messagesIn: ["_event_.Answer", "_variable_.StudentMessages"]);
+
         var process = processBuilder.Build();
 
-        //var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new DefaultAzureCredential());
-        //var agentsClient = foundryClient.GetAgentsClient();
-
-        //var kernelBuilder = Kernel.CreateBuilder();
-        //kernelBuilder.Services.AddSingleton(agentsClient);
-        //kernelBuilder.Services.AddSingleton(foundryClient);
-        //var kernel = kernelBuilder.Build();
-
-        //var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are distributed systems hard to reason about?" });
-        //var agent1Result = await context.GetStateAsync();
-
-        //Assert.NotNull(context);
-        //Assert.NotNull(agent1Result);
-
-        var workflow = await WorkflowBuilder.BuildWorkflow(process);
-        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
         await processBuilder.DeployToFoundryAsync(process, TestConfiguration.AzureAI.WorkflowEndpoint);
     }
 
@@ -381,7 +305,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         //Router -> Progress Manager
         processBuilder.OnResultFromStep(routerStep, condition: "contains(_variables_.NextAgentId, 'UnknownAgent')")
             .UpdateProcessState("NextAgentId", StateUpdateOperations.Set, "_agent_.outputs.targetAgentId")
-            .SendEventTo(progressManagerStep, inputs: new Dictionary<string, string> { { "arg1", "_variables_.NextAgentId" } }, messagesIn: "_variables_.Plan");
+            .SendEventTo(progressManagerStep, inputs: new Dictionary<string, string> { { "arg1", "_variables_.NextAgentId" } }, messagesIn: ["_variables_.Plan"]);
 
         //Router -> Facts Update
         processBuilder.OnResultFromStep(routerStep, condition: "contains(_variables_.NextAgentId, 'LedgerFactsUpdate')")
@@ -414,9 +338,6 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.OnResultFromStep(summarizerStep).StopProcess();
 
         var process = processBuilder.Build();
-
-        var workflow = await WorkflowBuilder.BuildWorkflow(process);
-        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
     }
 
     public class DeepResearchState

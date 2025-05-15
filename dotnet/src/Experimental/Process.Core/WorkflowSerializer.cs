@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -16,13 +19,14 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Helper class for serializing and deserializing workflows
 /// </summary>
-public static class WorkflowSerializer
+internal static class WorkflowSerializer
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonEnumMemberStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) }
     };
 
     /// <summary>
@@ -168,5 +172,54 @@ public static class WorkflowSerializer
 #pragma warning restore CA1308 // Normalize strings to uppercase
             emitter.Emit(new Scalar(snakeCaseValue));
         }
+    }
+
+    internal class JsonEnumMemberStringEnumConverter : JsonConverterFactory
+    {
+        private readonly JsonNamingPolicy? _namingPolicy;
+        private readonly bool _allowIntegerValues;
+        private readonly JsonStringEnumConverter _baseConverter;
+
+        public JsonEnumMemberStringEnumConverter() : this(null, true) { }
+
+        public JsonEnumMemberStringEnumConverter(JsonNamingPolicy? namingPolicy = null, bool allowIntegerValues = true)
+        {
+            this._namingPolicy = namingPolicy;
+            this._allowIntegerValues = allowIntegerValues;
+            this._baseConverter = new JsonStringEnumConverter(namingPolicy, allowIntegerValues);
+        }
+
+        public override bool CanConvert(Type typeToConvert) => this._baseConverter.CanConvert(typeToConvert);
+
+        public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+        {
+            var query = from field in typeToConvert.GetFields(BindingFlags.Public | BindingFlags.Static)
+                        let attr = field.GetCustomAttribute<EnumMemberAttribute>()
+                        where attr != null && attr.Value != null
+                        select (field.Name, attr.Value);
+            var dictionary = query.ToDictionary(p => p.Item1, p => p.Item2);
+            if (dictionary.Count > 0)
+            {
+                return new JsonStringEnumConverter(new DictionaryLookupNamingPolicy(dictionary, this._namingPolicy), this._allowIntegerValues).CreateConverter(typeToConvert, options);
+            }
+
+            return this._baseConverter.CreateConverter(typeToConvert, options);
+        }
+    }
+
+    internal class JsonNamingPolicyDecorator : JsonNamingPolicy
+    {
+        private readonly JsonNamingPolicy? _underlyingNamingPolicy;
+
+        public JsonNamingPolicyDecorator(JsonNamingPolicy? underlyingNamingPolicy) => this._underlyingNamingPolicy = underlyingNamingPolicy;
+        public override string ConvertName(string name) => this._underlyingNamingPolicy?.ConvertName(name) ?? name;
+    }
+
+    internal class DictionaryLookupNamingPolicy : JsonNamingPolicyDecorator
+    {
+        private readonly Dictionary<string, string> _dictionary;
+
+        public DictionaryLookupNamingPolicy(Dictionary<string, string> dictionary, JsonNamingPolicy? underlyingNamingPolicy) : base(underlyingNamingPolicy) => this._dictionary = dictionary ?? throw new ArgumentNullException();
+        public override string ConvertName(string name) => this._dictionary.TryGetValue(name, out var value) ? value : base.ConvertName(name);
     }
 }

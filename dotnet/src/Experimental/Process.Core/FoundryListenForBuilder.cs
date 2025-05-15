@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0081")]
 public class FoundryListenForBuilder
 {
+    private readonly ProcessBuilder _processBuilder;
     private readonly ListenForBuilder _listenForBuilder;
 
     /// <summary>
@@ -20,6 +21,7 @@ public class FoundryListenForBuilder
     /// <param name="processBuilder">The process builder.</param>
     public FoundryListenForBuilder(ProcessBuilder processBuilder)
     {
+        this._processBuilder = processBuilder;
         this._listenForBuilder = new ListenForBuilder(processBuilder);
     }
 
@@ -29,7 +31,7 @@ public class FoundryListenForBuilder
     /// <param name="eventName"></param>
     /// <param name="condition"></param>
     /// <returns></returns>
-    public FoundryListenForTargetBuilder InputEvent(string eventName, KernelProcessEdgeCondition? condition = null)
+    internal FoundryListenForTargetBuilder InputEvent(string eventName, KernelProcessEdgeCondition? condition = null)
     {
         return new(this._listenForBuilder.InputEvent(eventName, condition));
     }

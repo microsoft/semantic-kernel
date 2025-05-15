@@ -103,10 +103,9 @@ public record ProcessAgentInvokeTargetBuilder : ProcessTargetBuilder
     /// <param name="threadEval"></param>
     /// <param name="messagesInEval"></param>
     /// <param name="inputEvals"></param>
-    public ProcessAgentInvokeTargetBuilder(ProcessStepBuilder step, string threadEval, string? messagesInEval, Dictionary<string, string> inputEvals) : base(ProcessTargetType.Invocation)
+    public ProcessAgentInvokeTargetBuilder(ProcessStepBuilder step, string? threadEval, List<string>? messagesInEval, Dictionary<string, string> inputEvals) : base(ProcessTargetType.Invocation)
     {
         Verify.NotNull(step);
-        Verify.NotNullOrWhiteSpace(threadEval);
         Verify.NotNull(inputEvals);
 
         this.Step = step;
@@ -123,12 +122,12 @@ public record ProcessAgentInvokeTargetBuilder : ProcessTargetBuilder
     /// <summary>
     /// An evaluation string that will be evaluated to determine the thread to run on.
     /// </summary>
-    public string ThreadEval { get; init; }
+    public string? ThreadEval { get; init; }
 
     /// <summary>
     /// An evaluation string that will be evaluated to determine the messages to send to the target.
     /// </summary>
-    public string? MessagesInEval { get; init; }
+    public List<string>? MessagesInEval { get; init; }
 
     /// <summary>
     /// An evaluation string that will be evaluated to determine the inputs to send to the target.
