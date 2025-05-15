@@ -595,6 +595,5 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             throw new ArgumentException("Failed to deserialize the process string.", ex);
         }
     }
-
     #endregion
 }

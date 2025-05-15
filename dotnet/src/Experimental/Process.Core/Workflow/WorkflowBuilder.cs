@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Builds a workflow from a YAML definition.
 /// </summary>
-public class WorkflowBuilder
+internal class WorkflowBuilder
 {
     private readonly Dictionary<string, ProcessStepBuilder> _stepBuilders = [];
     private readonly Dictionary<string, CloudEvent> _inputEvents = [];
@@ -543,6 +543,13 @@ public class WorkflowBuilder
         if (eventName.EndsWith(ProcessConstants.Declarative.OnExitEvent, StringComparison.Ordinal))
         {
             return ProcessConstants.Declarative.OnExitEvent;
+        }
+
+        // remove the first part of the event name before the first period
+        int index = eventName.IndexOf(ProcessConstants.EventIdSeparator);
+        if (index > 0)
+        {
+            eventName = eventName.Substring(index + 1);
         }
 
         return eventName;

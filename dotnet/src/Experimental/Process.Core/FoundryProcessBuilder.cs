@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel;
 public class FoundryProcessBuilder<TProcessState> where TProcessState : class, new()
 {
     private readonly ProcessBuilder _processBuilder;
-    private static readonly string[] s_scopes = new[] { "https://management.azure.com/" };
+    private static readonly string[] s_scopes = ["https://management.azure.com/"];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
@@ -88,9 +88,21 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// </summary>
     /// <param name="eventId">The Id of the external event.</param>
     /// <returns>An instance of <see cref="ProcessEdgeBuilder"/></returns>
-    public ProcessEdgeBuilder OnInputEvent(string eventId)
+    internal ProcessEdgeBuilder OnInputEvent(string eventId)
     {
         return this._processBuilder.OnInputEvent(eventId);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
+    /// </summary>
+    /// <param name="eventName"> The name of the event to listen for.</param>
+    /// <param name="condition"></param>
+    /// <returns></returns>
+    public FoundryListenForTargetBuilder OnWorkflowEvent(string eventName, string? condition = null)
+    {
+        Verify.NotNullOrWhiteSpace(eventName);
+        return new FoundryListenForBuilder(this._processBuilder).Message(eventName, this._processBuilder, condition);
     }
 
     /// <summary>
@@ -160,8 +172,8 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
         httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {(await new DefaultAzureCredential().GetTokenAsync(new Azure.Core.TokenRequestContext(s_scopes)).ConfigureAwait(false)).Token}");
 
         var workflow = await WorkflowBuilder.BuildWorkflow(process).ConfigureAwait(false);
-        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
-        using var content = new StringContent(yaml, System.Text.Encoding.UTF8, "application/json");
+        string json = WorkflowSerializer.SerializeToJson(workflow);
+        using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
         var response = await httpClient.PostAsync(new Uri($"{endpoint}/agents?api-version=2025-05-01-preview"), content).ConfigureAwait(false);
 
         if (response.IsSuccessStatusCode)

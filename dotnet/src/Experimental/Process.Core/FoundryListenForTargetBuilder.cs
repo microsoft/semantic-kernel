@@ -51,10 +51,10 @@ public class FoundryListenForTargetBuilder
     /// <param name="inputs"> The inputs to the target.</param>
     /// <param name="messagesIn"> The messages to be sent to the target.</param>
     /// <returns>A fresh builder instance for fluid definition</returns>
-    public ProcessStepEdgeBuilder SendEventTo<TProcessState>(ProcessAgentBuilder<TProcessState> target, string? thread = null, Dictionary<string, string>? inputs = null, string? messagesIn = null) where TProcessState : class, new()
+    public ProcessStepEdgeBuilder SendEventTo<TProcessState>(ProcessAgentBuilder<TProcessState> target, string? thread = null, Dictionary<string, string>? inputs = null, List<string>? messagesIn = null) where TProcessState : class, new()
     {
         var threadName = thread ?? target.DefaultThreadName ?? throw new InvalidOperationException($"`SendEventTo({target.Name})` called with empty thread parameter and no default thread. Either specify the thread when calling `SendEventTo` or set the default thread on the agent step.");
-        return this._listenForTargetBuilder.SendEventTo_Internal(new ProcessAgentInvokeTargetBuilder(target, threadName, messagesIn ?? "", inputs ?? []));
+        return this._listenForTargetBuilder.SendEventTo_Internal(new ProcessAgentInvokeTargetBuilder(target, threadName, messagesIn ?? [], inputs ?? []));
     }
 
     /// <summary>
@@ -83,8 +83,9 @@ public class FoundryListenForTargetBuilder
     /// <summary>
     /// Signals that the process should be stopped.
     /// </summary>
-    public void StopProcess()
+    public void StopProcess(string? thread = null, Dictionary<string, string>? inputs = null, List<string>? messagesIn = null)
     {
-        this._listenForTargetBuilder.StopProcess();
+        var target = new ProcessAgentInvokeTargetBuilder(EndStep.Instance, thread, messagesIn ?? [], inputs ?? []);
+        this._listenForTargetBuilder.SendEventTo_Internal(target);
     }
 }

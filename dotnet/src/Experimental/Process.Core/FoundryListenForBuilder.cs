@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0081")]
 public class FoundryListenForBuilder
 {
+    private readonly ProcessBuilder _processBuilder;
     private readonly ListenForBuilder _listenForBuilder;
 
     /// <summary>
@@ -20,6 +21,7 @@ public class FoundryListenForBuilder
     /// <param name="processBuilder">The process builder.</param>
     public FoundryListenForBuilder(ProcessBuilder processBuilder)
     {
+        this._processBuilder = processBuilder;
         this._listenForBuilder = new ListenForBuilder(processBuilder);
     }
 

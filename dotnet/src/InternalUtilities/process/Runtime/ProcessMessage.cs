@@ -51,7 +51,7 @@ public record ProcessMessage(
     /// <summary>
     /// An evaluation string that will be evaluated to determine the messages to send to the target.
     /// </summary>
-    public string? MessagesInEval { get; init; }
+    public List<string>? MessagesInEval { get; init; }
 
     /// <summary>
     /// An evaluation string that will be evaluated to determine the inputs to send to the target.

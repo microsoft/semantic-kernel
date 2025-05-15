@@ -30,8 +30,8 @@ public class Step06_FoundryAgentProcess : BaseTest
     [Fact]
     public async Task ProcessWithExistingFoundryAgentsAndSeparateThreadsAsync()
     {
-        var foundryAgentDefinition1 = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
-        var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition1 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition2 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         var processBuilder = new FoundryProcessBuilder("foundry_agents");
 
@@ -62,8 +62,8 @@ public class Step06_FoundryAgentProcess : BaseTest
     [Fact]
     public async Task ProcessWithExistingFoundryAgentsAndSharedThreadAsync()
     {
-        var foundryAgentDefinition1 = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
-        var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition1 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition2 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         var processBuilder = new FoundryProcessBuilder("foundry_agents");
 
@@ -72,8 +72,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, defaultThread: "shared_thread");
         var agent2 = processBuilder.AddStepFromAgent(foundryAgentDefinition2, defaultThread: "shared_thread");
 
-        processBuilder.OnInputEvent("start").SendEventTo(new(agent1));
-
+        processBuilder.OnProcessEnter().SendEventTo(agent1);
         processBuilder.OnResultFromStep(agent2);
         processBuilder.OnResultFromStep(agent2).StopProcess();
 
@@ -98,8 +97,8 @@ public class Step06_FoundryAgentProcess : BaseTest
     public async Task ProcessWithExistingFoundryAgentsWithProcessStateUpdateAndOnCompleteConditions()
     {
         // Define the agents
-        var foundryAgentDefinition1 = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
-        var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition1 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition2 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
         var processBuilder = new FoundryProcessBuilder<ProcessStateWithCounter>("foundry_agents");
@@ -108,38 +107,20 @@ public class Step06_FoundryAgentProcess : BaseTest
         var agent1 = processBuilder.AddStepFromAgent(foundryAgentDefinition1, defaultThread: "shared_thread");
         var agent2 = processBuilder.AddStepFromAgent(foundryAgentDefinition2, defaultThread: "shared_thread");
 
-        processBuilder.OnInputEvent("start").SendEventTo(new(agent1));
-
+        processBuilder.OnProcessEnter().SendEventTo(agent1);
         processBuilder.OnResultFromStep(agent1, condition: "_variables_.Counter < `3`").SendEventTo(agent1);
         processBuilder.OnResultFromStep(agent1, condition: "_variables_.Counter >= `3`").SendEventTo(agent2);
         processBuilder.OnResultFromStep(agent2).StopProcess();
 
         var process = processBuilder.Build();
-
-        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-        var agentsClient = foundryClient.GetAgentsClient();
-
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddSingleton(agentsClient);
-        kernelBuilder.Services.AddSingleton(foundryClient);
-        var kernel = kernelBuilder.Build();
-
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" });
-        var agent1Result = await context.GetStateAsync();
-
-        Assert.NotNull(context);
-        Assert.NotNull(agent1Result);
-
-        var workflow = await WorkflowBuilder.BuildWorkflow(process);
-        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
     }
 
     [Fact]
     public async Task ProcessWithExistingFoundryAgentsWithProcessStateUpdateAndOrchestrationConditions()
     {
         // Define the agents
-        var foundryAgentDefinition1 = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
-        var foundryAgentDefinition2 = new AgentDefinition { Id = "asst_bM0sHsmAmNhEMj2nxKgPCiYr", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition1 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition2 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
         var processBuilder = new FoundryProcessBuilder<ProcessStateWithCounter>("foundry_agents");
@@ -165,30 +146,13 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.OnResultFromStep(agent2).StopProcess();
 
         var process = processBuilder.Build();
-
-        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-        var agentsClient = foundryClient.GetAgentsClient();
-
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddSingleton(agentsClient);
-        kernelBuilder.Services.AddSingleton(foundryClient);
-        var kernel = kernelBuilder.Build();
-
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are distributed systems hard to reason about?" });
-        var agent1Result = await context.GetStateAsync();
-
-        Assert.NotNull(context);
-        Assert.NotNull(agent1Result);
-
-        var workflow = await WorkflowBuilder.BuildWorkflow(process);
-        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
     }
 
     [Fact]
     public async Task ProcessWithExistingFoundryAgentsWithDynamicAgentResolution()
     {
         // Define the agents
-        var foundryAgentDefinition1 = new AgentDefinition { Id = "asst_6q5jvZmSxGaGwkiqPv1OmrdA", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition1 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
         var foundryAgentDefinition2 = new AgentDefinition { Id = "_variables_.NextAgentId", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
@@ -200,7 +164,7 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         var agent2 = processBuilder.AddStepFromAgentProxy(stepId: "dynamicAgent", foundryAgentDefinition2, threadName: "shared_thread");
 
-        processBuilder.OnInputEvent("start").SendEventTo(new(agent1));
+        processBuilder.OnProcessEnter().SendEventTo(agent1);
 
         // Increment the counter every time the step runs
         processBuilder.OnStepEnter(agent1, condition: "always").UpdateProcessState("Counter", StateUpdateOperations.Increment, 1);
@@ -215,31 +179,14 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.OnResultFromStep(agent2).StopProcess();
 
         var process = processBuilder.Build();
-
-        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-        var agentsClient = foundryClient.GetAgentsClient();
-
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddSingleton(agentsClient);
-        kernelBuilder.Services.AddSingleton(foundryClient);
-        var kernel = kernelBuilder.Build();
-
-        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are distributed systems hard to reason about?" });
-        var agent1Result = await context.GetStateAsync();
-
-        Assert.NotNull(context);
-        Assert.NotNull(agent1Result);
-
-        var workflow = await WorkflowBuilder.BuildWorkflow(process);
-        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
     }
 
     [Fact]
     public async Task ProcessWithTwoAgentMathChat()
     {
         // Define the agents
-        var studentDefinition = new AgentDefinition { Id = "asst_lGAOawWKaDEZp8XwNCF3ORlb", Name = "Student", Type = AzureAIAgentFactory.AzureAIAgentType };
-        var teacherDefinition = new AgentDefinition { Id = "asst_712348YXbqNviklLKqylkEDD", Name = "Teacher", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var studentDefinition = new AgentDefinition { Id = "{AGENT_ID}", Name = "Student", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var teacherDefinition = new AgentDefinition { Id = "{AGENT_ID}", Name = "Teacher", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
         var processBuilder = new FoundryProcessBuilder<TwoAgentMathState>("two_agent_math_chat");
@@ -257,7 +204,7 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.OnProcessEnter().SendEventTo(
             student,
             thread: "_variables_.student_thread",
-            messagesIn: "_variables_.TeacherMessages",
+            messagesIn: ["_variables_.TeacherMessages"],
             inputs: new Dictionary<string, string>
             {
                 { "InteractionCount", "_variables_.StudentState.InteractionCount" }
@@ -269,7 +216,7 @@ public class Step06_FoundryAgentProcess : BaseTest
             .UpdateProcessState(path: "InteractionCount", operation: StateUpdateOperations.Increment, value: "_agent_.student_messages")
             .UpdateProcessState(path: "StudentState.InteractionCount", operation: StateUpdateOperations.Increment, value: "_agent_.student_messages")
             .UpdateProcessState(path: "StudentState.Name", operation: StateUpdateOperations.Set, value: "Runhan")
-            .SendEventTo(teacher, messagesIn: "_variables_.StudentMessages");
+            .SendEventTo(teacher, messagesIn: ["_variables_.StudentMessages"]);
 
         processBuilder.OnStepExit(teacher, condition: "contains(to_string(_agent_.messages_out), '[COMPLETE]')")
             .EmitEvent(
@@ -285,24 +232,11 @@ public class Step06_FoundryAgentProcess : BaseTest
         processBuilder.OnStepExit(teacher, condition: "_default_")
             .SendEventTo(student);
 
+        processBuilder.OnWorkflowEvent("correct_answer")
+            .StopProcess(messagesIn: ["_event_.Answer", "_variable_.StudentMessages"]);
+
         var process = processBuilder.Build();
 
-        //var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new DefaultAzureCredential());
-        //var agentsClient = foundryClient.GetAgentsClient();
-
-        //var kernelBuilder = Kernel.CreateBuilder();
-        //kernelBuilder.Services.AddSingleton(agentsClient);
-        //kernelBuilder.Services.AddSingleton(foundryClient);
-        //var kernel = kernelBuilder.Build();
-
-        //var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are distributed systems hard to reason about?" });
-        //var agent1Result = await context.GetStateAsync();
-
-        //Assert.NotNull(context);
-        //Assert.NotNull(agent1Result);
-
-        var workflow = await WorkflowBuilder.BuildWorkflow(process);
-        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
         await processBuilder.DeployToFoundryAsync(process, TestConfiguration.AzureAI.WorkflowEndpoint);
     }
 
@@ -326,123 +260,9 @@ public class Step06_FoundryAgentProcess : BaseTest
         public string Name { get; set; }
     }
 
-    [Fact]
-    public async Task ProcessWithDeepResearch()
-    {
-        string ledgerFactsAgentId = nameof(ledgerFactsAgentId);
-        string ledgerFactsUpdateAgentId = nameof(ledgerFactsUpdateAgentId);
-        string ledgerPlannerAgentId = nameof(ledgerPlannerAgentId);
-        string ledgerPlannerUpdateAgentId = nameof(ledgerPlannerUpdateAgentId);
-        string progressManagerAgentId = nameof(progressManagerAgentId);
-        string actionRouterAgentId = nameof(actionRouterAgentId);
-        string summarizerAgentId = nameof(summarizerAgentId);
-        string userAgentId = nameof(userAgentId);
-
-        var processBuilder = new FoundryProcessBuilder<DeepResearchState>("foundry_agents");
-
-        //Define Threads
-        var planThread = processBuilder.AddThread("plan");
-        var runThread = processBuilder.AddThread("run");
-
-        // Define the steps
-        var gatherFactsStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = ledgerFactsAgentId, Name = "LedgerFacts", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "plan")
-            .WithUserStateInput((state) => state.NextStep.Count() + 1); // TODO: remove
-
-        var plannerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = ledgerPlannerAgentId, Name = "LedgerPlanner", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "plan");
-        var progressManagerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = progressManagerAgentId, Name = "ProgressManager", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run");
-        var routerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = actionRouterAgentId, Name = "ActionRouter", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run");
-        var dynamicStep = processBuilder.AddStepFromAgentProxy(stepId: "dynamicAgent", new AgentDefinition { Id = "_variables_.NextAgentId", Name = "DynamicStep", Type = AzureAIAgentFactory.AzureAIAgentType }, threadName: "run");
-        var userAgentStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = userAgentId, Name = "UserAgent", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run", humanInLoopMode: HITLMode.Always);
-        var summarizerStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = summarizerAgentId, Name = "Summarizer", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run");
-        var factUpdateStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = ledgerFactsUpdateAgentId, Name = "LedgerFactsUpdate", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run");
-        var planUpdateStep = processBuilder.AddStepFromAgent(new AgentDefinition { Id = ledgerPlannerUpdateAgentId, Name = "LedgerPlannerUpdate", Type = AzureAIAgentFactory.AzureAIAgentType }, defaultThread: "run");
-
-        //Start -> Gaether Facts
-        processBuilder.OnInputEvent("start")
-            .SendEventTo(new(gatherFactsStep));
-
-        //Gather Facts -> Planner
-        processBuilder.OnResultFromStep(gatherFactsStep)
-            .UpdateProcessState("Tasks", StateUpdateOperations.Set, "_agent_.outputs.tasks")
-            .UpdateProcessState("Facts", StateUpdateOperations.Set, "_agent_.outputs.facts")
-            .SendEventTo(plannerStep);
-
-        //Planner -> Progress Manager
-        processBuilder.OnResultFromStep(plannerStep)
-            .UpdateProcessState("Plan", StateUpdateOperations.Set, "_agent_.outputs.Plan")
-            .UpdateProcessState("NextSteps", StateUpdateOperations.Set, "_agent_.outputs.NextStep")
-            .SendEventTo(progressManagerStep);
-
-        //Progress Manager -> Router
-        processBuilder.OnResultFromStep(progressManagerStep)
-            .UpdateProcessState("NextSteps", StateUpdateOperations.Set, "_agent_.outputs")
-            .SendEventTo(routerStep);
-
-        //Router -> Progress Manager
-        processBuilder.OnResultFromStep(routerStep, condition: "contains(_variables_.NextAgentId, 'UnknownAgent')")
-            .UpdateProcessState("NextAgentId", StateUpdateOperations.Set, "_agent_.outputs.targetAgentId")
-            .SendEventTo(progressManagerStep, inputs: new Dictionary<string, string> { { "arg1", "_variables_.NextAgentId" } }, messagesIn: "_variables_.Plan");
-
-        //Router -> Facts Update
-        processBuilder.OnResultFromStep(routerStep, condition: "contains(_variables_.NextAgentId, 'LedgerFactsUpdate')")
-            .SendEventTo(factUpdateStep);
-
-        //Router -> User Agent
-        processBuilder.OnResultFromStep(routerStep, condition: "contains(_variables_.NextAgentId, 'UserAgent')")
-            .SendEventTo(userAgentStep);
-
-        //Router -> Summarizer
-        processBuilder.OnResultFromStep(routerStep, condition: "contains(_variables_.NextAgentId, 'Summarizer')")
-            .SendEventTo(summarizerStep);
-
-        //Router -> Dynamic Step
-        processBuilder.OnResultFromStep(routerStep, condition: "!contains(_variables_.NextAgentId, 'FinalStepAgent')")
-            .SendEventTo(dynamicStep);
-
-        //Dynamic Step -> Progress Manager
-        processBuilder.OnResultFromStep(dynamicStep)
-            .UpdateProcessState("NextAgentId", StateUpdateOperations.Set, "_agent_.outputs.targetAgentId")
-            .SendEventTo(progressManagerStep);
-
-        //Facts Update -> Plan Update
-        processBuilder.OnResultFromStep(planUpdateStep);
-
-        //PlanUpdate -> Progress Manager
-        processBuilder.OnResultFromStep(progressManagerStep);
-
-        //Summarizer -> End
-        processBuilder.OnResultFromStep(summarizerStep).StopProcess();
-
-        var process = processBuilder.Build();
-
-        var workflow = await WorkflowBuilder.BuildWorkflow(process);
-        string yaml = WorkflowSerializer.SerializeToYaml(workflow);
-    }
-
-    public class DeepResearchState
-    {
-        public string Instructions { get; set; }
-
-        public string Summary { get; set; }
-
-        public string Team { get; set; }
-
-        public List<ChatMessageContent> Plan { get; set; }
-
-        public List<ChatMessageContent> NextStep { get; set; }
-
-        public object Tasks { get; set; }
-
-        public object Facts { get; set; }
-
-        public List<string> SystemAgents { get; set; } = ["FinalStepAgent", "UserAgent", "LedgerFactsUpdate"];
-
-        public string NextAgentId { get; set; }
-    }
-
     public class DynamicAgentState
     {
-        public string NextAgentId { get; set; } = "asst_bM0sHsmAmNhEMj2nxKgPCiYr";
+        public string NextAgentId { get; set; } = "{AGENT_ID}";
         public int Counter { get; set; }
     }
 
