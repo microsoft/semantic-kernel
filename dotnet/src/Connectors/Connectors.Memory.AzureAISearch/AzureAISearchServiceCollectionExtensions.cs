@@ -9,260 +9,392 @@ using Azure.Core.Serialization;
 using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Http;
 
-namespace Microsoft.SemanticKernel;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extension methods to register Azure AI Search <see cref="VectorStore"/> instances on an <see cref="IServiceCollection"/>.
+/// Extension methods to register <see cref="AzureAISearchVectorStore"/> and <see cref="AzureAISearchCollection{TKey, TRecord}"/> instances on an <see cref="IServiceCollection"/>.
 /// </summary>
 public static class AzureAISearchServiceCollectionExtensions
 {
-    /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStore"/> with the specified service ID and where <see cref="SearchIndexClient"/> is retrieved from the dependency injection container.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStore"/> on.</param>
-    /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
-    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
-    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
-    public static IServiceCollection AddAzureAISearchVectorStore(this IServiceCollection services, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
-    {
-        // If we are not constructing the SearchIndexClient, add the IVectorStore as transient, since we
-        // cannot make assumptions about how SearchIndexClient is being managed.
-        services.AddKeyedTransient<VectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var searchIndexClient = sp.GetRequiredService<SearchIndexClient>();
-                options ??= sp.GetService<AzureAISearchVectorStoreOptions>() ?? new()
-                {
-                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
-                };
+    private const string DynamicCodeMessage = "The Azure AI Search provider is currently incompatible with trimming.";
+    private const string UnreferencedCodeMessage = "The Azure AI Search provider is currently incompatible with NativeAOT.";
 
-                return new AzureAISearchVectorStore(searchIndexClient, options);
-            });
+    /// <summary>
+    /// Registers a <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
+    /// with <see cref="SearchIndexClient"/> returned by <paramref name="clientProvider"/>.
+    /// </summary>
+    /// <inheritdoc cref="AddKeyedAzureAISearchVectorStore(IServiceCollection, object?, Func{IServiceProvider, SearchIndexClient}, Func{IServiceProvider, AzureAISearchVectorStoreOptions}?, ServiceLifetime)"/>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddAzureAISearchVectorStore(
+        this IServiceCollection services,
+        Func<IServiceProvider, SearchIndexClient> clientProvider,
+        Func<IServiceProvider, AzureAISearchVectorStoreOptions>? optionsProvider = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        => AddKeyedAzureAISearchVectorStore(services, serviceKey: null, clientProvider, optionsProvider, lifetime);
+
+    /// <summary>
+    /// Registers a keyed <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
+    /// with <see cref="SearchIndexClient"/> returned by <paramref name="clientProvider"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="AzureAISearchVectorStore"/> on.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="clientProvider">The <see cref="SearchIndexClient"/> provider.</param>
+    /// <param name="optionsProvider">Options provider to further configure the <see cref="AzureAISearchVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddKeyedAzureAISearchVectorStore(
+        this IServiceCollection services,
+        object? serviceKey,
+        Func<IServiceProvider, SearchIndexClient> clientProvider,
+        Func<IServiceProvider, AzureAISearchVectorStoreOptions>? optionsProvider = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    {
+        Verify.NotNull(services);
+        Verify.NotNull(clientProvider);
+
+        services.Add(new ServiceDescriptor(typeof(AzureAISearchVectorStore), serviceKey, (sp, _) =>
+        {
+            var client = clientProvider(sp);
+            var options = GetStoreOptions(sp, optionsProvider);
+
+            return new AzureAISearchVectorStore(client, options);
+        }, lifetime));
+
+        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<AzureAISearchVectorStore>(key), lifetime));
 
         return services;
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStore"/> with the provided <see cref="Uri"/> and <see cref="TokenCredential"/> and the specified service ID.
+    /// Registers a <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
+    /// with <see cref="SearchIndexClient"/> retrieved from the dependency injection container.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStore"/> on.</param>
+    /// <inheritdoc cref="AddKeyedAzureAISearchVectorStore(IServiceCollection, object?, AzureAISearchVectorStoreOptions?, ServiceLifetime)"/>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddAzureAISearchVectorStore(
+        this IServiceCollection services,
+        AzureAISearchVectorStoreOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        => AddKeyedAzureAISearchVectorStore(services, serviceKey: null, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
+    /// with <see cref="SearchIndexClient"/> retrieved from the dependency injection container.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="AzureAISearchVectorStore"/> on.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="options">Optional options to further configure the <see cref="AzureAISearchVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddKeyedAzureAISearchVectorStore(
+        this IServiceCollection services,
+        object? serviceKey,
+        AzureAISearchVectorStoreOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        => AddKeyedAzureAISearchVectorStore(services, serviceKey, sp => sp.GetRequiredService<SearchIndexClient>(), _ => options!, lifetime);
+
+    /// <summary>
+    /// Registers a <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
+    /// using the provided <paramref name="endpoint"/> and <paramref name="tokenCredential"/>.
+    /// </summary>
+    /// <inheritdoc cref="AddKeyedAzureAISearchVectorStore(IServiceCollection, object?, Uri, TokenCredential, AzureAISearchVectorStoreOptions?, ServiceLifetime)"/>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddAzureAISearchVectorStore(
+        this IServiceCollection services,
+        Uri endpoint,
+        TokenCredential tokenCredential,
+        AzureAISearchVectorStoreOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        => AddKeyedAzureAISearchVectorStore(services, serviceKey: null, endpoint, tokenCredential, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
+    /// using the provided <paramref name="endpoint"/> and <paramref name="tokenCredential"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="AzureAISearchVectorStore"/> on.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
     /// <param name="endpoint">The service endpoint for Azure AI Search.</param>
     /// <param name="tokenCredential">The credential to authenticate to Azure AI Search with.</param>
-    /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
-    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
-    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
-    public static IServiceCollection AddAzureAISearchVectorStore(this IServiceCollection services, Uri endpoint, TokenCredential tokenCredential, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
+    /// <param name="options">Optional options to further configure the <see cref="AzureAISearchVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddKeyedAzureAISearchVectorStore(
+        this IServiceCollection services,
+        object? serviceKey,
+        Uri endpoint,
+        TokenCredential tokenCredential,
+        AzureAISearchVectorStoreOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
         Verify.NotNull(endpoint);
         Verify.NotNull(tokenCredential);
 
-        services.AddKeyedSingleton<VectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                options ??= sp.GetService<AzureAISearchVectorStoreOptions>() ?? new()
-                {
-                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
-                };
-                var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
-                var searchIndexClient = new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
-
-                // Construct the vector store.
-                return new AzureAISearchVectorStore(searchIndexClient, options);
-            });
-
-        return services;
+        return AddKeyedAzureAISearchVectorStore(services, serviceKey, sp =>
+        {
+            var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
+            return new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
+        }, _ => options!, lifetime);
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStore"/> with the provided <see cref="Uri"/> and <see cref="AzureKeyCredential"/> and the specified service ID.
+    /// Registers a <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
+    /// using the provided <paramref name="endpoint"/> and <paramref name="keyCredential"/>.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStore"/> on.</param>
+    /// <inheritdoc cref="AddKeyedAzureAISearchVectorStore(IServiceCollection, object?, Uri, AzureKeyCredential, AzureAISearchVectorStoreOptions?, ServiceLifetime)"/>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddAzureAISearchVectorStore(
+        this IServiceCollection services,
+        Uri endpoint,
+        AzureKeyCredential keyCredential,
+        AzureAISearchVectorStoreOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        => AddKeyedAzureAISearchVectorStore(services, serviceKey: null, endpoint, keyCredential, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
+    /// using the provided <paramref name="endpoint"/> and <paramref name="keyCredential"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="AzureAISearchVectorStore"/> on.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
     /// <param name="endpoint">The service endpoint for Azure AI Search.</param>
-    /// <param name="credential">The credential to authenticate to Azure AI Search with.</param>
-    /// <param name="options">Optional options to further configure the <see cref="VectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
-    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
-    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
-    public static IServiceCollection AddAzureAISearchVectorStore(this IServiceCollection services, Uri endpoint, AzureKeyCredential credential, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
+    /// <param name="keyCredential">The credential to authenticate to Azure AI Search with.</param>
+    /// <param name="options">Optional options to further configure the <see cref="AzureAISearchVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddKeyedAzureAISearchVectorStore(
+        this IServiceCollection services,
+        object? serviceKey,
+        Uri endpoint,
+        AzureKeyCredential keyCredential,
+        AzureAISearchVectorStoreOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
         Verify.NotNull(endpoint);
-        Verify.NotNull(credential);
+        Verify.NotNull(keyCredential);
 
-        services.AddKeyedSingleton<VectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                options ??= sp.GetService<AzureAISearchVectorStoreOptions>() ?? new()
-                {
-                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
-                };
-                var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
-                var searchIndexClient = new SearchIndexClient(endpoint, credential, searchClientOptions);
-
-                // Construct the vector store.
-                return new AzureAISearchVectorStore(searchIndexClient, options);
-            });
-
-        return services;
+        return AddKeyedAzureAISearchVectorStore(services, serviceKey, sp =>
+        {
+            var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
+            return new SearchIndexClient(endpoint, keyCredential, searchClientOptions);
+        }, _ => options!, lifetime);
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/> and an <see cref="IVectorSearchable{TRecord}"/> with the
-    /// specified service ID and where <see cref="SearchIndexClient"/> is retrieved from the dependency injection container.
+    /// Registers a <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
+    /// with <see cref="SearchIndexClient"/> returned by <paramref name="clientProvider"/>.
     /// </summary>
-    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchCollection{TKey, TRecord}"/> will access.</param>
-    /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
-    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
-    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
-    public static IServiceCollection AddAzureAISearchVectorStoreRecordCollection<TRecord>(
+    /// <inheritdoc cref="AddKeyedAzureAISearchCollection{TRecord}(IServiceCollection, object?, string, Func{IServiceProvider, SearchIndexClient}, Func{IServiceProvider, AzureAISearchCollectionOptions}?, ServiceLifetime)"/>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddAzureAISearchCollection<TRecord>(
         this IServiceCollection services,
-        string collectionName,
-        AzureAISearchCollectionOptions? options = default,
-        string? serviceId = default)
+        string name,
+        Func<IServiceProvider, SearchIndexClient> clientProvider,
+        Func<IServiceProvider, AzureAISearchCollectionOptions>? optionsProvider = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TRecord : class
+        => AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey: null, name, clientProvider, optionsProvider, lifetime);
+
+    /// <summary>
+    /// Registers a keyed <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
+    /// with <see cref="SearchIndexClient"/> retrieved from the dependency injection container.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="AzureAISearchCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceKey">The key with which to associate the collection.</param>
+    /// <param name="name">The name of the collection.</param>
+    /// <param name="clientProvider">The <see cref="SearchIndexClient"/> provider.</param>
+    /// <param name="optionsProvider">Options provider to further configure the <see cref="AzureAISearchCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddKeyedAzureAISearchCollection<TRecord>(
+        this IServiceCollection services,
+        object? serviceKey,
+        string name,
+        Func<IServiceProvider, SearchIndexClient> clientProvider,
+        Func<IServiceProvider, AzureAISearchCollectionOptions>? optionsProvider = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
     {
-        // If we are not constructing the SearchIndexClient, add the IVectorStore as transient, since we
-        // cannot make assumptions about how SearchIndexClient is being managed.
-        services.AddKeyedTransient<VectorStoreCollection<string, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var searchIndexClient = sp.GetRequiredService<SearchIndexClient>();
-                options ??= sp.GetService<AzureAISearchCollectionOptions>() ?? new()
-                {
-                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
-                };
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(name);
+        Verify.NotNull(clientProvider);
 
-                return new AzureAISearchCollection<string, TRecord>(searchIndexClient, collectionName, options);
-            });
+        services.Add(new ServiceDescriptor(typeof(AzureAISearchCollection<string, TRecord>), serviceKey, (sp, _) =>
+        {
+            var client = clientProvider(sp);
+            var options = GetCollectionOptions(sp, optionsProvider);
 
-        AddVectorizedSearch<TRecord>(services, serviceId);
+            return new AzureAISearchCollection<string, TRecord>(client, name, options);
+        }, lifetime));
+
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<string, TRecord>), serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<AzureAISearchCollection<string, TRecord>>(key), lifetime));
+
+        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<AzureAISearchCollection<string, TRecord>>(key), lifetime));
+
+        services.Add(new ServiceDescriptor(typeof(IKeywordHybridSearchable<TRecord>), serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<AzureAISearchCollection<string, TRecord>>(key), lifetime));
 
         return services;
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/> and an <see cref="IVectorSearchable{TRecord}"/> with the
-    /// provided <see cref="Uri"/> and <see cref="TokenCredential"/> and the specified service ID.
+    /// Registers a <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
+    /// with <see cref="SearchIndexClient"/> retrieved from the dependency injection container.
     /// </summary>
-    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchCollection{TKey, TRecord}"/> will access.</param>
-    /// <param name="endpoint">The service endpoint for Azure AI Search.</param>
-    /// <param name="tokenCredential">The credential to authenticate to Azure AI Search with.</param>
-    /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
-    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
-    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
-    public static IServiceCollection AddAzureAISearchVectorStoreRecordCollection<TRecord>(
+    /// <inheritdoc cref="AddKeyedAzureAISearchCollection(IServiceCollection, object?, string, AzureAISearchCollectionOptions?, ServiceLifetime)"/>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddAzureAISearchCollection<TRecord>(
         this IServiceCollection services,
-        string collectionName,
+        string name,
+        AzureAISearchCollectionOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TRecord : class
+        => AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey: null, name, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
+    /// with <see cref="SearchIndexClient"/> retrieved from the dependency injection container.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="AzureAISearchCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceKey">The key with which to associate the collection.</param>
+    /// <param name="name">The name of the collection.</param>
+    /// <param name="options">Optional options to further configure the <see cref="AzureAISearchCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddKeyedAzureAISearchCollection<TRecord>(
+        this IServiceCollection services,
+        object? serviceKey,
+        string name,
+        AzureAISearchCollectionOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TRecord : class
+        => AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey, name, sp => sp.GetRequiredService<SearchIndexClient>(), _ => options!, lifetime);
+
+    /// <summary>
+    /// Registers a <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
+    /// using the provided <paramref name="endpoint"/> and <paramref name="tokenCredential"/>.
+    /// </summary>
+    /// <inheritdoc cref="AddKeyedAzureAISearchCollection(IServiceCollection, object?, string, Uri, TokenCredential, AzureAISearchCollectionOptions?, ServiceLifetime)"/>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddAzureAISearchCollection<TRecord>(
+        this IServiceCollection services,
+        string name,
         Uri endpoint,
         TokenCredential tokenCredential,
         AzureAISearchCollectionOptions? options = default,
-        string? serviceId = default)
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TRecord : class
+        => AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey: null, name, endpoint, tokenCredential, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
+    /// using the provided <paramref name="endpoint"/> and <paramref name="tokenCredential"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="AzureAISearchCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceKey">The key with which to associate the collection.</param>
+    /// <param name="name">The name of the collection.</param>
+    /// <param name="endpoint">The service endpoint for Azure AI Search.</param>
+    /// <param name="tokenCredential">The credential to authenticate to Azure AI Search with.</param>
+    /// <param name="options">Optional options to further configure the <see cref="AzureAISearchCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddKeyedAzureAISearchCollection<TRecord>(
+        this IServiceCollection services,
+        object? serviceKey,
+        string name,
+        Uri endpoint,
+        TokenCredential tokenCredential,
+        AzureAISearchCollectionOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
     {
         Verify.NotNull(endpoint);
         Verify.NotNull(tokenCredential);
 
-        services.AddKeyedSingleton<VectorStoreCollection<string, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                options ??= sp.GetService<AzureAISearchCollectionOptions>() ?? new()
-                {
-                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
-                };
-                var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
-                var searchIndexClient = new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
-
-                // Construct the vector store.
-                return new AzureAISearchCollection<string, TRecord>(searchIndexClient, collectionName, options);
-            });
-
-        AddVectorizedSearch<TRecord>(services, serviceId);
-
-        return services;
+        return AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey, name, sp =>
+        {
+            var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
+            return new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
+        }, _ => options!, lifetime);
     }
 
     /// <summary>
-    /// Register an Azure AI Search <see cref="VectorStoreCollection{TKey, TRecord}"/> and an <see cref="IVectorSearchable{TRecord}"/> with the
-    /// provided <see cref="Uri"/> and <see cref="AzureKeyCredential"/> and the specified service ID.
+    /// Registers a <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
+    /// using the provided <paramref name="endpoint"/> and <paramref name="keyCredential"/>.
     /// </summary>
-    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="VectorStoreCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchCollection{TKey, TRecord}"/> will access.</param>
-    /// <param name="endpoint">The service endpoint for Azure AI Search.</param>
-    /// <param name="credential">The credential to authenticate to Azure AI Search with.</param>
-    /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>The service collection.</returns>
-    [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
-    [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
-    public static IServiceCollection AddAzureAISearchVectorStoreRecordCollection<TRecord>(
+    /// <inheritdoc cref="AddKeyedAzureAISearchCollection(IServiceCollection, object?, string, Uri, AzureKeyCredential, AzureAISearchCollectionOptions?, ServiceLifetime)"/>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddAzureAISearchCollection<TRecord>(
         this IServiceCollection services,
-        string collectionName,
+        string name,
         Uri endpoint,
-        AzureKeyCredential credential,
+        AzureKeyCredential keyCredential,
         AzureAISearchCollectionOptions? options = default,
-        string? serviceId = default)
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TRecord : class
+        => AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey: null, name, endpoint, keyCredential, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
+    /// using the provided <paramref name="endpoint"/> and <paramref name="keyCredential"/>.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="AzureAISearchCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceKey">The key with which to associate the collection.</param>
+    /// <param name="name">The name of the collection.</param>
+    /// <param name="endpoint">The service endpoint for Azure AI Search.</param>
+    /// <param name="keyCredential">The credential to authenticate to Azure AI Search with.</param>
+    /// <param name="options">Optional options to further configure the <see cref="AzureAISearchCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    [RequiresUnreferencedCode(DynamicCodeMessage)]
+    [RequiresDynamicCode(UnreferencedCodeMessage)]
+    public static IServiceCollection AddKeyedAzureAISearchCollection<TRecord>(
+        this IServiceCollection services,
+        object? serviceKey,
+        string name,
+        Uri endpoint,
+        AzureKeyCredential keyCredential,
+        AzureAISearchCollectionOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
     {
         Verify.NotNull(endpoint);
-        Verify.NotNull(credential);
+        Verify.NotNull(keyCredential);
 
-        services.AddKeyedSingleton<VectorStoreCollection<string, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                options ??= sp.GetService<AzureAISearchCollectionOptions>() ?? new()
-                {
-                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
-                };
-                var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
-                var searchIndexClient = new SearchIndexClient(endpoint, credential, searchClientOptions);
-
-                // Construct the vector store.
-                return new AzureAISearchCollection<string, TRecord>(searchIndexClient, collectionName, options);
-            });
-
-        AddVectorizedSearch<TRecord>(services, serviceId);
-
-        return services;
-    }
-
-    /// <summary>
-    /// Also register the <see cref="VectorStoreCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorSearchable{TRecord}"/>.
-    /// </summary>
-    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The service collection to register on.</param>
-    /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : class
-    {
-        services.AddKeyedTransient<IVectorSearchable<TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                return sp.GetRequiredKeyedService<VectorStoreCollection<string, TRecord>>(serviceId);
-            });
+        return AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey, name, sp =>
+        {
+            var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
+            return new SearchIndexClient(endpoint, keyCredential, searchClientOptions);
+        }, _ => options!, lifetime);
     }
 
     /// <summary>
@@ -280,5 +412,33 @@ public static class AzureAISearchServiceCollectionExtensions
         }
 
         return searchClientOptions;
+    }
+
+    private static AzureAISearchVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, AzureAISearchVectorStoreOptions?>? optionsProvider)
+    {
+        var options = optionsProvider?.Invoke(sp);
+        if (options?.EmbeddingGenerator is not null)
+        {
+            return options; // The user has provided everything, there is nothing to change.
+        }
+
+        var embeddingGenerator = sp.GetService<IEmbeddingGenerator>();
+        return embeddingGenerator is null
+            ? options // There is nothing to change.
+            : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
+    }
+
+    private static AzureAISearchCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, AzureAISearchCollectionOptions?>? optionsProvider)
+    {
+        var options = optionsProvider?.Invoke(sp);
+        if (options?.EmbeddingGenerator is not null)
+        {
+            return options; // The user has provided everything, there is nothing to change.
+        }
+
+        var embeddingGenerator = sp.GetService<IEmbeddingGenerator>();
+        return embeddingGenerator is null
+            ? options // There is nothing to change.
+            : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
 }
