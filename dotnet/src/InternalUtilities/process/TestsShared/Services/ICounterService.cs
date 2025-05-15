@@ -17,4 +17,11 @@ public interface ICounterService
     /// </summary>
     /// <returns></returns>
     int GetCount();
+
+    /// <summary>
+    /// Set counter to specific value
+    /// </summary>
+    /// <param name="count"></param>
+    /// <returns></returns>
+    void SetCount(int count);
 }
