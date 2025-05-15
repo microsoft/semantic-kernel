@@ -18,6 +18,7 @@ from semantic_kernel.agents.runtime.core.core_runtime import CoreRuntime
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ TIn = TypeVar("TIn", default=DefaultTypeAlias)
 TOut = TypeVar("TOut", default=DefaultTypeAlias)
 
 
+@experimental
 class OrchestrationResult(KernelBaseModel, Generic[TOut]):
     """The result of an invocation of an orchestration."""
 
@@ -77,6 +79,7 @@ class OrchestrationResult(KernelBaseModel, Generic[TOut]):
         self.event.set()
 
 
+@experimental
 class OrchestrationBase(ABC, Generic[TIn, TOut]):
     """Base class for multi-agent orchestration."""
 
