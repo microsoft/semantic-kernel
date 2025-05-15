@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -48,7 +50,7 @@ public static class GoogleAIKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Add Google AI embeddings generation service to the kernel builder.
+    /// Add Google AI <see cref="ITextEmbeddingGenerationService"/> to the kernel builder.
     /// </summary>
     /// <param name="builder">The kernel builder.</param>
     /// <param name="modelId">The model for text generation.</param>
@@ -58,6 +60,7 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Obsolete("Use AddGoogleAIEmbeddingGenerator instead.")]
     public static IKernelBuilder AddGoogleAIEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -79,6 +82,40 @@ public static class GoogleAIKernelBuilderExtensions
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
                 loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
                 dimensions: dimensions));
+        return builder;
+    }
+
+    /// <summary>
+    /// Add Google AI <see cref="IEmbeddingGenerator{String, Embedding}"/> to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="apiKey">The API key for authentication Gemini API.</param>
+    /// <param name="apiVersion">The version of the Google API.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddGoogleAIEmbeddingGenerator(
+        this IKernelBuilder builder,
+        string modelId,
+        string apiKey,
+        GoogleAIVersion apiVersion = GoogleAIVersion.V1_Beta, // todo: change beta to stable when stable version will be available
+        string? serviceId = null,
+        HttpClient? httpClient = null,
+        int? dimensions = null)
+    {
+        Verify.NotNull(builder);
+        Verify.NotNull(modelId);
+        Verify.NotNull(apiKey);
+
+        builder.Services.AddGoogleAIEmbeddingGenerator(
+            modelId: modelId,
+            apiKey: apiKey,
+            apiVersion: apiVersion,
+            serviceId: serviceId,
+            httpClient: httpClient,
+            dimensions: dimensions);
         return builder;
     }
 }

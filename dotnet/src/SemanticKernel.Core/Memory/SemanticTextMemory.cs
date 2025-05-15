@@ -7,7 +7,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Embeddings;
+
+#pragma warning disable CS0618 // Type or member is obsolete
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -19,8 +22,23 @@ namespace Microsoft.SemanticKernel.Memory;
 [ExcludeFromCodeCoverage]
 public sealed class SemanticTextMemory : ISemanticTextMemory
 {
-    private readonly ITextEmbeddingGenerationService _embeddingGenerator;
+    private readonly ITextEmbeddingGenerationService? _textEmbeddingsService;
+    private readonly IEmbeddingGenerator<string, Embedding<float>>? _embeddingGenerator;
     private readonly IMemoryStore _storage;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SemanticTextMemory"/> class.
+    /// </summary>
+    /// <param name="storage">The memory store to use for storing and retrieving data.</param>
+    /// <param name="embeddingGenerator">The text embedding generator to use for generating embeddings.</param>
+    [Obsolete("Use the constructor with IEmbeddingGenerator instead.")]
+    public SemanticTextMemory(
+        IMemoryStore storage,
+        ITextEmbeddingGenerationService embeddingGenerator)
+    {
+        this._textEmbeddingsService = embeddingGenerator;
+        this._storage = storage;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SemanticTextMemory"/> class.
@@ -29,7 +47,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     /// <param name="embeddingGenerator">The text embedding generator to use for generating embeddings.</param>
     public SemanticTextMemory(
         IMemoryStore storage,
-        ITextEmbeddingGenerationService embeddingGenerator)
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
     {
         this._embeddingGenerator = embeddingGenerator;
         this._storage = storage;
@@ -45,7 +63,8 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false);
+        ReadOnlyMemory<float> embedding = await this.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false);
+
         MemoryRecord data = MemoryRecord.LocalRecord(
             id: id,
             text: text,
@@ -72,7 +91,8 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false);
+        var embedding = await this.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false);
+
         var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description: description,
             additionalMetadata: additionalMetadata, embedding: embedding);
 
@@ -119,7 +139,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         Kernel? kernel = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        ReadOnlyMemory<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, kernel, cancellationToken).ConfigureAwait(false);
+        var queryEmbedding = await this.GenerateEmbeddingAsync(query, kernel, cancellationToken).ConfigureAwait(false);
 
         if ((await this._storage.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
         {
@@ -142,5 +162,12 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     public async Task<IList<string>> GetCollectionsAsync(Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         return await this._storage.GetCollectionsAsync(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<ReadOnlyMemory<float>> GenerateEmbeddingAsync(string text, Kernel? kernel, CancellationToken cancellationToken)
+    {
+        return (this._textEmbeddingsService is not null)
+                    ? await this._textEmbeddingsService.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false)
+                    : (await this._embeddingGenerator!.GenerateAsync(text, cancellationToken: cancellationToken).ConfigureAwait(false)).Vector;
     }
 }
