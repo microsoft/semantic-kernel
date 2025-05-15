@@ -11,6 +11,11 @@
     "ApiKey": "",
     "ChatModelId ": "phi3"
   },
+  "AzureAIInferenceEmbeddings": {
+    "ServiceId": "azure-ai-inference-embeddings",
+    "Endpoint": "",
+    "ModelId": "text-embedding-ada-002"
+  },
   "AzureOpenAI": {
     "ServiceId": "azure-gpt",
     "DeploymentName": "gpt-35-turbo-instruct",
