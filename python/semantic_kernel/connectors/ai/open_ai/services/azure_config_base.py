@@ -105,9 +105,8 @@ class AzureOpenAIConfigBase(OpenAIHandler):
             if deployment_name and ai_model_type != OpenAIModelTypes.REALTIME:
                 args["azure_deployment"] = deployment_name
 
-            for key, value in kwargs.items():
-                if key not in args:
-                    args[key] = value
+            if "websocket_base_url" in kwargs:
+                args["websocket_base_url"] = kwargs.pop("websocket_base_url")
 
             client = AsyncAzureOpenAI(**args)
         args = {
