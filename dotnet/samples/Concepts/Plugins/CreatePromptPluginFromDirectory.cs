@@ -23,7 +23,7 @@ public class CreatePromptPluginFromDirectory(ITestOutputHelper output) : BaseTes
 
         CreateFileBasedPluginTemplate(pluginDirectory);
 
-        var funPlugin = kernel.ImportPluginFromPromptDirectory(pluginDirectory, "FunPlugin");
+        var funPlugin = kernel.ImportPluginFromPromptDirectoryYaml(pluginDirectory, "FunPlugin");
 
         // Invoke the plugin with a prompt
         var result = await kernel.InvokeAsync(funPlugin["Joke"], new()
@@ -38,82 +38,61 @@ public class CreatePromptPluginFromDirectory(ITestOutputHelper output) : BaseTes
     /// <summary>
     /// After running this method, a new importable plugin directory structure will be created at the application root.
     /// <code>
-    /// ./Plugins/FunPlugin/Joke/
-    ///    config.json
-    ///    skprompt.txt
+    /// ./Plugins/FunPlugin/
+    ///    joke.yml
     /// </code>
-    /// Within the <c>FunPlugin</c> directory, sub directories (Joke) will be represented as the available functions to use with the <see cref="Kernel"/>.
+    /// Within the <c>FunPlugin</c> directory, any yml file will be imported as a distinct prompt function for the <see cref="KernelPlugin"/>.
     /// </summary>
     private static void CreateFileBasedPluginTemplate(string pluginRootDirectory)
     {
         // Create the sub-directory for the plugin function "Joke"
         var pluginRelativeDirectory = Path.Combine(pluginRootDirectory, "Joke");
 
-        const string ConfigJsonFileContent =
+        const string PluginYmlFileContent =
             """
-            {
-              "schema": 1,
-              "description": "Generate a funny joke",
-              "execution_settings": {
-                "default": {
-                  "max_tokens": 1000,
-                  "temperature": 0.9,
-                  "top_p": 0.0,
-                  "presence_penalty": 0.0,
-                  "frequency_penalty": 0.0
-                }
-              },
-              "input_variables": [
-                {
-                  "name": "input",
-                  "description": "Joke subject",
-                  "default": ""
-                },
-                {
-                  "name": "style",
-                  "description": "Give a hint about the desired joke style",
-                  "default": ""
-                }
-              ]
-            }
-            """;
-
-        const string SkPromptFileContent =
-            """
-            WRITE EXACTLY ONE JOKE or HUMOROUS STORY ABOUT THE TOPIC BELOW
-
-            JOKE MUST BE:
-            - G RATED
-            - WORKPLACE/FAMILY SAFE
-            NO SEXISM, RACISM OR OTHER BIAS/BIGOTRY
-
-            BE CREATIVE AND FUNNY. I WANT TO LAUGH.
-            Incorporate the style suggestion, if provided: {{$style}}
-            +++++
-
-            {{$input}}
-            +++++
+            name: Joke
+            template: |
+              WRITE EXACTLY ONE JOKE or HUMOROUS STORY ABOUT THE TOPIC BELOW
+            
+              JOKE MUST BE:
+              - G RATED
+              - WORKPLACE/FAMILY SAFE
+              NO SEXISM, RACISM OR OTHER BIAS/BIGOTRY
+            
+              BE CREATIVE AND FUNNY. I WANT TO LAUGH.
+              Incorporate the style suggestion, if provided: {{$style}}
+              +++++
+            
+              {{$input}}
+              +++++
+            template_format: semantic-kernel
+            description: A function that generates a story about a topic.
+            input_variables:
+              - name: input
+                description: Joke subject.
+                is_required: true
+              - name: style
+                description: Give a hint about the desired joke style.
+                is_required: true
+            output_variable:
+              description: The generated funny joke.
+            execution_settings:
+              default:
+                temperature: 0.9
+                max_tokens: 1000
+                top_p: 0.0
+                presence_penalty: 0.0
+                frequency_penalty: 0.0
             """;
 
         // Create the directory structure
-        if (!Directory.Exists(pluginRelativeDirectory))
+        if (!Directory.Exists(pluginRootDirectory))
         {
-            Directory.CreateDirectory(pluginRelativeDirectory);
+            Directory.CreateDirectory(pluginRootDirectory);
         }
 
         // Create the config.json file if not exists
-        var configJsonFilePath = Path.Combine(pluginRelativeDirectory, "config.json");
-        if (!File.Exists(configJsonFilePath))
-        {
-            File.WriteAllText(configJsonFilePath, ConfigJsonFileContent);
-        }
-
-        // Create the skprompt.txt file if not exists
-        var skPromptFilePath = Path.Combine(pluginRelativeDirectory, "skprompt.txt");
-        if (!File.Exists(skPromptFilePath))
-        {
-            // Create the skprompt file with the content
-            File.WriteAllText(skPromptFilePath, SkPromptFileContent);
-        }
+        var ymlFilePath = Path.Combine(pluginRootDirectory, "joke.yml");
+        File.WriteAllText(ymlFilePath, PluginYmlFileContent);
     }
 }
