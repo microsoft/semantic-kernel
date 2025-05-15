@@ -157,34 +157,6 @@ def test_build_with_simple_step_yields_kernel_process() -> None:
     assert process.factories == {}
 
 
-# It is making steps empty
-# def test_build_includes_factories_and_parent_id() -> None:
-#     """Test that build includes factories and respects has_parent_process flag."""
-#     parent = _create_builder("parentProc")
-#     child = _create_builder("childProc")
-
-#     from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata  # noqa: F401
-#     from semantic_kernel.processes.process_builder import ProcessBuilder  # noqa: F401
-
-#     ProcessBuilder.model_rebuild()
-#     KernelFunctionMetadata.model_rebuild()
-
-#     parent.add_step_from_process(child)
-
-#     def fac() -> DummyStep:
-#         return DummyStep()
-
-#     parent.add_step(DummyStep, factory_function=fac)
-#     print(f"Steps after addition: {parent.steps}")
-
-#     process = parent.build()
-
-#     assert process.state.id is None
-#     fqn = get_fully_qualified_name(DummyStep)
-#     assert fqn in process.factories
-#     assert process.factories[fqn] is fac
-
-
 def test_resolve_function_target_no_steps_raises() -> None:
     """Test that resolve_function_target raises when there are no entry_steps."""
     builder = _create_builder("proc")
@@ -237,13 +209,3 @@ def test_resolve_function_target_success() -> None:
     assert result.step_id == "1"
     assert result.function_name == "myFn"
     assert result.parameter_name == "myParam"
-
-
-# same steps empty error as above
-# def test_build_step_returns_kernel_process() -> None:
-#     """Test that build_step returns a KernelProcess instance."""
-#     builder = _create_builder("stepProc")
-#     step_process = builder.build_step()
-#     assert isinstance(step_process, KernelProcess)
-#     assert step_process.state.name == "stepProc"
-#     assert step_process.edges == {}
