@@ -34,7 +34,7 @@ public class KernelFunctionTests
         kernel2.Data["id"] = "kernel2";
 
         // Clone the function with kernel2
-        var clonedFunction = function.Clone(kernel2);
+        var clonedFunction = function.WithKernel(kernel2);
 
         // Act
         // Invoke the cloned function without providing a kernel
@@ -65,7 +65,7 @@ public class KernelFunctionTests
         kernel2.Data["id"] = "kernel2";
 
         // Clone the function with kernel2
-        var clonedFunction = function.Clone(kernel2);
+        var clonedFunction = function.WithKernel(kernel2);
 
         // Act
         // Invoke the cloned function with null kernel
@@ -95,7 +95,7 @@ public class KernelFunctionTests
         kernel2.Data["id"] = "kernel2";
 
         // Clone the function with kernel2
-        var clonedFunction = function.Clone(kernel2);
+        var clonedFunction = function.WithKernel(kernel2);
 
         // Act
         // Invoke the cloned function with kernel1 explicitly
@@ -125,7 +125,7 @@ public class KernelFunctionTests
         kernel2.Data["id"] = "kernel2";
 
         // Clone the function with kernel2
-        var clonedFunction = function.Clone(kernel2);
+        var clonedFunction = function.WithKernel(kernel2);
 
         // Act
         // Invoke the cloned function with just arguments
@@ -156,7 +156,7 @@ public class KernelFunctionTests
         kernel2.Data["id"] = "kernel2";
 
         // Clone the function with kernel2
-        var clonedFunction = function.Clone(kernel2);
+        var clonedFunction = function.WithKernel(kernel2);
 
         // Act
         // Invoke the cloned function with kernel1 explicitly

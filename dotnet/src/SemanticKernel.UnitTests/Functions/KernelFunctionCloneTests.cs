@@ -22,12 +22,12 @@ public class KernelFunctionCloneTests
             "GetKernelHashCode");
 
         // Create an AIFunction from the KernelFunction with the original kernel
-        var aiFunction = function.Clone(originalKernel);
+        var aiFunction = function.WithKernel(originalKernel);
 
         // Act
         // Clone the function and create a new AIFunction with the new kernel
         var clonedFunction = function.Clone("TestPlugin");
-        var clonedAIFunction = clonedFunction.Clone(newKernel);
+        var clonedAIFunction = clonedFunction.WithKernel(newKernel);
 
         // Invoke both functions
         var originalResult = await aiFunction.InvokeAsync(new AIFunctionArguments(), default);
@@ -56,8 +56,8 @@ public class KernelFunctionCloneTests
 
         // Act
         // Create AIFunctions with different kernels
-        var aiFunction1 = function.Clone(kernel1);
-        var aiFunction2 = function.Clone(kernel2);
+        var aiFunction1 = function.WithKernel(kernel1);
+        var aiFunction2 = function.WithKernel(kernel2);
 
         // Invoke both functions
         var result1 = await aiFunction1.InvokeAsync(new AIFunctionArguments(), default);
@@ -80,7 +80,7 @@ public class KernelFunctionCloneTests
         var function = KernelFunctionFactory.CreateFromMethod(() => "Test", "TestFunction");
 
         // Act
-        var aiFunction = function.Clone(kernel);
+        var aiFunction = function.WithKernel(kernel);
 
         // Assert
         // We can't directly access the private _kernel field, but we can verify it's used
