@@ -12,6 +12,22 @@ public sealed class PineconeCollectionOptions : VectorStoreCollectionOptions
     internal static readonly PineconeCollectionOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="PineconeCollectionOptions"/> class.
+    /// </summary>
+    public PineconeCollectionOptions()
+    {
+    }
+
+    internal PineconeCollectionOptions(PineconeCollectionOptions? source)
+    {
+        this.Definition = source?.Definition;
+        this.IndexNamespace = source?.IndexNamespace;
+        this.ServerlessIndexCloud = source?.ServerlessIndexCloud ?? Default.ServerlessIndexCloud;
+        this.ServerlessIndexRegion = source?.ServerlessIndexRegion ?? Default.ServerlessIndexRegion;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+    }
+
+    /// <summary>
     /// Gets or sets the value for a namespace within the Pinecone index that will be used for operations involving records (Get, Upsert, Delete)."/>
     /// </summary>
     public string? IndexNamespace { get; set; }

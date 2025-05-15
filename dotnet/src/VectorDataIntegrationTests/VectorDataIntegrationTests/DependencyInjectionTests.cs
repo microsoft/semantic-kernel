@@ -15,6 +15,8 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
     where TKey : notnull
     where TRecord : class
 {
+    protected virtual string CollectionName => "collectionName";
+
     protected abstract void PopulateConfiguration(ConfigurationManager configuration, object? serviceKey = null);
 
     public abstract IEnumerable<Func<IServiceCollection, object?, ServiceLifetime, IServiceCollection>> StoreDelegates { get; }
@@ -32,8 +34,8 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
 
         foreach (var registrationDelegate in this.CollectionDelegates)
         {
-            Assert.Throws<ArgumentNullException>(() => registrationDelegate(null!, null, "collectionName", ServiceLifetime.Singleton));
-            Assert.Throws<ArgumentNullException>(() => registrationDelegate(null!, "serviceKey", "collectionName", ServiceLifetime.Singleton));
+            Assert.Throws<ArgumentNullException>(() => registrationDelegate(null!, null, this.CollectionName, ServiceLifetime.Singleton));
+            Assert.Throws<ArgumentNullException>(() => registrationDelegate(null!, "serviceKey", this.CollectionName, ServiceLifetime.Singleton));
         }
     }
 
@@ -91,7 +93,7 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
         {
             IServiceCollection services = this.CreateServices(serviceKey);
 
-            registrationDelegate(services, serviceKey, "collectionName", lifetime);
+            registrationDelegate(services, serviceKey, this.CollectionName, lifetime);
 
             using ServiceProvider serviceProvider = services.BuildServiceProvider();
             // Let's ensure that concrete types are registered.
@@ -138,7 +140,7 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
             // Users may be willing to register more than one VectorStoreCollection implementation.
             services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey, (sp, key) => new FakeVectorStoreRecordCollection(), lifetime));
 
-            registrationDelegate(services, serviceKey, "collectionName", lifetime);
+            registrationDelegate(services, serviceKey, this.CollectionName, lifetime);
 
             using ServiceProvider serviceProvider = services.BuildServiceProvider();
             // let's ensure that concrete types are registered
@@ -161,7 +163,7 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
                 return null!;
             });
 
-            registrationDelegate(services, serviceKey, "collectionName", lifetime);
+            registrationDelegate(services, serviceKey, this.CollectionName, lifetime);
 
             Assert.False(wasResolved); // it's lazy
 

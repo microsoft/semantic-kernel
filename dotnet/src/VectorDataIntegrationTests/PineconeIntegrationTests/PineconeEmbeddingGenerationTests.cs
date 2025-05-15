@@ -41,14 +41,20 @@ public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.S
         [
             services => services
                 .AddSingleton(PineconeTestStore.Instance.Client)
-                .AddPineconeVectorStore()
+                .AddPineconeVectorStore(),
+            services => services
+                .AddPineconeVectorStore("ForPineconeLocalTheApiKeysAreIgnored", PineconeTestStore.Instance.ClientOptions)
         ];
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
         [
             services => services
                 .AddSingleton(PineconeTestStore.Instance.Client)
-                .AddPineconeVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName),
+            services => services
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName, "ForPineconeLocalTheApiKeysAreIgnored", PineconeTestStore.Instance.ClientOptions),
+            services => services
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName, _ => "ForPineconeLocalTheApiKeysAreIgnored", _ => PineconeTestStore.Instance.ClientOptions)
         ];
     }
 
@@ -73,7 +79,7 @@ public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.S
         [
             services => services
                 .AddSingleton(PineconeTestStore.Instance.Client)
-                .AddPineconeVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 }
