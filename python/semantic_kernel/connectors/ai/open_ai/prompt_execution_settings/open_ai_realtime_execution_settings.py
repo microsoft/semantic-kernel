@@ -28,18 +28,23 @@ class TurnDetection(KernelBaseModel):
     """Turn detection settings.
 
     Args:
-        type: The type of turn detection, currently only "server_vad" is supported.
-        threshold: The threshold for voice activity detection, should be between 0 and 1.
+        type: The type of turn detection, server_vad or semantic_vad.
+        threshold: The threshold for voice activity detection, should be between 0 and 1, only for server_vad.
         prefix_padding_ms: The padding before the detected voice activity, in milliseconds.
         silence_duration_ms: The duration of silence to detect the end of a turn, in milliseconds.
+        interrupt_response: Whether to interrupt the response for each detected turn.
+        eagerness: The eagerness of the voice activity detection, can be low, medium, high, or auto,
+            used only for semantic_vad.
         create_response: Whether to create a response for each detected turn.
 
     """
 
-    type: Literal["server_vad"] = "server_vad"
+    type: Literal["server_vad", "semantic_vad"] = "server_vad"
     threshold: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
     prefix_padding_ms: Annotated[int | None, Field(ge=0)] = None
     silence_duration_ms: Annotated[int | None, Field(ge=0)] = None
+    interrupt_response: bool | None = None
+    eagerness: Literal["low", "medium", "high", "auto"] | None = None
     create_response: bool | None = None
 
 
