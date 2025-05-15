@@ -70,6 +70,7 @@ class OpenAIRealtimeExecutionSettings(PromptExecutionSettings):
     ] = None
     temperature: Annotated[float | None, Field(ge=0.0, le=2.0)] = None
     max_response_output_tokens: Annotated[int | Literal["inf"] | None, Field(gt=0)] = None
+    input_audio_noise_reduction: dict[Literal["type"], Literal["near_field", "far_field"]] | None = None
 
 
 class AzureRealtimeExecutionSettings(OpenAIRealtimeExecutionSettings):
