@@ -7,9 +7,9 @@
   <ItemGroup>
     <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
     <PackageVersion Include="Aspire.Azure.Search.Documents" Version="9.2.1" />
-    <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="9.1.0" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.1.0" />
+    <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="9.1.0" />
     <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.0-preview.13" />
     <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.0-preview.13" />
     <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.0.2" />
@@ -31,26 +31,24 @@
     <PackageVersion Include="EntityFramework" Version="6.5.1" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
     <PackageVersion Include="Google.Apis.Auth" Version="1.69.0" />
+    <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="1.68.0.3520" />
     <PackageVersion Include="Google.Protobuf" Version="3.27.1" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.70.0" />
     <PackageVersion Include="Grpc.AspNetCore.Server" Version="2.70.0" />
     <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.70.0" />
     <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.70.0" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.70.0" />
     <PackageVersion Include="Grpc.Tools" Version="2.71.0" />
     <PackageVersion Include="JmesPath.Net" Version="1.0.330" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="5.0.2" />
-    <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.13" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
-    <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
-    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
-    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.10" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.72" />
     <PackageVersion Include="JsonSchema.Net" Version="7.3.4" />
     <PackageVersion Include="Markdig" Version="0.40.0" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.0" />
@@ -66,7 +64,11 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.67.2" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.21.0" />
+    <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.13" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Npgsql" Version="8.0.6" />
@@ -149,8 +151,6 @@
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.23" />
     <PackageVersion Include="Microsoft.OpenApi.ApiManifest" Version="0.5.6-preview" />
     <PackageVersion Include="Microsoft.Plugins.Manifest" Version="1.0.0-rc3" />
-    <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="1.68.0.3520" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.70.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.45" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="YamlDotNet" Version="15.3.0" />
