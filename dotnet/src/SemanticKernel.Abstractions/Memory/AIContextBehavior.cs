@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -20,12 +19,6 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0130")]
 public abstract class AIContextBehavior
 {
-    /// <summary>
-    /// Gets the list of AI functions that this component exposes
-    /// and which should be used by the consuming AI when using this component.
-    /// </summary>
-    public virtual IReadOnlyCollection<AIFunction> AIFunctions => Array.Empty<AIFunction>();
-
     /// <summary>
     /// Called just after a new thread is created.
     /// </summary>
@@ -74,12 +67,12 @@ public abstract class AIContextBehavior
     /// <summary>
     /// Called just before the Model/Agent/etc. is invoked
     /// Implementers can load any additional context required at this time,
-    /// but they should also return any context that should be passed to the Model/Agent/etc.
+    /// and they should return any context that should be passed to the Model/Agent/etc.
     /// </summary>
     /// <param name="newMessages">The most recent messages that the Model/Agent/etc. is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been rendered and returned.</returns>
-    public abstract Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
+    public abstract Task<AIContextPart> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Called when the current conversion is temporarily suspended and any state should be saved.

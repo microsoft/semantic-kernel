@@ -47,8 +47,6 @@ public sealed class Mem0Behavior : AIContextBehavior
     private readonly bool _scopeToPerOperationThreadId;
     private readonly string _contextPrompt;
 
-    private readonly AIFunction[] _aIFunctions;
-
     private readonly Mem0Client _mem0Client;
 
     /// <summary>
@@ -82,13 +80,8 @@ public sealed class Mem0Behavior : AIContextBehavior
         this._scopeToPerOperationThreadId = options?.ScopeToPerOperationThreadId ?? false;
         this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
 
-        this._aIFunctions = [];
-
         this._mem0Client = new(httpClient);
     }
-
-    /// <inheritdoc/>
-    public override IReadOnlyCollection<AIFunction> AIFunctions => this._aIFunctions;
 
     /// <inheritdoc/>
     public override Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
@@ -130,7 +123,7 @@ public sealed class Mem0Behavior : AIContextBehavior
     }
 
     /// <inheritdoc/>
-    public override async Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override async Task<AIContextPart> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessages);
 
@@ -148,11 +141,14 @@ public sealed class Mem0Behavior : AIContextBehavior
                 inputText).ConfigureAwait(false);
 
         var lineSeparatedMemories = string.Join(Environment.NewLine, memories);
-        return
-            $"""
-            {this._contextPrompt}
-            {lineSeparatedMemories}
-            """;
+        return new()
+        {
+            Instructions =
+                $"""
+                {this._contextPrompt}
+                {lineSeparatedMemories}
+                """
+        };
     }
 
     /// <summary>

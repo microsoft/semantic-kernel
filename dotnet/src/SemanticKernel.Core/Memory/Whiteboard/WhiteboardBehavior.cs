@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// An <see cref="AIContextBehavior"/> that maintains a whiteboard during a conversation.
 /// </summary>
 [Experimental("SKEXP0130")]
-public class WhiteboardBehavior : AIContextBehavior
+public sealed class WhiteboardBehavior : AIContextBehavior
 {
     private readonly static JsonDocument s_structuredOutputSchema = JsonDocument.Parse("""{"type":"object","properties":{"newWhiteboard":{"type":"array","items":{"type":"string"}}}}""");
     private const string DefaultContextPrompt = "## Whiteboard\nThe following list of messages are currently on the whiteboard:";
@@ -51,9 +51,6 @@ public class WhiteboardBehavior : AIContextBehavior
         this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
         this._whiteboardEmptyPrompt = options?.WhiteboardEmptyPrompt ?? DefaultWhiteboardEmptyPrompt;
     }
-
-    /// <inheritdoc/>
-    public override IReadOnlyCollection<AIFunction> AIFunctions => Array.Empty<AIFunction>();
 
     /// <summary>
     /// Gets the current whiteboard content.
@@ -93,16 +90,19 @@ public class WhiteboardBehavior : AIContextBehavior
     }
 
     /// <inheritdoc/>
-    public override Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override Task<AIContextPart> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         if (this._currentWhiteboardContent.Count == 0)
         {
-            return Task.FromResult(this._whiteboardEmptyPrompt);
+            return Task.FromResult(new AIContextPart() { Instructions = this._whiteboardEmptyPrompt });
         }
 
         var numberedMessages = this._currentWhiteboardContent.Select((x, i) => $"{i} {x}");
         var joinedMessages = string.Join(Environment.NewLine, numberedMessages);
-        return Task.FromResult($"{this._contextPrompt}\n{joinedMessages}");
+        return Task.FromResult(new AIContextPart()
+        {
+            Instructions = $"{this._contextPrompt}\n{joinedMessages}"
+        });
     }
 
     /// <summary>

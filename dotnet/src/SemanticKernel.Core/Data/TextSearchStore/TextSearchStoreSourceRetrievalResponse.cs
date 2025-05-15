@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Represents a response from the <see cref="TextSearchStoreOptions.SourceRetrievalCallback"/>.
 /// </summary>
-public class TextSearchStoreSourceRetrievalResponse
+[Experimental("SKEXP0130")]
+public sealed class TextSearchStoreSourceRetrievalResponse
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="TextSearchStoreSourceRetrievalResponse"/> class.

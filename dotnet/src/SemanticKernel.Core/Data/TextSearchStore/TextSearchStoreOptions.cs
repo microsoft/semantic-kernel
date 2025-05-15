@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Data;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// <summary>
 /// Contains options for the <see cref="TextSearchStore{TKey}"/>.
 /// </summary>
+[Experimental("SKEXP0130")]
 public sealed class TextSearchStoreOptions
 {
     /// <summary>

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Microsoft.SemanticKernel.Data;
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// <summary>
 /// Contains options for <see cref="TextSearchStore{TKey}.UpsertDocumentsAsync(IEnumerable{TextSearchDocument}, TextSearchStoreUpsertOptions?, CancellationToken)"/>.
 /// </summary>
+[Experimental("SKEXP0130")]
 public sealed class TextSearchStoreUpsertOptions
 {
     /// <summary>

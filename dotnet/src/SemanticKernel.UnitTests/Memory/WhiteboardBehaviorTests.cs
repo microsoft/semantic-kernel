@@ -45,6 +45,6 @@ public class WhiteboardBehaviorTests
 
         await sut.WhenProcessingCompleteAsync();
         var actualContext = await sut.OnModelInvokeAsync([chatMessage]);
-        Assert.Contains("REQUIREMENT - User wants to create a presentation", actualContext);
+        Assert.Contains("REQUIREMENT - User wants to create a presentation", actualContext.Instructions);
     }
 }

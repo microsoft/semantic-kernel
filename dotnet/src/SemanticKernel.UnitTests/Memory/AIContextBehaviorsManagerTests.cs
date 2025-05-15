@@ -129,9 +129,9 @@ public class AIContextBehaviorsManagerTests
         var mockPart1 = new Mock<AIContextBehavior>();
         var mockPart2 = new Mock<AIContextBehavior>();
         mockPart1.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                      .ReturnsAsync("Context1");
+                      .ReturnsAsync(new AIContextPart { Instructions = "Context1" });
         mockPart2.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                      .ReturnsAsync("Context2");
+                      .ReturnsAsync(new AIContextPart { Instructions = "Context2" });
         manager.Add(mockPart1.Object);
         manager.Add(mockPart2.Object);
 
@@ -141,7 +141,7 @@ public class AIContextBehaviorsManagerTests
         var result = await manager.OnModelInvokeAsync(messages);
 
         // Assert
-        Assert.Equal("Context1\nContext2", result);
+        Assert.Equal("Context1\nContext2", result.Instructions);
     }
 
     [Fact]

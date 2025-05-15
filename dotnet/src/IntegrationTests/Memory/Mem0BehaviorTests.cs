@@ -50,7 +50,7 @@ public class Mem0BehaviorTests : IDisposable
 
         await sut.ClearStoredMemoriesAsync();
         var answerBeforeAdding = await sut.OnModelInvokeAsync([question]);
-        Assert.DoesNotContain("Caoimhe", answerBeforeAdding);
+        Assert.DoesNotContain("Caoimhe", answerBeforeAdding.Instructions);
 
         // Act
         await sut.OnNewMessageAsync("test-thread-id", input);
@@ -62,8 +62,8 @@ public class Mem0BehaviorTests : IDisposable
         var answerAfterClearing = await sut.OnModelInvokeAsync([question]);
 
         // Assert
-        Assert.Contains("Caoimhe", answerAfterAdding);
-        Assert.DoesNotContain("Caoimhe", answerAfterClearing);
+        Assert.Contains("Caoimhe", answerAfterAdding.Instructions);
+        Assert.DoesNotContain("Caoimhe", answerAfterClearing.Instructions);
     }
 
     [Fact(Skip = SkipReason)]
@@ -77,7 +77,7 @@ public class Mem0BehaviorTests : IDisposable
 
         await sut.ClearStoredMemoriesAsync();
         var answerBeforeAdding = await sut.OnModelInvokeAsync([question]);
-        Assert.DoesNotContain("Caoimhe", answerBeforeAdding);
+        Assert.DoesNotContain("Caoimhe", answerBeforeAdding.Instructions);
 
         // Act
         await sut.OnNewMessageAsync("test-thread-id", input);
@@ -89,8 +89,8 @@ public class Mem0BehaviorTests : IDisposable
         var answerAfterClearing = await sut.OnModelInvokeAsync([question]);
 
         // Assert
-        Assert.Contains("Caoimhe", answerAfterAdding);
-        Assert.DoesNotContain("Caoimhe", answerAfterClearing);
+        Assert.Contains("Caoimhe", answerAfterAdding.Instructions);
+        Assert.DoesNotContain("Caoimhe", answerAfterClearing.Instructions);
     }
 
     [Fact(Skip = SkipReason)]
@@ -108,8 +108,8 @@ public class Mem0BehaviorTests : IDisposable
 
         var answerBeforeAdding1 = await sut1.OnModelInvokeAsync([question]);
         var answerBeforeAdding2 = await sut2.OnModelInvokeAsync([question]);
-        Assert.DoesNotContain("Caoimhe", answerBeforeAdding1);
-        Assert.DoesNotContain("Caoimhe", answerBeforeAdding2);
+        Assert.DoesNotContain("Caoimhe", answerBeforeAdding1.Instructions);
+        Assert.DoesNotContain("Caoimhe", answerBeforeAdding2.Instructions);
 
         // Act
         await sut1.OnNewMessageAsync("test-thread-id-1", input);
@@ -119,8 +119,8 @@ public class Mem0BehaviorTests : IDisposable
         var answerAfterAddingOnOtherScope = await sut2.OnModelInvokeAsync([question]);
 
         // Assert
-        Assert.Contains("Caoimhe", answerAfterAdding);
-        Assert.DoesNotContain("Caoimhe", answerAfterAddingOnOtherScope);
+        Assert.Contains("Caoimhe", answerAfterAdding.Instructions);
+        Assert.DoesNotContain("Caoimhe", answerAfterAddingOnOtherScope.Instructions);
 
         // Cleanup.
         await sut1.ClearStoredMemoriesAsync();
