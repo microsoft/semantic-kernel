@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -9,6 +10,7 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
+[Obsolete("Temporary test for Obsoleted OpenAITextEmbeddingGenerationService.")]
 public sealed class OpenAITextEmbeddingTests
 {
     private const int AdaVectorLength = 1536;

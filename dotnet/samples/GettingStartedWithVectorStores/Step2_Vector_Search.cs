@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace GettingStartedWithVectorStores;
 
@@ -23,7 +23,7 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
         var searchResultItem = await SearchVectorStoreAsync(
             collection,
             "What is an Application Programming Interface?",
-            fixture.TextEmbeddingGenerationService);
+            fixture.EmbeddingGenerator);
 
         // Write the search result with its score to the console.
         Console.WriteLine(searchResultItem.Record.Definition);
@@ -35,12 +35,12 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
     /// </summary>
     /// <param name="collection">The collection to search.</param>
     /// <param name="searchString">The string to search matches for.</param>
-    /// <param name="textEmbeddingGenerationService">The service to generate embeddings with.</param>
+    /// <param name="embeddingGenerator">The service to generate embeddings with.</param>
     /// <returns>The top search result.</returns>
-    internal static async Task<VectorSearchResult<Glossary>> SearchVectorStoreAsync(IVectorStoreRecordCollection<string, Glossary> collection, string searchString, ITextEmbeddingGenerationService textEmbeddingGenerationService)
+    internal static async Task<VectorSearchResult<Glossary>> SearchVectorStoreAsync(IVectorStoreRecordCollection<string, Glossary> collection, string searchString, IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
     {
         // Generate an embedding from the search string.
-        var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
+        var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
 
         // Search the store and get the single most relevant result.
         var searchResultItems = await collection.SearchEmbeddingAsync(
@@ -59,7 +59,7 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
 
         // Generate an embedding from the search string.
         var searchString = "How do I provide additional context to an LLM?";
-        var searchVector = await fixture.TextEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
+        var searchVector = (await fixture.EmbeddingGenerator.GenerateAsync(searchString)).Vector;
 
         // Search the store with a filter and get the single most relevant result.
         var searchResultItems = await collection.SearchEmbeddingAsync(
@@ -82,7 +82,7 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
         var collection = vectorStore.GetCollection<string, Glossary>("skglossary");
 
         // Ingest data into the collection using the code from step 1.
-        await Step1_Ingest_Data.IngestDataIntoVectorStoreAsync(collection, fixture.TextEmbeddingGenerationService);
+        await Step1_Ingest_Data.IngestDataIntoVectorStoreAsync(collection, fixture.EmbeddingGenerator);
 
         return collection;
     }
