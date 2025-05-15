@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides functionality for incrementally defining a process.
 /// </summary>
-public sealed partial class ProcessBuilder : ProcessStepBuilder
+public sealed class ProcessBuilder : ProcessStepBuilder
 {
     /// <summary>The collection of steps within this process.</summary>
     private readonly List<ProcessStepBuilder> _steps = [];

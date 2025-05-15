@@ -71,7 +71,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._edgeGroupProcessors = this._stepInfo.IncomingEdgeGroups?.ToDictionary(kvp => kvp.Key, kvp => new LocalEdgeGroupProcessor(kvp.Value)) ?? [];
     }
 
-    private void InitializeStepInitialInputs()
+    protected virtual void InitializeStepInitialInputs()
     {
         // Instantiate an instance of the inner step object
         this._stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);

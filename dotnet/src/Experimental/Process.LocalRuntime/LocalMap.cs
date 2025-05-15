@@ -117,6 +117,12 @@ internal sealed class LocalMap : LocalStep
         return default;
     }
 
+    protected override void InitializeStepInitialInputs()
+    {
+        // The map does not need any initial inputs as it's already been initialized.
+        // Override the base method to prevent it from being called.
+    }
+
     private sealed record MapOperationContext(in HashSet<string> EventTargets, in IDictionary<string, Type> CapturedEvents)
     {
         public ConcurrentDictionary<string, object?> Results { get; } = [];

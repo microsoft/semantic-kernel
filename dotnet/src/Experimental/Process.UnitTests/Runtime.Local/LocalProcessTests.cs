@@ -46,22 +46,13 @@ public class LocalProcessTests
     /// Validates that the <see cref="LocalProcess"/> assigns and Id to the process if one is not already set.
     /// </summary>
     [Fact]
-    public async Task ProcessWithMissingIdIsAssignedAnIdAsync()
+    public async Task ProcessBuilderRequiresNonEmptyId()
     {
-        // Arrange
-        var mockKernel = new Kernel();
-        var processState = new KernelProcessState(name: "TestProcess", version: "v1");
-        var mockKernelProcess = new KernelProcess(processState,
-        [
-            new(typeof(TestStep), new KernelProcessState(name: "Step1", version: "v1", id: "1"), []),
-            new(typeof(TestStep), new KernelProcessState(name: "Step2", version: "v1", id: "2"), [])
-        ], []);
-
         // Act
-        await using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
-
-        // Assert
-        Assert.NotEmpty(localProcess.Id);
+        Assert.Throws<ArgumentException>(() =>
+        {
+            var processBuilder = new ProcessBuilder(string.Empty);
+        });
     }
 
     /// <summary>
