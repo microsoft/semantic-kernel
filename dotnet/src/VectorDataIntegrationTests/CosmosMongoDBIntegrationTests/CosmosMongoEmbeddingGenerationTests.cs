@@ -4,7 +4,6 @@ using CosmosMongoDBIntegrationTests.Support;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
 using Xunit;
@@ -54,7 +53,7 @@ public class CosmosMongoEmbeddingGenerationTests(CosmosMongoEmbeddingGenerationT
         [
             services => services
                 .AddSingleton(CosmosMongoTestStore.Instance.Database)
-                .AddCosmosMongoVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddCosmosMongoCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 }

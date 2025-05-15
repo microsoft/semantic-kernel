@@ -3,7 +3,6 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
 using MongoDBIntegrationTests.Support;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
@@ -47,14 +46,14 @@ public class MongoDBEmbeddingGenerationTests(MongoDBEmbeddingGenerationTests.Str
         [
             services => services
                 .AddSingleton(MongoDBTestStore.Instance.Database)
-                .AddMongoDBVectorStore()
+                .AddMongoVectorStore()
         ];
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
         [
             services => services
                 .AddSingleton(MongoDBTestStore.Instance.Database)
-                .AddMongoDBVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddMongoCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 }

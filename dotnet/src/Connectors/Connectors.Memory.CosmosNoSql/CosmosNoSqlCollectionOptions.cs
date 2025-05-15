@@ -14,6 +14,23 @@ public sealed class CosmosNoSqlCollectionOptions : VectorStoreCollectionOptions
     internal static readonly CosmosNoSqlCollectionOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="CosmosNoSqlVectorStoreOptions"/> class.
+    /// </summary>
+    public CosmosNoSqlCollectionOptions()
+    {
+    }
+
+    internal CosmosNoSqlCollectionOptions(CosmosNoSqlCollectionOptions? source)
+    {
+        this.Definition = source?.Definition;
+        this.JsonSerializerOptions = source?.JsonSerializerOptions;
+        this.PartitionKeyPropertyName = source?.PartitionKeyPropertyName;
+        this.IndexingMode = source?.IndexingMode ?? Default.IndexingMode;
+        this.Automatic = source?.Automatic ?? Default.Automatic;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+    }
+
+    /// <summary>
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure CosmosDB NoSQL record.
     /// </summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; set; }

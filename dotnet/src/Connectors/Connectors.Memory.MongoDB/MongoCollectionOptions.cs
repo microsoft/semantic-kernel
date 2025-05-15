@@ -12,6 +12,24 @@ public sealed class MongoCollectionOptions : VectorStoreCollectionOptions
     internal static readonly MongoCollectionOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="MongoCollectionOptions"/> class.
+    /// </summary>
+    public MongoCollectionOptions()
+    {
+    }
+
+    internal MongoCollectionOptions(MongoCollectionOptions? source)
+    {
+        this.Definition = source?.Definition;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+        this.VectorIndexName = source?.VectorIndexName ?? Default.VectorIndexName;
+        this.FullTextSearchIndexName = source?.FullTextSearchIndexName ?? Default.FullTextSearchIndexName;
+        this.MaxRetries = source?.MaxRetries ?? Default.MaxRetries;
+        this.DelayInMilliseconds = source?.DelayInMilliseconds ?? Default.DelayInMilliseconds;
+        this.NumCandidates = source?.NumCandidates ?? Default.NumCandidates;
+    }
+
+    /// <summary>
     /// Vector index name to use. If null, the default "vector_index" name will be used.
     /// </summary>
     public string VectorIndexName { get; set; } = MongoConstants.DefaultVectorIndexName;

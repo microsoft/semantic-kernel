@@ -12,6 +12,22 @@ public sealed class CosmosMongoCollectionOptions : VectorStoreCollectionOptions
     internal static readonly CosmosMongoCollectionOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="CosmosMongoCollectionOptions"/> class.
+    /// </summary>
+    public CosmosMongoCollectionOptions()
+    {
+    }
+
+    internal CosmosMongoCollectionOptions(CosmosMongoCollectionOptions? source)
+    {
+        this.Definition = source?.Definition;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+        this.NumLists = source?.NumLists ?? Default.NumLists;
+        this.EfConstruction = source?.EfConstruction ?? Default.EfConstruction;
+        this.EfSearch = source?.EfSearch ?? Default.EfSearch;
+    }
+
+    /// <summary>
     /// This integer is the number of clusters that the inverted file (IVF) index uses to group the vector data. Default is 1.
     /// We recommend that numLists is set to documentCount/1000 for up to 1 million documents and to sqrt(documentCount)
     /// for more than 1 million documents. Using a numLists value of 1 is akin to performing brute-force search, which has
