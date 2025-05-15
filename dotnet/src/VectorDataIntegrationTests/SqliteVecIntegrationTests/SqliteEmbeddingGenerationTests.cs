@@ -22,12 +22,12 @@ public class SqliteEmbeddingGenerationTests(SqliteEmbeddingGenerationTests.Strin
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
         [
-            services => services.AddSqliteVectorStore(SqliteTestStore.Instance.ConnectionString)
+            services => services.AddSqliteVectorStore(_ => SqliteTestStore.Instance.ConnectionString)
         ];
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
         [
-            services => services.AddSqliteVectorStoreRecordCollection<string, RecordWithAttributes>(this.CollectionName, SqliteTestStore.Instance.ConnectionString)
+            services => services.AddSqliteCollection<string, RecordWithAttributes>(this.CollectionName, SqliteTestStore.Instance.ConnectionString)
         ];
     }
 
