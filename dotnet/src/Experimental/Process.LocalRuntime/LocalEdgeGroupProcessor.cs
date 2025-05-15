@@ -52,7 +52,16 @@ internal class LocalEdgeGroupProcessor
             throw new KernelException($"Message {messageKey} is not expected for edge group {this._edgeGroup.GroupId}.");
         }
 
-        this.MessageData[messageKey] = (message.TargetEventData as KernelProcessEventData)!.ToObject();
+        if (message.TargetEventData is KernelProcessEventData processEventData)
+        {
+            // used by events from steps
+            this.MessageData[messageKey] = processEventData.ToObject();
+        }
+        else
+        {
+            // used by events that are process input events
+            this.MessageData[messageKey] = message.TargetEventData;
+        }
 
         this._absentMessages.Remove(messageKey);
         if (this._absentMessages.Count == 0)

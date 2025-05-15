@@ -124,7 +124,15 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
             //{
             //    onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
             //}
-            onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
+
+            if (messageSource.Source is ProcessBuilder processSource)
+            {
+                onEventBuilder = processSource.OnInputEvent(messageSource.MessageType);
+            }
+            else
+            {
+                onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
+            }
 
             onEventBuilder.EdgeGroupBuilder = this.EdgeGroupBuilder;
             onEventBuilder.Metadata = metadata ?? [];

@@ -322,10 +322,75 @@ public class LocalProcessTests
         var edgeData = JsonSerializer.Deserialize<StorageStepEdgesData>(entry.Content);
         Assert.NotNull(edgeData);
         Assert.Single(edgeData.EdgesData);
-        // Only 2/3 parameters in merge step should have arrived and persisted in stepEdgesData
+        // Only 2/3 events in merge step should have arrived and persisted in stepEdgesData
         Assert.Equal(2, edgeData.EdgesData.First().Value?.Count);
         Assert.True(edgeData.EdgesData.First().Value?.ContainsKey("DelayedEchoStep22.DelayedEcho"));
         Assert.True(edgeData.EdgesData.First().Value?.ContainsKey("DelayedEchoStep33.DelayedEcho"));
+
+        // Act - 2
+        await using LocalKernelProcessContext runningProcess2 = await LocalKernelProcessFactory.StartAsync(
+            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            {
+                Id = CommonProcesses.ProcessEvents.OtherEvent,
+                Data = "World",
+            }, storageConnector: processStorage);
+
+        // Assert - 2
+        var processState2 = await runningProcess2.GetStateAsync();
+        Assert.NotNull(processState2);
+        processStorage._dbMock.TryGetValue(mergeStepStorageEntry, out var entry2);
+        Assert.NotNull(entry2?.Content);
+        Assert.IsType<string>(entry2?.Content);
+
+        var edgeData2 = JsonSerializer.Deserialize<StorageStepEdgesData>(entry2.Content);
+        Assert.NotNull(edgeData2);
+        Assert.Single(edgeData2.EdgesData);
+        // All parameters in merge step should have been processed and edge data should be empty
+        Assert.Empty(edgeData2.EdgesData.First().Value!);
+    }
+
+    /// <summary>
+    /// Verify that the process runs correctly when using the context factory with process key and a storage manager.
+    /// Running same process twice to verify step parameters get persisted.
+    /// Making use of process input events directly to validate AllOf plumbing with process events
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task StartProcessWithKeyedProcessUseOfAllOfAndAllEventsAreProcessInputsAsync()
+    {
+        // Arrange
+        var processId = "myProcessId";
+        var mergeStepStorageEntry = "MergeStringsStep.MergeStringsStep.StepEdgesData";
+        var processKey = CommonProcesses.ProcessKeys.SimpleMergeProcess;
+
+        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
+        var processStorage = new MockStorage();
+        // To use local storage, comment line above and uncomment line below + replacing <TEST_DIR> with existing directory path
+        //var processStorage = new JsonFileStorage("<TEST_DIR>");
+
+        Kernel kernel = new();
+
+        // Act - 1
+        await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
+            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            {
+                Id = CommonProcesses.ProcessEvents.StartProcess,
+                Data = "Hello",
+            }, storageConnector: processStorage);
+
+        // Assert - 1
+        var processState = await runningProcess.GetStateAsync();
+        Assert.NotNull(processState);
+        processStorage._dbMock.TryGetValue(mergeStepStorageEntry, out var entry);
+        Assert.NotNull(entry?.Content);
+        Assert.IsType<string>(entry?.Content);
+
+        var edgeData = JsonSerializer.Deserialize<StorageStepEdgesData>(entry.Content);
+        Assert.NotNull(edgeData);
+        Assert.Single(edgeData.EdgesData);
+        // Only 1/2 events in merge step should have arrived and persisted in stepEdgesData
+        Assert.Single(edgeData.EdgesData.First().Value);
+        Assert.True(edgeData.EdgesData.First().Value?.ContainsKey("SimpleMergeProcess.StartProcess"));
 
         // Act - 2
         await using LocalKernelProcessContext runningProcess2 = await LocalKernelProcessFactory.StartAsync(

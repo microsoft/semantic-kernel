@@ -25,7 +25,7 @@ public static class CommonProcesses
         public const string CounterProcess = nameof(CounterProcess);
         public const string CounterWithEvenNumberDetectionProcess = nameof(CounterWithEvenNumberDetectionProcess);
         public const string DelayedMergeProcess = nameof(DelayedMergeProcess);
-        public const string DelayedMergeProcess2 = nameof(DelayedMergeProcess2);
+        public const string SimpleMergeProcess = nameof(SimpleMergeProcess);
     }
 
     public static KernelProcess GetCounterProcess(string processName = "counterProcess")
@@ -70,8 +70,60 @@ public static class CommonProcesses
     }
 
     /// <summary>
+    /// Process that merges string from process onInput events when they are all available.
+    /// Helps test make use of ListenFor() and AllOf() methods with events from process.
+    /// <code>
+    /// Other ───┐   ┌───────┐
+    ///          │   │       │
+    ///          └──►│       │
+    ///              │       │
+    ///              │       │    ┌───────────┐
+    ///    ┌────────►│ merge ├───►│ finalEcho │
+    ///    │         │       │    └───────────┘
+    /// Start        │       │
+    /// Process  ┌──►│       │
+    ///    │     │   │       │
+    ///    └─────┘   └───────┘
+    /// </code>
+    /// </summary>
+    /// <param name="processName"></param>
+    /// <returns></returns>
+    public static KernelProcess GetSimpleMergeProcess(string processName = "SimpleMergeProcess")
+    {
+        ProcessBuilder process = new(processName);
+
+        var mergeStep = process.AddStepFromType<CommonSteps.MergeStringsStep>(id: nameof(CommonSteps.MergeStringsStep));
+
+        var finalEchoStep = process.AddStepFromType<CommonSteps.EchoStep>(id: nameof(CommonSteps.EchoStep));
+
+        // merging inputs
+        process
+            .ListenFor()
+            .AllOf([
+                new(messageType: ProcessEvents.StartProcess, process),
+                new(messageType: ProcessEvents.StartProcess, process),
+                new(messageType: ProcessEvents.OtherEvent, process),
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(mergeStep, inputMapping: (inputEvents) =>
+            {
+                return new()
+                {
+                    { "str1", inputEvents[process.GetFullEventId(ProcessEvents.StartProcess)] },
+                    { "str2", inputEvents[process.GetFullEventId(ProcessEvents.StartProcess)] },
+                    { "str3", inputEvents[process.GetFullEventId(ProcessEvents.OtherEvent)] },
+                };
+            }));
+
+        mergeStep
+            .OnFunctionResult()
+            .SendEventTo(new ProcessFunctionTargetBuilder(finalEchoStep));
+
+        return process.Build();
+    }
+
+    /// <summary>
     /// Process that delays the merge of three strings until all three are available.
-    /// Helps test make use of ListenFor() and AlOf() methods.
+    /// Helps test make use of ListenFor() and AllOf() methods with events from steps.
     /// <code>
     ///         ┌────────┐
     /// Other ─►│ echo1  ├───────────────────────────────┐   ┌───────┐
@@ -158,6 +210,7 @@ public static class CommonProcesses
             { ProcessKeys.CounterProcess, GetCounterProcess() },
             { ProcessKeys.CounterWithEvenNumberDetectionProcess, GetCounterWithEventDetectionProcess() },
             { ProcessKeys.DelayedMergeProcess, GetDelayedMergeProcess() },
+            { ProcessKeys.SimpleMergeProcess, GetSimpleMergeProcess() },
         };
     }
 }
