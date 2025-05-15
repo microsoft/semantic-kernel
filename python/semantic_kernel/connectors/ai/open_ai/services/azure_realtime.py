@@ -243,22 +243,28 @@ class AzureRealtimeWebRTC(OpenAIRealtimeWebRTCBase, AzureOpenAIConfigBase):
     @override
     def _get_ephemeral_token_headers_and_url(self) -> tuple[dict[str, str], str]:
         """Get the headers and URL for the ephemeral token."""
-        if self.client._azure_ad_token is not None:
+        url = f"{self.client.beta.realtime._client.base_url}/realtimeapi/sessions?api-version={self.client._api_version}"  # ignore[attr-defined] # noqa: E501
+        if self.client._azure_ad_token is not None:  # ignore[attr-defined]
             return (
                 {
-                    "Authorization": f"Bearer {self.client._azure_ad_token}",
+                    "Authorization": f"Bearer {self.client._azure_ad_token}",  # ignore[attr-defined]
                     "Content-Type": "application/json",
                 },
-                f"{self.client.beta.realtime._client.base_url}/realtimeapi/sessions?api-version={self.client._api_version}",
+                url,
             )
-        return {
-            "Authorization": f"Bearer {self.client.api_key}",
-            "Content-Type": "application/json",
-        }, f"{self.client.beta.realtime._client.base_url}/realtimeapi/sessions?api-version={self.client._api_version}"
+        return (
+            {
+                "Authorization": f"Bearer {self.client.api_key}",
+                "Content-Type": "application/json",
+            },
+            url,
+        )
 
     @override
     def _get_webrtc_url(self) -> str:
         """Get the webrtc URL."""
+        if not self.model_extra:
+            raise ServiceInitializationError("The region is required for WebRTC.")
         region = self.model_extra.get("region")
         if not region:
             raise ServiceInitializationError("The region is required for WebRTC.")
