@@ -186,7 +186,7 @@ public class Step06_FoundryAgentProcess : BaseTest
     {
         // Define the agents
         var studentDefinition = new AgentDefinition { Id = "{AGENT_ID}", Name = "Student", Type = AzureAIAgentFactory.AzureAIAgentType };
-        var teacherDefinition = new AgentDefinition { Id = "{AGENT_ID}", Name = "Teacher", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var teacherDefinition = new AgentDefinition { Id = "{AGENT_ID2}", Name = "Teacher", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
         var processBuilder = new FoundryProcessBuilder<TwoAgentMathState>("two_agent_math_chat");

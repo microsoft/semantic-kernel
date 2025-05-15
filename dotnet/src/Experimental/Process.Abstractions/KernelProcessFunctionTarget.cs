@@ -88,7 +88,6 @@ public record KernelProcessAgentInvokeTarget : KernelProcessTarget
     public KernelProcessAgentInvokeTarget(string stepId, string? threadEval, List<string>? messagesInEval, Dictionary<string, string> inputEvals) : base(ProcessTargetType.Invocation)
     {
         Verify.NotNullOrWhiteSpace(stepId);
-        Verify.NotNullOrWhiteSpace(threadEval);
         Verify.NotNull(inputEvals);
 
         this.StepId = stepId;

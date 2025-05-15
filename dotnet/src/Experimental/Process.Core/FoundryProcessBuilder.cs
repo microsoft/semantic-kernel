@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using Azure.Identity;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
@@ -163,28 +165,34 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// <summary>
     /// Deploys the process to Azure Foundry.
     /// </summary>
-    /// <param name="process"></param>
-    /// <param name="endpoint"></param>
+    /// <param name="process">The built process to deploy.</param>
+    /// <param name="endpoint">Th workflow endpoint to deploy to.</param>
+    /// <param name="credential">The credential to use.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task DeployToFoundryAsync(KernelProcess process, string endpoint)
+    public async Task DeployToFoundryAsync(KernelProcess process, string endpoint, TokenCredential? credential = null, CancellationToken cancellationToken = default)
     {
         using var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {(await new DefaultAzureCredential().GetTokenAsync(new Azure.Core.TokenRequestContext(s_scopes)).ConfigureAwait(false)).Token}");
+        if (credential != null)
+        {
+            var token = await credential.GetTokenAsync(new TokenRequestContext(s_scopes), cancellationToken).ConfigureAwait(false);
+            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Token}");
+        }
+        else
+        {
+            var token = await new DefaultAzureCredential().GetTokenAsync(new TokenRequestContext(s_scopes), cancellationToken).ConfigureAwait(false);
+            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Token}");
+        }
 
         var workflow = await WorkflowBuilder.BuildWorkflow(process).ConfigureAwait(false);
         string json = WorkflowSerializer.SerializeToJson(workflow);
         using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-        var response = await httpClient.PostAsync(new Uri($"{endpoint}/agents?api-version=2025-05-01-preview"), content).ConfigureAwait(false);
+        var response = await httpClient.PostAsync(new Uri($"{endpoint}/agents?api-version=2025-05-01-preview"), content, cancellationToken).ConfigureAwait(false);
 
-        if (response.IsSuccessStatusCode)
+        if (!response.IsSuccessStatusCode)
         {
-            Console.WriteLine("Process deployed successfully.");
-        }
-        else
-        {
-            Console.WriteLine($"Failed to deploy process. Status code: {response.StatusCode}");
-            var errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            Console.WriteLine($"Error content: {errorContent}");
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            throw new KernelException($"Failed to deploy process. Response: {errorContent}");
         }
     }
 }
