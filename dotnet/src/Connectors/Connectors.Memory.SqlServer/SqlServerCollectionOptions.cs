@@ -19,11 +19,11 @@ public sealed class SqlServerCollectionOptions
     {
     }
 
-    internal SqlServerCollectionOptions(SqlServerCollectionOptions? source, IEmbeddingGenerator embeddingGenerator)
+    internal SqlServerCollectionOptions(SqlServerCollectionOptions? source)
     {
         this.Schema = source?.Schema;
         this.RecordDefinition = source?.RecordDefinition;
-        this.EmbeddingGenerator = embeddingGenerator;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
     }
 
     /// <summary>

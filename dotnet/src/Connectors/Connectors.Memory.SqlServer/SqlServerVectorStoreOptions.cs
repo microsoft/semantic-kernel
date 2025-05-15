@@ -18,10 +18,10 @@ public sealed class SqlServerVectorStoreOptions
     {
     }
 
-    internal SqlServerVectorStoreOptions(SqlServerVectorStoreOptions? source, IEmbeddingGenerator embeddingGenerator)
+    internal SqlServerVectorStoreOptions(SqlServerVectorStoreOptions? source)
     {
         this.Schema = source?.Schema;
-        this.EmbeddingGenerator = embeddingGenerator;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
     }
 
     /// <summary>
