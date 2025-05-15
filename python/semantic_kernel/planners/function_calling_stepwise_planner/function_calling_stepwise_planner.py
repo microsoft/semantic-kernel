@@ -57,7 +57,7 @@ USER_INTERACTION_SEND_FINAL_ANSWER = "UserInteraction-SendFinalAnswer"
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@deprecated("Will be removed in a future version, use function calling instead.")
+@deprecated("This is no longer maintained and will be removed after June 1, 2025. Use function calling instead.")
 class FunctionCallingStepwisePlanner(KernelBaseModel):
     """A Function Calling Stepwise Planner."""
 

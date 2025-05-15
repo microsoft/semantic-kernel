@@ -37,7 +37,7 @@ def read_file(file_path: str) -> str:
         return file.read()
 
 
-@deprecated("Will be removed in a future version, use function calling instead.")
+@deprecated("This is no longer maintained and will be removed after June 1, 2025. Use function calling instead.")
 class SequentialPlanner:
     """Sequential planner class."""
 
