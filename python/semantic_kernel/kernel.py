@@ -329,20 +329,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         function_behavior: "FunctionChoiceBehavior | None" = None,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the provided FunctionCallContent and updates the chat history."""
-        args_cloned = copy(arguments) if arguments else KernelArguments()
-        try:
-            parsed_args = function_call.to_kernel_arguments()
-            if parsed_args:
-                args_cloned.update(parsed_args)
-        except (FunctionCallInvalidArgumentsException, TypeError) as exc:
-            logger.info(f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again.")
-            frc = FunctionResultContent.from_function_call_content_and_result(
-                function_call_content=function_call,
-                result="The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
-            )
-            chat_history.add_message(message=frc.to_chat_message_content())
-            return None
-
         try:
             if function_call.name is None:
                 raise FunctionExecutionException("The function name is required.")
@@ -367,6 +353,44 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             chat_history.add_message(message=frc.to_chat_message_content())
             return None
 
+        args_cloned = copy(arguments) if arguments else KernelArguments()
+        try:
+            parsed_args = function_call.to_kernel_arguments()
+
+            # Check for missing or unexpected parameters
+            required_param_names = {param.name for param in function_to_call.parameters if param.is_required}
+            received_param_names = set(parsed_args or {})
+
+            missing_params = required_param_names - received_param_names
+            unexpected_params = received_param_names - {param.name for param in function_to_call.parameters}
+
+            if missing_params or unexpected_params:
+                msg_parts = []
+                if missing_params:
+                    msg_parts.append(f"Missing required argument(s): {sorted(missing_params)}.")
+                if unexpected_params:
+                    msg_parts.append(f"Received unexpected argument(s): {sorted(unexpected_params)}.")
+                msg = " ".join(msg_parts) + " Please revise the arguments to match the function signature."
+
+                logger.info(msg)
+                frc = FunctionResultContent.from_function_call_content_and_result(
+                    function_call_content=function_call,
+                    result=msg,
+                )
+                chat_history.add_message(message=frc.to_chat_message_content())
+                return None
+
+            if parsed_args:
+                args_cloned.update(parsed_args)
+        except (FunctionCallInvalidArgumentsException, TypeError) as exc:
+            logger.info(f"Received invalid arguments for function {function_call.name}: {exc}. Trying tool call again.")
+            frc = FunctionResultContent.from_function_call_content_and_result(
+                function_call_content=function_call,
+                result="The tool call arguments are malformed. Arguments must be in JSON format. Please try again.",
+            )
+            chat_history.add_message(message=frc.to_chat_message_content())
+            return None
+
         num_required_func_params = len([param for param in function_to_call.parameters if param.is_required])
         if parsed_args is None or len(parsed_args) < num_required_func_params:
             msg = (
@@ -375,29 +399,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
                 f"{[param.name for param in function_to_call.parameters if param.is_required]}. "
                 "Please provide the required arguments and try again."
             )
-            logger.info(msg)
-            frc = FunctionResultContent.from_function_call_content_and_result(
-                function_call_content=function_call,
-                result=msg,
-            )
-            chat_history.add_message(message=frc.to_chat_message_content())
-            return None
-
-        # Check for missing or unexpected parameters
-        required_param_names = {param.name for param in function_to_call.parameters if param.is_required}
-        received_param_names = set(parsed_args or {})
-
-        missing_params = required_param_names - received_param_names
-        unexpected_params = received_param_names - {param.name for param in function_to_call.parameters}
-
-        if missing_params or unexpected_params:
-            msg_parts = []
-            if missing_params:
-                msg_parts.append(f"Missing required argument(s): {sorted(missing_params)}.")
-            if unexpected_params:
-                msg_parts.append(f"Received unexpected argument(s): {sorted(unexpected_params)}.")
-            msg = " ".join(msg_parts) + " Please revise the arguments to match the function signature."
-
             logger.info(msg)
             frc = FunctionResultContent.from_function_call_content_and_result(
                 function_call_content=function_call,
