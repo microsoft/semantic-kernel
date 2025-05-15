@@ -31,7 +31,7 @@ public class CosmosMongoEmbeddingGenerationTests(CosmosMongoEmbeddingGenerationT
         [
             services => services
                 .AddSingleton(CosmosMongoTestStore.Instance.Database)
-                .AddCosmosMongoVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddCosmosMongoCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 

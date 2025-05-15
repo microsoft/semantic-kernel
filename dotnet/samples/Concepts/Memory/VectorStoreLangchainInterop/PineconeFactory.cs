@@ -58,7 +58,7 @@ public static class PineconeFactory
                 name,
                 new()
                 {
-                    VectorStoreRecordDefinition = s_recordDefinition
+                    Definition = s_recordDefinition
                 }) as VectorStoreCollection<TKey, TRecord>)!;
         }
 
@@ -72,7 +72,7 @@ public static class PineconeFactory
                 name,
                 new()
                 {
-                    VectorStoreRecordDefinition = s_recordDefinition
+                    Definition = s_recordDefinition
                 });
         }
 
