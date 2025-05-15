@@ -88,7 +88,26 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
             }
 
             // Link all the source steps to the event listener
-            var onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
+            ProcessStepEdgeBuilder? onEventBuilder = null;
+            // TODO: seems on function result is not properly supported
+            //if (messageSource.MessageType == "default")
+            //{
+            //    onEventBuilder = messageSource.Source.OnFunctionResult();
+            //}
+            //else
+            //{
+            //    onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
+            //}
+
+            if (messageSource.Source is ProcessBuilder processSource)
+            {
+                onEventBuilder = processSource.OnInputEvent(messageSource.MessageType);
+            }
+            else
+            {
+                onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
+            }
+
             onEventBuilder.EdgeGroupBuilder = this.EdgeGroupBuilder;
 
             if (messageSource.Condition != null)
