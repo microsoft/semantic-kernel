@@ -247,7 +247,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         if (string.IsNullOrWhiteSpace(threadName))
         {
             // No thread name was specified so add a new thread for the agent.
-            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            this.AddThread(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
             threadName = agentDefinition.Name;
         }
 
@@ -275,7 +275,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         if (string.IsNullOrWhiteSpace(threadName))
         {
             // No thread name was specified so add a new thread for the agent.
-            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            this.AddThread(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
             threadName = agentDefinition.Name;
         }
 
@@ -310,7 +310,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         if (string.IsNullOrWhiteSpace(threadName))
         {
             // No thread name was specified so add a new thread for the agent.
-            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            this.AddThread(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
             threadName = agentDefinition.Name;
         }
 
@@ -420,9 +420,9 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     /// <typeparam name="T">The concrete type of the <see cref="AgentThread"/></typeparam>
     /// <param name="threadName">The name of the thread.</param>
+    /// <param name="threadPolicy">The policy that determines the lifetime of the <see cref="AgentThread"/></param>
     /// <param name="threadId">The Id of an existing thread that should be used.</param>
-    /// <returns></returns>
-    public ProcessBuilder AddThread<T>(string threadName, string threadId) where T : AgentThread
+    public ProcessBuilder AddThread<T>(string threadName, KernelProcessThreadLifetime threadPolicy, string? threadId = null) where T : AgentThread
     {
         Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
         Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
@@ -441,11 +441,9 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <summary>
     /// Adds a thread to the process.
     /// </summary>
-    /// <typeparam name="T">The concrete type of the <see cref="AgentThread"/></typeparam>
     /// <param name="threadName">The name of the thread.</param>
     /// <param name="threadPolicy">The policy that determines the lifetime of the <see cref="AgentThread"/></param>
-    /// <returns></returns>
-    public ProcessBuilder AddThread<T>(string threadName, KernelProcessThreadLifetime threadPolicy) where T : AgentThread
+    public ProcessBuilder AddThread(string threadName, KernelProcessThreadLifetime threadPolicy)
     {
         Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
         Verify.NotNull(threadPolicy, nameof(threadPolicy));
@@ -516,7 +514,6 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// Builds the process.
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public KernelProcess Build(KernelProcessStateMetadata? stateMetadata = null)
     {
         // Build the edges first

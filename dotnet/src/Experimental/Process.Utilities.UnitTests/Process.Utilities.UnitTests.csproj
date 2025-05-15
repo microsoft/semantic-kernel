@@ -31,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\..\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
