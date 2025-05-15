@@ -1,7 +1,6 @@
 syntax = "proto3";
 
-package ProcessWithCloudEvents.Grpc.Contract;
-option csharp_namespace = "ProcessWithCloudEvents.Grpc.Contract";
+option csharp_namespace = "ProcessWithCloudEvents.Grpc.DocumentationGenerator";
 
 service GrpcDocumentationGeneration {  
     rpc UserRequestFeatureDocumentation (FeatureDocumentationRequest) returns (ProcessData);

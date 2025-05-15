@@ -482,7 +482,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
     /// </summary>
     /// <returns></returns>
-    public ListenForBuilder ListenFor()
+    internal ListenForBuilder ListenFor()
     {
         return new ListenForBuilder(this);
     }

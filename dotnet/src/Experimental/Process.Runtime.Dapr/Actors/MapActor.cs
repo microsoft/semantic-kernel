@@ -29,9 +29,8 @@ internal sealed class MapActor : StepActor, IMap
     /// </summary>
     /// <param name="host">The Dapr host actor</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    /// <param name="registeredProcesses"></param>
-    public MapActor(ActorHost host, Kernel kernel, IReadOnlyDictionary<string, KernelProcess> registeredProcesses)
-        : base(host, kernel, registeredProcesses)
+    public MapActor(ActorHost host, Kernel kernel)
+        : base(host, kernel)
     {
     }
 
@@ -94,18 +93,14 @@ internal sealed class MapActor : StepActor, IMap
         {
             KernelProcess mapProcess = mapOperation with { State = mapOperation.State with { Id = $"{this.Name}-{mapOperations.Count}-{Guid.NewGuid():N}" } };
             DaprKernelProcessContext processContext = new(mapProcess);
-
-            Task processTask = Task.CompletedTask;
-
-            // TODO: This needs to be updated to not dynamically create a process. Map will be broken until then.
-            //Task processTask =
-            //    processContext.StartWithEventAsync(
-            //        new KernelProcessEvent
-            //        {
-            //            Id = startEventId,
-            //            Data = value
-            //        },
-            //        eventProxyStepId: this.Id);
+            Task processTask =
+                processContext.StartWithEventAsync(
+                    new KernelProcessEvent
+                    {
+                        Id = startEventId,
+                        Data = value
+                    },
+                    eventProxyStepId: this.Id);
 
             mapOperations.Add(processTask);
         }
@@ -179,7 +174,7 @@ internal sealed class MapActor : StepActor, IMap
         this.ParentProcessId = parentProcessId;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._mapInfo.State.Name) ?? new NullLogger<MapActor>();
         this._outputEdges = this._mapInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
-        this._eventNamespace = this._mapInfo.State.Id;
+        this._eventNamespace = $"{this._mapInfo.State.Name}_{this._mapInfo.State.Id}";
 
         // Capture the events that the map is interested in as hashtable for performant lookup
         this._mapEvents = [.. this._mapInfo.Edges.Keys.Select(key => key.Split(ProcessConstants.EventIdSeparator).Last())];

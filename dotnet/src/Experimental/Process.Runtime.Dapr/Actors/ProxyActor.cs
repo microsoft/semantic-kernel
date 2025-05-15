@@ -23,9 +23,8 @@ internal sealed class ProxyActor : StepActor, IProxy
     /// </summary>
     /// <param name="host">The Dapr host actor</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    /// <param name="registeredProcesses">The registered processes</param>
-    public ProxyActor(ActorHost host, Kernel kernel, IReadOnlyDictionary<string, KernelProcess> registeredProcesses)
-        : base(host, kernel, registeredProcesses)
+    public ProxyActor(ActorHost host, Kernel kernel)
+        : base(host, kernel)
     {
         this._logger = this._kernel.LoggerFactory?.CreateLogger(typeof(KernelProxyStep)) ?? new NullLogger<ProxyActor>();
     }
