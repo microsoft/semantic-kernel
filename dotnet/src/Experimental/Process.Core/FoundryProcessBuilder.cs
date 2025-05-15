@@ -88,7 +88,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// </summary>
     /// <param name="eventId">The Id of the external event.</param>
     /// <returns>An instance of <see cref="ProcessEdgeBuilder"/></returns>
-    public ProcessEdgeBuilder OnInputEvent(string eventId)
+    internal ProcessEdgeBuilder OnInputEvent(string eventId)
     {
         return this._processBuilder.OnInputEvent(eventId);
     }
