@@ -15,7 +15,7 @@ public class WeaviateDependencyInjectionTests
     private static readonly Uri s_endpoint = new("http://localhost");
     private const string ApiKey = "Fake API Key";
 
-    protected override string CollectionName => "Upercase";
+    protected override string CollectionName => "Uppercase";
 
     protected override void PopulateConfiguration(ConfigurationManager configuration, object? serviceKey = null)
         => configuration.AddInMemoryCollection(
