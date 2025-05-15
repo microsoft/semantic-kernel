@@ -18,12 +18,10 @@ public sealed class SqliteCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
-    internal SqliteCollectionOptions(SqliteCollectionOptions? source)
+    internal SqliteCollectionOptions(SqliteCollectionOptions? source) : base(source)
     {
-        this.Definition = source?.Definition;
         this.VectorVirtualTableName = source?.VectorVirtualTableName;
         this.VectorSearchExtensionName = source?.VectorSearchExtensionName;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
     }
 
     /// <summary>

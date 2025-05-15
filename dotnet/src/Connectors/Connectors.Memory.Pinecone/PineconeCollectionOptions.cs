@@ -18,13 +18,11 @@ public sealed class PineconeCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
-    internal PineconeCollectionOptions(PineconeCollectionOptions? source)
+    internal PineconeCollectionOptions(PineconeCollectionOptions? source) : base(source)
     {
-        this.Definition = source?.Definition;
         this.IndexNamespace = source?.IndexNamespace;
         this.ServerlessIndexCloud = source?.ServerlessIndexCloud ?? Default.ServerlessIndexCloud;
         this.ServerlessIndexRegion = source?.ServerlessIndexRegion ?? Default.ServerlessIndexRegion;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
     }
 
     /// <summary>
