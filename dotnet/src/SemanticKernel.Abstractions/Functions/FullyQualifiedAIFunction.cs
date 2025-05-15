@@ -17,6 +17,7 @@ public abstract class FullyQualifiedAIFunction : AIFunction
     {
         this.Metadata = metadata;
     }
+
     /// <summary>
     /// Gets the metadata describing the function.
     /// </summary>
