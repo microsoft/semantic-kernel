@@ -14,7 +14,7 @@ namespace VectorDataSpecificationTests;
 #pragma warning disable CA2000 // Don't actually need to dispose FakeEmbeddingGenerator
 #pragma warning disable CS8605 // Unboxing a possibly null value.
 
-public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TKey>.Fixture fixture)
+public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TKey>.StringVectorFixture stringVectorFixture, EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture romOfFloatVectorFixture)
     where TKey : notnull
 {
     #region Search
@@ -66,7 +66,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     [ConditionalFact]
     public virtual async Task SearchAsync_with_store_dependency_injection()
     {
-        foreach (var registrationDelegate in fixture.DependencyInjectionStoreRegistrationDelegates)
+        foreach (var registrationDelegate in stringVectorFixture.DependencyInjectionStoreRegistrationDelegates)
         {
             IServiceCollection serviceCollection = new ServiceCollection();
 
@@ -76,7 +76,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
             await using var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var vectorStore = serviceProvider.GetRequiredService<VectorStore>();
-            var collection = vectorStore.GetCollection<TKey, Record>(fixture.CollectionName, fixture.CreateRecordDefinition());
+            var collection = vectorStore.GetCollection<TKey, Record>(stringVectorFixture.CollectionName, stringVectorFixture.CreateRecordDefinition());
 
             var result = await collection.SearchAsync("[1, 1, 0]", top: 1).SingleAsync();
 
@@ -87,7 +87,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     [ConditionalFact]
     public virtual async Task SearchAsync_with_collection_dependency_injection()
     {
-        foreach (var registrationDelegate in fixture.DependencyInjectionCollectionRegistrationDelegates)
+        foreach (var registrationDelegate in stringVectorFixture.DependencyInjectionCollectionRegistrationDelegates)
         {
             IServiceCollection serviceCollection = new ServiceCollection();
 
@@ -109,23 +109,36 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         var recordDefinition = new VectorStoreRecordDefinition()
         {
-            Properties = fixture.CreateRecordDefinition().Properties
+            Properties = stringVectorFixture.CreateRecordDefinition().Properties
                 .Select(p => p is VectorStoreVectorProperty vectorProperty
                     ? new VectorStoreVectorProperty<Customer>(nameof(Record.Embedding), dimensions: 3)
                     {
-                        DistanceFunction = fixture.DefaultDistanceFunction,
-                        IndexKind = fixture.DefaultIndexKind
+                        DistanceFunction = stringVectorFixture.DefaultDistanceFunction,
+                        IndexKind = stringVectorFixture.DefaultIndexKind
                     }
                     : p)
                 .ToList()
         };
 
-        var collection = fixture.GetCollection<RecordWithCustomerVectorProperty>(
-            fixture.CreateVectorStore(new FakeCustomerEmbeddingGenerator([1, 1, 1])),
-            fixture.CollectionName,
+        var collection = stringVectorFixture.GetCollection<RecordWithCustomerVectorProperty>(
+            stringVectorFixture.CreateVectorStore(new FakeCustomerEmbeddingGenerator([1, 1, 1])),
+            stringVectorFixture.CollectionName,
             recordDefinition);
 
         var result = await collection.SearchAsync(new Customer(), top: 1).SingleAsync();
+
+        Assert.Equal("Store ([1, 1, 1])", result.Record.Text);
+    }
+
+    [ConditionalFact]
+    public virtual async Task SearchAsync_with_search_only_embedding_generation()
+    {
+        var collection = romOfFloatVectorFixture.GetCollection<RecordWithRomOfFloatVectorProperty>(
+            romOfFloatVectorFixture.CreateVectorStore(new FakeEmbeddingGenerator()),
+            romOfFloatVectorFixture.CollectionName,
+            romOfFloatVectorFixture.CreateRecordDefinition());
+
+        var result = await collection.SearchAsync("[1, 1, 1]", top: 1).SingleAsync();
 
         Assert.Equal("Store ([1, 1, 1])", result.Record.Text);
     }
@@ -135,7 +148,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         // The database doesn't support embedding generation, and no client-side generator has been configured at any level,
         // so SearchAsync should throw.
-        var collection = fixture.GetCollection<RawRecord>(fixture.TestStore.DefaultVectorStore, fixture.CollectionName + "withoutgenerator");
+        var collection = stringVectorFixture.GetCollection<RawRecord>(stringVectorFixture.TestStore.DefaultVectorStore, stringVectorFixture.CollectionName + "withoutgenerator");
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => collection.SearchAsync("foo", top: 1).ToListAsync().AsTask());
 
@@ -178,11 +191,11 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     [ConditionalFact]
     public virtual async Task UpsertAsync()
     {
-        var counter = fixture.GenerateNextCounter();
+        var counter = stringVectorFixture.GenerateNextCounter();
 
         var record = new Record
         {
-            Key = fixture.GenerateNextKey<TKey>(),
+            Key = stringVectorFixture.GenerateNextKey<TKey>(),
             Embedding = "[100, 1, 0]",
             Counter = counter,
             Text = nameof(UpsertAsync)
@@ -193,7 +206,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         await collection.UpsertAsync(record).ConfigureAwait(false);
 
-        await fixture.TestStore.WaitForDataAsync(collection, 1, filter: r => r.Counter == counter);
+        await stringVectorFixture.TestStore.WaitForDataAsync(collection, 1, filter: r => r.Counter == counter);
 
         var result = await collection.SearchEmbeddingAsync(new ReadOnlyMemory<float>([100, 1, 3]), top: 1).SingleAsync();
         Assert.Equal(counter, result.Record.Counter);
@@ -202,11 +215,11 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     [ConditionalFact]
     public virtual async Task UpsertAsync_dynamic()
     {
-        var counter = fixture.GenerateNextCounter();
+        var counter = stringVectorFixture.GenerateNextCounter();
 
         var record = new Dictionary<string, object?>
         {
-            [nameof(Record.Key)] = fixture.GenerateNextKey<TKey>(),
+            [nameof(Record.Key)] = stringVectorFixture.GenerateNextKey<TKey>(),
             [nameof(Record.Embedding)] = "[200, 1, 0]",
             [nameof(Record.Counter)] = counter,
             [nameof(Record.Text)] = nameof(UpsertAsync_dynamic)
@@ -217,7 +230,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         await collection.UpsertAsync(record).ConfigureAwait(false);
 
-        await fixture.TestStore.WaitForDataAsync(collection, 1, filter: r => (int)r[nameof(Record.Counter)] == counter);
+        await stringVectorFixture.TestStore.WaitForDataAsync(collection, 1, filter: r => (int)r[nameof(Record.Counter)] == counter);
 
         var result = await collection.SearchEmbeddingAsync(new ReadOnlyMemory<float>([200, 1, 3]), top: 1).SingleAsync();
         Assert.Equal(counter, result.Record[nameof(Record.Counter)]);
@@ -226,20 +239,20 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     [ConditionalFact]
     public virtual async Task UpsertAsync_batch()
     {
-        var (counter1, counter2) = (fixture.GenerateNextCounter(), fixture.GenerateNextCounter());
+        var (counter1, counter2) = (stringVectorFixture.GenerateNextCounter(), stringVectorFixture.GenerateNextCounter());
 
         Record[] records =
         [
             new()
             {
-                Key = fixture.GenerateNextKey<TKey>(),
+                Key = stringVectorFixture.GenerateNextKey<TKey>(),
                 Embedding = "[300, 1, 0]",
                 Counter = counter1,
                 Text = nameof(UpsertAsync_batch) + "1"
             },
             new()
             {
-                Key = fixture.GenerateNextKey<TKey>(),
+                Key = stringVectorFixture.GenerateNextKey<TKey>(),
                 Embedding = "[400, 1, 0]",
                 Counter = counter2,
                 Text = nameof(UpsertAsync_batch) + "2"
@@ -250,7 +263,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         await collection.UpsertAsync(records).ConfigureAwait(false);
 
-        await fixture.TestStore.WaitForDataAsync(collection, 2, filter: r => (int)r.Counter == counter1 || (int)r.Counter == counter2);
+        await stringVectorFixture.TestStore.WaitForDataAsync(collection, 2, filter: r => (int)r.Counter == counter1 || (int)r.Counter == counter2);
 
         var result = await collection.SearchEmbeddingAsync(new ReadOnlyMemory<float>([300, 1, 3]), top: 1).SingleAsync();
         Assert.Equal(counter1, result.Record.Counter);
@@ -262,20 +275,20 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     [ConditionalFact]
     public virtual async Task UpsertAsync_batch_dynamic()
     {
-        var (counter1, counter2) = (fixture.GenerateNextCounter(), fixture.GenerateNextCounter());
+        var (counter1, counter2) = (stringVectorFixture.GenerateNextCounter(), stringVectorFixture.GenerateNextCounter());
 
         Dictionary<string, object?>[] records =
         [
             new()
             {
-                [nameof(Record.Key)] = fixture.GenerateNextKey<TKey>(),
+                [nameof(Record.Key)] = stringVectorFixture.GenerateNextKey<TKey>(),
                 [nameof(Record.Embedding)] = "[500, 1, 0]",
                 [nameof(Record.Counter)] = counter1,
                 [nameof(Record.Text)] = nameof(UpsertAsync_batch_dynamic) + "1"
             },
             new()
             {
-                [nameof(Record.Key)] = fixture.GenerateNextKey<TKey>(),
+                [nameof(Record.Key)] = stringVectorFixture.GenerateNextKey<TKey>(),
                 [nameof(Record.Embedding)] = "[600, 1, 0]",
                 [nameof(Record.Counter)] = counter2,
                 [nameof(Record.Text)] = nameof(UpsertAsync_batch_dynamic) + "2"
@@ -286,7 +299,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         await collection.UpsertAsync(records).ConfigureAwait(false);
 
-        await fixture.TestStore.WaitForDataAsync(collection, 2, filter: r => (int)r[nameof(Record.Counter)] == counter1 || (int)r[nameof(Record.Counter)] == counter2);
+        await stringVectorFixture.TestStore.WaitForDataAsync(collection, 2, filter: r => (int)r[nameof(Record.Counter)] == counter1 || (int)r[nameof(Record.Counter)] == counter2);
 
         var result = await collection.SearchEmbeddingAsync(new ReadOnlyMemory<float>([500, 1, 3]), top: 1).SingleAsync();
         Assert.Equal(counter1, result.Record[nameof(Record.Counter)]);
@@ -314,7 +327,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         var collection = this.GetCollection<Record>(storeGenerator: true, collectionGenerator: true, propertyGenerator: true);
 
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(() => collection.GetAsync(fixture.TestData[0].Key, new() { IncludeVectors = true }));
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(() => collection.GetAsync(stringVectorFixture.TestData[0].Key, new() { IncludeVectors = true }));
 
         Assert.Equal("When an embedding generator is configured, `Include Vectors` cannot be enabled.", exception.Message);
     }
@@ -326,7 +339,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         var exception = await Assert.ThrowsAsync<NotSupportedException>(() =>
             collection.GetAsync(
-                [fixture.TestData[0].Key, fixture.TestData[1].Key],
+                [stringVectorFixture.TestData[0].Key, stringVectorFixture.TestData[1].Key],
                 new() { IncludeVectors = true })
                 .ToListAsync().AsTask());
 
@@ -370,6 +383,15 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         public string? Text { get; set; }
     }
 
+    public class RecordWithRomOfFloatVectorProperty
+    {
+        public TKey Key { get; set; } = default!;
+        public ReadOnlyMemory<float> Embedding { get; set; }
+
+        public int Counter { get; set; }
+        public string? Text { get; set; }
+    }
+
     public class Customer
     {
         public string? FirstName { get; set; }
@@ -384,7 +406,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         var (vectorStore, recordDefinition) = this.GetStoreAndRecordDefinition(storeGenerator, collectionGenerator, propertyGenerator);
 
-        return fixture.GetCollection<TRecord>(vectorStore, fixture.CollectionName, recordDefinition);
+        return stringVectorFixture.GetCollection<TRecord>(vectorStore, stringVectorFixture.CollectionName, recordDefinition);
     }
 
     private VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(
@@ -394,7 +416,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     {
         var (vectorStore, recordDefinition) = this.GetStoreAndRecordDefinition(storeGenerator, collectionGenerator, propertyGenerator);
 
-        return fixture.GetDynamicCollection(vectorStore, fixture.CollectionName, recordDefinition);
+        return stringVectorFixture.GetDynamicCollection(vectorStore, stringVectorFixture.CollectionName, recordDefinition);
     }
 
     private (VectorStore, VectorStoreRecordDefinition) GetStoreAndRecordDefinition(
@@ -402,7 +424,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         bool collectionGenerator = false,
         bool propertyGenerator = false)
     {
-        var recordDefinition = fixture.CreateRecordDefinition();
+        var recordDefinition = stringVectorFixture.CreateRecordDefinition();
 
         if (propertyGenerator)
         {
@@ -417,12 +439,12 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
             recordDefinition.EmbeddingGenerator = new FakeEmbeddingGenerator(replaceLast: 2);
         }
 
-        var vectorStore = fixture.CreateVectorStore(storeGenerator ? new FakeEmbeddingGenerator(replaceLast: 1) : null);
+        var vectorStore = stringVectorFixture.CreateVectorStore(storeGenerator ? new FakeEmbeddingGenerator(replaceLast: 1) : null);
 
         return (vectorStore, recordDefinition);
     }
 
-    public abstract class Fixture : VectorStoreCollectionFixture<TKey, Record>
+    public abstract class StringVectorFixture : VectorStoreCollectionFixture<TKey, Record>
     {
         private int _counter;
 
@@ -466,6 +488,77 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
             {
                 Key = this.GenerateNextKey<TKey>(),
                 Embedding = "[1, 1, 3]",
+                Counter = this.GenerateNextCounter(),
+                Text = "Property ([1, 1, 3])"
+            }
+        ];
+
+        public virtual VectorStoreCollection<TKey, TRecord> GetCollection<TRecord>(
+            VectorStore vectorStore,
+            string collectionName,
+            VectorStoreRecordDefinition? recordDefinition = null)
+            where TRecord : class
+            => vectorStore.GetCollection<TKey, TRecord>(collectionName, recordDefinition);
+
+        public virtual VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(
+            VectorStore vectorStore,
+            string collectionName,
+            VectorStoreRecordDefinition recordDefinition)
+            => vectorStore.GetDynamicCollection(collectionName, recordDefinition);
+
+        public abstract VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator = null);
+
+        public abstract Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates { get; }
+        public abstract Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates { get; }
+
+        public virtual int GenerateNextCounter()
+            => Interlocked.Increment(ref this._counter);
+    }
+
+    public abstract class RomOfFloatVectorFixture : VectorStoreCollectionFixture<TKey, RecordWithRomOfFloatVectorProperty>
+    {
+        private int _counter;
+
+        public override string CollectionName => "SearchOnlyEmbeddingGenerationTests";
+
+        public override VectorStoreRecordDefinition CreateRecordDefinition()
+            => new()
+            {
+                Properties =
+                [
+                    new VectorStoreKeyProperty(nameof(RecordWithRomOfFloatVectorProperty.Key), typeof(TKey)),
+                    new VectorStoreVectorProperty(nameof(RecordWithRomOfFloatVectorProperty.Embedding), typeof(ReadOnlyMemory<float>), dimensions: 3)
+                    {
+                        DistanceFunction = this.DefaultDistanceFunction,
+                        IndexKind = this.DefaultIndexKind
+                    },
+
+                    new VectorStoreDataProperty(nameof(RecordWithRomOfFloatVectorProperty.Counter), typeof(int)) { IsIndexed = true },
+                    new VectorStoreDataProperty(nameof(RecordWithRomOfFloatVectorProperty.Text), typeof(string))
+                ],
+                EmbeddingGenerator = new FakeEmbeddingGenerator()
+            };
+
+        protected override List<RecordWithRomOfFloatVectorProperty> BuildTestData() =>
+        [
+            new()
+            {
+                Key = this.GenerateNextKey<TKey>(),
+                Embedding = new ReadOnlyMemory<float>([1, 1, 1]),
+                Counter = this.GenerateNextCounter(),
+                Text = "Store ([1, 1, 1])",
+            },
+            new()
+            {
+                Key = this.GenerateNextKey<TKey>(),
+                Embedding = new ReadOnlyMemory<float>([1, 1, 2]),
+                Counter = this.GenerateNextCounter(),
+                Text = "Collection ([1, 1, 2])"
+            },
+            new()
+            {
+                Key = this.GenerateNextKey<TKey>(),
+                Embedding = new ReadOnlyMemory<float>([1, 1, 3]),
                 Counter = this.GenerateNextCounter(),
                 Text = "Property ([1, 1, 3])"
             }

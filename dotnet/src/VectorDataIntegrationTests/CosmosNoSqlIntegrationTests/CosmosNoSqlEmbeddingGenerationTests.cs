@@ -11,10 +11,32 @@ using Xunit;
 
 namespace CosmosNoSqlIntegrationTests;
 
-public class CosmosNoSQLEmbeddingGenerationTests(CosmosNoSQLEmbeddingGenerationTests.Fixture fixture)
-    : EmbeddingGenerationTests<string>(fixture), IClassFixture<CosmosNoSQLEmbeddingGenerationTests.Fixture>
+public class CosmosNoSQLEmbeddingGenerationTests(CosmosNoSQLEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, CosmosNoSQLEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<CosmosNoSQLEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<CosmosNoSQLEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
-    public new class Fixture : EmbeddingGenerationTests<string>.Fixture
+    public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
+    {
+        public override TestStore TestStore => CosmosNoSqlTestStore.Instance;
+
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+            => CosmosNoSqlTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
+        [
+            services => services
+                .AddSingleton(CosmosNoSqlTestStore.Instance.Database)
+                .AddCosmosNoSqlVectorStore()
+        ];
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
+        [
+            services => services
+                .AddSingleton(CosmosNoSqlTestStore.Instance.Database)
+                .AddCosmosNoSqlVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+        ];
+    }
+
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => CosmosNoSqlTestStore.Instance;
 

@@ -11,10 +11,32 @@ using Xunit;
 
 namespace MongoDBIntegrationTests;
 
-public class MongoDBEmbeddingGenerationTests(MongoDBEmbeddingGenerationTests.Fixture fixture)
-    : EmbeddingGenerationTests<string>(fixture), IClassFixture<MongoDBEmbeddingGenerationTests.Fixture>
+public class MongoDBEmbeddingGenerationTests(MongoDBEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, MongoDBEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<MongoDBEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<MongoDBEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
-    public new class Fixture : EmbeddingGenerationTests<string>.Fixture
+    public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
+    {
+        public override TestStore TestStore => MongoDBTestStore.Instance;
+
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+            => MongoDBTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
+        [
+            services => services
+                .AddSingleton(MongoDBTestStore.Instance.Database)
+                .AddMongoDBVectorStore()
+        ];
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
+        [
+            services => services
+                .AddSingleton(MongoDBTestStore.Instance.Database)
+                .AddMongoDBVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+        ];
+    }
+
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
     {
         public override TestStore TestStore => MongoDBTestStore.Instance;
 
