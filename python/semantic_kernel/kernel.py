@@ -358,7 +358,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             parsed_args = function_call.to_kernel_arguments()
 
             # Check for missing or unexpected parameters
-            required_param_names = {param.name for param in function_to_call.parameters if param.is_required}
+            required_param_names = {
+                param.name for param in function_to_call.parameters if param.name is not None and param.is_required
+            }
             received_param_names = set(parsed_args or {})
 
             missing_params = required_param_names - received_param_names
