@@ -50,6 +50,31 @@ public abstract class ProcessStepBuilder
     }
 
     /// <summary>
+    /// Returns the event Id that is used to identify the result of a function.
+    /// </summary>
+    /// <param name="functionName">Optional: name of the step function the result is expected from</param>
+    /// <returns></returns>
+    public string GetFunctionResultEventId(string? functionName = null)
+    {
+        // TODO: Add a check to see if the function name is valid if provided
+        if (string.IsNullOrWhiteSpace(functionName))
+        {
+            functionName = this.ResolveFunctionName();
+        }
+        return $"{functionName}.OnResult";
+    }
+
+    /// <summary>
+    /// Returns the event Id that is used to identify the step specific event.
+    /// </summary>
+    /// <param name="eventName"></param>
+    /// <returns></returns>
+    public string GetFullEventId(string eventName)
+    {
+        return $"{this.Id}.{eventName}";
+    }
+
+    /// <summary>
     /// Define the behavior of the step when the specified function has been successfully invoked.
     /// </summary>
     /// <param name="functionName">Optional: The name of the function of interest.</param>
@@ -57,11 +82,8 @@ public abstract class ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/>.</returns>
     public ProcessStepEdgeBuilder OnFunctionResult(string? functionName = null)
     {
-        if (string.IsNullOrWhiteSpace(functionName))
-        {
-            functionName = this.ResolveFunctionName();
-        }
-        return this.OnEvent($"{functionName}.OnResult");
+        var eventId = this.GetFunctionResultEventId(functionName);
+        return this.OnEvent(eventId);
     }
 
     /// <summary>
