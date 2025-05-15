@@ -37,6 +37,8 @@
     <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.70.0" />
     <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.70.0" />
     <PackageVersion Include="Grpc.Tools" Version="2.71.0" />
+    <PackageVersion Include="JmesPath.Net" Version="1.0.330" />
+    <PackageVersion Include="JsonSchema.Net.Generation" Version="5.0.2" />
     <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.13" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
@@ -46,7 +48,7 @@
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.10" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.72" />
-    <PackageVersion Include="JsonSchema.Net" Version="5.4.2" />
+    <PackageVersion Include="JsonSchema.Net" Version="7.3.4" />
     <PackageVersion Include="Markdig" Version="0.40.0" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />

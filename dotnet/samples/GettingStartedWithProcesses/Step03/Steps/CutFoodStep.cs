@@ -12,7 +12,7 @@ namespace Step03.Steps;
 [KernelProcessStepMetadata("CutFoodStep.V1")]
 public class CutFoodStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string ChopFood = nameof(ChopFood);
         public const string SliceFood = nameof(SliceFood);
@@ -24,7 +24,7 @@ public class CutFoodStep : KernelProcessStep
         public const string SlicingReady = nameof(SlicingReady);
     }
 
-    [KernelFunction(Functions.ChopFood)]
+    [KernelFunction(ProcessStepFunctions.ChopFood)]
     public async Task ChopFoodAsync(KernelProcessStepContext context, List<string> foodActions)
     {
         var foodToBeCut = foodActions.First();
@@ -33,7 +33,7 @@ public class CutFoodStep : KernelProcessStep
         await context.EmitEventAsync(new() { Id = OutputEvents.ChoppingReady, Data = foodActions });
     }
 
-    [KernelFunction(Functions.SliceFood)]
+    [KernelFunction(ProcessStepFunctions.SliceFood)]
     public async Task SliceFoodAsync(KernelProcessStepContext context, List<string> foodActions)
     {
         var foodToBeCut = foodActions.First();
