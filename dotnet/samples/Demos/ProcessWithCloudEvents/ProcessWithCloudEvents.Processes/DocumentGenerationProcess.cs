@@ -77,9 +77,9 @@ public static class DocumentGenerationProcess
             .OnInputEvent(DocGenerationEvents.UserRejectedDocument)
             .SendEventTo(new(docsGenerationStep, functionName: GenerateDocumentationStep.ProcessFunctions.ApplySuggestions));
 
-        processBuilder
-            .OnInputEvent(DocGenerationEvents.UserApprovedDocument)
-            .SendEventTo(new(docsPublishStep, parameterName: "userApproval"));
+        //processBuilder
+        //    .OnInputEvent(DocGenerationEvents.UserApprovedDocument)
+        //    .SendEventTo(new(docsPublishStep, parameterName: "userApproval"));
 
         // Hooking up the rest of the process steps
         infoGatheringStep
@@ -98,8 +98,22 @@ public static class DocumentGenerationProcess
         // Additionally, the generated document is emitted externally for user approval using the pre-configured proxyStep
         docsProofreadStep
             .OnEvent(ProofReadDocumentationStep.OutputEvents.DocumentationApproved)
-            .EmitExternalEvent(proxyStep, DocGenerationTopics.RequestUserReview)
-            .SendEventTo(new ProcessFunctionTargetBuilder(docsPublishStep, parameterName: "document"));
+            .EmitExternalEvent(proxyStep, DocGenerationTopics.RequestUserReview);
+        //.SendEventTo(new ProcessFunctionTargetBuilder(docsPublishStep, parameterName: "document"));
+
+        processBuilder
+            .ListenFor()
+            .AllOf([
+                new(messageType: ProofReadDocumentationStep.OutputEvents.DocumentationApproved, docsProofreadStep),
+                new(messageType: DocGenerationEvents.UserApprovedDocument, processBuilder),
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(docsPublishStep, inputMapping: (inputEvents) =>
+            {
+                return new() {
+                    { "document", inputEvents[docsProofreadStep.GetFullEventId(ProofReadDocumentationStep.OutputEvents.DocumentationApproved)] },
+                    { "userApproval", inputEvents[processBuilder.GetFullEventId(DocGenerationEvents.UserApprovedDocument)] },
+                };
+            }));
 
         // When event is approved by user, it gets published externally too
         docsPublishStep

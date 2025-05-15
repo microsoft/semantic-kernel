@@ -13,6 +13,8 @@ namespace ProcessWithCloudEvents.Grpc.Clients;
 /// </summary>
 public class TeacherStudentInteractionGrpcClient : IExternalKernelProcessMessageChannel
 {
+    public static string Key => nameof(TeacherStudentInteractionGrpcClient);
+
     private GrpcChannel? _grpcChannel;
     private GrpcTeacherStudentInteraction.GrpcTeacherStudentInteractionClient? _grpcClient;
 
@@ -28,7 +30,7 @@ public class TeacherStudentInteractionGrpcClient : IExternalKernelProcessMessage
     {
         if (this._grpcChannel != null)
         {
-            await this._grpcChannel.ShutdownAsync();
+            await this._grpcChannel.ShutdownAsync().ConfigureAwait(false);
         }
     }
 

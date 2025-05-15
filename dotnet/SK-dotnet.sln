@@ -534,7 +534,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProcessWithCloudEvents", "P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessWithCloudEvents.Processes", "samples\Demos\ProcessWithCloudEvents\ProcessWithCloudEvents.Processes\ProcessWithCloudEvents.Processes.csproj", "{31F6608A-FD36-F529-A5FC-C954A0B5E29E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessWithCloudEvents.Grpc", "samples\Demos\ProcessWithCloudEvents\ProcessWithCloudEvents.Grpc\ProcessWithCloudEvents.Grpc.csproj", "{08D84994-794A-760F-95FD-4EFA8998A16D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessWithCloudEvents.Grpc.DaprRuntime", "samples\Demos\ProcessWithCloudEvents\ProcessWithCloudEvents.Grpc\ProcessWithCloudEvents.Grpc.DaprRuntime.csproj", "{08D84994-794A-760F-95FD-4EFA8998A16D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Runtime", "Runtime", "{A70ED5A7-F8E1-4A57-9455-3C05989542DA}"
 EndProject
@@ -575,6 +575,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "abstractions", "abstraction
 		src\InternalUtilities\process\Abstractions\ProcessExtensions.cs = src\InternalUtilities\process\Abstractions\ProcessExtensions.cs
 		src\InternalUtilities\process\Abstractions\StepExtensions.cs = src\InternalUtilities\process\Abstractions\StepExtensions.cs
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessWithCloudEvents.Grpc.LocalRuntime", "samples\Demos\ProcessWithCloudEvents\ProcessWithCloudEvents.Grpc.LocalRuntime\ProcessWithCloudEvents.Grpc.LocalRuntime.csproj", "{955BD976-597B-C698-0CAA-32AF9FA61BA0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1543,6 +1545,18 @@ Global
 		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAC7B5E8-CC4E-49D0-AF6A-2B4F7B43BD84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1786E2B-CAA0-4B2D-A974-9845EB9E420F}.Debug|Any CPU.ActiveCfg = Debug
+		{D1786E2B-CAA0-4B2D-A974-9845EB9E420F}.Debug|Any CPU.Build.0 = Debug
+		{D1786E2B-CAA0-4B2D-A974-9845EB9E420F}.Publish|Any CPU.ActiveCfg = Release
+		{D1786E2B-CAA0-4B2D-A974-9845EB9E420F}.Publish|Any CPU.Build.0 = Release
+		{D1786E2B-CAA0-4B2D-A974-9845EB9E420F}.Release|Any CPU.ActiveCfg = Release
+		{D1786E2B-CAA0-4B2D-A974-9845EB9E420F}.Release|Any CPU.Build.0 = Release
+		{955BD976-597B-C698-0CAA-32AF9FA61BA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{955BD976-597B-C698-0CAA-32AF9FA61BA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{955BD976-597B-C698-0CAA-32AF9FA61BA0}.Publish|Any CPU.ActiveCfg = Release|Any CPU
+		{955BD976-597B-C698-0CAA-32AF9FA61BA0}.Publish|Any CPU.Build.0 = Release|Any CPU
+		{955BD976-597B-C698-0CAA-32AF9FA61BA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{955BD976-597B-C698-0CAA-32AF9FA61BA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1752,6 +1766,7 @@ Global
 		{B97D1BCF-60F3-4331-AF75-D55CABCA747D} = {4D3DAE63-41C6-4E1C-A35A-E77BDFC40675}
 		{5679A130-CD48-4F30-AC68-908EADF85CEA} = {B97D1BCF-60F3-4331-AF75-D55CABCA747D}
 		{B59A89DC-4E53-4E7D-B89A-FE3ABB86BDF8} = {B97D1BCF-60F3-4331-AF75-D55CABCA747D}
+		{955BD976-597B-C698-0CAA-32AF9FA61BA0} = {7C092DD9-9985-4D18-A817-15317D984149}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
