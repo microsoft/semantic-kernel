@@ -46,6 +46,12 @@ internal class LocalStep : IKernelProcessMessageChannel
         Verify.NotNull(kernel, nameof(kernel));
         Verify.NotNull(stepInfo, nameof(stepInfo));
 
+        // This special handling will be removed with the refactoring of KernelProcessState
+        if (string.IsNullOrEmpty(stepInfo.State.Id))
+        {
+            stepInfo = stepInfo with { State = stepInfo.State with { Id = Guid.NewGuid().ToString() } };
+        }
+
         this._kernel = kernel;
         this._stepInfo = stepInfo;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
@@ -53,12 +59,6 @@ internal class LocalStep : IKernelProcessMessageChannel
         if (stepInfo is not KernelProcess)
         {
             this.InitializeStepInitialInputs();
-        }
-
-        // This special handling will be removed with the refactoring of KernelProcessState
-        if (string.IsNullOrEmpty(stepInfo.State.Id))
-        {
-            stepInfo = stepInfo with { State = stepInfo.State with { Id = Guid.NewGuid().ToString() } };
         }
 
         Verify.NotNull(stepInfo.State.Id);
