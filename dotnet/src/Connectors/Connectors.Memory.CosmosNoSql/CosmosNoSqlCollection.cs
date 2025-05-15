@@ -492,21 +492,21 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             float[] a => new ReadOnlyMemory<float>(a),
             Embedding<float> e => e.Vector,
             _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false),
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
             // int8
             ReadOnlyMemory<sbyte> m => m,
             sbyte[] a => new ReadOnlyMemory<sbyte>(a),
             Embedding<sbyte> e => e.Vector,
             _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<sbyte>> generator
-                => await generator.GenerateVectorAsync(searchValue, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false),
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
             // uint8
             ReadOnlyMemory<byte> m => m,
             byte[] a => new ReadOnlyMemory<byte>(a),
             Embedding<byte> e => e.Vector,
             _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<byte>> generator
-                => await generator.GenerateVectorAsync(searchValue, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false),
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), CosmosNoSqlModelBuilder.SupportedVectorTypes))
