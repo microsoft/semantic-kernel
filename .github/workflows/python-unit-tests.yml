@@ -42,12 +42,10 @@ jobs:
           cache-dependency-glob: "**/uv.lock"
 
       - name: Install CopilotStudio client from Test-PyPI
+        shell: pwsh
         run: |
           pip install --upgrade pip
-          pip install \
-            --extra-index-url https://test.pypi.org/simple \
-            microsoft-agents-core \
-            microsoft-agents-copilotstudio-client
+          pip install --extra-index-url https://test.pypi.org/simple microsoft-agents-core microsoft-agents-copilotstudio-client
 
       - name: Install the project
         run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
