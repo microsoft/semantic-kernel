@@ -28,7 +28,7 @@ public static class CommonProcesses
         public const string SimpleMergeProcess = nameof(SimpleMergeProcess);
     }
 
-    public static KernelProcess GetCounterProcess(string processName = "counterProcess")
+    public static KernelProcess GetCounterProcess(string processName = ProcessKeys.CounterProcess)
     {
         ProcessBuilder process = new(processName);
 
@@ -46,7 +46,7 @@ public static class CommonProcesses
         return process.Build();
     }
 
-    public static KernelProcess GetCounterWithEventDetectionProcess(string processName = "counterWithEventDetectionProcess")
+    public static KernelProcess GetCounterWithEventDetectionProcess(string processName = ProcessKeys.CounterWithEvenNumberDetectionProcess)
     {
         ProcessBuilder process = new(processName);
 
@@ -88,7 +88,7 @@ public static class CommonProcesses
     /// </summary>
     /// <param name="processName"></param>
     /// <returns></returns>
-    public static KernelProcess GetSimpleMergeProcess(string processName = "SimpleMergeProcess")
+    public static KernelProcess GetSimpleMergeProcess(string processName = ProcessKeys.SimpleMergeProcess)
     {
         ProcessBuilder process = new(processName);
 
@@ -142,7 +142,7 @@ public static class CommonProcesses
     /// </summary>
     /// <param name="processName"></param>
     /// <returns></returns>
-    public static KernelProcess GetDelayedMergeProcess(string processName = "DelayedMergeProcess")
+    public static KernelProcess GetDelayedMergeProcess(string processName = ProcessKeys.DelayedMergeProcess)
     {
         ProcessBuilder process = new(processName);
 
