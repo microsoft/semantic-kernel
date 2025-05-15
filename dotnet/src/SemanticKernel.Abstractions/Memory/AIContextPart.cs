@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel;
 public sealed class AIContextPart
 {
     /// <summary>
-    /// Any instructions to pass to the AI model in adddition to any other prompts
+    /// Any instructions to pass to the AI model in addition to any other prompts
     /// that it may already have (in the case of an agent), or chat history that may
     /// already exist.
     /// </summary>
