@@ -332,19 +332,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         }
 
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        ReadOnlyMemory<float> vector = searchValue switch
-        {
-            ReadOnlyMemory<float> r => r,
-            float[] f => new ReadOnlyMemory<float>(f),
-            Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
-
-            _ => vectorProperty.EmbeddingGenerator is null
-                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), WeaviateModelBuilder.SupportedVectorTypes))
-                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
-        };
+        var vector = await GetSearchVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
         var query = WeaviateQueryBuilder.BuildSearchQuery(
             vector,
@@ -361,6 +349,21 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             yield return record;
         }
     }
+
+    private static async ValueTask<ReadOnlyMemory<float>> GetSearchVectorAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
+        where TInput : notnull
+        => searchValue switch
+        {
+            ReadOnlyMemory<float> r => r,
+            float[] f => new ReadOnlyMemory<float>(f),
+            Embedding<float> e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), WeaviateModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
 
     #endregion Search
 
@@ -386,15 +389,21 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(
+        TInput searchValue,
+        ICollection<string> keywords,
+        int top,
+        HybridSearchOptions<TRecord>? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
     {
         const string OperationName = "HybridSearch";
 
-        VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var vector = await GetSearchVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
         var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
         var query = WeaviateQueryBuilder.BuildHybridSearchQuery(
@@ -409,7 +418,10 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             options,
             this._hasNamedVectors);
 
-        return this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken);
+        await foreach (var record in this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false))
+        {
+            yield return record;
+        }
     }
 
     /// <inheritdoc />
@@ -529,19 +541,6 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             () => JsonSerializer.Deserialize<TResponse>(responseContent, WeaviateConstants.s_jsonSerializerOptions));
 
         return responseModel;
-    }
-
-    private static void VerifyVectorParam<TVector>(TVector vector)
-    {
-        Verify.NotNull(vector);
-
-        var vectorType = vector.GetType();
-
-        if (!WeaviateModelBuilder.IsVectorPropertyTypeValidCore(vectorType, out var supportedTypes))
-        {
-            throw new NotSupportedException(
-                $"The provided vector type {vectorType.FullName} is not supported by the Weaviate connector. Supported types are: {supportedTypes}");
-        }
     }
 
     private static void VerifyCollectionName(string collectionName)

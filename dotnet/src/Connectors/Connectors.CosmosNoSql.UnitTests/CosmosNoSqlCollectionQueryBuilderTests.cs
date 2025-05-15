@@ -43,7 +43,7 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             .AnyTagEqualTo("TestProperty3", "test-value-3");
 
         // Act
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
+        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<DummyType>(
             vector,
             keywords: null,
             this._model,
@@ -88,7 +88,7 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             .AnyTagEqualTo("TestProperty3", "test-value-3");
 
         // Act
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
+        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<DummyType>(
             vector,
             keywords: null,
             this._model,
@@ -132,7 +132,7 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
         var filter = new VectorSearchFilter().EqualTo("non-existent-property", "test-value-2");
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
+        Assert.Throws<InvalidOperationException>(() => CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<DummyType>(
             vector,
             keywords: null,
             this._model,
@@ -154,7 +154,7 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
         var vectorPropertyName = "test_property_1";
 
         // Act
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
+        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<DummyType>(
             vector,
             keywords: null,
             this._model,
@@ -239,7 +239,7 @@ public sealed class CosmosNoSqlCollectionQueryBuilderTests
             .AnyTagEqualTo("TestProperty3", "test-value-3");
 
         // Act
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<ReadOnlyMemory<float>, DummyType>(
+        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<DummyType>(
             vector,
             [keywordText],
             this._model,

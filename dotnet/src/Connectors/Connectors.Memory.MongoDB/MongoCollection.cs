@@ -344,23 +344,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         }
 
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        ReadOnlyMemory<float> vector = searchValue switch
-        {
-            ReadOnlyMemory<float> r => r,
-            float[] f => new ReadOnlyMemory<float>(f),
-            Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
-
-            _ => vectorProperty.EmbeddingGenerator is null
-                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), MongoModelBuilder.SupportedVectorTypes))
-                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
-        };
-
-        Array vectorArray = MemoryMarshal.TryGetArray(vector, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
-            ? segment.Array
-            : vector.ToArray();
+        var vectorArray = await GetSearchVectorArrayAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = options switch
@@ -407,6 +391,31 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         {
             yield return result;
         }
+    }
+
+    private static async ValueTask<float[]> GetSearchVectorArrayAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
+        where TInput : notnull
+    {
+        if (searchValue is float[] array)
+        {
+            return array;
+        }
+
+        var memory = searchValue switch
+        {
+            ReadOnlyMemory<float> r => r,
+            Embedding<float> e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), MongoModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
+
+        return MemoryMarshal.TryGetArray(memory, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
+                ? segment.Array
+                : memory.ToArray();
     }
 
     #endregion Search
@@ -460,13 +469,14 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(TInput searchValue, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
     {
-        Array vectorArray = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var vectorArray = await GetSearchVectorArrayAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
         var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
@@ -708,19 +718,6 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
             delayInMilliseconds,
             operation,
             cancellationToken).ConfigureAwait(false);
-
-    private static float[] VerifyVectorParam<TVector>(TVector vector)
-    {
-        Verify.NotNull(vector);
-
-        return vector switch
-        {
-            ReadOnlyMemory<float> memoryFloat => memoryFloat.ToArray(),
-            _ => throw new NotSupportedException(
-                $"The provided vector type {vector.GetType().FullName} is not supported by the MongoDB connector. " +
-                $"Supported types are: {typeof(ReadOnlyMemory<float>).FullName}")
-        };
-    }
 
     private string GetStringKey(TKey key)
     {

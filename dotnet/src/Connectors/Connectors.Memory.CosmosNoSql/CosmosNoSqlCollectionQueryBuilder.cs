@@ -23,8 +23,8 @@ internal static class CosmosNoSqlCollectionQueryBuilder
     /// <summary>
     /// Builds <see cref="QueryDefinition"/> to get items from Azure CosmosDB NoSQL using vector search.
     /// </summary>
-    public static QueryDefinition BuildSearchQuery<TVector, TRecord>(
-        TVector vector,
+    public static QueryDefinition BuildSearchQuery<TRecord>(
+        object vector,
         ICollection<string>? keywords,
         CollectionModel model,
         string vectorPropertyName,
