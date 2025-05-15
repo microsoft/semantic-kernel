@@ -5,7 +5,7 @@ instructions: Use the provided functions to answer questions about the menu.
 model:
   id: ${AzureAI:ChatModelId}
   connection:
-    connection_string: ${AzureAI:ConnectionString}
+    connection_string: ${AzureAI:Endpoint}
   options:
     temperature: 0.4
 tools:
