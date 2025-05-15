@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
-
 namespace SemanticKernel.Process.IntegrationTests;
 
 /// <summary>
@@ -9,10 +7,6 @@ namespace SemanticKernel.Process.IntegrationTests;
 /// </summary>
 public static class ProcessResources
 {
-    /// <summary>
-    /// Creates a kernel process with steps A, B, and C.
-    /// </summary>
-    /// <returns></returns>
     //public static KernelProcess GetCStepProcess()
     //{
     //    // Create the process builder.

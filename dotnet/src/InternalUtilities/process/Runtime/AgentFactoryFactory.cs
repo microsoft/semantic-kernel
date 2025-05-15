@@ -15,15 +15,14 @@ public static class ProcessAgentFactory
     /// <summary>
     /// Processes the agent definition and creates the correct derived type of <see cref="AgentFactory"/>."/>
     /// </summary>
-    /// <param name="agentDefinition"></param>
-    /// <returns></returns>
-    /// <exception cref="NotSupportedException"></exception>
-    public static AgentFactory CreateAgentFactoryAsync(this AgentDefinition agentDefinition)
+    /// <param name="agentDefinition">An instance of <see cref="AgentDefinition"/>.</param>
+    public static AgentFactory CreateAgentFactory(this AgentDefinition agentDefinition)
     {
         return agentDefinition.Type switch
         {
             AzureAIAgentFactory.AzureAIAgentType => new AzureAIAgentFactory(),
             OpenAIAssistantAgentFactory.OpenAIAssistantAgentType => new OpenAIAssistantAgentFactory(),
+            ChatCompletionAgentFactory.ChatCompletionAgentType => new ChatCompletionAgentFactory(),
             _ => throw new NotSupportedException($"Agent type {agentDefinition.Type} is not supported."),
         };
     }
