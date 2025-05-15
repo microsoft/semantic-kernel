@@ -11,9 +11,12 @@ This agent allows you to interact with Microsoft Copilot Studio agents through p
 
 1. Python 3.10+
 2. Install Semantic Kernel with Copilot Studio dependencies:
-   ```bash
-   pip install semantic-kernel[copilot_studio]
-   ```
+   - **Until the Copilot Studio packages are on public PyPI**:
+     ```bash
+     pip install semantic-kernel
+     pip install --extra-index-url https://test.pypi.org/simple \
+       microsoft-agents-core microsoft-agents-copilotstudio-client
+     ```
 3. An agent created in **Microsoft Copilot Studio**
 4. Ability to create an application identity in Azure for a **Public Client/Native App Registration**, 
 or access to an existing app registration with the `CopilotStudio.Copilots.Invoke` API permission assigned.
