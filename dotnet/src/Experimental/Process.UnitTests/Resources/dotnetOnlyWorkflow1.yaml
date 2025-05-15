@@ -1,4 +1,4 @@
-
+id: dotnetOnlyWorkflow1
 format_version: "1.0" # The version of the declarative spec being used to define this workflow.
 workflow_version: "1.5" # The version of the workflow itself.
 name: report_generation_pipeline

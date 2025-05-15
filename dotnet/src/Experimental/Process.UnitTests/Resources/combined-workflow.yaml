@@ -1,4 +1,5 @@
 workflow:
+  id: combined_workflow  
   name: ProductSummarization
   inputs:
     events:

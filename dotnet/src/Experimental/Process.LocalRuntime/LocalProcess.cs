@@ -432,12 +432,12 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             }
             else if (edge.OutputTarget is KernelProcessFunctionTarget functionTarget)
             {
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, this._process.State.Id!, null, null);
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, processEvent.SourceId, processEvent.Data);
                 messageChannel.Enqueue(message);
             }
             else if (edge.OutputTarget is KernelProcessAgentInvokeTarget agentInvokeTarget)
             {
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, this._process.State.Id!, null, null);
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, processEvent.SourceId, processEvent.Data);
                 messageChannel.Enqueue(message);
             }
             else
