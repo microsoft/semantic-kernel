@@ -24,7 +24,7 @@ public class PostgresCollectionTests
         };
         var options = new PostgresCollectionOptions()
         {
-            VectorStoreRecordDefinition = recordDefinition
+            Definition = recordDefinition
         };
 
         // Act & Assert

@@ -40,7 +40,7 @@ public class PineconeCollectionTests
         using var sut = new PineconeCollection<string, SinglePropsModel>(
             pineconeClient,
             TestCollectionName,
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
     }
 
     public sealed class SinglePropsModel

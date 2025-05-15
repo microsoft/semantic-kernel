@@ -31,7 +31,7 @@ public class CosmosNoSQLEmbeddingGenerationTests(CosmosNoSQLEmbeddingGenerationT
         [
             services => services
                 .AddSingleton(CosmosNoSqlTestStore.Instance.Database)
-                .AddCosmosNoSqlVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddCosmosNoSqlCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 

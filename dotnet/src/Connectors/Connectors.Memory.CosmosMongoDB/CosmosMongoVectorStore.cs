@@ -68,7 +68,7 @@ public sealed class CosmosMongoVectorStore : VectorStore
                 name,
                 new()
                 {
-                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    Definition = vectorStoreRecordDefinition,
                     EmbeddingGenerator = this._embeddingGenerator
                 });
 
@@ -83,7 +83,7 @@ public sealed class CosmosMongoVectorStore : VectorStore
             name,
             new()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator,
             }
         );

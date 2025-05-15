@@ -68,7 +68,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
 
         var options = new MongoCollectionOptions
         {
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
 
         using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, collectionName, options);
@@ -223,7 +223,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         using var sut = new MongoCollection<string, TestModel>(
             fixture.MongoDatabase,
             fixture.TestCollection,
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
 
         // Act
         await sut.UpsertAsync(model);
@@ -271,7 +271,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         using var sut = new MongoCollection<string, BsonTestModel>(
             fixture.MongoDatabase,
             fixture.TestCollection,
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
 
         // Act
         await sut.UpsertAsync(model);
@@ -417,7 +417,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         // Arrange
         var options = new MongoCollectionOptions
         {
-            VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
+            Definition = fixture.HotelVectorStoreRecordDefinition
         };
 
         using var sut = new MongoCollection<object, Dictionary<string, object?>>(fixture.MongoDatabase, fixture.TestCollection, options);

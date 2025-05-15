@@ -89,7 +89,7 @@ public sealed class QdrantVectorStore : VectorStore
             : new QdrantCollection<TKey, TRecord>(this._qdrantClient.Share, name, new()
             {
                 HasNamedVectors = this._hasNamedVectors,
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator
             });
 
@@ -102,7 +102,7 @@ public sealed class QdrantVectorStore : VectorStore
         => new QdrantDynamicCollection(this._qdrantClient.Share, name, new QdrantCollectionOptions()
         {
             HasNamedVectors = this._hasNamedVectors,
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+            Definition = vectorStoreRecordDefinition,
             EmbeddingGenerator = this._embeddingGenerator
         });
 #pragma warning restore IDE0090

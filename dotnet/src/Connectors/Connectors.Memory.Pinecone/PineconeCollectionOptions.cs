@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -8,19 +7,9 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// <summary>
 /// Options when creating a <see cref="PineconeCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class PineconeCollectionOptions
+public sealed class PineconeCollectionOptions : VectorStoreCollectionOptions
 {
     internal static readonly PineconeCollectionOptions Default = new();
-
-    /// <summary>
-    /// Gets or sets an optional record definition that defines the schema of the record type.
-    /// </summary>
-    /// <remarks>
-    /// If not provided, the schema will be inferred from the record model class using reflection.
-    /// In this case, the record model properties must be annotated with the appropriate attributes to indicate their usage.
-    /// See <see cref="VectorStoreKeyAttribute"/>, <see cref="VectorStoreDataAttribute"/> and <see cref="VectorStoreVectorAttribute"/>.
-    /// </remarks>
-    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; set; }
 
     /// <summary>
     /// Gets or sets the value for a namespace within the Pinecone index that will be used for operations involving records (Get, Upsert, Delete)."/>
@@ -42,9 +31,4 @@ public sealed class PineconeCollectionOptions
     /// This option is only used when creating a new Pinecone index. Default value is 'us-east-1'.
     /// </remarks>
     public string ServerlessIndexRegion { get; set; } = "us-east-1";
-
-    /// <summary>
-    /// Gets or sets the default embedding generator for vector properties in this collection.
-    /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

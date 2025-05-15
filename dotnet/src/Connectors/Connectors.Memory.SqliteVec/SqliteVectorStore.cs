@@ -75,7 +75,7 @@ public sealed class SqliteVectorStore : VectorStore
                 name,
                 new()
                 {
-                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    Definition = vectorStoreRecordDefinition,
                     VectorVirtualTableName = this._vectorVirtualTableName,
                     EmbeddingGenerator = this._embeddingGenerator
                 });
@@ -91,7 +91,7 @@ public sealed class SqliteVectorStore : VectorStore
             name,
             new()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 VectorVirtualTableName = this._vectorVirtualTableName,
                 EmbeddingGenerator = this._embeddingGenerator
             }

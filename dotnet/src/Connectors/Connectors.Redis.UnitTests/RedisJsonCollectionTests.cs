@@ -436,7 +436,7 @@ public class RedisJsonCollectionTests
             new()
             {
                 PrefixCollectionNameToKeyNames = false,
-                VectorStoreRecordDefinition = useDefinition ? this._multiPropsDefinition : null,
+                Definition = useDefinition ? this._multiPropsDefinition : null,
                 JsonSerializerOptions = useCustomJsonSerializerOptions ? this._customJsonSerializerOptions : null
             });
     }

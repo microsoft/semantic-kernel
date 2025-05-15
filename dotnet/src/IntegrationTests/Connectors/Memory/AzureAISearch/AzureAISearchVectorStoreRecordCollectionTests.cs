@@ -51,7 +51,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var testCollectionName = $"{fixture.TestIndexName}-createtest";
         var options = new AzureAISearchCollectionOptions
         {
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
         using var sut = new AzureAISearchCollection<string, AzureAISearchHotel>(fixture.SearchIndexClient, testCollectionName, options);
 
@@ -125,7 +125,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         // Arrange
         var options = new AzureAISearchCollectionOptions
         {
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
         using var sut = new AzureAISearchCollection<string, AzureAISearchHotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
 
@@ -174,7 +174,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         // Arrange
         var options = new AzureAISearchCollectionOptions
         {
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
         using var sut = new AzureAISearchCollection<string, AzureAISearchHotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
 
@@ -235,7 +235,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         // Arrange
         var options = new AzureAISearchCollectionOptions
         {
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.VectorStoreRecordDefinition : null
         };
         using var sut = new AzureAISearchCollection<string, AzureAISearchHotel>(fixture.SearchIndexClient, fixture.TestIndexName);
         await sut.UpsertAsync(this.CreateTestHotel("Remove-1"));
@@ -369,7 +369,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         // Arrange
         var options = new AzureAISearchCollectionOptions
         {
-            VectorStoreRecordDefinition = fixture.VectorStoreRecordDefinition
+            Definition = fixture.VectorStoreRecordDefinition
         };
         using var sut = new AzureAISearchCollection<object, Dictionary<string, object?>>(fixture.SearchIndexClient, fixture.TestIndexName, options);
 

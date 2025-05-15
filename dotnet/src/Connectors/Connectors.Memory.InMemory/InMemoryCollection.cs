@@ -56,7 +56,7 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(InMemoryDynamicCollection)))
-                : new InMemoryModelBuilder().Build(typeof(TRecord), options.VectorStoreRecordDefinition, options.EmbeddingGenerator),
+                : new InMemoryModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
             options)
     {
     }

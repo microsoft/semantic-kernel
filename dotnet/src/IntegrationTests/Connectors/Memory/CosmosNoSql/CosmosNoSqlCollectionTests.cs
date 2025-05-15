@@ -73,7 +73,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
 
         var options = new CosmosNoSqlCollectionOptions
         {
-            VectorStoreRecordDefinition = useRecordDefinition ? this.GetTestHotelRecordDefinition() : null
+            Definition = useRecordDefinition ? this.GetTestHotelRecordDefinition() : null
         };
 
         using var sut = new CosmosNoSqlCollection<string, CosmosNoSqlHotel>(fixture.Database!, collectionName);
@@ -349,7 +349,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         const string HotelId = "55555555-5555-5555-5555-555555555555";
         var options = new CosmosNoSqlCollectionOptions
         {
-            VectorStoreRecordDefinition = this.GetTestHotelRecordDefinition()
+            Definition = this.GetTestHotelRecordDefinition()
         };
 
         using var sut = new CosmosNoSqlCollection<object, Dictionary<string, object?>>(fixture.Database!, "dynamic-mapper", options);

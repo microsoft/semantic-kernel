@@ -101,7 +101,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         var options = new SqliteCollectionOptions
         {
-            VectorStoreRecordDefinition = useRecordDefinition ? GetVectorStoreRecordDefinition<ulong>() : null
+            Definition = useRecordDefinition ? GetVectorStoreRecordDefinition<ulong>() : null
         };
 
         using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteCollection", options);
@@ -436,7 +436,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         var options = new SqliteCollectionOptions
         {
-            VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<ulong>()
+            Definition = GetVectorStoreRecordDefinition<ulong>()
         };
 
         using var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithNumericKey", options);
@@ -476,7 +476,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         var options = new SqliteCollectionOptions
         {
-            VectorStoreRecordDefinition = GetVectorStoreRecordDefinition<string>()
+            Definition = GetVectorStoreRecordDefinition<string>()
         };
 
         using var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithStringKey", options)

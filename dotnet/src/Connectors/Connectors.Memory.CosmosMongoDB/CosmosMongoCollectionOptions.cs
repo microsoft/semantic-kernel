@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
@@ -8,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 /// <summary>
 /// Options when creating a <see cref="CosmosMongoCollection{TKey, TRecord}"/>.
 /// </summary>
-public sealed class CosmosMongoCollectionOptions
+public sealed class CosmosMongoCollectionOptions : VectorStoreCollectionOptions
 {
     internal static readonly CosmosMongoCollectionOptions Default = new();
 
@@ -21,27 +20,12 @@ public sealed class CosmosMongoCollectionOptions
 
     internal CosmosMongoCollectionOptions(CosmosMongoCollectionOptions? source)
     {
-        this.VectorStoreRecordDefinition = source?.VectorStoreRecordDefinition;
+        this.Definition = source?.Definition;
         this.EmbeddingGenerator = source?.EmbeddingGenerator;
         this.NumLists = source?.NumLists ?? Default.NumLists;
         this.EfConstruction = source?.EfConstruction ?? Default.EfConstruction;
         this.EfSearch = source?.EfSearch ?? Default.EfSearch;
     }
-
-    /// <summary>
-    /// Gets or sets an optional record definition that defines the schema of the record type.
-    /// </summary>
-    /// <remarks>
-    /// If not provided, the schema will be inferred from the record model class using reflection.
-    /// In this case, the record model properties must be annotated with the appropriate attributes to indicate their usage.
-    /// See <see cref="VectorStoreKeyAttribute"/>, <see cref="VectorStoreDataAttribute"/> and <see cref="VectorStoreVectorAttribute"/>.
-    /// </remarks>
-    public VectorStoreRecordDefinition? VectorStoreRecordDefinition { get; set; }
-
-    /// <summary>
-    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
-    /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 
     /// <summary>
     /// This integer is the number of clusters that the inverted file (IVF) index uses to group the vector data. Default is 1.

@@ -23,7 +23,7 @@ public class CommonPostgresVectorStoreRecordCollectionTests(PostgresVectorStoreF
     {
         return new PostgresCollection<string, TRecord>(fixture.DataSource!, recordCollectionName, ownsDataSource: false, new()
         {
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            Definition = vectorStoreRecordDefinition
         });
     }
 

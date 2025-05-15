@@ -66,7 +66,7 @@ public sealed class CosmosNoSqlDynamicCollection : CosmosNoSqlCollection<object,
             name,
             static options => new CosmosNoSqlModelBuilder()
                 .BuildDynamic(
-                    options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                    options.Definition ?? throw new ArgumentException("Definition is required for dynamic collections"),
                     options.EmbeddingGenerator,
                     options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
             options)

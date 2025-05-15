@@ -33,7 +33,7 @@ public sealed class WeaviateDynamicCollection : WeaviateCollection<object, Dicti
             name,
             static options => new WeaviateModelBuilder(options.HasNamedVectors)
                 .BuildDynamic(
-                    options.VectorStoreRecordDefinition ?? throw new ArgumentException("VectorStoreRecordDefinition is required for dynamic collections"),
+                    options.Definition ?? throw new ArgumentException("Definition is required for dynamic collections"),
                     options.EmbeddingGenerator,
                     WeaviateConstants.s_jsonSerializerOptions),
             options)

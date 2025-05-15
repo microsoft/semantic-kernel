@@ -441,7 +441,7 @@ public class RedisHashSetCollectionTests
         using var sut = new RedisHashSetCollection<string, SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
     }
 
     private RedisHashSetCollection<string, SinglePropsModel> CreateRecordCollection(bool useDefinition)
@@ -452,7 +452,7 @@ public class RedisHashSetCollectionTests
             new()
             {
                 PrefixCollectionNameToKeyNames = false,
-                VectorStoreRecordDefinition = useDefinition ? this._singlePropsDefinition : null
+                Definition = useDefinition ? this._singlePropsDefinition : null
             });
     }
 

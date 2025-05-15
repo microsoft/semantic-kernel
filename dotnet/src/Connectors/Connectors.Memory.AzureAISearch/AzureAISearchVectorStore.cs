@@ -75,7 +75,7 @@ public sealed class AzureAISearchVectorStore : VectorStore
                 new AzureAISearchCollectionOptions()
                 {
                     JsonSerializerOptions = this._jsonSerializerOptions,
-                    VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                    Definition = vectorStoreRecordDefinition,
                     EmbeddingGenerator = this._embeddingGenerator
                 });
 
@@ -93,7 +93,7 @@ public sealed class AzureAISearchVectorStore : VectorStore
             new()
             {
                 JsonSerializerOptions = this._jsonSerializerOptions,
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
+                Definition = vectorStoreRecordDefinition,
                 EmbeddingGenerator = this._embeddingGenerator
             }
         );
