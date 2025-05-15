@@ -41,7 +41,7 @@ async def main() -> None:
 
         # 3. Create an agent on the Azure AI agent service with the file search tool
         agent_definition = await client.agents.create_agent(
-            model=AzureAIAgentSettings().deployment_name,
+            model=AzureAIAgentSettings().model_deployment_name,
             tools=file_search.definitions,
             tool_resources=file_search.resources,
         )

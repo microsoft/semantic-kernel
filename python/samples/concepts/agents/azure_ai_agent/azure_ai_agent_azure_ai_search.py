@@ -52,7 +52,7 @@ async def main() -> None:
 
         # Create agent definition
         agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.deployment_name,
+            model=ai_agent_settings.model_deployment_name,
             instructions="Answer questions about hotels using your index.",
             tools=ai_search.definitions,
             tool_resources=ai_search.resources,

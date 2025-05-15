@@ -97,7 +97,7 @@ async def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = N
         agent = AzureAIAgent(
             client=client,
             definition=await client.agents.create_agent(
-                model=AzureAIAgentSettings().deployment_name,
+                model=AzureAIAgentSettings().model_deployment_name,
                 name="Host",
                 instructions="Answer questions about the menu.",
             ),

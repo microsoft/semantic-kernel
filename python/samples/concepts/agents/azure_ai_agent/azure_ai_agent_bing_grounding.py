@@ -36,7 +36,7 @@ async def main() -> None:
         agent_definition = await client.agents.create_agent(
             name="BingGroundingAgent",
             instructions="Use the Bing grounding tool to answer the user's question.",
-            model=AzureAIAgentSettings().deployment_name,
+            model=AzureAIAgentSettings().model_deployment_name,
             tools=bing_grounding.definitions,
         )
 

@@ -53,7 +53,7 @@ async def main():
         agent_writer = AzureAIAgent(
             client=client,
             definition=await client.agents.create_agent(
-                model=AzureAIAgentSettings().deployment_name,
+                model=AzureAIAgentSettings().model_deployment_name,
                 name=COPYWRITER_NAME,
                 instructions=COPYWRITER_INSTRUCTIONS,
             ),

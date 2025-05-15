@@ -33,7 +33,7 @@ async def main() -> None:
         # 1. Create an agent with a code interpreter on the Azure AI agent service
         code_interpreter = CodeInterpreterTool()
         agent_definition = await client.agents.create_agent(
-            model=AzureAIAgentSettings().deployment_name,
+            model=AzureAIAgentSettings().model_deployment_name,
             tools=code_interpreter.definitions,
             tool_resources=code_interpreter.resources,
         )

@@ -32,7 +32,7 @@ async def main() -> None:
     ):
         # Create the agent definition
         agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.deployment_name,
+            model=ai_agent_settings.model_deployment_name,
             name="TruncateAgent",
             instructions="You are a helpful assistant that answers user questions in one sentence.",
         )

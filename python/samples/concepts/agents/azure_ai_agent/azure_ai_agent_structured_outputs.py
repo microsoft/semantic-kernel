@@ -42,7 +42,7 @@ async def main():
     ):
         # Create the agent definition
         agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.deployment_name,
+            model=ai_agent_settings.model_deployment_name,
             name="Assistant",
             instructions="Extract the information about planets.",
             response_format=ResponseFormatJsonSchemaType(
