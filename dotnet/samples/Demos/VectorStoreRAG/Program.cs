@@ -106,11 +106,11 @@ switch (appConfig.RagConfig.VectorStoreType)
             appConfig.RedisConfig.ConnectionConfiguration);
         break;
     case "Weaviate":
-        kernelBuilder.Services.AddWeaviateVectorStoreRecordCollection<TextSnippet<Guid>>(
+        kernelBuilder.Services.AddWeaviateCollection<TextSnippet<Guid>>(
             // Weaviate collection names must start with an upper case letter.
             char.ToUpper(appConfig.RagConfig.CollectionName[0], CultureInfo.InvariantCulture) + appConfig.RagConfig.CollectionName.Substring(1),
-            null,
-            new() { Endpoint = new Uri(appConfig.WeaviateConfig.Endpoint) });
+            endpoint: new Uri(appConfig.WeaviateConfig.Endpoint),
+            apiKey: null);
         break;
     default:
         throw new NotSupportedException($"Vector store type '{appConfig.RagConfig.VectorStoreType}' is not supported.");

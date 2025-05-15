@@ -13,6 +13,20 @@ public sealed class WeaviateCollectionOptions : VectorStoreCollectionOptions
     internal static readonly WeaviateCollectionOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="WeaviateCollectionOptions"/> class.
+    /// </summary>
+    public WeaviateCollectionOptions()
+    {
+    }
+
+    internal WeaviateCollectionOptions(WeaviateCollectionOptions? source) : base(source)
+    {
+        this.Endpoint = source?.Endpoint;
+        this.ApiKey = source?.ApiKey;
+        this.HasNamedVectors = source?.HasNamedVectors ?? Default.HasNamedVectors;
+    }
+
+    /// <summary>
     /// Weaviate endpoint for remote or local cluster.
     /// </summary>
     public Uri? Endpoint { get; set; }

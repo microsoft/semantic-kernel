@@ -3,7 +3,6 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
 using WeaviateIntegrationTests.Support;
@@ -32,7 +31,7 @@ public class WeaviateEmbeddingGenerationTests(WeaviateEmbeddingGenerationTests.S
         [
             services => services
                 .AddSingleton(WeaviateTestStore.NamedVectorsInstance.Client)
-                .AddWeaviateVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddWeaviateCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 
@@ -54,7 +53,7 @@ public class WeaviateEmbeddingGenerationTests(WeaviateEmbeddingGenerationTests.S
         [
             services => services
                 .AddSingleton(WeaviateTestStore.NamedVectorsInstance.Client)
-                .AddWeaviateVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddWeaviateCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 }
