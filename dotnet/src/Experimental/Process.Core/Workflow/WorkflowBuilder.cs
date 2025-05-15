@@ -555,11 +555,11 @@ internal class WorkflowBuilder
         return eventName;
     }
 
-    private static List<OnEventAction> ToEventActions(KernelProcessDeclarativeConditionHandler? handler)
+    private static List<OnEventAction>? ToEventActions(KernelProcessDeclarativeConditionHandler? handler)
     {
         if (handler is null)
         {
-            return [];
+            return null;
         }
 
         List<OnEventAction> actions = [];
