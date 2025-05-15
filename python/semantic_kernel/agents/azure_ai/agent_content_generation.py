@@ -16,6 +16,7 @@ from azure.ai.projects.models import (
     MessageTextUrlCitationAnnotation,
     RequiredFunctionToolCall,
     RunStep,
+    RunStepAzureAISearchToolCall,
     RunStepBingGroundingToolCall,
     RunStepDeltaCodeInterpreterImageOutput,
     RunStepDeltaCodeInterpreterLogOutput,
@@ -294,6 +295,31 @@ def generate_bing_grounding_content(
 
 
 @experimental
+def generate_azure_ai_search_content(
+    agent_name: str, azure_ai_search_tool_call: "RunStepAzureAISearchToolCall"
+) -> ChatMessageContent:
+    """Generate function result content related to an Azure AI Search Tool."""
+    message_content: ChatMessageContent = ChatMessageContent(role=AuthorRole.ASSISTANT, name=agent_name)  # type: ignore
+    # Azure AI Search tool call contains both tool call input and output
+    message_content.items.append(
+        FunctionCallContent(
+            id=azure_ai_search_tool_call.id,
+            name=azure_ai_search_tool_call.type,
+            function_name=azure_ai_search_tool_call.type,
+            arguments=azure_ai_search_tool_call.azure_ai_search.get("input"),
+        )
+    )
+    message_content.items.append(
+        FunctionResultContent(
+            function_name=azure_ai_search_tool_call.type,
+            id=azure_ai_search_tool_call.id,
+            result=azure_ai_search_tool_call.azure_ai_search.get("output"),
+        )
+    )
+    return message_content
+
+
+@experimental
 def generate_code_interpreter_content(agent_name: str, code: str) -> "ChatMessageContent":
     """Generate code interpreter content.
 
@@ -381,6 +407,45 @@ def generate_streaming_bing_grounding_content(
                     name=bing_tool.type,
                     function_name=bing_tool.type,
                     arguments=arguments,
+                )
+            )
+
+    return StreamingChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        name=agent_name,
+        choice_index=0,
+        items=items,  # type: ignore
+    )  # type: ignore
+
+
+@experimental
+def generate_streaming_azure_ai_search_content(
+    agent_name: str, step_details: "RunStepDeltaToolCallObject"
+) -> StreamingChatMessageContent | None:
+    """Generate function result content related to a Bing Grounding Tool."""
+    if not step_details.tool_calls:
+        return None
+
+    items: list[FunctionCallContent | FunctionResultContent] = []
+
+    for index, tool in enumerate(step_details.tool_calls):
+        if tool.type == "azure_ai_search":
+            azure_ai_search_tool = cast(RunStepAzureAISearchToolCall, tool)
+            arguments = getattr(azure_ai_search_tool, "azure_ai_search", None)
+            items.append(
+                FunctionCallContent(
+                    id=azure_ai_search_tool.id,
+                    index=index,
+                    name=azure_ai_search_tool.type,
+                    function_name=azure_ai_search_tool.type,
+                    arguments=arguments,
+                )
+            )
+            items.append(
+                FunctionResultContent(
+                    function_name=azure_ai_search_tool.type,
+                    id=azure_ai_search_tool.id,
+                    result=azure_ai_search_tool.azure_ai_search.get("output"),
                 )
             )
 

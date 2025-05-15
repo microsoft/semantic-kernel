@@ -43,7 +43,7 @@ public abstract class BaseAssistantTest : BaseAgentsTest<OpenAIClient>
         {
             if (item is AnnotationContent annotation)
             {
-                await this.DownloadFileContentAsync(fileClient, annotation.FileId!);
+                await this.DownloadFileContentAsync(fileClient, annotation.ReferenceId!);
             }
         }
     }
