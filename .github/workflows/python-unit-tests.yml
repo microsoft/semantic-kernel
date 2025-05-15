@@ -6,7 +6,6 @@ on:
     paths:
       - "python/**"
 env:
-  # Configure a constant location for the uv cache
   UV_CACHE_DIR: /tmp/.uv-cache
 
 jobs:
@@ -33,6 +32,7 @@ jobs:
         working-directory: python
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -40,12 +40,23 @@ jobs:
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
           cache-dependency-glob: "**/uv.lock"
+
+      - name: Install CopilotStudio client from Test-PyPI
+        run: |
+          pip install --upgrade pip
+          pip install \
+            --extra-index-url https://test.pypi.org/simple \
+            microsoft-agents-core \
+            microsoft-agents-copilotstudio-client
+
       - name: Install the project
         run: uv sync --all-extras --dev -U --prerelease=if-necessary-or-explicit
+
       - name: Test with pytest
         env:
           PYTHON_GIL: ${{ matrix.gil }}
         run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit
+
       - name: Surface failing tests
         if: ${{ !matrix.experimental }}
         uses: pmeier/pytest-results-action@v0.7.1

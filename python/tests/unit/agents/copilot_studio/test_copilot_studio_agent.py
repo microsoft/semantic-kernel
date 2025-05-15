@@ -7,6 +7,12 @@ from typing import TypeVar
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
+# Skip all tests in this module if CopilotStudio packages aren’t installed
+pytest.importorskip(
+    "microsoft.agents.copilotstudio.client", reason="CopilotStudio packages not installed — skipping Copilot tests"
+)
+
 from microsoft.agents.copilotstudio.client import (
     CopilotClient,
 )
