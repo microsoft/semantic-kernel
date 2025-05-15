@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -18,7 +19,7 @@ using Xunit;
 namespace SemanticKernel.Connectors.Ollama.UnitTests.Extensions;
 
 /// <summary>
-/// Unit tests of <see cref="OllamaServiceCollectionExtensions"/>.
+/// Unit tests of <see cref="Microsoft.SemanticKernel.OllamaServiceCollectionExtensions"/>.
 /// </summary>
 public class OllamaServiceCollectionExtensionsTests
 {
@@ -61,6 +62,7 @@ public class OllamaServiceCollectionExtensionsTests
     }
 
     [Fact]
+    [Obsolete("Temporarily test for obsolete TextEmbeddingGenerationService.")]
     public void AddOllamaTextEmbeddingGenerationFromServiceCollection()
     {
         var services = new ServiceCollection();
@@ -74,6 +76,20 @@ public class OllamaServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public void AddOllamaEmbeddingGeneratorFromServiceCollection()
+    {
+        var services = new ServiceCollection();
+        using var ollamaClient = new OllamaApiClient(new Uri("http://localhost:11434"), "model");
+
+        services.AddSingleton(ollamaClient);
+        services.AddOllamaEmbeddingGenerator();
+        var serviceProvider = services.BuildServiceProvider();
+        var service = serviceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        Assert.NotNull(service);
+    }
+
+    [Fact]
+    [Obsolete("Temporarily test for obsolete TextEmbeddingGenerationService.")]
     public void AddOllamaTextEmbeddingsGenerationToServiceCollection()
     {
         var services = new ServiceCollection();
@@ -85,8 +101,67 @@ public class OllamaServiceCollectionExtensionsTests
         Assert.NotNull(service);
     }
 
+    [Fact]
+    public void AddOllamaEmbeddingsGeneratorToServiceCollection()
+    {
+        var services = new ServiceCollection();
+        services.AddOllamaEmbeddingGenerator("model", new Uri("http://localhost:11434"));
+
+        var serviceProvider = services.BuildServiceProvider();
+        var service = serviceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+
+        Assert.NotNull(service);
+    }
+
     [Theory]
     [MemberData(nameof(AddOllamaApiClientScenarios))]
+    public async Task AddOllamaApiClientEmbeddingGeneratorFromServiceCollectionAsync(ServiceCollectionRegistration registration)
+    {
+        using var myHttpClientHandler = new FakeHttpMessageHandler(File.ReadAllText("TestData/embeddings_test_response.json"));
+        using var httpClient = new HttpClient(myHttpClientHandler) { BaseAddress = new Uri("http://localhost:11434"), };
+        using var client = new OllamaApiClient(httpClient);
+        var services = new ServiceCollection();
+        string? serviceId = null;
+        switch (registration)
+        {
+            case ServiceCollectionRegistration.KeyedOllamaApiClient:
+                services.AddKeyedSingleton<OllamaApiClient>(serviceId = "model", client);
+                break;
+            case ServiceCollectionRegistration.KeyedIOllamaApiClient:
+                services.AddKeyedSingleton<IOllamaApiClient>(serviceId = "model", client);
+                break;
+            case ServiceCollectionRegistration.OllamaApiClient:
+                services.AddSingleton<OllamaApiClient>(client);
+                break;
+            case ServiceCollectionRegistration.Endpoint:
+                services.AddSingleton<IOllamaApiClient>(client);
+                break;
+        }
+
+        services.AddOllamaEmbeddingGenerator(serviceId: serviceId);
+        var serviceProvider = services.BuildServiceProvider();
+
+        IEmbeddingGenerator<string, Embedding<float>> service;
+        if (registration is ServiceCollectionRegistration.KeyedOllamaApiClient
+                         or ServiceCollectionRegistration.KeyedIOllamaApiClient)
+        {
+            service = serviceProvider.GetRequiredKeyedService<IEmbeddingGenerator<string, Embedding<float>>>(serviceId);
+        }
+        else
+        {
+            service = serviceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        }
+
+        Assert.NotNull(service);
+
+        await service.GenerateAsync(["text"]);
+
+        Assert.Equal(1, myHttpClientHandler.InvokedCount);
+    }
+
+    [Theory]
+    [MemberData(nameof(AddOllamaApiClientScenarios))]
+    [Obsolete("Temporarily test for obsolete TextEmbeddingGenerationService.")]
     public async Task AddOllamaApiClientEmbeddingsFromServiceCollectionAsync(ServiceCollectionRegistration registration)
     {
         using var myHttpClientHandler = new FakeHttpMessageHandler(File.ReadAllText("TestData/embeddings_test_response.json"));

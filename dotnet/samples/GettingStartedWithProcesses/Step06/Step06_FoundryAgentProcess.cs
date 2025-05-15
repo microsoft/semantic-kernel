@@ -51,6 +51,12 @@ public class Step06_FoundryAgentProcess : BaseTest
         kernelBuilder.Services.AddSingleton(agentsClient);
         kernelBuilder.Services.AddSingleton(foundryClient);
         var kernel = kernelBuilder.Build();
+
+        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "What is the best programming language and why?" });
+        var agent1Result = await context.GetStateAsync();
+
+        Assert.NotNull(context);
+        Assert.NotNull(agent1Result);
     }
 
     [Fact]
@@ -80,6 +86,12 @@ public class Step06_FoundryAgentProcess : BaseTest
         kernelBuilder.Services.AddSingleton(agentsClient);
         kernelBuilder.Services.AddSingleton(foundryClient);
         var kernel = kernelBuilder.Build();
+
+        var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" });
+        var agent1Result = await context.GetStateAsync();
+
+        Assert.NotNull(context);
+        Assert.NotNull(agent1Result);
     }
 
     [Fact]

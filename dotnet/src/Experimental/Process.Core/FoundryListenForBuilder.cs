@@ -31,7 +31,7 @@ public class FoundryListenForBuilder
     /// <param name="eventName"></param>
     /// <param name="condition"></param>
     /// <returns></returns>
-    internal FoundryListenForTargetBuilder InputEvent(string eventName, KernelProcessEdgeCondition? condition = null)
+    public FoundryListenForTargetBuilder InputEvent(string eventName, KernelProcessEdgeCondition? condition = null)
     {
         return new(this._listenForBuilder.InputEvent(eventName, condition));
     }

@@ -20,42 +20,10 @@ public record KernelProcessTarget
         this.Type = type;
     }
 
-    ///// <summary>
-    ///// Initializes a new instance of the <see cref="KernelProcessTarget"/> class.
-    ///// </summary>
-    ///// <param name="functionTarget"></param>
-    //public KernelProcessTarget(KernelProcessFunctionTarget functionTarget)
-    //{
-    //    Verify.NotNull(functionTarget, nameof(functionTarget));
-    //    this.Type = ProcessTargetType.KernelFunction;
-    //    this.FunctionTarget = functionTarget;
-    //}
-
-    ///// <summary>
-    ///// Initializes a new instance of the <see cref="KernelProcessTarget"/> class.
-    ///// </summary>
-    ///// <param name="variableUpdate"></param>
-    //public KernelProcessTarget(VariableUpdate variableUpdate)
-    //{
-    //    Verify.NotNull(variableUpdate, nameof(variableUpdate));
-    //    this.Type = ProcessTargetType.StateUpdate;
-    //    this.VariableUpdate = variableUpdate;
-    //}
-
     /// <summary>
     /// The type of target.
     /// </summary>
     public ProcessTargetType Type { get; init; } = ProcessTargetType.Invocation;
-
-    ///// <summary>
-    ///// The associated <see cref="KernelProcessFunctionTarget"/>. Null when <see cref="Type"/> is not <see cref="ProcessTargetType.KernelFunction"/>."/>
-    ///// </summary>
-    //public KernelProcessFunctionTarget? FunctionTarget { get; init; }
-
-    ///// <summary>
-    ///// The associated <see cref="VariableUpdate"/>. Null when <see cref="Type"/> is not <see cref="ProcessTargetType.StateUpdate"/>."/>
-    ///// </summary>
-    //public VariableUpdate? VariableUpdate { get; init; }
 }
 
 /// <summary>
@@ -120,6 +88,7 @@ public record KernelProcessAgentInvokeTarget : KernelProcessTarget
     public KernelProcessAgentInvokeTarget(string stepId, string? threadEval, List<string>? messagesInEval, Dictionary<string, string> inputEvals) : base(ProcessTargetType.Invocation)
     {
         Verify.NotNullOrWhiteSpace(stepId);
+        Verify.NotNullOrWhiteSpace(threadEval);
         Verify.NotNull(inputEvals);
 
         this.StepId = stepId;

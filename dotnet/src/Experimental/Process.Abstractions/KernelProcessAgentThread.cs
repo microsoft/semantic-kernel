@@ -15,7 +15,7 @@ public record KernelProcessAgentThread
     /// <summary>
     /// The type of the thread. This is used to identify the underlying thread type.
     /// </summary>
-    public KernelProcessThreadType ThreadType { get; init; } = KernelProcessThreadType.AzureAI;
+    public KernelProcessThreadType ThreadType { get; init; } = KernelProcessThreadType.ChatCompletion;
 
     /// <summary>
     /// The id of the thread. This may be null if the thread is not existing when the Process is created.

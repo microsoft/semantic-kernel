@@ -10,7 +10,6 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Embeddings;
 using ModelContextProtocol.Protocol.Types;
 using ModelContextProtocol.Server;
 
@@ -32,7 +31,7 @@ kernelBuilder.Plugins.AddFromFunctions("Agents", [AgentKernelFunctionFactory.Cre
 
 // Register embedding generation service and in-memory vector store
 kernelBuilder.Services.AddSingleton<IVectorStore, InMemoryVectorStore>();
-kernelBuilder.Services.AddOpenAITextEmbeddingGeneration(embeddingModelId, apiKey);
+kernelBuilder.Services.AddOpenAIEmbeddingGenerator(embeddingModelId, apiKey);
 
 // Register MCP server
 builder.Services
@@ -96,7 +95,7 @@ static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel
             RequestContext<ReadResourceRequestParams> context,
             string collection,
             string prompt,
-            [FromKernelServices] ITextEmbeddingGenerationService embeddingGenerationService,
+            [FromKernelServices] IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
             [FromKernelServices] IVectorStore vectorStore,
             CancellationToken cancellationToken) =>
         {
@@ -119,11 +118,11 @@ static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel
                 string content = EmbeddedResource.ReadAsString("semantic-kernel-info.txt");
 
                 // Create a collection from the lines in the file
-                await vectorStore.CreateCollectionFromListAsync<Guid, TextDataModel>(collection, content.Split('\n'), embeddingGenerationService, CreateRecord);
+                await vectorStore.CreateCollectionFromListAsync<Guid, TextDataModel>(collection, content.Split('\n'), embeddingGenerator, CreateRecord);
             }
 
             // Generate embedding for the prompt
-            ReadOnlyMemory<float> promptEmbedding = await embeddingGenerationService.GenerateEmbeddingAsync(prompt, cancellationToken: cancellationToken);
+            ReadOnlyMemory<float> promptEmbedding = (await embeddingGenerator.GenerateAsync(prompt, cancellationToken: cancellationToken)).Vector;
 
             // Retrieve top three matching records from the vector store
             var result = vsCollection.SearchEmbeddingAsync(promptEmbedding, top: 3, cancellationToken: cancellationToken);

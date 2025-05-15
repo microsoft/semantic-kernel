@@ -89,7 +89,7 @@ internal sealed class KernelProcessAgentExecutorInternal : KernelProcessStep<Ker
             }
 
             List<ChatMessageContent> agentResponses = [];
-            AgentFactory agentFactory = ProcessAgentFactory.CreateAgentFactoryAsync(this._agentStep.AgentDefinition);
+            AgentFactory agentFactory = ProcessAgentFactory.CreateAgentFactory(this._agentStep.AgentDefinition);
             Agent agent = await agentFactory.CreateAsync(kernel, this._agentStep.AgentDefinition).ConfigureAwait(false);
             this._state!.AgentId = agent.Id;
 
@@ -145,9 +145,18 @@ public sealed class KernelProcessAgentExecutorState
     public string? ThreadId { get; set; }
 }
 
-internal sealed class AgentInvokeOutputWrapper
+/// <summary>
+/// Output wrapper for agent invocation.
+/// </summary>
+public sealed class AgentInvokeOutputWrapper
 {
+    /// <summary>
+    /// Collection of output messages produced by agent.
+    /// </summary>
     public List<ChatMessageContent> MessagesOut { get; set; } = [];
 
+    /// <summary>
+    /// Collection of events produced by agent.
+    /// </summary>
     public Dictionary<string, object?>? Events { get; set; } = [];
 }

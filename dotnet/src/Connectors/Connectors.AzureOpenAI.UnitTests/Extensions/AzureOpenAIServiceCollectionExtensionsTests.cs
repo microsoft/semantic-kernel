@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AudioToText;
@@ -23,7 +24,7 @@ using Moq.Protected;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Extensions;
 /// <summary>
-/// Unit tests for the service collection extensions in the <see cref="AzureOpenAIServiceCollectionExtensions"/> class.
+/// Unit tests for the service collection extensions in the <see cref="Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions"/> class.
 /// </summary>
 public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
 {
@@ -105,6 +106,7 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
     [InlineData(InitializationType.ClientInServiceProvider)]
     [InlineData(InitializationType.ApiVersion)]
     [InlineData(InitializationType.HttpClient)]
+    [Obsolete("Temporary Obsoleted AzureOpenAITextEmbeddingGeneration tests.")]
     public void ServiceCollectionAddAzureOpenAITextEmbeddingGenerationAddsValidService(InitializationType type)
     {
         // Arrange
@@ -131,6 +133,40 @@ public sealed class AzureOpenAIServiceCollectionExtensionsTests : IDisposable
 
         Assert.NotNull(service);
         Assert.True(service is AzureOpenAITextEmbeddingGenerationService);
+    }
+
+    [Theory]
+    [InlineData(InitializationType.ApiKey)]
+    [InlineData(InitializationType.TokenCredential)]
+    [InlineData(InitializationType.ClientInline)]
+    [InlineData(InitializationType.ClientInServiceProvider)]
+    [InlineData(InitializationType.ApiVersion)]
+    [InlineData(InitializationType.HttpClient)]
+    public void ServiceCollectionAddAzureOpenAIEmbeddingGeneratorAddsValidService(InitializationType type)
+    {
+        // Arrange
+        var credentials = DelegatedTokenCredential.Create((_, _) => new AccessToken());
+        var client = new AzureOpenAIClient(new Uri("https://localhost"), new ApiKeyCredential("key"));
+        var builder = Kernel.CreateBuilder();
+
+        builder.Services.AddSingleton<AzureOpenAIClient>(client);
+
+        // Act
+        IServiceCollection collection = type switch
+        {
+            InitializationType.ApiKey => builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key"),
+            InitializationType.TokenCredential => builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", credentials),
+            InitializationType.ClientInline => builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name", client),
+            InitializationType.ClientInServiceProvider => builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name"),
+            InitializationType.ApiVersion => builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key", apiVersion: "2024-10-01-preview"),
+            InitializationType.HttpClient => builder.Services.AddAzureOpenAIEmbeddingGenerator("deployment-name", "https://endpoint", "api-key", httpClient: this._httpClient),
+            _ => builder.Services
+        };
+
+        // Assert
+        var service = builder.Build().GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+
+        Assert.NotNull(service);
     }
 
     #endregion
