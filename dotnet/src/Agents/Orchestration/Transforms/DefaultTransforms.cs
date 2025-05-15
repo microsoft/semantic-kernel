@@ -66,7 +66,7 @@ internal static class DefaultTransforms
             {
                 output = (object)result;
             }
-            else if (isSingleResult && typeof(TOutput).IsAssignableFrom(typeof(ChatMessageContent)))
+            else if (isSingleResult && typeof(ChatMessageContent).IsAssignableFrom(typeof(TOutput)))
             {
                 output = (object)result[0];
             }

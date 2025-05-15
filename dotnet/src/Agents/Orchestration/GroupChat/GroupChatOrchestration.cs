@@ -17,8 +17,6 @@ public class GroupChatOrchestration<TInput, TOutput> :
 {
     internal const string DefaultAgentDescription = "A helpful agent.";
 
-    internal static readonly string OrchestrationName = FormatOrchestrationName(typeof(GroupChatOrchestration<,>));
-
     private readonly GroupChatManager _manager;
 
     /// <summary>
@@ -27,7 +25,7 @@ public class GroupChatOrchestration<TInput, TOutput> :
     /// <param name="manager">The manages the flow of the group-chat.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
     public GroupChatOrchestration(GroupChatManager manager, params Agent[] agents)
-        : base(OrchestrationName, agents)
+        : base(agents)
     {
         Verify.NotNull(manager, nameof(manager));
 
@@ -60,7 +58,7 @@ public class GroupChatOrchestration<TInput, TOutput> :
 
             team[name] = (agentType, description ?? DefaultAgentDescription);
 
-            logger.LogRegisterActor(OrchestrationName, agentType, "MEMBER", agentCount);
+            logger.LogRegisterActor(this.OrchestrationLabel, agentType, "MEMBER", agentCount);
 
             await runtime.SubscribeAsync(agentType, context.Topic).ConfigureAwait(false);
         }
@@ -77,7 +75,7 @@ public class GroupChatOrchestration<TInput, TOutput> :
                     return ValueTask.FromResult<IHostableAgent>(actor);
 #endif
                 }).ConfigureAwait(false);
-        logger.LogRegisterActor(OrchestrationName, managerType, "MANAGER");
+        logger.LogRegisterActor(this.OrchestrationLabel, managerType, "MANAGER");
 
         await runtime.SubscribeAsync(managerType, context.Topic).ConfigureAwait(false);
 

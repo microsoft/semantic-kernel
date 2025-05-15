@@ -18,14 +18,12 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 public class ConcurrentOrchestration<TInput, TOutput>
     : AgentOrchestration<TInput, TOutput>
 {
-    internal static readonly string OrchestrationName = FormatOrchestrationName(typeof(ConcurrentOrchestration<,>));
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ConcurrentOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="agents">The agents participating in the orchestration.</param>
     public ConcurrentOrchestration(params Agent[] agents)
-        : base(OrchestrationName, agents)
+        : base(agents)
     {
     }
 
@@ -53,7 +51,7 @@ public class ConcurrentOrchestration<TInput, TOutput>
                 return ValueTask.FromResult<IHostableAgent>(actor);
 #endif
             }).ConfigureAwait(false);
-        logger.LogRegisterActor(OrchestrationName, resultType, "RESULTS");
+        logger.LogRegisterActor(this.OrchestrationLabel, resultType, "RESULTS");
 
         // Register member actors - All agents respond to the same message.
         int agentCount = 0;
@@ -74,7 +72,7 @@ public class ConcurrentOrchestration<TInput, TOutput>
 #endif
                     }).ConfigureAwait(false);
 
-            logger.LogRegisterActor(OrchestrationName, agentType, "MEMBER", agentCount);
+            logger.LogRegisterActor(this.OrchestrationLabel, agentType, "MEMBER", agentCount);
 
             await runtime.SubscribeAsync(agentType, context.Topic).ConfigureAwait(false);
         }

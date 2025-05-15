@@ -15,14 +15,12 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Sequential;
 /// </summary>
 public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInput, TOutput>
 {
-    internal static readonly string OrchestrationName = FormatOrchestrationName(typeof(SequentialOrchestration<,>));
-
     /// <summary>
     /// Initializes a new instance of the <see cref="SequentialOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="agents">The agents participating in the orchestration.</param>
     public SequentialOrchestration(params Agent[] agents)
-        : base(OrchestrationName, agents)
+        : base(agents)
     {
     }
 
@@ -48,7 +46,7 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
             Agent agent = this.Members[index];
             nextAgent = await RegisterAgentAsync(agent, index, nextAgent).ConfigureAwait(false);
 
-            logger.LogRegisterActor(OrchestrationName, nextAgent, "MEMBER", index + 1);
+            logger.LogRegisterActor(this.OrchestrationLabel, nextAgent, "MEMBER", index + 1);
         }
 
         return nextAgent;

@@ -42,7 +42,9 @@ public class Step04a_HandoffWithStructuredInput(ITestOutputHelper output) : Base
 
         // Define the orchestration
         HandoffOrchestration<GithubIssue, string> orchestration =
-            new(OrchestrationHandoffs.Add(triageAgent, dotnetAgent, pythonAgent),
+            new(OrchestrationHandoffs
+                    .StartWith(triageAgent)
+                    .Add(triageAgent, dotnetAgent, pythonAgent),
                 triageAgent,
                 pythonAgent,
                 dotnetAgent)

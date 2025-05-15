@@ -31,27 +31,15 @@ public delegate ValueTask<ChatMessageContent> OrchestrationInteractiveCallback()
 /// <typeparam name="TOutput">The type of the result output by the orchestration.</typeparam>
 public abstract partial class AgentOrchestration<TInput, TOutput>
 {
-    private readonly string _orchestrationRoot;
-
-    /// <summary>
-    /// Provides a properly formatted name based on the orchestration type (removes generic parameters).
-    /// </summary>
-    /// <param name="orchestrationType">The orchestration type</param>
-    /// <remarks>
-    /// Need to respect naming restrictions around <see cref="AgentType"/> and <see cref="TopicId"/>.
-    /// </remarks>
-    protected static string FormatOrchestrationName(Type orchestrationType) => orchestrationType.Name.Split('`').First();
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TOutput}"/> class.
     /// </summary>
-    /// <param name="orchestrationRoot">A descriptive root label for the orchestration.</param>
     /// <param name="members">Specifies the member agents or orchestrations participating in this orchestration.</param>
-    protected AgentOrchestration(string orchestrationRoot, params Agent[] members)
+    protected AgentOrchestration(params Agent[] members)
     {
-        Verify.NotNullOrWhiteSpace(orchestrationRoot, nameof(orchestrationRoot));
-
-        this._orchestrationRoot = orchestrationRoot;
+        // Capture orchestration root name without generic parameters for use in
+        // agent type and topic formatting as well as logging.
+        this.OrchestrationLabel = this.GetType().Name.Split('`').First();
 
         this.Members = members;
     }
@@ -92,6 +80,12 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     protected IReadOnlyList<Agent> Members { get; }
 
     /// <summary>
+    /// Orchestration identifier without generic parameters for use in
+    /// agent type and topic formatting as well as logging.
+    /// </summary>
+    protected string OrchestrationLabel { get; }
+
+    /// <summary>
     /// Initiates processing of the orchestration.
     /// </summary>
     /// <param name="input">The input message.</param>
@@ -104,11 +98,11 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     {
         Verify.NotNull(input, nameof(input));
 
-        TopicId topic = new($"ID_{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
+        TopicId topic = new($"{this.OrchestrationLabel}_{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
 
         CancellationTokenSource orchestrationCancelSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        OrchestrationContext context = new(this._orchestrationRoot, topic, this.ResponseCallback, this.LoggerFactory, cancellationToken);
+        OrchestrationContext context = new(this.OrchestrationLabel, topic, this.ResponseCallback, this.LoggerFactory, cancellationToken);
 
         ILogger logger = this.LoggerFactory.CreateLogger(this.GetType());
 
@@ -118,11 +112,11 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        logger.LogOrchestrationInvoke(this._orchestrationRoot, topic);
+        logger.LogOrchestrationInvoke(this.OrchestrationLabel, topic);
 
         Task task = runtime.SendMessageAsync(input, orchestrationType, cancellationToken).AsTask();
 
-        logger.LogOrchestrationYield(this._orchestrationRoot, topic);
+        logger.LogOrchestrationYield(this.OrchestrationLabel, topic);
 
         return new OrchestrationResult<TOutput>(context, completion, orchestrationCancelSource, logger);
     }
@@ -152,7 +146,7 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     /// <param name="topic">The topic identifier used in formatting the agent type.</param>
     /// <param name="suffix">A suffix to differentiate the agent type.</param>
     /// <returns>A formatted AgentType object.</returns>
-    protected AgentType FormatAgentType(TopicId topic, string suffix) => new($"{topic.Type}_{this._orchestrationRoot}_{suffix}");
+    protected AgentType FormatAgentType(TopicId topic, string suffix) => new($"{topic.Type}_{suffix}");
 
     /// <summary>
     /// Registers the orchestration's root and boot agents, setting up completion and target routing.

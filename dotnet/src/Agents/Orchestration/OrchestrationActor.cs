@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Agents.Runtime.Core;
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
 /// <summary>
-/// An actor that participates in an orchestration.
+/// Base abstractions for any actor that participates in an orchestration.
 /// </summary>
 public abstract class OrchestrationActor : BaseAgent
 {

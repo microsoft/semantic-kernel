@@ -16,8 +16,6 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 /// </summary>
 public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, TOutput>
 {
-    internal static readonly string OrchestrationName = FormatOrchestrationName(typeof(HandoffOrchestration<,>));
-
     private readonly OrchestrationHandoffs _handoffs;
 
     /// <summary>
@@ -26,10 +24,11 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
     /// <param name="handoffs">Defines the handoff connections for each agent.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
     public HandoffOrchestration(OrchestrationHandoffs handoffs, params Agent[] agents)
-        : base(OrchestrationName, agents)
+        : base(agents)
     {
-        // Extract agent names
-        HashSet<string> agentNames = new(agents.Select(a => a.Name ?? a.Id), StringComparer.OrdinalIgnoreCase);
+        // Create list of distinct agent names
+        HashSet<string> agentNames = new(agents.Select(a => a.Name ?? a.Id), StringComparer.Ordinal);
+        agentNames.Add(handoffs.FirstAgentName);
         // Extract names from handoffs that don't align with a member agent.
         string[] badNames = [.. handoffs.Keys.Concat(handoffs.Values.SelectMany(h => h.Keys)).Where(name => !agentNames.Contains(name))];
         // Fail fast if invalid names are present.
@@ -91,7 +90,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
 
             await runtime.SubscribeAsync(agentType, context.Topic).ConfigureAwait(false);
 
-            logger.LogRegisterActor(OrchestrationName, agentType, "MEMBER", index + 1);
+            logger.LogRegisterActor(this.OrchestrationLabel, agentType, "MEMBER", index + 1);
         }
 
         // Complete the handoff model
@@ -106,7 +105,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
             }
         }
 
-        return agentType;
+        return agentMap[this._handoffs.FirstAgentName];
     }
 
     private AgentType GetAgentType(TopicId topic, int index) => this.FormatAgentType(topic, $"Agent_{index + 1}");

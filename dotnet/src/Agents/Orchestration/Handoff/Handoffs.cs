@@ -32,23 +32,33 @@ public sealed class OrchestrationHandoffs : Dictionary<string, AgentHandoffs>
     /// <summary>
     /// Initializes a new instance of the <see cref="OrchestrationHandoffs"/> class with no handoff relationships.
     /// </summary>
-    public OrchestrationHandoffs() { }
+    /// <param name="firstAgent">The first agent to be invoked (prior to any handoff).</param>
+    public OrchestrationHandoffs(Agent firstAgent)
+        : this(firstAgent.Name ?? firstAgent.Id)
+    { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OrchestrationHandoffs"/> class with the specified handoff relationships.
+    /// Initializes a new instance of the <see cref="OrchestrationHandoffs"/> class with no handoff relationships.
     /// </summary>
-    /// <param name="handoffs">A dictionary mapping source agent names/IDs to their <see cref="AgentHandoffs"/>.</param>
-    public OrchestrationHandoffs(Dictionary<string, AgentHandoffs> handoffs) : base(handoffs) { }
+    /// <param name="firstAgentName">The name of the first agent to be invoked (prior to any handoff).</param>
+    public OrchestrationHandoffs(string firstAgentName)
+    {
+        Verify.NotNullOrWhiteSpace(firstAgentName, nameof(firstAgentName));
+        this.FirstAgentName = firstAgentName;
+    }
+
+    /// <summary>
+    /// The name of the first agent to be invoked (prior to any handoff).
+    /// </summary>
+    public string FirstAgentName { get; }
 
     /// <summary>
     /// Adds handoff relationships from a source agent to one or more target agents.
     /// Each target agent's name or ID is mapped to its description.
     /// </summary>
     /// <param name="source">The source agent.</param>
-    /// <param name="targets">The target agents to add as handoff targets for the source agent.</param>
     /// <returns>The updated <see cref="OrchestrationHandoffs"/> instance.</returns>
-    public static OrchestrationHandoffs Add(Agent source, params Agent[] targets)
-        => new OrchestrationHandoffs().Add(source, targets);
+    public static OrchestrationHandoffs StartWith(Agent source) => new(source);
 }
 
 /// <summary>
