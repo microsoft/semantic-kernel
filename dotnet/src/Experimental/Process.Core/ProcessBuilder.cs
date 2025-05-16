@@ -3,16 +3,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
+using Microsoft.SemanticKernel.Process.Tools;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides functionality for incrementally defining a process.
 /// </summary>
-public sealed class ProcessBuilder : ProcessStepBuilder
+public sealed partial class ProcessBuilder : ProcessStepBuilder
 {
     /// <summary>The collection of steps within this process.</summary>
     private readonly List<ProcessStepBuilder> _steps = [];
@@ -21,7 +25,12 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     private readonly List<ProcessStepBuilder> _entrySteps = [];
 
     /// <summary>Maps external input event Ids to the target entry step for the event.</summary>
-    private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
+    private readonly Dictionary<string, ProcessTargetBuilder> _externalEventTargetMap = [];
+
+    /// <summary>
+    /// The collection of threads within this process.
+    /// </summary>
+    private readonly Dictionary<string, KernelProcessAgentThread> _threads = [];
 
     /// <summary>
     /// A boolean indicating if the current process is a step within another process.
@@ -32,6 +41,31 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// Version of the process, used when saving the state of the process
     /// </summary>
     public string Version { get; init; } = "v1";
+
+    /// <summary>
+    /// The type of the state. This is optional.
+    /// </summary>
+    public Type? StateType { get; init; } = null;
+
+    /// <summary>
+    /// The description of the process.
+    /// </summary>
+    public string Description { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
+    /// </summary>
+    /// <param name="id">The name of the process. This is required.</param>
+    /// <param name="description">The semantic description of the Process being built.</param>
+    /// <param name="processBuilder">ProcessBuilder to copy from</param>
+    /// <param name="stateType">The type of the state. This is optional.</param>
+    public ProcessBuilder(string id, string? description = null, ProcessBuilder? processBuilder = null, Type? stateType = null)
+        : base(id, processBuilder)
+    {
+        Verify.NotNullOrWhiteSpace(id, nameof(id));
+        this.StateType = stateType;
+        this.Description = description ?? string.Empty;
+    }
 
     /// <summary>
     /// Used to resolve the target function and parameter for a given optional function name and parameter name.
@@ -95,9 +129,10 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <summary>
     /// Builds the step.
     /// </summary>
+    /// <param name="processBuilder">ProcessBuilder to build the step for</param>
     /// <param name="stateMetadata">State to apply to the step on the build process</param>
     /// <returns></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
     {
         // The step is a, process so we can return the step info directly.
         return this.Build(stateMetadata as KernelProcessStateMetadata);
@@ -153,12 +188,26 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// Adds a step to the process.
     /// </summary>
     /// <typeparam name="TStep">The step Type.</typeparam>
-    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessStepBuilder AddStepFromType<TStep>(string? name = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
+    public ProcessStepBuilder AddStepFromType<TStep>(string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(name);
+        ProcessStepBuilder<TStep> stepBuilder = new(id: id ?? typeof(TStep).Name, this.ProcessBuilder);
+
+        return this.AddStep(stepBuilder, aliases);
+    }
+
+    /// <summary>
+    /// Adds a step to the process.
+    /// </summary>
+    /// <param name="stepType">The step Type.</param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
+    /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
+    public ProcessStepBuilder AddStepFromType(Type stepType, string? id = null, IReadOnlyList<string>? aliases = null)
+    {
+        ProcessStepBuilderTyped stepBuilder = new(stepType: stepType, id: id ?? stepType.Name, this.ProcessBuilder);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -169,14 +218,122 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <typeparam name="TStep">The step Type.</typeparam>
     /// <typeparam name="TState">The state Type.</typeparam>
     /// <param name="initialState">The initial state of the step.</param>
-    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? name = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
+    public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(name, initialState: initialState);
+        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this.ProcessBuilder, initialState: initialState);
 
         return this.AddStep(stepBuilder, aliases);
+    }
+
+    /// <summary>
+    /// Adds a step to the process from a declarative agent.
+    /// </summary>
+    /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
+    /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgent<TProcessState>(AgentDefinition agentDefinition, string? id = null, IReadOnlyList<string>? aliases = null, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never) where TProcessState : class, new()
+    {
+        Verify.NotNull(agentDefinition, nameof(agentDefinition));
+
+        if (string.IsNullOrWhiteSpace(agentDefinition.Name))
+        {
+            throw new ArgumentException("AgentDefinition.Name cannot be null or empty.", nameof(agentDefinition));
+        }
+
+        if (string.IsNullOrWhiteSpace(threadName))
+        {
+            // No thread name was specified so add a new thread for the agent.
+            this.AddThread(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            threadName = agentDefinition.Name;
+        }
+
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder, id) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        return this.AddStep(stepBuilder, aliases);
+    }
+
+    /// <summary>
+    /// Adds a step to the process from a declarative agent.
+    /// </summary>
+    /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
+    /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
+    public ProcessAgentBuilder AddStepFromAgent(AgentDefinition agentDefinition, string? id = null, IReadOnlyList<string>? aliases = null, string? threadName = null, HITLMode humanInLoopMode = HITLMode.Never)
+    {
+        Verify.NotNull(agentDefinition, nameof(agentDefinition));
+
+        if (string.IsNullOrWhiteSpace(agentDefinition.Name))
+        {
+            throw new ArgumentException("AgentDefinition.Name cannot be null or empty.", nameof(agentDefinition));
+        }
+
+        if (string.IsNullOrWhiteSpace(threadName))
+        {
+            // No thread name was specified so add a new thread for the agent.
+            this.AddThread(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            threadName = agentDefinition.Name;
+        }
+
+        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this.ProcessBuilder, id) { HumanInLoopMode = humanInLoopMode };
+        return this.AddStep(stepBuilder, aliases);
+    }
+
+    /// <summary>
+    /// Adds a step to the process from a declarative agent.
+    /// </summary>
+    /// <param name="agentDefinition">The <see cref="AgentDefinition"/></param>
+    /// <param name="threadName">Specifies the thread reference to be used by the agent. If not provided, the agent will create a new thread for each invocation.</param>
+    /// <param name="stepId">Id of the step. If not provided, the Id will come from the agent Id.</param>
+    /// <param name="humanInLoopMode">Specifies the human-in-the-loop mode for the agent. If not provided, the default is <see cref="HITLMode.Never"/>.</param>
+    /// <param name="aliases"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public ProcessAgentBuilder<TProcessState> AddStepFromAgentProxy<TProcessState>(AgentDefinition agentDefinition, string? threadName = null, string? stepId = null, HITLMode humanInLoopMode = HITLMode.Never, IReadOnlyList<string>? aliases = null) where TProcessState : class, new()
+    {
+        Verify.NotNull(agentDefinition, nameof(agentDefinition));
+
+        if (string.IsNullOrWhiteSpace(agentDefinition.Id))
+        {
+            throw new ArgumentException("AgentDefinition.Id cannot be null or empty.", nameof(agentDefinition));
+        }
+
+        if (string.IsNullOrWhiteSpace(agentDefinition.Name))
+        {
+            throw new ArgumentException("AgentDefinition.Name cannot be null or empty.", nameof(agentDefinition));
+        }
+
+        if (string.IsNullOrWhiteSpace(threadName))
+        {
+            // No thread name was specified so add a new thread for the agent.
+            this.AddThread(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            threadName = agentDefinition.Name;
+        }
+
+        KernelProcessStateResolver<string?> agentIdResolver = new((s) =>
+        {
+            StateResolverContentWrapper wrapper = new() { State = s };
+            var result = JMESPathConditionEvaluator.EvaluateToString(wrapper, agentDefinition.Id);
+            return Task.FromResult(result);
+        });
+
+        var stepBuilder = new ProcessAgentBuilder<TProcessState>(agentDefinition, threadName: threadName, [], this.ProcessBuilder, stepId) { AgentIdResolver = agentIdResolver, HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        return this.AddStep(stepBuilder, aliases);
+    }
+
+    /// <summary>
+    /// Adds a step to the process that represents the end of the process.
+    /// </summary>
+    /// <returns></returns>
+    public ProcessStepBuilder AddEndStep()
+    {
+        var stepBuilder = EndStep.Instance;
+        return this.AddStep(stepBuilder, null);
     }
 
     /// <summary>
@@ -196,12 +353,12 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// Adds a step to the process.
     /// </summary>
     /// <typeparam name="TStep">The step Type.</typeparam>
-    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
-    public ProcessMapBuilder AddMapStepFromType<TStep>(string? name = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
+    public ProcessMapBuilder AddMapStepFromType<TStep>(string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(name);
+        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, this.ProcessBuilder);
 
         ProcessMapBuilder mapBuilder = new(stepBuilder);
 
@@ -214,12 +371,12 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <typeparam name="TStep">The step Type.</typeparam>
     /// <typeparam name="TState">The state Type.</typeparam>
     /// <param name="initialState">The initial state of the step.</param>
-    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="id">The unique Id of the step.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
-    public ProcessMapBuilder AddMapStepFromType<TStep, TState>(TState initialState, string? name = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
+    public ProcessMapBuilder AddMapStepFromType<TStep, TState>(TState initialState, string id, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(name, initialState: initialState);
+        ProcessStepBuilder<TStep> stepBuilder = new(id, this.ProcessBuilder, initialState: initialState);
 
         ProcessMapBuilder mapBuilder = new(stepBuilder);
 
@@ -248,39 +405,84 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// of <see cref="IExternalKernelProcessMessageChannel"/> passed.
     /// For now, the current implementation only allows for 1 implementation of <see cref="IExternalKernelProcessMessageChannel"/> at the time.
     /// </summary>
-    /// <param name="externalTopics">topic names to be used externally</param>
-    /// <param name="name">name of the proxy step</param>
+    /// <param name="id">The unique Id of the proxy step.</param>
+    /// <param name="externalTopics">topic names to be used externally.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessProxyBuilder"/></returns>
-    public ProcessProxyBuilder AddProxyStep(IReadOnlyList<string> externalTopics, string? name = null, IReadOnlyList<string>? aliases = null)
+    public ProcessProxyBuilder AddProxyStep(string id, IReadOnlyList<string> externalTopics, IReadOnlyList<string>? aliases = null)
     {
-        ProcessProxyBuilder proxyBuilder = new(externalTopics, name ?? nameof(KernelProxyStep));
+        ProcessProxyBuilder proxyBuilder = new(externalTopics, id ?? nameof(KernelProxyStep), this);
 
         return this.AddStep(proxyBuilder, aliases);
     }
 
     /// <summary>
-    /// Provides an instance of <see cref="ProcessStepEdgeBuilder"/> for defining an edge to a
-    /// step inside the process for a given external event.
+    /// Adds a thread to the process.
+    /// </summary>
+    /// <typeparam name="T">The concrete type of the <see cref="AgentThread"/></typeparam>
+    /// <param name="threadName">The name of the thread.</param>
+    /// <param name="threadPolicy">The policy that determines the lifetime of the <see cref="AgentThread"/></param>
+    /// <param name="threadId">The Id of an existing thread that should be used.</param>
+    public ProcessBuilder AddThread<T>(string threadName, KernelProcessThreadLifetime threadPolicy, string? threadId = null) where T : AgentThread
+    {
+        Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
+
+        var threadType = typeof(T) switch
+        {
+            Type t when t == typeof(AzureAIAgentThread) => KernelProcessThreadType.AzureAI,
+            _ => throw new ArgumentException($"Unsupported thread type: {typeof(T).Name}")
+        };
+
+        var processThread = new KernelProcessAgentThread() { ThreadName = threadName, ThreadId = threadId, ThreadType = threadType };
+        this._threads[threadName] = processThread;
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a thread to the process.
+    /// </summary>
+    /// <param name="threadName">The name of the thread.</param>
+    /// <param name="threadPolicy">The policy that determines the lifetime of the <see cref="AgentThread"/></param>
+    public ProcessBuilder AddThread(string threadName, KernelProcessThreadLifetime threadPolicy)
+    {
+        Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
+        Verify.NotNull(threadPolicy, nameof(threadPolicy));
+
+        var processThread = new KernelProcessAgentThread() { ThreadName = threadName, ThreadPolicy = threadPolicy };
+        this._threads[threadName] = processThread;
+        return this;
+    }
+
+    /// <summary>
+    /// Provides an instance of <see cref="ProcessEdgeBuilder"/> for defining an input edge to a process.
     /// </summary>
     /// <param name="eventId">The Id of the external event.</param>
-    /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/></returns>
+    /// <returns>An instance of <see cref="ProcessEdgeBuilder"/></returns>
     public ProcessEdgeBuilder OnInputEvent(string eventId)
     {
         return new ProcessEdgeBuilder(this, eventId);
     }
 
     /// <summary>
-    /// Provides an instance of <see cref="ProcessStepEdgeBuilder"/> for defining an edge to a
+    /// Provides an instance of <see cref="ProcessEdgeBuilder"/> for defining an edge to a
     /// step that responds to an unhandled process error.
     /// </summary>
-    /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/></returns>
+    /// <returns>An instance of <see cref="ProcessEdgeBuilder"/></returns>
     /// <remarks>
     /// To target a specific error source, use the <see cref="ProcessStepBuilder.OnFunctionError"/> on the step.
     /// </remarks>
     public ProcessEdgeBuilder OnError()
     {
         return new ProcessEdgeBuilder(this, ProcessConstants.GlobalErrorEventId);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
+    /// </summary>
+    /// <returns></returns>
+    internal ListenForBuilder ListenFor()
+    {
+        return new ListenForBuilder(this);
     }
 
     /// <summary>
@@ -298,8 +500,13 @@ public sealed class ProcessBuilder : ProcessStepBuilder
             throw new KernelException($"The process named '{this.Name}' does not expose an event with Id '{eventId}'.");
         }
 
+        if (target is not ProcessFunctionTargetBuilder functionTargetBuilder)
+        {
+            throw new KernelException($"The process named '{this.Name}' does not expose an event with Id '{eventId}'.");
+        }
+
         // Targets for external events on a process should be scoped to the process itself rather than the step inside the process.
-        var processTarget = target with { Step = this, TargetEventId = eventId };
+        var processTarget = functionTargetBuilder with { Step = this, TargetEventId = eventId };
         return processTarget;
     }
 
@@ -307,7 +514,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// Builds the process.
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public KernelProcess Build(KernelProcessStateMetadata? stateMetadata = null)
     {
         // Build the edges first
@@ -317,8 +523,8 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         var builtSteps = this.BuildWithStateMetadata(stateMetadata);
 
         // Create the process
-        KernelProcessState state = new(this.Name, version: this.Version, id: this.HasParentProcess ? this.Id : null);
-        KernelProcess process = new(state, builtSteps, builtEdges);
+        KernelProcessState state = new(this.Name, version: this.Version, id: this.Id);
+        KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads, UserStateType = this.StateType, Description = this.Description };
 
         return process;
     }
@@ -326,11 +532,68 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
     /// </summary>
-    /// <param name="name">The name of the process. This is required.</param>
-    public ProcessBuilder(string name)
-        : base(name)
-    {
-    }
+    /// <param name="yaml">Workflow definition in YAML format.</param>
+    /// <returns>An instance of <see cref="KernelProcess"/></returns>
+    public static Task<KernelProcess?> LoadFromYamlAsync(string yaml)
+        => LoadFromYamlInternalAsync(yaml);
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
+    /// </summary>
+    /// <param name="yaml">Workflow definition in YAML format.</param>
+    /// <param name="stepTypes">Collection of preloaded step types.</param>
+    /// <returns>An instance of <see cref="KernelProcess"/></returns>
+    public static Task<KernelProcess?> LoadFromYamlAsync(string yaml, Dictionary<string, Type> stepTypes)
+        => LoadFromYamlInternalAsync(yaml, stepTypes: stepTypes);
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
+    /// </summary>
+    /// <param name="yaml">Workflow definition in YAML format.</param>
+    /// <param name="assemblyPaths">Collection of names or paths of the files that contain the manifest of the assembly.</param>
+    /// <returns>An instance of <see cref="KernelProcess"/></returns>
+    public static Task<KernelProcess?> LoadFromYamlAsync(string yaml, List<string> assemblyPaths)
+        => LoadFromYamlInternalAsync(yaml, assemblyPaths: assemblyPaths);
+
+    #endregion
+
+    #region private
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
+    /// </summary>
+    /// <param name="yaml">Workflow definition in YAML format.</param>
+    /// <param name="assemblyPaths">Collection of names or paths of the files that contain the manifest of the assembly.</param>
+    /// <param name="stepTypes">Collection of preloaded step types.</param>
+    /// <returns>An instance of <see cref="KernelProcess"/></returns>
+    private static async Task<KernelProcess?> LoadFromYamlInternalAsync(
+        string yaml,
+        List<string>? assemblyPaths = null,
+        Dictionary<string, Type>? stepTypes = null)
+    {
+        Verify.NotNullOrWhiteSpace(yaml);
+
+        try
+        {
+            var workflow = WorkflowSerializer.DeserializeFromYaml(yaml);
+            var builder = new WorkflowBuilder();
+
+            if (stepTypes is not null)
+            {
+                return await builder.BuildProcessAsync(workflow, yaml, stepTypes).ConfigureAwait(false);
+            }
+            else if (assemblyPaths is { Count: > 0 })
+            {
+                var loadedStepTypes = ProcessStepLoader.LoadStepTypesFromAssemblies(assemblyPaths);
+                return await builder.BuildProcessAsync(workflow, yaml, loadedStepTypes).ConfigureAwait(false);
+            }
+
+            return await builder.BuildProcessAsync(workflow, yaml).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            throw new ArgumentException("Failed to deserialize the process string.", ex);
+        }
+    }
     #endregion
 }
