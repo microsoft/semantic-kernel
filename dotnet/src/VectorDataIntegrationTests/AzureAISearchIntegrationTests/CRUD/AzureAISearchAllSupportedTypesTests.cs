@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
 using AzureAISearchIntegrationTests.Support;
+using Microsoft.Extensions.VectorData;
 using VectorDataSpecificationTests.Xunit;
 using Xunit;
 
