@@ -65,7 +65,7 @@ public class RedisHashSetDynamicMappingTests
             Properties = new List<VectorStoreProperty>
             {
                 new VectorStoreKeyProperty("Key", typeof(string)),
-                new VectorStoreDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
+                new VectorStoreDataProperty("StringData", typeof(string)) { StorageName = "storage_string_data" },
                 new VectorStoreDataProperty("NullableIntData", typeof(int?)),
                 new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
             },
@@ -134,7 +134,7 @@ public class RedisHashSetDynamicMappingTests
             Properties = new List<VectorStoreProperty>
             {
                 new VectorStoreKeyProperty("Key", typeof(string)),
-                new VectorStoreDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
+                new VectorStoreDataProperty("StringData", typeof(string)) { StorageName = "storage_string_data" },
                 new VectorStoreDataProperty("NullableIntData", typeof(int?)),
                 new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
             }
@@ -168,7 +168,7 @@ public class RedisHashSetDynamicMappingTests
             Properties = new List<VectorStoreProperty>
             {
                 new VectorStoreKeyProperty("Key", typeof(string)),
-                new VectorStoreDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
+                new VectorStoreDataProperty("StringData", typeof(string)) { StorageName = "storage_string_data" },
                 new VectorStoreDataProperty("NullableIntData", typeof(int?)),
                 new VectorStoreVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
             }

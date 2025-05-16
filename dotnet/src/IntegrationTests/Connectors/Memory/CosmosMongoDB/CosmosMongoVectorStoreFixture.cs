@@ -51,7 +51,7 @@ public class CosmosMongoVectorStoreFixture : IAsyncLifetime
                 new VectorStoreKeyProperty("HotelId", typeof(string)),
                 new VectorStoreDataProperty("HotelName", typeof(string)),
                 new VectorStoreDataProperty("HotelCode", typeof(int)),
-                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StorageName = "parking_is_included" },
                 new VectorStoreDataProperty("HotelRating", typeof(float)),
                 new VectorStoreDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreDataProperty("Timestamp", typeof(DateTime)),

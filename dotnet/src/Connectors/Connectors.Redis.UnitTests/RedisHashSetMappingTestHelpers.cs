@@ -20,7 +20,7 @@ internal static class RedisHashSetMappingTestHelpers
         Properties = new List<VectorStoreProperty>()
         {
             new VectorStoreKeyProperty("Key", typeof(string)),
-            new VectorStoreDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
+            new VectorStoreDataProperty("StringData", typeof(string)) { StorageName = "storage_string_data" },
             new VectorStoreDataProperty("IntData", typeof(int)),
             new VectorStoreDataProperty("UIntData", typeof(uint)),
             new VectorStoreDataProperty("LongData", typeof(long)),

@@ -15,35 +15,35 @@ public abstract class VectorStoreProperty
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreProperty"/> class.
     /// </summary>
-    /// <param name="dataModelPropertyName">The name of the property on the data model.</param>
-    /// <param name="propertyType">The type of the property.</param>
-    private protected VectorStoreProperty(string dataModelPropertyName, Type propertyType)
+    /// <param name="name">The name of the property on the data model. If the record is mapped to a .NET type, this corresponds to the .NET property name on that type.</param>
+    /// <param name="type">The type of the property.</param>
+    private protected VectorStoreProperty(string name, Type type)
     {
-        if (string.IsNullOrWhiteSpace(dataModelPropertyName))
+        if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException("Value cannot be null or whitespace.", nameof(dataModelPropertyName));
+            throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
         }
 
-        if (propertyType == null)
+        if (type == null)
         {
-            throw new ArgumentNullException(nameof(propertyType));
+            throw new ArgumentNullException(nameof(type));
         }
 
-        this.DataModelPropertyName = dataModelPropertyName;
-        this.PropertyType = propertyType;
+        this.Name = name;
+        this.Type = type;
     }
 
     private protected VectorStoreProperty(VectorStoreProperty source)
     {
-        this.DataModelPropertyName = source.DataModelPropertyName;
-        this.StoragePropertyName = source.StoragePropertyName;
-        this.PropertyType = source.PropertyType;
+        this.Name = source.Name;
+        this.StorageName = source.StorageName;
+        this.Type = source.Type;
     }
 
     /// <summary>
     /// Gets the name of the property on the data model.
     /// </summary>
-    public string DataModelPropertyName { get; set; }
+    public string Name { get; set; }
 
     /// <summary>
     /// Gets or sets an optional name to use for the property in storage, if different from the property name.
@@ -54,10 +54,10 @@ public abstract class VectorStoreProperty
     /// serialization mechanism like JSON, in which case the attributes used by that serialization system will
     /// be used.
     /// </remarks>
-    public string? StoragePropertyName { get; set; }
+    public string? StorageName { get; set; }
 
     /// <summary>
     /// Gets the type of the property.
     /// </summary>
-    public Type PropertyType { get; set; }
+    public Type Type { get; set; }
 }

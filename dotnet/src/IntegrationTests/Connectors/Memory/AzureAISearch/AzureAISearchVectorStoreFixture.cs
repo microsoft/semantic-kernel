@@ -74,7 +74,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
                 new VectorStoreDataProperty("Description", typeof(string)),
                 new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 1536),
                 new VectorStoreDataProperty("Tags", typeof(string[])) { IsIndexed = true },
-                new VectorStoreDataProperty("ParkingIncluded", typeof(bool?)) { IsIndexed = true, StoragePropertyName = "parking_is_included" },
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool?)) { IsIndexed = true, StorageName = "parking_is_included" },
                 new VectorStoreDataProperty("LastRenovationDate", typeof(DateTimeOffset?)) { IsIndexed = true },
                 new VectorStoreDataProperty("Rating", typeof(double?))
             }

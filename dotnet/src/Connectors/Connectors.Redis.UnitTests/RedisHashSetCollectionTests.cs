@@ -548,8 +548,8 @@ public class RedisHashSetCollectionTests
         [
             new VectorStoreKeyProperty("Key", typeof(string)),
             new VectorStoreDataProperty("OriginalNameData", typeof(string)),
-            new VectorStoreDataProperty("Data", typeof(string)) { StoragePropertyName = "data_storage_name" },
-            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector_storage_name", DistanceFunction = DistanceFunction.CosineDistance }
+            new VectorStoreDataProperty("Data", typeof(string)) { StorageName = "data_storage_name" },
+            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StorageName = "vector_storage_name", DistanceFunction = DistanceFunction.CosineDistance }
         ]
     };
 
@@ -562,11 +562,11 @@ public class RedisHashSetCollectionTests
         public string OriginalNameData { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_data_json_name")]
-        [VectorStoreData(IsIndexed = true, StoragePropertyName = "data_storage_name")]
+        [VectorStoreData(IsIndexed = true, StorageName = "data_storage_name")]
         public string Data { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_vector_json_name")]
-        [VectorStoreVector(4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "vector_storage_name")]
+        [VectorStoreVector(4, DistanceFunction = DistanceFunction.CosineDistance, StorageName = "vector_storage_name")]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

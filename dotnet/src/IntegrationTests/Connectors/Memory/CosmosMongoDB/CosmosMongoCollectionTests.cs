@@ -481,7 +481,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
         [VectorStoreKey]
         public string? HotelId { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "hotel_name")]
+        [VectorStoreData(StorageName = "hotel_name")]
         public string? HotelName { get; set; }
     }
 
@@ -512,7 +512,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
         public string? Id { get; set; }
 
         [BsonElement("bson_hotel_name")]
-        [VectorStoreData(StoragePropertyName = "storage_hotel_name")]
+        [VectorStoreData(StorageName = "storage_hotel_name")]
         public string? HotelName { get; set; }
     }
 

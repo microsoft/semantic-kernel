@@ -655,7 +655,7 @@ public sealed class CosmosMongoCollectionTests
         [VectorStoreKey]
         public string? Id { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "hotel_name")]
+        [VectorStoreData(StorageName = "hotel_name")]
         public string? HotelName { get; set; }
     }
 
@@ -686,7 +686,7 @@ public sealed class CosmosMongoCollectionTests
         public string? Id { get; set; }
 
         [BsonElement("bson_hotel_name")]
-        [VectorStoreData(StoragePropertyName = "storage_hotel_name")]
+        [VectorStoreData(StorageName = "storage_hotel_name")]
         public string? HotelName { get; set; }
     }
 
@@ -699,7 +699,7 @@ public sealed class CosmosMongoCollectionTests
         [VectorStoreData]
         public string? HotelName { get; set; }
 
-        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat, StoragePropertyName = "test_embedding_1")]
+        [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance, IndexKind = IndexKind.IvfFlat, StorageName = "test_embedding_1")]
         public ReadOnlyMemory<float> TestEmbedding1 { get; set; }
 
         [BsonElement("test_embedding_2")]

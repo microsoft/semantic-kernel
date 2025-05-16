@@ -376,21 +376,21 @@ public class QdrantMapperTests
     {
         Properties = new List<VectorStoreProperty>
         {
-            new VectorStoreKeyProperty("Key", keyType) { StoragePropertyName = "key" },
-            new VectorStoreDataProperty("Data", typeof(string)) { StoragePropertyName = "data" },
-            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector" },
+            new VectorStoreKeyProperty("Key", keyType) { StorageName = "key" },
+            new VectorStoreDataProperty("Data", typeof(string)) { StorageName = "data" },
+            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StorageName = "vector" },
         },
     };
 
     private sealed class SinglePropsModel<TKey>
     {
-        [VectorStoreKey(StoragePropertyName = "key")]
+        [VectorStoreKey(StorageName = "key")]
         public TKey? Key { get; set; } = default;
 
-        [VectorStoreData(StoragePropertyName = "data")]
+        [VectorStoreData(StorageName = "data")]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreVector(10, StoragePropertyName = "vector")]
+        [VectorStoreVector(10, StorageName = "vector")]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;
@@ -400,54 +400,54 @@ public class QdrantMapperTests
     {
         Properties = new List<VectorStoreProperty>
         {
-            new VectorStoreKeyProperty("Key", keyType) { StoragePropertyName = "key" },
-            new VectorStoreDataProperty("DataString", typeof(string)) { StoragePropertyName = "dataString" },
-            new VectorStoreDataProperty("DataInt", typeof(int)) { StoragePropertyName = "dataInt" },
-            new VectorStoreDataProperty("DataLong", typeof(long)) { StoragePropertyName = "dataLong" },
-            new VectorStoreDataProperty("DataFloat", typeof(float)) { StoragePropertyName = "dataFloat" },
-            new VectorStoreDataProperty("DataDouble", typeof(double)) { StoragePropertyName = "dataDouble" },
-            new VectorStoreDataProperty("DataBool", typeof(bool)) { StoragePropertyName = "dataBool" },
-            new VectorStoreDataProperty("DataDateTimeOffset", typeof(DateTimeOffset)) { StoragePropertyName = "dataDateTimeOffset" },
-            new VectorStoreDataProperty("DataArrayInt", typeof(List<int>)) { StoragePropertyName = "dataArrayInt" },
-            new VectorStoreVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector1" },
-            new VectorStoreVectorProperty("Vector2", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector2" },
+            new VectorStoreKeyProperty("Key", keyType) { StorageName = "key" },
+            new VectorStoreDataProperty("DataString", typeof(string)) { StorageName = "dataString" },
+            new VectorStoreDataProperty("DataInt", typeof(int)) { StorageName = "dataInt" },
+            new VectorStoreDataProperty("DataLong", typeof(long)) { StorageName = "dataLong" },
+            new VectorStoreDataProperty("DataFloat", typeof(float)) { StorageName = "dataFloat" },
+            new VectorStoreDataProperty("DataDouble", typeof(double)) { StorageName = "dataDouble" },
+            new VectorStoreDataProperty("DataBool", typeof(bool)) { StorageName = "dataBool" },
+            new VectorStoreDataProperty("DataDateTimeOffset", typeof(DateTimeOffset)) { StorageName = "dataDateTimeOffset" },
+            new VectorStoreDataProperty("DataArrayInt", typeof(List<int>)) { StorageName = "dataArrayInt" },
+            new VectorStoreVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 10) { StorageName = "vector1" },
+            new VectorStoreVectorProperty("Vector2", typeof(ReadOnlyMemory<float>), 10) { StorageName = "vector2" },
         },
     };
 
     private sealed class MultiPropsModel<TKey>
     {
-        [VectorStoreKey(StoragePropertyName = "key")]
+        [VectorStoreKey(StorageName = "key")]
         public TKey? Key { get; set; } = default;
 
-        [VectorStoreData(StoragePropertyName = "dataString")]
+        [VectorStoreData(StorageName = "dataString")]
         public string DataString { get; set; } = string.Empty;
 
         [JsonPropertyName("data_int_json")]
-        [VectorStoreData(StoragePropertyName = "dataInt")]
+        [VectorStoreData(StorageName = "dataInt")]
         public int DataInt { get; set; } = 0;
 
-        [VectorStoreData(StoragePropertyName = "dataLong")]
+        [VectorStoreData(StorageName = "dataLong")]
         public long DataLong { get; set; } = 0;
 
-        [VectorStoreData(StoragePropertyName = "dataFloat")]
+        [VectorStoreData(StorageName = "dataFloat")]
         public float DataFloat { get; set; } = 0;
 
-        [VectorStoreData(StoragePropertyName = "dataDouble")]
+        [VectorStoreData(StorageName = "dataDouble")]
         public double DataDouble { get; set; } = 0;
 
-        [VectorStoreData(StoragePropertyName = "dataBool")]
+        [VectorStoreData(StorageName = "dataBool")]
         public bool DataBool { get; set; } = false;
 
-        [VectorStoreData(StoragePropertyName = "dataDateTimeOffset")]
+        [VectorStoreData(StorageName = "dataDateTimeOffset")]
         public DateTimeOffset DataDateTimeOffset { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "dataArrayInt")]
+        [VectorStoreData(StorageName = "dataArrayInt")]
         public List<int>? DataArrayInt { get; set; }
 
-        [VectorStoreVector(10, StoragePropertyName = "vector1")]
+        [VectorStoreVector(10, StorageName = "vector1")]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
-        [VectorStoreVector(10, StoragePropertyName = "vector2")]
+        [VectorStoreVector(10, StorageName = "vector2")]
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;

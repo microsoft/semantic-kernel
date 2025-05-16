@@ -24,9 +24,9 @@ public sealed class CosmosNoSqlMapperTests
                     Properties =
                     [
                         new VectorStoreKeyProperty("HotelId", typeof(string)),
-                        new VectorStoreVectorProperty("TestProperty1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "test_property_1" },
-                        new VectorStoreDataProperty("TestProperty2", typeof(string)) { StoragePropertyName = "test_property_2" },
-                        new VectorStoreDataProperty("TestProperty3", typeof(string)) { StoragePropertyName = "test_property_3" }
+                        new VectorStoreVectorProperty("TestProperty1", typeof(ReadOnlyMemory<float>), 10) { StorageName = "test_property_1" },
+                        new VectorStoreDataProperty("TestProperty2", typeof(string)) { StorageName = "test_property_2" },
+                        new VectorStoreDataProperty("TestProperty3", typeof(string)) { StorageName = "test_property_3" }
                     ]
                 },
                 defaultEmbeddingGenerator: null,

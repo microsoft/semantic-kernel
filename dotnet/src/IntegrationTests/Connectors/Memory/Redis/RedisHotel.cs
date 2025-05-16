@@ -37,7 +37,7 @@ public class RedisHotel
 #pragma warning restore CA1819 // Properties should not return arrays
 
     [JsonPropertyName("parking_is_included")]
-    [VectorStoreData(StoragePropertyName = "parking_is_included")]
+    [VectorStoreData(StorageName = "parking_is_included")]
     public bool ParkingIncluded { get; init; }
 
     [VectorStoreData]
@@ -80,7 +80,7 @@ public class RedisBasicHotel<TVectorElement>
     public ReadOnlyMemory<TVectorElement>? DescriptionEmbedding { get; init; }
 
     [JsonPropertyName("parking_is_included")]
-    [VectorStoreData(StoragePropertyName = "parking_is_included")]
+    [VectorStoreData(StorageName = "parking_is_included")]
     public bool ParkingIncluded { get; init; }
 
     [VectorStoreData]

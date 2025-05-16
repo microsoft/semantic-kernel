@@ -519,7 +519,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             new VectorStoreKeyProperty("HotelId", typeof(TKey)),
             new VectorStoreDataProperty("HotelName", typeof(string)),
             new VectorStoreDataProperty("HotelCode", typeof(int)),
-            new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
+            new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StorageName = "parking_is_included" },
             new VectorStoreDataProperty("HotelRating", typeof(float)),
             new VectorStoreDataProperty("Description", typeof(string)),
             new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }

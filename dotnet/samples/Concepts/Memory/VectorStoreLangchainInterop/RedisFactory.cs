@@ -22,9 +22,9 @@ public static class RedisFactory
         Properties = new List<VectorStoreProperty>
         {
             new VectorStoreKeyProperty("Key", typeof(string)),
-            new VectorStoreDataProperty("Content", typeof(string)) { StoragePropertyName = "text" },
-            new VectorStoreDataProperty("Source", typeof(string)) { StoragePropertyName = "source" },
-            new VectorStoreVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 1536) { StoragePropertyName = "embedding" }
+            new VectorStoreDataProperty("Content", typeof(string)) { StorageName = "text" },
+            new VectorStoreDataProperty("Source", typeof(string)) { StorageName = "source" },
+            new VectorStoreVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 1536) { StorageName = "embedding" }
         }
     };
 

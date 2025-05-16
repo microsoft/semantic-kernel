@@ -714,8 +714,8 @@ public class QdrantCollectionTests
             [
                 new VectorStoreKeyProperty("Key", keyType),
                 new VectorStoreDataProperty("OriginalNameData", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
-                new VectorStoreDataProperty("Data", typeof(string)) { IsIndexed = true, StoragePropertyName = "data_storage_name" },
-                new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { StoragePropertyName = "vector_storage_name" }
+                new VectorStoreDataProperty("Data", typeof(string)) { IsIndexed = true, StorageName = "data_storage_name" },
+                new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { StorageName = "vector_storage_name" }
             ]
         };
     }
@@ -729,11 +729,11 @@ public class QdrantCollectionTests
         public string OriginalNameData { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_data_json_name")]
-        [VectorStoreData(IsIndexed = true, StoragePropertyName = "data_storage_name")]
+        [VectorStoreData(IsIndexed = true, StorageName = "data_storage_name")]
         public string Data { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_vector_json_name")]
-        [VectorStoreVector(4, StoragePropertyName = "vector_storage_name")]
+        [VectorStoreVector(4, StorageName = "vector_storage_name")]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

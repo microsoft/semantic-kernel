@@ -15,10 +15,10 @@ public sealed class VectorStoreKeyProperty : VectorStoreProperty
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreKeyProperty"/> class.
     /// </summary>
-    /// <param name="propertyName">The name of the property.</param>
-    /// <param name="propertyType">The type of the property.</param>
-    public VectorStoreKeyProperty(string propertyName, Type propertyType)
-        : base(propertyName, propertyType)
+    /// <param name="name">The name of the property on the data model. If the record is mapped to a .NET type, this corresponds to the .NET property name on that type.</param>
+    /// <param name="type">The type of the property.</param>
+    public VectorStoreKeyProperty(string name, Type type)
+        : base(name, type)
     {
     }
 }

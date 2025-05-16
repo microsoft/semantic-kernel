@@ -26,7 +26,7 @@ public class VectorStoreVectorProperty<TInput> : VectorStoreVectorProperty
     }
 
     internal override VectorPropertyModel CreatePropertyModel()
-        => new VectorPropertyModel<TInput>(this.DataModelPropertyName)
+        => new VectorPropertyModel<TInput>(this.Name)
         {
             Dimensions = this.Dimensions,
             IndexKind = this.IndexKind,

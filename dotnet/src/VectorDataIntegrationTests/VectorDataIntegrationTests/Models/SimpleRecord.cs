@@ -14,16 +14,16 @@ public sealed class SimpleRecord<TKey>
 {
     public const int DimensionCount = 3;
 
-    [VectorStoreKey(StoragePropertyName = "key")]
+    [VectorStoreKey(StorageName = "key")]
     public TKey Id { get; set; } = default!;
 
-    [VectorStoreData(StoragePropertyName = "text")]
+    [VectorStoreData(StorageName = "text")]
     public string? Text { get; set; }
 
-    [VectorStoreData(StoragePropertyName = "number")]
+    [VectorStoreData(StorageName = "number")]
     public int Number { get; set; }
 
-    [VectorStoreVector(Dimensions: DimensionCount, StoragePropertyName = "embedding")]
+    [VectorStoreVector(Dimensions: DimensionCount, StorageName = "embedding")]
     public ReadOnlyMemory<float> Floats { get; set; }
 
     public void AssertEqual(SimpleRecord<TKey>? other, bool includeVectors, bool compareVectors)

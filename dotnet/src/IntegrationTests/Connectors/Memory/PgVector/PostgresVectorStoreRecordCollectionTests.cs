@@ -500,7 +500,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             new VectorStoreDataProperty("HotelName", typeof(string)),
             new VectorStoreDataProperty("HotelCode", typeof(int)),
             new VectorStoreDataProperty("HotelRating", typeof(float?)),
-            new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
+            new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StorageName = "parking_is_included" },
             new VectorStoreDataProperty("Tags", typeof(List<string>)),
             new VectorStoreDataProperty("ListInts", typeof(List<int>)),
             new VectorStoreDataProperty("Description", typeof(string)),
