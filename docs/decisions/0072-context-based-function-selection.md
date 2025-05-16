@@ -1,6 +1,6 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: proposed
+status: accepted
 contact: sergeymenshykh
 date: 2025-05-13
 deciders: markwallace, rbarreto, dmytrostruk, westey-m
