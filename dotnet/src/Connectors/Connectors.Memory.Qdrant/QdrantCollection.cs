@@ -533,19 +533,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         }
 
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
-
-        ReadOnlyMemory<float> vector = searchValue switch
-        {
-            ReadOnlyMemory<float> r => r,
-            float[] f => new ReadOnlyMemory<float>(f),
-            Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
-
-            _ => vectorProperty.EmbeddingGenerator is null
-                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), QdrantModelBuilder.SupportedVectorTypes))
-                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
-        };
+        var vectorArray = await GetSearchVectorArrayAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
 #pragma warning disable CS0618 // Type or member is obsolete
         // Build filter object.
@@ -559,16 +547,8 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 #pragma warning restore CS0618 // Type or member is obsolete
 
         // Specify whether to include vectors in the search results.
-        var vectorsSelector = new WithVectorsSelector();
-        vectorsSelector.Enable = options.IncludeVectors;
-
-        var query = new Query
-        {
-            Nearest = new VectorInput(
-                MemoryMarshal.TryGetArray(vector, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
-                    ? segment.Array
-                    : vector.ToArray())
-        };
+        var vectorsSelector = new WithVectorsSelector { Enable = options.IncludeVectors };
+        var query = new Query { Nearest = new VectorInput(vectorArray) };
 
         // Execute Search.
         var points = await this.RunOperationAsync(
@@ -597,6 +577,31 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         {
             yield return result;
         }
+    }
+
+    private static async ValueTask<float[]> GetSearchVectorArrayAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
+        where TInput : notnull
+    {
+        if (searchValue is float[] array)
+        {
+            return array;
+        }
+
+        var memory = searchValue switch
+        {
+            ReadOnlyMemory<float> r => r,
+            Embedding<float> e => e.Vector,
+            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
+                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), QdrantModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
+
+        return MemoryMarshal.TryGetArray(memory, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
+                ? segment.Array
+                : memory.ToArray();
     }
 
     #endregion Search
@@ -659,14 +664,15 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(TInput searchValue, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
     {
-        var floatVector = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
 
         // Resolve options.
         options ??= s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var vectorArray = await GetSearchVectorArrayAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
         var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
         // Build filter object.
@@ -682,17 +688,13 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 #pragma warning restore CS0618 // Type or member is obsolete
 
         // Specify whether to include vectors in the search results.
-        var vectorsSelector = new WithVectorsSelector();
-        vectorsSelector.Enable = options.IncludeVectors;
+        var vectorsSelector = new WithVectorsSelector { Enable = options.IncludeVectors };
 
         // Build the vector query.
         var vectorQuery = new PrefetchQuery
         {
             Filter = filter,
-            Query = new Query
-            {
-                Nearest = new VectorInput(floatVector.ToArray()),
-            },
+            Query = new Query { Nearest = new VectorInput(vectorArray) }
         };
 
         if (this._hasNamedVectors)
@@ -784,16 +786,4 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             this._collectionMetadata,
             operationName,
             operation);
-
-    private static ReadOnlyMemory<float> VerifyVectorParam<TVector>(TVector vector)
-    {
-        Verify.NotNull(vector);
-
-        if (vector is not ReadOnlyMemory<float> floatVector)
-        {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Qdrant connector.");
-        }
-
-        return floatVector;
-    }
 }

@@ -484,8 +484,34 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         }
 
         var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+        object vector = await GetSearchVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
-        object vector = searchValue switch
+#pragma warning disable CS0618 // Type or member is obsolete
+        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery(
+            vector,
+            null,
+            this._model,
+            vectorProperty.StorageName,
+            null,
+            ScorePropertyName,
+            options.OldFilter,
+            options.Filter,
+            top,
+            options.Skip,
+            options.IncludeVectors);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken);
+
+        await foreach (var record in this.MapSearchResultsAsync(searchResults, ScorePropertyName, OperationName, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
+        {
+            yield return record;
+        }
+    }
+
+    private static async ValueTask<object> GetSearchVectorAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
+        where TInput : notnull
+        => searchValue switch
         {
             // float32
             ReadOnlyMemory<float> m => m,
@@ -512,29 +538,6 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), CosmosNoSqlModelBuilder.SupportedVectorTypes))
                 : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
         };
-
-#pragma warning disable CS0618 // Type or member is obsolete
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery(
-            vector,
-            null,
-            this._model,
-            vectorProperty.StorageName,
-            null,
-            ScorePropertyName,
-            options.OldFilter,
-            options.Filter,
-            top,
-            options.Skip,
-            options.IncludeVectors);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken);
-
-        await foreach (var record in this.MapSearchResultsAsync(searchResults, ScorePropertyName, OperationName, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
-        {
-            yield return record;
-        }
-    }
 
     #endregion Search
 
@@ -569,20 +572,27 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(
+        TInput searchValue,
+        ICollection<string> keywords,
+        int top,
+        HybridSearchOptions<TRecord>? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
     {
         const string OperationName = "VectorizedSearch";
         const string ScorePropertyName = "SimilarityScore";
 
-        this.VerifyVectorType(vector);
+        this.VerifyVectorType(searchValue);
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        object vector = await GetSearchVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
         var textProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
 #pragma warning disable CS0618 // Type or member is obsolete
-        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<TVector, TRecord>(
+        var queryDefinition = CosmosNoSqlCollectionQueryBuilder.BuildSearchQuery<TRecord>(
             vector,
             keywords,
             this._model,
@@ -597,12 +607,11 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
 #pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, OperationName, cancellationToken);
-        return this.MapSearchResultsAsync(
-            searchResults,
-            ScorePropertyName,
-            OperationName,
-            options.IncludeVectors,
-            cancellationToken);
+
+        await foreach (var record in this.MapSearchResultsAsync(searchResults, ScorePropertyName, OperationName, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
+        {
+            yield return record;
+        }
     }
 
     /// <inheritdoc />
