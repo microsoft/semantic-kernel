@@ -2,10 +2,18 @@
 
 import asyncio
 
-from semantic_kernel.agents import Agent, ChatCompletionAgent, MagenticOrchestration, OpenAIAssistantAgent
-from semantic_kernel.agents.orchestration.magentic import StandardMagenticManager
+from semantic_kernel.agents import (
+    Agent,
+    ChatCompletionAgent,
+    MagenticOrchestration,
+    OpenAIAssistantAgent,
+    StandardMagenticManager,
+)
 from semantic_kernel.agents.runtime import InProcessRuntime
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIPromptExecutionSettings
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
+    OpenAIChatPromptExecutionSettings,
+)
 from semantic_kernel.contents import ChatMessageContent
 
 """
@@ -66,12 +74,12 @@ def agent_response_callback(message: ChatMessageContent) -> None:
 async def main():
     """Main function to run the agents."""
     # 1. Create a Magentic orchestration with two agents and a Magentic manager
-    # Note, the Magentic manager accepts custom prompts for advanced users and scenarios.
+    # Note, the Standard Magentic manager accepts custom prompts for advanced users and scenarios.
     magentic_orchestration = MagenticOrchestration(
         members=await agents(),
         manager=StandardMagenticManager(
             chat_completion_service=OpenAIChatCompletion(),
-            prompt_execution_settings=OpenAIPromptExecutionSettings(),
+            prompt_execution_settings=OpenAIChatPromptExecutionSettings(),
         ),
         agent_response_callback=agent_response_callback,
     )

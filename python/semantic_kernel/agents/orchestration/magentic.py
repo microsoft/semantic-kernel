@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
 from typing import Annotated
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
@@ -37,6 +37,7 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -49,30 +50,35 @@ logger: logging.Logger = logging.getLogger(__name__)
 # region Messages and Types
 
 
+@experimental
 class MagenticStartMessage(KernelBaseModel):
     """A message to start a magentic group chat."""
 
     body: ChatMessageContent
 
 
+@experimental
 class MagenticRequestMessage(KernelBaseModel):
     """A request message type for agents in a magentic group chat."""
 
     agent_name: str
 
 
+@experimental
 class MagenticResponseMessage(KernelBaseModel):
     """A response message type from agents in a magentic group chat."""
 
     body: ChatMessageContent
 
 
+@experimental
 class MagenticResetMessage(KernelBaseModel):
     """A message to reset a participant's chat history in a magentic group chat."""
 
     pass
 
 
+@experimental
 class ProgressLedgerItem(KernelBaseModel):
     """A progress ledger item."""
 
@@ -80,6 +86,7 @@ class ProgressLedgerItem(KernelBaseModel):
     answer: str | bool
 
 
+@experimental
 class ProgressLedger(KernelBaseModel):
     """A progress ledger."""
 
@@ -90,6 +97,7 @@ class ProgressLedger(KernelBaseModel):
     instruction_or_question: ProgressLedgerItem
 
 
+@experimental
 class MagenticContext(KernelBaseModel):
     """Context for the Magentic manager."""
 
@@ -120,6 +128,7 @@ class MagenticContext(KernelBaseModel):
 # region MagenticManager
 
 
+@experimental
 class MagenticManager(KernelBaseModel, ABC):
     """Base class for the Magentic One manager."""
 
@@ -182,6 +191,7 @@ class MagenticManager(KernelBaseModel, ABC):
         ...
 
 
+@experimental
 class StandardMagenticManager(MagenticManager):
     """Standard Magentic manager implementation.
 
@@ -209,6 +219,21 @@ class StandardMagenticManager(MagenticManager):
         plan: Annotated[ChatMessageContent, Field(description="The plan for the task.")]
 
     task_ledger: TaskLedger | None = None
+
+    @field_validator("prompt_execution_settings", mode="after")
+    def _validate_prompt_execution_settings(cls, v: PromptExecutionSettings) -> PromptExecutionSettings:
+        """Validate the prompt execution settings to ensure the service supports structured output.
+
+        Args:
+            v (PromptExecutionSettings): The prompt execution settings.
+
+        Returns:
+            PromptExecutionSettings: The validated prompt execution settings.
+        """
+        if not hasattr(v, "response_format"):
+            raise ValueError("The service must support structured output.")
+
+        return v
 
     @override
     async def plan(self, magentic_context: MagenticContext) -> ChatMessageContent:
@@ -372,7 +397,6 @@ class StandardMagenticManager(MagenticManager):
             self.prompt_execution_settings
         )
         prompt_execution_settings_clone.update_from_prompt_execution_settings(
-            # TODO(@taochen): Double check how to make sure the service support json output.
             PromptExecutionSettings(extension_data={"response_format": ProgressLedger})
         )
 
@@ -418,6 +442,7 @@ class StandardMagenticManager(MagenticManager):
 # region MagenticManagerActor
 
 
+@experimental
 class MagenticManagerActor(ActorBase):
     """Actor for the Magentic One manager."""
 
@@ -619,6 +644,7 @@ class MagenticManagerActor(ActorBase):
 # region MagenticAgentActor
 
 
+@experimental
 class MagenticAgentActor(AgentActorBase):
     """An agent actor that process messages in a Magentic One group chat."""
 
@@ -692,6 +718,7 @@ class MagenticAgentActor(AgentActorBase):
 # region MagenticOrchestration
 
 
+@experimental
 class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
     """The Magentic One pattern orchestration."""
 

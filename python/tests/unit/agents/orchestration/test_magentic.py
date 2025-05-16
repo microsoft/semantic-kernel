@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import sys
+from typing import Any, Literal
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from pydantic import BaseModel
 
 from semantic_kernel.agents.orchestration.magentic import (
     MagenticContext,
@@ -37,6 +39,14 @@ class MockChatCompletionService(ChatCompletionClientBase):
     pass
 
 
+class MockPromptExecutionSettings(PromptExecutionSettings):
+    """A mock prompt execution settings class for testing purposes."""
+
+    response_format: (
+        dict[Literal["type"], Literal["text", "json_object"]] | dict[str, Any] | type[BaseModel] | type | None
+    ) = None
+
+
 # region MagenticOrchestration
 
 
@@ -50,7 +60,7 @@ async def test_init_member_without_description_throws():
             members=[agent_a, agent_b],
             manager=StandardMagenticManager(
                 chat_completion_service=MockChatCompletionService(ai_model_id="test"),
-                prompt_execution_settings=PromptExecutionSettings(),
+                prompt_execution_settings=MockPromptExecutionSettings(),
             ),
         )
 
@@ -73,7 +83,7 @@ async def test_prepare():
             members=[agent_a, agent_b],
             manager=StandardMagenticManager(
                 chat_completion_service=MockChatCompletionService(ai_model_id="test"),
-                prompt_execution_settings=PromptExecutionSettings(),
+                prompt_execution_settings=MockPromptExecutionSettings(),
             ),
         )
         await orchestration.invoke(task="test_message", runtime=runtime)
@@ -173,7 +183,7 @@ async def test_invoke():
     ):
         mock_get_chat_message_content.return_value = ChatMessageContent(role="assistant", content="mock_response")
         chat_completion_service = MockChatCompletionService(ai_model_id="test")
-        prompt_execution_settings = PromptExecutionSettings()
+        prompt_execution_settings = MockPromptExecutionSettings()
 
         manager = StandardMagenticManager(
             chat_completion_service=chat_completion_service,
@@ -205,7 +215,7 @@ async def test_invoke():
 async def test_invoke_with_list_error():
     """Test the invoke method of the MagenticOrchestration with a list of messages which raises an error."""
     chat_completion_service = MockChatCompletionService(ai_model_id="test")
-    prompt_execution_settings = PromptExecutionSettings()
+    prompt_execution_settings = MockPromptExecutionSettings()
 
     manager = StandardMagenticManager(
         chat_completion_service=chat_completion_service,
@@ -264,7 +274,7 @@ async def test_invoke_with_response_callback():
                 members=[agent_a, agent_b],
                 manager=StandardMagenticManager(
                     chat_completion_service=MockChatCompletionService(ai_model_id="test"),
-                    prompt_execution_settings=PromptExecutionSettings(),
+                    prompt_execution_settings=MockPromptExecutionSettings(),
                 ),
                 agent_response_callback=lambda x: responses.append(x),
             )
@@ -309,7 +319,7 @@ async def test_invoke_with_max_stall_count_exceeded():
                 members=[agent_a, agent_b],
                 manager=StandardMagenticManager(
                     chat_completion_service=MockChatCompletionService(ai_model_id="test"),
-                    prompt_execution_settings=PromptExecutionSettings(),
+                    prompt_execution_settings=MockPromptExecutionSettings(),
                     max_stall_count=1,
                 ),
             )
@@ -355,7 +365,7 @@ async def test_invoke_with_max_round_count_exceeded():
                 members=[agent_a, agent_b],
                 manager=StandardMagenticManager(
                     chat_completion_service=MockChatCompletionService(ai_model_id="test"),
-                    prompt_execution_settings=PromptExecutionSettings(),
+                    prompt_execution_settings=MockPromptExecutionSettings(),
                     max_round_count=1,
                 ),
             )
@@ -401,7 +411,7 @@ async def test_invoke_with_max_reset_count_exceeded():
                 members=[agent_a, agent_b],
                 manager=StandardMagenticManager(
                     chat_completion_service=MockChatCompletionService(ai_model_id="test"),
-                    prompt_execution_settings=PromptExecutionSettings(),
+                    prompt_execution_settings=MockPromptExecutionSettings(),
                     max_stall_count=0,  # No stall allowed
                     max_reset_count=0,  # No reset allowed
                 ),
@@ -449,7 +459,7 @@ async def test_invoke_with_unknown_speaker():
                 members=[agent_a, agent_b],
                 manager=StandardMagenticManager(
                     chat_completion_service=MockChatCompletionService(ai_model_id="test"),
-                    prompt_execution_settings=PromptExecutionSettings(),
+                    prompt_execution_settings=MockPromptExecutionSettings(),
                 ),
             )
             orchestration_result = await orchestration.invoke(task="test_message", runtime=runtime)
@@ -466,7 +476,7 @@ async def test_invoke_with_unknown_speaker():
 def test_standard_magentic_manager_init():
     """Test the initialization of the StandardMagenticManager."""
     chat_completion_service = MockChatCompletionService(ai_model_id="test")
-    prompt_execution_settings = PromptExecutionSettings()
+    prompt_execution_settings = MockPromptExecutionSettings()
 
     manager = StandardMagenticManager(
         chat_completion_service=chat_completion_service,
@@ -506,7 +516,7 @@ def test_standard_magentic_manager_init():
 def test_standard_magentic_manager_init_with_custom_prompts():
     """Test the initialization of the StandardMagenticManager with custom prompts."""
     chat_completion_service = MockChatCompletionService(ai_model_id="test")
-    prompt_execution_settings = PromptExecutionSettings()
+    prompt_execution_settings = MockPromptExecutionSettings()
 
     manager = StandardMagenticManager(
         chat_completion_service=chat_completion_service,
@@ -529,6 +539,18 @@ def test_standard_magentic_manager_init_with_custom_prompts():
     assert manager.final_answer_prompt == "custom_final_answer_prompt"
 
 
+def test_standard_magentic_manager_init_with_invalid_prompt_execution_settings():
+    """Test the initialization of the StandardMagenticManager with invalid prompt execution settings."""
+    chat_completion_service = MockChatCompletionService(ai_model_id="test")
+    prompt_execution_settings = PromptExecutionSettings()
+
+    with pytest.raises(ValueError):
+        StandardMagenticManager(
+            chat_completion_service=chat_completion_service,
+            prompt_execution_settings=prompt_execution_settings,
+        )
+
+
 async def test_standard_magentic_manager_plan():
     """Test the plan method of the StandardMagenticManager."""
 
@@ -537,7 +559,7 @@ async def test_standard_magentic_manager_plan():
     ) as mock_get_chat_message_content:
         mock_get_chat_message_content.return_value = ChatMessageContent(role="assistant", content="mock_response")
         chat_completion_service = MockChatCompletionService(ai_model_id="test")
-        prompt_execution_settings = PromptExecutionSettings()
+        prompt_execution_settings = MockPromptExecutionSettings()
 
         manager = StandardMagenticManager(
             chat_completion_service=chat_completion_service,
@@ -579,7 +601,7 @@ async def test_standard_magentic_manager_replan():
         mock_get_chat_message_content.return_value = ChatMessageContent(role="assistant", content="mock_response")
 
         chat_completion_service = MockChatCompletionService(ai_model_id="test")
-        prompt_execution_settings = PromptExecutionSettings()
+        prompt_execution_settings = MockPromptExecutionSettings()
 
         manager = StandardMagenticManager(
             chat_completion_service=chat_completion_service,
@@ -618,7 +640,7 @@ async def test_standard_magentic_manager_replan_without_plan():
     """Test the replan method of the StandardMagenticManager."""
 
     chat_completion_service = MockChatCompletionService(ai_model_id="test")
-    prompt_execution_settings = PromptExecutionSettings()
+    prompt_execution_settings = MockPromptExecutionSettings()
 
     manager = StandardMagenticManager(
         chat_completion_service=chat_completion_service,
@@ -654,7 +676,7 @@ async def test_standard_magentic_manager_create_progress_ledger():
         )
 
         chat_completion_service = MockChatCompletionService(ai_model_id="test")
-        prompt_execution_settings = PromptExecutionSettings()
+        prompt_execution_settings = MockPromptExecutionSettings()
 
         manager = StandardMagenticManager(
             chat_completion_service=chat_completion_service,
