@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses SQLite as the underlying storage.
 /// </summary>
-/// <typeparam name="TKey">The data type of the record key. Can be <see cref="string"/> or <see cref="ulong"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
+/// <typeparam name="TKey">The data type of the record key. Can be <see cref="string"/>, <see cref="int"/> or <see cref="long"/>.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
@@ -85,9 +85,9 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         Verify.NotNull(connectionString);
         Verify.NotNullOrWhiteSpace(name);
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(object))
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(int) && typeof(TKey) != typeof(long) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException($"Only {nameof(String)} and {nameof(UInt64)} keys are supported (and object for dynamic mapping).");
+            throw new NotSupportedException("Only string, int and long keys are supported.");
         }
 
         options ??= SqliteCollectionOptions.Default;

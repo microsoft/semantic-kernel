@@ -29,7 +29,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task CollectionExistsReturnsCollectionStateAsync(bool createCollection)
     {
         // Arrange
-        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("CollectionExists");
+        using var sut = fixture.GetCollection<long, SqliteHotel<long>>("CollectionExists");
 
         if (createCollection)
         {
@@ -47,7 +47,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanEnsureCollectionExistsAsync()
     {
         // Arrange
-        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("CreateCollection");
+        using var sut = fixture.GetCollection<long, SqliteHotel<long>>("CreateCollection");
 
         // Act
         await sut.EnsureCollectionExistsAsync();
@@ -60,7 +60,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanCreateCollectionForSupportedDistanceFunctionsAsync()
     {
         // Arrange
-        using var sut = fixture.GetCollection<ulong, RecordWithSupportedDistanceFunctions>("CreateCollectionForSupportedDistanceFunctions");
+        using var sut = fixture.GetCollection<long, RecordWithSupportedDistanceFunctions>("CreateCollectionForSupportedDistanceFunctions");
 
         // Act
         await sut.EnsureCollectionExistsAsync();
@@ -73,7 +73,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanDeleteCollectionAsync()
     {
         // Arrange
-        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteCollection");
+        using var sut = fixture.GetCollection<long, SqliteHotel<long>>("DeleteCollection");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -94,17 +94,17 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanCreateCollectionUpsertAndGetAsync(bool includeVectors, bool useRecordDefinition)
     {
         // Arrange
-        const ulong HotelId = 5;
+        const long HotelId = 5;
 
         var collectionNamePostfix = useRecordDefinition ? "WithDefinition" : "WithType";
         var collectionName = $"Collection{collectionNamePostfix}";
 
         var options = new SqliteCollectionOptions
         {
-            Definition = useRecordDefinition ? GetVectorStoreRecordDefinition<ulong>() : null
+            Definition = useRecordDefinition ? GetVectorStoreRecordDefinition<long>() : null
         };
 
-        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteCollection", options);
+        using var sut = fixture.GetCollection<long, SqliteHotel<long>>("DeleteCollection", options);
 
         var record = CreateTestHotel(HotelId);
 
@@ -141,8 +141,8 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanGetAndDeleteRecordAsync()
     {
         // Arrange
-        const ulong HotelId = 5;
-        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("DeleteRecord");
+        const long HotelId = 5;
+        using var sut = fixture.GetCollection<long, SqliteHotel<long>>("DeleteRecord");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -166,11 +166,11 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanGetUpsertDeleteBatchWithNumericKeyAsync()
     {
         // Arrange
-        const ulong HotelId1 = 1;
-        const ulong HotelId2 = 2;
-        const ulong HotelId3 = 3;
+        const long HotelId1 = 1;
+        const long HotelId2 = 2;
+        const long HotelId3 = 3;
 
-        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("GetUpsertDeleteBatchWithNumericKey");
+        using var sut = fixture.GetCollection<long, SqliteHotel<long>>("GetUpsertDeleteBatchWithNumericKey");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -235,8 +235,8 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var collectionNamePostfix = includeVectors ? "WithVectors" : "WithoutVectors";
         var collectionName = $"Collection{collectionNamePostfix}";
 
-        const ulong HotelId = 5;
-        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>(collectionName);
+        const long HotelId = 5;
+        using var sut = fixture.GetCollection<long, SqliteHotel<long>>(collectionName);
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -301,8 +301,8 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     public async Task ItCanUpsertExistingRecordAsync()
     {
         // Arrange
-        const ulong HotelId = 5;
-        using var sut = fixture.GetCollection<ulong, SqliteHotel<ulong>>("UpsertRecord");
+        const long HotelId = 5;
+        using var sut = fixture.GetCollection<long, SqliteHotel<long>>("UpsertRecord");
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -436,7 +436,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         var options = new SqliteCollectionOptions
         {
-            Definition = GetVectorStoreRecordDefinition<ulong>()
+            Definition = GetVectorStoreRecordDefinition<long>()
         };
 
         using var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithNumericKey", options);
@@ -555,7 +555,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
     private sealed class RecordWithSupportedDistanceFunctions
     {
         [VectorStoreKey]
-        public ulong Id { get; set; }
+        public long Id { get; set; }
 
         [VectorStoreVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Embedding1 { get; set; }

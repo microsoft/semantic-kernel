@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Weaviate as the underlying storage.
 /// </summary>
-/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="Guid"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
+/// <typeparam name="TKey">The data type of the record key. Must be <see cref="Guid"/>.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
@@ -97,7 +97,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         if (typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException($"Only {nameof(Guid)} key is supported (and object for dynamic mapping).");
+            throw new NotSupportedException($"Only {nameof(Guid)} key is supported.");
         }
 
         var endpoint = (options?.Endpoint ?? httpClient.BaseAddress) ?? throw new ArgumentException($"Weaviate endpoint should be provided via HttpClient.BaseAddress property or {nameof(WeaviateCollectionOptions)} options parameter.");
