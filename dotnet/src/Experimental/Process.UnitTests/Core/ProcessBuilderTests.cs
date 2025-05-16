@@ -125,7 +125,7 @@ public class ProcessBuilderTests
 
         // Assert
         Assert.NotNull(edgeBuilder);
-        Assert.Equal(EventId, edgeBuilder.EventId);
+        Assert.Equal(EventId, edgeBuilder.EventData.EventId);
     }
 
     /// <summary>
@@ -164,7 +164,7 @@ public class ProcessBuilderTests
 
         // Assert
         Assert.NotNull(edgeBuilder);
-        Assert.EndsWith("Global.OnError", edgeBuilder.EventId);
+        Assert.EndsWith("Global.OnError", edgeBuilder.EventData.EventId);
     }
 
     /// <summary>
