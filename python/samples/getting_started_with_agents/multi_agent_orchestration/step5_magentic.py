@@ -83,14 +83,12 @@ async def main():
     # 3. Invoke the orchestration with a task and the runtime
     orchestration_result = await magentic_orchestration.invoke(
         task=(
-            "The 2025 trade war between the US and other countries has had a significant impact "
-            "on the global economy. I am a business owner in the US that import household goods "
-            "such as bed sheets and holiday decorations from south-east Asia. I want "
-            "to know the impact of the tariffs on my business given that my current profit "
-            "margin is 20%. And If I were to increase the price of my products by 10%, "
-            "how would that affect my customer behavior and profit margin? Base on the analysis, "
-            "find similar cases in the past to cross-reference the results. Provide a detailed "
-            "report and recommendations on how to adapt to the changing market conditions at the end."
+            "I am preparing a report on the energy efficiency of different machine learning model architectures. "
+            "Compare the estimated training and inference energy consumption of ResNet-50, BERT-base, and GPT-2 "
+            "on standard datasets (e.g., ImageNet for ResNet, GLUE for BERT, WebText for GPT-2). "
+            "Then, estimate the CO2 emissions associated with each, assuming training on an Azure Standard_NC6s_v3 VM "
+            "for 24 hours. Provide tables for clarity, and recommend the most energy-efficient model "
+            "per task type (image classification, text classification, and text generation)."
         ),
         runtime=runtime,
     )
@@ -106,47 +104,84 @@ async def main():
     """
     Sample output:
     **ResearchAgent**
-    The 2025 trade war has led to significant tariffs imposed by the United States on imports from Southeast Asian
-    countries, directly affecting industries such as household goods. For instance, Cambodia faces a 49% tariff,
-    Vietnam 46%, and Thailand 36% on their exports to the U.S.
-    ([thailandinfo.se](https://www.thailandinfo.se/en/usa-tariffs-southeast-asia-2025/?utm_source=openai))
+    Estimating the energy consumption and associated CO₂ emissions for training and inference of ResNet-50, BERT-base...
 
-    ...
     **CoderAgent**
-    Here's the analysis based on your scenario:
+    Here is the comparison of energy consumption and CO₂ emissions for each model (ResNet-50, BERT-base, and GPT-2)
+    over a 24-hour period:
 
-    1. **Initial Scenario:**
-    - Initial Selling Price: $125.00 (to achieve a 20% profit margin)
+    | Model     | Training Energy (kWh) | Inference Energy (kWh) | Total Energy (kWh) | CO₂ Emissions (kg) |
+    |-----------|------------------------|------------------------|---------------------|---------------------|
+    | ResNet-50 | 21.11                  | 0.08232                | 21.19232            | 19.50               |
+    | BERT-base | 0.048                  | 0.23736                | 0.28536             | 0.26                |
+    | GPT-2     | 42.22                  | 0.35604                | 42.57604            | 39.17               |
 
-    2. **After Applying Tariffs:**
-    - New Cost Price: $145.00 (after a 45% tariff on the initial $100 cost)
-
-    3. **With a 10% Price Increase:**
-    - New Selling Price: $137.50
-
-    4. **Profit Margin and Volume Impact:**
+    ### Recommendations:
     ...
+
+    **CoderAgent**
+    Here are the recalibrated results for energy consumption and CO₂ emissions, assuming a more conservative approach
+    for models like GPT-2:
+
+    | Model            | Training Energy (kWh) | Inference Energy (kWh) | Total Energy (kWh) | CO₂ Emissions (kg) |
+    |------------------|------------------------|------------------------|---------------------|---------------------|
+    | ResNet-50        | 21.11                  | 0.08232                | 21.19232            | 19.50               |
+    | BERT-base        | 0.048                  | 0.23736                | 0.28536             | 0.26                |
+    | GPT-2 (Adjusted) | 42.22                  | 0.35604                | 42.57604            | 39.17               |
+
+    ...
+
     **ResearchAgent**
-    In response to increased tariffs during trade wars, various companies have implemented strategic measures to
-    mitigate financial impacts and maintain competitiveness. Notable examples include:
+    Estimating the energy consumption and associated CO₂ emissions for training and inference of machine learning ...
 
-    **1. Supply Chain Diversification:**
+    **ResearchAgent**
+    Estimating the energy consumption and CO₂ emissions of training and inference for ResNet-50, BERT-base, and ...
 
-    - **Steven Madden Ltd.:** Faced with a 10% tariff on handbags imported from China, the company relocated
-    production to Cambodia to circumvent the tariffs.([money.usnews.com](https://money.usnews.com/money/blogs/...
     **CoderAgent**
-    Here's a detailed simulated report on the potential business impact due to tariffs and price adjustments,
-    along with strategic recommendations:
+    Here is the estimated energy use and CO₂ emissions for a full day of operation for each model on an Azure ...
 
-    ### Financial Impact Summary:
+    **ResearchAgent**
+    Recent analyses have highlighted the substantial energy consumption and carbon emissions associated with ...
 
-    1. **New Cost Price after Tariffs:** $145.00
-    2. **New Selling Price after 10% Increase:** $137.50
-    3. **New Profit Margin:** -5.45%
-    4. **Estimated Sales Volume Change:** Decrease to 95.0% of original
-    5. **New Estimated Profit per Unit:** Negative $7.12
+    **CoderAgent**
+    Here's the refined estimation for the energy use and CO₂ emissions for optimized models on an Azure ...
 
-    ### Strategies from Historical Cases:
+    **CoderAgent**
+    To provide precise estimates for CO₂ emissions based on Azure's regional data centers' carbon intensity, we need ...
+
+    **ResearchAgent**
+    To refine the CO₂ emission estimates for training and inference of ResNet-50, BERT-base, and GPT-2 on an Azure ...
+
+    **CoderAgent**
+    Here's the refined comparative table for energy consumption and CO₂ emissions for ResNet-50, BERT-base, and GPT-2,
+    taking into account carbon intensity data for Azure's West Europe and Sweden Central regions:
+
+    | Model      | Energy (kWh) | CO₂ Emissions West Europe (kg) | CO₂ Emissions Sweden Central (kg) |
+    |------------|--------------|--------------------------------|-----------------------------------|
+    | ResNet-50  | 5.76         | 0.639                          | 0.086                            |
+    | BERT-base  | 9.18         | 1.019                          | 0.138                            |
+    | GPT-2      | 12.96        | 1.439                          | 0.194                            |
+
+    **Refined Recommendations:**
+
+    ...
+
+    Final result:
+    Here is the comprehensive report on energy efficiency and CO₂ emissions for ResNet-50, BERT-base, and GPT-2 models
+    when trained and inferred on an Azure Standard_NC6s_v3 VM for 24 hours.
+
+    ### Energy Consumption and CO₂ Emissions:
+
+    Based on refined analyses, here are the estimated energy consumption and CO₂ emissions for each model:
+
+    | Model      | Energy (kWh) | CO₂ Emissions West Europe (kg) | CO₂ Emissions Sweden Central (kg) |
+    |------------|--------------|--------------------------------|-----------------------------------|
+    | ResNet-50  | 5.76         | 0.639                          | 0.086                            |
+    | BERT-base  | 9.18         | 1.019                          | 0.138                            |
+    | GPT-2      | 12.96        | 1.439                          | 0.194                            |
+
+    ### Recommendations for Energy Efficiency:
+
     ...
     """
 
