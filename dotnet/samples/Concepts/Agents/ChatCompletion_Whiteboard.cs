@@ -61,42 +61,42 @@ public class ChatCompletion_Whiteboard(ITestOutputHelper output) : BaseTest(outp
 
         // Simulate a conversation with the agent.
         // We will also truncate the conversation once it goes over a few items.
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "Hello");
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "I'd like to create a VM?");
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "I want it to have 3 cores.");
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "I want it to have 48GB of RAM.");
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "I want it to have a 500GB Harddrive.");
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "I want it in Europe.");
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "Can you make it Linux and call it 'ContosoVM'.");
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "OK, let's call it `ContosoFinanceVM_Europe` instead.");
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "Thanks, now I want to create another VM.");
-        await this.InvokeWithConsoleWriteLine(agent, agentThread, whiteboardBehavior, chatHistoryReducer, "Make all the options the same as the last one, except for the region, which should be North America, and the name, which should be 'ContosoFinanceVM_NorthAmerica'.");
-    }
+        await InvokeWithConsoleWriteLine("Hello");
+        await InvokeWithConsoleWriteLine("I'd like to create a VM?");
+        await InvokeWithConsoleWriteLine("I want it to have 3 cores.");
+        await InvokeWithConsoleWriteLine("I want it to have 48GB of RAM.");
+        await InvokeWithConsoleWriteLine("I want it to have a 500GB Harddrive.");
+        await InvokeWithConsoleWriteLine("I want it in Europe.");
+        await InvokeWithConsoleWriteLine("Can you make it Linux and call it 'ContosoVM'.");
+        await InvokeWithConsoleWriteLine("OK, let's call it `ContosoFinanceVM_Europe` instead.");
+        await InvokeWithConsoleWriteLine("Thanks, now I want to create another VM.");
+        await InvokeWithConsoleWriteLine("Make all the options the same as the last one, except for the region, which should be North America, and the name, which should be 'ContosoFinanceVM_NorthAmerica'.");
 
-    private async Task InvokeWithConsoleWriteLine(ChatCompletionAgent agent, ChatHistoryAgentThread agentThread, WhiteboardBehavior whiteboardBehavior, IChatHistoryReducer chatHistoryReducer, string message)
-    {
-        // Print the user input.
-        Console.WriteLine($"User: {message}");
-
-        // Invoke the agent.
-        ChatMessageContent response = await agent.InvokeAsync(message, agentThread).FirstAsync();
-
-        // Print the response.
-        Console.WriteLine($"Assistant:\n{response.Content}\n");
-
-        // Make sure any async whiteboard processing is complete before we print out its contents.
-        await whiteboardBehavior.WhenProcessingCompleteAsync();
-
-        // Print out the whiteboard contents.
-        Console.WriteLine("Whiteboard contents:");
-        foreach (var item in whiteboardBehavior.CurrentWhiteboardContent)
+        async Task InvokeWithConsoleWriteLine(string message)
         {
-            Console.WriteLine($"- {item}");
-        }
-        Console.WriteLine();
+            // Print the user input.
+            Console.WriteLine($"User: {message}");
 
-        // Truncate the chat history if it gets too big.
-        await agentThread.ChatHistory.ReduceInPlaceAsync(chatHistoryReducer, CancellationToken.None);
+            // Invoke the agent.
+            ChatMessageContent response = await agent.InvokeAsync(message, agentThread).FirstAsync();
+
+            // Print the response.
+            Console.WriteLine($"Assistant:\n{response.Content}\n");
+
+            // Make sure any async whiteboard processing is complete before we print out its contents.
+            await whiteboardBehavior.WhenProcessingCompleteAsync();
+
+            // Print out the whiteboard contents.
+            Console.WriteLine("Whiteboard contents:");
+            foreach (var item in whiteboardBehavior.CurrentWhiteboardContent)
+            {
+                Console.WriteLine($"- {item}");
+            }
+            Console.WriteLine();
+
+            // Truncate the chat history if it gets too big.
+            await agentThread.ChatHistory.ReduceInPlaceAsync(chatHistoryReducer, CancellationToken.None);
+        }
     }
 
     private sealed class VMPlugin
