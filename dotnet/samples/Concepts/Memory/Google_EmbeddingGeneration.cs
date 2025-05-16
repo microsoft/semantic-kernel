@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Google.Apis.Auth.OAuth2;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Embeddings;
 using xRetry;
 
 namespace Memory;
@@ -29,20 +29,20 @@ public class Google_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(out
         Assert.NotNull(TestConfiguration.VertexAI.ProjectId);
 
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddVertexAIEmbeddingGeneration(
+        kernelBuilder.AddVertexAIEmbeddingGenerator(
                 modelId: TestConfiguration.VertexAI.EmbeddingModelId!,
                 bearerTokenProvider: GetBearerToken,
                 location: TestConfiguration.VertexAI.Location,
                 projectId: TestConfiguration.VertexAI.ProjectId);
         Kernel kernel = kernelBuilder.Build();
 
-        var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        var embeddingGenerator = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
         // Generate embeddings with the default dimensions for the model
-        var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(
+        var embeddings = await embeddingGenerator.GenerateAsync(
             ["Semantic Kernel is a lightweight, open-source development kit that lets you easily build AI agents and integrate the latest AI models into your codebase."]);
 
-        Console.WriteLine($"Generated '{embeddings.Count}' embedding(s) with '{embeddings[0].Length}' dimensions (default) for the provided text");
+        Console.WriteLine($"Generated '{embeddings.Count}' embedding(s) with '{embeddings[0].Vector.Length}' dimensions (default) for the provided text");
 
         // Uses Google.Apis.Auth.OAuth2 to get the bearer token
         async ValueTask<string> GetBearerToken()
@@ -76,18 +76,18 @@ public class Google_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(out
         Assert.NotNull(TestConfiguration.GoogleAI.ApiKey);
 
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddGoogleAIEmbeddingGeneration(
+        kernelBuilder.AddGoogleAIEmbeddingGenerator(
                 modelId: TestConfiguration.GoogleAI.EmbeddingModelId!,
                 apiKey: TestConfiguration.GoogleAI.ApiKey);
         Kernel kernel = kernelBuilder.Build();
 
-        var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        var embeddingGenerator = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
         // Generate embeddings with the default dimensions for the model
-        var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(
+        var embeddings = await embeddingGenerator.GenerateAsync(
             ["Semantic Kernel is a lightweight, open-source development kit that lets you easily build AI agents and integrate the latest AI models into your codebase."]);
 
-        Console.WriteLine($"Generated '{embeddings.Count}' embedding(s) with '{embeddings[0].Length}' dimensions (default) for the provided text");
+        Console.WriteLine($"Generated '{embeddings.Count}' embedding(s) with '{embeddings[0].Vector.Length}' dimensions (default) for the provided text");
     }
 
     [RetryFact(typeof(HttpOperationException))]
@@ -100,21 +100,21 @@ public class Google_EmbeddingGeneration(ITestOutputHelper output) : BaseTest(out
         const int CustomDimensions = 512;
 
         IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.AddGoogleAIEmbeddingGeneration(
+        kernelBuilder.AddGoogleAIEmbeddingGenerator(
                 modelId: TestConfiguration.GoogleAI.EmbeddingModelId!,
                 apiKey: TestConfiguration.GoogleAI.ApiKey,
                 dimensions: CustomDimensions);
         Kernel kernel = kernelBuilder.Build();
 
-        var embeddingGenerator = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        var embeddingGenerator = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
         // Generate embeddings with the specified custom dimensions
-        var embeddings = await embeddingGenerator.GenerateEmbeddingsAsync(
+        var embeddings = await embeddingGenerator.GenerateAsync(
             ["Semantic Kernel is a lightweight, open-source development kit that lets you easily build AI agents and integrate the latest AI models into your codebase."]);
 
-        Console.WriteLine($"Generated '{embeddings.Count}' embedding(s) with '{embeddings[0].Length}' dimensions (custom: '{CustomDimensions}') for the provided text");
+        Console.WriteLine($"Generated '{embeddings.Count}' embedding(s) with '{embeddings[0].Vector.Length}' dimensions (custom: '{CustomDimensions}') for the provided text");
 
         // Verify that we received embeddings with our requested dimensions
-        Assert.Equal(CustomDimensions, embeddings[0].Length);
+        Assert.Equal(CustomDimensions, embeddings[0].Vector.Length);
     }
 }
