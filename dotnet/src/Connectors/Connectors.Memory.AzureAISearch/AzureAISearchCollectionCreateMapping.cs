@@ -122,6 +122,7 @@ internal static class AzureAISearchCollectionCreateMapping
             Type t when t == typeof(int) => SearchFieldDataType.Int32,
             Type t when t == typeof(long) => SearchFieldDataType.Int64,
             // We don't map float to SearchFieldDataType.Single, because Azure AI Search doesn't support it.
+            // Half is also listed by the SDK, but currently not supported.
             Type t when t == typeof(float) => SearchFieldDataType.Double,
             Type t when t == typeof(double) => SearchFieldDataType.Double,
             Type t when t == typeof(DateTimeOffset) => SearchFieldDataType.DateTimeOffset,
