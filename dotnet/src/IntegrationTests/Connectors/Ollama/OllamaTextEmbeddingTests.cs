@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -10,6 +11,7 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Ollama;
 
+[Obsolete("Temporary tests for the obsolete ITextEmbeddingGenerationService.")]
 public sealed class OllamaTextEmbeddingTests
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()

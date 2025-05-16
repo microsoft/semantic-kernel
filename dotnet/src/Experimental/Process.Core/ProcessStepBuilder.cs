@@ -33,6 +33,11 @@ public abstract class ProcessStepBuilder
     public IReadOnlyList<string> Aliases { get; internal set; } = [];
 
     /// <summary>
+    /// A mapping of group Ids to functions that will be used to map the input of the step to the input of the group.
+    /// </summary>
+    public Dictionary<string, KernelProcessEdgeGroup> IncomingEdgeGroups { get; internal set; } = [];
+
+    /// <summary>
     /// Define the behavior of the step when the event with the specified Id is fired.
     /// </summary>
     /// <param name="eventId">The Id of the event of interest.</param>
@@ -90,10 +95,31 @@ public abstract class ProcessStepBuilder
     internal Dictionary<string, List<ProcessStepEdgeBuilder>> Edges { get; }
 
     /// <summary>
+    /// The process builder that this step is a part of. This may be null if the step is itself a process.
+    /// </summary>
+    internal ProcessBuilder? ProcessBuilder { get; }
+
+    /// <summary>
     /// Builds the step with step state
     /// </summary>
     /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null);
+    internal abstract KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null);
+
+    /// <summary>
+    /// Registers a group input mapping for the step.
+    /// </summary>
+    /// <param name="edgeGroup"></param>
+    internal void RegisterGroupInputMapping(KernelProcessEdgeGroup edgeGroup)
+    {
+        // If the group is alrwady registered, then we don't need to register it again.
+        if (this.IncomingEdgeGroups.ContainsKey(edgeGroup.GroupId))
+        {
+            return;
+        }
+
+        // Register the group by GroupId.
+        this.IncomingEdgeGroups[edgeGroup.GroupId] = edgeGroup;
+    }
 
     /// <summary>
     /// Resolves the function name for the step.
@@ -173,7 +199,8 @@ public abstract class ProcessStepBuilder
 
             if (undeterminedParameters.Count > 1)
             {
-                throw new KernelException($"The function {functionName} on step {this.Name} has more than one parameter, so a parameter name must be provided.");
+                // TODO: Uncomment the following line if we want to enforce parameter specification.
+                //throw new KernelException($"The function {functionName} on step {this.Name} has more than one parameter, so a parameter name must be provided.");
             }
 
             // We can infer the parameter name from the function metadata
@@ -213,37 +240,46 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessStepBuilder"/> class.
     /// </summary>
-    /// <param name="name">The name of the step.</param>
-    protected ProcessStepBuilder(string name)
+    /// <param name="id">The unique Id of the step.</param>
+    /// <param name="processBuilder">The process builder that this step is a part of.</param>
+    protected ProcessStepBuilder(string id, ProcessBuilder? processBuilder)
     {
-        this.Name ??= name;
-        Verify.NotNullOrWhiteSpace(name);
+        Verify.NotNullOrWhiteSpace(id, nameof(id));
 
+        this.Id ??= id;
+        this.Name = id;
         this.FunctionsDict = [];
-        this.Id = Guid.NewGuid().ToString("n");
-        this._eventNamespace = $"{this.Name}_{this.Id}";
+        this._eventNamespace = this.Id;
         this.Edges = new Dictionary<string, List<ProcessStepEdgeBuilder>>(StringComparer.OrdinalIgnoreCase);
+        this.ProcessBuilder = processBuilder;
     }
 }
 
 /// <summary>
 /// Provides functionality for incrementally defining a process step.
 /// </summary>
-public class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep : KernelProcessStep
+public class ProcessStepBuilderTyped : ProcessStepBuilder
 {
     /// <summary>
     /// The initial state of the step. This may be null if the step does not have any state.
     /// </summary>
     private object? _initialState;
 
+    private readonly Type _stepType;
+
     /// <summary>
     /// Creates a new instance of the <see cref="ProcessStepBuilder"/> class. If a name is not provided, the name will be derived from the type of the step.
     /// </summary>
-    /// <param name="name">Optional: The name of the step.</param>
+    /// <param name="stepType">The <see cref="Type"/> of the step.</param>
+    /// <param name="id">The unique id of the step.</param>
+    /// <param name="processBuilder">The process builder that this step is a part of.</param>
     /// <param name="initialState">Initial state of the step to be used on the step building stage</param>
-    internal ProcessStepBuilder(string? name = null, object? initialState = default)
-        : base(name ?? typeof(TStep).Name)
+    internal ProcessStepBuilderTyped(Type stepType, string id, ProcessBuilder? processBuilder, object? initialState = default)
+        : base(id, processBuilder)
     {
+        Verify.NotNull(stepType);
+
+        this._stepType = stepType;
         this.FunctionsDict = this.GetFunctionMetadataMap();
         this._initialState = initialState;
     }
@@ -252,12 +288,12 @@ public class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep : Kernel
     /// Builds the step with a state if provided
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcessStepInfo"/></returns>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
     {
         KernelProcessStepState? stateObject = null;
-        KernelProcessStepMetadataAttribute stepMetadataAttributes = KernelProcessStepMetadataFactory.ExtractProcessStepMetadataFromType(typeof(TStep));
+        KernelProcessStepMetadataAttribute stepMetadataAttributes = KernelProcessStepMetadataFactory.ExtractProcessStepMetadataFromType(this._stepType);
 
-        if (typeof(TStep).TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
+        if (this._stepType.TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
         {
             // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
             // and create an instance of the corresponding KernelProcessStepState<>.
@@ -301,14 +337,31 @@ public class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep : Kernel
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
         // Then build the step with the edges and state.
-        var builtStep = new KernelProcessStepInfo(typeof(TStep), stateObject, builtEdges);
+        var builtStep = new KernelProcessStepInfo(this._stepType, stateObject, builtEdges, this.IncomingEdgeGroups);
         return builtStep;
     }
 
     /// <inheritdoc/>
     internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
     {
-        var metadata = KernelFunctionMetadataFactory.CreateFromType(typeof(TStep));
+        var metadata = KernelFunctionMetadataFactory.CreateFromType(this._stepType);
         return metadata.ToDictionary(m => m.Name, m => m);
+    }
+}
+
+/// <summary>
+/// Provides functionality for incrementally defining a process step.
+/// </summary>
+public class ProcessStepBuilder<TStep> : ProcessStepBuilderTyped where TStep : KernelProcessStep
+{
+    /// <summary>
+    /// Creates a new instance of the <see cref="ProcessStepBuilder"/> class. If a name is not provided, the name will be derived from the type of the step.
+    /// </summary>
+    /// <param name="id">The unique Id of the step.</param>
+    /// <param name="processBuilder">The process builder that this step is a part of.</param>
+    /// <param name="initialState">Initial state of the step to be used on the step building stage</param>
+    internal ProcessStepBuilder(string id, ProcessBuilder? processBuilder = null, object? initialState = default)
+        : base(typeof(TStep), id, processBuilder, initialState)
+    {
     }
 }

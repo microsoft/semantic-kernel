@@ -1,0 +1,396 @@
+workflow:
+  format_version: "1.0" # The version of the declarative spec being used to define this workflow.
+  workflow_version: "1.5" # The version of the workflow itself.
+  name: report_generation_pipeline
+  description: "A workflow that generates and publishes a report on a given topic."
+  suggested_inputs:
+    events:
+      - type: "research_requested"
+        payload:
+          topic: "Create a report on AI agents at Microsoft."
+
+  # Input that the workflow supports.
+  # The way the events get sent to the workflow may differ depending on the platform. Some platforms may support sending events directly to the workflow,
+  # while others may require using a chat completion interface similar to how local tool calls work.
+  inputs: # The structured inputs supported by the workflow.
+    events:
+      cloud_events:
+        - type: "research_requested"
+          data_schema: 
+                type: string
+          filters: # optional filters on cloud event attributes
+            - filter: "$.source == 'my_input_source'"
+
+  # Variables used by the agents in the workflow. Variables can be defined as read-only or mutable.
+  # Read-only variables are initialized with a default value and cannot be modified during the workflow execution.
+  variables:
+    max_retries:
+        type: integer # defaults to mutable: false
+        default: 3
+        scope: "workflow"
+    report_length_threshold:
+        type: integer
+        default: 500
+    research_history:
+        type: "chat_history" # defaults to scope: "run", should it be thread?
+        is_mutable: true
+        acls:
+          - node: "researcher"
+            access: "read"
+    drafting_history:
+        type: "chat_history"
+        is_mutable: true
+    research_memory:
+        type: "memory"
+        is_mutable: true
+    drafting_memory:
+        type: "memory"
+        is_mutable: true
+    drafting_whiteboard:
+        type: "whiteboard"
+        is_mutable: true
+    revision_count:
+        type: integer
+        default: 0
+        is_mutable: true
+    last_feedback:
+        type: string
+        default: ""
+        is_mutable: true
+    approved_report:
+        type: "string"
+        is_mutable: true
+
+  # Schemas for the data types used in the workflow. These can be defined inline or referenced from an external schema.
+  schemas:
+    research_data:
+      type: object
+      properties:
+        summary: { type: string }
+        articles: { type: array, items: { type: string } }
+      required: [summary, articles]
+
+    draft:
+      type: object
+      properties:
+        content: { type: string }
+        word_count: { type: integer }
+      required: [content, word_count]
+
+    report_feedback:
+      type: object
+      properties:
+        passed: { type: boolean }
+        content: { type: string }
+        feedback: { type: string }
+      required: [passed, content, feedback]
+
+    report:
+      type: object
+      properties:
+        content: { type: string }
+        approval_reason: { type: string }
+      required: [content, approval_reason]
+
+  # The nodes that make up the workflow. A node is a wrapper around something that can be invoked such as code, an agent, a tool, etc.
+  nodes:
+    - id: fetch_data
+      type: declarative
+      version: "1.0"
+      description: "Fetches relevant research data on the given topic."
+      agent:
+        type: foundry_agent
+        id: research_agent
+        # name: research_agent
+        # description: "Find the most relevant articles and summarize key points ${{topic}}."
+        # inputs:
+        #   topic:
+        #     type: string
+        # outputs:
+        #   results:
+        #     $ref: "#/workflow/schemas/research_data"
+      inputs:
+        input:
+          type: string
+      agent_input_mapping:
+        topic: "inputs.input"
+      on_invoke: # mvp?
+        emits:
+        updates:
+      on_error: # mvp?
+        emits:
+        updates:
+      on_complete:
+        - on_condition:
+            type: state
+            expression: "$agent.outputs.results.articles.length > 0" # json path or something standard, look at Azure pipelines, GH, etc.
+            emits:
+              - event_type: data_fetched
+                schema: 
+                    $ref: "#/workflow/schemas/research_data"
+                payload: "$agent.outputs.results"
+        - on_condition:
+            type: default
+            emits:
+              - event_type: data_fetch_no_results
+
+    - id: draft_report
+      type: declarative
+      version: "1.0"
+      description: "Generates a draft report based on the research data."
+      inputs:
+        research_data:
+          schema:
+            $ref: "#/workflow/schemas/research_data"
+        last_feedback: 
+          type: string
+      agent:
+        type: foundry_agent
+        id: report_drafter
+        # name: generate_draft
+        # prompt: "Create a well-structured draft based on the given research data."
+        # inputs:
+        #   research_data:
+        #     type: object
+        #       $ref: "#/workflow/schemas/research_data"
+        #   last_feedback: 
+        #     type: string
+        # outputs:
+        #   draft:
+        #     $ref: "#/workflow/schemas/draft"
+      on_invoke: # mvp?
+        emits:
+        updates:
+      on_error: # mvp?
+        emits:
+        updates:
+      on_complete:
+        - on_condition:
+            type: default
+            emits:
+              - event_type: draft_created
+                schema: 
+                    $ref: "#/workflow/schemas/draft"
+                payload: "$agent.outputs.draft"
+
+    - id: proofread_report
+      type: declarative
+      version: "1.0"
+      description: "Proofreads the draft report for grammar, clarity, and factual accuracy."
+      agent:
+        type: foundry_agent
+        id: proofreader
+        # The agent is already deployed to Foundry and is only referenced here by Id.
+        # The definition looks like this:
+        #   name: proofreader
+        #   prompt: "Review the draft for grammar, clarity, and factual accuracy."
+        #   inputs:
+        #     draft:
+        #       $ref: "#/workflow/schemas/draft"
+        #   output:
+        #     report_feedback:
+        #       $ref: "#/workflow/schemas/report_feedback"
+        #   tools:
+        #      ...
+      inputs:
+        draft:
+          schema:
+            $ref: "#/workflow/schemas/draft"
+      agent_input_mapping:
+        draft: "$.inputs.draft" # Should only be needed when mapping is not 1:1.
+        
+      on_invoke: # mvp?
+        emits:
+        updates:
+      on_error: # mvp?
+        emits:
+        updates:
+      on_complete:
+        - on_condition:
+            type: state # need to support structured and unstructured evaluation
+            expression: "$agent.outputs.report_feedback.passed == true" # json path or something standard
+            emits:
+              - event_type: report_approved
+                schema: 
+                $ref: "#/workflow/schemas/report"
+                payload:
+                  object:
+                    content: "$agent.outputs.report_feedback.content"
+                    approval_reason: "$agent.outputs.report_feedback.feedback"
+        - on_condition:
+            type: default
+            emits:
+              - event_type: report_rejected
+                schema: 
+                  $ref: "#/workflow/schemas/report_feedback"
+                payload: "$agent.outputs.report_feedback"
+            updates: # discuss more with AK
+              - variable: $.variables.revision_count
+                operation: increment
+                value: 1
+              - variable: last_feedback
+                operation: set
+                value: "$agent.outputs.report_feedback.feedback"
+
+    - id: human_review
+      type: declarative
+      version: "1.0"
+      description: "Human reviewer for the final report."
+      # Could be a pre-built agent template from the Foundry Catalog. The behavior is to
+      # yield an event to the workflow and wait for a response before resuming.
+      agent: 
+        type: foundry_agent
+        id: built_in/yield_event
+        # name: yield_event
+        # inputs:
+        #   event_type:
+        #     type: string
+        #   event_payload:
+        #     type: object
+        # output:
+        #   event_response:
+        #     type: object
+      inputs:
+        report:
+          schema:
+            $ref: "#/workflow/schemas/report"
+      agent_input_mapping:
+        event_payload: "$.inputs.report"
+        event_type: "human_approval_request"
+      on_invoke: # mvp?
+      emits:
+      updates:
+      on_error: # mvp?
+        emits:
+        updates:
+      on_complete:
+        - on_condition:
+            type: default
+            emits:
+              - event_type: human_approved
+                schema: 
+                  $ref: "#/workflow/schemas/report"
+            updates:
+            - variable: approved_report
+              operation: set
+              value: "$agent.outputs.report"
+            - variable: $workflow.thread
+              operation: append
+              value: "$agent.outputs.report"
+
+    - id: error_handler
+      type: declarative
+      version: "1.0"
+      description: "Handles errors that occur during the workflow."
+      agent: 
+        type: foundry_agent
+        id: built_in/yield_event 
+        # name: yield_event
+        # inputs:
+        #   event_type:
+        #     type: string
+        #   event_payload:
+        #     type: object
+        # output:
+        #   event_response:
+        #     type: object
+        #       schema:
+        #         $ref: "#/workflow/schemas/human_approval_response"
+      inputs:
+        error_details:
+          type: object
+        error_type:
+          type: string
+      agent_input_mapping:
+        event_payload: "$.inputs.error"
+        event_type: "$.inputs.error_type"
+      on_invoke: # mvp?
+      emits:
+      updates:
+      on_error: # mvp?
+        emits:
+        updates:
+      on_complete:
+        - on_condition:
+            type: default
+            emits:
+              - event_type: human_approved
+                schema: 
+                  $ref: "#/workflow/schemas/report"
+            updates: # append to the main thread to "output" the answer
+            - variable: approved_report
+              operation: set
+              value: "$agent.outputs.report"
+
+  # The orchestration of the workflow. This defines the sequence of events and actions that make up the workflow.
+  orchestration:
+
+    - listen_for:
+        event: "research_requested"
+        from: $.workflow
+      then:
+        - node: fetch_data
+          inputs:
+            input: $.event.payload
+            last_feedback: ""
+
+    - listen_for:
+        event: "data_fetched"
+        from: fetch_data
+      then:
+        - node: draft_report
+          inputs:
+            research_data: $.event.payload
+
+    - listen_for:
+        event: "draft_created"
+        from: draft_report
+      then:
+        - node: proofread_report
+          inputs:
+            draft: $.event.payload
+
+    - listen_for:
+        event: "report_approved"
+        from: proofread_report
+      then:
+        - node: human_review
+          inputs: # input mapping for different entry points
+            report: $.event.payload
+
+    - listen_for:
+        all_of: # Want to also support any_of - AK needs to figure out implementation
+          - event: "report_approved"
+            from: proofread_report
+          - event: "human_approved"
+            from: human_review
+      then:
+        - node: publish_report
+          inputs:
+            report: $.event.payload
+
+  # The compatibility matrix for the workflow. This defines the compatibility of the workflow with different versions of itself.
+  upgrade:
+    - from_versions:
+      min_version: "0.1"
+      max_version_exclusive: "1.0"
+      strategy: "not_compatible"
+    - from_versions:
+      min_version: "1.0"
+      max_version_exclusive: "*"
+      strategy: "backward_compatible"
+
+  # The error handling for the workflow. This defines how errors are handled at different levels of the workflow.
+  error_handling:
+    on_error:
+      - listen_for:
+          event: "*_failed"
+        then:
+          - node: error_handler
+            inputs:
+              error_details: $.event.payload
+              error_type: "unknown_error"
+    default:
+      - node: logging_service
+        inputs:
+          error_details: $.event.payload
