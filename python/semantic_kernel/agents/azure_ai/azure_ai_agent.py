@@ -421,6 +421,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
     def create_client(
         credential: "DefaultAzureCredential",
         endpoint: str | None = None,
+        api_version: str | None = None,
         **kwargs: Any,
     ) -> AIProjectClient:
         """Create the Azure AI Project client using the connection string.
@@ -428,6 +429,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         Args:
             credential: The credential
             endpoint: The Azure AI Foundry endpoint
+            api_version: Optional API version to use
             kwargs: Additional keyword arguments
 
         Returns:
@@ -439,11 +441,18 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
                 raise AgentInitializationException("Please provide a valid Azure AI endpoint.")
             endpoint = ai_agent_settings.endpoint
 
+        client_kwargs: dict[str, Any] = {
+            **kwargs,
+            **({"user_agent": SEMANTIC_KERNEL_USER_AGENT} if APP_INFO else {}),
+        }
+
+        if api_version:
+            client_kwargs["api_version"] = api_version
+
         return AIProjectClient(
             credential=credential,
             endpoint=endpoint,
-            **({"user_agent": SEMANTIC_KERNEL_USER_AGENT} if APP_INFO else {}),
-            **kwargs,
+            **client_kwargs,
         )
 
     # region Declarative Spec

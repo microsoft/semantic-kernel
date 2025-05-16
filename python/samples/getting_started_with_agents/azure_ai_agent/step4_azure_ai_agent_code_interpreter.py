@@ -60,7 +60,7 @@ async def main() -> None:
             # 7. Cleanup: Delete the thread, agent, and file
             await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
-            await client.agents.delete_file(file.id)
+            await client.agents.files.delete(file.id)
 
         """
         Sample Output:

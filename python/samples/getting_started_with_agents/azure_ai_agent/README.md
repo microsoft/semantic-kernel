@@ -49,6 +49,9 @@ from azure.identity.aio import DefaultAzureCredential
 You can pass in an endpoint, along with an optional api-version, to create the client:
 
 ```python
+
+ai_agent_settings = AzureAIAgentSettings()
+
 async with (
     DefaultAzureCredential() as creds,
     AzureAIAgent.create_client(
