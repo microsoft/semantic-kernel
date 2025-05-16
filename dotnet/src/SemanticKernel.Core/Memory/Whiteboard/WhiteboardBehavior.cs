@@ -28,7 +28,7 @@ public sealed class WhiteboardBehavior : AIContextBehavior
     private readonly int _maxWhiteboardMessages;
     private readonly string _contextPrompt;
     private readonly string _whiteboardEmptyPrompt;
-    private readonly string _maintainancePrompt;
+    private readonly string _maintenancePrompt;
 
     private readonly IChatClient _chatClient;
 
@@ -51,7 +51,7 @@ public sealed class WhiteboardBehavior : AIContextBehavior
         this._maxWhiteboardMessages = options?.MaxWhiteboardMessages ?? 10;
         this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
         this._whiteboardEmptyPrompt = options?.WhiteboardEmptyPrompt ?? DefaultWhiteboardEmptyPrompt;
-        this._maintainancePrompt = options?.MaintainancePromptTemplate ?? MaintenancePromptTemplate;
+        this._maintenancePrompt = options?.MaintenancePromptTemplate ?? MaintenancePromptTemplate;
     }
 
     /// <summary>
@@ -159,7 +159,7 @@ public sealed class WhiteboardBehavior : AIContextBehavior
 
     private string FormatPromptTemplate(string inputMessagesJson, string currentWhiteboardJson, int maxWhiteboardMessages)
     {
-        var sb = new StringBuilder(this._maintainancePrompt);
+        var sb = new StringBuilder(this._maintenancePrompt);
         sb.Replace("{{$inputMessages}}", inputMessagesJson);
         sb.Replace("{{$currentWhiteboard}}", currentWhiteboardJson);
         sb.Replace("{{$maxWhiteboardMessages}}", maxWhiteboardMessages.ToString());

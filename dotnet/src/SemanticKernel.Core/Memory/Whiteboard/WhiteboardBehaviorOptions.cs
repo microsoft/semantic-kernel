@@ -20,7 +20,7 @@ public sealed class WhiteboardBehaviorOptions
 
     /// <summary>
     /// Gets or sets a string that is prefixed to the messages on the whiteboard,
-    /// when providing them as conetxt to the AI model.
+    /// when providing them as context to the AI model.
     /// </summary>
     /// <value>
     /// Defaults to &quot;## Whiteboard\nThe following list of messages are currently on the whiteboard:&quot;
@@ -45,5 +45,5 @@ public sealed class WhiteboardBehaviorOptions
     /// {{$inputMessages}}
     /// {{$currentWhiteboard}}
     /// </remarks>
-    public string? MaintainancePromptTemplate { get; init; }
+    public string? MaintenancePromptTemplate { get; init; }
 }
