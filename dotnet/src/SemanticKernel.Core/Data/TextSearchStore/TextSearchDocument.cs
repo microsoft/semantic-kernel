@@ -17,7 +17,7 @@ public sealed class TextSearchDocument
     /// <remarks>
     /// A namespace is a logical grouping of documents, e.g. may include a group id to scope the document to a specific group of users.
     /// </remarks>
-    public List<string> Namespaces { get; set; } = [];
+    public IList<string> Namespaces { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the content as text.

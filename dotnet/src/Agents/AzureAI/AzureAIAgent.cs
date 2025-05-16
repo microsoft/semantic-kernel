@@ -191,7 +191,7 @@ public sealed partial class AzureAIAgent : Agent
         // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var behaviorsContext = await azureAIAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        behaviorsContext.RegisterPlugins(kernel);
+        kernel.Plugins.AddFromAIContextPart(behaviorsContext, "Tools");
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, behaviorsContext.Instructions);
@@ -321,7 +321,7 @@ public sealed partial class AzureAIAgent : Agent
         // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var behaviorsContext = await azureAIAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        behaviorsContext.RegisterPlugins(kernel);
+        kernel.Plugins.AddFromAIContextPart(behaviorsContext, "Tools");
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, behaviorsContext.Instructions);

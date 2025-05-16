@@ -162,7 +162,7 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
             return new TextRagStorageDocument<TKey>
             {
                 Key = key,
-                Namespaces = document.Namespaces,
+                Namespaces = document.Namespaces.ToList(),
                 SourceId = document.SourceId,
                 Text = options?.PersistSourceText is false ? null : document.Text,
                 SourceName = document.SourceName,

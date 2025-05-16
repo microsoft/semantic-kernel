@@ -416,7 +416,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
         // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var behaviorsContext = await openAIAssistantAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        behaviorsContext.RegisterPlugins(kernel);
+        kernel.Plugins.AddFromAIContextPart(behaviorsContext, "Tools");
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
@@ -561,7 +561,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
         // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var behaviorsContext = await openAIAssistantAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        behaviorsContext.RegisterPlugins(kernel);
+        kernel.Plugins.AddFromAIContextPart(behaviorsContext, "Tools");
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Create options that use the RunCreationOptions from the options param if provided or
