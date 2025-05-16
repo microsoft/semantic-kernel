@@ -10,8 +10,7 @@ import pytest
 import pytest_asyncio
 from pydantic import BaseModel
 
-from semantic_kernel.connectors.memory.postgres import PostgresSettings, PostgresStore
-from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection
+from semantic_kernel.connectors.memory.postgres import PostgresCollection, PostgresSettings, PostgresStore
 from semantic_kernel.data import (
     VectorStoreRecordDataField,
     VectorStoreRecordDefinition,
