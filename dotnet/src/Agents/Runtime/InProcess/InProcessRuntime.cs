@@ -347,8 +347,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
 
     private async ValueTask PublishMessageServicerAsync(MessageEnvelope envelope, CancellationToken deliveryToken)
     {
-        Debug.WriteLine("SERVICE PUBLISH - ENTER");
-
         if (!envelope.Topic.HasValue)
         {
             throw new InvalidOperationException("Message must have a topic to be published.");
@@ -381,28 +379,23 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
                 IHostableAgent agent = await this.EnsureAgentAsync(agentId).ConfigureAwait(false);
 
                 // TODO: Cancellation propagation!
-                Debug.WriteLine("SERVICE PUBLISH - INVOKE");
                 await agent.OnMessageAsync(envelope.Message, messageContext).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                Debug.WriteLine($"SERVICE PUBLISH FAILED: {ex.Message}\n{ex.StackTrace}");
                 exceptions.Add(ex);
             }
         }
 
-        Debug.WriteLine("SERVICE PUBLISH - EXIT");
-
         if (exceptions.Count > 0)
         {
+            // TODO: Unwrap TargetInvocationException?
             throw new AggregateException("One or more exceptions occurred while processing the message.", exceptions);
         }
     }
 
     private async ValueTask<object?> SendMessageServicerAsync(MessageEnvelope envelope, CancellationToken deliveryToken)
     {
-        Debug.WriteLine("SERVICE SEND - ENTER");
-
         if (!envelope.Receiver.HasValue)
         {
             throw new InvalidOperationException("Message must have a receiver to be sent.");
@@ -418,20 +411,7 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         AgentId receiver = envelope.Receiver.Value;
         IHostableAgent agent = await this.EnsureAgentAsync(receiver).ConfigureAwait(false);
 
-        try
-        {
-            Debug.WriteLine("SERVICE SEND - INVOKE");
-            return await agent.OnMessageAsync(envelope.Message, messageContext).ConfigureAwait(false);
-        }
-        catch (Exception exception)
-        {
-            Debug.WriteLine($"SERVICE SEND FAILURE - {exception.Message}\n{exception.StackTrace}");
-            throw;
-        }
-        finally
-        {
-            Debug.WriteLine("SERVICE SEND - EXIT");
-        }
+        return await agent.OnMessageAsync(envelope.Message, messageContext).ConfigureAwait(false);
     }
 
     private async ValueTask<IHostableAgent> EnsureAgentAsync(AgentId agentId)
