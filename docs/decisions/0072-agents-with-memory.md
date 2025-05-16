@@ -20,7 +20,7 @@ a conversation and re-use those later in the same conversation or later in a sub
 Today we support multiple agent types with different characteristics:
 
 1. In process vs remote.
-1. Remote agents that store and maintain conversation state in the service vs those that require the caller to provide conversation state on each invocation.
+2. Remote agents that store and maintain conversation state in the service vs those that require the caller to provide conversation state on each invocation.
 
 We need to support advanced memory capabilities across this range of agent types.
 
@@ -44,7 +44,7 @@ All of the above memory types can be supported for any agent by attaching softwa
 This is achieved via a simple mechanism of:
 
 1. Inspecting and using messages as they are passed to and from the agent.
-1. Passing additional context to the agent per invocation.
+2. Passing additional context to the agent per invocation.
 
 With our current `AgentThread` implementation, when an agent is invoked, all input and output messages are already passed to the `AgentThread`
 and can be made available to any components attached to the `AgentThread`.
@@ -59,8 +59,8 @@ This enables the component to provide memories that it contains to the Agent as 
 Different memory capabilities can be built using separate components. Each component would have the following characteristics:
 
 1. May store some context that can be provided to the agent per invocation.
-1. May inspect messages from the conversation to learn from the conversation and build its context.
-1. May register plugins to allow the agent to directly store, retrieve, update or clear memories.
+2. May inspect messages from the conversation to learn from the conversation and build its context.
+3. May register plugins to allow the agent to directly store, retrieve, update or clear memories.
 
 ### Suspend / Resume
 
@@ -104,8 +104,6 @@ public abstract class AIContextBehavior
     public virtual Task OnResumeAsync(string? threadId, CancellationToken cancellationToken = default);
 }
 ```
-
-> TODO: Decide about the correct namespace for `AIContextBehavior`
 
 ## Managing multiple components
 
@@ -183,25 +181,25 @@ var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023",
 
 1. ConversationStateExtension
     1. Long
-1. MemoryComponent
+2. MemoryComponent
     1. Too specific
-1. AIContextBehavior
+3. AIContextBehavior
 
-Chose AIContextBehavior.
+Decided 3. AIContextBehavior.
 
 ### Location for abstractions
 
 1. Microsoft.SemanticKernel.<baseclass>
-1. Microsoft.SemanticKernel.Memory.<baseclass>
-1. Microsoft.SemanticKernel.Memory.<baseclass> (in separate nuget)
+2. Microsoft.SemanticKernel.Memory.<baseclass>
+3. Microsoft.SemanticKernel.Memory.<baseclass> (in separate nuget)
 
-Chose Microsoft.SemanticKernel.<baseclass>.
+Decided: 1. Microsoft.SemanticKernel.<baseclass>.
 
 ### Location for memory components
 
 1. A nuget for each component
-1. Microsoft.SemanticKernel.Core nuget
-1. Microsoft.SemanticKernel.Memory nuget
-1. Microsoft.SemanticKernel.ConversationStateExtensions nuget
+2. Microsoft.SemanticKernel.Core nuget
+3. Microsoft.SemanticKernel.Memory nuget
+4. Microsoft.SemanticKernel.ConversationStateExtensions nuget
 
-Chose Microsoft.SemanticKernel.Core nuget
+Decided: 2. Microsoft.SemanticKernel.Core nuget
