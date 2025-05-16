@@ -27,8 +27,16 @@ from .open_ai.open_ai_assistant_agent import AssistantAgentThread, OpenAIAssista
 from .open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
 from .open_ai.run_polling_options import RunPollingOptions
 from .orchestration.concurrent import ConcurrentOrchestration
-from .orchestration.group_chat import GroupChatManager, GroupChatOrchestration, RoundRobinGroupChatManager
+from .orchestration.group_chat import (
+    BooleanResult,
+    GroupChatManager,
+    GroupChatOrchestration,
+    MessageResult,
+    RoundRobinGroupChatManager,
+    StringResult,
+)
 from .orchestration.handoffs import HandoffOrchestration, OrchestrationHandoffs
+from .orchestration.magentic import MagenticManagerBase, MagenticOrchestration, ProgressLedger, StandardMagenticManager
 from .orchestration.sequential import SequentialOrchestration
 
 __all__ = [
@@ -49,6 +57,7 @@ __all__ = [
     "AzureResponsesAgent",
     "BedrockAgent",
     "BedrockAgentThread",
+    "BooleanResult",
     "ChatCompletionAgent",
     "ChatHistoryAgentThread",
     "ConcurrentOrchestration",
@@ -60,15 +69,21 @@ __all__ = [
     "GroupChatManager",
     "GroupChatOrchestration",
     "HandoffOrchestration",
+    "MagenticManagerBase",
+    "MagenticOrchestration",
+    "MessageResult",
     "ModelConnection",
     "ModelSpec",
     "OpenAIAssistantAgent",
     "OpenAIResponsesAgent",
     "OrchestrationHandoffs",
+    "ProgressLedger",
     "ResponsesAgentThread",
     "RoundRobinGroupChatManager",
     "RunPollingOptions",
     "SequentialOrchestration",
+    "StandardMagenticManager",
+    "StringResult",
     "ToolSpec",
     "register_agent_type",
 ]
