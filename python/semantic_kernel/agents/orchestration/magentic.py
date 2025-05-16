@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
 from typing import Annotated
 
-from pydantic import Field, field_validator
+from pydantic import Field
 
 from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.orchestration.agent_actor_base import ActorBase, AgentActorBase
@@ -129,7 +129,7 @@ class MagenticContext(KernelBaseModel):
 
 
 @experimental
-class MagenticManager(KernelBaseModel, ABC):
+class MagenticManagerBase(KernelBaseModel, ABC):
     """Base class for the Magentic One manager."""
 
     max_stall_count: Annotated[int, Field(description="The maximum number of stalls allowed before a reset.", ge=0)] = 3
@@ -192,13 +192,21 @@ class MagenticManager(KernelBaseModel, ABC):
 
 
 @experimental
-class StandardMagenticManager(MagenticManager):
+class _TaskLedger(KernelBaseModel):
+    """Task ledger for the Standard Magentic manager."""
+
+    facts: Annotated[ChatMessageContent, Field(description="The facts about the task.")]
+    plan: Annotated[ChatMessageContent, Field(description="The plan for the task.")]
+
+
+@experimental
+class StandardMagenticManager(MagenticManagerBase):
     """Standard Magentic manager implementation.
 
     This is the default implementation of the Magentic manager.
     It uses the task ledger to keep track of the facts and plan for the task.
 
-    This implementation is requires structured outputs.
+    This implementation requires a chat completion model with structured outputs.
     """
 
     chat_completion_service: ChatCompletionClientBase
@@ -212,28 +220,45 @@ class StandardMagenticManager(MagenticManager):
     progress_ledger_prompt: str = ORCHESTRATOR_PROGRESS_LEDGER_PROMPT
     final_answer_prompt: str = ORCHESTRATOR_FINAL_ANSWER_PROMPT
 
-    class TaskLedger(KernelBaseModel):
-        """Task ledger for the Standard Magentic manager."""
+    task_ledger: _TaskLedger | None = None
 
-        facts: Annotated[ChatMessageContent, Field(description="The facts about the task.")]
-        plan: Annotated[ChatMessageContent, Field(description="The plan for the task.")]
-
-    task_ledger: TaskLedger | None = None
-
-    @field_validator("prompt_execution_settings", mode="after")
-    def _validate_prompt_execution_settings(cls, v: PromptExecutionSettings) -> PromptExecutionSettings:
-        """Validate the prompt execution settings to ensure the service supports structured output.
+    def __init__(
+        self,
+        chat_completion_service: ChatCompletionClientBase,
+        prompt_execution_settings: PromptExecutionSettings | None = None,
+        **kwargs,
+    ) -> None:
+        """Initialize the Standard Magentic manager.
 
         Args:
-            v (PromptExecutionSettings): The prompt execution settings.
-
-        Returns:
-            PromptExecutionSettings: The validated prompt execution settings.
+            chat_completion_service (ChatCompletionClientBase): The chat completion service to use.
+            prompt_execution_settings (PromptExecutionSettings | None): The prompt execution settings to use.
+            **kwargs: Additional keyword arguments for prompts:
+                - task_ledger_facts_prompt: The prompt to use for the task ledger facts.
+                - task_ledger_plan_prompt: The prompt to use for the task ledger plan.
+                - task_ledger_full_prompt: The prompt to use for the full task ledger.
+                - task_ledger_facts_update_prompt: The prompt to use for the task ledger facts update.
+                - task_ledger_plan_update_prompt: The prompt to use for the task ledger plan update.
+                - progress_ledger_prompt: The prompt to use for the progress ledger.
+                - final_answer_prompt: The prompt to use for the final answer.
         """
-        if not hasattr(v, "response_format"):
-            raise ValueError("The service must support structured output.")
+        # Bast effort to make sure the service supports structured output. Even if the service supports
+        # structured output, the model may not support it, in which case there is no good way to check.
+        if prompt_execution_settings is None:
+            prompt_execution_settings = chat_completion_service.instantiate_prompt_execution_settings()
+            if not hasattr(prompt_execution_settings, "response_format"):
+                raise ValueError("The service must support structured output.")
+        else:
+            if not hasattr(prompt_execution_settings, "response_format"):
+                raise ValueError("The service must support structured output.")
+            if prompt_execution_settings.response_format is not None:
+                raise ValueError("The prompt execution settings must not have a response format set.")
 
-        return v
+        super().__init__(
+            chat_completion_service=chat_completion_service,
+            prompt_execution_settings=prompt_execution_settings,
+            **kwargs,
+        )
 
     @override
     async def plan(self, magentic_context: MagenticContext) -> ChatMessageContent:
@@ -281,7 +306,7 @@ class StandardMagenticManager(MagenticManager):
         )
         assert plan is not None  # nosec B101
 
-        self.task_ledger = self.TaskLedger(facts=facts, plan=plan)
+        self.task_ledger = _TaskLedger(facts=facts, plan=plan)
         return await self._render_task_ledger(magentic_context)
 
     @override
@@ -448,7 +473,7 @@ class MagenticManagerActor(ActorBase):
 
     def __init__(
         self,
-        manager: MagenticManager,
+        manager: MagenticManagerBase,
         internal_topic_type: str,
         participant_descriptions: dict[str, str],
         result_callback: Callable[[DefaultTypeAlias], Awaitable[None]] | None = None,
@@ -456,7 +481,7 @@ class MagenticManagerActor(ActorBase):
         """Initialize the Magentic One manager actor.
 
         Args:
-            manager (MagenticManager): The Magentic One manager.
+            manager (MagenticManagerBase): The Magentic One manager.
             internal_topic_type (str): The internal topic type.
             participant_descriptions (dict[str, str]): The participant descriptions.
             result_callback (Callable | None): A callback function to handle the final answer.
@@ -725,7 +750,7 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
     def __init__(
         self,
         members: list[Agent],
-        manager: MagenticManager,
+        manager: MagenticManagerBase,
         name: str | None = None,
         description: str | None = None,
         input_transform: Callable[[TIn], Awaitable[DefaultTypeAlias] | DefaultTypeAlias] | None = None,
@@ -735,8 +760,8 @@ class MagenticOrchestration(OrchestrationBase[TIn, TOut]):
         """Initialize the Magentic One orchestration.
 
         Args:
-            members (list[Agent | OrchestrationBase]): A list of agents or orchestration bases.
-            manager (MagenticManager): The manager for the Magentic One pattern.
+            members (list[Agent]): A list of agents.
+            manager (MagenticManagerBase): The manager for the Magentic One pattern.
             name (str | None): The name of the orchestration.
             description (str | None): The description of the orchestration.
             input_transform (Callable | None): A function that transforms the external input message.

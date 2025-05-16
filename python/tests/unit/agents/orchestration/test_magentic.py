@@ -551,6 +551,16 @@ def test_standard_magentic_manager_init_with_invalid_prompt_execution_settings()
         )
 
 
+def test_standard_magentic_manager_init_without_prompt_execution_settings():
+    """Test the initialization of the StandardMagenticManager without prompt execution settings."""
+    # The default prompt execution settings of the mock chat completion service
+    # does not support structured output.
+    chat_completion_service = MockChatCompletionService(ai_model_id="test")
+
+    with pytest.raises(ValueError):
+        StandardMagenticManager(chat_completion_service=chat_completion_service)
+
+
 async def test_standard_magentic_manager_plan():
     """Test the plan method of the StandardMagenticManager."""
 

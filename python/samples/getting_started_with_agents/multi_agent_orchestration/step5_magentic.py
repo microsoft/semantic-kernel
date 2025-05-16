@@ -11,9 +11,6 @@ from semantic_kernel.agents import (
 )
 from semantic_kernel.agents.runtime import InProcessRuntime
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIChatPromptExecutionSettings,
-)
 from semantic_kernel.contents import ChatMessageContent
 
 """
@@ -44,6 +41,8 @@ async def agents() -> list[Agent]:
             "You are a Researcher. You find information without additional computation or quantitative analysis."
         ),
         # This agent requires the gpt-4o-search-preview model to perform web searches.
+        # Feel free to explore with other agents that support web search, for example,
+        # the `OpenAIResponseAgent` or `AzureAIAgent` with bing grounding.
         service=OpenAIChatCompletion(ai_model_id="gpt-4o-search-preview"),
     )
 
@@ -74,13 +73,15 @@ def agent_response_callback(message: ChatMessageContent) -> None:
 async def main():
     """Main function to run the agents."""
     # 1. Create a Magentic orchestration with two agents and a Magentic manager
-    # Note, the Standard Magentic manager accepts custom prompts for advanced users and scenarios.
+    # Note, the Standard Magentic manager uses prompts that have been tuned very
+    # carefully but it accepts custom prompts for advanced users and scenarios.
+    # For even more advanced scenarios, you can subclass the MagenticManagerBase
+    # and implement your own manager logic.
+    # The standard manager also requires a chat completion model that supports
+    # structured output.
     magentic_orchestration = MagenticOrchestration(
         members=await agents(),
-        manager=StandardMagenticManager(
-            chat_completion_service=OpenAIChatCompletion(),
-            prompt_execution_settings=OpenAIChatPromptExecutionSettings(),
-        ),
+        manager=StandardMagenticManager(chat_completion_service=OpenAIChatCompletion()),
         agent_response_callback=agent_response_callback,
     )
 
