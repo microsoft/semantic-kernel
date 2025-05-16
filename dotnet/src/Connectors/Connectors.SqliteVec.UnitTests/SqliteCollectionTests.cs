@@ -33,7 +33,7 @@ public sealed class SqliteCollectionTests
         using var fakeCommand = new FakeDbCommand(scalarResult: tableCount);
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnection, TableName);
+        var sut = new SqliteVectorStoreRecordCollection<TestRecord<long>>(fakeConnection, TableName);
 
         // Act
         var result = await sut.CollectionExistsAsync();
@@ -50,7 +50,7 @@ public sealed class SqliteCollectionTests
         using var fakeCommand = new FakeDbCommand();
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnection, TableName);
+        var sut = new SqliteVectorStoreRecordCollection<TestRecord<long>>(fakeConnection, TableName);
 
         // Act
         await sut.CreateCollectionAsync();
@@ -68,7 +68,7 @@ public sealed class SqliteCollectionTests
         using var fakeCommand = new FakeDbCommand();
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnection, TableName);
+        var sut = new SqliteVectorStoreRecordCollection<TestRecord<long>>(fakeConnection, TableName);
 
         // Act
         await sut.EnsureCollectionExistsAsync();
@@ -87,8 +87,8 @@ public sealed class SqliteCollectionTests
         using var fakeCommandWithoutVectorProperty = new FakeDbCommand();
         using var fakeConnectionWithoutVectorProperty = new FakeDBConnection(fakeCommandWithoutVectorProperty);
 
-        var collectionWithVectorProperty = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnectionWithVectorProperty, "WithVectorProperty");
-        var collectionWithoutVectorProperty = new SqliteVectorStoreRecordCollection<TestRecordWithoutVectorProperty<ulong>>(fakeConnectionWithoutVectorProperty, "WithoutVectorProperty");
+        var collectionWithVectorProperty = new SqliteVectorStoreRecordCollection<TestRecord<long>>(fakeConnectionWithVectorProperty, "WithVectorProperty");
+        var collectionWithoutVectorProperty = new SqliteVectorStoreRecordCollection<TestRecordWithoutVectorProperty<long>>(fakeConnectionWithoutVectorProperty, "WithoutVectorProperty");
 
         // Act
         await collectionWithVectorProperty.DeleteCollectionAsync();
@@ -105,7 +105,7 @@ public sealed class SqliteCollectionTests
     public async Task VectorizedSearchReturnsRecordAsync(bool includeVectors)
     {
         // Arrange
-        var expectedRecord = new TestRecord<ulong> { Key = 1, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
+        var expectedRecord = new TestRecord<long> { Key = 1, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
 
         var mockReader = new Mock<DbDataReader>();
 
@@ -117,7 +117,7 @@ public sealed class SqliteCollectionTests
         using var fakeCommand = new FakeDbCommand(mockReader.Object);
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnection, "VectorizedSearch");
+        var sut = new SqliteVectorStoreRecordCollection<TestRecord<long>>(fakeConnection, "VectorizedSearch");
 
         // Act
         var result = await sut.VectorizedSearchAsync(expectedRecord.Vector, new() { IncludeVectors = includeVectors }).FirstOrDefaultAsync();
@@ -136,7 +136,7 @@ public sealed class SqliteCollectionTests
     public async Task GetReturnsValidRecordAsync(bool includeVectors)
     {
         // Arrange
-        var expectedRecord = new TestRecord<ulong> { Key = 1, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
+        var expectedRecord = new TestRecord<long> { Key = 1, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
 
         var mockReader = new Mock<DbDataReader>();
 
@@ -145,7 +145,7 @@ public sealed class SqliteCollectionTests
         using var fakeCommand = new FakeDbCommand(mockReader.Object);
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnection, "Get");
+        var sut = new SqliteVectorStoreRecordCollection<TestRecord<long>>(fakeConnection, "Get");
 
         // Act
         var actualRecord = await sut.GetAsync(expectedRecord.Key, new() { IncludeVectors = includeVectors });
@@ -160,11 +160,11 @@ public sealed class SqliteCollectionTests
     public async Task GetBatchReturnsValidRecordsAsync(bool includeVectors)
     {
         // Arrange
-        var expectedRecord1 = new TestRecord<ulong> { Key = 1, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
-        var expectedRecord2 = new TestRecord<ulong> { Key = 2, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
-        var expectedRecord3 = new TestRecord<ulong> { Key = 3, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
+        var expectedRecord1 = new TestRecord<long> { Key = 1, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
+        var expectedRecord2 = new TestRecord<long> { Key = 2, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
+        var expectedRecord3 = new TestRecord<long> { Key = 3, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
 
-        var expectedRecords = new List<TestRecord<ulong>> { expectedRecord1, expectedRecord2, expectedRecord3 };
+        var expectedRecords = new List<TestRecord<long>> { expectedRecord1, expectedRecord2, expectedRecord3 };
 
         var mockReader = new Mock<DbDataReader>();
 
@@ -173,7 +173,7 @@ public sealed class SqliteCollectionTests
         using var fakeCommand = new FakeDbCommand(mockReader.Object);
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnection, "GetBatch");
+        var sut = new SqliteVectorStoreRecordCollection<TestRecord<long>>(fakeConnection, "GetBatch");
 
         // Act
         var actualRecords = await sut
@@ -191,7 +191,7 @@ public sealed class SqliteCollectionTests
     public async Task UpsertReturnsKeyAsync()
     {
         // Arrange
-        var expectedRecord = new TestRecord<ulong> { Key = 1, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
+        var expectedRecord = new TestRecord<long> { Key = 1, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
 
         var mockReader = new Mock<DbDataReader>();
 
@@ -200,7 +200,7 @@ public sealed class SqliteCollectionTests
         using var fakeCommand = new FakeDbCommand(mockReader.Object);
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnection, "Upsert");
+        var sut = new SqliteVectorStoreRecordCollection<TestRecord<long>>(fakeConnection, "Upsert");
 
         // Act
         var actualKey = await sut.UpsertAsync(expectedRecord);
@@ -215,7 +215,7 @@ public sealed class SqliteCollectionTests
     public async Task UpsertWithoutVectorPropertyReturnsKeyAsync()
     {
         // Arrange
-        var expectedRecord = new TestRecordWithoutVectorProperty<ulong> { Key = 1, Data = "Test data" };
+        var expectedRecord = new TestRecordWithoutVectorProperty<long> { Key = 1, Data = "Test data" };
 
         var mockReader = new Mock<DbDataReader>();
 
@@ -224,7 +224,7 @@ public sealed class SqliteCollectionTests
         using var fakeCommand = new FakeDbCommand(mockReader.Object);
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<TestRecordWithoutVectorProperty<ulong>>(fakeConnection, "UpsertWithoutVectorProperty");
+        var sut = new SqliteVectorStoreRecordCollection<TestRecordWithoutVectorProperty<long>>(fakeConnection, "UpsertWithoutVectorProperty");
 
         // Act
         var actualKey = await sut.UpsertAsync(expectedRecord);
@@ -239,11 +239,11 @@ public sealed class SqliteCollectionTests
     public async Task UpsertBatchReturnsKeysAsync()
     {
         // Arrange
-        var expectedRecord1 = new TestRecord<ulong> { Key = 1, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
-        var expectedRecord2 = new TestRecord<ulong> { Key = 2, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
-        var expectedRecord3 = new TestRecord<ulong> { Key = 3, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
+        var expectedRecord1 = new TestRecord<long> { Key = 1, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
+        var expectedRecord2 = new TestRecord<long> { Key = 2, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
+        var expectedRecord3 = new TestRecord<long> { Key = 3, Data = "Test data", Vector = new ReadOnlyMemory<float>([1f, 2f, 3f, 4f]) };
 
-        var expectedRecords = new List<TestRecord<ulong>> { expectedRecord1, expectedRecord2, expectedRecord3 };
+        var expectedRecords = new List<TestRecord<long>> { expectedRecord1, expectedRecord2, expectedRecord3 };
 
         var mockReader = new Mock<DbDataReader>();
 
@@ -252,7 +252,7 @@ public sealed class SqliteCollectionTests
         using var fakeCommand = new FakeDbCommand(mockReader.Object);
         using var fakeConnection = new FakeDBConnection(fakeCommand);
 
-        var sut = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnection, "UpsertBatch");
+        var sut = new SqliteVectorStoreRecordCollection<TestRecord<long>>(fakeConnection, "UpsertBatch");
 
         // Act
         var actualKeys = await sut.UpsertBatchAsync(expectedRecords).ToListAsync();
@@ -272,8 +272,8 @@ public sealed class SqliteCollectionTests
         using var fakeCommandWithoutVectorProperty = new FakeDbCommand();
         using var fakeConnectionWithoutVectorProperty = new FakeDBConnection(fakeCommandWithoutVectorProperty);
 
-        var collectionWithVectorProperty = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnectionWithVectorProperty, "WithVectorProperty");
-        var collectionWithoutVectorProperty = new SqliteVectorStoreRecordCollection<TestRecordWithoutVectorProperty<ulong>>(fakeConnectionWithoutVectorProperty, "WithoutVectorProperty");
+        var collectionWithVectorProperty = new SqliteVectorStoreRecordCollection<TestRecord<long>>(fakeConnectionWithVectorProperty, "WithVectorProperty");
+        var collectionWithoutVectorProperty = new SqliteVectorStoreRecordCollection<TestRecordWithoutVectorProperty<long>>(fakeConnectionWithoutVectorProperty, "WithoutVectorProperty");
 
         // Act
         await collectionWithVectorProperty.DeleteAsync(key: 1);
@@ -293,8 +293,8 @@ public sealed class SqliteCollectionTests
         using var fakeCommandWithoutVectorProperty = new FakeDbCommand();
         using var fakeConnectionWithoutVectorProperty = new FakeDBConnection(fakeCommandWithoutVectorProperty);
 
-        var collectionWithVectorProperty = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnectionWithVectorProperty, "WithVectorProperty");
-        var collectionWithoutVectorProperty = new SqliteVectorStoreRecordCollection<TestRecordWithoutVectorProperty<ulong>>(fakeConnectionWithoutVectorProperty, "WithoutVectorProperty");
+        var collectionWithVectorProperty = new SqliteVectorStoreRecordCollection<TestRecord<long>>(fakeConnectionWithVectorProperty, "WithVectorProperty");
+        var collectionWithoutVectorProperty = new SqliteVectorStoreRecordCollection<TestRecordWithoutVectorProperty<long>>(fakeConnectionWithoutVectorProperty, "WithoutVectorProperty");
 
         // Act
         await collectionWithVectorProperty.DeleteBatchAsync(keys: [1, 2, 3]);
@@ -327,9 +327,9 @@ public sealed class SqliteCollectionTests
         {
             var vectorBytes = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(record.Vector);
 
-            if (record.Key is ulong numericKey)
+            if (record.Key is long numericKey)
             {
-                numericKeySequence.Returns((long)numericKey);
+                numericKeySequence.Returns(numericKey);
             }
 
             if (record.Key is string stringKey)

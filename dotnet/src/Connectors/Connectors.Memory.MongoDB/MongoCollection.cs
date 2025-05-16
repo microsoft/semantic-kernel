@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses MongoDB as the underlying storage.
 /// </summary>
-/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
+/// <typeparam name="TKey">The data type of the record key. Must be <see cref="string"/>.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
@@ -105,7 +105,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
+            throw new NotSupportedException("Only string keys are supported.");
         }
 
         options ??= MongoCollectionOptions.Default;

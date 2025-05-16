@@ -11,7 +11,7 @@ public class SqliteRecordConformanceTests_string(SqliteSimpleModelFixture<string
 {
 }
 
-public class SqliteRecordConformanceTests_ulong(SqliteSimpleModelFixture<ulong> fixture)
-    : RecordConformanceTests<ulong>(fixture), IClassFixture<SqliteSimpleModelFixture<ulong>>
+public class SqliteRecordConformanceTests_long(SqliteSimpleModelFixture<long> fixture)
+    : RecordConformanceTests<long>(fixture), IClassFixture<SqliteSimpleModelFixture<long>>
 {
 }
