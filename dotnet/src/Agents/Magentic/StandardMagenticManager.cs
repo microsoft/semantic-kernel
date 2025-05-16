@@ -87,7 +87,6 @@ public sealed class StandardMagenticManager : MagenticManager
             JsonSerializer.Deserialize<MagenticProgressLedger>(response) ??
             throw new InvalidDataException($"Message content does not align with requested type: {nameof(MagenticProgressLedger)}.");
 
-
         return status;
     }
 
