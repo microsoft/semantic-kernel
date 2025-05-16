@@ -214,7 +214,6 @@ public class AzureAISearchCollectionCreateMappingTests
         yield return new object[] { typeof(long), SearchFieldDataType.Int64 };
         yield return new object[] { typeof(float), SearchFieldDataType.Double };
         yield return new object[] { typeof(double), SearchFieldDataType.Double };
-        yield return new object[] { typeof(DateTime), SearchFieldDataType.DateTimeOffset };
         yield return new object[] { typeof(DateTimeOffset), SearchFieldDataType.DateTimeOffset };
 
         yield return new object[] { typeof(string[]), SearchFieldDataType.Collection(SearchFieldDataType.String) };
