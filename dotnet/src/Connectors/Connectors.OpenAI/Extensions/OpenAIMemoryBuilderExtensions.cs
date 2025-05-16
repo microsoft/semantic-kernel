@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Http;
@@ -24,6 +25,7 @@ public static class OpenAIMemoryBuilderExtensions
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>Self instance</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("This method is now obsolete and will be removed in future. Use an EmbeddingGenerator with your VectorStore instead.")]
     public static MemoryBuilder WithOpenAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,
