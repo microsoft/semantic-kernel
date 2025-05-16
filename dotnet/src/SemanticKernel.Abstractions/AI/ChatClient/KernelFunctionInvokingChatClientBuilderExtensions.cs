@@ -6,9 +6,10 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.ChatCompletion;
+namespace Microsoft.SemanticKernel;
 
-/// <summary>Provides extensions for configuring <see cref="OpenTelemetryChatClient"/> instances.</summary>
+/// <summary>Provides extensions for configuring <see cref="KernelFunctionInvokingChatClient"/> instances.</summary>
+[Experimental("SKEXP0001")]
 public static class KernelFunctionInvokingChatClientBuilderExtensions
 {
     /// <summary>
@@ -19,7 +20,6 @@ public static class KernelFunctionInvokingChatClientBuilderExtensions
     /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to use to create a logger for logging function invocations.</param>
     /// <returns>The supplied <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    [Experimental("SKEXP0001")]
     public static ChatClientBuilder UseKernelFunctionInvocation(
         this ChatClientBuilder builder,
         ILoggerFactory? loggerFactory = null)

@@ -111,17 +111,4 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
 
         return result;
     }
-
-    public override Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        return base.GetResponseAsync(messages, options, cancellationToken);
-    }
-
-    public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        return base.GetStreamingResponseAsync(messages, options, cancellationToken);
-    }
 }

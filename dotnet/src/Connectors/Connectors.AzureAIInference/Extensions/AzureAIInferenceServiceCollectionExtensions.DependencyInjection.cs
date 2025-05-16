@@ -7,7 +7,6 @@ using Azure.Core;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference.Core;
 using AzureKeyCredential = Azure.AzureKeyCredential;
 
@@ -113,6 +112,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
         Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
 
         return services.AddKeyedSingleton<IChatClient>(serviceId, (serviceProvider, _) =>
         {
@@ -160,6 +160,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
         Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
 
         return services.AddKeyedSingleton<IChatClient>(serviceId, (serviceProvider, _) =>
         {
@@ -202,6 +203,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
         Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
 
         return services.AddKeyedSingleton<IChatClient>(serviceId, (serviceProvider, _) =>
         {

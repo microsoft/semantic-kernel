@@ -6,7 +6,6 @@ using Amazon.Runtime;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -33,8 +32,9 @@ public static class BedrockServiceCollectionExtensions
         Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
 
-        if (bedrockRuntime == null)
+        if (bedrockRuntime is null)
         {
             // Add IAmazonBedrockRuntime service client to the DI container
             services.TryAddAWSService<IAmazonBedrockRuntime>();
@@ -94,7 +94,10 @@ public static class BedrockServiceCollectionExtensions
         string? openTelemetrySourceName = null,
         Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
-        if (bedrockRuntime == null)
+        Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(modelId);
+
+        if (bedrockRuntime is null)
         {
             // Add IAmazonBedrockRuntime service client to the DI container
             services.TryAddAWSService<IAmazonBedrockRuntime>();
