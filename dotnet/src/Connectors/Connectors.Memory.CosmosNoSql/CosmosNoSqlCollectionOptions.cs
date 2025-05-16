@@ -20,14 +20,12 @@ public sealed class CosmosNoSqlCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
-    internal CosmosNoSqlCollectionOptions(CosmosNoSqlCollectionOptions? source)
+    internal CosmosNoSqlCollectionOptions(CosmosNoSqlCollectionOptions? source) : base(source)
     {
-        this.Definition = source?.Definition;
         this.JsonSerializerOptions = source?.JsonSerializerOptions;
         this.PartitionKeyPropertyName = source?.PartitionKeyPropertyName;
         this.IndexingMode = source?.IndexingMode ?? Default.IndexingMode;
         this.Automatic = source?.Automatic ?? Default.Automatic;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
     }
 
     /// <summary>

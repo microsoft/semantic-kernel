@@ -3,7 +3,7 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
+using Pinecone;
 using PineconeIntegrationTests.Support;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
@@ -42,14 +42,20 @@ public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.S
         [
             services => services
                 .AddSingleton(PineconeTestStore.Instance.Client)
-                .AddPineconeVectorStore()
+                .AddPineconeVectorStore(),
+            services => services
+                .AddPineconeVectorStore("ForPineconeLocalTheApiKeysAreIgnored", PineconeTestStore.Instance.ClientOptions)
         ];
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
         [
             services => services
                 .AddSingleton(PineconeTestStore.Instance.Client)
-                .AddPineconeVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName),
+            services => services
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName, "ForPineconeLocalTheApiKeysAreIgnored", PineconeTestStore.Instance.ClientOptions),
+            services => services
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName, _ => new PineconeClient("ForPineconeLocalTheApiKeysAreIgnored", PineconeTestStore.Instance.ClientOptions))
         ];
     }
 
@@ -74,7 +80,7 @@ public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.S
         [
             services => services
                 .AddSingleton(PineconeTestStore.Instance.Client)
-                .AddPineconeVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddPineconeCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 }

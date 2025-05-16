@@ -3,7 +3,6 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
 using QdrantIntegrationTests.Support;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
@@ -32,7 +31,7 @@ public class QdrantEmbeddingGenerationTests(QdrantEmbeddingGenerationTests.Strin
         [
             services => services
                 .AddSingleton(QdrantTestStore.UnnamedVectorInstance.Client)
-                .AddQdrantVectorStoreRecordCollection<Guid, RecordWithAttributes>(this.CollectionName)
+                .AddQdrantCollection<Guid, RecordWithAttributes>(this.CollectionName)
         ];
     }
 
@@ -54,7 +53,7 @@ public class QdrantEmbeddingGenerationTests(QdrantEmbeddingGenerationTests.Strin
         [
             services => services
                 .AddSingleton(QdrantTestStore.UnnamedVectorInstance.Client)
-                .AddQdrantVectorStoreRecordCollection<Guid, RecordWithAttributes>(this.CollectionName)
+                .AddQdrantCollection<Guid, RecordWithAttributes>(this.CollectionName)
         ];
     }
 }

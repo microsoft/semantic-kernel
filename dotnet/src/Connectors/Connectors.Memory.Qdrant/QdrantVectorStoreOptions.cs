@@ -12,6 +12,19 @@ public sealed class QdrantVectorStoreOptions
     internal static readonly QdrantVectorStoreOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="QdrantVectorStoreOptions"/> class.
+    /// </summary>
+    public QdrantVectorStoreOptions()
+    {
+    }
+
+    internal QdrantVectorStoreOptions(QdrantVectorStoreOptions? source)
+    {
+        this.HasNamedVectors = source?.HasNamedVectors ?? Default.HasNamedVectors;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+    }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector per qdrant point.
     /// Defaults to single vector per point.
     /// </summary>

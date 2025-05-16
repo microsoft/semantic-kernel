@@ -8,6 +8,22 @@ namespace Microsoft.Extensions.VectorData;
 public abstract class VectorStoreCollectionOptions
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="VectorStoreCollectionOptions"/> class.
+    /// </summary>
+    protected VectorStoreCollectionOptions()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VectorStoreCollectionOptions"/> class.
+    /// </summary>
+    protected VectorStoreCollectionOptions(VectorStoreCollectionOptions? source)
+    {
+        this.Definition = source?.Definition;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+    }
+
+    /// <summary>
     /// An optional record definition that defines the schema of the record type.
     /// </summary>
     /// <remarks>

@@ -18,11 +18,9 @@ public sealed class SqlServerCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
-    internal SqlServerCollectionOptions(SqlServerCollectionOptions? source)
+    internal SqlServerCollectionOptions(SqlServerCollectionOptions? source) : base(source)
     {
         this.Schema = source?.Schema;
-        this.Definition = source?.Definition;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
     }
 
     /// <summary>

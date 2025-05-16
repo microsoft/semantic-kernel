@@ -13,6 +13,19 @@ public sealed class RedisJsonCollectionOptions : VectorStoreCollectionOptions
     internal static readonly RedisJsonCollectionOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="RedisJsonCollectionOptions"/> class.
+    /// </summary>
+    public RedisJsonCollectionOptions()
+    {
+    }
+
+    internal RedisJsonCollectionOptions(RedisJsonCollectionOptions? source) : base(source)
+    {
+        this.PrefixCollectionNameToKeyNames = source?.PrefixCollectionNameToKeyNames ?? Default.PrefixCollectionNameToKeyNames;
+        this.JsonSerializerOptions = source?.JsonSerializerOptions;
+    }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the collection name should be prefixed to the
     /// key names before reading or writing to the Redis store. Default is true.
     /// </summary>

@@ -18,10 +18,8 @@ public sealed class CosmosMongoCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
-    internal CosmosMongoCollectionOptions(CosmosMongoCollectionOptions? source)
+    internal CosmosMongoCollectionOptions(CosmosMongoCollectionOptions? source) : base(source)
     {
-        this.Definition = source?.Definition;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
         this.NumLists = source?.NumLists ?? Default.NumLists;
         this.EfConstruction = source?.EfConstruction ?? Default.EfConstruction;
         this.EfSearch = source?.EfSearch ?? Default.EfSearch;

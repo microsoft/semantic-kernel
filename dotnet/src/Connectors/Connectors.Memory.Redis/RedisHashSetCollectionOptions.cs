@@ -12,6 +12,18 @@ public sealed class RedisHashSetCollectionOptions : VectorStoreCollectionOptions
     internal static readonly RedisHashSetCollectionOptions Default = new();
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="RedisHashSetCollectionOptions"/> class.
+    /// </summary>
+    public RedisHashSetCollectionOptions()
+    {
+    }
+
+    internal RedisHashSetCollectionOptions(RedisHashSetCollectionOptions? source) : base(source)
+    {
+        this.PrefixCollectionNameToKeyNames = source?.PrefixCollectionNameToKeyNames ?? Default.PrefixCollectionNameToKeyNames;
+    }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the collection name should be prefixed to the
     /// key names before reading or writing to the Redis store. Default is true.
     /// </summary>
