@@ -28,7 +28,7 @@ public class ChatCompletion_Whiteboard(ITestOutputHelper output) : BaseTest(outp
     /// from a long running, truncated conversation.
     /// </summary>
     [Fact]
-    private async Task UseWhiteboardAsync()
+    private async Task UseWhiteboardForShortTermMemory()
     {
         var chatClient = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAI.Endpoint), new AzureCliCredential())
             .GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName)

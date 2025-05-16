@@ -415,8 +415,8 @@ public sealed partial class OpenAIAssistantAgent : Agent
 
         // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await openAIAssistantAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        extensionsContext.RegisterPlugins(kernel);
+        var behaviorsContext = await openAIAssistantAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        behaviorsContext.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
@@ -431,7 +431,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
                 this.Client,
                 openAIAssistantAgentThread.Id!,
                 internalOptions,
-                extensionsContext.Instructions,
+                behaviorsContext.Instructions,
                 this.Logger,
                 kernel,
                 options?.KernelArguments,
@@ -560,8 +560,8 @@ public sealed partial class OpenAIAssistantAgent : Agent
 
         // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await openAIAssistantAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        extensionsContext.RegisterPlugins(kernel);
+        var behaviorsContext = await openAIAssistantAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        behaviorsContext.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Create options that use the RunCreationOptions from the options param if provided or
@@ -588,7 +588,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
                 openAIAssistantAgentThread.Id!,
                 newMessagesReceiver,
                 internalOptions,
-                extensionsContext.Instructions,
+                behaviorsContext.Instructions,
                 this.Logger,
                 kernel,
                 options?.KernelArguments,
@@ -666,7 +666,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
         IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
         {
             kernel ??= this.Kernel;
-            return AssistantThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, null, this.Logger, kernel, arguments, cancellationToken);
+            return AssistantThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, behaviorsContext: null, this.Logger, kernel, arguments, cancellationToken);
         }
     }
 

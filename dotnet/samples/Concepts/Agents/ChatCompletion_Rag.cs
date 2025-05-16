@@ -32,16 +32,16 @@ public class ChatCompletion_Rag(ITestOutputHelper output) : BaseTest(output)
     /// Shows how to do Retrieval Augmented Generation (RAG) with some basic text strings.
     /// </summary>
     [Fact]
-    private async Task BasicRagAsync()
+    private async Task UseChatCompletionAgentWithBasicRag()
     {
-        var textEmbeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
+        var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
             .AsIEmbeddingGenerator(1536);
 
         // Create a vector store to store our documents.
         // Note that the embedding generator provided here must be able to generate embeddings matching the
         // number of dimensions configured for the TextSearchStore below.
-        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = textEmbeddingGenerator });
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         // Create a store that uses a built in schema for storing text documents
         // and provides easy upload and search capabilities.
@@ -90,16 +90,16 @@ public class ChatCompletion_Rag(ITestOutputHelper output) : BaseTest(output)
     /// Shows how to do Retrieval Augmented Generation (RAG) with citations and filtering.
     /// </summary>
     [Fact]
-    private async Task RagWithCitationsAndFilteringAsync()
+    private async Task RagWithCitationsAndFiltering()
     {
-        var textEmbeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
+        var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
             .AsIEmbeddingGenerator(1536);
 
         // Create a vector store to store our documents.
         // Note that the embedding generator provided here must be able to generate embeddings matching the
         // number of dimensions configured for the TextSearchStore below.
-        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = textEmbeddingGenerator });
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         // Create a store that uses a built in schema for storing text documents
         // and provides easy upload and search capabilities.

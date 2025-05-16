@@ -78,8 +78,8 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await chatHistoryAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        extensionsContext.RegisterPlugins(kernel);
+        var behaviorsContext = await chatHistoryAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        behaviorsContext.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.
@@ -102,8 +102,8 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             options?.KernelArguments,
             kernel,
             options?.AdditionalInstructions == null ?
-                extensionsContext.Instructions :
-                string.Concat(options.AdditionalInstructions, Environment.NewLine, Environment.NewLine, extensionsContext.Instructions),
+                behaviorsContext.Instructions :
+                string.Concat(options.AdditionalInstructions, Environment.NewLine, Environment.NewLine, behaviorsContext.Instructions),
             cancellationToken);
 
         // Notify the thread of new messages and return them to the caller.
@@ -171,8 +171,8 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await chatHistoryAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        extensionsContext.RegisterPlugins(kernel);
+        var behaviorsContext = await chatHistoryAgentThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        behaviorsContext.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.
@@ -196,8 +196,8 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             options?.KernelArguments,
             kernel,
             options?.AdditionalInstructions == null ?
-                extensionsContext.Instructions :
-                string.Concat(options.AdditionalInstructions, Environment.NewLine, Environment.NewLine, extensionsContext),
+                behaviorsContext.Instructions :
+                string.Concat(options.AdditionalInstructions, Environment.NewLine, Environment.NewLine, behaviorsContext),
             cancellationToken);
 
         await foreach (var result in invokeResults.ConfigureAwait(false))

@@ -94,7 +94,7 @@ public abstract class AgentThread
         this.Id = await this.CreateInternalAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        await this.AIContextBehaviors.OnThreadCreatedAsync(this.Id!, cancellationToken).ConfigureAwait(false);
+        await this.AIContextBehaviors.OnThreadCreatedAsync(this.Id, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
@@ -117,7 +117,7 @@ public abstract class AgentThread
         }
 
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        await this.AIContextBehaviors.OnThreadDeleteAsync(this.Id!, cancellationToken).ConfigureAwait(false);
+        await this.AIContextBehaviors.OnThreadDeleteAsync(this.Id, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         await this.DeleteInternalAsync(cancellationToken).ConfigureAwait(false);
