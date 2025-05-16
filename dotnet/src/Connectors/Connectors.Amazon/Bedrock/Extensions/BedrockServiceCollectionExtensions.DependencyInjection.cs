@@ -24,7 +24,7 @@ public static class BedrockServiceCollectionExtensions
     /// <param name="openTelemetrySourceName">An optional source name that will be used on the telemetry data.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>Returns back <see cref="IServiceCollection"/> with a configured service.</returns>
-    public static IServiceCollection AddBedrockChatClientService(
+    public static IServiceCollection AddBedrockChatClient(
         this IServiceCollection services,
         string modelId,
         IAmazonBedrockRuntime? bedrockRuntime = null,

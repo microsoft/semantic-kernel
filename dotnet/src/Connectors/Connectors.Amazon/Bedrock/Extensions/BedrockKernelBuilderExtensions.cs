@@ -42,7 +42,7 @@ public static class BedrockKernelBuilderExtensions
     /// <param name="openTelemetrySourceName">An optional source name that will be used on the telemetry data.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>Returns back <see cref="IKernelBuilder"/> with a configured <see cref="IChatClient"/>.</returns>
-    public static IKernelBuilder AddBedrockChatClientService(
+    public static IKernelBuilder AddBedrockChatClient(
         this IKernelBuilder builder,
         string modelId,
         IAmazonBedrockRuntime? bedrockRuntime = null,
@@ -52,7 +52,7 @@ public static class BedrockKernelBuilderExtensions
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddBedrockChatClientService(modelId, bedrockRuntime, serviceId, openTelemetrySourceName, openTelemetryConfig);
+        builder.Services.AddBedrockChatClient(modelId, bedrockRuntime, serviceId, openTelemetrySourceName, openTelemetryConfig);
 
         return builder;
     }

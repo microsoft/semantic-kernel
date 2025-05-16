@@ -30,7 +30,7 @@ public class BedrockChatClientTests
     public async Task ChatCompletionReturnsValidResponseAsync(string modelId)
     {
         // Arrange
-        var kernel = Kernel.CreateBuilder().AddBedrockChatClientService(modelId).Build();
+        var kernel = Kernel.CreateBuilder().AddBedrockChatClient(modelId).Build();
 
         // Act
         var message = await kernel.InvokePromptAsync<ChatMessage>("Hello, I'm Alexa, how are you?").ConfigureAwait(true);
@@ -62,7 +62,7 @@ public class BedrockChatClientTests
     public async Task ChatStreamingReturnsValidResponseAsync(string modelId)
     {
         // Arrange
-        var kernel = Kernel.CreateBuilder().AddBedrockChatClientService(modelId).Build();
+        var kernel = Kernel.CreateBuilder().AddBedrockChatClient(modelId).Build();
 
         // Act
         var response = kernel.InvokePromptStreamingAsync<ChatResponseUpdate>("Hello, I'm Alexa, how are you?").ConfigureAwait(true);

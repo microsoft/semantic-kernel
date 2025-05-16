@@ -148,7 +148,7 @@ public sealed class BedrockServiceCollectionExtensionTests : IDisposable
 
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton(this._mockLoggerFactory.Object);
-        builder.AddBedrockChatClientService(
+        builder.AddBedrockChatClient(
             modelId: modelId,
             bedrockRuntime: bedrockRuntime,
             openTelemetrySourceName: customSourceName,
