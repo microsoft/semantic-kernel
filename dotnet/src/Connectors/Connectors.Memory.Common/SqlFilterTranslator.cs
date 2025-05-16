@@ -154,8 +154,10 @@ internal abstract class SqlFilterTranslator
                 this._sql.Append(l);
                 return;
 
-            case string s:
-                this._sql.Append('\'').Append(s.Replace("'", "''")).Append('\'');
+            case string untrustedInput:
+                // This is the only place where we allow untrusted input to be passed in, so we need to quote and escape it.
+                // Luckily for us, values are escaped in the same way for every provider that we support so far.
+                this._sql.Append('\'').Append(untrustedInput.Replace("'", "''")).Append('\'');
                 return;
             case bool b:
                 this._sql.Append(b ? "TRUE" : "FALSE");
