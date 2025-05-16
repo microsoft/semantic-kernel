@@ -91,7 +91,7 @@ public class OpenAIAssistantAgentFixture : AgentFixture
 
         this._assistant =
             await this._assistantClient.CreateAssistantAsync(
-                configuration.ChatModelId,
+                configuration.ChatDeploymentName!,
                 name: "HelpfulAssistant",
                 instructions: "You are a helpful assistant.");
 
