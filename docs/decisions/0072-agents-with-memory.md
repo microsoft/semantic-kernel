@@ -87,7 +87,7 @@ This type should live in the `Microsoft.SemanticKernel.Abstractions` nuget, sinc
 ```csharp
 namespace Microsoft.SemanticKernel;
 
-public abstract class ConversationStateExtension
+public abstract class AIContextBehavior
 {
     public virtual IReadOnlyCollection<AIFunction> AIFunctions => Array.Empty<AIFunction>();
 
@@ -105,18 +105,18 @@ public abstract class ConversationStateExtension
 }
 ```
 
-> TODO: Decide about the correct namespace for `ConversationStateExtension`
+> TODO: Decide about the correct namespace for `AIContextBehavior`
 
 ## Managing multiple components
 
-To manage multiple components I propose that we have a `ConversationStateExtensionsManager`.
+To manage multiple components I propose that we have a `AIContextBehavior`.
 This class allows registering components and delegating new message notifications, ai invocation calls, etc. to the contained components.
 
 ## Integrating with agents
 
-I propose to add a `ConversationStateExtensionsManager` to the `AgentThread` class, allowing us to attach components to any `AgentThread`.
+I propose to add a `AIContextBehaviorManager` to the `AgentThread` class, allowing us to attach components to any `AgentThread`.
 
-When an `Agent` is invoked, we will call `OnModelInvokeAsync` on each component via the `ConversationStateExtensionsManager` to get
+When an `Agent` is invoked, we will call `OnModelInvokeAsync` on each component via the `AIContextBehaviorManager` to get
 a combined set of context to pass to the agent for this invocation. This will be internal to the `Agent` class and transparent to the user.
 
 ```csharp
@@ -185,8 +185,9 @@ var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023",
     1. Long
 1. MemoryComponent
     1. Too specific
+1. AIContextBehavior
 
-Chose ConversationStateExtension.
+Chose AIContextBehavior.
 
 ### Location for abstractions
 
