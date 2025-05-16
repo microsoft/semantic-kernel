@@ -1,28 +1,33 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ast
 import logging
-from collections.abc import AsyncIterable
-from typing import TYPE_CHECKING, Any, ClassVar, Final
+import sys
+from collections.abc import AsyncIterable, Callable
+from inspect import getsource
+from typing import Any, ClassVar, Final, Literal
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import Field, SecretStr, ValidationError
 
+from semantic_kernel.connectors.search.utils import SearchLambdaVisitor
 from semantic_kernel.data.text_search import (
-    AnyTagsEqualTo,
-    EqualTo,
     KernelSearchResults,
-    SearchFilter,
+    SearchOptions,
     TextSearch,
-    TextSearchOptions,
     TextSearchResult,
+    TSearchResult,
 )
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel, KernelBaseSettings
+from semantic_kernel.kernel_types import OptionalOneOrList
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
-if TYPE_CHECKING:
-    from semantic_kernel.data.text_search import SearchOptions
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -137,38 +142,26 @@ class BraveSearch(KernelBaseModel, TextSearch):
 
         super().__init__(settings=settings)  # type: ignore[call-arg]
 
+    @override
     async def search(
-        self, query: str, options: "SearchOptions | None" = None, **kwargs: Any
-    ) -> "KernelSearchResults[str]":
-        """Search for text, returning a KernelSearchResult with a list of strings."""
-        options = self._get_options(options, **kwargs)
+        self,
+        query: str,
+        output_type: type[str] | type[TSearchResult] | Literal["Any"] = str,
+        *,
+        filter: OptionalOneOrList[Callable | str] = None,
+        skip: int = 0,
+        top: int = 5,
+        include_total_count: bool = False,
+        **kwargs: Any,
+    ) -> "KernelSearchResults[TSearchResult]":
+        options = SearchOptions(filter=filter, skip=skip, top=top, include_total_count=include_total_count, **kwargs)
         results = await self._inner_search(query=query, options=options)
         return KernelSearchResults(
-            results=self._get_result_strings(results),
-            total_count=self._get_total_count(results, options),
-            metadata=self._get_metadata(results),
-        )
-
-    async def get_text_search_results(
-        self, query: str, options: "SearchOptions | None" = None, **kwargs
-    ) -> "KernelSearchResults[TextSearchResult]":
-        """Search for text, returning a KernelSearchResult with TextSearchResults."""
-        options = self._get_options(options, **kwargs)
-        results = await self._inner_search(query=query, options=options)
-        return KernelSearchResults(
-            results=self._get_text_search_results(results),
-            total_count=self._get_total_count(results, options),
-            metadata=self._get_metadata(results),
-        )
-
-    async def get_search_results(
-        self, query: str, options: "SearchOptions | None" = None, **kwargs
-    ) -> "KernelSearchResults[BraveWebPage]":
-        """Search for text, returning a KernelSearchResult with the results directly from the service."""
-        options = self._get_options(options, **kwargs)
-        results = await self._inner_search(query=query, options=options)
-        return KernelSearchResults(
-            results=self._get_brave_web_pages(results),
+            results=self._get_result_strings(results)
+            if output_type is str
+            else self._get_text_search_results(results)
+            if output_type is TextSearchResult
+            else self._get_brave_web_pages(results),
             total_count=self._get_total_count(results, options),
             metadata=self._get_metadata(results),
         )
@@ -204,20 +197,18 @@ class BraveSearch(KernelBaseModel, TextSearch):
             "country": response.query_context.get("country"),
         }
 
-    def _get_total_count(self, response: BraveSearchResponse, options: TextSearchOptions) -> int | None:
+    def _get_total_count(self, response: BraveSearchResponse, options: SearchOptions) -> int | None:
         if options.include_total_count and response.web_pages is not None:
             return len(response.web_pages.results)
         return None
 
-    def _get_options(self, options: "SearchOptions | None", **kwargs: Any) -> TextSearchOptions:
-        if options is not None and isinstance(options, TextSearchOptions):
-            return options
+    def _get_options(self, **kwargs: Any) -> SearchOptions:
         try:
-            return TextSearchOptions(**kwargs)
+            return SearchOptions(**kwargs)
         except ValidationError:
-            return TextSearchOptions()
+            return SearchOptions()
 
-    async def _inner_search(self, query: str, options: TextSearchOptions) -> BraveSearchResponse:
+    async def _inner_search(self, query: str, options: SearchOptions) -> BraveSearchResponse:
         self._validate_options(options)
 
         logger.info(
@@ -249,7 +240,7 @@ class BraveSearch(KernelBaseModel, TextSearch):
             logger.error(f"An unexpected error occurred: {ex}")
             raise ServiceInvalidRequestError("An unexpected error occurred while getting search results.") from ex
 
-    def _validate_options(self, options: TextSearchOptions) -> None:
+    def _validate_options(self, options: SearchOptions) -> None:
         if options.top <= 0:
             raise ServiceInvalidRequestError("count value must be greater than 0.")
         if options.top >= 21:
@@ -263,24 +254,28 @@ class BraveSearch(KernelBaseModel, TextSearch):
     def _get_url(self) -> str:
         return DEFAULT_URL
 
-    def _build_request_parameters(self, query: str, options: TextSearchOptions) -> dict[str, str | int | bool]:
+    def _parse_filter_lambda(self, filter_lambda: Callable | str) -> list[dict[str, str]]:
+        """Parse a string lambda or string expression into a list of {field: value} dicts using AST."""
+        expr = filter_lambda if isinstance(filter_lambda, str) else getsource(filter_lambda).strip()
+        tree = ast.parse(expr, mode="eval")
+        node = tree.body
+        visitor = SearchLambdaVisitor(valid_parameters=QUERY_PARAMETERS)
+        visitor.visit(node)
+        return visitor.filters
+
+    def _build_request_parameters(self, query: str, options: SearchOptions) -> dict[str, str | int | bool]:
         params: dict[str, str | int] = {"q": query or "", "count": options.top, "offset": options.skip}
         if not options.filter:
             return params
-        for filter in options.filter.filters:
-            if isinstance(filter, EqualTo):
-                if filter.field_name in QUERY_PARAMETERS:
-                    params[filter.field_name] = filter.value
-                else:
-                    raise ServiceInvalidRequestError(
-                        f"Observed an unwanted parameter named {filter.field_name} with value {filter.value} ."
-                    )
-            elif isinstance(filter, SearchFilter):
-                logger.warning("Groups are not supported by Brave search, ignored.")
+        filters = options.filter
+        if not isinstance(filters, list):
+            filters = [filters]
+        for f in filters:
+            try:
+                for d in self._parse_filter_lambda(f):
+                    for field, value in d.items():
+                        params[field] = value
+            except Exception as exc:
+                logger.warning(f"Failed to parse filter lambda: {f}, ignoring this filter. Error: {exc}")
                 continue
-            elif isinstance(filter, AnyTagsEqualTo):
-                logger.debug("Any tag equals to filter is not supported by Brave Search API.")
         return params
-
-
-__all__ = ["BraveSearch", "BraveSearchResponse", "BraveWebPage"]
