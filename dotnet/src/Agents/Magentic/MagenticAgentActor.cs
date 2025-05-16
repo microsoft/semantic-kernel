@@ -39,8 +39,6 @@ internal sealed class MagenticAgentActor :
     /// <inheritdoc/>
     public ValueTask HandleAsync(MagenticMessages.Group item, MessageContext messageContext)
     {
-        Debug.WriteLine("ACTOR GROUP");
-
         this._cache.AddRange(item.Messages);
 
 #if !NETCOREAPP
@@ -53,7 +51,7 @@ internal sealed class MagenticAgentActor :
     /// <inheritdoc/>
     public async ValueTask HandleAsync(MagenticMessages.Reset item, MessageContext messageContext)
     {
-        Debug.WriteLine("ACTOR RESET");
+        this._cache.Clear();
         await this.DeleteThreadAsync(messageContext.CancellationToken).ConfigureAwait(false);
     }
 
