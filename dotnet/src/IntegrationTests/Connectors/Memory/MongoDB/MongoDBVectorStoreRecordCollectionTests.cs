@@ -49,7 +49,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
     }
 
     [RetryTheory(typeof(MongoCommandException), Skip = SkipReason)]
@@ -82,7 +82,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         Assert.NotNull(getResult);
 
@@ -118,7 +118,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.True(await sut.CollectionExistsAsync());
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         Assert.False(await sut.CollectionExistsAsync());

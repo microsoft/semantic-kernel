@@ -166,7 +166,7 @@ public sealed class WeaviateCollectionTests : IDisposable
         using var sut = new WeaviateCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         Assert.Equal("http://default-endpoint/schema/Collection", this._messageHandlerStub.RequestUri?.AbsoluteUri);

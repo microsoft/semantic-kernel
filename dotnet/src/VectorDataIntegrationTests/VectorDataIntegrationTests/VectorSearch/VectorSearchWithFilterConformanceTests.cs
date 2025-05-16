@@ -52,7 +52,7 @@ public abstract class VectorSearchWithFilterConformanceTests<TKey>(VectorStoreFi
         }
         finally
         {
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
         }
 
         // Assert

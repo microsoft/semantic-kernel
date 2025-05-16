@@ -217,7 +217,7 @@ public sealed class CosmosMongoCollectionTests
             CollectionName);
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         this._mockMongoDatabase.Verify(l => l.DropCollectionAsync(

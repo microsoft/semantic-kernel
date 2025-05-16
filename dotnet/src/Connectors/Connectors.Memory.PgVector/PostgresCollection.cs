@@ -144,7 +144,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     }
 
     /// <inheritdoc/>
-    public override Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
         const string OperationName = "DeleteCollection";
         return this.RunOperationAsync(OperationName, () =>

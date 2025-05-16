@@ -41,7 +41,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             // Cleanup
             if (createCollection)
             {
-                await sut.DeleteCollectionAsync();
+                await sut.EnsureCollectionDeletedAsync();
             }
         }
     }
@@ -60,7 +60,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         finally
         {
             // Cleanup
-            await sut.DeleteCollectionAsync();
+            await sut.EnsureCollectionDeletedAsync();
         }
     }
 
@@ -71,7 +71,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         var sut = fixture.GetCollection<int, PostgresHotel<int>>("CollectionCanUpsertAndGet");
         if (await sut.CollectionExistsAsync())
         {
-            await sut.DeleteCollectionAsync();
+            await sut.EnsureCollectionDeletedAsync();
         }
 
         await sut.EnsureCollectionExistsAsync();
@@ -127,7 +127,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         finally
         {
             // Cleanup
-            await sut.DeleteCollectionAsync();
+            await sut.EnsureCollectionDeletedAsync();
         }
     }
 

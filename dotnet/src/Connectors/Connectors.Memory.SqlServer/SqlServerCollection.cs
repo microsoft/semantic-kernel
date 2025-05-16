@@ -127,7 +127,7 @@ public class SqlServerCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public override async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.DropTableIfExists(

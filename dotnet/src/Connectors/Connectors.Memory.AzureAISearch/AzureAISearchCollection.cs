@@ -211,7 +211,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     }
 
     /// <inheritdoc />
-    public override Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
         return this.RunOperationAsync<Response>(
             "DeleteIndex",

@@ -47,7 +47,7 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
     /// <inheritdoc/>
     public async Task DisposeAsync()
     {
-        await this.VectorStoreRecordCollection.DeleteCollectionAsync().ConfigureAwait(false);
+        await this.VectorStoreRecordCollection.EnsureCollectionDeletedAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

@@ -158,7 +158,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     }
 
     /// <inheritdoc />
-    public override Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
         => this.RunOperationAsync("DropCollection", () => this._mongoDatabase.DropCollectionAsync(this.Name, cancellationToken));
 
     /// <inheritdoc />

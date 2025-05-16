@@ -51,7 +51,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
         finally
         {
             // Clean up
-            await sut.DeleteCollectionAsync();
+            await sut.EnsureCollectionDeletedAsync();
         }
     }
 
@@ -84,7 +84,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         Assert.NotNull(getResult);
 
@@ -120,7 +120,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
         Assert.True(await sut.CollectionExistsAsync());
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         Assert.False(await sut.CollectionExistsAsync());

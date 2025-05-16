@@ -34,7 +34,7 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
 
         if (await this.Collection.CollectionExistsAsync())
         {
-            await this.Collection.DeleteCollectionAsync();
+            await this.Collection.EnsureCollectionDeletedAsync();
         }
 
         await this.Collection.EnsureCollectionExistsAsync();

@@ -217,7 +217,7 @@ public sealed class MongoCollectionTests
             CollectionName);
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         this._mockMongoDatabase.Verify(l => l.DropCollectionAsync(

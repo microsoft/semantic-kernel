@@ -136,7 +136,7 @@ public class AzureAISearchCollectionTests
         using var sut = this.CreateRecordCollection(false);
 
         // Act.
-        await sut.DeleteCollectionAsync(this._testCancellationToken);
+        await sut.EnsureCollectionDeletedAsync(this._testCancellationToken);
 
         // Assert.
         this._searchIndexClientMock.Verify(x => x.DeleteIndexAsync(TestCollectionName, this._testCancellationToken), Times.Once);

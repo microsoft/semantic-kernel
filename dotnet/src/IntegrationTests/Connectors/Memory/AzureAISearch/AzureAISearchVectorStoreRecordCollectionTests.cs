@@ -55,7 +55,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         };
         using var sut = new AzureAISearchCollection<string, AzureAISearchHotel>(fixture.SearchIndexClient, testCollectionName, options);
 
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Act
         await sut.EnsureCollectionExistsAsync();
@@ -74,7 +74,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
         Assert.True(collectionExistResult);
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         Assert.NotNull(getResult);
         Assert.Equal(hotel.HotelName, getResult.HotelName);
@@ -111,7 +111,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         using var sut = new AzureAISearchCollection<string, AzureAISearchHotel>(fixture.SearchIndexClient, tempCollectionName);
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         Assert.False(await sut.CollectionExistsAsync());

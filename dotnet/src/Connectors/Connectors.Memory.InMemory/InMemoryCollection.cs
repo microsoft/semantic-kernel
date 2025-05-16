@@ -129,7 +129,7 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     }
 
     /// <inheritdoc />
-    public override Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
         this._internalCollections.TryRemove(this.Name, out _);
         this._internalCollectionTypes.TryRemove(this.Name, out _);
