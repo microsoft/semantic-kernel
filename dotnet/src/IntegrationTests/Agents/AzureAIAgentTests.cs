@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.AI.Agents.Persistent;
@@ -88,7 +89,7 @@ public class AzureAIAgentTests
                 message,
                 agentThread,
                 new AzureAIAgentInvokeOptions() { OverrideInstructions = "Respond to all user questions with 'Computer says no'." }).ToArrayAsync();
-            var responseText = string.Join(string.Empty, responseMessages.Select(x => x.Message.Content));
+            var responseText = string.Join(Environment.NewLine, responseMessages.Select(x => x.Message.Content));
 
             Assert.Contains("Computer says no", responseText);
         }
