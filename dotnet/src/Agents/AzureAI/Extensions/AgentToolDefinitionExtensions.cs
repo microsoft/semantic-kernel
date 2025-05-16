@@ -242,7 +242,7 @@ internal static class AgentToolDefinitionExtensions
 
         var toolConnections = agentToolDefinition.GetRequiredOption<List<object>>("tool_connections");
 
-        return toolConnections.Select(connectionId => new ToolConnection(connectionId.ToString())).ToList();
+        return [.. toolConnections.Select(connectionId => new ToolConnection(connectionId.ToString()))];
     }
 
     private static T GetRequiredOption<T>(this AgentToolDefinition agentToolDefinition, string key)

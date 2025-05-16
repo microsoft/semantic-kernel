@@ -45,34 +45,34 @@ public abstract class BaseTest : TextWriter
     /// </summary>
     protected bool UseBingSearch => TestConfiguration.Bing.ApiKey is not null;
 
-    protected Kernel CreateKernelWithChatCompletion()
+    protected Kernel CreateKernelWithChatCompletion(string? modelName = null)
     {
         var builder = Kernel.CreateBuilder();
 
-        AddChatCompletionToKernel(builder);
+        AddChatCompletionToKernel(builder, modelName);
 
         return builder.Build();
     }
 
-    protected void AddChatCompletionToKernel(IKernelBuilder builder)
+    protected void AddChatCompletionToKernel(IKernelBuilder builder, string? modelName = null)
     {
         if (this.UseOpenAIConfig)
         {
             builder.AddOpenAIChatCompletion(
-                TestConfiguration.OpenAI.ChatModelId,
+                modelName ?? TestConfiguration.OpenAI.ChatModelId,
                 TestConfiguration.OpenAI.ApiKey);
         }
         else if (!string.IsNullOrEmpty(this.ApiKey))
         {
             builder.AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                modelName ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
         }
         else
         {
             builder.AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                modelName ?? TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 new AzureCliCredential());
         }
