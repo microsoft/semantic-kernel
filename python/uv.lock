@@ -766,7 +766,7 @@ wheels = [
 
 [[package]]
 name = "chromadb"
-version = "1.0.8"
+version = "1.0.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bcrypt", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -800,13 +800,13 @@ dependencies = [
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "uvicorn", extra = ["standard"], marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/88/88/75dc5b4ba2945fcf78672446fd2234a2d5f2e5b5b3273ad9548d8a682b35/chromadb-1.0.8.tar.gz", hash = "sha256:271ed476da71f46b44d0d8e1ee63bb009e3b0d81903b973422522f5637b169f2", size = 1183015, upload_time = "2025-05-05T09:26:14.927Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bd/f9/4da6de4e3728805027f7e5ffe44e5e019123a20dfddc8aa920f204ecd656/chromadb-1.0.9.tar.gz", hash = "sha256:96498ed141e71f1fce2e40f1bdce89020182f9fceed8d8e30d3a40e07be3d488", size = 1189351, upload-time = "2025-05-12T22:05:00.182Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b0/85/827a588726c2936747b28c10faeb4896920ce9589559437e0e7b702b2955/chromadb-1.0.8-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:fa9ec1d8ebef84e1f13793e596a6a81c8fa62366e241ed2b411d6ea6f291264b", size = 18183763, upload_time = "2025-05-05T09:26:12.561Z" },
-    { url = "https://files.pythonhosted.org/packages/60/c9/7e29fa95e95f2b8f704fbf9108308864285d45ec5b692b909f5c9b42c92e/chromadb-1.0.8-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:88e60508cf335e243bbab9e5d3fa8eb2a08b1557623edea9bf681a30cb683a9f", size = 17423700, upload_time = "2025-05-05T09:26:10.027Z" },
-    { url = "https://files.pythonhosted.org/packages/b8/83/3bc274ac7cd2f06fd70ef2196401f1c0d70b753fa1345bc04336440b3e85/chromadb-1.0.8-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7f65ac60a26955eec14dfd69092c3323873b4161280485c85f950e6e6fa04b43", size = 17955971, upload_time = "2025-05-05T09:26:03.314Z" },
-    { url = "https://files.pythonhosted.org/packages/ba/8b/92bded2d3beb1238416052e39cf4cb42c2de7550d73bc48843f4eee2d722/chromadb-1.0.8-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8da0c3293b8f18bea462b7166136c99e5624e218b009bad43d8fd931c092e2c0", size = 18871103, upload_time = "2025-05-05T09:26:06.303Z" },
-    { url = "https://files.pythonhosted.org/packages/5f/e4/82d9ab49a206a0f3030ca94b29305358a6ab61fab45e0756e23f4cc7d701/chromadb-1.0.8-cp39-abi3-win_amd64.whl", hash = "sha256:627f3dd992b30895a62154e8ae07fedf1ffd3e99bbfc339732a16202e0816d81", size = 18817415, upload_time = "2025-05-05T09:26:17.219Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/f7/f9408376ba1fa98cbe027ae50095f487716d57e2def79d4761f3ce7d3d6f/chromadb-1.0.9-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:d03bdc692215dc9c62215f766858852ccbf879ffd156fdd13b77be0a52a7f5c8", size = 18260521, upload-time = "2025-05-12T22:04:57.572Z" },
+    { url = "https://files.pythonhosted.org/packages/6c/3b/9195db9e17516eb279a6adac3a4ca6062be5b922e4062b794e99dcccef91/chromadb-1.0.9-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:661772b9d2ec96665fea49cf1bd9c00313f6bba3fa5f1c7c7ea983cd6bb93254", size = 17511116, upload-time = "2025-05-12T22:04:54.541Z" },
+    { url = "https://files.pythonhosted.org/packages/15/d1/2513d386d3001066a1b72142fabc00f46bc1e06cf3c775c042553b24c78a/chromadb-1.0.9-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:44f1f8c53b03b5fc08c54163736b7ba870c1a6c60bb0ac5db9e22c7026c91045", size = 18052311, upload-time = "2025-05-12T22:04:48.006Z" },
+    { url = "https://files.pythonhosted.org/packages/74/f7/00b99c47efd0c7d2f9af1bff86f755fde342513263d61078de5bd5c3bf7b/chromadb-1.0.9-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d1ecb75306e8700501d6196006e4d4e8d7523be1952eb1714be7a245c3f294ac", size = 18944764, upload-time = "2025-05-12T22:04:51.314Z" },
+    { url = "https://files.pythonhosted.org/packages/5d/c4/4a10dbd99f88daa9dd5b19ce35865bbd237fce8df2d348b9032a9d7470dd/chromadb-1.0.9-cp39-abi3-win_amd64.whl", hash = "sha256:4bd2b76e5b3df9e1aeb12b75ea18a938ff5f50a63fd67a4da7b13470926355e8", size = 18924680, upload-time = "2025-05-12T22:05:02.478Z" },
 ]
 
 [[package]]
@@ -1520,7 +1520,7 @@ wheels = [
 
 [[package]]
 name = "google-cloud-bigquery"
-version = "3.31.0"
+version = "3.32.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "google-api-core", extra = ["grpc"], marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -1531,9 +1531,9 @@ dependencies = [
     { name = "python-dateutil", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "requests", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/73/91/4c7274f4d5faf13ac000b06353deaf3579575bf0e4bbad07fa68b9f09ba9/google_cloud_bigquery-3.31.0.tar.gz", hash = "sha256:b89dc716dbe4abdb7a4f873f7050100287bc98514e0614c5d54cd6a8e9fb0991", size = 479961, upload_time = "2025-03-25T18:54:40.43Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9f/cf/174ea37f0410f0702c3582c09bae45d6f43c6eabe2858ab5fb2a4319e15f/google_cloud_bigquery-3.32.0.tar.gz", hash = "sha256:f1c53d73a6d255c8cd0ca7a0c077d95224217427a4b7dcf9913ea0298a2961e8", size = 487055, upload-time = "2025-05-12T17:09:36.542Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e8/bc/4cb8c61fc6dd817a4a390b745ec7b305f4578f547a16d09d54c8a790624b/google_cloud_bigquery-3.31.0-py3-none-any.whl", hash = "sha256:97f4a3219854ff01d6a3a57312feecb0b6e13062226b823f867e2d3619c4787b", size = 250099, upload_time = "2025-03-25T18:54:38.241Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/c3/f3f6179f54e4b4ac2c6abaa8186054fd1d7d881676bb3caef9688e5fac3d/google_cloud_bigquery-3.32.0-py3-none-any.whl", hash = "sha256:ff38d21d70c4563d2473db288d2a9fe44f071d928bbad6d029ac9ba0b8a36b7a", size = 253121, upload-time = "2025-05-12T17:09:34.671Z" },
 ]
 
 [[package]]
@@ -1893,21 +1893,6 @@ wheels = [
 ]
 
 [[package]]
-name = "hf-xet"
-version = "1.1.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/aa/2c/70009910fcbd204bde75842b60c1e47fe72edb0e978954cb8001735885c7/hf_xet-1.1.0.tar.gz", hash = "sha256:a7c2a4c2b6eee9ce0a1a367a82b60d95ba634420ef1c250addad7aa4af419cf4", size = 263996, upload_time = "2025-04-29T21:15:51.247Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/fd/0db331297e331f0f02005fd7ea666439bf15efd74f0dd62af02a43236a1b/hf_xet-1.1.0-cp37-abi3-macosx_10_12_x86_64.whl", hash = "sha256:0322c42551e275fcb7949c083a54a81b2898e50787c9aa74284fcb8d2c58c12c", size = 5069444, upload_time = "2025-04-29T21:15:42.631Z" },
-    { url = "https://files.pythonhosted.org/packages/b9/7d/4d7ae44219d3744ad55669cb90ef3d4ed9f5f8a4729fa635a6499491cb78/hf_xet-1.1.0-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:667153a0304ac2debf2af95a8ff7687186f885b493f4cd16344869af270cd110", size = 4881465, upload_time = "2025-04-29T21:15:40.799Z" },
-    { url = "https://files.pythonhosted.org/packages/83/9a/d40d2a57b132d609d8a4ccc29e59ed69749021610616749cabcda2532158/hf_xet-1.1.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:995eeffb119636ea617b96c7d7bf3c3f5ea8727fa57974574e25d700b8532d48", size = 53584225, upload_time = "2025-04-29T21:15:37.754Z" },
-    { url = "https://files.pythonhosted.org/packages/2e/01/d94553f91d85746e0862f24d239da88d10f5ce252b028565744e982432f4/hf_xet-1.1.0-cp37-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:3aee847da362393331f515c4010d0aaa1c2669acfcca1f4b28946d6949cc0086", size = 52043680, upload_time = "2025-04-29T21:15:34.15Z" },
-    { url = "https://files.pythonhosted.org/packages/29/89/1f31853bf378f0ceb3363c07fd8a12af9b904b1f8c21e65eb5c19397bc98/hf_xet-1.1.0-cp37-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:68c5813a6074aa36e12ef5983230e3b03148cce61e0fcdd294096493795565b4", size = 53072672, upload_time = "2025-04-29T21:15:44.743Z" },
-    { url = "https://files.pythonhosted.org/packages/b5/9f/5ecb92b18a4b2135a72a95dc08bcbeda9176f46642c745ee052420d2aea8/hf_xet-1.1.0-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:4ee9222bf9274b1c198b88a929de0b5a49349c4962d89c5b3b2f0f7f47d9761c", size = 53521053, upload_time = "2025-04-29T21:15:48.252Z" },
-    { url = "https://files.pythonhosted.org/packages/53/d6/cb32842cbf1cf5a154b41fa918a2fd86003af9bca227a2397cd7f312a8a6/hf_xet-1.1.0-cp37-abi3-win_amd64.whl", hash = "sha256:73153eab9abf3d6973b21e94a67ccba5d595c3e12feb8c0bf50be02964e7f126", size = 4204376, upload_time = "2025-04-29T21:15:52.69Z" },
-]
-
-[[package]]
 name = "hiredis"
 version = "3.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2082,21 +2067,20 @@ wheels = [
 
 [[package]]
 name = "huggingface-hub"
-version = "0.31.1"
+version = "0.31.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "filelock", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "fsspec", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "hf-xet", marker = "(platform_machine == 'aarch64' and sys_platform == 'darwin') or (platform_machine == 'amd64' and sys_platform == 'darwin') or (platform_machine == 'arm64' and sys_platform == 'darwin') or (platform_machine == 'x86_64' and sys_platform == 'darwin') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'amd64' and sys_platform == 'linux') or (platform_machine == 'arm64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux') or (platform_machine == 'aarch64' and sys_platform == 'win32') or (platform_machine == 'amd64' and sys_platform == 'win32') or (platform_machine == 'arm64' and sys_platform == 'win32') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
     { name = "packaging", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "pyyaml", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "requests", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "tqdm", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/25/eb/9268c1205d19388659d5dc664f012177b752c0eef194a9159acc7227780f/huggingface_hub-0.31.1.tar.gz", hash = "sha256:492bb5f545337aa9e2f59b75ef4c5f535a371e8958a6ce90af056387e67f1180", size = 403036, upload_time = "2025-05-07T15:25:19.695Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3b/7b/09ab792c463975fcd0a81f459b5e900057dabbbc274ff253bb28d58ebfce/huggingface_hub-0.31.2.tar.gz", hash = "sha256:7053561376ed7f6ffdaecf09cc54d70dc784ac6315fa4bb9b93e19662b029675", size = 403025, upload-time = "2025-05-13T09:45:43.617Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3a/bf/6002da17ec1c7a47bedeb216812929665927c70b6e7500b3c7bf36f01bdd/huggingface_hub-0.31.1-py3-none-any.whl", hash = "sha256:43f73124819b48b42d140cbc0d7a2e6bd15b2853b1b9d728d4d55ad1750cac5b", size = 484265, upload_time = "2025-05-07T15:25:17.921Z" },
+    { url = "https://files.pythonhosted.org/packages/83/81/a8fd9c226f7e3bc8918f1e456131717cb38e93f18ccc109bf3c8471e464f/huggingface_hub-0.31.2-py3-none-any.whl", hash = "sha256:8138cd52aa2326b4429bb00a4a1ba8538346b7b8a808cdce30acb6f1f1bdaeec", size = 484230, upload-time = "2025-05-13T09:45:41.977Z" },
 ]
 
 [[package]]
@@ -3378,8 +3362,8 @@ name = "onnxruntime-genai"
 version = "0.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "numpy", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux')" },
-    { name = "onnxruntime", version = "1.22.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux')" },
+    { name = "numpy", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "onnxruntime", version = "1.22.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ef/47/ff222bb74a0725266cebfbca7bf24f0877b4e9abb1b38451173507d3c362/onnxruntime_genai-0.7.1-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:12dc0005dba08bee78ec5bae67624f9e92ce0dad8a6cab444b87d9a43236a514", size = 988999, upload_time = "2025-04-21T22:52:59.484Z" },
@@ -3398,7 +3382,7 @@ wheels = [
 
 [[package]]
 name = "openai"
-version = "1.78.0"
+version = "1.78.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -3410,9 +3394,9 @@ dependencies = [
     { name = "tqdm", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d1/7c/7c48bac9be52680e41e99ae7649d5da3a0184cd94081e028897f9005aa03/openai-1.78.0.tar.gz", hash = "sha256:254aef4980688468e96cbddb1f348ed01d274d02c64c6c69b0334bf001fb62b3", size = 442652, upload_time = "2025-05-08T17:28:34.23Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a4/3f/4e5e7b0548a15eabc4a755c93cd5f9564887e3d2fd45b6ff531352e5859d/openai-1.78.1.tar.gz", hash = "sha256:8b26b364531b100df1b961d03560042e5f5be11301d7d49a6cd1a2b9af824dca", size = 442985, upload-time = "2025-05-12T09:59:51.098Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cc/41/d64a6c56d0ec886b834caff7a07fc4d43e1987895594b144757e7a6b90d7/openai-1.78.0-py3-none-any.whl", hash = "sha256:1ade6a48cd323ad8a7715e7e1669bb97a17e1a5b8a916644261aaef4bf284778", size = 680407, upload_time = "2025-05-08T17:28:32.09Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/4c/3889bc332a6c743751eb78a4bada5761e50a8a847ff0e46c1bd23ce12362/openai-1.78.1-py3-none-any.whl", hash = "sha256:7368bf147ca499804cc408fe68cdb6866a060f38dec961bbc97b04f9d917907e", size = 680917, upload-time = "2025-05-12T09:59:48.948Z" },
 ]
 
 [[package]]
@@ -6593,7 +6577,7 @@ wheels = [
 
 [[package]]
 name = "weaviate-client"
-version = "4.14.1"
+version = "4.14.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "authlib", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -6606,9 +6590,9 @@ dependencies = [
     { name = "pydantic", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "validators", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5d/a6/e0a1634efa8bf0e761a6a146d5e822d527e3bc810074d582b979284fcf80/weaviate_client-4.14.1.tar.gz", hash = "sha256:fbac4dc73cb65d811865ebb8d42c2c14207cc192f51008009cb54b571e181d1a", size = 661887, upload_time = "2025-04-24T12:22:43.802Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ce/e5/cfb31bcfa3c8010785ee93b5d81fd1235bd085bfc9d73bd2f598e68f0fe9/weaviate_client-4.14.3.tar.gz", hash = "sha256:b21f8d0335eaf25aab3867eba0f621c8a89b8dfdadd27d11e2cb1f5a257c5f4c", size = 663320, upload-time = "2025-05-12T10:28:18.81Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9c/47/251c7819ff5e0dc4279c064657cbdddbf09523c5a0fff1e20e0a3d05c407/weaviate_client-4.14.1-py3-none-any.whl", hash = "sha256:00895b1b96f725acae9ed64d6e9c541f1774a09cc1f53a0ab79369ca2b451dcf", size = 442311, upload_time = "2025-04-24T12:22:41.699Z" },
+    { url = "https://files.pythonhosted.org/packages/2d/a2/bf731769116e998e0becc5289179bb65fb0d1596cf5cf649fd6f0360e90e/weaviate_client-4.14.3-py3-none-any.whl", hash = "sha256:7e395fd759859e3ec39e29183a62a99150a9c4b25a0ceb3f5a9a66741da1c7e8", size = 436652, upload-time = "2025-05-12T10:28:17.115Z" },
 ]
 
 [[package]]
