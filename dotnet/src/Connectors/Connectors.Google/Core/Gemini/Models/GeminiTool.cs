@@ -26,6 +26,17 @@ internal sealed class GeminiTool
     public IList<FunctionDeclaration> Functions { get; set; } = [];
 
     /// <summary>
+    /// Optional. Google Search configuration that allows the model to use Google Search as a tool to improve response quality.
+    /// When this property is set (even with empty object), the model can decide to use Google Search autonomously.
+    /// </summary>
+    /// <remarks>
+    /// The Search-as-a-tool functionality also enables multi-turn searches. Combining Search with function calling is not yet supported.
+    /// </remarks>
+    [JsonPropertyName("googleSearch")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GoogleSearchProperties? GoogleSearch { get; set; }
+
+    /// <summary>
     /// Structured representation of a function declaration as defined by the OpenAPI 3.03 specification.
     /// Included in this declaration are the function name and parameters.
     /// This FunctionDeclaration is a representation of a block of code that can be used as a Tool by the model and executed by the client.
@@ -56,4 +67,12 @@ internal sealed class GeminiTool
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonElement? Parameters { get; set; }
     }
+
+    /// <summary>
+    /// Configuration properties for Google Search integration.
+    /// </summary>
+    /// <remarks>
+    /// An empty object is sufficient to enable Search as a tool.
+    /// </remarks>
+    internal sealed class GoogleSearchProperties;
 }
