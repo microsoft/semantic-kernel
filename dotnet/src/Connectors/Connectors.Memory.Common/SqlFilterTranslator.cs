@@ -61,7 +61,7 @@ internal abstract class SqlFilterTranslator
                 return;
 
             case QueryParameterExpression { Name: var name, Value: var value }:
-                this.TranslateQueryParameter(name, value);
+                this.TranslateQueryParameter(value);
                 return;
 
             case MemberExpression member:
@@ -192,7 +192,7 @@ internal abstract class SqlFilterTranslator
     protected virtual void GenerateColumn(string column, bool isSearchCondition = false)
         => this._sql.Append('"').Append(column.Replace("\"", "\"\"")).Append('"');
 
-    protected abstract void TranslateQueryParameter(string name, object? value);
+    protected abstract void TranslateQueryParameter(object? value);
 
     private void TranslateMethodCall(MethodCallExpression methodCall, bool isSearchCondition = false)
     {

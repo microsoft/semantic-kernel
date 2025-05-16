@@ -88,7 +88,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    protected override void TranslateQueryParameter(string name, object? value)
+    protected override void TranslateQueryParameter(object? value)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)
@@ -99,6 +99,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         else
         {
             this._parameterValues.Add(value);
+            // The param name is just the index, so there is no need for escaping or quoting.
             // SQL Server parameters can't start with a digit (but underscore is OK).
             this._sql.Append("@_").Append(this._parameterIndex++);
         }
