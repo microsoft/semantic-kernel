@@ -506,9 +506,9 @@ public sealed class Node
     /// Gets or sets the human-in-the-loop (HITL) mode for this node.
     /// HITL mode determines when and how human intervention is required during node execution.
     /// </summary>
-    [YamlMember(Alias = "human_in_loop_type")]
-    [JsonPropertyName("human_in_loop_type")]
-    public HITLMode HumanInLoopType { get; set; } = HITLMode.Never;
+    [YamlMember(Alias = "human_in_loop_mode")]
+    [JsonPropertyName("human_in_loop_mode")]
+    public HITLMode? HumanInLoopType { get; set; } = null;
 
     /// <summary>
     /// Gets or sets the input configuration for the node.
