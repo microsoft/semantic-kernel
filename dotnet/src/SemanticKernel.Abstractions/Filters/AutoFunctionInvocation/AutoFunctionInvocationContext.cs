@@ -20,34 +20,21 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="Microsoft.Extensions.AI.FunctionInvocationContext"/>.
     /// </summary>
-    internal AutoFunctionInvocationContext(ChatOptions options, AIFunction aiFunction)
+    internal AutoFunctionInvocationContext(KernelChatOptions autoInvocationChatOptions, AIFunction aiFunction)
     {
-        Verify.NotNull(options);
+        Verify.NotNull(autoInvocationChatOptions);
         Verify.NotNull(aiFunction);
-
         if (aiFunction is not KernelFunction kernelFunction)
         {
             throw new InvalidOperationException($"The function must be of type {nameof(KernelFunction)}.");
         }
+        Verify.NotNull(autoInvocationChatOptions.Kernel);
+        Verify.NotNull(autoInvocationChatOptions.ChatMessageContent);
 
-        // the ChatOptions must be provided with AdditionalProperties.
-        Verify.NotNull(options.AdditionalProperties);
-
-        // The ChatOptions must be provided with the kernel.
-        options.AdditionalProperties.TryGetValue<Kernel>(ChatOptionsExtensions.KernelKey, out var kernel);
-        Verify.NotNull(kernel);
-
-        // The ChatOptions must be provided with the chat message content.
-        options.AdditionalProperties.TryGetValue<ChatMessageContent>(ChatOptionsExtensions.ChatMessageContentKey, out var chatMessageContent);
-        Verify.NotNull(chatMessageContent);
-
-        // The ChatOptions can be provided with the execution settings.
-        options.AdditionalProperties.TryGetValue<PromptExecutionSettings>(ChatOptionsExtensions.PromptExecutionSettingsKey, out var executionSettings);
-
-        this.ExecutionSettings = executionSettings;
-        this.Options = options;
+        this.Options = autoInvocationChatOptions;
+        this.ExecutionSettings = autoInvocationChatOptions.ExecutionSettings;
         this.AIFunction = aiFunction;
-        this.Result = new FunctionResult(kernelFunction) { Culture = kernel.Culture };
+        this.Result = new FunctionResult(kernelFunction) { Culture = autoInvocationChatOptions.Kernel.Culture };
     }
 
     /// <summary>
@@ -71,13 +58,9 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         Verify.NotNull(chatHistory);
         Verify.NotNull(chatMessageContent);
 
-        this.Options = new()
+        this.Options = new KernelChatOptions(kernel)
         {
-            AdditionalProperties = new()
-            {
-                [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent,
-                [ChatOptionsExtensions.KernelKey] = kernel
-            }
+            ChatMessageContent = chatMessageContent,
         };
 
         this._chatHistory = chatHistory;
@@ -151,20 +134,18 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     /// <summary>
     /// The chat message content associated with automatic function invocation.
     /// </summary>
-    public ChatMessageContent ChatMessageContent
-        => (this.Options?.AdditionalProperties?[ChatOptionsExtensions.ChatMessageContentKey] as ChatMessageContent)!;
+    public ChatMessageContent ChatMessageContent => (this.Options as KernelChatOptions)!.ChatMessageContent!;
 
     /// <summary>
     /// The execution settings associated with the operation.
     /// </summary>
     public PromptExecutionSettings? ExecutionSettings
     {
-        get => this.Options?.AdditionalProperties?[ChatOptionsExtensions.PromptExecutionSettingsKey] as PromptExecutionSettings;
+        get => ((KernelChatOptions)this.Options!).ExecutionSettings;
         init
         {
-            this.Options ??= new();
-            this.Options.AdditionalProperties ??= [];
-            this.Options.AdditionalProperties[ChatOptionsExtensions.PromptExecutionSettingsKey] = value;
+            this.Options ??= new KernelChatOptions(this.Kernel);
+            ((KernelChatOptions)this.Options!).ExecutionSettings = value;
         }
     }
 
@@ -196,17 +177,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.
     /// </summary>
-    public Kernel Kernel
-    {
-        get
-        {
-            Kernel? kernel = null;
-            this.Options?.AdditionalProperties?.TryGetValue(ChatOptionsExtensions.KernelKey, out kernel);
-
-            // To avoid exception from properties, when attempting to retrieve a kernel from a non-ready context, it will give a null.
-            return kernel!;
-        }
-    }
+    public Kernel Kernel => ((KernelChatOptions)this.Options!).Kernel!;
 
     /// <summary>
     /// Gets or sets the result of the function's invocation.

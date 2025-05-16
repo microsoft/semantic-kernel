@@ -52,7 +52,9 @@ public static class OpenAIChatClientServiceCollectionExtensions
             return new OpenAIClient(new ApiKeyCredential(apiKey ?? SingleSpace), options: GetClientOptions(orgId: orgId, httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider)))
                 .GetChatClient(modelId)
                 .AsIChatClient()
-                .AsKernelFunctionInvokingChatClient(loggerFactory);
+                .AsBuilder()
+                .UseKernelFunctionInvocation(loggerFactory)
+                .Build();
         }
 
         services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);
@@ -82,7 +84,9 @@ public static class OpenAIChatClientServiceCollectionExtensions
             return (openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>())
                 .GetChatClient(modelId)
                 .AsIChatClient()
-                .AsKernelFunctionInvokingChatClient(loggerFactory);
+                .AsBuilder()
+                .UseKernelFunctionInvocation(loggerFactory)
+                .Build();
         }
 
         services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);
@@ -119,7 +123,9 @@ public static class OpenAIChatClientServiceCollectionExtensions
             return new OpenAIClient(new ApiKeyCredential(apiKey ?? SingleSpace), GetClientOptions(endpoint, orgId, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)))
                 .GetChatClient(modelId)
                 .AsIChatClient()
-                .AsKernelFunctionInvokingChatClient(loggerFactory);
+                .AsBuilder()
+                .UseKernelFunctionInvocation(loggerFactory)
+                .Build();
         }
 
         services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);

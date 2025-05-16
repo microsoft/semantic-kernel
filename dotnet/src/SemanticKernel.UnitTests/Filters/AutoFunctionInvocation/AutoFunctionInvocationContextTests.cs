@@ -7,6 +7,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
+using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
 
 namespace SemanticKernel.UnitTests.Filters.AutoFunctionInvocation;
 
@@ -201,17 +202,9 @@ public class AutoFunctionInvocationContextTests
         var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
         var executionSettings = new PromptExecutionSettings();
 
-        // Create options with execution settings
-        var additionalProperties = new AdditionalPropertiesDictionary
+        var options = new KernelChatOptions(kernel, settings: executionSettings)
         {
-            [ChatOptionsExtensions.PromptExecutionSettingsKey] = executionSettings,
-            [ChatOptionsExtensions.KernelKey] = kernel,
-            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent
-        };
-
-        var options = new ChatOptions
-        {
-            AdditionalProperties = additionalProperties
+            ChatMessageContent = chatMessageContent,
         };
 
         // Act
@@ -413,17 +406,9 @@ public class AutoFunctionInvocationContextTests
         var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
         var executionSettings = new PromptExecutionSettings();
 
-        // Create options with required properties
-        var additionalProperties = new AdditionalPropertiesDictionary
+        var options = new KernelChatOptions(kernel, settings: executionSettings)
         {
-            [ChatOptionsExtensions.KernelKey] = kernel,
-            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent,
-            [ChatOptionsExtensions.PromptExecutionSettingsKey] = executionSettings
-        };
-
-        var options = new ChatOptions
-        {
-            AdditionalProperties = additionalProperties
+            ChatMessageContent = chatMessageContent,
         };
 
         // Act
@@ -455,16 +440,9 @@ public class AutoFunctionInvocationContextTests
         var kernel = new Kernel();
         var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
 
-        // Create options with required properties
-        var additionalProperties = new AdditionalPropertiesDictionary
+        var options = new KernelChatOptions(kernel)
         {
-            [ChatOptionsExtensions.KernelKey] = kernel,
-            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent
-        };
-
-        var options = new ChatOptions
-        {
-            AdditionalProperties = additionalProperties
+            ChatMessageContent = chatMessageContent,
         };
 
         // Act & Assert
@@ -479,16 +457,9 @@ public class AutoFunctionInvocationContextTests
         var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
         var testAIFunction = new TestAIFunction("TestFunction");
 
-        // Create options with required properties
-        var additionalProperties = new AdditionalPropertiesDictionary
+        var options = new KernelChatOptions(kernel)
         {
-            [ChatOptionsExtensions.KernelKey] = kernel,
-            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent
-        };
-
-        var options = new ChatOptions
-        {
-            AdditionalProperties = additionalProperties
+            ChatMessageContent = chatMessageContent,
         };
 
         // Act & Assert
@@ -502,19 +473,11 @@ public class AutoFunctionInvocationContextTests
         var function = KernelFunctionFactory.CreateFromMethod(() => "Test", "TestFunction");
         var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
 
-        // Create options without kernel
-        var additionalProperties = new AdditionalPropertiesDictionary
-        {
-            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent
-        };
-
-        var options = new ChatOptions
-        {
-            AdditionalProperties = additionalProperties
-        };
-
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new AutoFunctionInvocationContext(options, function));
+        Assert.Throws<ArgumentNullException>(() =>
+            // Create options without kernel
+            new AutoFunctionInvocationContext(new(null!) { ChatMessageContent = chatMessageContent }, function)
+        );
     }
 
     [Fact]
@@ -525,15 +488,7 @@ public class AutoFunctionInvocationContextTests
         var function = KernelFunctionFactory.CreateFromMethod(() => "Test", "TestFunction");
 
         // Create options without chat message content
-        var additionalProperties = new AdditionalPropertiesDictionary
-        {
-            [ChatOptionsExtensions.KernelKey] = kernel
-        };
-
-        var options = new ChatOptions
-        {
-            AdditionalProperties = additionalProperties
-        };
+        var options = new KernelChatOptions(kernel);
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new AutoFunctionInvocationContext(options, function));
@@ -549,15 +504,9 @@ public class AutoFunctionInvocationContextTests
         var kernelArgs = new KernelArguments { ["test"] = "value" };
 
         // Create options with required properties
-        var additionalProperties = new AdditionalPropertiesDictionary
+        var options = new KernelChatOptions(kernel)
         {
-            [ChatOptionsExtensions.KernelKey] = kernel,
-            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent
-        };
-
-        var options = new ChatOptions
-        {
-            AdditionalProperties = additionalProperties
+            ChatMessageContent = chatMessageContent,
         };
 
         // Act
@@ -580,17 +529,10 @@ public class AutoFunctionInvocationContextTests
         var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, "Test message");
 
         // Create options with required properties
-        var additionalProperties = new AdditionalPropertiesDictionary
+        var options = new KernelChatOptions(kernel)
         {
-            [ChatOptionsExtensions.KernelKey] = kernel,
-            [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent
+            ChatMessageContent = chatMessageContent,
         };
-
-        var options = new ChatOptions
-        {
-            AdditionalProperties = additionalProperties
-        };
-
         // Act
         var context = new AutoFunctionInvocationContext(options, function)
         {

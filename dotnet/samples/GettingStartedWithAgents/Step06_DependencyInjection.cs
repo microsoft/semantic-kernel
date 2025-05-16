@@ -64,7 +64,7 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
                     .AsIChatClient();
             }
 
-            var functionCallingChatClient = chatClient!.AsKernelFunctionInvokingChatClient();
+            var functionCallingChatClient = chatClient!.AsBuilder().UseKernelFunctionInvocation().Build();
             serviceContainer.AddTransient<IChatClient>((sp) => functionCallingChatClient);
         }
         else

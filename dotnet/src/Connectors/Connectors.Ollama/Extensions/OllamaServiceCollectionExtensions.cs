@@ -157,13 +157,15 @@ public static class OllamaServiceCollectionExtensions
 
             var ollamaClient = (IChatClient)new OllamaApiClient(endpoint, modelId);
 
+            var builder = ollamaClient.AsBuilder();
             if (loggerFactory is not null)
             {
-                ollamaClient.AsBuilder().UseLogging(loggerFactory).Build();
+                builder.UseLogging(loggerFactory);
             }
 
-            return ollamaClient
-                .AsKernelFunctionInvokingChatClient(loggerFactory)
+            return builder
+                .UseKernelFunctionInvocation(loggerFactory)
+                .Build(serviceProvider)
                 .AsChatCompletionService();
         });
     }
@@ -192,13 +194,15 @@ public static class OllamaServiceCollectionExtensions
 
             var ollamaClient = (IChatClient)new OllamaApiClient(httpClient, modelId);
 
+            var builder = ollamaClient.AsBuilder();
             if (loggerFactory is not null)
             {
-                ollamaClient.AsBuilder().UseLogging(loggerFactory).Build();
+                builder.UseLogging(loggerFactory);
             }
 
-            return ollamaClient
-                .AsKernelFunctionInvokingChatClient(loggerFactory)
+            return builder
+                .UseKernelFunctionInvocation(loggerFactory)
+                .Build(serviceProvider)
                 .AsChatCompletionService();
         });
     }
@@ -230,17 +234,16 @@ public static class OllamaServiceCollectionExtensions
                 throw new InvalidOperationException($"No {nameof(IOllamaApiClient)} implementations found in the service collection.");
             }
 
-            var builder = ((IChatClient)ollamaClient)
-                .AsKernelFunctionInvokingChatClient(loggerFactory)
-                .AsBuilder();
-
+            var builder = ((IChatClient)ollamaClient).AsBuilder();
             if (loggerFactory is not null)
             {
                 builder.UseLogging(loggerFactory);
             }
 
-            return builder.Build(serviceProvider)
-                .AsChatCompletionService(serviceProvider);
+            return builder
+                .UseKernelFunctionInvocation(loggerFactory)
+                .Build(serviceProvider)
+                .AsChatCompletionService();
         });
     }
 
