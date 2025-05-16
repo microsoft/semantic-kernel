@@ -69,8 +69,8 @@ aws = [
 ]
 # This is temporary to get the PR reviewed, and will be replaced when their new version is public.
 azure = [
-    "azure-ai-projects @ https://pkgs.dev.azure.com/azure-sdk/29ec6040-b234-4e31-b139-33dc4287b756/_packaging/3572dbf9-b5ef-433b-9137-fc4d7768e7cc/pypi/download/azure-ai-projects/1a20250513005/azure_ai_projects-1.0.0a20250513005-py3-none-any.whl",
-    "azure-ai-agents @ https://pkgs.dev.azure.com/azure-sdk/29ec6040-b234-4e31-b139-33dc4287b756/_packaging/3572dbf9-b5ef-433b-9137-fc4d7768e7cc/pypi/download/azure-ai-agents/1a20250514005/azure_ai_agents-1.0.0a20250514005-py3-none-any.whl",
+    "azure-ai-projects >= 1.0.0b11",
+    "azure-ai-agents >= 1.0.0b3",
     "azure-ai-inference >= 1.0.0b6",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",

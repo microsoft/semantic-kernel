@@ -345,22 +345,16 @@ wheels = [
 
 [[package]]
 name = "azure-ai-agents"
-version = "1.0.0a20250514005"
-source = { url = "https://pkgs.dev.azure.com/azure-sdk/29ec6040-b234-4e31-b139-33dc4287b756/_packaging/3572dbf9-b5ef-433b-9137-fc4d7768e7cc/pypi/download/azure-ai-agents/1a20250514005/azure_ai_agents-1.0.0a20250514005-py3-none-any.whl" }
+version = "1.0.0b3"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-core", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "isodate", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/bf/0b/e8c433a59b058e28b379b3b82238e7bff7df427e563e09bc9983d17a13d0/azure_ai_agents-1.0.0b3.tar.gz", hash = "sha256:07ce9a5b5556ec7f8b2a911425a7245b06cba7d927943950f97227c724dbf303", size = 297655, upload_time = "2025-05-14T19:36:52.399Z" }
 wheels = [
-    { url = "https://pkgs.dev.azure.com/azure-sdk/29ec6040-b234-4e31-b139-33dc4287b756/_packaging/3572dbf9-b5ef-433b-9137-fc4d7768e7cc/pypi/download/azure-ai-agents/1a20250514005/azure_ai_agents-1.0.0a20250514005-py3-none-any.whl", hash = "sha256:ca3a242420ad1cbf8bd51212012c7dbe16dc2fdda464be571af78a6a08ff0282" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "azure-core", specifier = ">=1.30.0" },
-    { name = "isodate", specifier = ">=0.6.1" },
-    { name = "typing-extensions", specifier = ">=4.6.0" },
+    { url = "https://files.pythonhosted.org/packages/79/f2/f54d2d25d97c3e3eefa34f110a105365843bc0c3ae5b6cc8597ade6ccb60/azure_ai_agents-1.0.0b3-py3-none-any.whl", hash = "sha256:69518b8ecf1d2e3176168f7053601d3a499c639b4341e49f2164e843b84ab0b2", size = 187224, upload_time = "2025-05-14T19:36:54.265Z" },
 ]
 
 [[package]]
@@ -379,8 +373,8 @@ wheels = [
 
 [[package]]
 name = "azure-ai-projects"
-version = "1.0.0a20250513005"
-source = { url = "https://pkgs.dev.azure.com/azure-sdk/29ec6040-b234-4e31-b139-33dc4287b756/_packaging/3572dbf9-b5ef-433b-9137-fc4d7768e7cc/pypi/download/azure-ai-projects/1a20250513005/azure_ai_projects-1.0.0a20250513005-py3-none-any.whl" }
+version = "1.0.0b11"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-ai-agents", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "azure-core", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -388,20 +382,10 @@ dependencies = [
     { name = "isodate", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/01/4b/0a879eb66b5d9a08ab09292ff9a36a4e9c855b458d0e843b5e838fc6f6fd/azure_ai_projects-1.0.0b11.tar.gz", hash = "sha256:68a115c48cde7d5f9c29aee61c7fbf0b6de69aecbd1dc749b847a1e1348216b5", size = 133087, upload_time = "2025-05-16T00:33:32.286Z" }
 wheels = [
-    { url = "https://pkgs.dev.azure.com/azure-sdk/29ec6040-b234-4e31-b139-33dc4287b756/_packaging/3572dbf9-b5ef-433b-9137-fc4d7768e7cc/pypi/download/azure-ai-projects/1a20250513005/azure_ai_projects-1.0.0a20250513005-py3-none-any.whl", hash = "sha256:8404e23a591d26da921ff396f0c49dbd9c07f1ce1f9c167a22fd6e4404b7e1f4" },
+    { url = "https://files.pythonhosted.org/packages/3e/2d/5502377ecc07677365a1e86be64d8cb9959eb6e9b605fcc28f1f68d3777a/azure_ai_projects-1.0.0b11-py3-none-any.whl", hash = "sha256:3572f2989627e896ecfebe2fa7326d5b940f920cc581e98809b244af7a38cbf0", size = 130983, upload_time = "2025-05-16T00:33:33.789Z" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "azure-ai-agents", specifier = ">=1.0.0a1,<1.0.0b0" },
-    { name = "azure-core", specifier = ">=1.30.0" },
-    { name = "azure-storage-blob", specifier = ">=12.15.0" },
-    { name = "isodate", specifier = ">=0.6.1" },
-    { name = "prompty", marker = "extra == 'prompts'" },
-    { name = "typing-extensions", specifier = ">=4.12.2" },
-]
-provides-extras = ["prompts"]
 
 [[package]]
 name = "azure-common"
@@ -5657,9 +5641,9 @@ requires-dist = [
     { name = "aiortc", marker = "extra == 'realtime'", specifier = ">=1.9.0" },
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = "~=0.32" },
     { name = "autogen-agentchat", marker = "extra == 'autogen'", specifier = ">=0.2,<0.4" },
-    { name = "azure-ai-agents", marker = "extra == 'azure'", url = "https://pkgs.dev.azure.com/azure-sdk/29ec6040-b234-4e31-b139-33dc4287b756/_packaging/3572dbf9-b5ef-433b-9137-fc4d7768e7cc/pypi/download/azure-ai-agents/1a20250514005/azure_ai_agents-1.0.0a20250514005-py3-none-any.whl" },
+    { name = "azure-ai-agents", marker = "extra == 'azure'", specifier = ">=1.0.0b3" },
     { name = "azure-ai-inference", marker = "extra == 'azure'", specifier = ">=1.0.0b6" },
-    { name = "azure-ai-projects", marker = "extra == 'azure'", url = "https://pkgs.dev.azure.com/azure-sdk/29ec6040-b234-4e31-b139-33dc4287b756/_packaging/3572dbf9-b5ef-433b-9137-fc4d7768e7cc/pypi/download/azure-ai-projects/1a20250513005/azure_ai_projects-1.0.0a20250513005-py3-none-any.whl" },
+    { name = "azure-ai-projects", marker = "extra == 'azure'", specifier = ">=1.0.0b11" },
     { name = "azure-core-tracing-opentelemetry", marker = "extra == 'azure'", specifier = ">=1.0.0b11" },
     { name = "azure-cosmos", marker = "extra == 'azure'", specifier = "~=4.7" },
     { name = "azure-identity", specifier = ">=1.13" },

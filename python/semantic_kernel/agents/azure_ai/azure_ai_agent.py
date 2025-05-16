@@ -564,7 +564,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
                 raise AgentInitializationException(f"Expected AzureAIAgentSettings, got {type(settings).__name__}")
 
             field_mapping.update({
-                "ChatModelId": getattr(settings, "deployment_name", None),
+                "ChatModelId": getattr(settings, "model_deployment_name", None),
                 "Endpoint": getattr(settings, "endpoint", None),
                 "AgentId": getattr(settings, "agent_id", None),
                 "BingConnectionId": getattr(settings, "bing_connection_id", None),
