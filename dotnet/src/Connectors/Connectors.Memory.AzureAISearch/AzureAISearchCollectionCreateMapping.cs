@@ -123,7 +123,6 @@ internal static class AzureAISearchCollectionCreateMapping
             Type t when t == typeof(long) => SearchFieldDataType.Int64,
             Type t when t == typeof(float) => SearchFieldDataType.Double,
             Type t when t == typeof(double) => SearchFieldDataType.Double,
-            Type t when t == typeof(DateTime) => SearchFieldDataType.DateTimeOffset,
             Type t when t == typeof(DateTimeOffset) => SearchFieldDataType.DateTimeOffset,
 
             Type t when t == typeof(string[]) => SearchFieldDataType.Collection(SearchFieldDataType.String),
@@ -138,8 +137,6 @@ internal static class AzureAISearchCollectionCreateMapping
             Type t when t == typeof(List<float>) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
             Type t when t == typeof(double[]) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
             Type t when t == typeof(List<double>) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
-            Type t when t == typeof(DateTime[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
-            Type t when t == typeof(List<DateTime>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
             Type t when t == typeof(DateTimeOffset[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
             Type t when t == typeof(List<DateTimeOffset>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
 
