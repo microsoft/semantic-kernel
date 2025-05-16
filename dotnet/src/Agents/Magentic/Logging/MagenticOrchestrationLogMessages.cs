@@ -132,7 +132,7 @@ internal static partial class MagenticOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "MAGENTIC FAILURE: {TopicId}")]
+        Message = "MAGENTIC FAILURE: {Topic}")]
     public static partial void LogMagenticManagerStatusFailure(this ILogger logger, TopicId topic, Exception exception);
 
     /// <summary>
@@ -141,7 +141,7 @@ internal static partial class MagenticOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "MAGENTIC MANAGER FAILURE: {TopicId}")]
+        Message = "MAGENTIC MANAGER FAILURE: {Topic}")]
     public static partial void LogMagenticManagerTaskFailed(this ILogger logger, TopicId topic);
 
     /// <summary>
@@ -150,7 +150,7 @@ internal static partial class MagenticOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "MAGENTIC MANAGER RESET: #{ResetCount} - {TopicId}")]
+        Message = "MAGENTIC MANAGER RESET: #{ResetCount} - {Topic}")]
     public static partial void LogMagenticManagerTaskReset(
         this ILogger logger,
         TopicId topic,
