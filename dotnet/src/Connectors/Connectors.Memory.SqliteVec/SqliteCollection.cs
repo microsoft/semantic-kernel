@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
@@ -172,7 +173,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         const string LimitPropertyName = "k";
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -253,8 +254,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         Verify.NotLessThan(top, 1);
 
         options ??= new();
-
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -370,14 +370,17 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         {
             var vectorProperty = this._model.VectorProperties[i];
 
-            if (vectorProperty.EmbeddingGenerator is null)
+            if (SqliteModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
                 continue;
             }
 
+            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
+            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
+
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var floatTask))
+            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>>(record, cancellationToken, out var floatTask))
             {
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = [await floatTask.ConfigureAwait(false)];
@@ -418,10 +421,13 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         {
             var vectorProperty = this._model.VectorProperties[i];
 
-            if (vectorProperty.EmbeddingGenerator is null)
+            if (SqliteModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
                 continue;
             }
+
+            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
+            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
 
             // We have a property with embedding generation; materialize the records' enumerable if needed, to
             // prevent multiple enumeration.
@@ -439,7 +445,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var floatTask))
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
             {
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
@@ -631,7 +637,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
         if (includeVectors)
         {
-            if (this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+            if (this._model.EmbeddingGenerationRequired)
             {
                 throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
             }

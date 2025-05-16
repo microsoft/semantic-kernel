@@ -227,7 +227,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         var maybePrefixedKey = this.PrefixKeyIfNeeded(stringKey);
 
         var includeVectors = options?.IncludeVectors ?? false;
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -330,7 +330,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -409,8 +409,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         Verify.NotLessThan(top, 1);
 
         options ??= new();
-
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }

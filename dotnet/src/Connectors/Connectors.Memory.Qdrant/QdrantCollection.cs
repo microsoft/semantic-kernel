@@ -319,7 +319,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         }
 
         var includeVectors = options?.IncludeVectors ?? false;
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -469,10 +469,13 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         {
             var vectorProperty = this._model.VectorProperties[i];
 
-            if (vectorProperty.EmbeddingGenerator is null)
+            if (QdrantModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
                 continue;
             }
+
+            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
+            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
 
             if (recordsList is null)
             {
@@ -488,7 +491,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var task))
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var task))
             {
                 generatedEmbeddings ??= new GeneratedEmbeddings<Embedding<float>>?[vectorPropertyCount];
                 generatedEmbeddings[i] = await task.ConfigureAwait(false);
@@ -527,7 +530,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
