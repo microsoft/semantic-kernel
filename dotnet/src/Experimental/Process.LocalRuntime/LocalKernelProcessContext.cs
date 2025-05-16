@@ -29,6 +29,11 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAs
     internal Task StartWithEventAsync(KernelProcessEvent initialEvent, Kernel? kernel = null) =>
         this._localProcess.RunOnceAsync(initialEvent, kernel);
 
+    //internal RunUntilEndAsync(KernelProcessEvent initialEvent, Kernel? kernel = null, TimeSpan? timeout = null)
+    //{
+
+    //}
+
     /// <summary>
     /// Sends a message to the process.
     /// </summary>

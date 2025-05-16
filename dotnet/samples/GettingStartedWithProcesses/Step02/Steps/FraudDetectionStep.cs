@@ -10,12 +10,12 @@ namespace Step02.Steps;
 /// </summary>
 public class FraudDetectionStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string FraudDetectionCheck = nameof(FraudDetectionCheck);
     }
 
-    [KernelFunction(Functions.FraudDetectionCheck)]
+    [KernelFunction(ProcessStepFunctions.FraudDetectionCheck)]
     public async Task FraudDetectionCheckAsync(KernelProcessStepContext context, bool previousCheckSucceeded, NewCustomerForm customerDetails, Kernel _kernel)
     {
         // Placeholder for a call to API to validate user details for fraud detection
