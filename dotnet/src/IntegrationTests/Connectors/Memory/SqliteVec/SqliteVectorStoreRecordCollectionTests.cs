@@ -21,7 +21,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.SqliteVec;
 [Collection("SqliteVectorStoreCollection")]
 public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixture fixture)
 {
-    private const string? SkipReason = "SQLite vector search extension is required";
+    private const string? SkipReason = null;
 
     [Theory(Skip = SkipReason)]
     [InlineData(true)]
@@ -41,6 +41,9 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         // Assert
         Assert.Equal(createCollection, collectionExists);
+
+        // Cleanup
+        await sut.EnsureCollectionDeletedAsync();
     }
 
     [Fact(Skip = SkipReason)]
@@ -439,7 +442,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             Definition = GetVectorStoreRecordDefinition<long>()
         };
 
-        using var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithNumericKey", options);
+        using var sut = fixture.GetDynamicCollection("DynamicMapperWithNumericKey", options);
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -479,7 +482,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             Definition = GetVectorStoreRecordDefinition<string>()
         };
 
-        using var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithStringKey", options)
+        using var sut = fixture.GetDynamicCollection("DynamicMapperWithStringKey", options)
             as VectorStoreCollection<object, Dictionary<string, object?>>;
 
         await sut.EnsureCollectionExistsAsync();

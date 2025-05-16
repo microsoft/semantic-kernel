@@ -421,7 +421,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
             Definition = fixture.HotelVectorStoreRecordDefinition
         };
 
-        using var sut = new CosmosMongoCollection<object, Dictionary<string, object?>>(fixture.MongoDatabase, fixture.TestCollection, options);
+        using var sut = new CosmosMongoDynamicCollection(fixture.MongoDatabase, fixture.TestCollection, options);
 
         // Act
         await sut.UpsertAsync(new Dictionary<string, object?>

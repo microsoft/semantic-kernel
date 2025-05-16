@@ -24,6 +24,16 @@ public class SqliteVectorStoreFixture : IDisposable
             options);
     }
 
+    public SqliteDynamicCollection GetDynamicCollection(
+        string collectionName,
+        SqliteCollectionOptions options)
+    {
+        return new SqliteDynamicCollection(
+            this.ConnectionString,
+            collectionName,
+            options);
+    }
+
     public void Dispose()
     {
         this.Dispose(true);
