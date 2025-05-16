@@ -20,6 +20,9 @@ public static class VectorDataStrings
     public static string EmbeddingPropertyTypeIncompatibleWithEmbeddingGenerator(VectorPropertyModel vectorProperty)
         => $"Property '{vectorProperty.ModelName}' has embedding type '{TypeName(vectorProperty.Type)}', but an embedding generator is configured on the property. Remove the embedding generator or change the property's .NET type to a non-embedding input type to the generator (e.g. string).";
 
+    public static string DifferentEmbeddingTypeSpecifiedForNativelySupportedType(VectorPropertyModel vectorProperty, Type embeddingType)
+        => $"Property '{vectorProperty.ModelName}' has {nameof(VectorStoreVectorProperty.EmbeddingType)} configured to '{TypeName(embeddingType)}', but the property already has natively supported '{TypeName(vectorProperty.Type)}'. {nameof(VectorStoreVectorProperty.EmbeddingType)} only needs to be specified for properties that require embedding generation.";
+
     public static string GetCollectionWithDictionaryNotSupported
         => "Dynamic mapping via Dictionary<string, object?> is not supported via this method, call GetDynamicCollection() instead.";
 

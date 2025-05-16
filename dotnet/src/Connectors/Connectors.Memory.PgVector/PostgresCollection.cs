@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
@@ -164,20 +165,23 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         {
             var vectorProperty = this._model.VectorProperties[i];
 
-            if (vectorProperty.EmbeddingGenerator is null)
+            if (PostgresModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
                 continue;
             }
 
+            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
+            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
+
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var floatTask))
+            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>>(record, cancellationToken, out var floatTask))
             {
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = [await floatTask.ConfigureAwait(false)];
             }
 #if NET8_0_OR_GREATER
-            else if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<Half>, ReadOnlyMemory<Half>>(record, cancellationToken, out var halfTask))
+            else if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<Half>>(record, cancellationToken, out var halfTask))
             {
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = [await halfTask.ConfigureAwait(false)];
@@ -220,13 +224,15 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         {
             var vectorProperty = this._model.VectorProperties[i];
 
-            if (vectorProperty.EmbeddingGenerator is null)
+            if (PostgresModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
                 continue;
             }
 
-            // We have a property with embedding generation; materialize the records' enumerable if needed, to
-            // prevent multiple enumeration.
+            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
+            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
+
+            // Materialize the records' enumerable if needed, to prevent multiple enumeration.
             if (recordsList is null)
             {
                 recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
@@ -241,13 +247,13 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var floatTask))
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
             {
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
             }
 #if NET8_0_OR_GREATER
-            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<Half>, ReadOnlyMemory<Half>>(records, cancellationToken, out var halfTask))
+            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<Half>>(records, cancellationToken, out var halfTask))
             {
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = (IReadOnlyList<Embedding<Half>>)await halfTask.ConfigureAwait(false);
@@ -282,8 +288,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         Verify.NotNull(key);
 
         bool includeVectors = options?.IncludeVectors is true;
-
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -305,8 +310,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         Verify.NotNull(keys);
 
         bool includeVectors = options?.IncludeVectors is true;
-
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -355,7 +359,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }

@@ -184,7 +184,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         var stringKey = this.GetStringKey(key);
 
         var includeVectors = options?.IncludeVectors ?? false;
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -212,7 +212,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         Verify.NotNull(keys);
 
         var includeVectors = options?.IncludeVectors ?? false;
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -290,10 +290,13 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         {
             var vectorProperty = model.VectorProperties[i];
 
-            if (vectorProperty.EmbeddingGenerator is null)
+            if (MongoModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
                 continue;
             }
+
+            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
+            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
 
             // We have a property with embedding generation; materialize the records' enumerable if needed, to
             // prevent multiple enumeration.
@@ -311,7 +314,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var floatTask))
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
             {
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
@@ -339,7 +342,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }

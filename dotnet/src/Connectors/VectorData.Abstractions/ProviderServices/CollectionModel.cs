@@ -50,6 +50,11 @@ public sealed class CollectionModel
     /// </summary>
     public IReadOnlyDictionary<string, PropertyModel> PropertyMap { get; }
 
+    /// <summary>
+    /// Whether any of the vector properties in the model require embedding generation.
+    /// </summary>
+    public bool EmbeddingGenerationRequired { get; }
+
     internal CollectionModel(
         Type recordType,
         IRecordCreator recordCreator,
@@ -66,6 +71,8 @@ public sealed class CollectionModel
         this.VectorProperties = vectorProperties;
         this.PropertyMap = propertyMap;
         this.Properties = propertyMap.Values.ToList();
+
+        this.EmbeddingGenerationRequired = vectorProperties.Any(p => p.EmbeddingType != p.Type);
     }
 
     /// <summary>
