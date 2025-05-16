@@ -14,7 +14,7 @@ namespace Step04.Steps;
 /// </summary>
 public class RenderMessageStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string RenderDone = nameof(RenderMessageStep.RenderDone);
         public const string RenderError = nameof(RenderMessageStep.RenderError);
@@ -61,8 +61,14 @@ public class RenderMessageStep : KernelProcessStep
     /// Render an assistant message from the primary chat
     /// </summary>
     [KernelFunction]
-    public void RenderMessage(ChatMessageContent message)
+    public void RenderMessage(ChatMessageContent? message)
     {
+        if (message is null)
+        {
+            // if the message is empty, we don't want to render it
+            return;
+        }
+
         Render(message);
     }
 
