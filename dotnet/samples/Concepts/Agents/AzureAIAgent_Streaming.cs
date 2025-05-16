@@ -20,7 +20,7 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         const string AgentInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
 
         // Define the agent
-        PersistentAgent definition = await this.Client.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
@@ -46,7 +46,7 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         const string AgentInstructions = "Answer questions about the menu.";
 
         // Define the agent
-        PersistentAgent definition = await this.Client.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
@@ -75,7 +75,7 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         const string AgentInstructions = "Solve math problems with code.";
 
         // Define the agent
-        PersistentAgent definition = await this.Client.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,

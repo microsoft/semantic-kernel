@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 internal static class AgentMessageFactory
 {
     /// <summary>
-    /// Translate metadata from a <see cref="ChatMessageContent"/> to be used for a <see cref="ThreadMessage"/> or
+    /// Translate metadata from a <see cref="ChatMessageContent"/> to be used for a <see cref="PersistentThreadMessage"/> or
     /// <see cref="ThreadMessageOptions"/>.
     /// </summary>
     /// <param name="message">The message content.</param>
@@ -25,7 +25,7 @@ internal static class AgentMessageFactory
     }
 
     /// <summary>
-    /// Translate attachments from a <see cref="ChatMessageContent"/> to be used for a <see cref="ThreadMessage"/> or
+    /// Translate attachments from a <see cref="ChatMessageContent"/> to be used for a <see cref="PersistentThreadMessage"/> or
     /// </summary>
     /// <param name="message">The message content.</param>
     public static IEnumerable<MessageAttachment> GetAttachments(ChatMessageContent message)

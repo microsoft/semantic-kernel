@@ -230,9 +230,9 @@ internal static class AgentDefinitionExtensions
     {
         Verify.NotNull(tool);
 
-        ToolConnectionList bingGrounding = tool.GetToolConnectionList();
+        BingGroundingSearchToolParameters bingToolParameters = new(tool.GetToolConnections().Select(connectionId => new BingGroundingSearchConfiguration(connectionId)));
 
-        return new BingGroundingToolDefinition(bingGrounding);
+        return new BingGroundingToolDefinition(bingToolParameters);
     }
 
     private static CodeInterpreterToolDefinition CreateCodeInterpreterToolDefinition(AgentToolDefinition tool)

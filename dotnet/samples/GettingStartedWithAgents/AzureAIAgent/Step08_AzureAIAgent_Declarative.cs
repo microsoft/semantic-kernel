@@ -451,7 +451,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             {
                 var azureaiAgent = agent as AzureAIAgent;
                 Assert.NotNull(azureaiAgent);
-                await azureaiAgent.Client.DeleteAgentAsync(azureaiAgent.Id);
+                await azureaiAgent.Client.Administration.DeleteAgentAsync(azureaiAgent.Id);
 
                 if (agentThread is not null)
                 {

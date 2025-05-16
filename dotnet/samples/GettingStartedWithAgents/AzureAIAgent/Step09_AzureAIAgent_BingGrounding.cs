@@ -16,18 +16,11 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
     public async Task UseBingGroundingToolWithAgent()
     {
         // Access the BingGrounding connection
-        AAIP.AIProjectClient projectClient = this.CreateProjectClient();
-        AAIP.Connections connectionsClient = projectClient.GetConnectionsClient();
-        AAIP.Connection bingConnectionResponse = await connectionsClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
-
-        // Define the agent
-        ToolConnectionList toolConnections = new()
-        {
-            ConnectionList = { new ToolConnection(bingConnectionResponse.Name) }
-        };
+        BingGroundingSearchConfiguration bingToolConfiguration = new(TestConfiguration.AzureAI.BingConnectionId);
+        BingGroundingSearchToolParameters bingToolParameters = new([bingToolConfiguration]);
         PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
-            tools: [new BingGroundingToolDefinition(toolConnections)]);
+            tools: [new BingGroundingToolDefinition(bingToolParameters)]);
         AzureAIAgent agent = new(definition, this.Client);
 
         // Create a thread for the agent conversation.
@@ -62,18 +55,13 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
     public async Task UseBingGroundingToolWithStreaming()
     {
         // Access the BingGrounding connection
-        AAIP.AIProjectClient projectClient = this.CreateProjectClient();
-        AAIP.Connections connectionsClient = projectClient.GetConnectionsClient();
-        AAIP.Connection bingConnectionResponse = await connectionsClient.GetConnectionAsync(TestConfiguration.AzureAI.BingConnectionId);
+        BingGroundingSearchConfiguration bingToolConfiguration = new(TestConfiguration.AzureAI.BingConnectionId);
+        BingGroundingSearchToolParameters bingToolParameters = new([bingToolConfiguration]);
 
         // Define the agent
-        ToolConnectionList toolConnections = new()
-        {
-            ConnectionList = { new ToolConnection(bingConnectionResponse.Name) }
-        };
         PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
-            tools: [new BingGroundingToolDefinition(toolConnections)]);
+            tools: [new BingGroundingToolDefinition(bingToolParameters)]);
         AzureAIAgent agent = new(definition, this.Client);
 
         // Create a thread for the agent conversation.

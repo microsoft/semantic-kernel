@@ -39,7 +39,7 @@ public sealed class AzureAIAgentFactory : AgentFactory
             if (!string.IsNullOrEmpty(agentDefinition.Id))
             {
                 // Get an existing agent
-                agent = await client.GetAgentAsync(
+                agent = await client.Administration.GetAgentAsync(
                     agentDefinition.Id,
                     cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -56,7 +56,7 @@ public sealed class AzureAIAgentFactory : AgentFactory
             Verify.NotNull(agentDefinition.Model);
             Verify.NotNull(agentDefinition.Model.Id);
 
-            agent = await client.CreateAgentAsync(
+            agent = await client.Administration.CreateAgentAsync(
                 model: agentDefinition.Model.Id,
                 name: agentDefinition.Name,
                 description: agentDefinition.Description,

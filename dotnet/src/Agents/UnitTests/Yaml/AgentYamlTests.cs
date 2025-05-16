@@ -44,9 +44,9 @@ public class AgentYamlTests : IDisposable
 
         // Add Azure AI agents client
         var client = new PersistentAgentsClient(
-            new Uri("https://endpoint"),
+            "https://endpoint",
             new FakeTokenCredential(),
-            new PersistentAgentsClientOptions
+            new PersistentAgentsAdministrationClientOptions
             {
                 Transport = new HttpClientTransport(this._httpClient)
             });

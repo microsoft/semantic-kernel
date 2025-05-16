@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Net.Http;
-using Azure;
 using Azure.AI.Agents.Persistent;
 using Azure.Core;
 using Azure.Core.Pipeline;
@@ -14,33 +12,13 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// </summary>
 public sealed partial class AzureAIAgent : Agent
 {
-    ///// <summary> // %%% REMOVE ME
-    ///// Produces a <see cref="PersistentAgentsClient"/>.
-    ///// </summary>
-    ///// <param name="endpoint">The Azure AI Foundry project endpoint.</param>
-    ///// <param name="credential"> A credential used to authenticate to an Azure Service.</param>
-    ///// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
-    //public static PersistentAgentsClient CreateAgentsClient(
-    //    string endpoint,
-    //    AzureKeyCredential credential,
-    //    HttpClient? httpClient = null)
-    //{
-    //    Verify.NotNull(endpoint, nameof(endpoint));
-    //    Verify.NotNull(credential, nameof(credential));
-
-    //    PersistentAgentsAdministrationClientOptions clientOptions = CreateAzureClientOptions(httpClient);
-
-    //    return new PersistentAgentsClient(endpoint, credential, clientOptions);
-    //}
-
     /// <summary>
     /// Produces a <see cref="PersistentAgentsClient"/>.
     /// </summary>
     /// <param name="endpoint">The Azure AI Foundry project endpoint.</param>
     /// <param name="credential"> A credential used to authenticate to an Azure Service.</param>
     /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
-    public static PersistentAgentsClient CreateAgentsClient
-        (
+    public static PersistentAgentsClient CreateAgentsClient(
         string endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null)

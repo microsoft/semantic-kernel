@@ -68,7 +68,7 @@ internal sealed class AzureAIAgentWithMCPToolsSample : BaseSample
         await response!.Thread.DeleteAsync();
 
         // Delete the agent after use
-        await agent.Client.DeleteAgentAsync(agent.Id);
+        await agent.Client.Administration.DeleteAgentAsync(agent.Id);
     }
 
     /// <summary>
@@ -96,9 +96,9 @@ internal sealed class AzureAIAgentWithMCPToolsSample : BaseSample
         string modelId = config["AzureAI:ChatModelId"] ?? "gpt-4o-mini";
 
         // Create the Azure AI Agent
-        PersistentAgentsClient agentsClient = AzureAIAgent.CreateAgentsClient(new Uri(endpoint), new AzureCliCredential());
+        PersistentAgentsClient agentsClient = AzureAIAgent.CreateAgentsClient(endpoint, new AzureCliCredential());
 
-        PersistentAgent agent = await agentsClient.CreateAgentAsync(modelId, name, null, instructions);
+        PersistentAgent agent = await agentsClient.Administration.CreateAgentAsync(modelId, name, null, instructions);
 
         return new AzureAIAgent(agent, agentsClient)
         {

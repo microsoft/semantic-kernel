@@ -53,7 +53,7 @@ public class AzureAIAgentFixture : AgentFixture
 
     public override Task DeleteThread(AgentThread thread)
     {
-        return this._agentsClient!.DeleteThreadAsync(thread.Id);
+        return this._agentsClient!.Threads.DeleteThreadAsync(thread.Id);
     }
 
     public override async Task DisposeAsync()
@@ -62,7 +62,7 @@ public class AzureAIAgentFixture : AgentFixture
         {
             try
             {
-                await this._agentsClient!.DeleteThreadAsync(this._thread!.Id);
+                await this._agentsClient!.Threads.DeleteThreadAsync(this._thread!.Id);
             }
             catch (RequestFailedException ex) when (ex.Status == 404)
             {
@@ -71,7 +71,7 @@ public class AzureAIAgentFixture : AgentFixture
 
         try
         {
-            await this._agentsClient!.DeleteThreadAsync(this._createdThread!.Id);
+            await this._agentsClient!.Threads.DeleteThreadAsync(this._createdThread!.Id);
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
@@ -79,22 +79,22 @@ public class AzureAIAgentFixture : AgentFixture
 
         try
         {
-            await this._agentsClient!.DeleteThreadAsync(this._createdServiceFailingAgentThread!.Id);
+            await this._agentsClient!.Threads.DeleteThreadAsync(this._createdServiceFailingAgentThread!.Id);
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
         }
 
-        await this._agentsClient!.DeleteAgentAsync(this._aiAgent!.Id);
+        await this._agentsClient!.Administration.DeleteAgentAsync(this._aiAgent!.Id);
     }
 
     public override async Task InitializeAsync()
     {
         AzureAIConfiguration configuration = this._configuration.GetSection("AzureAI").Get<AzureAIConfiguration>()!;
-        this._agentsClient = AzureAIAgent.CreateAgentsClient(new Uri(configuration.Endpoint), new AzureCliCredential());
+        this._agentsClient = AzureAIAgent.CreateAgentsClient(configuration.Endpoint, new AzureCliCredential());
 
         this._aiAgent =
-            await this._agentsClient.CreateAgentAsync(
+            await this._agentsClient.Administration.CreateAgentAsync(
                 configuration.ChatModelId,
                 name: "HelpfulAssistant",
                 description: "Helpful Assistant",
@@ -109,10 +109,10 @@ public class AzureAIAgentFixture : AgentFixture
         this._createdThread = new AzureAIAgentThread(this._agentsClient);
         await this._createdThread.CreateAsync();
 
-        var serviceFailingClient = AzureAIAgent.CreateAgentsClient(new Uri("https://invalid"), new AzureCliCredential());
+        var serviceFailingClient = AzureAIAgent.CreateAgentsClient("https://invalid", new AzureCliCredential());
         this._serviceFailingAgentThread = new AzureAIAgentThread(serviceFailingClient);
 
-        var createdFailingThreadResponse = await this._agentsClient.CreateThreadAsync();
+        var createdFailingThreadResponse = await this._agentsClient.Threads.CreateThreadAsync();
         this._createdServiceFailingAgentThread = new AzureAIAgentThread(serviceFailingClient, createdFailingThreadResponse.Value.Id);
     }
 }

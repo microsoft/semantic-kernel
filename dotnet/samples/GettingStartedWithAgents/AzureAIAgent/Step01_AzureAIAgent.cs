@@ -53,7 +53,7 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAzureAgentTest(
         finally
         {
             await thread.DeleteAsync();
-            await this.Client.DeleteAgentAsync(agent.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the response.

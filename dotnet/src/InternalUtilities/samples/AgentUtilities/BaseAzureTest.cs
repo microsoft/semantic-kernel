@@ -3,7 +3,6 @@
 using System.Diagnostics;
 using Azure;
 using Azure.AI.Agents.Persistent;
-using Azure.AI.Projects.OneDP;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -20,11 +19,6 @@ public abstract class BaseAzureAgentTest : BaseAgentsTest<PersistentAgentsClient
     }
 
     protected override PersistentAgentsClient Client { get; }
-
-    protected AIProjectClient CreateProjectClient() =>
-        string.IsNullOrEmpty(TestConfiguration.AzureAI.ApiKey) ?
-            new AIProjectClient(new Uri(TestConfiguration.AzureAI.Endpoint), new AzureCliCredential()) :
-            new AIProjectClient(new Uri(TestConfiguration.AzureAI.Endpoint), new AzureKeyCredential(TestConfiguration.AzureAI.ApiKey));
 
     protected async Task DownloadContentAsync(ChatMessageContent message)
     {

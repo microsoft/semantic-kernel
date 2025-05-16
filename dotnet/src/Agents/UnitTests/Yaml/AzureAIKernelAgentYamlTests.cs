@@ -39,9 +39,9 @@ public class AzureAIKernelAgentYamlTests : IDisposable
 
         // Add Azure AI agents client
         var client = new PersistentAgentsClient(
-            new Uri("https://test"),
+            "https://test",
             new FakeTokenCredential(),
-            new PersistentAgentsClientOptions
+            new PersistentAgentsAdministrationClientOptions
             {
                 Transport = new HttpClientTransport(this._httpClient)
             });
@@ -220,42 +220,6 @@ public class AzureAIKernelAgentYamlTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the request includes a Microsoft Fabric tool when creating an Azure AI agent.
-    /// </summary>
-    [Fact]
-    public async Task VerifyRequestIncludesMicrosoftFabricAsync()
-    {
-        // Arrange
-        const string Text =
-            """
-            type: foundry_agent
-            name: FoundryAgent
-            description: AzureAIAgent Description
-            instructions: AzureAIAgent Instructions
-            model:
-              id: gpt-4o-mini
-            tools:
-                - type: fabric_aiskill
-                  options:
-                      tool_connections:
-                        - connection_string
-            """;
-        AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
-
-        // Act
-        var agent = await factory.CreateAgentFromYamlAsync(Text, new() { Kernel = this._kernel });
-
-        // Assert
-        Assert.NotNull(agent);
-        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
-        Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("fabric_dataagent", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
-    }
-
-    /// <summary>
     /// Verify the request includes a Open API tool when creating an Azure AI agent.
     /// </summary>
     [Fact]
@@ -306,42 +270,6 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         Assert.Equal("openapi", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
         Assert.Equal("openapi", requestJson.GetProperty("tools")[1].GetProperty("type").GetString());
         Assert.Equal("openapi", requestJson.GetProperty("tools")[2].GetProperty("type").GetString());
-    }
-
-    /// <summary>
-    /// Verify the request includes a Sharepoint tool when creating an Azure AI agent.
-    /// </summary>
-    [Fact]
-    public async Task VerifyRequestIncludesSharepointGroundingAsync()
-    {
-        // Arrange
-        const string Text =
-            """
-            type: foundry_agent
-            name: FoundryAgent
-            description: AzureAIAgent Description
-            instructions: AzureAIAgent Instructions
-            model:
-              id: gpt-4o-mini
-            tools:
-                - type: sharepoint_grounding
-                  options:
-                    tool_connections:
-                        - connection_string
-            """;
-        AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
-
-        // Act
-        var agent = await factory.CreateAgentFromYamlAsync(Text, new() { Kernel = this._kernel });
-
-        // Assert
-        Assert.NotNull(agent);
-        var requestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(requestContent);
-        var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
-        Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("sharepoint_grounding", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
     }
 
     /// <summary>

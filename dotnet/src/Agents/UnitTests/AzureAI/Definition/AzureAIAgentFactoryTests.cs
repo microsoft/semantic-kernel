@@ -33,9 +33,9 @@ public class AzureAIAgentFactoryTests : IDisposable
 
         var builder = Kernel.CreateBuilder();
         var client = new PersistentAgentsClient(
-            new Uri("https://test"),
+            "https://test",
             new FakeTokenCredential(),
-            new PersistentAgentsClientOptions
+            new PersistentAgentsAdministrationClientOptions
             {
                 Transport = new HttpClientTransport(this._httpClient)
             });

@@ -430,7 +430,7 @@ public sealed partial class AzureAIAgent : Agent
 
         this.Logger.LogAzureAIAgentRestoringChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
 
-        PersistentAgentThread thread = await this.Client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+        PersistentAgentThread thread = await this.Client.Threads.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
 
         this.Logger.LogAzureAIAgentRestoredChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
 

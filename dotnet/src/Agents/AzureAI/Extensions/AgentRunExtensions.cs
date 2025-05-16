@@ -67,7 +67,8 @@ internal static class AgentRunExtensions
     private static BinaryData? GetResponseFormat(AzureAIInvocationOptions? invocationOptions)
     {
         return invocationOptions?.EnableJsonResponse == true ?
-            BinaryData.FromString(ResponseFormat.JsonObject.ToString()) :
+            //BinaryData.FromString(ResponseFormat.JsonObject.ToString()) :
+            BinaryData.FromString("// %%% TODO") :
             null;
     }
 

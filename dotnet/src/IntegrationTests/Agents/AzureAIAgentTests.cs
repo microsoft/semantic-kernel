@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.AI.Agents.Persistent;
-using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +29,7 @@ public class AzureAIAgentTests
         var kernelBuilder = Kernel.CreateBuilder();
         this._kernel = kernelBuilder.Build();
         this._configuration = this.ReadAzureConfiguration();
-        this._client = AzureAIAgent.CreateAgentsClient(new Uri(this._configuration.Endpoint), new AzureCliCredential());
+        this._client = AzureAIAgent.CreateAgentsClient(this._configuration.Endpoint, new AzureCliCredential());
     }
 
     /// <summary>
@@ -40,7 +39,7 @@ public class AzureAIAgentTests
     public async Task AzureAIAgentWithThreadCustomOptionsAsync()
     {
         var aiAgent =
-            await this._client.CreateAgentAsync(
+            await this._client.Administration.CreateAgentAsync(
                 this._configuration.ChatModelId,
                 name: "HelpfulAssistant",
                 description: "Helpful Assistant",
@@ -63,7 +62,7 @@ public class AzureAIAgentTests
         finally
         {
             await agentThread.DeleteAsync();
-            await this._client.DeleteAgentAsync(agent.Id);
+            await this._client.Administration.DeleteAgentAsync(agent.Id);
         }
     }
 
@@ -74,7 +73,7 @@ public class AzureAIAgentTests
     public async Task AzureAIAgentWithThreadCustomOptionsStreamingAsync()
     {
         var aiAgent =
-            await this._client.CreateAgentAsync(
+            await this._client.Administration.CreateAgentAsync(
                 this._configuration.ChatModelId,
                 name: "HelpfulAssistant",
                 description: "Helpful Assistant",
@@ -97,7 +96,7 @@ public class AzureAIAgentTests
         finally
         {
             await agentThread.DeleteAsync();
-            await this._client.DeleteAgentAsync(agent.Id);
+            await this._client.Administration.DeleteAgentAsync(agent.Id);
         }
     }
 
@@ -135,7 +134,7 @@ public class AzureAIAgentTests
         finally
         {
             await agentThread.DeleteAsync();
-            await this._client.DeleteAgentAsync(agent.Id);
+            await this._client.Administration.DeleteAgentAsync(agent.Id);
         }
     }
 

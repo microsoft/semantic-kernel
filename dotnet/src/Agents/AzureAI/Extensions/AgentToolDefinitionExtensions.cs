@@ -75,20 +75,6 @@ internal static class AgentToolDefinitionExtensions
         return details;
     }
 
-    internal static ToolConnectionList GetToolConnectionList(this AgentToolDefinition agentToolDefinition)
-    {
-        Verify.NotNull(agentToolDefinition.Options);
-
-        var toolConnections = agentToolDefinition.GetToolConnections();
-
-        var toolConnectionList = new ToolConnectionList();
-        if (toolConnections is not null)
-        {
-            toolConnectionList.ConnectionList.AddRange(toolConnections);
-        }
-        return toolConnectionList;
-    }
-
     internal static BinaryData GetSpecification(this AgentToolDefinition agentToolDefinition)
     {
         Verify.NotNull(agentToolDefinition.Options);
@@ -236,13 +222,13 @@ internal static class AgentToolDefinitionExtensions
         return null;
     }
 
-    private static List<ToolConnection> GetToolConnections(this AgentToolDefinition agentToolDefinition)
+    internal static List<string> GetToolConnections(this AgentToolDefinition agentToolDefinition)
     {
         Verify.NotNull(agentToolDefinition.Options);
 
-        var toolConnections = agentToolDefinition.GetRequiredOption<List<object>>("tool_connections");
+        List<object> toolConnections = agentToolDefinition.GetRequiredOption<List<object>>("tool_connections");
 
-        return toolConnections.Select(connectionId => new ToolConnection(connectionId.ToString())).ToList();
+        return [.. toolConnections.Select(connectionId => $"{connectionId}")];
     }
 
     private static T GetRequiredOption<T>(this AgentToolDefinition agentToolDefinition, string key)

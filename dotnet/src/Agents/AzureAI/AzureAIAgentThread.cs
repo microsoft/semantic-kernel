@@ -78,7 +78,7 @@ public sealed class AzureAIAgentThread : AgentThread
 
         try
         {
-            var agentThreadResponse = await this._client.CreateThreadAsync(
+            var agentThreadResponse = await this._client.Threads.CreateThreadAsync(
                 this._messages,
                 this._toolResources,
                 this._metadata,
@@ -102,7 +102,7 @@ public sealed class AzureAIAgentThread : AgentThread
 
         try
         {
-            await this._client.DeleteThreadAsync(this.Id, cancellationToken).ConfigureAwait(false);
+            await this._client.Threads.DeleteThreadAsync(this.Id, cancellationToken).ConfigureAwait(false);
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {

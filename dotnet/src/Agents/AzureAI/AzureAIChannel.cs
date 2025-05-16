@@ -53,7 +53,7 @@ internal sealed class AzureAIChannel(PersistentAgentsClient client, string threa
     /// <inheritdoc/>
     protected override Task ResetAsync(CancellationToken cancellationToken = default)
     {
-        return client.DeleteThreadAsync(threadId, cancellationToken);
+        return client.Threads.DeleteThreadAsync(threadId, cancellationToken);
     }
 
     /// <inheritdoc/>

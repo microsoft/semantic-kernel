@@ -79,7 +79,7 @@ public class Step10_MultiAgent_Declarative : BaseAgentsTest
         {
             var azureaiAgent = agent as AzureAIAgent;
             Assert.NotNull(azureaiAgent);
-            await azureaiAgent.Client.DeleteAgentAsync(azureaiAgent.Id);
+            await azureaiAgent.Client.Administration.DeleteAgentAsync(azureaiAgent.Id);
 
             if (agentThread is not null)
             {
@@ -97,7 +97,7 @@ public class Step10_MultiAgent_Declarative : BaseAgentsTest
                    OpenAIAssistantAgent.CreateAzureOpenAIClient(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
                    OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(this.Endpoint!));
 
-        var agentsClient = AzureAIAgent.CreateAgentsClient(new Uri(TestConfiguration.AzureAI.Endpoint), new AzureCliCredential());
+        var agentsClient = AzureAIAgent.CreateAgentsClient(TestConfiguration.AzureAI.Endpoint, new AzureCliCredential());
 
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<OpenAIClient>(openaiClient);
