@@ -28,6 +28,7 @@ public sealed class WhiteboardBehavior : AIContextBehavior
     private readonly int _maxWhiteboardMessages;
     private readonly string _contextPrompt;
     private readonly string _whiteboardEmptyPrompt;
+    private readonly string _maintainancePrompt;
 
     private readonly IChatClient _chatClient;
 
@@ -50,6 +51,7 @@ public sealed class WhiteboardBehavior : AIContextBehavior
         this._maxWhiteboardMessages = options?.MaxWhiteboardMessages ?? 10;
         this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
         this._whiteboardEmptyPrompt = options?.WhiteboardEmptyPrompt ?? DefaultWhiteboardEmptyPrompt;
+        this._maintainancePrompt = options?.MaintainancePromptTemplate ?? MaintenancePromptTemplate;
     }
 
     /// <summary>
@@ -142,7 +144,7 @@ public sealed class WhiteboardBehavior : AIContextBehavior
 
         // Inovke the LLM to extract the latest information from the input messages and update the whiteboard.
         var result = await this._chatClient.GetResponseAsync(
-            FormatPromptTemplate(inputMessagesJson, currentWhiteboardJson, this._maxWhiteboardMessages),
+            this.FormatPromptTemplate(inputMessagesJson, currentWhiteboardJson, this._maxWhiteboardMessages),
             new()
             {
                 Temperature = 0,
@@ -155,9 +157,9 @@ public sealed class WhiteboardBehavior : AIContextBehavior
         this._currentWhiteboardContent = newWhiteboardResponse?.NewWhiteboard ?? [];
     }
 
-    private static string FormatPromptTemplate(string inputMessagesJson, string currentWhiteboardJson, int maxWhiteboardMessages)
+    private string FormatPromptTemplate(string inputMessagesJson, string currentWhiteboardJson, int maxWhiteboardMessages)
     {
-        var sb = new StringBuilder(MaintenancePromptTemplate);
+        var sb = new StringBuilder(this._maintainancePrompt);
         sb.Replace("{{$inputMessages}}", inputMessagesJson);
         sb.Replace("{{$currentWhiteboard}}", currentWhiteboardJson);
         sb.Replace("{{$maxWhiteboardMessages}}", maxWhiteboardMessages.ToString());

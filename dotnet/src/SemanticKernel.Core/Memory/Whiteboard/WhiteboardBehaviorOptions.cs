@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Memory;
 public sealed class WhiteboardBehaviorOptions
 {
     /// <summary>
-    /// The maximum number of messages to keep on the whiteboard.
+    /// Gets or sets the maximum number of messages to keep on the whiteboard.
     /// </summary>
     /// <value>
     /// Defaults to 10 if not specified.
@@ -19,8 +19,8 @@ public sealed class WhiteboardBehaviorOptions
     public int? MaxWhiteboardMessages { get; set; }
 
     /// <summary>
-    /// When providing the messages that are currently on the whiteboard, this string is prefixed
-    /// to those memories, in order to provide some context to the model.
+    /// Gets or sets a string that is prefixed to the messages on the whiteboard,
+    /// when providing them as conetxt to the AI model.
     /// </summary>
     /// <value>
     /// Defaults to &quot;## Whiteboard\nThe following list of messages are currently on the whiteboard:&quot;
@@ -28,10 +28,22 @@ public sealed class WhiteboardBehaviorOptions
     public string? ContextPrompt { get; init; }
 
     /// <summary>
-    /// This message is provided to the model when there are no messages on the whiteboard.
+    /// Gets or sets the message to provide to the AI model when there are no messages on the whiteboard.
     /// </summary>
     /// <value>
     /// Defaults to &quot;## Whiteboard\nThe whiteboard is currently empty.&quot;
     /// </value>
     public string? WhiteboardEmptyPrompt { get; init; }
+
+    /// <summary>
+    /// Gets or sets a prompt template to use to update the whiteboard with the latest messages
+    /// if the built-in prompt needs to be customized.
+    /// </summary>
+    /// <remarks>
+    /// The following parameters can be used in the prompt:
+    /// {{$maxWhiteboardMessages}}
+    /// {{$inputMessages}}
+    /// {{$currentWhiteboard}}
+    /// </remarks>
+    public string? MaintainancePromptTemplate { get; init; }
 }
