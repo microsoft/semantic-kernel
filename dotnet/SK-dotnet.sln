@@ -552,30 +552,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorData.UnitTests", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.Orchestration", "src\Agents\Orchestration\Agents.Orchestration.csproj", "{D1A02387-FA60-22F8-C2ED-4676568B6CC3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "process", "process", "{B97D1BCF-60F3-4331-AF75-D55CABCA747D}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "runtime", "runtime", "{5679A130-CD48-4F30-AC68-908EADF85CEA}"
-	ProjectSection(SolutionItems) = preProject
-		AgentThreadFactory.cs = AgentThreadFactory.cs
-		src\InternalUtilities\process\Runtime\KernelProcessProxyMessageFactory.cs = src\InternalUtilities\process\Runtime\KernelProcessProxyMessageFactory.cs
-		src\InternalUtilities\process\Runtime\MapExtensions.cs = src\InternalUtilities\process\Runtime\MapExtensions.cs
-		src\InternalUtilities\process\Runtime\ProcessEvent.cs = src\InternalUtilities\process\Runtime\ProcessEvent.cs
-		src\InternalUtilities\process\Runtime\ProcessMessage.cs = src\InternalUtilities\process\Runtime\ProcessMessage.cs
-		src\InternalUtilities\process\Runtime\ProcessMessageFactory.cs = src\InternalUtilities\process\Runtime\ProcessMessageFactory.cs
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "abstractions", "abstractions", "{B59A89DC-4E53-4E7D-B89A-FE3ABB86BDF8}"
-	ProjectSection(SolutionItems) = preProject
-		src\InternalUtilities\process\Abstractions\AgentThreadFactory.cs = src\InternalUtilities\process\Abstractions\AgentThreadFactory.cs
-		src\InternalUtilities\process\Abstractions\ExceptionExtensions.cs = src\InternalUtilities\process\Abstractions\ExceptionExtensions.cs
-		src\InternalUtilities\process\Abstractions\KernelProcessStateMetadataFactory.cs = src\InternalUtilities\process\Abstractions\KernelProcessStateMetadataFactory.cs
-		src\InternalUtilities\process\Abstractions\KernelProcessStepExtension.cs = src\InternalUtilities\process\Abstractions\KernelProcessStepExtension.cs
-		src\InternalUtilities\process\Abstractions\MapExtensions.cs = src\InternalUtilities\process\Abstractions\MapExtensions.cs
-		src\InternalUtilities\process\Abstractions\ProcessConstants.cs = src\InternalUtilities\process\Abstractions\ProcessConstants.cs
-		src\InternalUtilities\process\Abstractions\ProcessExtensions.cs = src\InternalUtilities\process\Abstractions\ProcessExtensions.cs
-		src\InternalUtilities\process\Abstractions\StepExtensions.cs = src\InternalUtilities\process\Abstractions\StepExtensions.cs
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
