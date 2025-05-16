@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Agents.Orchestration;
 namespace Microsoft.SemanticKernel.Agents.Magentic;
 
 /// <summary>
-/// A manager that manages the flow of a group chat.
+/// A manager that manages the flow of a Magentic style chat.
 /// </summary>
 public abstract class MagenticManager
 {
