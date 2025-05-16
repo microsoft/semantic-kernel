@@ -27,7 +27,7 @@ public class MongoDBHotel
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
-    [VectorStoreData(StoragePropertyName = "parking_is_included")]
+    [VectorStoreData(StorageName = "parking_is_included")]
     public bool ParkingIncluded { get; set; }
 
     /// <summary>An array metadata field.</summary>

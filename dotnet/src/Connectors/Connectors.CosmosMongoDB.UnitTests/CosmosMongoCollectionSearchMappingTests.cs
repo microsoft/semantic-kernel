@@ -24,8 +24,8 @@ public sealed class CosmosMongoCollectionSearchMappingTests
             {
                 Properties =
                 [
-                    new VectorStoreKeyProperty("Property1", typeof(string)) { StoragePropertyName = "property_1" },
-                    new VectorStoreDataProperty("Property2", typeof(string)) { StoragePropertyName = "property_2" }
+                    new VectorStoreKeyProperty("Property1", typeof(string)) { StorageName = "property_1" },
+                    new VectorStoreDataProperty("Property2", typeof(string)) { StorageName = "property_2" }
                 ]
             },
             defaultEmbeddingGenerator: null);

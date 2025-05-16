@@ -153,7 +153,7 @@ public abstract class CollectionModelBuilder
             {
                 var keyProperty = new KeyPropertyModel(clrProperty.Name, clrProperty.PropertyType);
                 this.KeyProperties.Add(keyProperty);
-                storageName = keyAttribute.StoragePropertyName;
+                storageName = keyAttribute.StorageName;
                 property = keyProperty;
             }
 
@@ -172,7 +172,7 @@ public abstract class CollectionModelBuilder
                 };
 
                 this.DataProperties.Add(dataProperty);
-                storageName = dataAttribute.StoragePropertyName;
+                storageName = dataAttribute.StorageName;
                 property = dataProperty;
             }
 
@@ -185,7 +185,7 @@ public abstract class CollectionModelBuilder
 
                 // If a record definition exists for the property, we must instantiate it via that definition, as the user may be using
                 // a generic VectorStoreRecordVectorProperty<TInput> for a custom input type.
-                var vectorProperty = definition?.Properties.FirstOrDefault(p => p.DataModelPropertyName == clrProperty.Name) is VectorStoreVectorProperty definitionVectorProperty
+                var vectorProperty = definition?.Properties.FirstOrDefault(p => p.Name == clrProperty.Name) is VectorStoreVectorProperty definitionVectorProperty
                     ? definitionVectorProperty.CreatePropertyModel()
                     : new VectorPropertyModel(clrProperty.Name, clrProperty.PropertyType);
 
@@ -213,7 +213,7 @@ public abstract class CollectionModelBuilder
                 }
 
                 this.VectorProperties.Add(vectorProperty);
-                storageName = vectorAttribute.StoragePropertyName;
+                storageName = vectorAttribute.StorageName;
                 property = vectorProperty;
             }
 
@@ -237,7 +237,7 @@ public abstract class CollectionModelBuilder
     {
         foreach (VectorStoreProperty definitionProperty in definition.Properties)
         {
-            if (!this.PropertyMap.TryGetValue(definitionProperty.DataModelPropertyName, out var property))
+            if (!this.PropertyMap.TryGetValue(definitionProperty.Name, out var property))
             {
                 // Property wasn't found attribute-annotated on the CLR type, so we need to add it.
 
@@ -245,21 +245,21 @@ public abstract class CollectionModelBuilder
                 switch (definitionProperty)
                 {
                     case VectorStoreKeyProperty definitionKeyProperty:
-                        var keyProperty = new KeyPropertyModel(definitionKeyProperty.DataModelPropertyName, definitionKeyProperty.PropertyType);
+                        var keyProperty = new KeyPropertyModel(definitionKeyProperty.Name, definitionKeyProperty.Type);
                         this.KeyProperties.Add(keyProperty);
-                        this.PropertyMap.Add(definitionKeyProperty.DataModelPropertyName, keyProperty);
+                        this.PropertyMap.Add(definitionKeyProperty.Name, keyProperty);
                         property = keyProperty;
                         break;
                     case VectorStoreDataProperty definitionDataProperty:
-                        var dataProperty = new DataPropertyModel(definitionDataProperty.DataModelPropertyName, definitionDataProperty.PropertyType);
+                        var dataProperty = new DataPropertyModel(definitionDataProperty.Name, definitionDataProperty.Type);
                         this.DataProperties.Add(dataProperty);
-                        this.PropertyMap.Add(definitionDataProperty.DataModelPropertyName, dataProperty);
+                        this.PropertyMap.Add(definitionDataProperty.Name, dataProperty);
                         property = dataProperty;
                         break;
                     case VectorStoreVectorProperty definitionVectorProperty:
                         var vectorProperty = definitionVectorProperty.CreatePropertyModel();
                         this.VectorProperties.Add(vectorProperty);
-                        this.PropertyMap.Add(definitionVectorProperty.DataModelPropertyName, vectorProperty);
+                        this.PropertyMap.Add(definitionVectorProperty.Name, vectorProperty);
                         property = vectorProperty;
                         break;
                     default:
@@ -267,8 +267,8 @@ public abstract class CollectionModelBuilder
                 }
             }
 
-            property.Type = definitionProperty.PropertyType;
-            this.SetPropertyStorageName(property, definitionProperty.StoragePropertyName, type);
+            property.Type = definitionProperty.Type;
+            this.SetPropertyStorageName(property, definitionProperty.StorageName, type);
 
             switch (definitionProperty)
             {

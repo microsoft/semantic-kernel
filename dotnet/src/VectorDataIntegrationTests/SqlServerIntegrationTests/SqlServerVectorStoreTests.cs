@@ -210,49 +210,49 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
     public sealed class TestModel
     {
-        [VectorStoreKey(StoragePropertyName = "key")]
+        [VectorStoreKey(StorageName = "key")]
         public string? Id { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "text")]
+        [VectorStoreData(StorageName = "text")]
         public string? Text { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "column")]
+        [VectorStoreData(StorageName = "column")]
         public int Number { get; set; }
 
-        [VectorStoreVector(Dimensions: 10, StoragePropertyName = "embedding")]
+        [VectorStoreVector(Dimensions: 10, StorageName = "embedding")]
         public ReadOnlyMemory<float> Floats { get; set; }
     }
 
     public sealed class SameStorageNameButDifferentType
     {
-        [VectorStoreKey(StoragePropertyName = "key")]
+        [VectorStoreKey(StorageName = "key")]
         public string? Id { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "text")]
+        [VectorStoreData(StorageName = "text")]
         public int Number { get; set; }
     }
 
     public sealed class SameStorageNameButInvalidVector
     {
-        [VectorStoreKey(StoragePropertyName = "key")]
+        [VectorStoreKey(StorageName = "key")]
         public string? Id { get; set; }
 
-        [VectorStoreVector(Dimensions: 10, StoragePropertyName = "text")]
+        [VectorStoreVector(Dimensions: 10, StorageName = "text")]
         public ReadOnlyMemory<float> Floats { get; set; }
     }
 
     public sealed class DifferentStorageNames
     {
-        [VectorStoreKey(StoragePropertyName = "key")]
+        [VectorStoreKey(StorageName = "key")]
         public string? Id { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "text2")]
+        [VectorStoreData(StorageName = "text2")]
         public string? Text { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "column2")]
+        [VectorStoreData(StorageName = "column2")]
         public int Number { get; set; }
 
-        [VectorStoreVector(Dimensions: 10, StoragePropertyName = "embedding2")]
+        [VectorStoreVector(Dimensions: 10, StorageName = "embedding2")]
         public ReadOnlyMemory<float> Floats { get; set; }
     }
 
@@ -298,10 +298,10 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
     public sealed class TimeModel
     {
-        [VectorStoreKey(StoragePropertyName = "key")]
+        [VectorStoreKey(StorageName = "key")]
         public string? Id { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "time")]
+        [VectorStoreData(StorageName = "time")]
 #if NETFRAMEWORK
         public TimeSpan Time { get; set; }
 #else
@@ -379,27 +379,27 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
     public sealed class FancyTestModel<TKey>
     {
-        [VectorStoreKey(StoragePropertyName = "key")]
+        [VectorStoreKey(StorageName = "key")]
         public TKey? Id { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "byte")]
+        [VectorStoreData(StorageName = "byte")]
         public byte Number8 { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "short")]
+        [VectorStoreData(StorageName = "short")]
         public short Number16 { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "int")]
+        [VectorStoreData(StorageName = "int")]
         public int Number32 { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "long")]
+        [VectorStoreData(StorageName = "long")]
         public long Number64 { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "bytes")]
+        [VectorStoreData(StorageName = "bytes")]
 #pragma warning disable CA1819 // Properties should not return arrays
         public byte[]? Bytes { get; set; }
 #pragma warning restore CA1819 // Properties should not return arrays
 
-        [VectorStoreVector(Dimensions: 10, StoragePropertyName = "embedding")]
+        [VectorStoreVector(Dimensions: 10, StorageName = "embedding")]
         public ReadOnlyMemory<float> Floats { get; set; }
     }
 }

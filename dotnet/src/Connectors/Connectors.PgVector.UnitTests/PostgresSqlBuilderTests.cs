@@ -34,7 +34,7 @@ public class PostgresSqlBuilderTests
                 new VectorStoreDataProperty("code", typeof(int)),
                 new VectorStoreDataProperty("rating", typeof(float?)),
                 new VectorStoreDataProperty("description", typeof(string)),
-                new VectorStoreDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
+                new VectorStoreDataProperty("parking_is_included", typeof(bool)) { StorageName = "free_parking" },
                 new VectorStoreDataProperty("tags", typeof(List<string>)),
                 new VectorStoreVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
                 {
@@ -265,7 +265,7 @@ public class PostgresSqlBuilderTests
                 new VectorStoreDataProperty("code", typeof(int)),
                 new VectorStoreDataProperty("rating", typeof(float?)),
                 new VectorStoreDataProperty("description", typeof(string)),
-                new VectorStoreDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
+                new VectorStoreDataProperty("parking_is_included", typeof(bool)) { StorageName = "free_parking" },
                 new VectorStoreDataProperty("tags", typeof(List<string>)),
                 new VectorStoreVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
                 {
@@ -308,7 +308,7 @@ public class PostgresSqlBuilderTests
                 new VectorStoreDataProperty("code", typeof(int)),
                 new VectorStoreDataProperty("rating", typeof(float?)),
                 new VectorStoreDataProperty("description", typeof(string)),
-                new VectorStoreDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
+                new VectorStoreDataProperty("parking_is_included", typeof(bool)) { StorageName = "free_parking" },
                 new VectorStoreDataProperty("tags", typeof(List<string>)),
                 new VectorStoreVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
                 {

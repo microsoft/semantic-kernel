@@ -93,7 +93,7 @@ public class RedisCollectionSearchMappingTests
         var model = BuildModel(
         [
             new VectorStoreKeyProperty("Key", typeof(string)),
-            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "storage_Vector" }
+            new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StorageName = "storage_Vector" }
         ]);
         var selectFields = new string[] { "storage_Field1", "storage_Field2" };
 
@@ -129,7 +129,7 @@ public class RedisCollectionSearchMappingTests
         var model = BuildModel(
         [
             new VectorStoreKeyProperty("Key", typeof(string)),
-            new VectorStoreDataProperty("Data1", typeof(string)) { StoragePropertyName = "storage_Data1" },
+            new VectorStoreDataProperty("Data1", typeof(string)) { StorageName = "storage_Data1" },
             new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
         ]);
 
@@ -164,7 +164,7 @@ public class RedisCollectionSearchMappingTests
         var model = BuildModel(
         [
             new VectorStoreKeyProperty("Key", typeof(string)),
-            new VectorStoreDataProperty("Data1", typeof(string)) { StoragePropertyName = "storage_Data1" },
+            new VectorStoreDataProperty("Data1", typeof(string)) { StorageName = "storage_Data1" },
             new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
         ]);
 
@@ -183,7 +183,7 @@ public class RedisCollectionSearchMappingTests
         var model = BuildModel(
         [
             new VectorStoreKeyProperty("Key", typeof(string)),
-            new VectorStoreDataProperty("Data1", typeof(string)) { StoragePropertyName = "storage_Data1" },
+            new VectorStoreDataProperty("Data1", typeof(string)) { StorageName = "storage_Data1" },
             new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
         ]);
 

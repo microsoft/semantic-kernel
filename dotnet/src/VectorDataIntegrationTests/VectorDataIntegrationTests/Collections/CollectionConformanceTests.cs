@@ -97,9 +97,9 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         {
             Properties =
             [
-                new VectorStoreKeyProperty(nameof(SimpleRecord<object>.Id), typeof(TKey)) { StoragePropertyName = "key" },
-                new VectorStoreDataProperty(nameof(SimpleRecord<object>.Text), typeof(string)) { StoragePropertyName = "text" },
-                new VectorStoreDataProperty(nameof(SimpleRecord<object>.Number), typeof(int)) { StoragePropertyName = "number" },
+                new VectorStoreKeyProperty(nameof(SimpleRecord<object>.Id), typeof(TKey)) { StorageName = "key" },
+                new VectorStoreDataProperty(nameof(SimpleRecord<object>.Text), typeof(string)) { StorageName = "text" },
+                new VectorStoreDataProperty(nameof(SimpleRecord<object>.Number), typeof(int)) { StorageName = "number" },
                 new VectorStoreVectorProperty(nameof(SimpleRecord<object>.Floats), typeof(ReadOnlyMemory<float>), 10) { IndexKind = fixture.TestStore.DefaultIndexKind }
             ]
         };

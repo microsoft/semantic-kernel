@@ -96,7 +96,7 @@ public sealed class RedisHashSetMapperTests
         [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreData(StoragePropertyName = "storage_string_data")]
+        [VectorStoreData(StorageName = "storage_string_data")]
         public string StringData { get; set; } = string.Empty;
 
         [VectorStoreData]

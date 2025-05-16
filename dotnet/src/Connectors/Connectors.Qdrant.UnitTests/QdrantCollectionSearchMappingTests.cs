@@ -23,9 +23,9 @@ public class QdrantCollectionSearchMappingTests
             {
                 Properties =
                 [
-                    new VectorStoreKeyProperty("Key", typeof(Guid)) { StoragePropertyName = "storage_key" },
-                    new VectorStoreDataProperty("FieldName", typeof(string)) { StoragePropertyName = "storage_FieldName" },
-                    new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "storage_vector" },
+                    new VectorStoreKeyProperty("Key", typeof(Guid)) { StorageName = "storage_key" },
+                    new VectorStoreDataProperty("FieldName", typeof(string)) { StorageName = "storage_FieldName" },
+                    new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StorageName = "storage_vector" },
                 ]
             },
             defaultEmbeddingGenerator: null);
@@ -124,7 +124,7 @@ public class QdrantCollectionSearchMappingTests
                     Properties =
                     [
                         new VectorStoreKeyProperty("Id", typeof(ulong)),
-                        new VectorStoreDataProperty("DataField", typeof(string)) { StoragePropertyName = "storage_DataField" },
+                        new VectorStoreDataProperty("DataField", typeof(string)) { StorageName = "storage_DataField" },
                         new VectorStoreVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 10),
                     ]
                 },

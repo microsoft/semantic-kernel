@@ -538,9 +538,9 @@ public class RedisJsonCollectionTests
         Properties =
         [
             new VectorStoreKeyProperty("Key", typeof(string)),
-            new VectorStoreDataProperty("Data1", typeof(string)) { IsIndexed = true, StoragePropertyName = "ignored_data1_storage_name" },
+            new VectorStoreDataProperty("Data1", typeof(string)) { IsIndexed = true, StorageName = "ignored_data1_storage_name" },
             new VectorStoreDataProperty("Data2", typeof(string)) { IsIndexed = true },
-            new VectorStoreVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 4) { DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "ignored_vector1_storage_name" },
+            new VectorStoreVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 4) { DistanceFunction = DistanceFunction.CosineDistance, StorageName = "ignored_vector1_storage_name" },
             new VectorStoreVectorProperty("Vector2", typeof(ReadOnlyMemory<float>), 4)
         ]
     };
@@ -551,14 +551,14 @@ public class RedisJsonCollectionTests
         public string Key { get; set; } = string.Empty;
 
         [JsonPropertyName("data1_json_name")]
-        [VectorStoreData(IsIndexed = true, StoragePropertyName = "ignored_data1_storage_name")]
+        [VectorStoreData(IsIndexed = true, StorageName = "ignored_data1_storage_name")]
         public string Data1 { get; set; } = string.Empty;
 
         [VectorStoreData(IsIndexed = true)]
         public string Data2 { get; set; } = string.Empty;
 
         [JsonPropertyName("vector1_json_name")]
-        [VectorStoreVector(4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "ignored_vector1_storage_name")]
+        [VectorStoreVector(4, DistanceFunction = DistanceFunction.CosineDistance, StorageName = "ignored_vector1_storage_name")]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
         [VectorStoreVector(4)]

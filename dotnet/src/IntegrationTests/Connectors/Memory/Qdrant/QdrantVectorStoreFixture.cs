@@ -55,7 +55,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
                 new VectorStoreKeyProperty("HotelId", typeof(ulong)),
                 new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
                 new VectorStoreDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
-                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { IsIndexed = true, StoragePropertyName = "parking_is_included" },
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { IsIndexed = true, StorageName = "parking_is_included" },
                 new VectorStoreDataProperty("HotelRating", typeof(float)) { IsIndexed = true },
                 new VectorStoreDataProperty("LastRenovationDate", typeof(DateTimeOffset)) { IsIndexed = true },
                 new VectorStoreDataProperty("Tags", typeof(List<string>)) { IsIndexed = true },
@@ -331,7 +331,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public float? HotelRating { get; set; }
 
         /// <summary>A bool metadata field.</summary>
-        [VectorStoreData(IsIndexed = true, StoragePropertyName = "parking_is_included")]
+        [VectorStoreData(IsIndexed = true, StorageName = "parking_is_included")]
         public bool ParkingIncluded { get; set; }
 
         [VectorStoreData(IsIndexed = true)]

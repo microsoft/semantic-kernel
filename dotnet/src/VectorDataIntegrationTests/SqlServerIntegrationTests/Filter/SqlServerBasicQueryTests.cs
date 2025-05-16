@@ -54,7 +54,7 @@ public class SqlServerBasicQueryTests(SqlServerBasicQueryTests.Fixture fixture)
         public override VectorStoreRecordDefinition CreateRecordDefinition()
             => new()
             {
-                Properties = base.CreateRecordDefinition().Properties.Where(p => p.PropertyType != typeof(string[]) && p.PropertyType != typeof(List<string>)).ToList()
+                Properties = base.CreateRecordDefinition().Properties.Where(p => p.Type != typeof(string[]) && p.Type != typeof(List<string>)).ToList()
             };
     }
 }

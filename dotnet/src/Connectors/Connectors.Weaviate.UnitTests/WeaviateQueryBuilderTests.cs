@@ -37,11 +37,11 @@ public sealed class WeaviateQueryBuilderTests
             {
                 Properties =
                 [
-                    new VectorStoreKeyProperty("HotelId", typeof(Guid)) { StoragePropertyName = "hotelId" },
-                    new VectorStoreDataProperty("HotelName", typeof(string)) { StoragePropertyName = "hotelName" },
-                    new VectorStoreDataProperty("HotelCode", typeof(string)) { StoragePropertyName = "hotelCode" },
-                    new VectorStoreDataProperty("Tags", typeof(string[])) { StoragePropertyName = "tags" },
-                    new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "descriptionEmbeddding" },
+                    new VectorStoreKeyProperty("HotelId", typeof(Guid)) { StorageName = "hotelId" },
+                    new VectorStoreDataProperty("HotelName", typeof(string)) { StorageName = "hotelName" },
+                    new VectorStoreDataProperty("HotelCode", typeof(string)) { StorageName = "hotelCode" },
+                    new VectorStoreDataProperty("Tags", typeof(string[])) { StorageName = "tags" },
+                    new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>), 10) { StorageName = "descriptionEmbeddding" },
                 ]
             },
             defaultEmbeddingGenerator: null);

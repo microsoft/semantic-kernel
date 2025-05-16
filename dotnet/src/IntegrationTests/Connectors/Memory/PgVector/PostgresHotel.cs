@@ -30,7 +30,7 @@ public record PostgresHotel<T>()
     public float? HotelRating { get; set; }
 
     /// <summary>A bool metadata field.</summary>
-    [VectorStoreData(StoragePropertyName = "parking_is_included")]
+    [VectorStoreData(StorageName = "parking_is_included")]
     public bool ParkingIncluded { get; set; }
 
     [VectorStoreData]

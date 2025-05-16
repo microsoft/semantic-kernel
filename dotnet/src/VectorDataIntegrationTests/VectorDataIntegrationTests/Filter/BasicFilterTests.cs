@@ -649,17 +649,17 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             Assert.Equal(x.String, y.String);
             Assert.Equal(x.Int2, y.Int2);
 
-            if (definitionProperties.Any(p => p.DataModelPropertyName == nameof(FilterRecord.Bool)))
+            if (definitionProperties.Any(p => p.Name == nameof(FilterRecord.Bool)))
             {
                 Assert.Equal(x.Bool, y.Bool);
             }
 
-            if (definitionProperties.Any(p => p.DataModelPropertyName == nameof(FilterRecord.StringArray)))
+            if (definitionProperties.Any(p => p.Name == nameof(FilterRecord.StringArray)))
             {
                 Assert.Equivalent(x.StringArray, y.StringArray);
             }
 
-            if (definitionProperties.Any(p => p.DataModelPropertyName == nameof(FilterRecord.StringList)))
+            if (definitionProperties.Any(p => p.Name == nameof(FilterRecord.StringList)))
             {
                 Assert.Equivalent(x.StringList, y.StringList);
             }
@@ -674,17 +674,17 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             Assert.Equal(x.String, y["String"]);
             Assert.Equal(x.Int2, y["Int2"]);
 
-            if (definitionProperties.Any(p => p.DataModelPropertyName == nameof(FilterRecord.Bool)))
+            if (definitionProperties.Any(p => p.Name == nameof(FilterRecord.Bool)))
             {
                 Assert.Equal(x.Bool, y["Bool"]);
             }
 
-            if (definitionProperties.Any(p => p.DataModelPropertyName == nameof(FilterRecord.StringArray)))
+            if (definitionProperties.Any(p => p.Name == nameof(FilterRecord.StringArray)))
             {
                 Assert.Equivalent(x.StringArray, y["StringArray"]);
             }
 
-            if (definitionProperties.Any(p => p.DataModelPropertyName == nameof(FilterRecord.StringList)))
+            if (definitionProperties.Any(p => p.Name == nameof(FilterRecord.StringList)))
             {
                 Assert.Equivalent(x.StringList, y["StringList"]);
             }

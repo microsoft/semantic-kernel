@@ -60,13 +60,13 @@ public class VectorStore_ConsumeFromMemoryStore_Redis(ITestOutputHelper output, 
         [VectorStoreKey]
         public string Key { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "metadata")]
+        [VectorStoreData(StorageName = "metadata")]
         public string Metadata { get; set; }
 
-        [VectorStoreData(StoragePropertyName = "timestamp")]
+        [VectorStoreData(StorageName = "timestamp")]
         public long Timestamp { get; set; }
 
-        [VectorStoreVector(VectorSize, StoragePropertyName = "embedding")]
+        [VectorStoreVector(VectorSize, StorageName = "embedding")]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 }
