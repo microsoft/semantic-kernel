@@ -3,9 +3,18 @@
 
 from typing import Annotated, Any
 
-from pydantic import BaseModel
+import requests
+from azure.search.documents.indexes.models import (
+    ComplexField,
+    HnswAlgorithmConfiguration,
+    SearchField,
+    SearchFieldDataType,
+    SearchIndex,
+    VectorSearch,
+    VectorSearchProfile,
+)
+from pydantic import BaseModel, ConfigDict
 
-from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings
 from semantic_kernel.data import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -13,52 +22,335 @@ from semantic_kernel.data import (
     vectorstoremodel,
 )
 
-###
-# The data model used for this sample is based on the hotel data model from the Azure AI Search samples.
-# When deploying a new index in Azure AI Search using the import wizard you can choose to deploy the 'hotel-samples'
-# dataset, see here: https://learn.microsoft.com/en-us/azure/search/search-get-started-portal.
-# This is the dataset used in this sample with some modifications.
-# This model adds vectors for the 2 descriptions in English and French.
-# Both are based on the 1536 dimensions of the OpenAI models.
-# You can adjust this at creation time and then make the change below as well.
-# Refer to the README for more information.
-###
+"""
+The data model used for this sample is based on the hotel data model from the Azure AI Search samples.
+The source can be found here: https://github.com/Azure/azure-search-vector-samples/blob/main/data/hotels.json
+The version in this folder, is modified to have python style names and no vectors.
+Below we define a custom index for the hotel data model.
+The reason for this is that the built-in connector cannot properly handle the complex data types.
+"""
 
 
-@vectorstoremodel
+class Rooms(BaseModel):
+    Type: str
+    Description: str
+    Description_fr: str
+    BaseRate: float
+    BedOptions: str
+    SleepsCount: int
+    SmokingAllowed: bool
+    Tags: list[str]
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class Address(BaseModel):
+    StreetAddress: str
+    City: str | None
+    StateProvince: str | None
+    PostalCode: str | None
+    Country: str | None
+
+    model_config = ConfigDict(extra="ignore")
+
+
+@vectorstoremodel(collection_name="hotel-index")
 class HotelSampleClass(BaseModel):
-    hotel_id: Annotated[str, VectorStoreRecordKeyField]
-    hotel_name: Annotated[str | None, VectorStoreRecordDataField()] = None
-    description: Annotated[
+    HotelId: Annotated[str, VectorStoreRecordKeyField]
+    HotelName: Annotated[str | None, VectorStoreRecordDataField()] = None
+    Description: Annotated[
         str,
-        VectorStoreRecordDataField(
-            has_embedding=True, embedding_property_name="description_vector", is_full_text_searchable=True
-        ),
+        VectorStoreRecordDataField(is_full_text_indexed=True),
     ]
-    description_vector: Annotated[
-        list[float] | None,
-        VectorStoreRecordVectorField(
-            dimensions=1536,
-            local_embedding=True,
-            embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
-        ),
+    DescriptionVector: Annotated[
+        list[float] | str | None,
+        VectorStoreRecordVectorField(dimensions=1536),
     ] = None
-    description_fr: Annotated[
-        str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="description_fr_vector")
-    ]
-    description_fr_vector: Annotated[
-        list[float] | None,
-        VectorStoreRecordVectorField(
-            dimensions=1536,
-            local_embedding=True,
-            embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
-        ),
+    Description_fr: Annotated[str, VectorStoreRecordDataField(is_full_text_indexed=True)]
+    DescriptionFrVector: Annotated[
+        list[float] | str | None,
+        VectorStoreRecordVectorField(dimensions=1536),
     ] = None
-    category: Annotated[str, VectorStoreRecordDataField()]
-    tags: Annotated[list[str], VectorStoreRecordDataField()]
-    parking_included: Annotated[bool | None, VectorStoreRecordDataField()] = None
-    last_renovation_date: Annotated[str | None, VectorStoreRecordDataField()] = None
-    rating: Annotated[float, VectorStoreRecordDataField()]
-    location: Annotated[dict[str, Any], VectorStoreRecordDataField()]
-    address: Annotated[dict[str, str | None], VectorStoreRecordDataField()]
-    rooms: Annotated[list[dict[str, Any]], VectorStoreRecordDataField()]
+    Category: Annotated[str, VectorStoreRecordDataField()]
+    Tags: Annotated[list[str], VectorStoreRecordDataField(is_indexed=True)]
+    ParkingIncluded: Annotated[bool | None, VectorStoreRecordDataField()] = None
+    LastRenovationDate: Annotated[
+        str | None, VectorStoreRecordDataField(property_type=SearchFieldDataType.DateTimeOffset)
+    ] = None
+    Rating: Annotated[float, VectorStoreRecordDataField()]
+    Location: Annotated[dict[str, Any], VectorStoreRecordDataField(property_type=SearchFieldDataType.GeographyPoint)]
+    Address: Annotated[Address, VectorStoreRecordDataField()]
+    Rooms: Annotated[list[Rooms], VectorStoreRecordDataField()]
+
+    model_config = ConfigDict(extra="ignore")
+
+    def model_post_init(self, context: Any) -> None:
+        if self.DescriptionVector is None:
+            self.DescriptionVector = self.Description
+        if self.DescriptionFrVector is None:
+            self.DescriptionFrVector = self.Description_fr
+
+
+def load_records(url: str | None = None) -> list[HotelSampleClass]:
+    """
+    Load the records from the given URL (default: Azure hotels.json).
+    Removes the 'DescriptionEmbedding' field.
+    :param url: The URL to the hotels.json file.
+    :return: A list of HotelSampleClass objects.
+    """
+    if url is None:
+        url = "https://raw.githubusercontent.com/Azure/azure-search-vector-samples/refs/heads/main/data/hotels.json"
+    response = requests.get(url, timeout=60)
+    response.raise_for_status()
+    all_records = response.json()
+    return [HotelSampleClass.model_validate(record) for record in all_records]
+
+
+custom_index = SearchIndex(
+    name="hotel-index",
+    fields=[
+        SearchField(
+            name="HotelId",
+            type="Edm.String",
+            key=True,
+            hidden=False,
+            filterable=True,
+            sortable=False,
+            facetable=False,
+            searchable=True,
+        ),
+        SearchField(
+            name="HotelName",
+            type="Edm.String",
+            hidden=False,
+            filterable=True,
+            sortable=True,
+            facetable=False,
+            searchable=True,
+        ),
+        SearchField(
+            name="Description",
+            type="Edm.String",
+            hidden=False,
+            filterable=False,
+            sortable=False,
+            facetable=False,
+            searchable=True,
+        ),
+        SearchField(
+            name="DescriptionVector",
+            type="Collection(Edm.Single)",
+            hidden=False,
+            searchable=True,
+            vector_search_dimensions=1536,
+            vector_search_profile_name="hnsw",
+        ),
+        SearchField(
+            name="Description_fr",
+            type="Edm.String",
+            hidden=False,
+            filterable=False,
+            sortable=False,
+            facetable=False,
+            searchable=True,
+            analyzer_name="fr.microsoft",
+        ),
+        SearchField(
+            name="DescriptionFrVector",
+            type="Collection(Edm.Single)",
+            hidden=False,
+            searchable=True,
+            vector_search_dimensions=1536,
+            vector_search_profile_name="hnsw",
+        ),
+        SearchField(
+            name="Category",
+            type="Edm.String",
+            hidden=False,
+            filterable=True,
+            sortable=False,
+            facetable=True,
+            searchable=True,
+        ),
+        SearchField(
+            name="Tags",
+            type="Collection(Edm.String)",
+            hidden=False,
+            filterable=True,
+            sortable=False,
+            facetable=True,
+            searchable=True,
+        ),
+        SearchField(
+            name="ParkingIncluded",
+            type="Edm.Boolean",
+            hidden=False,
+            filterable=True,
+            sortable=False,
+            facetable=True,
+            searchable=False,
+        ),
+        SearchField(
+            name="LastRenovationDate",
+            type="Edm.DateTimeOffset",
+            hidden=False,
+            filterable=False,
+            sortable=True,
+            facetable=False,
+            searchable=False,
+        ),
+        SearchField(
+            name="Rating",
+            type="Edm.Double",
+            hidden=False,
+            filterable=True,
+            sortable=True,
+            facetable=True,
+            searchable=False,
+        ),
+        ComplexField(
+            name="Address",
+            collection=False,
+            fields=[
+                SearchField(
+                    name="StreetAddress",
+                    type="Edm.String",
+                    hidden=False,
+                    filterable=True,
+                    sortable=False,
+                    facetable=False,
+                    searchable=True,
+                ),
+                SearchField(
+                    name="City",
+                    type="Edm.String",
+                    hidden=False,
+                    filterable=True,
+                    sortable=False,
+                    facetable=True,
+                    searchable=True,
+                ),
+                SearchField(
+                    name="StateProvince",
+                    type="Edm.String",
+                    hidden=False,
+                    filterable=True,
+                    sortable=False,
+                    facetable=True,
+                    searchable=True,
+                ),
+                SearchField(
+                    name="PostalCode",
+                    type="Edm.String",
+                    hidden=False,
+                    filterable=True,
+                    sortable=False,
+                    facetable=True,
+                    searchable=True,
+                ),
+                SearchField(
+                    name="Country",
+                    type="Edm.String",
+                    hidden=False,
+                    filterable=True,
+                    sortable=False,
+                    facetable=True,
+                    searchable=True,
+                ),
+            ],
+        ),
+        SearchField(
+            name="Location",
+            type="Edm.GeographyPoint",
+            hidden=False,
+            filterable=True,
+            sortable=True,
+            facetable=False,
+            searchable=False,
+        ),
+        ComplexField(
+            name="Rooms",
+            collection=True,
+            fields=[
+                SearchField(
+                    name="Description",
+                    type="Edm.String",
+                    hidden=False,
+                    filterable=False,
+                    sortable=False,
+                    facetable=False,
+                    searchable=True,
+                ),
+                SearchField(
+                    name="Description_fr",
+                    type="Edm.String",
+                    hidden=False,
+                    filterable=False,
+                    sortable=False,
+                    facetable=False,
+                    searchable=True,
+                    analyzer_name="fr.microsoft",
+                ),
+                SearchField(
+                    name="Type",
+                    type="Edm.String",
+                    hidden=False,
+                    filterable=True,
+                    sortable=False,
+                    facetable=True,
+                    searchable=True,
+                ),
+                SearchField(
+                    name="BaseRate",
+                    type="Edm.Double",
+                    hidden=False,
+                    filterable=True,
+                    sortable=False,
+                    facetable=True,
+                    searchable=False,
+                ),
+                SearchField(
+                    name="BedOptions",
+                    type="Edm.String",
+                    hidden=False,
+                    filterable=True,
+                    sortable=False,
+                    facetable=True,
+                    searchable=True,
+                ),
+                SearchField(
+                    name="SleepsCount",
+                    type="Edm.Int64",
+                    hidden=False,
+                    filterable=True,
+                    sortable=False,
+                    facetable=True,
+                    searchable=False,
+                ),
+                SearchField(
+                    name="SmokingAllowed",
+                    type="Edm.Boolean",
+                    hidden=False,
+                    filterable=True,
+                    sortable=False,
+                    facetable=True,
+                    searchable=False,
+                ),
+                SearchField(
+                    name="Tags",
+                    type="Collection(Edm.String)",
+                    hidden=False,
+                    filterable=True,
+                    sortable=False,
+                    facetable=True,
+                    searchable=True,
+                ),
+            ],
+        ),
+    ],
+    vector_search=VectorSearch(
+        profiles=[VectorSearchProfile(name="hnsw", algorithm_configuration_name="hnsw")],
+        algorithms=[HnswAlgorithmConfiguration(name="hnsw")],
+        vectorizers=[],
+    ),
+)
