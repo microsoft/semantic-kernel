@@ -36,8 +36,8 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
         ChatCompletionAgent researchAgent =
             this.CreateAgent(
                 name: "ResearchAgent",
-                description: "Able to retrieve information and data from the Internet. Ask it to provide information or data without additional computation or quantitative analysis.",
-                instructions: "Retrieve information and data from the Internet without additional computation or quantitative analysis.",
+                description: "A helpful assistant with access to web search. Ask it to perform web searches.",
+                instructions: "You are a Researcher. You find information without additional computation or quantitative analysis.",
                 kernel: researchKernel);
 
         AAIP.AIProjectClient projectClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
@@ -47,7 +47,7 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
                 TestConfiguration.AzureAI.ChatModelId,
                 name: "CoderAgent",
                 description: "Write and executes code to process and analyze data.",
-                instructions: "Use code to process and analyze data.",
+                instructions: "You solve questions using code. Please provide detailed analysis and computation process.",
                 tools: [new Azure.AI.Projects.CodeInterpreterToolDefinition()]);
         AzureAIAgent coderAgent = new(definition, agentsClient);
 
@@ -81,8 +81,7 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
             """;
         Console.WriteLine($"\n# INPUT:\n{input}\n");
         OrchestrationResult<string> result = await orchestration.InvokeAsync(input, runtime);
-        //string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 6));
-        string text = await result.GetValueAsync();
+        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds * 10));
         Console.WriteLine($"\n# RESULT: {text}");
 
         await runtime.RunUntilIdleAsync();

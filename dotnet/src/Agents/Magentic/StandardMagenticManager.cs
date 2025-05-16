@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,7 +80,7 @@ public sealed class StandardMagenticManager : MagenticManager
         KernelArguments arguments =
             new()
             {
-                { MagenticPrompts.Parameters.Task, context.Task },
+                { MagenticPrompts.Parameters.Task, this.FormatInputTask(context.Task) },
                 { MagenticPrompts.Parameters.Team, context.Team.FormatNames() },
             };
         string response = await this.GetResponseAsync(internalChat, MagenticPrompts.StatusTemplate, arguments, this._executionSettings, cancellationToken).ConfigureAwait(false);
@@ -108,7 +109,7 @@ public sealed class StandardMagenticManager : MagenticManager
         KernelArguments arguments =
             new()
             {
-                { MagenticPrompts.Parameters.Task, context.Task },
+                { MagenticPrompts.Parameters.Task, this.FormatInputTask(context.Task) },
                 { MagenticPrompts.Parameters.Facts, this._facts },
             };
         return
@@ -142,7 +143,7 @@ public sealed class StandardMagenticManager : MagenticManager
         KernelArguments arguments =
             new()
             {
-                { MagenticPrompts.Parameters.Task, context.Task },
+                { MagenticPrompts.Parameters.Task, this.FormatInputTask(context.Task) },
                 { MagenticPrompts.Parameters.Team, context.Team.FormatList() },
                 { MagenticPrompts.Parameters.Facts, this._facts },
                 { MagenticPrompts.Parameters.Plan, this._plan },
@@ -170,4 +171,6 @@ public sealed class StandardMagenticManager : MagenticManager
         ChatMessageContent response = await this._service.GetChatMessageContentAsync(history, executionSettings, kernel: null, cancellationToken).ConfigureAwait(false);
         return response.Content ?? string.Empty;
     }
+
+    private string FormatInputTask(IReadOnlyList<ChatMessageContent> inputTask) => string.Join("\n", inputTask.Select(m => $"{m.Content}"));
 }

@@ -56,7 +56,6 @@ internal sealed class MagenticManagerActor :
         this._orchestrationType = orchestrationType;
         this._team = team;
 
-        Debug.WriteLine($"TEAM: {team.FormatNames()}");
         Debug.WriteLine($"TEAM:\n{team.FormatList()}");
     }
 
