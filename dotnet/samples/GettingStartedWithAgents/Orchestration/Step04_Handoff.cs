@@ -49,6 +49,7 @@ public class Step04_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         Queue<string> responses = new();
         HandoffOrchestration orchestration =
             new(OrchestrationHandoffs
+                    .StartWith(triageAgent)
                     .Add(triageAgent, statusAgent, returnAgent, refundAgent)
                     .Add(statusAgent, triageAgent, "Transfer to this agent if the issue is not status related")
                     .Add(returnAgent, triageAgent, "Transfer to this agent if the issue is not return related")

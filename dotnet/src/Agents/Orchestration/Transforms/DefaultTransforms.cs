@@ -13,22 +13,20 @@ internal static class DefaultTransforms
 {
     public static ValueTask<IEnumerable<ChatMessageContent>> FromInput<TInput>(TInput input, CancellationToken cancellationToken = default)
     {
-        if (input is IEnumerable<ChatMessageContent> messages)
-        {
-            return new ValueTask<IEnumerable<ChatMessageContent>>(messages);
-        }
+#if !NETCOREAPP
+        return TransformInput().AsValueTask();
+#else
+        return ValueTask.FromResult(TransformInput());
+#endif
 
-        if (input is ChatMessageContent message)
-        {
-            return new ValueTask<IEnumerable<ChatMessageContent>>([message]);
-        }
-
-        if (input is not string text)
-        {
-            text = JsonSerializer.Serialize(input);
-        }
-
-        return new ValueTask<IEnumerable<ChatMessageContent>>([new ChatMessageContent(AuthorRole.User, text)]);
+        IEnumerable<ChatMessageContent> TransformInput() =>
+            input switch
+            {
+                IEnumerable<ChatMessageContent> messages => messages,
+                ChatMessageContent message => [message],
+                string text => [new ChatMessageContent(AuthorRole.User, text)],
+                _ => [new ChatMessageContent(AuthorRole.User, JsonSerializer.Serialize(input))]
+            };
     }
 
     public static ValueTask<TOutput> ToOutput<TOutput>(IList<ChatMessageContent> result, CancellationToken cancellationToken = default)
@@ -66,7 +64,7 @@ internal static class DefaultTransforms
             {
                 output = (object)result;
             }
-            else if (isSingleResult && typeof(TOutput).IsAssignableFrom(typeof(ChatMessageContent)))
+            else if (isSingleResult && typeof(ChatMessageContent).IsAssignableFrom(typeof(TOutput)))
             {
                 output = (object)result[0];
             }

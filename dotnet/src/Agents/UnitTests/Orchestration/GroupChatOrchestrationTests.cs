@@ -56,7 +56,7 @@ public class GroupChatOrchestrationTests
         // Act
         await runtime.StartAsync();
 
-        GroupChatOrchestration orchestration = new(new RoundRobinGroupChatManager() { MaximumInvocations = mockAgents.Length }, mockAgents);
+        GroupChatOrchestration orchestration = new(new RoundRobinGroupChatManager() { MaximumInvocationCount = mockAgents.Length }, mockAgents);
 
         const string InitialInput = "123";
         OrchestrationResult<string> result = await orchestration.InvokeAsync(InitialInput, runtime);

@@ -17,6 +17,7 @@ public abstract class BaseOrchestrationTest(ITestOutputHelper output) : BaseAgen
         return
             new ChatCompletionAgent
             {
+                Instructions = instructions,
                 Name = name,
                 Description = description,
                 Instructions = instructions,

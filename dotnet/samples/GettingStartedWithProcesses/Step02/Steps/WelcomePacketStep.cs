@@ -10,12 +10,12 @@ namespace Step02.Steps;
 /// </summary>
 public class WelcomePacketStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string CreateWelcomePacket = nameof(CreateWelcomePacket);
     }
 
-    [KernelFunction(Functions.CreateWelcomePacket)]
+    [KernelFunction(ProcessStepFunctions.CreateWelcomePacket)]
     public async Task CreateWelcomePacketAsync(KernelProcessStepContext context, bool marketingEntryCreated, bool crmRecordCreated, AccountDetails accountDetails, Kernel _kernel)
     {
         Console.WriteLine($"[WELCOME PACKET] New Account {accountDetails.AccountId} created");

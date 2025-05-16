@@ -21,6 +21,7 @@ from semantic_kernel.agents.runtime.core.routed_agent import message_handler
 from semantic_kernel.agents.runtime.core.topic import TopicId
 from semantic_kernel.agents.runtime.in_process.type_subscription import TypeSubscription
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -31,18 +32,21 @@ else:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental
 class ConcurrentRequestMessage(KernelBaseModel):
     """A request message type for concurrent agents."""
 
     body: DefaultTypeAlias
 
 
+@experimental
 class ConcurrentResponseMessage(KernelBaseModel):
     """A response message type for concurrent agents."""
 
     body: ChatMessageContent
 
 
+@experimental
 class ConcurrentAgentActor(AgentActorBase):
     """A agent actor for concurrent agents that process tasks."""
 
@@ -89,6 +93,7 @@ class ConcurrentAgentActor(AgentActorBase):
         )
 
 
+@experimental
 class CollectionActor(ActorBase):
     """A agent container for collecting results from concurrent agents."""
 
@@ -117,6 +122,7 @@ class CollectionActor(ActorBase):
                 await self._result_callback(self._results)
 
 
+@experimental
 class ConcurrentOrchestration(OrchestrationBase[TIn, TOut]):
     """A concurrent multi-agent pattern orchestration."""
 

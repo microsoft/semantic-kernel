@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
+using System;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 using Xunit;
@@ -15,39 +15,24 @@ public class HandoffsTests
         AgentHandoffs agentHandoffs = [];
         Assert.Empty(agentHandoffs);
 
-        OrchestrationHandoffs orchestrationHandoffs = [];
+        OrchestrationHandoffs orchestrationHandoffs = new("first");
         Assert.Empty(orchestrationHandoffs);
+        Assert.Equal("first", orchestrationHandoffs.FirstAgentName);
     }
 
     [Fact]
-    public void DictionaryConstructors_CopyValues()
+    public void DictionaryConstructors_InvalidFirstAgent()
     {
-        Dictionary<string, string> handoffDict = new()
-        {
-            { "agent1", "description1" },
-            { "agent2", "description2" }
-        };
-
-        AgentHandoffs agentHandoffs = new(handoffDict);
-        Assert.Equal(2, agentHandoffs.Count);
-        Assert.Equal("description1", agentHandoffs["agent1"]);
-        Assert.Equal("description2", agentHandoffs["agent2"]);
-
-        Dictionary<string, AgentHandoffs> orchestrationDict = new()
-        {
-            { "source1", new AgentHandoffs(handoffDict) }
-        };
-
-        OrchestrationHandoffs orchestrationHandoffs = new(orchestrationDict);
-        Assert.Single(orchestrationHandoffs);
-        Assert.Equal(2, orchestrationHandoffs["source1"].Count);
+        Assert.Throws<ArgumentNullException>(() => new OrchestrationHandoffs((string)null!));
+        Assert.Throws<ArgumentException>(() => new OrchestrationHandoffs(string.Empty));
+        Assert.Throws<ArgumentException>(() => new OrchestrationHandoffs(" "));
     }
 
     [Fact]
     public void Add_WithAgentObjects_CreatesHandoffRelationships()
     {
         // Arrange
-        OrchestrationHandoffs handoffs = [];
+        OrchestrationHandoffs handoffs = new("source");
 
         Agent sourceAgent = CreateAgent("source", "Source Agent");
         Agent targetAgent1 = CreateAgent("target1", "Target Agent 1");
@@ -58,6 +43,7 @@ public class HandoffsTests
 
         // Assert
         Assert.Single(handoffs);
+        Assert.Equal("source", handoffs.FirstAgentName);
         Assert.True(handoffs.ContainsKey("source"));
 
         AgentHandoffs sourceHandoffs = handoffs["source"];
@@ -70,7 +56,7 @@ public class HandoffsTests
     public void Add_WithAgentAndCustomDescription_UsesCustomDescription()
     {
         // Arrange
-        OrchestrationHandoffs handoffs = [];
+        OrchestrationHandoffs handoffs = new("source");
 
         Agent sourceAgent = CreateAgent("source", "Source Agent");
         Agent targetAgent = CreateAgent("target", "Target Agent");
@@ -81,6 +67,7 @@ public class HandoffsTests
 
         // Assert
         Assert.Single(handoffs);
+        Assert.Equal("source", handoffs.FirstAgentName);
         AgentHandoffs sourceHandoffs = handoffs["source"];
         Assert.Single(sourceHandoffs);
         Assert.Equal(customDescription, sourceHandoffs["target"]);
@@ -90,7 +77,7 @@ public class HandoffsTests
     public void Add_WithAgentAndTargetName_AddsHandoffWithDescription()
     {
         // Arrange
-        OrchestrationHandoffs handoffs = [];
+        OrchestrationHandoffs handoffs = new("source");
 
         Agent sourceAgent = CreateAgent("source", "Source Agent");
         string targetName = "targetName";
@@ -101,6 +88,7 @@ public class HandoffsTests
 
         // Assert
         Assert.Single(handoffs);
+        Assert.Equal("source", handoffs.FirstAgentName);
         AgentHandoffs sourceHandoffs = handoffs["source"];
         Assert.Single(sourceHandoffs);
         Assert.Equal(description, sourceHandoffs[targetName]);
@@ -110,7 +98,7 @@ public class HandoffsTests
     public void Add_WithSourceNameAndTargetName_AddsHandoffWithDescription()
     {
         // Arrange
-        OrchestrationHandoffs handoffs = [];
+        OrchestrationHandoffs handoffs = new("sourceName");
 
         string sourceName = "sourceName";
         string targetName = "targetName";
@@ -121,6 +109,7 @@ public class HandoffsTests
 
         // Assert
         Assert.Single(handoffs);
+        Assert.Equal("sourceName", handoffs.FirstAgentName);
         AgentHandoffs sourceHandoffs = handoffs[sourceName];
         Assert.Single(sourceHandoffs);
         Assert.Equal(description, sourceHandoffs[targetName]);
@@ -130,7 +119,7 @@ public class HandoffsTests
     public void Add_WithMultipleSourcesAndTargets_CreatesCorrectStructure()
     {
         // Arrange
-        OrchestrationHandoffs handoffs = [];
+        OrchestrationHandoffs handoffs = new("source1");
 
         Agent source1 = CreateAgent("source1", "Source Agent 1");
         Agent source2 = CreateAgent("source2", "Source Agent 2");
@@ -146,6 +135,7 @@ public class HandoffsTests
 
         // Assert
         Assert.Equal(2, handoffs.Count);
+        Assert.Equal("source1", handoffs.FirstAgentName);
 
         // Check source1's targets
         AgentHandoffs source1Handoffs = handoffs["source1"];
@@ -170,10 +160,14 @@ public class HandoffsTests
         Agent target2 = CreateAgent("target2", "Target Agent 2");
 
         // Act
-        OrchestrationHandoffs handoffs = OrchestrationHandoffs.Add(source, target1, target2);
+        OrchestrationHandoffs handoffs =
+            OrchestrationHandoffs
+                .StartWith(source)
+                .Add(source, target1, target2);
 
         // Assert
         Assert.NotNull(handoffs);
+        Assert.Equal(source.Id, handoffs.FirstAgentName);
         Assert.Single(handoffs);
         Assert.True(handoffs.ContainsKey("source"));
 
@@ -187,7 +181,7 @@ public class HandoffsTests
     public void Add_WithAgentsWithNoNameUsesId()
     {
         // Arrange
-        OrchestrationHandoffs handoffs = [];
+        OrchestrationHandoffs handoffs = new("source-id");
 
         Agent sourceAgent = CreateAgent(id: "source-id", name: null);
         Agent targetAgent = CreateAgent(id: "target-id", name: null, description: "Target Description");
@@ -197,6 +191,7 @@ public class HandoffsTests
 
         // Assert
         Assert.Single(handoffs);
+        Assert.Equal("source-id", handoffs.FirstAgentName);
         Assert.True(handoffs.ContainsKey("source-id"));
 
         AgentHandoffs sourceHandoffs = handoffs["source-id"];
@@ -208,7 +203,7 @@ public class HandoffsTests
     public void Add_WithTargetWithNoDescription_UsesEmptyString()
     {
         // Arrange
-        OrchestrationHandoffs handoffs = [];
+        OrchestrationHandoffs handoffs = new("source");
 
         Agent sourceAgent = CreateAgent("source", "Source Agent");
         Agent targetAgent = CreateAgent("target", null);
@@ -218,6 +213,7 @@ public class HandoffsTests
 
         // Assert
         Assert.Single(handoffs);
+        Assert.Equal("source", handoffs.FirstAgentName);
         AgentHandoffs sourceHandoffs = handoffs["source"];
         Assert.Single(sourceHandoffs);
         Assert.Equal(string.Empty, sourceHandoffs["target"]);
