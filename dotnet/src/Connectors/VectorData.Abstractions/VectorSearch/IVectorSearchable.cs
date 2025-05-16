@@ -54,7 +54,7 @@ public interface IVectorSearchable<TRecord>
     IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput searchValue,
         int top,
-        RecordSearchOptions<TRecord>? options = default,
+        VectorSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
         where TInput : notnull;
 

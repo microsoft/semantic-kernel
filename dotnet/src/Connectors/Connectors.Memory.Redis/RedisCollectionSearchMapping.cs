@@ -48,7 +48,7 @@ internal static class RedisCollectionSearchMapping
     /// <param name="vectorProperty">The vector property.</param>
     /// <param name="selectFields">The set of fields to limit the results to. Null for all.</param>
     /// <returns>The <see cref="Query"/>.</returns>
-    public static Query BuildQuery<TRecord>(byte[] vectorBytes, int top, RecordSearchOptions<TRecord> options, CollectionModel model, VectorPropertyModel vectorProperty, string[]? selectFields)
+    public static Query BuildQuery<TRecord>(byte[] vectorBytes, int top, VectorSearchOptions<TRecord> options, CollectionModel model, VectorPropertyModel vectorProperty, string[]? selectFields)
     {
         // Build search query.
         var redisLimit = top + options.Skip;

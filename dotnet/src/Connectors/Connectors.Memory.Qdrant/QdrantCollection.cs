@@ -35,7 +35,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
     private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
@@ -520,7 +520,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput searchValue,
         int top,
-        RecordSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord>? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(searchValue);

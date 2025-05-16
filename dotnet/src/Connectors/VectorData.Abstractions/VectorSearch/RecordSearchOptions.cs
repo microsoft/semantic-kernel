@@ -7,9 +7,9 @@ using System.Threading;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines options for vector search via <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}(TInput, int, RecordSearchOptions{TRecord}, CancellationToken)"/>.
+/// Defines options for vector search via <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}(TInput, int, VectorSearchOptions{TRecord}, CancellationToken)"/>.
 /// </summary>
-public class RecordSearchOptions<TRecord>
+public class VectorSearchOptions<TRecord>
 {
     private int _skip = 0;
 

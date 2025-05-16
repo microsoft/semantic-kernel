@@ -179,7 +179,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     public abstract IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default);
 
     /// <inheritdoc />
-    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(TInput searchValue, int top, RecordSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(TInput searchValue, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         where TInput : notnull;
 
     /// <inheritdoc />

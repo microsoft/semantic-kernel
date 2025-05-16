@@ -25,7 +25,7 @@ internal static class WeaviateQueryBuilder
         string vectorPropertyName,
         JsonSerializerOptions jsonSerializerOptions,
         int top,
-        RecordSearchOptions<TRecord> searchOptions,
+        VectorSearchOptions<TRecord> searchOptions,
         CollectionModel model,
         bool hasNamedVectors)
     {

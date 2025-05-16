@@ -16,6 +16,7 @@ using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MEVD = Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 
@@ -40,7 +41,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     private const string DocumentPropertyName = "document";
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly MEVD.VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
@@ -314,7 +315,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput searchValue,
         int top,
-        RecordSearchOptions<TRecord>? options = null,
+        MEVD.VectorSearchOptions<TRecord>? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(searchValue);
@@ -534,7 +535,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
 
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> EnumerateAndMapSearchResultsAsync(
         ErrorHandlingAsyncCursor<BsonDocument> cursor,
-        RecordSearchOptions<TRecord> searchOptions,
+        MEVD.VectorSearchOptions<TRecord> searchOptions,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var skipCounter = 0;

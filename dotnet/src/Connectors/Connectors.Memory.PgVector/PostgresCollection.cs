@@ -44,7 +44,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     private readonly PostgresMapper<TRecord> _mapper;
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresCollection{TKey, TRecord}"/> class.
@@ -348,7 +348,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput searchValue,
         int top,
-        RecordSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord>? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(searchValue);

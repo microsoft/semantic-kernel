@@ -212,7 +212,7 @@ internal sealed class PostgresDbClient(NpgsqlDataSource dataSource, string? sche
     /// <inheritdoc />
     public async IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync<TRecord>(
         string tableName, CollectionModel model, VectorPropertyModel vectorProperty, object vectorValue, int limit,
-        RecordSearchOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        VectorSearchOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         NpgsqlConnection connection = await this.DataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
