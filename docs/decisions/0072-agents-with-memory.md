@@ -180,9 +180,13 @@ var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023",
 ### Extension base class name
 
 1. ConversationStateExtension
-    1. Long
+
+    1.1. Long
+
 2. MemoryComponent
-    1. Too specific
+
+    2.1. Too specific
+
 3. AIContextBehavior
 
 Decided 3. AIContextBehavior.
