@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 public static class AIContextAdditionsExtensions
 {
     /// <summary>
-    /// Registers the <see cref="AIFunction"/> objects availble on the provided <see cref="AIContextPart"/> as a plugin.
+    /// Registers the <see cref="AIFunction"/> objects available on the provided <see cref="AIContextPart"/> as a plugin.
     /// </summary>
     /// <param name="plugins">The plugins collection to register the <see cref="AIFunction"/> objects on.</param>
     /// <param name="aiContextAdditions">The <see cref="AIContextPart"/> to get plugins from.</param>
