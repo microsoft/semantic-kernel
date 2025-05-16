@@ -44,12 +44,10 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         var process = processBuilder.Build();
 
-        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-        var agentsClient = foundryClient.GetAgentsClient();
+        var agentsClient = AzureAIAgent.CreateAgentsClient(TestConfiguration.AzureAI.Endpoint, new AzureCliCredential());
 
         var kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.Services.AddSingleton(agentsClient);
-        kernelBuilder.Services.AddSingleton(foundryClient);
         var kernel = kernelBuilder.Build();
 
         var context = await process.StartAsync(kernel, new() { Id = "start", Data = "What is the best programming language and why?" });
@@ -78,12 +76,10 @@ public class Step06_FoundryAgentProcess : BaseTest
 
         var process = processBuilder.Build();
 
-        var foundryClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-        var agentsClient = foundryClient.GetAgentsClient();
+        var agentsClient = AzureAIAgent.CreateAgentsClient(TestConfiguration.AzureAI.Endpoint, new AzureCliCredential());
 
         var kernelBuilder = Kernel.CreateBuilder();
         kernelBuilder.Services.AddSingleton(agentsClient);
-        kernelBuilder.Services.AddSingleton(foundryClient);
         var kernel = kernelBuilder.Build();
 
         var context = await process.StartAsync(kernel, new() { Id = "start", Data = "Why are frogs green?" });
