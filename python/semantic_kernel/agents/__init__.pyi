@@ -36,7 +36,7 @@ from .orchestration.group_chat import (
     StringResult,
 )
 from .orchestration.handoffs import HandoffOrchestration, OrchestrationHandoffs
-from .orchestration.magentic import MagenticManager, MagenticOrchestration, ProgressLedger, StandardMagenticManager
+from .orchestration.magentic import MagenticManagerBase, MagenticOrchestration, ProgressLedger, StandardMagenticManager
 from .orchestration.sequential import SequentialOrchestration
 
 __all__ = [
@@ -69,7 +69,7 @@ __all__ = [
     "GroupChatManager",
     "GroupChatOrchestration",
     "HandoffOrchestration",
-    "MagenticManager",
+    "MagenticManagerBase",
     "MagenticOrchestration",
     "MessageResult",
     "ModelConnection",

@@ -47,7 +47,7 @@ _AGENTS = {
     "GroupChatManager": ".orchestration.group_chat",
     "MagenticOrchestration": ".orchestration.magentic",
     "ProgressLedger": ".orchestration.magentic",
-    "MagenticManager": ".orchestration.magentic",
+    "MagenticManagerBase": ".orchestration.magentic",
     "StandardMagenticManager": ".orchestration.magentic",
 }
 

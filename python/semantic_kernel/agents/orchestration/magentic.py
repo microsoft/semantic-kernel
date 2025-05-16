@@ -251,7 +251,7 @@ class StandardMagenticManager(MagenticManagerBase):
         else:
             if not hasattr(prompt_execution_settings, "response_format"):
                 raise ValueError("The service must support structured output.")
-            if prompt_execution_settings.response_format is not None:
+            if getattr(prompt_execution_settings, "response_format", None) is not None:
                 raise ValueError("The prompt execution settings must not have a response format set.")
 
         super().__init__(
