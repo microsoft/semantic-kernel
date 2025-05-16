@@ -1,21 +1,38 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from collections.abc import Awaitable, Callable
 from copy import copy
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from openai import AsyncAzureOpenAI
 from pydantic import ValidationError
 
 from semantic_kernel.agents import OpenAIAssistantAgent
+from semantic_kernel.agents.agent import register_agent_type
 from semantic_kernel.connectors.ai.open_ai.settings.azure_open_ai_settings import AzureOpenAISettings
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
+if TYPE_CHECKING:
+    from semantic_kernel.kernel_pydantic import KernelBaseSettings
+
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+if sys.version < "3.11":
+    from typing_extensions import Self  # pragma: no cover
+else:
+    from typing import Self  # type: ignore # pragma: no cover
+
 
 @release_candidate
+@register_agent_type("azure_openai_assistant")
 class AzureAssistantAgent(OpenAIAssistantAgent):
     """An Azure Assistant Agent class that extends the OpenAI Assistant Agent class."""
 
@@ -108,3 +125,59 @@ class AzureAssistantAgent(OpenAIAssistantAgent):
         )
 
         return client, azure_openai_settings.chat_deployment_name
+
+    @override
+    @classmethod
+    def resolve_placeholders(
+        cls: type[Self],
+        yaml_str: str,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+    ) -> str:
+        """Substitute ${OpenAI:Key} placeholders with fields from OpenAIAgentSettings and extras."""
+        import re
+
+        pattern = re.compile(r"\$\{([^}]+)\}")
+
+        # Build the mapping only if settings is provided and valid
+        field_mapping: dict[str, Any] = {}
+
+        if settings is None:
+            settings = AzureOpenAISettings()
+
+        if not isinstance(settings, AzureOpenAISettings):
+            raise AgentInitializationException(f"Expected AzureOpenAISettings, got {type(settings).__name__}")
+
+        field_mapping.update({
+            "ChatModelId": getattr(settings, "chat_deployment_name", None),
+            "AgentId": getattr(settings, "agent_id", None),
+            "ApiKey": getattr(settings, "api_key", None),
+            "ApiVersion": getattr(settings, "api_version", None),
+            "BaseUrl": getattr(settings, "base_url", None),
+            "Endpoint": getattr(settings, "endpoint", None),
+            "TokenEndpoint": getattr(settings, "token_endpoint", None),
+        })
+
+        if extras:
+            field_mapping.update(extras)
+
+        def replacer(match: re.Match[str]) -> str:
+            """Replace the matched placeholder with the corresponding value from field_mapping."""
+            full_key = match.group(1)  # for example, OpenAI:ApiKey
+            section, _, key = full_key.partition(":")
+            if section != "AzureOpenAI":
+                return match.group(0)
+
+            # Try short key first (ApiKey), then full (OpenAI:ApiKey)
+            return str(field_mapping.get(key) or field_mapping.get(full_key) or match.group(0))
+
+        result = pattern.sub(replacer, yaml_str)
+
+        # Safety check for unresolved placeholders
+        unresolved = pattern.findall(result)
+        if unresolved:
+            raise AgentInitializationException(
+                f"Unresolved placeholders in spec: {', '.join(f'${{{key}}}' for key in unresolved)}"
+            )
+
+        return result
