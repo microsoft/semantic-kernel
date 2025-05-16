@@ -4,20 +4,16 @@ from collections.abc import AsyncGenerator
 from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 import pytest
+from azure.cosmos.aio import CosmosClient
 from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError
 
-from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
+from semantic_kernel.connectors.memory.azure_cosmos_db import (
+    COSMOS_ITEM_ID_PROPERTY_NAME,
     AzureCosmosDBNoSQLCollection,
+    _create_default_indexing_policy_nosql,
+    _create_default_vector_embedding_policy,
 )
-from semantic_kernel.connectors.memory.azure_cosmos_db.const import COSMOS_ITEM_ID_PROPERTY_NAME
-from semantic_kernel.connectors.memory.azure_cosmos_db.utils import (
-    CosmosClientWrapper,
-    create_default_indexing_policy,
-    create_default_vector_embedding_policy,
-)
-from semantic_kernel.exceptions import (
-    VectorStoreInitializationException,
-)
+from semantic_kernel.exceptions import VectorStoreInitializationException
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException, VectorStoreOperationException
 
 
@@ -112,7 +108,7 @@ def test_azure_cosmos_db_no_sql_collection_invalid_settings(
         )
 
 
-@patch.object(CosmosClientWrapper, "__init__", return_value=None)
+@patch.object(CosmosClient, "__init__", return_value=None)
 def test_azure_cosmos_db_no_sql_get_cosmos_client(
     mock_cosmos_client_init,
     azure_cosmos_db_no_sql_unit_test_env,
@@ -132,7 +128,7 @@ def test_azure_cosmos_db_no_sql_get_cosmos_client(
     )
 
 
-@patch.object(CosmosClientWrapper, "__init__", return_value=None)
+@patch.object(CosmosClient, "__init__", return_value=None)
 def test_azure_cosmos_db_no_sql_get_cosmos_client_without_key(
     mock_cosmos_client_init,
     clear_azure_cosmos_db_no_sql_env,
@@ -232,8 +228,8 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection(
     mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
         id=collection_name,
         partition_key=vector_collection.partition_key,
-        indexing_policy=create_default_indexing_policy(vector_collection.data_model_definition),
-        vector_embedding_policy=create_default_vector_embedding_policy(vector_collection.data_model_definition),
+        indexing_policy=_create_default_indexing_policy_nosql(vector_collection.data_model_definition),
+        vector_embedding_policy=_create_default_vector_embedding_policy(vector_collection.data_model_definition),
     )
 
 
@@ -263,7 +259,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
         id=collection_name,
         partition_key=vector_collection.partition_key,
         indexing_policy={"automatic": False},
-        vector_embedding_policy=create_default_vector_embedding_policy(vector_collection.data_model_definition),
+        vector_embedding_policy=_create_default_vector_embedding_policy(vector_collection.data_model_definition),
     )
 
 
@@ -292,7 +288,7 @@ async def test_azure_cosmos_db_no_sql_collection_create_collection_allow_custom_
     mock_database_proxy.create_container_if_not_exists.assert_called_once_with(
         id=collection_name,
         partition_key=vector_collection.partition_key,
-        indexing_policy=create_default_indexing_policy(vector_collection.data_model_definition),
+        indexing_policy=_create_default_indexing_policy_nosql(vector_collection.data_model_definition),
         vector_embedding_policy={"vectorEmbeddings": []},
     )
 
@@ -475,7 +471,7 @@ async def test_azure_cosmos_db_no_sql_get_without_id(
     assert record.key == "test_key"
 
 
-@patch.object(CosmosClientWrapper, "close", return_value=None)
+@patch.object(CosmosClient, "close", return_value=None)
 async def test_client_is_closed(
     mock_cosmos_client_close,
     azure_cosmos_db_no_sql_unit_test_env,
