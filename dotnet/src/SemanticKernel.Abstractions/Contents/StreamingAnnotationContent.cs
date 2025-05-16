@@ -24,7 +24,6 @@ public class StreamingAnnotationContent : StreamingKernelContent
     public string FileId
     {
         get => this.ReferenceId;
-        init => this.ReferenceId = value;
     }
 
     /// <summary>
@@ -40,11 +39,12 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// <remarks>
     /// Provides context for using <see cref="ReferenceId"/>.
     /// </remarks>
-    public AnnotationKind Kind { get; init; }
+    public AnnotationKind Kind { get; }
 
     /// <summary>
     /// The citation.
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Label { get; init; }
 
     /// <summary>
@@ -54,8 +54,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// A file is referenced for certain tools, such as file search, and also when
     /// and image or document is produced as part of the agent response.
     /// </remarks>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string ReferenceId { get; init; }
+    public string ReferenceId { get; }
 
     /// <summary>
     /// The title of the annotation reference (when <see cref="Kind"/> == <see cref="AnnotationKind.UrlCitation"/>..
@@ -80,6 +79,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// </summary>
     /// <param name="kind">Describes the kind of annotation</param>
     /// <param name="referenceId">Identifies the referenced resource.</param>
+    [JsonConstructor]
     public StreamingAnnotationContent(
         AnnotationKind kind,
         string referenceId)

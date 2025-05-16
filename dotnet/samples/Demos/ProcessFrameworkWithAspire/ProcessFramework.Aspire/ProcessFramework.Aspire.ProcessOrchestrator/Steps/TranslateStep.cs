@@ -7,12 +7,12 @@ namespace ProcessFramework.Aspire.ProcessOrchestrator.Steps;
 
 public class TranslateStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessFunctions
     {
         public const string Translate = nameof(Translate);
     }
 
-    [KernelFunction(Functions.Translate)]
+    [KernelFunction(ProcessFunctions.Translate)]
     public async ValueTask TranslateAsync(KernelProcessStepContext context, Kernel kernel, string textToTranslate)
     {
         var translatorAgentHttpClient = kernel.GetRequiredService<TranslatorAgentHttpClient>();
