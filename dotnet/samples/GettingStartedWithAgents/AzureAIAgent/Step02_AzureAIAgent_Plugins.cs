@@ -37,7 +37,7 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
         finally
         {
             await thread.DeleteAsync();
-            await this.Client.DeleteAgentAsync(agent.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
         }
     }
 
@@ -58,14 +58,14 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
         finally
         {
             await thread.DeleteAsync();
-            await this.Client.DeleteAgentAsync(agent.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
         }
     }
 
     private async Task<AzureAIAgent> CreateAzureAgentAsync(KernelPlugin plugin, string? instructions = null, string? name = null)
     {
         // Define the agent
-        PersistentAgent definition = await this.Client.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             name,
             null,

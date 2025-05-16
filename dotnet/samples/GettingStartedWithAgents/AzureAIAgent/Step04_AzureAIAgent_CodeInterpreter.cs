@@ -16,7 +16,7 @@ public class Step04_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : Bas
     public async Task UseCodeInterpreterToolWithAgent()
     {
         // Define the agent
-        PersistentAgent definition = await this.Client.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new CodeInterpreterToolDefinition()]);
         AzureAIAgent agent = new(definition, this.Client);
@@ -32,7 +32,7 @@ public class Step04_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : Bas
         finally
         {
             await thread.DeleteAsync();
-            await this.Client.DeleteAgentAsync(agent.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

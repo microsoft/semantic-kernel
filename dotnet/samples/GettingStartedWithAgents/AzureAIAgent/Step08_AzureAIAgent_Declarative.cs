@@ -383,7 +383,9 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
         var promptTemplateFactory = new KernelPromptTemplateFactory();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
+        var agent =
+            await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot) ??
+            throw new InvalidOperationException("Unable to create agent");
 
         var options = new AgentInvokeOptions()
         {
@@ -405,8 +407,8 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         }
         finally
         {
-            var azureaiAgent = agent as AzureAIAgent;
-            await azureaiAgent!.Client.DeleteAgentAsync(azureaiAgent.Id);
+            var azureaiAgent = (AzureAIAgent)agent;
+            await azureaiAgent.Client.Administration.DeleteAgentAsync(azureaiAgent.Id);
 
             if (agentThread is not null)
             {

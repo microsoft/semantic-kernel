@@ -18,12 +18,12 @@ public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAzur
         // Define the agent
         await using Stream stream = EmbeddedResource.ReadStream("employees.pdf")!;
 
-        PersistentAgentFile fileInfo = await this.Client.UploadFileAsync(stream, PersistentAgentFilePurpose.Agents, "employees.pdf");
-        VectorStore fileStore =
-            await this.Client.CreateVectorStoreAsync(
+        PersistentAgentFileInfo fileInfo = await this.Client.Files.UploadFileAsync(stream, PersistentAgentFilePurpose.Agents, "employees.pdf");
+        PersistentAgentsVectorStore fileStore =
+            await this.Client.VectorStores.CreateVectorStoreAsync(
                 [fileInfo.Id],
                 metadata: new Dictionary<string, string>() { { SampleMetadataKey, bool.TrueString } });
-        PersistentAgent agentModel = await this.Client.CreateAgentAsync(
+        PersistentAgent agentModel = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new FileSearchToolDefinition()],
             toolResources: new()
@@ -49,9 +49,9 @@ public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAzur
         finally
         {
             await thread.DeleteAsync();
-            await this.Client.DeleteAgentAsync(agent.Id);
-            await this.Client.DeleteVectorStoreAsync(fileStore.Id);
-            await this.Client.DeleteFileAsync(fileInfo.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
+            await this.Client.VectorStores.DeleteVectorStoreAsync(fileStore.Id);
+            await this.Client.Files.DeleteFileAsync(fileInfo.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

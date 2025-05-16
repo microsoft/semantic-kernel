@@ -24,7 +24,7 @@ public class Step06_AzureAIAgent_OpenAPI(ITestOutputHelper output) : BaseAzureAg
         string apiWeather = EmbeddedResource.Read("weather.json");
 
         // Define the agent
-        PersistentAgent definition = await this.Client.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools:
             [
@@ -45,7 +45,7 @@ public class Step06_AzureAIAgent_OpenAPI(ITestOutputHelper output) : BaseAzureAg
         finally
         {
             await thread.DeleteAsync();
-            await this.Client.DeleteAgentAsync(agent.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

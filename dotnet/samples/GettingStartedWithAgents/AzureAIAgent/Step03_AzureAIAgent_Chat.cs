@@ -39,13 +39,13 @@ public class Step03_AzureAIAgent_Chat(ITestOutputHelper output) : BaseAzureAgent
     public async Task UseGroupChatWithTwoAgents()
     {
         // Define the agents
-        PersistentAgent reviewerModel = await this.Client.CreateAgentAsync(
+        PersistentAgent reviewerModel = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             ReviewerName,
             null,
             ReviewerInstructions);
         AzureAIAgent agentReviewer = new(reviewerModel, this.Client);
-        PersistentAgent writerModel = await this.Client.CreateAgentAsync(
+        PersistentAgent writerModel = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             CopyWriterName,
             null,

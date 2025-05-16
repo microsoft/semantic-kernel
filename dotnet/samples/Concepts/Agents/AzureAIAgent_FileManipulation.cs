@@ -16,10 +16,10 @@ public class AzureAIAgent_FileManipulation(ITestOutputHelper output) : BaseAzure
     public async Task AnalyzeCSVFileUsingAzureAIAgentAsync()
     {
         await using Stream stream = EmbeddedResource.ReadStream("sales.csv")!;
-        PersistentAgentFile fileInfo = await this.Client.UploadFileAsync(stream, PersistentAgentFilePurpose.Agents, "sales.csv");
+        PersistentAgentFileInfo fileInfo = await this.Client.Files.UploadFileAsync(stream, PersistentAgentFilePurpose.Agents, "sales.csv");
 
         // Define the agent
-        PersistentAgent definition = await this.Client.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new CodeInterpreterToolDefinition()],
             toolResources:
@@ -43,8 +43,8 @@ public class AzureAIAgent_FileManipulation(ITestOutputHelper output) : BaseAzure
         finally
         {
             await thread.DeleteAsync();
-            await this.Client.DeleteAgentAsync(agent.Id);
-            await this.Client.DeleteFileAsync(fileInfo.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
+            await this.Client.Files.DeleteFileAsync(fileInfo.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

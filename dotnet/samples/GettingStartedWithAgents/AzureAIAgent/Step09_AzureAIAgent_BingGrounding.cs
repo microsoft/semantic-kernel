@@ -4,7 +4,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using AAIP = Azure.AI.Projects.OneDP;
 
 namespace GettingStarted.AzureAgents;
 
@@ -26,7 +25,7 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
         {
             ConnectionList = { new ToolConnection(bingConnectionResponse.Name) }
         };
-        PersistentAgent definition = await this.Client.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new BingGroundingToolDefinition(toolConnections)]);
         AzureAIAgent agent = new(definition, this.Client);
@@ -43,7 +42,7 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
         finally
         {
             await thread.DeleteAsync();
-            await this.Client.DeleteAgentAsync(agent.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -72,7 +71,7 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
         {
             ConnectionList = { new ToolConnection(bingConnectionResponse.Name) }
         };
-        PersistentAgent definition = await this.Client.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new BingGroundingToolDefinition(toolConnections)]);
         AzureAIAgent agent = new(definition, this.Client);
@@ -98,7 +97,7 @@ public class Step09_AzureAIAgent_BingGrounding(ITestOutputHelper output) : BaseA
         finally
         {
             await thread.DeleteAsync();
-            await this.Client.DeleteAgentAsync(agent.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

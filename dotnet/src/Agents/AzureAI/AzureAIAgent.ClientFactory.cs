@@ -14,24 +14,24 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// </summary>
 public sealed partial class AzureAIAgent : Agent
 {
-    /// <summary>
-    /// Produces a <see cref="PersistentAgentsClient"/>.
-    /// </summary>
-    /// <param name="endpoint">The Azure AI Foundry project endpoint.</param>
-    /// <param name="credential"> A credential used to authenticate to an Azure Service.</param>
-    /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
-    public static PersistentAgentsClient CreateAgentsClient(
-        Uri endpoint,
-        AzureKeyCredential credential,
-        HttpClient? httpClient = null)
-    {
-        Verify.NotNull(endpoint, nameof(endpoint));
-        Verify.NotNull(credential, nameof(credential));
+    ///// <summary> // %%% REMOVE ME
+    ///// Produces a <see cref="PersistentAgentsClient"/>.
+    ///// </summary>
+    ///// <param name="endpoint">The Azure AI Foundry project endpoint.</param>
+    ///// <param name="credential"> A credential used to authenticate to an Azure Service.</param>
+    ///// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
+    //public static PersistentAgentsClient CreateAgentsClient(
+    //    string endpoint,
+    //    AzureKeyCredential credential,
+    //    HttpClient? httpClient = null)
+    //{
+    //    Verify.NotNull(endpoint, nameof(endpoint));
+    //    Verify.NotNull(credential, nameof(credential));
 
-        PersistentAgentsClientOptions clientOptions = CreateAzureClientOptions(httpClient);
+    //    PersistentAgentsAdministrationClientOptions clientOptions = CreateAzureClientOptions(httpClient);
 
-        return new PersistentAgentsClient(endpoint, credential, clientOptions);
-    }
+    //    return new PersistentAgentsClient(endpoint, credential, clientOptions);
+    //}
 
     /// <summary>
     /// Produces a <see cref="PersistentAgentsClient"/>.
@@ -41,21 +41,21 @@ public sealed partial class AzureAIAgent : Agent
     /// <param name="httpClient">A custom <see cref="HttpClient"/> for HTTP requests.</param>
     public static PersistentAgentsClient CreateAgentsClient
         (
-        Uri endpoint,
+        string endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(endpoint, nameof(endpoint));
         Verify.NotNull(credential, nameof(credential));
 
-        PersistentAgentsClientOptions clientOptions = CreateAzureClientOptions(httpClient);
+        PersistentAgentsAdministrationClientOptions clientOptions = CreateAzureClientOptions(httpClient);
 
         return new PersistentAgentsClient(endpoint, credential, clientOptions);
     }
 
-    private static PersistentAgentsClientOptions CreateAzureClientOptions(HttpClient? httpClient)
+    private static PersistentAgentsAdministrationClientOptions CreateAzureClientOptions(HttpClient? httpClient)
     {
-        PersistentAgentsClientOptions options = new();
+        PersistentAgentsAdministrationClientOptions options = new();
 
         options.AddPolicy(new SemanticKernelHeadersPolicy(), HttpPipelinePosition.PerCall);
 

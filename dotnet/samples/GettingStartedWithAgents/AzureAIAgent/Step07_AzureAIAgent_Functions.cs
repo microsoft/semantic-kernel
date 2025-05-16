@@ -28,7 +28,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         var tools = plugin.Select(f => f.ToToolDefinition(plugin.Name));
 
-        PersistentAgent definition = await this.Client.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             model: TestConfiguration.AzureAI.ChatModelId,
             name: HostName,
             description: null,
@@ -53,7 +53,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
         finally
         {
             await thread.DeleteAsync();
-            await this.Client.DeleteAgentAsync(agent.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

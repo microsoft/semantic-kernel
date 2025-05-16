@@ -20,9 +20,7 @@ internal static class AgentDefinitionExtensions
     private const string CodeInterpreterType = "code_interpreter";
     private const string FileSearchType = "file_search";
     private const string FunctionType = "function";
-    private const string MicrosoftFabricType = "fabric_aiskill";
     private const string OpenApiType = "openapi";
-    private const string SharepointGroundingType = "sharepoint_grounding";
 
     private static readonly string[] s_validToolTypes =
     [
@@ -32,9 +30,7 @@ internal static class AgentDefinitionExtensions
         CodeInterpreterType,
         FileSearchType,
         FunctionType,
-        MicrosoftFabricType,
         OpenApiType,
-        SharepointGroundingType
     ];
 
     private const string Endpoint = "endpoint";
@@ -58,9 +54,7 @@ internal static class AgentDefinitionExtensions
                 CodeInterpreterType => CreateCodeInterpreterToolDefinition(tool),
                 FileSearchType => CreateFileSearchToolDefinition(tool),
                 FunctionType => CreateFunctionToolDefinition(tool),
-                MicrosoftFabricType => CreateMicrosoftFabricToolDefinition(tool),
                 OpenApiType => CreateOpenApiToolDefinition(tool),
-                SharepointGroundingType => CreateSharepointGroundingToolDefinition(tool),
                 _ => throw new NotSupportedException($"Unable to create Azure AI tool definition because of unsupported tool type: {tool.Type}, supported tool types are: {string.Join(",", s_validToolTypes)}"),
             };
         }) ?? [];
@@ -127,7 +121,7 @@ internal static class AgentDefinitionExtensions
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
                 var tokenCredential = kernel.Services.GetRequiredService<TokenCredential>();
-                return AzureAIAgent.CreateAgentsClient(new Uri(endpoint), tokenCredential, httpClient);
+                return AzureAIAgent.CreateAgentsClient(endpoint, tokenCredential, httpClient);
             }
         }
 
@@ -183,7 +177,7 @@ internal static class AgentDefinitionExtensions
         return null;
     }
 
-    private static AzureAISearchResource? GetAzureAISearchResource(this AgentDefinition agentDefinition)
+    private static AzureAISearchToolResource? GetAzureAISearchResource(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
 
@@ -204,7 +198,7 @@ internal static class AgentDefinitionExtensions
             string filter = azureAISearch.GetFilter() ?? string.Empty;
             AzureAISearchQueryType? queryType = azureAISearch.GetAzureAISearchQueryType();
 
-            return new AzureAISearchResource(indexConnectionId, indexName, topK, filter, queryType);
+            return new AzureAISearchToolResource(indexConnectionId, indexName, topK, filter, queryType);
         }
 
         return null;
@@ -269,15 +263,6 @@ internal static class AgentDefinitionExtensions
         return new FunctionToolDefinition(name, description, parameters);
     }
 
-    private static MicrosoftFabricToolDefinition CreateMicrosoftFabricToolDefinition(AgentToolDefinition tool)
-    {
-        Verify.NotNull(tool);
-
-        ToolConnectionList fabricAiSkill = tool.GetToolConnectionList();
-
-        return new MicrosoftFabricToolDefinition(fabricAiSkill);
-    }
-
     private static OpenApiToolDefinition CreateOpenApiToolDefinition(AgentToolDefinition tool)
     {
         Verify.NotNull(tool);
@@ -290,15 +275,6 @@ internal static class AgentDefinitionExtensions
         OpenApiAuthDetails auth = tool.GetOpenApiAuthDetails();
 
         return new OpenApiToolDefinition(name, description, spec, auth);
-    }
-
-    private static SharepointToolDefinition CreateSharepointGroundingToolDefinition(AgentToolDefinition tool)
-    {
-        Verify.NotNull(tool);
-
-        ToolConnectionList sharepointGrounding = tool.GetToolConnectionList();
-
-        return new SharepointToolDefinition(sharepointGrounding);
     }
     #endregion
 }

@@ -20,7 +20,7 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAzureAgentTest(
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
         // Instructions, Name and Description properties defined via the PromptTemplateConfig.
-        PersistentAgent definition = await this.Client.CreateAgentAsync(TestConfiguration.AzureAI.ChatModelId, templateConfig.Name, templateConfig.Description, templateConfig.Template);
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(TestConfiguration.AzureAI.ChatModelId, templateConfig.Name, templateConfig.Description, templateConfig.Template);
         AzureAIAgent agent = new(
             definition,
             this.Client,
