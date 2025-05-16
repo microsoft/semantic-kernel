@@ -191,9 +191,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        this._kernel.Plugins.Add(plugin);
-
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
 
         await InvokeAgentAsync(agent!, "What are the key features of the Semantic Kernel?");

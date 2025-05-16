@@ -107,7 +107,7 @@ internal static class AgentToolDefinitionExtensions
 
     internal static List<string>? GetVectorStoreIds(this AgentToolDefinition agentToolDefinition)
     {
-        return agentToolDefinition.GetOption<List<object>>("vector_store_ids")?.Select(id => id.ToString()!).ToList();
+        return agentToolDefinition.GetOption<List<object>>("vector_store_ids")?.Select(id => $"{id}").ToList();
     }
 
     internal static List<string>? GetFileIds(this AgentToolDefinition agentToolDefinition)
