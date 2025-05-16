@@ -62,6 +62,14 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
         return vectorStore.GetCollection<TKey, TRecord>(collectionName, recordDefinition);
     }
 
+    public VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(
+        string collectionName,
+        VectorStoreRecordDefinition recordDefinition)
+    {
+        var vectorStore = this.VectorStore;
+        return vectorStore.GetDynamicCollection(collectionName, recordDefinition);
+    }
+
     /// <summary>
     /// Create / Recreate postgres docker container and run it.
     /// </summary>

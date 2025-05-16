@@ -245,7 +245,9 @@ internal static class WeaviateQueryBuilder
                 throw new InvalidOperationException($"Property name '{propertyName}' provided as part of the filter clause is not a valid property name.");
             }
 
-            var operand = $$"""{ path: ["{{property.StorageName}}"], operator: {{filterOperator}}, {{filterValueType}}: {{propertyValue}} }""";
+            var storageName = property is KeyPropertyModel ? WeaviateConstants.ReservedKeyPropertyName : property.StorageName;
+
+            var operand = $$"""{ path: ["{{storageName}}"], operator: {{filterOperator}}, {{filterValueType}}: {{propertyValue}} }""";
 
             operands.Add(operand);
         }

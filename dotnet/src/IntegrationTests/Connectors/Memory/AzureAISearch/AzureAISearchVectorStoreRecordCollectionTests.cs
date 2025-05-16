@@ -371,7 +371,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         {
             Definition = fixture.VectorStoreRecordDefinition
         };
-        using var sut = new AzureAISearchCollection<object, Dictionary<string, object?>>(fixture.SearchIndexClient, fixture.TestIndexName, options);
+        using var sut = new AzureAISearchDynamicCollection(fixture.SearchIndexClient, fixture.TestIndexName, options);
 
         // Act
         var baseSetGetResult = await sut.GetAsync("BaseSet-1", new RecordRetrievalOptions { IncludeVectors = true });

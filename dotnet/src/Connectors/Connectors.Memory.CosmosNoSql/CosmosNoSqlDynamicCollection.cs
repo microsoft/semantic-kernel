@@ -24,7 +24,16 @@ public sealed class CosmosNoSqlDynamicCollection : CosmosNoSqlCollection<object,
     [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
     public CosmosNoSqlDynamicCollection(Database database, string name, CosmosNoSqlCollectionOptions options)
-        : base(new(database.Client, ownsClient: false), _ => database, name, options)
+        : base(
+            new(database.Client, ownsClient: false),
+            _ => database,
+            name,
+            static options => new CosmosNoSqlModelBuilder()
+                .BuildDynamic(
+                    options.Definition ?? throw new ArgumentException("Definition is required for dynamic collections"),
+                    options.EmbeddingGenerator,
+                    options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
+            options)
     {
     }
 
@@ -48,6 +57,11 @@ public sealed class CosmosNoSqlDynamicCollection : CosmosNoSqlCollection<object,
             new ClientWrapper(new CosmosClient(connectionString, clientOptions), ownsClient: true),
             client => client.GetDatabase(databaseName),
             collectionName,
+            static options => new CosmosNoSqlModelBuilder()
+                .BuildDynamic(
+                    options.Definition ?? throw new ArgumentException("Definition is required for dynamic collections"),
+                    options.EmbeddingGenerator,
+                    options.JsonSerializerOptions ?? JsonSerializerOptions.Default),
             options)
     {
         Verify.NotNullOrWhiteSpace(connectionString);

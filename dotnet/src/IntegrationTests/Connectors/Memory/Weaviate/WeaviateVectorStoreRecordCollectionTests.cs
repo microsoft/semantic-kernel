@@ -357,7 +357,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
             Definition = this.GetTestHotelRecordDefinition()
         };
 
-        using var sut = new WeaviateCollection<object, Dictionary<string, object?>>(fixture.HttpClient!, "TestDynamicMapper", options);
+        using var sut = new WeaviateDynamicCollection(fixture.HttpClient!, "TestDynamicMapper", options);
 
         await sut.EnsureCollectionExistsAsync();
 

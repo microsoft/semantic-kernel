@@ -8,7 +8,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.CosmosNoSql;
 /// <summary>
 /// Integration tests for <see cref="CosmosNoSqlVectorStore"/>.
 /// </summary>
-[Collection("CosmosNoSqlVectorStoreCollection")]
+[Collection("CosmosNoSqlCollection")]
 [CosmosNoSqlConnectionStringSetCondition]
 public sealed class CosmosNoSqlVectorStoreTests(CosmosNoSqlVectorStoreFixture fixture)
 #pragma warning disable CA2000 // Dispose objects before losing scope

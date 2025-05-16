@@ -406,7 +406,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         {
             Definition = fixture.HotelVectorStoreRecordDefinition
         };
-        using var sut = new QdrantCollection<object, Dictionary<string, object?>>(fixture.QdrantClient, "singleVectorHotels", ownsClient: false, options);
+        using var sut = new QdrantDynamicCollection(fixture.QdrantClient, "singleVectorHotels", ownsClient: false, options);
 
         // Act
         var baseSetGetResult = await sut.GetAsync(11ul, new RecordRetrievalOptions { IncludeVectors = true });

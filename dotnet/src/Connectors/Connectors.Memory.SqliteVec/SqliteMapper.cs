@@ -71,17 +71,19 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
 
                 var memory = SqlitePropertyMapping.MapVectorForDataModel(vectorBytes);
 
-                property.SetValueAsObject(record, property.Type switch
-                {
-                    var t when t == typeof(ReadOnlyMemory<float>) => memory,
-                    var t when t == typeof(Embedding<float>) => new Embedding<float>(memory),
-                    var t when t == typeof(float[])
-                        => MemoryMarshal.TryGetArray(memory, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
-                            ? segment.Array
-                            : memory.ToArray(),
+                property.SetValueAsObject(
+                    record,
+                    (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
+                    {
+                        var t when t == typeof(ReadOnlyMemory<float>) => memory,
+                        var t when t == typeof(Embedding<float>) => new Embedding<float>(memory),
+                        var t when t == typeof(float[])
+                            => MemoryMarshal.TryGetArray(memory, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
+                                ? segment.Array
+                                : memory.ToArray(),
 
-                    _ => throw new UnreachableException()
-                });
+                        _ => throw new UnreachableException()
+                    });
             }
         }
 

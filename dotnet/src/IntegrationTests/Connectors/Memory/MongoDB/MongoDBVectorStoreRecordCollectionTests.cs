@@ -420,7 +420,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
             Definition = fixture.HotelVectorStoreRecordDefinition
         };
 
-        using var sut = new MongoCollection<object, Dictionary<string, object?>>(fixture.MongoDatabase, fixture.TestCollection, options);
+        using var sut = new MongoDynamicCollection(fixture.MongoDatabase, fixture.TestCollection, options);
 
         // Act
         await sut.UpsertAsync(new Dictionary<string, object?>
