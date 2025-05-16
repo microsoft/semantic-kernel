@@ -52,7 +52,7 @@ async def agents() -> list[Agent]:
     definition = await client.beta.assistants.create(
         model=model,
         name="CoderAgent",
-        description="A helpful assistant with code interpreter capability.",
+        description="A helpful assistant that writes and executes code to process and analyze data.",
         instructions="You solve questions using code. Please provide detailed analysis and computation process.",
         tools=code_interpreter_tool,
         tool_resources=code_interpreter_tool_resources,
