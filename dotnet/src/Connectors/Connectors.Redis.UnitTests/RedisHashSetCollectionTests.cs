@@ -120,7 +120,7 @@ public class RedisHashSetCollectionTests
         using var sut = this.CreateRecordCollection(false);
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         var expectedArgs = new object[] { TestCollectionName };

@@ -135,7 +135,7 @@ public class QdrantCollectionTests
             .Returns(Task.CompletedTask);
 
         // Act.
-        await sut.DeleteCollectionAsync(this._testCancellationToken);
+        await sut.EnsureCollectionDeletedAsync(this._testCancellationToken);
 
         // Assert.
         this._qdrantClientMock

@@ -72,7 +72,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
         Assert.True(collectionExistResult);
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
@@ -122,7 +122,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         using var sut = new RedisJsonCollection<string, RedisHotel>(fixture.Database, tempCollectionName);
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         Assert.False(await sut.CollectionExistsAsync());

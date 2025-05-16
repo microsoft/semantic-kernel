@@ -35,14 +35,14 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
 
             Assert.True(await collection.CollectionExistsAsync());
 
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
 
             Assert.False(await collection.CollectionExistsAsync());
             Assert.False(await testStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionName));
         }
         finally
         {
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
         }
     }
 
@@ -100,7 +100,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         }
         finally
         {
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
         }
     }
 
@@ -143,7 +143,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         }
         finally
         {
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
         }
     }
 
@@ -195,7 +195,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         }
         finally
         {
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
         }
     }
 
@@ -291,7 +291,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         }
         finally
         {
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
         }
     }
 #endif
@@ -361,7 +361,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         }
         finally
         {
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
         }
 
         void AssertEquality(FancyTestModel<TKey> expected, FancyTestModel<TKey>? received, TKey expectedKey)

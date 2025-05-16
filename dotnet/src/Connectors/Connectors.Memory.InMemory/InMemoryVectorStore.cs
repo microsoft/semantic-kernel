@@ -109,7 +109,7 @@ public sealed class InMemoryVectorStore : VectorStore
     }
 
     /// <inheritdoc />
-    public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
         this._internalCollections.TryRemove(name, out _);
         this._internalCollectionTypes.TryRemove(name, out _);

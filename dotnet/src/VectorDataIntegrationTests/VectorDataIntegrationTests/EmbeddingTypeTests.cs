@@ -42,7 +42,7 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
     {
         vectorEqualityAsserter ??= (e, a) => Assert.Equal(e, a);
 
-        await fixture.VectorStore.DeleteCollectionAsync(fixture.CollectionName);
+        await fixture.VectorStore.EnsureCollectionDeletedAsync(fixture.CollectionName);
 
         var collection = fixture.VectorStore.GetCollection<TKey, Record<TVector>>(fixture.CollectionName, fixture.CreateRecordDefinition<TVector>(embeddingGenerator: null, distanceFunction, dimensions));
         await collection.EnsureCollectionExistsAsync();
@@ -80,7 +80,7 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
         ///////////////////////
         if (fixture.RecreateCollection)
         {
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
         }
         else
         {
@@ -129,7 +129,7 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
         {
             if (fixture.RecreateCollection)
             {
-                await collection.DeleteCollectionAsync();
+                await collection.EnsureCollectionDeletedAsync();
             }
             else
             {

@@ -67,7 +67,7 @@ public abstract class VectorStore : IDisposable
     /// <param name="name">The name of the collection.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> that completes when the collection has been deleted.</returns>
-    public abstract Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default);
+    public abstract Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default);
 
     /// <summary>Asks the <see cref="VectorStore"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>

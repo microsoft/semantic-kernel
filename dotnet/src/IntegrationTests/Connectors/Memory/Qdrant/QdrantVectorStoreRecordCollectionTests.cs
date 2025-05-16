@@ -74,7 +74,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
         Assert.True(collectionExistResult);
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
@@ -113,7 +113,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, tempCollectionName, ownsClient: false);
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         Assert.False(await sut.CollectionExistsAsync());

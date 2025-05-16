@@ -243,7 +243,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     }
 
     /// <inheritdoc />
-    public override Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
         => this.RunOperationAsync("DeleteCollection",
             async () =>
             {

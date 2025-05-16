@@ -145,7 +145,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     }
 
     /// <inheritdoc />
-    public override async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
 

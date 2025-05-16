@@ -131,7 +131,7 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
         }
         finally
         {
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
         }
 
         static void VerifySearchResults(SearchRecord[] expectedRecords, double[] expectedScores,

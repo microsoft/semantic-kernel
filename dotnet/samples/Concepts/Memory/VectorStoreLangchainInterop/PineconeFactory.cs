@@ -82,6 +82,6 @@ public static class PineconeFactory
 
         public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) => innerStore.CollectionExistsAsync(name, cancellationToken);
 
-        public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default) => innerStore.DeleteCollectionAsync(name, cancellationToken);
+        public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default) => innerStore.EnsureCollectionDeletedAsync(name, cancellationToken);
     }
 }

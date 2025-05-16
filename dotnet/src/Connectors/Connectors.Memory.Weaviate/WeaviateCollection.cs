@@ -176,7 +176,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     }
 
     /// <inheritdoc />
-    public override async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
         using var request = new WeaviateDeleteCollectionSchemaRequest(this.Name).Build();
 

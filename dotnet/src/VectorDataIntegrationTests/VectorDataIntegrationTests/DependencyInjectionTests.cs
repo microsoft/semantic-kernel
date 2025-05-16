@@ -236,7 +236,7 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
     private sealed class FakeVectorStore : VectorStore
     {
         public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-        public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override VectorStoreCollection<TKey1, TRecord1> GetCollection<TKey1, TRecord1>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null) => throw new NotImplementedException();
         public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null) => throw new NotImplementedException();
         public override object? GetService(Type serviceType, object? serviceKey = null) => throw new NotImplementedException();
@@ -249,7 +249,7 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
         public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-        public override Task DeleteCollectionAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override object? GetService(Type serviceType, object? serviceKey = null) => throw new NotImplementedException();

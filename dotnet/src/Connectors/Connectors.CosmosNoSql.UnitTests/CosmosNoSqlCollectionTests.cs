@@ -349,7 +349,7 @@ public sealed class CosmosNoSqlCollectionTests
             "collection");
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         this._mockContainer.Verify(l => l.DeleteContainerAsync(

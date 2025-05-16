@@ -117,10 +117,10 @@ public sealed class CosmosMongoVectorStore : VectorStore
     }
 
     /// <inheritdoc />
-    public override Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
         var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
-        return collection.DeleteCollectionAsync(cancellationToken);
+        return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
 
     /// <inheritdoc />

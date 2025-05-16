@@ -210,7 +210,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
     }
 
     /// <inheritdoc />
-    public override async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override async Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
         try
         {

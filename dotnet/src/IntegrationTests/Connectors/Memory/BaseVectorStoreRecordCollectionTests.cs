@@ -112,7 +112,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
         Assert.Equal(Math.Round(scoreDictionary[resultOrder[2]], 2), Math.Round(results[2].Score!.Value, 2));
 
         // Cleanup
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
     }
 
     private static VectorStoreRecordDefinition CreateKeyWithVectorRecordDefinition(int vectorDimensions, string distanceFunction)

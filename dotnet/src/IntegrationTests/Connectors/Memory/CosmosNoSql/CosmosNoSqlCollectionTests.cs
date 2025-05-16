@@ -87,7 +87,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         Assert.NotNull(getResult);
 
@@ -123,7 +123,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         Assert.True(await sut.CollectionExistsAsync());
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         Assert.False(await sut.CollectionExistsAsync());

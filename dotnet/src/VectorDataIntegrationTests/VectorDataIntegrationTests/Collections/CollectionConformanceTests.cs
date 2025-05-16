@@ -12,7 +12,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
     where TKey : notnull
 {
     public Task InitializeAsync()
-        => fixture.VectorStore.DeleteCollectionAsync(this.CollectionName);
+        => fixture.VectorStore.EnsureCollectionDeletedAsync(this.CollectionName);
 
     [ConditionalFact]
     public async Task Collection_Ensure_Exists_Delete()
@@ -22,11 +22,11 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         Assert.False(await collection.CollectionExistsAsync());
         await collection.EnsureCollectionExistsAsync();
         Assert.True(await collection.CollectionExistsAsync());
-        await collection.DeleteCollectionAsync();
+        await collection.EnsureCollectionDeletedAsync();
         Assert.False(await collection.CollectionExistsAsync());
 
         // Deleting a non-existing collection does not throw
-        await fixture.TestStore.DefaultVectorStore.DeleteCollectionAsync(collection.Name);
+        await fixture.TestStore.DefaultVectorStore.EnsureCollectionDeletedAsync(collection.Name);
     }
 
     [ConditionalFact]
@@ -57,7 +57,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         var collection = this.GetCollection();
 
         await collection.EnsureCollectionExistsAsync();
-        await fixture.TestStore.DefaultVectorStore.DeleteCollectionAsync(collection.Name);
+        await fixture.TestStore.DefaultVectorStore.EnsureCollectionDeletedAsync(collection.Name);
         Assert.False(await collection.CollectionExistsAsync());
     }
 
