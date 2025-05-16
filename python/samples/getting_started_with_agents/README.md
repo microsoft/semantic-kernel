@@ -49,6 +49,21 @@ Example|Description
 
 _Note: For details on configuring an Azure AI Agent, please see [here](../getting_started_with_agents/azure_ai_agent/README.md)._
 
+## Multi Agent Orchestration
+
+Example|Description
+---|---
+[step1_concurrent](../getting_started_with_agents/multi_agent_orchestration/step1_concurrent.py)|How to run multiple agents concurrently and manage their output.
+[step1a_concurrent_structure_output](../getting_started_with_agents/multi_agent_orchestration/step1a_concurrent_structure_output.py)|How to run concurrent agents that return structured outputs.
+[step2_sequential](../getting_started_with_agents/multi_agent_orchestration/step2_sequential.py)|How to run agents sequentially where each one depends on the previous.
+[step2a_sequential_cancellation_token](../getting_started_with_agents/multi_agent_orchestration/step2a_sequential_cancellation_token.py)|How to use cancellation tokens in a sequential agent flow.
+[step3_group_chat](../getting_started_with_agents/multi_agent_orchestration/step3_group_chat.py)|How to create a group chat with multiple agents interacting together.
+[step3a_group_chat_human_in_the_loop](../getting_started_with_agents/multi_agent_orchestration/step3a_group_chat_human_in_the_loop.py)|How to include a human participant in a group chat with agents.
+[step3b_group_chat_with_chat_completion_manager](../getting_started_with_agents/multi_agent_orchestration/step3b_group_chat_with_chat_completion_manager.py)|How to manage a group chat with agents using a chat completion manager.
+[step4_handoff](../getting_started_with_agents/multi_agent_orchestration/step4_handoff.py)|How to hand off conversation or tasks from one agent to another.
+[step4a_handoff_structured_inputs](../getting_started_with_agents/multi_agent_orchestration/step4a_handoff_structured_inputs.py)|How to perform structured inputs handoffs between agents.
+
+
 ## OpenAI Assistant Agent
 
 Example|Description
