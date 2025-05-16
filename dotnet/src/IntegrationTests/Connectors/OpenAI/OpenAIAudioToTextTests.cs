@@ -22,7 +22,7 @@ public sealed class OpenAIAudioToTextTests()
         .AddUserSecrets<OpenAIAudioToTextTests>()
         .Build();
 
-    [RetryFact]//(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
+    [RetryFact] //(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
     public async Task OpenAIAudioToTextTestAsync()
     {
         // Arrange

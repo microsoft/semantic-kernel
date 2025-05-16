@@ -9,6 +9,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
+#pragma warning disable IDE0055 // Fix formatting
+
 namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 
 /// <summary>

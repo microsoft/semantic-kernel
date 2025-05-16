@@ -16,8 +16,10 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAssistantTest(outpu
 {
     private const string SummaryInstructions = "Summarize the entire conversation for the user in natural language.";
 
-    [Fact]
-    public async Task AnalyzeFileAndGenerateReportAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AnalyzeFileAndGenerateReport(bool useChatClient)
     {
         await using Stream stream = EmbeddedResource.ReadStream("30-user-context.txt")!;
         string fileId = await this.Client.UploadAssistantFileAsync(stream, "30-user-context.txt");
@@ -38,7 +40,7 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAssistantTest(outpu
             new()
             {
                 Instructions = SummaryInstructions,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
         // Create a chat for agent interaction.
@@ -60,6 +62,8 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAssistantTest(outpu
             await this.AssistantClient.DeleteAssistantAsync(analystAgent.Id);
             await this.Client.DeleteFileAsync(fileId);
         }
+
+        chatClient?.Dispose();
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(Agent agent, string? input = null)
