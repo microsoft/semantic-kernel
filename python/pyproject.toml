@@ -69,7 +69,7 @@ aws = [
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
-    "azure-ai-projects >= 1.0.0b7",
+    "azure-ai-projects >= 1.0.0b7, <1.0.0b11",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
     "azure-cosmos ~= 4.7"

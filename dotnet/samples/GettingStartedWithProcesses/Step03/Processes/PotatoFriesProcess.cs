@@ -40,7 +40,7 @@ public static class PotatoFriesProcess
 
         gatherIngredientsStep
             .OnEvent(GatherPotatoFriesIngredientsStep.OutputEvents.IngredientsGathered)
-            .SendEventTo(new ProcessFunctionTargetBuilder(sliceStep, functionName: CutFoodStep.Functions.SliceFood));
+            .SendEventTo(new ProcessFunctionTargetBuilder(sliceStep, functionName: CutFoodStep.ProcessStepFunctions.SliceFood));
 
         sliceStep
             .OnEvent(CutFoodStep.OutputEvents.SlicingReady)
@@ -73,7 +73,7 @@ public static class PotatoFriesProcess
 
         gatherIngredientsStep
             .OnEvent(GatherPotatoFriesIngredientsWithStockStep.OutputEvents.IngredientsGathered)
-            .SendEventTo(new ProcessFunctionTargetBuilder(sliceStep, functionName: CutFoodWithSharpeningStep.Functions.SliceFood));
+            .SendEventTo(new ProcessFunctionTargetBuilder(sliceStep, functionName: CutFoodWithSharpeningStep.ProcessStepFunctions.SliceFood));
 
         gatherIngredientsStep
             .OnEvent(GatherPotatoFriesIngredientsWithStockStep.OutputEvents.IngredientsOutOfStock)
@@ -85,11 +85,11 @@ public static class PotatoFriesProcess
 
         sliceStep
             .OnEvent(CutFoodWithSharpeningStep.OutputEvents.KnifeNeedsSharpening)
-            .SendEventTo(new ProcessFunctionTargetBuilder(sliceStep, functionName: CutFoodWithSharpeningStep.Functions.SharpenKnife));
+            .SendEventTo(new ProcessFunctionTargetBuilder(sliceStep, functionName: CutFoodWithSharpeningStep.ProcessStepFunctions.SharpenKnife));
 
         sliceStep
             .OnEvent(CutFoodWithSharpeningStep.OutputEvents.KnifeSharpened)
-            .SendEventTo(new ProcessFunctionTargetBuilder(sliceStep, functionName: CutFoodWithSharpeningStep.Functions.SliceFood));
+            .SendEventTo(new ProcessFunctionTargetBuilder(sliceStep, functionName: CutFoodWithSharpeningStep.ProcessStepFunctions.SliceFood));
 
         fryStep
             .OnEvent(FryFoodStep.OutputEvents.FoodRuined)
