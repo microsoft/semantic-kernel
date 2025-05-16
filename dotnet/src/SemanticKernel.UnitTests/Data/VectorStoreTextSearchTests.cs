@@ -93,8 +93,8 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         var sut = await CreateVectorStoreTextSearchWithEmbeddingGeneratorAsync();
 
         // Act.
-        KernelSearchResults<string> searchResults = await sut.SearchAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
-        var results = await searchResults.Results.ToListAsync();
+        var searchResults = sut.SearchAsync("What is the Semantic Kernel?", top: 2, new() { Skip = 0 });
+        var results = await searchResults.ToListAsync();
 
         Assert.Equal(2, results.Count);
     }
@@ -106,8 +106,8 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         var sut = await CreateVectorStoreTextSearchWithEmbeddingGeneratorAsync();
 
         // Act.
-        KernelSearchResults<TextSearchResult> searchResults = await sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
-        var results = await searchResults.Results.ToListAsync();
+        var searchResults = sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", top: 2, new() { Skip = 0 });
+        var results = await searchResults.ToListAsync();
 
         Assert.Equal(2, results.Count);
     }
@@ -119,8 +119,8 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         var sut = await CreateVectorStoreTextSearchWithEmbeddingGeneratorAsync();
 
         // Act.
-        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
-        var results = await searchResults.Results.ToListAsync();
+        var searchResults = sut.GetSearchResultsAsync("What is the Semantic Kernel?", top: 2, new() { Skip = 0 });
+        var results = await searchResults.ToListAsync();
 
         Assert.Equal(2, results.Count);
     }

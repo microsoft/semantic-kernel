@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Data;
 using Xunit;
@@ -21,7 +22,7 @@ public class ObsoleteVectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         var vectorSearch = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
-        using var embeddingGenerationService = new MockTextEmbeddingGenerator();
+        using IEmbeddingGenerator<string, Embedding<float>> embeddingGenerationService = new MockTextEmbeddingGenerator();
 
         // Act.
         var sut = new VectorStoreTextSearch<DataModelWithRawEmbedding>(vectorSearch, embeddingGenerationService, stringMapper, resultMapper);
