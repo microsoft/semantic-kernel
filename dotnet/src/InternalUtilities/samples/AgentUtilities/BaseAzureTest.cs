@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
-using Azure;
 using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
