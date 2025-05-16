@@ -585,8 +585,10 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 #pragma warning restore CS0618 // Type or member is obsolete
 
         // Specify whether to include vectors in the search results.
-        var vectorsSelector = new WithVectorsSelector();
-        vectorsSelector.Enable = options.IncludeVectors;
+        var vectorsSelector = new WithVectorsSelector
+        {
+            Enable = options.IncludeVectors
+        };
 
         var query = new Query
         {

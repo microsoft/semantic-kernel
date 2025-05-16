@@ -174,7 +174,7 @@ DO UPDATE SET {updateColumnsWithParams};
         var valuesRows = string.Join(", ",
             rows.Select((row, rowIndex) =>
                 $"({string.Join(", ",
-                    columns.Select((c, colIndex) => $"${rowIndex * columns.Count + colIndex + 1}"))})"));
+                    columns.Select((c, colIndex) => $"${(rowIndex * columns.Count) + colIndex + 1}"))})"));
 
         // Generate the update set clause
         var updateSetClause = string.Join(", ", columns.Where(c => c != keyColumn).Select(c => $"\"{c}\" = EXCLUDED.\"{c}\""));

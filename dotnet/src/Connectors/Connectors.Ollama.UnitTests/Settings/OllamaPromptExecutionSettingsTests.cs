@@ -71,8 +71,10 @@ public class OllamaPromptExecutionSettingsTests
         // Arrange
         var functionChoiceBehavior = FunctionChoiceBehavior.Auto();
 
-        var originalExecutionSettings = new PromptExecutionSettings();
-        originalExecutionSettings.FunctionChoiceBehavior = functionChoiceBehavior;
+        var originalExecutionSettings = new PromptExecutionSettings
+        {
+            FunctionChoiceBehavior = functionChoiceBehavior
+        };
 
         // Act
         var result = OllamaPromptExecutionSettings.FromExecutionSettings(originalExecutionSettings);
