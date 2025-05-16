@@ -390,11 +390,10 @@ string userMessage = "Please retrieve my company report";
 ChatMessageContent message = await agent.InvokeAsync(userMessage, agentThread).FirstAsync();
 ````
 
-There might be cases when there is a need to reuse an existing AI context behavior to narrow down the list of functions for non-agent scenarios, such as a chat completion service.
-In these cases, the AI context behavior can be adapted to the model required by one of the options described above.
-
-The opposite is also true: if a component created to implement one of the options described above needs to be reused in the agent context, it should be adapted to the AI context behavior model.
+There might be cases when there is a need to reuse an existing AI context behavior to narrow down the list of functions for non-agent scenarios, such as a chat completion service or chat client.
+In these cases, either the AI context behavior can be adapted to the model required by one of the options described above, or preferably the same components for vectorization and 
+semantic search can be used to implement both the AI context behavior and the model required by one of the options described above.
 
 ## Decision Outcome
 During the ADR review meeting, it was decided to prioritize context-based function selection for agents by implementing an AIContextBehavior, which would perform RAG on the agent's functions.
-Later, upon request, the same functionality can be extended to chat completion services or M.E.AI chat clients using option 2: the M.E.AI ChatClient Decorator.
+Later, upon request, the same functionality can be extended to chat completion services and  M.E.AI chat clients using option 2: the M.E.AI ChatClient Decorator.
