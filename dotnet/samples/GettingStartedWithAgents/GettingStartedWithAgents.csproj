@@ -47,6 +47,7 @@
     <ProjectReference Include="..\..\src\Agents\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\Agents\Bedrock\Agents.Bedrock.csproj" />
     <ProjectReference Include="..\..\src\Agents\Orchestration\Agents.Orchestration.csproj" />
+    <ProjectReference Include="..\..\src\Agents\Magentic\Agents.Magentic.csproj" />
     <ProjectReference Include="..\..\src\Agents\Runtime\InProcess\Runtime.InProcess.csproj" />
     <ProjectReference Include="..\..\src\Agents\Yaml\Agents.Yaml.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
