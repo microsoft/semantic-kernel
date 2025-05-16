@@ -16,7 +16,6 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
         RequiresAtLeastOneVector = false,
         SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
-        EscapeIdentifier = SqliteCommandBuilder.EscapeIdentifier
     };
 
     protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
