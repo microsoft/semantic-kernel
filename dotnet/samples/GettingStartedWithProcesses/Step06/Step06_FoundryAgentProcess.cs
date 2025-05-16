@@ -12,6 +12,9 @@ using OpenAI;
 namespace Step06;
 public class Step06_FoundryAgentProcess : BaseTest
 {
+    private const string Agent1Id = "asst_aAsLEzwbFDMDcyQl70pLqVi0";
+    private const string Agent2Id = "asst_DGvpjCuKdbNF81Ku2XdQPX7F";
+
     public Step06_FoundryAgentProcess(ITestOutputHelper output) : base(output, redirectSystemConsoleOutput: true)
     {
         this.Client =
@@ -30,8 +33,8 @@ public class Step06_FoundryAgentProcess : BaseTest
     [Fact]
     public async Task ProcessWithExistingFoundryAgentsAndSeparateThreadsAsync()
     {
-        var foundryAgentDefinition1 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
-        var foundryAgentDefinition2 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition1 = new AgentDefinition { Id = Agent1Id, Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition2 = new AgentDefinition { Id = Agent2Id, Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         var processBuilder = new FoundryProcessBuilder("foundry_agents");
 
@@ -60,8 +63,8 @@ public class Step06_FoundryAgentProcess : BaseTest
     [Fact]
     public async Task ProcessWithExistingFoundryAgentsAndSharedThreadAsync()
     {
-        var foundryAgentDefinition1 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
-        var foundryAgentDefinition2 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition1 = new AgentDefinition { Id = Agent1Id, Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition2 = new AgentDefinition { Id = Agent2Id, Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         var processBuilder = new FoundryProcessBuilder("foundry_agents");
 
@@ -93,8 +96,8 @@ public class Step06_FoundryAgentProcess : BaseTest
     public async Task ProcessWithExistingFoundryAgentsWithProcessStateUpdateAndOnCompleteConditions()
     {
         // Define the agents
-        var foundryAgentDefinition1 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
-        var foundryAgentDefinition2 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition1 = new AgentDefinition { Id = Agent1Id, Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition2 = new AgentDefinition { Id = Agent2Id, Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
         var processBuilder = new FoundryProcessBuilder<ProcessStateWithCounter>("foundry_agents");
@@ -115,8 +118,8 @@ public class Step06_FoundryAgentProcess : BaseTest
     public async Task ProcessWithExistingFoundryAgentsWithProcessStateUpdateAndOrchestrationConditions()
     {
         // Define the agents
-        var foundryAgentDefinition1 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
-        var foundryAgentDefinition2 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition1 = new AgentDefinition { Id = Agent1Id, Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition2 = new AgentDefinition { Id = Agent2Id, Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
         var processBuilder = new FoundryProcessBuilder<ProcessStateWithCounter>("foundry_agents");
@@ -148,7 +151,7 @@ public class Step06_FoundryAgentProcess : BaseTest
     public async Task ProcessWithExistingFoundryAgentsWithDynamicAgentResolution()
     {
         // Define the agents
-        var foundryAgentDefinition1 = new AgentDefinition { Id = "{AGENT_ID}", Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var foundryAgentDefinition1 = new AgentDefinition { Id = Agent1Id, Name = "Agent1", Type = AzureAIAgentFactory.AzureAIAgentType };
         var foundryAgentDefinition2 = new AgentDefinition { Id = "_variables_.NextAgentId", Name = "Agent2", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
@@ -181,8 +184,8 @@ public class Step06_FoundryAgentProcess : BaseTest
     public async Task ProcessWithTwoAgentMathChat()
     {
         // Define the agents
-        var studentDefinition = new AgentDefinition { Id = "{AGENT_ID}", Name = "Student", Type = AzureAIAgentFactory.AzureAIAgentType };
-        var teacherDefinition = new AgentDefinition { Id = "{AGENT_ID2}", Name = "Teacher", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var studentDefinition = new AgentDefinition { Id = Agent1Id, Name = "Student", Type = AzureAIAgentFactory.AzureAIAgentType };
+        var teacherDefinition = new AgentDefinition { Id = Agent2Id, Name = "Teacher", Type = AzureAIAgentFactory.AzureAIAgentType };
 
         // Define the process with a state type
         var processBuilder = new FoundryProcessBuilder<TwoAgentMathState>("two_agent_math_chat");
@@ -258,7 +261,7 @@ public class Step06_FoundryAgentProcess : BaseTest
 
     public class DynamicAgentState
     {
-        public string NextAgentId { get; set; } = "{AGENT_ID}";
+        public string NextAgentId { get; set; } = Agent2Id;
         public int Counter { get; set; }
     }
 

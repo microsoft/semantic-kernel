@@ -27,16 +27,23 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
             AgentInstructions);
         AzureAIAgent agent = new(definition, this.Client);
 
-        // Create a thread for the agent conversation.
-        AzureAIAgentThread agentThread = new(this.Client, metadata: SampleMetadata);
+        try
+        {
+            // Create a thread for the agent conversation.
+            AzureAIAgentThread agentThread = new(this.Client, metadata: SampleMetadata);
 
-        // Respond to user input
-        await InvokeAgentAsync(agent, agentThread, "Fortune favors the bold.");
-        await InvokeAgentAsync(agent, agentThread, "I came, I saw, I conquered.");
-        await InvokeAgentAsync(agent, agentThread, "Practice makes perfect.");
+            // Respond to user input
+            await InvokeAgentAsync(agent, agentThread, "Fortune favors the bold.");
+            await InvokeAgentAsync(agent, agentThread, "I came, I saw, I conquered.");
+            await InvokeAgentAsync(agent, agentThread, "Practice makes perfect.");
 
-        // Output the entire chat history
-        await DisplayChatHistoryAsync(agentThread);
+            // Output the entire chat history
+            await DisplayChatHistoryAsync(agentThread);
+        }
+        finally
+        {
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
+        }
     }
 
     [Fact]
@@ -60,12 +67,20 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         // Create a thread for the agent conversation.
         AzureAIAgentThread agentThread = new(this.Client, metadata: SampleMetadata);
 
-        // Respond to user input
-        await InvokeAgentAsync(agent, agentThread, "What is the special soup and its price?");
-        await InvokeAgentAsync(agent, agentThread, "What is the special drink and its price?");
+        try
+        {
+            // Respond to user input
+            await InvokeAgentAsync(agent, agentThread, "What is the special soup and its price?");
+            await InvokeAgentAsync(agent, agentThread, "What is the special drink and its price?");
 
-        // Output the entire chat history
-        await DisplayChatHistoryAsync(agentThread);
+            // Output the entire chat history
+            await DisplayChatHistoryAsync(agentThread);
+        }
+        finally
+        {
+            await this.Client.Threads.DeleteThreadAsync(agentThread.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
+        }
     }
 
     [Fact]
@@ -86,12 +101,20 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         // Create a thread for the agent conversation.
         AzureAIAgentThread agentThread = new(this.Client, metadata: SampleMetadata);
 
-        // Respond to user input
-        await InvokeAgentAsync(agent, agentThread, "Is 191 a prime number?");
-        await InvokeAgentAsync(agent, agentThread, "Determine the values in the Fibonacci sequence that that are less then the value of 101");
+        try
+        {
+            // Respond to user input
+            await InvokeAgentAsync(agent, agentThread, "Is 191 a prime number?");
+            await InvokeAgentAsync(agent, agentThread, "Determine the values in the Fibonacci sequence that that are less then the value of 101");
 
-        // Output the entire chat history
-        await DisplayChatHistoryAsync(agentThread);
+            // Output the entire chat history
+            await DisplayChatHistoryAsync(agentThread);
+        }
+        finally
+        {
+            await this.Client.Threads.DeleteThreadAsync(agentThread.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
+        }
     }
 
     // Local function to invoke agent and display the conversation messages.

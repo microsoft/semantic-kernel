@@ -73,17 +73,26 @@ public class Step03_Chat(ITestOutputHelper output) : BaseAgentsTest(output)
                     }
             };
 
-        // Invoke chat and display messages.
-        ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
-        chat.AddChatMessage(input);
-        this.WriteAgentChatMessage(input);
-
-        await foreach (ChatMessageContent response in chat.InvokeAsync())
+        try
         {
-            this.WriteAgentChatMessage(response);
-        }
+            // Invoke chat and display messages.
+            ChatMessageContent input = new(AuthorRole.User, "concept: maps made out of egg cartons.");
+            chat.AddChatMessage(input);
+            this.WriteAgentChatMessage(input);
 
-        Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
+            await foreach (ChatMessageContent response in chat.InvokeAsync())
+            {
+                this.WriteAgentChatMessage(response);
+            }
+
+            Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
+        }
+        finally
+        {
+            await chat.ResetAsync();
+            await agentReviewer.Client.Administration.DeleteAgentAsync(agentReviewer.Id);
+            await agentWriter.Client.Administration.DeleteAgentAsync(agentWriter.Id);
+        }
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy

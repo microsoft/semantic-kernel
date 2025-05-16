@@ -88,9 +88,9 @@ public class Step03_AzureAIAgent_Chat(ITestOutputHelper output) : BaseAzureAgent
         }
         finally
         {
+            await chat.ResetAsync();
             await agentReviewer.Client.Administration.DeleteAgentAsync(agentReviewer.Id);
             await agentWriter.Client.Administration.DeleteAgentAsync(agentWriter.Id);
-            await chat.ResetAsync();
         }
     }
 
