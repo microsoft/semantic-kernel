@@ -73,6 +73,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Agents.StreamingAnnotationContent.set_FileId(System.String)</Target>
+    <Left>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.Agents.StreamingAnnotationContent.set_Quote(System.String)</Target>
     <Left>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
@@ -186,6 +193,13 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.SemanticKernel.Agents.StreamingAnnotationContent.get_StartIndex</Target>
+    <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Microsoft.SemanticKernel.Agents.StreamingAnnotationContent.set_FileId(System.String)</Target>
     <Left>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.SemanticKernel.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

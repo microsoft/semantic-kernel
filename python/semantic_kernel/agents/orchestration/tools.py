@@ -11,8 +11,10 @@ from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecut
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
+@experimental
 def structured_outputs_transform(
     target_structure: type[BaseModel],
     service: ChatCompletionClientBase,

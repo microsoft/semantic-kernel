@@ -13,6 +13,7 @@ from semantic_kernel.agents.runtime.core.message_context import MessageContext
 from semantic_kernel.agents.runtime.core.routed_agent import message_handler
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -23,18 +24,21 @@ else:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental
 class SequentialRequestMessage(KernelBaseModel):
     """A request message type for sequential agents."""
 
     body: DefaultTypeAlias
 
 
+@experimental
 class SequentialResultMessage(KernelBaseModel):
     """A result message type for sequential agents."""
 
     body: ChatMessageContent
 
 
+@experimental
 class SequentialAgentActor(AgentActorBase):
     """A agent actor for sequential agents that process tasks."""
 
@@ -72,6 +76,7 @@ class SequentialAgentActor(AgentActorBase):
         )
 
 
+@experimental
 class CollectionActor(ActorBase):
     """A agent container for collection results from the last agent in the sequence."""
 
@@ -91,6 +96,7 @@ class CollectionActor(ActorBase):
         await self._result_callback(message.body)
 
 
+@experimental
 class SequentialOrchestration(OrchestrationBase[TIn, TOut]):
     """A sequential multi-agent pattern orchestration."""
 
@@ -140,7 +146,7 @@ class SequentialOrchestration(OrchestrationBase[TIn, TOut]):
             str: The first actor type in the sequence.
         """
         next_actor_type = self._get_collection_actor_type(internal_topic_type)
-        for index, agent in enumerate(reversed(self._members)):
+        for agent in reversed(self._members):
             await SequentialAgentActor.register(
                 runtime,
                 self._get_agent_actor_type(agent, internal_topic_type),

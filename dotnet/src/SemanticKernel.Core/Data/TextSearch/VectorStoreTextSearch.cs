@@ -22,7 +22,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
     /// provided <see cref="IVectorSearch{TRecord}"/> for performing searches and
-    /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
+    /// <see cref="IEmbeddingGenerator"/> for generating vectors from the text search query.
     /// </summary>
     /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the search.</param>
     /// <param name="embeddingGenerator"><see cref="IEmbeddingGenerator"/> instance used to create a vector from the text query. Only FLOAT32 vector generation is currently supported by <see cref="VectorStoreTextSearch{TRecord}"/>. If you required a different type of vector use the built in vector generation in the vector store.</param>
@@ -47,7 +47,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
     /// provided <see cref="IVectorSearch{TRecord}"/> for performing searches and
-    /// <see cref="ITextEmbeddingGenerationService"/> for generating vectors from the text search query.
+    /// <see cref="IEmbeddingGenerator"/> for generating vectors from the text search query.
     /// </summary>
     /// <param name="vectorSearch"><see cref="IVectorSearch{TRecord}"/> instance used to perform the search.</param>
     /// <param name="embeddingGenerator"><see cref="IEmbeddingGenerator"/> instance used to create a vector from the text query. Only FLOAT32 vector generation is currently supported by <see cref="VectorStoreTextSearch{TRecord}"/>. If you required a different type of vector use the built in vector generation in the vector store.</param>
@@ -195,6 +195,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     #region private
+    [Obsolete("This property is obsolete.")]
     private readonly ITextEmbeddingGenerationService? _textEmbeddingGeneration;
     private readonly IVectorSearch<TRecord>? _vectorSearch;
     private readonly ITextSearchStringMapper _stringMapper;
@@ -259,6 +260,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             Skip = searchOptions.Skip,
         };
 
+#pragma warning disable CS0618 // Type or member is obsolete
         if (this._textEmbeddingGeneration is not null)
         {
             var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -270,6 +272,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
             yield break;
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         await foreach (var result in this._vectorSearch!.SearchAsync(query, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false))
         {
