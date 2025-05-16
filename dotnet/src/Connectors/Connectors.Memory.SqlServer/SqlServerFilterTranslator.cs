@@ -45,9 +45,10 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         }
     }
 
-    protected override void GenerateColumn(string column, bool isSearchCondition = false)
+    protected override void GenerateColumn(PropertyModel property, bool isSearchCondition = false)
     {
-        this._sql.Append('[').Append(column).Append(']');
+        // StorageName is considered to be a safe input, we quote and escape it mostly to produce valid SQL.
+        this._sql.Append('[').Append(property.StorageName.Replace("]", "]]")).Append(']');
 
         // "SELECT * FROM MyTable WHERE BooleanColumn;" is not supported.
         // "SELECT * FROM MyTable WHERE BooleanColumn = 1;" is supported.
