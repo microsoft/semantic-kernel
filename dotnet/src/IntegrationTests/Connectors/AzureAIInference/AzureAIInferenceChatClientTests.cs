@@ -25,6 +25,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.AzureAIInference;
 
 public sealed class AzureAIInferenceChatClientTests(ITestOutputHelper output) : BaseIntegrationTest, IDisposable
 {
+    private const string SkipReason = "For manual verification only";
     private const string InputParameterName = "input";
     private readonly XunitLogger<Kernel> _loggerFactory = new(output);
     private readonly RedirectOutput _testOutputHelper = new(output);
@@ -35,7 +36,7 @@ public sealed class AzureAIInferenceChatClientTests(ITestOutputHelper output) : 
         .AddUserSecrets<AzureAIInferenceChatClientTests>()
         .Build();
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
     public async Task InvokeGetResponseAsync(string prompt, string expectedAnswerContains)
     {
@@ -55,7 +56,7 @@ public sealed class AzureAIInferenceChatClientTests(ITestOutputHelper output) : 
         Assert.Contains(expectedAnswerContains, result.Text, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Theory]
+    [Theory(Skip = SkipReason)]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?", "Pike Place")]
     public async Task InvokeGetStreamingResponseAsync(string prompt, string expectedAnswerContains)
     {
@@ -79,7 +80,7 @@ public sealed class AzureAIInferenceChatClientTests(ITestOutputHelper output) : 
         Assert.Contains(expectedAnswerContains, fullContent.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanUseChatForTextGenerationAsync()
     {
         // Arrange
@@ -98,7 +99,7 @@ public sealed class AzureAIInferenceChatClientTests(ITestOutputHelper output) : 
         Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItStreamingFromKernelTestAsync()
     {
         // Arrange
@@ -120,7 +121,7 @@ public sealed class AzureAIInferenceChatClientTests(ITestOutputHelper output) : 
         Assert.Contains("Pike Place", fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItHttpRetryPolicyTestAsync()
     {
         // Arrange
@@ -163,7 +164,7 @@ public sealed class AzureAIInferenceChatClientTests(ITestOutputHelper output) : 
         Assert.Equal((int)HttpStatusCode.Unauthorized, ((RequestFailedException)exception).Status);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItShouldReturnInnerContentAsync()
     {
         // Arrange
@@ -187,7 +188,7 @@ public sealed class AzureAIInferenceChatClientTests(ITestOutputHelper output) : 
         Assert.NotEqual(0, usage.CompletionTokens);
     }
 
-    [Theory(Skip = "This test is for manual verification.")]
+    [Theory(Skip = SkipReason)]
     [InlineData("\n")]
     [InlineData("\r\n")]
     public async Task CompletionWithDifferentLineEndingsAsync(string lineEnding)
