@@ -71,6 +71,7 @@ Pros:
 
 Cons:
 - Complex integration of all the parts (vectorization of functions, function search, advertisement of functions) of the solution together.
+- Doesn't support function choice behavior configured in prompt templates.
 
 ## Option 1A: Function Invocation Filter
 
@@ -121,11 +122,13 @@ class PluginSelectionFilter(IFunctionProvider functionProvider, string collectio
 }
 ````
 
+It's invoked per operation rather than per AI model request; one operation call may result in multiple AI model requests in cases where the AI model performs function calling. 
+
 Pros:
 
 Cons:
-- Relies on usage of the `InvokePromptAsync` function, making it unusable for all scenarios except those where the `kernle.InvokePromptAsync` function is used.
-- Invoked per operation rather than per AI model request; one operation call may result in multiple AI model requests in cases where the AI model performs function calling. 
+- Relies on usage of the `InvokePromptAsync` function, making it unusable for all scenarios except those where the `kernel.InvokePromptAsync` function is used.
+- Doesn't support function choice behavior configured in prompt templates.
  
 ## Option 2: M.E.AI ChatClient Decorator
 
@@ -195,6 +198,7 @@ Pros:
 
 Cons:
 - Works with chat completion agents only and does not work with SK agents that don't use the chat completion service.
+- Doesn't support function choice behavior configured in prompt templates.
 
 ## Option 3: Function Advertisement Filter
 
