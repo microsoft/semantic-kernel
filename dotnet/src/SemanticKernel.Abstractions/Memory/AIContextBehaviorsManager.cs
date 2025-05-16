@@ -25,19 +25,12 @@ public sealed class AIContextBehaviorsManager
     public IReadOnlyList<AIContextBehavior> Behaviors => this._behaviors;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AIContextBehaviorsManager"/> class.
-    /// </summary>
-    public AIContextBehaviorsManager()
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="AIContextBehaviorsManager"/> class with the specified <see cref="AIContextBehavior"/> objects.
     /// </summary>
     /// <param name="aiContextBehaviors">The <see cref="AIContextBehavior"/> objects to add to the manager.</param>
-    public AIContextBehaviorsManager(IEnumerable<AIContextBehavior> aiContextBehaviors)
+    public AIContextBehaviorsManager(IEnumerable<AIContextBehavior>? aiContextBehaviors = null)
     {
-        this._behaviors.AddRange(aiContextBehaviors);
+        this._behaviors.AddRange(aiContextBehaviors ?? []);
     }
 
     /// <summary>
@@ -107,7 +100,7 @@ public sealed class AIContextBehaviorsManager
         subContexts = subContexts.Where(x => x != null).ToArray();
 
         var combinedContext = new AIContextPart();
-        combinedContext.AIFunctions = subContexts.Where(x => x.AIFunctions != null).SelectMany(x => x.AIFunctions).ToList();
+        combinedContext.AIFunctions = subContexts.Where(x => x.AIFunctions != null).SelectMany(x => x.AIFunctions).ToArray();
         combinedContext.Instructions = string.Join("\n", subContexts.Where(x => !string.IsNullOrWhiteSpace(x.Instructions)).Select(x => x.Instructions));
         return combinedContext;
     }
@@ -124,7 +117,7 @@ public sealed class AIContextBehaviorsManager
     /// </remarks>
     public async Task OnSuspendAsync(string? threadId, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(this.Behaviors.Select(x => x.OnSuspendAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
+        await Task.WhenAll(this.Behaviors.Select(x => x.OnSuspendAsync(threadId, cancellationToken))).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -139,6 +132,6 @@ public sealed class AIContextBehaviorsManager
     /// </remarks>
     public async Task OnResumeAsync(string? threadId, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(this.Behaviors.Select(x => x.OnResumeAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
+        await Task.WhenAll(this.Behaviors.Select(x => x.OnResumeAsync(threadId, cancellationToken))).ConfigureAwait(false);
     }
 }

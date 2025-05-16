@@ -62,7 +62,7 @@ public sealed class TextSearchBehavior : AIContextBehavior
         {
             return new()
             {
-                AIFunctions = this._aIFunctions.ToList(),
+                AIFunctions = this._aIFunctions.ToArray(),
             };
         }
 

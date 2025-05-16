@@ -155,13 +155,13 @@ public sealed class Mem0Behavior : AIContextBehavior
     /// Plugin method to clear memories for the current agent/thread/user.
     /// </summary>
     /// <returns>A task that completes when the memory is cleared.</returns>
-    public async Task ClearStoredMemoriesAsync()
+    public Task ClearStoredMemoriesAsync()
     {
-        await this._mem0Client.ClearMemoryAsync(
+        return this._mem0Client.ClearMemoryAsync(
             this._applicationId,
             this._agentId,
             this._scopeToPerOperationThreadId ? this._perOperationThreadId : this._threadId,
-            this._userId).ConfigureAwait(false);
+            this._userId);
     }
 
     /// <summary>

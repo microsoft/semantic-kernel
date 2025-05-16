@@ -29,5 +29,5 @@ public sealed class AIContextPart
     /// <summary>
     /// A list of functions/tools to make available to the AI model for the current invocation.
     /// </summary>
-    public List<AIFunction> AIFunctions { get; set; } = new();
+    public IList<AIFunction> AIFunctions { get; set; } = [];
 }

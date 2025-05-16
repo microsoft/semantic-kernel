@@ -92,7 +92,7 @@ public class TextSearchBehaviorTests
         var mockTextSearch = new Mock<ITextSearch>();
         var options = new TextSearchBehaviorOptions
         {
-            SearchTime = TextSearchBehaviorOptions.RagBehavior.ViaPlugin,
+            SearchTime = TextSearchBehaviorOptions.RagBehavior.OnDemandFunctionCalling,
             PluginFunctionName = overridePluginFunctionName,
             PluginFunctionDescription = overridePluginFunctionDescription
         };

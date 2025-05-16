@@ -40,7 +40,7 @@ public sealed class TextSearchBehaviorOptions
 
     /// <summary>
     /// Gets or sets the name of the plugin method that will be made available for searching
-    /// if the <see cref="SearchTime"/> option is set to <see cref="RagBehavior.ViaPlugin"/>.
+    /// if the <see cref="SearchTime"/> option is set to <see cref="RagBehavior.OnDemandFunctionCalling"/>.
     /// </summary>
     /// <value>
     /// Defaults to &quot;Search&quot; if not set.
@@ -49,7 +49,7 @@ public sealed class TextSearchBehaviorOptions
 
     /// <summary>
     /// Gets or sets the description of the plugin method that will be made available for searching
-    /// if the <see cref="SearchTime"/> option is set to <see cref="RagBehavior.ViaPlugin"/>.
+    /// if the <see cref="SearchTime"/> option is set to <see cref="RagBehavior.OnDemandFunctionCalling"/>.
     /// </summary>
     /// <value>
     /// Defaults to &quot;Allows searching for additional information to help answer the user question.&quot; if not set.
@@ -106,6 +106,6 @@ public sealed class TextSearchBehaviorOptions
         /// <summary>
         /// A search may be performed by the model/agent on demand via function calling.
         /// </summary>
-        ViaPlugin
+        OnDemandFunctionCalling
     }
 }

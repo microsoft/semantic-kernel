@@ -35,7 +35,7 @@ internal sealed class Mem0Client
             && string.IsNullOrWhiteSpace(threadId)
             && string.IsNullOrWhiteSpace(userId))
         {
-            throw new InvalidOperationException("At least one of applicationId, agentId, threadId, or userId must be provided.");
+            throw new ArgumentException("At least one of applicationId, agentId, threadId, or userId must be provided.");
         }
 
         var searchRequest = new SearchRequest
@@ -65,7 +65,7 @@ internal sealed class Mem0Client
             && string.IsNullOrWhiteSpace(threadId)
             && string.IsNullOrWhiteSpace(userId))
         {
-            throw new InvalidOperationException("At least one of applicationId, agentId, threadId, or userId must be provided.");
+            throw new ArgumentException("At least one of applicationId, agentId, threadId, or userId must be provided.");
         }
 
 #pragma warning disable CA1308 // Normalize strings to uppercase: mem0 requires lowercase values

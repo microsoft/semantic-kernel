@@ -17,6 +17,9 @@ public sealed class TextSearchStoreSourceRetrievalResponse
     /// <param name="text">The source text that was retrieved.</param>
     public TextSearchStoreSourceRetrievalResponse(TextSearchStoreSourceRetrievalRequest request, string text)
     {
+        Verify.NotNull(request);
+        Verify.NotNull(text);
+
         this.SourceId = request.SourceId;
         this.SourceLink = request.SourceLink;
         this.Text = text;
