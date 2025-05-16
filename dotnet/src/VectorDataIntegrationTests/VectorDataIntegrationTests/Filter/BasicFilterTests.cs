@@ -30,6 +30,22 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             r => r["String"] == "foo");
 
     [ConditionalFact]
+    public virtual Task Equal_with_string_sql_injection_in_value()
+    {
+        string sqlInjection = $"foo; DROP TABLE {fixture.Collection.Name};";
+
+        return this.TestFilterAsync(
+            r => r.String == sqlInjection,
+            r => r["String"] == sqlInjection,
+            expectZeroResults: true);
+    }
+
+    [ConditionalFact]
+    public virtual Task Equal_with_string_sql_injection_in_name()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => this.GetDynamicRecords(r => r["String = \"not\"; DROP TABLE FilterTests;"] == "",
+            fixture.TestData.Count, new ReadOnlyMemory<float>([1, 2, 3])));
+
+    [ConditionalFact]
     public virtual Task Equal_with_string_containing_special_characters()
         => this.TestFilterAsync(
             r => r.String == """with some special"characters'and\stuff""",
