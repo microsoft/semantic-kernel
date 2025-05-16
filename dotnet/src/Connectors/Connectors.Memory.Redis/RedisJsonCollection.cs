@@ -45,7 +45,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
     };
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
@@ -406,7 +406,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput searchValue,
         int top,
-        RecordSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord>? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(searchValue);

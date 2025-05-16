@@ -15,6 +15,7 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MEVD = Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
@@ -39,7 +40,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     private const string DocumentPropertyName = "document";
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly MEVD.VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
     private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
@@ -331,7 +332,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput searchValue,
         int top,
-        RecordSearchOptions<TRecord>? options = null,
+        MEVD.VectorSearchOptions<TRecord>? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(searchValue);

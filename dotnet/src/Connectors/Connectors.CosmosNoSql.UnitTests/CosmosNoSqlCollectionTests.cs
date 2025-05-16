@@ -564,7 +564,7 @@ public sealed class CosmosNoSqlCollectionTests
             this._mockDatabase.Object,
             "collection");
 
-        var searchOptions = new RecordSearchOptions<CosmosNoSqlHotel> { VectorProperty = r => "non-existent-property" };
+        var searchOptions = new VectorSearchOptions<CosmosNoSqlHotel> { VectorProperty = r => "non-existent-property" };
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>

@@ -332,7 +332,7 @@ internal static class SqlServerCommandBuilder
         VectorPropertyModel vectorProperty,
         CollectionModel model,
         int top,
-        RecordSearchOptions<TRecord> options,
+        VectorSearchOptions<TRecord> options,
         ReadOnlyMemory<float> vector)
     {
         string distanceFunction = vectorProperty.DistanceFunction ?? DistanceFunction.CosineDistance;

@@ -16,7 +16,7 @@ internal sealed class MockVectorizableTextSearch<TRecord> : IVectorSearchable<TR
     public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput searchValue,
         int top,
-        RecordSearchOptions<TRecord>? options = default,
+        VectorSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
         where TInput : notnull
     {
@@ -26,7 +26,7 @@ internal sealed class MockVectorizableTextSearch<TRecord> : IVectorSearchable<TR
     public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
         TVector vector,
         int top,
-        RecordSearchOptions<TRecord>? options = default,
+        VectorSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
         where TVector : notnull
     {

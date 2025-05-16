@@ -73,7 +73,7 @@ public class RedisCollectionSearchMappingTests
         ]);
 
         // Act.
-        var query = RedisCollectionSearchMapping.BuildQuery(byteArray, top: 3, new RecordSearchOptions<DummyType>(), model, model.VectorProperty, null);
+        var query = RedisCollectionSearchMapping.BuildQuery(byteArray, top: 3, new VectorSearchOptions<DummyType>(), model, model.VectorProperty, null);
 
         // Assert.
         Assert.NotNull(query);
@@ -89,7 +89,7 @@ public class RedisCollectionSearchMappingTests
         // Arrange.
         var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
         var byteArray = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
-        var vectorSearchOptions = new RecordSearchOptions<DummyType> { Skip = 3 };
+        var vectorSearchOptions = new VectorSearchOptions<DummyType> { Skip = 3 };
         var model = BuildModel(
         [
             new VectorStoreKeyProperty("Key", typeof(string)),

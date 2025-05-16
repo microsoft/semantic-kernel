@@ -28,7 +28,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
@@ -398,7 +398,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput searchValue,
         int top,
-        RecordSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord>? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(searchValue);

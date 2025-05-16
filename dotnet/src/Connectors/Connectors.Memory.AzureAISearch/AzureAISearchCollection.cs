@@ -38,7 +38,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
     private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
@@ -387,7 +387,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput searchValue,
         int top,
-        RecordSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord>? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(searchValue);
@@ -623,7 +623,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// Build the search options for a vector search, where the type of vector search can be provided as input.
     /// E.g. VectorizedQuery or VectorizableTextQuery.
     /// </summary>
-    private static SearchOptions BuildSearchOptions(CollectionModel model, RecordSearchOptions<TRecord> options, int top, VectorQuery? vectorQuery)
+    private static SearchOptions BuildSearchOptions(CollectionModel model, VectorSearchOptions<TRecord> options, int top, VectorQuery? vectorQuery)
     {
         if (model.VectorProperties.Count == 0)
         {

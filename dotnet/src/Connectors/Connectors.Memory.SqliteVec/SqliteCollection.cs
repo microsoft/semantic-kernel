@@ -37,7 +37,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     private readonly SqliteMapper<TRecord> _mapper;
 
     /// <summary>The default options for vector search.</summary>
-    private static readonly RecordSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
@@ -163,7 +163,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput searchValue,
         int top,
-        RecordSearchOptions<TRecord>? options = null,
+        VectorSearchOptions<TRecord>? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(searchValue);
@@ -523,7 +523,7 @@ public class SqliteCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         List<SqliteWhereCondition> conditions,
         string? extraWhereFilter,
         Dictionary<string, object>? extraParameters,
-        RecordSearchOptions<TRecord> searchOptions,
+        VectorSearchOptions<TRecord> searchOptions,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string OperationName = "VectorizedSearch";
