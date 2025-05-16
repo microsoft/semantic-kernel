@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import logging
 
 from semantic_kernel.agents import Agent, ChatCompletionAgent, MagenticOrchestration, OpenAIAssistantAgent
 from semantic_kernel.agents.orchestration.magentic import StandardMagenticManager
@@ -23,9 +22,6 @@ orchestration, and finally waiting for the results.
 
 The Magentic manager requires a chat completion model that supports structured output.
 """
-# Set up logging to see the invocation process
-logging.basicConfig(level=logging.WARNING)  # Set default level to WARNING
-logging.getLogger("semantic_kernel.agents.orchestration.magentic").setLevel(logging.DEBUG)
 
 
 async def agents() -> list[Agent]:
@@ -36,7 +32,10 @@ async def agents() -> list[Agent]:
     research_agent = ChatCompletionAgent(
         name="ResearchAgent",
         description="A helpful assistant with access to web search. Ask it to perform web searches.",
-        instructions=("You are a Researcher. You find information and provide it as it is without any processing."),
+        instructions=(
+            "You are a Researcher. You find information without additional computation or quantitative analysis."
+        ),
+        # This agent requires the gpt-4o-search-preview model to perform web searches.
         service=OpenAIChatCompletion(ai_model_id="gpt-4o-search-preview"),
     )
 
@@ -47,7 +46,7 @@ async def agents() -> list[Agent]:
         model=model,
         name="CoderAgent",
         description="A helpful assistant with code interpreter capability.",
-        instructions="You solve questions using code.",
+        instructions="You solve questions using code. Please provide detailed analysis and computation process.",
         tools=code_interpreter_tool,
         tool_resources=code_interpreter_tool_resources,
     )
@@ -84,16 +83,22 @@ async def main():
     # 3. Invoke the orchestration with a task and the runtime
     orchestration_result = await magentic_orchestration.invoke(
         task=(
-            "What are the 50 tallest buildings in the world? Create a table showing the average height "
-            "of the buildings in each country, in descending order, along with the names of the tallest "
-            "buildings in that country and the counts of buildings that make top 50 in that country."
+            "The 2025 trade war between the US and other countries has had a significant impact "
+            "on the global economy. I am a business owner in the US that import household goods "
+            "such as bed sheets and holiday decorations from south-east Asia. I want "
+            "to know the impact of the tariffs on my business given that my current profit "
+            "margin is 20%. And If I were to increase the price of my products by 10%, "
+            "how would that affect my customer behavior and profit margin? Base on the analysis, "
+            "find similar cases in the past to cross-reference the results. Provide a detailed "
+            "report and recommendations on how to adapt to the changing market conditions at the end."
         ),
         runtime=runtime,
     )
 
     # 4. Wait for the results
     value = await orchestration_result.get()
-    print(value)
+
+    print(f"\nFinal result:\n{value}")
 
     # 5. Stop the runtime when idle
     await runtime.stop_when_idle()
@@ -101,106 +106,48 @@ async def main():
     """
     Sample output:
     **ResearchAgent**
-    Based on the available information, here is a list of the 50 tallest buildings in the world, including their names,
-    heights, and countries:
+    The 2025 trade war has led to significant tariffs imposed by the United States on imports from Southeast Asian
+    countries, directly affecting industries such as household goods. For instance, Cambodia faces a 49% tariff,
+    Vietnam 46%, and Thailand 36% on their exports to the U.S.
+    ([thailandinfo.se](https://www.thailandinfo.se/en/usa-tariffs-southeast-asia-2025/?utm_source=openai))
 
-    | Rank | Building Name                         | Height (m) | Country                 |
-    |------|---------------------------------------|------------|-------------------------|
-    | 1    | Burj Khalifa                          | 828        | United Arab Emirates    |
-    | 2    | Merdeka 118                           | 679        | Malaysia                |
-    | 3    | Shanghai Tower                        | 632        | China                   |
-    | 4    | Makkah Royal Clock Tower              | 601        | Saudi Arabia            |
-    | 5    | Ping An Finance Center                | 599        | China                   |
-    | 6    | Lotte World Tower                     | 555        | South Korea             |
-    | 7    | One World Trade Center                | 541        | United States           |
-    | 8    | Guangzhou CTF Finance Centre          | 530        | China                   |
-    | 9    | Tianjin CTF Finance Centre            | 530        | China                   |
-    | 10   | CITIC Tower                           | 528        | China                   |
-    | 11   | TAIPEI 101                            | 508        | Taiwan                  |
-    | 12   | Shanghai World Financial Center       | 492        | China                   |
-    | 13   | International Commerce Centre         | 484        | Hong Kong               |
-    | 14   | Wuhan Greenland Center                | 476        | China                   |
-    | 15   | Central Park Tower                    | 472        | United States           |
-    | 16   | Lakhta Center                         | 462        | Russia                  |
-    | 17   | Vincom Landmark 81                    | 461        | Vietnam                 |
-    | 18   | Changsha IFS Tower T1                 | 452        | China                   |
-    | 19   | Petronas Tower 1                      | 452        | Malaysia                |
-    | 20   | Petronas Tower 2                      | 452        | Malaysia                |
-    | 21   | Suzhou IFS                            | 450        | China                   |
-    | 22   | Zifeng Tower                          | 450        | China                   |
-    | 23   | The Exchange 106                      | 445        | Malaysia                |
-    | 24   | Wuhan Center Tower                    | 443        | China                   |
-    | 25   | Willis Tower                          | 442        | United States           |
-    | 26   | KK100                                 | 442        | China                   |
-    | 27   | Guangzhou International Finance Center| 438        | China                   |
-    | 28   | Wuhan Greenland Center                | 438        | China                   |
-    | 29   | 432 Park Avenue                       | 425        | United States           |
-    | 30   | Marina 101                            | 425        | United Arab Emirates    |
-    | 31   | Trump International Hotel & Tower     | 423        | United States           |
-    | 32   | Jin Mao Tower                         | 421        | China                   |
-    | 33   | Princess Tower                        | 414        | United Arab Emirates    |
-    | 34   | Al Hamra Tower                        | 413        | Kuwait                  |
-    | 35   | Two International Finance Centre      | 412        | Hong Kong               |
-    | 36   | 23 Marina                             | 392        | United Arab Emirates    |
-    | 37   | CITIC Plaza                           | 391        | China                   |
-    | 38   | Shun Hing Square                      | 384        | China                   |
-    | 39   | Eton Place Dalian Tower 1             | 383        | China                   |
-    | 40   | Empire State Building                 | 381        | United States           |
-    | 41   | Burj Mohammed Bin Rashid              | 381        | United Arab Emirates    |
-    | 42   | Elite Residence                       | 380        | United Arab Emirates    |
-    | 43   | The Address Boulevard                 | 370        | United Arab Emirates    |
-    | 44   | Bank of China Tower                   | 367        | Hong Kong               |
-    | 45   | Bank of America Tower                 | 366        | United States           |
-    | 46   | St. Regis Chicago                     | 363        | United States           |
-    | 47   | Almas Tower                           | 360        | United Arab Emirates    |
-    | 48   | Hanking Center                        | 359        | China                   |
-    | 49   | Guangzhou Chow Tai Fook Finance Centre| 530        | China                   |
-    | 50   | Tianjin Chow Tai Fook Binhai Center   | 530        | China                   |
-
-    *Note: The heights are measured to the architectural top, including spires but excluding antennas, signage, flag
-    poles, or other functional or technical equipment.*
-
-    This information is compiled from various sources, including the Council on Tall Buildings and Urban Habitat
-    (CTBUH) and other reputable architectural databases.
+    ...
     **CoderAgent**
-    Here's the table of the 50 tallest buildings in the world, grouped by country with the buildings' names, heights,
-    and the average height for each country:
+    Here's the analysis based on your scenario:
 
-    | Country               | Number of Buildings | Average Height (m) | Building Names & Heights                     |
-    |-----------------------|---------------------|---------------------|---------------------------------------------|
-    | China                 | 21                  | 471.33              | Shanghai Tower (632m), Ping An Finance  ... |
-    | Hong Kong             | 3                   | 421.00              | International Commerce Centre (484m), T ... |
-    | Kuwait                | 1                   | 413.00              | Al Hamra Tower (413m)                   ... |
-    | Malaysia              | 4                   | 507.00              | Merdeka 118 (679m), Petronas Tower 1 (4 ... |
-    | Russia                | 1                   | 462.00              | Lakhta Center (462m)                    ... |
-    | Saudi Arabia          | 1                   | 601.00              | Makkah Royal Clock Tower (601m)         ... |
-    | South Korea           | 1                   | 555.00              | Lotte World Tower (555m)                ... |
-    | Taiwan                | 1                   | 508.00              | TAIPEI 101 (508m)                       ... |
-    | United Arab Emirates  | 8                   | 443.75              | Burj Khalifa (828m), Marina 101 (425m), ... |
-    | United States         | 8                   | 426.63              | One World Trade Center (541m), Central  ... |
-    | Vietnam               | 1                   | 461.00              | Vincom Landmark 81 (461m)               ... |
+    1. **Initial Scenario:**
+    - Initial Selling Price: $125.00 (to achieve a 20% profit margin)
 
-    This table presents a clear summary of tallest building distributions across various countries, along with the 
-    average height of skyscrapers present in each region.
-    Here's the information you requested regarding the 50 tallest buildings in the world, organized by country. The
-    table below includes the names and heights of these buildings, along with the average height for each country:
+    2. **After Applying Tariffs:**
+    - New Cost Price: $145.00 (after a 45% tariff on the initial $100 cost)
 
-    | Country               | Number of Buildings | Average Height (m) | Building Names & Heights                     |
-    |-----------------------|---------------------|---------------------|---------------------------------------------|
-    | China                 | 21                  | 471.33              | Shanghai Tower (632m), Ping An Finance  ... |
-    | Hong Kong             | 3                   | 421.00              | International Commerce Centre (484m), T ... |
-    | Kuwait                | 1                   | 413.00              | Al Hamra Tower (413m)                   ... |
-    | Malaysia              | 4                   | 507.00              | Merdeka 118 (679m), Petronas Tower 1 (4 ... |
-    | Russia                | 1                   | 462.00              | Lakhta Center (462m)                    ... |
-    | Saudi Arabia          | 1                   | 601.00              | Makkah Royal Clock Tower (601m)         ... |
-    | South Korea           | 1                   | 555.00              | Lotte World Tower (555m)                ... |
-    | Taiwan                | 1                   | 508.00              | TAIPEI 101 (508m)                       ... |
-    | United Arab Emirates  | 8                   | 443.75              | Burj Khalifa (828m), Marina 101 (425m), ... |
-    | United States         | 8                   | 426.63              | One World Trade Center (541m), Central  ... |
-    | Vietnam               | 1                   | 461.00              | Vincom Landmark 81 (461m)               ... |
+    3. **With a 10% Price Increase:**
+    - New Selling Price: $137.50
 
-    This comprehensive list should give you a clear view of the tallest skyscrapers, showcasing their significant
-    presence across the globe. If you have any more questions or need further details, feel free to ask!
+    4. **Profit Margin and Volume Impact:**
+    ...
+    **ResearchAgent**
+    In response to increased tariffs during trade wars, various companies have implemented strategic measures to
+    mitigate financial impacts and maintain competitiveness. Notable examples include:
+
+    **1. Supply Chain Diversification:**
+
+    - **Steven Madden Ltd.:** Faced with a 10% tariff on handbags imported from China, the company relocated
+    production to Cambodia to circumvent the tariffs.([money.usnews.com](https://money.usnews.com/money/blogs/...
+    **CoderAgent**
+    Here's a detailed simulated report on the potential business impact due to tariffs and price adjustments,
+    along with strategic recommendations:
+
+    ### Financial Impact Summary:
+
+    1. **New Cost Price after Tariffs:** $145.00
+    2. **New Selling Price after 10% Increase:** $137.50
+    3. **New Profit Margin:** -5.45%
+    4. **Estimated Sales Volume Change:** Decrease to 95.0% of original
+    5. **New Estimated Profit per Unit:** Negative $7.12
+
+    ### Strategies from Historical Cases:
+    ...
     """
 
 
