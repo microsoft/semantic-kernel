@@ -14,6 +14,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
+[Obsolete("Temporary test for obsolete ITextEmbeddingGenerationService MemoryBuilder extensions.")]
 public sealed class PineconeMemoryBuilderExtensionsTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;

@@ -125,26 +125,29 @@ public static class ProcessVisualizationExtensions
                         string source = $"{stepName}[\"{stepName}\"]";
                         string target;
 
-                        // Check if the target step is the end node by function name
-                        if (edge.OutputTarget.FunctionName.Equals("end", StringComparison.OrdinalIgnoreCase) && !isSubProcess)
+                        if (edge.OutputTarget is KernelProcessFunctionTarget functionTarget)
                         {
-                            target = "End[\"End\"]";
-                        }
-                        else if (stepNames.TryGetValue(edge.OutputTarget.StepId, out string? targetStepName))
-                        {
-                            target = $"{targetStepName}[\"{targetStepName}\"]";
-                        }
-                        else
-                        {
-                            // Handle cases where the target step is not in the current dictionary, possibly a nested step or placeholder
-                            // As we have events from the step that, when it is a subprocess, that go to a step in the subprocess
-                            // Those are triggered by events and do not have an origin step, also they are not connected to the Start node
-                            // So we need to handle them separately - we ignore them for now
-                            continue;
-                        }
+                            // Check if the target step is the end node by function name
+                            if (functionTarget.FunctionName.Equals("end", StringComparison.OrdinalIgnoreCase) && !isSubProcess)
+                            {
+                                target = "End[\"End\"]";
+                            }
+                            else if (stepNames.TryGetValue(functionTarget.StepId, out string? targetStepName))
+                            {
+                                target = $"{targetStepName}[\"{targetStepName}\"]";
+                            }
+                            else
+                            {
+                                // Handle cases where the target step is not in the current dictionary, possibly a nested step or placeholder
+                                // As we have events from the step that, when it is a subprocess, that go to a step in the subprocess
+                                // Those are triggered by events and do not have an origin step, also they are not connected to the Start node
+                                // So we need to handle them separately - we ignore them for now
+                                continue;
+                            }
 
-                        // Append the connection
-                        sb.AppendLine($"{indentation}{source} --> {target}");
+                            // Append the connection
+                            sb.AppendLine($"{indentation}{source} --> {target}");
+                        }
                     }
                 }
             }
