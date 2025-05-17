@@ -526,7 +526,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         var builtSteps = this.BuildWithStateMetadata(stateMetadata);
 
         // Create the process
-        KernelProcessState state = new(this.Name, version: this.Version, id: this.Id);
+        KernelProcessState state = new(this.Id, version: this.Version);
         KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads, UserStateype = this.StateType, Description = this.Description };
 
         return process;

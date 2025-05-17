@@ -41,8 +41,9 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     /// </summary>
     /// <param name="process">The <see cref="KernelProcess"/> instance.</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    internal LocalProcess(KernelProcess process, Kernel kernel)
-        : base(process, kernel)
+    /// <param name="instanceId">id to be used for LocalProcess as unique identifier</param>
+    internal LocalProcess(KernelProcess process, Kernel kernel, string? instanceId = null)
+        : base(process, kernel, instanceId: instanceId)
     {
         Verify.NotNull(process.Steps);
 
@@ -168,6 +169,20 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
     internal Task<KernelProcess> GetProcessInfoAsync() => this.ToKernelProcessAsync();
 
+    internal override async Task SaveStepDataAsync()
+    {
+        if (this.StorageManager != null && !string.IsNullOrEmpty(this._stepInfo.State.Id))
+        {
+            var storageKeyValues = this.GetStepStorageKeyValues();
+            var updatedProcess = this._process with { State = this._stepState, Steps = this._steps.Select(step => step._stepInfo).ToList() };
+            await this.StorageManager.SaveProcessDataAsync(storageKeyValues.Item1, storageKeyValues.Item2, updatedProcess).ConfigureAwait(false);
+            foreach (var step in this._steps)
+            {
+                await step.SaveStepDataAsync().ConfigureAwait(false);
+            }
+        }
+    }
+
     /// <summary>
     /// Handles a <see cref="ProcessMessage"/> that has been sent to the process. This happens only in the case
     /// of a process (this one) running as a step within another process (this one's parent). In this case the
@@ -205,11 +220,24 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     {
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
+        Dictionary<string, string> processInfoInstanceMap = [];
 
         // Initialize Storage Manager
         if (this.StorageManager != null)
         {
             await this.StorageManager.InitializeAsync().ConfigureAwait(false);
+            var processState = await this.StorageManager.GetProcessDataAsync(this.Name, this.Id).ConfigureAwait(false);
+            if (processState != null)
+            {
+                // Verification process matches same process type
+                // TODO: This verification should be more robust to support versioning - process name change, etc
+                if (processState.ProcessName != this._stepState.Name)
+                {
+                    throw new KernelException($"The process type {this._stepState.Name} does not match the persisted process type {processState.ProcessName}").Log(this._logger);
+                }
+
+                processInfoInstanceMap = processState.Steps;
+            }
         }
 
         // TODO: Pull user state from persisted state on resume.
@@ -254,7 +282,15 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             // The current step should already have a name.
             Verify.NotNull(step.State?.Name);
 
-            if (step is KernelProcess processStep)
+            // Assign id to kernelStepInfo if any before creation of Local components
+            if (!processInfoInstanceMap.TryGetValue(step.State.Name, out string? stepId) && stepId == null)
+            {
+                stepId = Guid.NewGuid().ToString();
+            }
+
+            KernelProcessStepInfo stepInfo = step.CloneWithIdAndEdges(stepId, this._logger);
+
+            if (stepInfo is KernelProcess processStep)
             {
                 // The process will only have an Id if its already been executed.
                 if (string.IsNullOrWhiteSpace(processStep.State.Id))
@@ -272,25 +308,25 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         StorageManager = this.StorageManager,
                     };
             }
-            else if (step is KernelProcessMap mapStep)
+            else if (stepInfo is KernelProcessMap mapStep)
             {
+                mapStep = mapStep with { Operation = mapStep.Operation with { State = mapStep.Operation.State with { Id = mapStep.Operation.State.Name } } };
                 localStep =
                     new LocalMap(mapStep, this._kernel)
                     {
                         ParentProcessId = this.Id,
                     };
             }
-            else if (step is KernelProcessProxy proxyStep)
+            else if (stepInfo is KernelProcessProxy proxyStep)
             {
                 localStep =
-                    new LocalProxy(proxyStep, this._kernel)
+                    new LocalProxy(proxyStep, this._kernel, this.ExternalMessageChannel)
                     {
                         ParentProcessId = this.RootProcessId,
                         EventProxy = this.EventProxy,
-                        ExternalMessageChannel = this.ExternalMessageChannel
                     };
             }
-            else if (step is KernelProcessAgentStep agentStep)
+            else if (stepInfo is KernelProcessAgentStep agentStep)
             {
                 if (!this._threads.TryGetValue(agentStep.ThreadName, out KernelProcessAgentThread? thread) || thread is null)
                 {
@@ -302,10 +338,10 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             else
             {
                 // The current step should already have an Id.
-                Verify.NotNull(step.State?.Id);
+                Verify.NotNull(stepInfo.State?.Id);
 
                 localStep =
-                    new LocalStep(step, this._kernel)
+                    new LocalStep(stepInfo, this._kernel)
                     {
                         ParentProcessId = this.Id,
                         EventProxy = this.EventProxy,
@@ -315,6 +351,9 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
             this._steps.Add(localStep);
         }
+
+        // Process steps local instances have been created, saving process state
+        await this.SaveStepDataAsync().ConfigureAwait(false);
     }
 
     /// <summary>
@@ -373,7 +412,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         break;
                     }
 
-                    var destinationStep = this._steps.First(v => v.Id == message.DestinationId);
+                    var destinationStep = this._steps.First(v => v.Name == message.DestinationId);
 
                     // Send a message to the step
                     messageTasks.Add(destinationStep.HandleMessageAsync(message));

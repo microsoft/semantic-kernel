@@ -63,7 +63,7 @@ public static class LocalKernelProcessFactory
         Kernel kernel,
         IReadOnlyDictionary<string, KernelProcess> registeredProcesses,
         string processKey,
-        string processId,
+        string? processId,
         KernelProcessEvent initialEvent,
         IExternalKernelProcessMessageChannel? externalMessageChannel = null,
         IProcessStorageConnector? storageConnector = null)
@@ -80,10 +80,10 @@ public static class LocalKernelProcessFactory
         // Assign the process Id if one is provided and the processes does not already have an Id.
         if (!string.IsNullOrWhiteSpace(processId) && string.IsNullOrWhiteSpace(process.State.Id))
         {
-            process = process with { State = process.State with { Id = processId, Name = processKey } };
+            process = process with { State = process.State with { Name = processKey } };
         }
 
-        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel, storageConnector);
+        LocalKernelProcessContext processContext = new(process, kernel, null, externalMessageChannel, storageConnector, processId);
         await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
         return processContext;
     }

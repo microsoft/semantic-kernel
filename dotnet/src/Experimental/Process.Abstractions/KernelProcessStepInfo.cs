@@ -39,7 +39,7 @@ public record KernelProcessStepInfo
     /// <summary>
     /// A read-only dictionary of output edges from the Step.
     /// </summary>
-    public IReadOnlyDictionary<string, IReadOnlyCollection<KernelProcessEdge>> Edges { get; }
+    public IReadOnlyDictionary<string, IReadOnlyCollection<KernelProcessEdge>> Edges { get; init; }
 
     /// <summary>
     /// A dictionary of input mappings for the grouped edges.
