@@ -81,7 +81,7 @@ internal sealed class ConsoleOutputFunctionInvocationFilter() : IFunctionInvocat
     private static string IndentMultilineString(string multilineText, int indentLevel = 1, int spacesPerIndent = 4)
     {
         // Create the indentation string
-        string indentation = new (' ', indentLevel * spacesPerIndent);
+        var indentation = new string(' ', indentLevel * spacesPerIndent);
 
         // Split the text into lines, add indentation, and rejoin
         char[] NewLineChars = { '\r', '\n' };
