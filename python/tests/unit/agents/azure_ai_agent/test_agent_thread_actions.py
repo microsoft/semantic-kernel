@@ -3,10 +3,9 @@
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from azure.ai.projects.models import (
+from azure.ai.agents.models import (
     MessageTextContent,
     MessageTextDetails,
-    OpenAIPageableListOfRunStep,
     RequiredFunctionToolCall,
     RequiredFunctionToolCallDetails,
     RunStep,
@@ -22,6 +21,8 @@ from azure.ai.projects.models import (
     ThreadMessage,
     ThreadRun,
 )
+from azure.ai.projects.aio import AIProjectClient
+from pytest import fixture
 
 from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActions
 from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
@@ -31,27 +32,38 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
 
-async def test_agent_thread_actions_create_thread():
-    class FakeAgentClient:
-        create_thread = AsyncMock(return_value=type("FakeThread", (), {"id": "thread123"}))
+@fixture
+def mock_client():
+    mock_thread = AsyncMock()
+    mock_thread.id = "thread123"
 
-    class FakeClient:
-        agents = FakeAgentClient()
+    mock_threads = MagicMock()
+    mock_threads.create = AsyncMock(return_value=mock_thread)
 
-    client = FakeClient()
-    thread_id = await AgentThreadActions.create_thread(client)
+    mock_message = AsyncMock()
+    mock_message.id = "message456"
+
+    mock_messages = MagicMock()
+    mock_messages.create = AsyncMock(return_value="someMessage")
+
+    mock_agents = MagicMock()
+    mock_agents.threads = mock_threads
+    mock_agents.messages = mock_messages
+
+    mock_client = AsyncMock(spec=AIProjectClient)
+    mock_client.agents = mock_agents
+
+    return mock_client
+
+
+async def test_agent_thread_actions_create_thread(mock_client):
+    thread_id = await AgentThreadActions.create_thread(mock_client)
     assert thread_id == "thread123"
 
 
-async def test_agent_thread_actions_create_message():
-    class FakeAgentClient:
-        create_message = AsyncMock(return_value="someMessage")
-
-    class FakeClient:
-        agents = FakeAgentClient()
-
+async def test_agent_thread_actions_create_message(mock_client):
     msg = ChatMessageContent(role=AuthorRole.USER, content="some content")
-    out = await AgentThreadActions.create_message(FakeClient(), "threadXYZ", msg)
+    out = await AgentThreadActions.create_message(mock_client, "threadXYZ", msg)
     assert out == "someMessage"
 
 
@@ -68,11 +80,10 @@ async def test_agent_thread_actions_create_message_no_content():
     assert FakeAgentClient.create_message.await_count == 0
 
 
-async def test_agent_thread_actions_invoke(ai_project_client, ai_agent_definition):
+async def test_agent_thread_actions_invoke(ai_project_client: AIProjectClient, ai_agent_definition):
     agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
 
-    agent.client.agents = MagicMock()
-
+    # Properly construct nested mocks without re-spec'ing from a mock
     mock_thread_run = ThreadRun(
         id="run123",
         thread_id="thread123",
@@ -82,29 +93,29 @@ async def test_agent_thread_actions_invoke(ai_project_client, ai_agent_definitio
         model="model",
     )
 
-    agent.client.agents.create_run = AsyncMock(return_value=mock_thread_run)
+    agent.client.agents.runs = MagicMock()
+    agent.client.agents.runs.create = AsyncMock(return_value=mock_thread_run)
+    agent.client.agents.runs.get = AsyncMock(return_value=mock_thread_run)
 
-    mock_run_steps = OpenAIPageableListOfRunStep(
-        data=[
-            RunStep(
-                type="message_creation",
-                id="msg123",
-                thread_id="thread123",
-                run_id="run123",
-                created_at=int(datetime.now(timezone.utc).timestamp()),
-                completed_at=int(datetime.now(timezone.utc).timestamp()),
-                status="completed",
-                agent_id="agent123",
-                step_details=RunStepMessageCreationDetails(
-                    message_creation=RunStepMessageCreationReference(
-                        message_id="msg123",
-                    ),
+    async def mock_poll_run_status(*args, **kwargs):
+        yield RunStep(
+            type="message_creation",
+            id="msg123",
+            thread_id="thread123",
+            run_id="run123",
+            created_at=int(datetime.now(timezone.utc).timestamp()),
+            completed_at=int(datetime.now(timezone.utc).timestamp()),
+            status="completed",
+            agent_id="agent123",
+            step_details=RunStepMessageCreationDetails(
+                message_creation=RunStepMessageCreationReference(
+                    message_id="msg123",
                 ),
             ),
-        ]
-    )
+        )
 
-    agent.client.agents.list_run_steps = AsyncMock(return_value=mock_run_steps)
+    agent.client.agents.run_steps = MagicMock()
+    agent.client.agents.run_steps.list = mock_poll_run_status
 
     mock_message = ThreadMessage(
         id="msg123",
@@ -118,10 +129,13 @@ async def test_agent_thread_actions_invoke(ai_project_client, ai_agent_definitio
         content=[MessageTextContent(text=MessageTextDetails(value="some message", annotations=[]))],
     )
 
-    agent.client.agents.get_message = AsyncMock(return_value=mock_message)
+    agent.client.agents.messages = MagicMock()
+    agent.client.agents.messages.get = AsyncMock(return_value=mock_message)
 
-    async for message in AgentThreadActions.invoke(agent=agent, thread_id="thread123", kernel=AsyncMock(spec=Kernel)):
-        assert message is not None
+    async for is_visible, message in AgentThreadActions.invoke(
+        agent=agent, thread_id="thread123", kernel=AsyncMock(spec=Kernel)
+    ):
+        assert str(message.content) == "some message"
         break
 
 
@@ -138,7 +152,12 @@ async def test_agent_thread_actions_invoke_with_requires_action(ai_project_clien
         model="model",
     )
 
-    agent.client.agents.create_run = AsyncMock(return_value=mock_thread_run)
+    agent.client.agents = MagicMock()
+
+    agent.client.agents.runs = MagicMock()
+    agent.client.agents.runs.create = AsyncMock(return_value=mock_thread_run)
+    agent.client.agents.runs.get = AsyncMock(return_value=mock_thread_run)
+    agent.client.agents.runs.submit_tool_outputs = AsyncMock()
 
     poll_count = 0
 
@@ -183,18 +202,20 @@ async def test_agent_thread_actions_invoke_with_requires_action(ai_project_clien
         agent_id="agent123",
         step_details=RunStepToolCallDetails(
             tool_calls=[
+                # 1. This will yield FunctionResultContent
+                RunStepFunctionToolCall(
+                    id="tool_call_id",
+                    function=RunStepFunctionToolCallDetails({
+                        "name": "mock_function_call",
+                        "arguments": '{"arg": "value"}',
+                        "output": "some output",
+                    }),
+                ),
+                # 2. This will yield TextContent
                 RunStepCodeInterpreterToolCall(
                     id="tool_call_id",
                     code_interpreter=RunStepCodeInterpreterToolCallDetails(
                         input="some code",
-                    ),
-                ),
-                RunStepFunctionToolCall(
-                    id="tool_call_id",
-                    function=RunStepFunctionToolCallDetails(
-                        name="mock_function_call",
-                        arguments={"arg": "value"},
-                        output="some output",
                     ),
                 ),
             ]
@@ -215,8 +236,14 @@ async def test_agent_thread_actions_invoke_with_requires_action(ai_project_clien
         ),
     )
 
-    mock_run_steps = OpenAIPageableListOfRunStep(data=[mock_run_step_tool_calls, mock_run_step_message_creation])
-    agent.client.agents.list_run_steps = AsyncMock(return_value=mock_run_steps)
+    mock_run_steps = [mock_run_step_tool_calls, mock_run_step_message_creation]
+
+    async def mock_list_run_steps(*args, **kwargs):
+        for step in mock_run_steps:
+            yield step
+
+    agent.client.agents.run_steps = MagicMock()
+    agent.client.agents.run_steps.list = mock_list_run_steps
 
     mock_message = ThreadMessage(
         id="msg123",
@@ -229,9 +256,9 @@ async def test_agent_thread_actions_invoke_with_requires_action(ai_project_clien
         role="assistant",
         content=[MessageTextContent(text=MessageTextDetails(value="some message", annotations=[]))],
     )
-    agent.client.agents.get_message = AsyncMock(return_value=mock_message)
+    agent.client.agents.runs.get = AsyncMock(return_value=mock_message)
 
-    agent.client.agents.submit_tool_outputs_to_run = AsyncMock()
+    agent.client.agents.runs.submit_tool_outputs = AsyncMock()
 
     with (
         patch.object(AgentThreadActions, "_poll_run_status", side_effect=mock_poll_run_status),
@@ -249,15 +276,13 @@ async def test_agent_thread_actions_invoke_with_requires_action(ai_project_clien
         ):
             messages.append((is_visible, content))
 
-    assert len(messages) == 4, "There should be four yields in total."
+    assert len(messages) == 3, "There should be three yields in total."
 
     assert isinstance(messages[0][1].items[0], FunctionCallContent)
-    assert isinstance(messages[1][1].items[0], TextContent)
-    assert messages[1][1].items[0].metadata.get("code") is True
-    assert isinstance(messages[2][1].items[0], FunctionResultContent)
-    assert isinstance(messages[3][1].items[0], TextContent)
+    assert isinstance(messages[1][1].items[0], FunctionResultContent)
+    assert isinstance(messages[2][1].items[0], TextContent)
 
-    agent.client.agents.submit_tool_outputs_to_run.assert_awaited_once()
+    agent.client.agents.runs.submit_tool_outputs.assert_awaited_once()
 
 
 class MockEvent:

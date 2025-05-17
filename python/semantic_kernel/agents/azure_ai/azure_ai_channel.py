@@ -116,6 +116,6 @@ class AzureAIChannel(AgentChannel):
     async def reset(self) -> None:
         """Reset the agent's thread."""
         try:
-            await self.client.agents.delete_thread(thread_id=self.thread_id)
+            await self.client.agents.threads.delete(thread_id=self.thread_id)
         except Exception as e:
             raise AgentChatException(f"Failed to delete thread: {e}")

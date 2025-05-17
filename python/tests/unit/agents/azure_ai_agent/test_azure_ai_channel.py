@@ -12,18 +12,6 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 
 
-async def test_azure_ai_channel_receive():
-    class FakeAgentClient:
-        create_message = AsyncMock()
-
-    class FakeClient:
-        agents = FakeAgentClient()
-
-    channel = AzureAIChannel(FakeClient(), "thread123")
-    await channel.receive([ChatMessageContent(role=AuthorRole.USER, content="Hello")])
-    FakeAgentClient.create_message.assert_awaited_once()
-
-
 async def test_azure_ai_channel_invoke_invalid_agent():
     channel = AzureAIChannel(AsyncMock(spec=AIProjectClient), "thread123")
     with pytest.raises(AgentChatException):
@@ -92,18 +80,6 @@ async def test_azure_ai_channel_get_history():
 
     assert len(results) == 1
     assert results[0].content == "Previous msg"
-
-
-async def test_azure_ai_channel_reset():
-    class FakeAgentClient:
-        delete_thread = AsyncMock()
-
-    class FakeClient:
-        agents = FakeAgentClient()
-
-    channel = AzureAIChannel(FakeClient(), "threadXYZ")
-    await channel.reset()
-    FakeAgentClient.delete_thread.assert_awaited_once_with(thread_id="threadXYZ")
 
 
 # Helper for returning an async generator

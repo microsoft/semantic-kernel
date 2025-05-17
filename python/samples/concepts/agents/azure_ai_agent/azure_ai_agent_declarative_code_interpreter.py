@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from azure.ai.projects.models import FilePurpose
+from azure.ai.agents.models import FilePurpose
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
@@ -28,7 +28,7 @@ instructions: >
 model:
   id: ${AzureAI:ChatModelId}
   connection:
-    connection_string: ${AzureAI:ConnectionString}
+    connection_string: ${AzureAI:Endpoint}
 tools:
   - type: code_interpreter
     options:
@@ -36,7 +36,7 @@ tools:
         - ${AzureAI:FileId1}
 """
 
-settings = AzureAIAgentSettings()  # ChatModelId & ConnectionString come from env vars
+settings = AzureAIAgentSettings()  # ChatModelId & Endpoint come from env vars
 
 
 async def main():
@@ -54,7 +54,7 @@ async def main():
 
         try:
             # Upload the CSV file to the agent service
-            file = await client.agents.upload_file_and_poll(file_path=csv_file_path, purpose=FilePurpose.AGENTS)
+            file = await client.agents.files.upload_and_poll(file_path=csv_file_path, purpose=FilePurpose.AGENTS)
 
             # Create the AzureAI Agent from the YAML spec
             # Note: the extras can be provided in the short-format (shown below) or
@@ -100,7 +100,7 @@ async def main():
         finally:
             # Cleanup: Delete the thread and agent
             await client.agents.delete_agent(agent.id)
-            await client.agents.delete_file(file.id)
+            await client.agents.files.delete(file.id)
 
         """
         Sample output:
