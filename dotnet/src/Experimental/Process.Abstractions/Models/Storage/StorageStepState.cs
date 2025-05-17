@@ -45,7 +45,7 @@ public record StorageStepState
 /// <summary>
 /// Extension methods for converting between StorageStepState and KernelProcessStepStateMetadata.
 /// </summary>
-public static class StorageProcessExtension
+public static class StorageProcessStepExtension
 {
     /// <summary>
     /// Converts a <see cref="StorageStepState"/> to a <see cref="KernelProcessStepStateMetadata"/>.

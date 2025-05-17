@@ -14,6 +14,8 @@ namespace ProcessWithCloudEvents.Grpc.Clients;
 /// </summary>
 public class DocumentGenerationGrpcClient : IExternalKernelProcessMessageChannel
 {
+    public static string Key => nameof(DocumentGenerationGrpcClient);
+
     private GrpcChannel? _grpcChannel;
     private GrpcDocumentationGeneration.GrpcDocumentationGenerationClient? _grpcClient;
 

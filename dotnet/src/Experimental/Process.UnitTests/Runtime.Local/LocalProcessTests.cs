@@ -71,8 +71,9 @@ public class LocalProcessTests
     public async Task ProcessWithAssignedIdIsNotOverwrittenIdAsync()
     {
         // Arrange
+        var processId = "AlreadySet";
         var mockKernel = new Kernel();
-        var processState = new KernelProcessState(name: "TestProcess", version: "v1", id: "AlreadySet");
+        var processState = new KernelProcessState(name: "TestProcess", version: "v1");
         var mockKernelProcess = new KernelProcess(processState,
         [
             new(typeof(TestStep), new KernelProcessState(name: "Step1", version: "v1", id: "1"), []),
@@ -80,7 +81,7 @@ public class LocalProcessTests
         ], []);
 
         // Act
-        await using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
+        await using var localProcess = new LocalProcess(mockKernelProcess, mockKernel, instanceId: processId);
 
         // Assert
         Assert.NotEmpty(localProcess.Id);
@@ -225,8 +226,8 @@ public class LocalProcessTests
         // Assert
         var processState = await runningProcess.GetStateAsync();
         Assert.NotNull(processState);
-        Assert.Equal(processKey, processState.State.Id);
         Assert.Equal(processKey, processState.State.Name);
+        Assert.Equal(processId, processState.State.Id);
     }
 
     /// <summary>
@@ -261,8 +262,8 @@ public class LocalProcessTests
         Assert.NotNull(counterState);
         Assert.Equal(1, ((KernelProcessStepState<CommonSteps.CounterState>)counterState.State).State?.Count);
 
-        Assert.Equal(processKey, processState.State.Id);
         Assert.Equal(processKey, processState.State.Name);
+        Assert.Equal(processId, processState.State.Id);
 
         // Act - 2
         counterService.SetCount(0);
@@ -279,8 +280,8 @@ public class LocalProcessTests
         Assert.NotNull(counterState2);
         Assert.Equal(2, ((KernelProcessStepState<CommonSteps.CounterState>)counterState2.State).State?.Count);
 
-        Assert.Equal(processKey, processState.State.Id);
-        Assert.Equal(processKey, processState.State.Name);
+        Assert.Equal(processKey, processState2.State.Name);
+        Assert.Equal(processId, processState2.State.Id);
     }
 
     /// <summary>
@@ -293,13 +294,14 @@ public class LocalProcessTests
     {
         // Arrange
         var processId = "myProcessId";
-        var mergeStepStorageEntry = "MergeStringsStep.MergeStringsStep.StepEdgesData";
+        var mergeStepStorageEntry = "MergeStringsStep.{0}.StepEdgesData";
         var processKey = CommonProcesses.ProcessKeys.DelayedMergeProcess;
 
         var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
         var processStorage = new MockStorage();
         // To use local storage, comment line above and uncomment line below + replacing <TEST_DIR> with existing directory path
         //var processStorage = new JsonFileStorage("<TEST_DIR>");
+        //var processStorage = new JsonFileStorage("C:\\Users\\estenori\\Desktop\\TEST2");
 
         CounterService counterService = new();
         Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
@@ -315,7 +317,11 @@ public class LocalProcessTests
         // Assert - 1
         var processState = await runningProcess.GetStateAsync();
         Assert.NotNull(processState);
-        processStorage._dbMock.TryGetValue(mergeStepStorageEntry, out var entry);
+        Assert.Equal(processId, processState.State.Id);
+        var mergeStepId = processState.Steps.Where(s => s.State.Name == "MergeStringsStep").FirstOrDefault()?.State.Id;
+        Assert.NotNull(mergeStepId);
+        var mergeStepFullEntry = string.Format(mergeStepStorageEntry, mergeStepId);
+        processStorage._dbMock.TryGetValue(mergeStepFullEntry, out var entry);
         Assert.NotNull(entry?.Content);
         Assert.IsType<string>(entry?.Content);
 
@@ -338,7 +344,8 @@ public class LocalProcessTests
         // Assert - 2
         var processState2 = await runningProcess2.GetStateAsync();
         Assert.NotNull(processState2);
-        processStorage._dbMock.TryGetValue(mergeStepStorageEntry, out var entry2);
+        Assert.Equal(processId, processState2.State.Id);
+        processStorage._dbMock.TryGetValue(mergeStepFullEntry, out var entry2);
         Assert.NotNull(entry2?.Content);
         Assert.IsType<string>(entry2?.Content);
 
@@ -360,7 +367,7 @@ public class LocalProcessTests
     {
         // Arrange
         var processId = "myProcessId";
-        var mergeStepStorageEntry = "MergeStringsStep.MergeStringsStep.StepEdgesData";
+        var mergeStepStorageEntry = "MergeStringsStep.{0}.StepEdgesData";
         var processKey = CommonProcesses.ProcessKeys.SimpleMergeProcess;
 
         var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
@@ -381,7 +388,11 @@ public class LocalProcessTests
         // Assert - 1
         var processState = await runningProcess.GetStateAsync();
         Assert.NotNull(processState);
-        processStorage._dbMock.TryGetValue(mergeStepStorageEntry, out var entry);
+        Assert.Equal(processId, processState.State.Id);
+        var mergeStepId = processState.Steps.Where(s => s.State.Name == "MergeStringsStep").FirstOrDefault()?.State.Id;
+        Assert.NotNull(mergeStepId);
+        var mergeStepFullEntry = string.Format(mergeStepStorageEntry, mergeStepId);
+        processStorage._dbMock.TryGetValue(mergeStepFullEntry, out var entry);
         Assert.NotNull(entry?.Content);
         Assert.IsType<string>(entry?.Content);
 
@@ -403,7 +414,7 @@ public class LocalProcessTests
         // Assert - 2
         var processState2 = await runningProcess2.GetStateAsync();
         Assert.NotNull(processState2);
-        processStorage._dbMock.TryGetValue(mergeStepStorageEntry, out var entry2);
+        processStorage._dbMock.TryGetValue(mergeStepFullEntry, out var entry2);
         Assert.NotNull(entry2?.Content);
         Assert.IsType<string>(entry2?.Content);
 

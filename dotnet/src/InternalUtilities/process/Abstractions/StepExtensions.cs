@@ -153,4 +153,39 @@ internal static class StepExtensions
 
         return inputs;
     }
+
+    private static IReadOnlyDictionary<string, IReadOnlyCollection<KernelProcessEdge>> ReplaceEdgeSourceNames(IReadOnlyDictionary<string, IReadOnlyCollection<KernelProcessEdge>> edges, string originalSourceName, string newSourceName)
+    {
+        if (edges.Count == 0)
+        {
+            return edges;
+        }
+
+        var updatedEdges = new Dictionary<string, IReadOnlyCollection<KernelProcessEdge>>();
+
+        foreach (var kvp in edges)
+        {
+            var newKey = kvp.Key.Replace(originalSourceName, newSourceName);
+            updatedEdges[newKey] = kvp.Value;
+        }
+
+        return updatedEdges;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="KernelProcessStepInfo"/> class with a new step ID and updated edges.
+    /// </summary>
+    /// <param name="step">instance of <see cref="KernelProcessStepInfo"/></param>
+    /// <param name="stepId">id to be assigned to the updated step info</param>
+    /// <param name="logger">instance of <see cref="ILogger"/></param>
+    /// <returns></returns>
+    public static KernelProcessStepInfo CloneWithIdAndEdges(this KernelProcessStepInfo step, string stepId, ILogger logger)
+    {
+        if (string.IsNullOrWhiteSpace(stepId))
+        {
+            throw new KernelException("Internal Error: The step needs a non-empty id").Log(logger);
+        }
+
+        return step with { State = step.State with { Id = stepId }, Edges = ReplaceEdgeSourceNames(step.Edges, step.State.Name, stepId) };
+    }
 }

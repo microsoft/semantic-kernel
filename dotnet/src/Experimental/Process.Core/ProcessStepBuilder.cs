@@ -344,13 +344,13 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
             }
 
             var initialState = this._initialState ?? Activator.CreateInstance(userStateType);
-            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, stepMetadataAttributes.Version, this.Id);
+            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, stepMetadataAttributes.Version, null);
             stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, initialState);
         }
         else
         {
             // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
-            stateObject = new KernelProcessStepState(this.Name, stepMetadataAttributes.Version, this.Id);
+            stateObject = new KernelProcessStepState(this.Name, stepMetadataAttributes.Version);
         }
 
         Verify.NotNull(stateObject);

@@ -11,7 +11,7 @@ public sealed record KernelProcessMap : KernelProcessStepInfo
     /// <summary>
     /// The map operation.
     /// </summary>
-    public KernelProcessStepInfo Operation { get; }
+    public KernelProcessStepInfo Operation { get; init; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="KernelProcess"/> class.

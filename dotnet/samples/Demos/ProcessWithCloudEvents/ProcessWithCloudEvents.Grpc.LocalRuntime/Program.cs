@@ -7,9 +7,10 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using OpenAI;
 using ProcessWithCloudEvents.Grpc.Clients;
 using ProcessWithCloudEvents.Grpc.Extensions;
-using ProcessWithCloudEvents.Grpc.Services;
+using ProcessWithCloudEvents.Grpc.LocalRuntime.Services;
 using ProcessWithCloudEvents.Processes;
 using ProcessWithCloudEvents.Shared.Options;
+using ProcessWithCloudEvents.Shared.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,28 +40,31 @@ builder.Services.AddTransient<AgentFactory, OpenAIAssistantAgentFactory>();
 // Grpc setup
 builder.Services.AddSingleton<DocumentGenerationService>();
 builder.Services.AddSingleton<TeacherStudentInteractionService>();
-// Injecting SK Process custom grpc client IExternalKernelProcessMessageChannel implementation
-// TODO: Add similar keyed singleton approach to support multiple grpc clients, for now uncomment/use only one grpc client at the time
-builder.Services.AddSingleton<IExternalKernelProcessMessageChannel, DocumentGenerationGrpcClient>();
-//builder.Services.AddSingleton<IExternalKernelProcessMessageChannel, TeacherStudentInteractionGrpcClient>();
 
-// Configure Dapr
-builder.Services.AddDaprKernelProcesses();
-builder.Services.AddActors(static options =>
+// Since we have multiple grpc clients, we need to register them as keyed singletons so then we can access them respetively in each service by key
+builder.Services.AddKeyedSingleton<IExternalKernelProcessMessageChannel>(DocumentGenerationGrpcClient.Key, (sp, key) =>
 {
-    // Register the actors required to run Processes
-    options.AddProcessActors();
+    return new DocumentGenerationGrpcClient();
+});
+builder.Services.AddKeyedSingleton<IExternalKernelProcessMessageChannel>(TeacherStudentInteractionGrpcClient.Key, (sp, key) =>
+{
+    return new TeacherStudentInteractionGrpcClient();
 });
 
-// Register the processes we want to run
-builder.Services.AddKeyedSingleton<KernelProcess>(DocumentGenerationProcess.Key, (sp, key) =>
+// Configuring Processes to be used in this App
+builder.Services.AddSingleton<IReadOnlyDictionary<string, KernelProcess>>(sp =>
 {
-    return DocumentGenerationProcess.CreateProcessBuilder().Build();
+    var processes = new Dictionary<string, KernelProcess>
+    {
+        { DocumentGenerationProcess.Key, DocumentGenerationProcess.CreateProcessBuilder().Build() },
+        { TeacherStudentProcess.Key, TeacherStudentProcess.CreateProcessBuilder().Build() }
+    };
+    return processes;
 });
-builder.Services.AddKeyedSingleton<KernelProcess>(TeacherStudentProcess.Key, (sp, key) =>
-{
-    return TeacherStudentProcess.CreateProcessBuilder().Build();
-});
+
+// Registering storage used for persisting process state with Local Runtime
+var storageInstance = new JsonFileStorage("C:\\Users\\estenori\\Desktop\\TEST2");
+builder.Services.AddSingleton<IProcessStorageConnector>(storageInstance);
 
 // Enabling CORS for grpc-web when using webApp as client, remove if not needed
 builder.Services.AddCors(o => o.AddPolicy("AllowAll", builder =>
@@ -86,6 +90,4 @@ app.MapGrpcReflectionService().RequireCors("AllowAll");
 app.MapGrpcService<DocumentGenerationService>().EnableGrpcWeb().RequireCors("AllowAll");
 app.MapGrpcService<TeacherStudentInteractionService>().EnableGrpcWeb().RequireCors("AllowAll");
 
-// Dapr actors related mapping
-app.MapActorsHandlers();
 app.Run();

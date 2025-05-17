@@ -11,21 +11,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\documentationGenerator.proto" GrpcServices="Both" />
-    <Protobuf Include="Protos\teacherStudentInteraction.proto" GrpcServices="Both" />
+    <Protobuf Include="..\ProcessWithCloudEvents.Utilities\Grpc\Proto\documentationGenerator.proto" GrpcServices="Both" />
+    <Protobuf Include="..\ProcessWithCloudEvents.Utilities\Grpc\Proto\teacherStudentInteraction.proto" GrpcServices="Both" />
   </ItemGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Utilities/GrpcComponents.props" />
+  <Import Project="$(RepoRoot)/dotnet/samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Utilities/ExtensionsUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Utilities/StorageComponents.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\..\src\Experimental\Process.Abstractions\Process.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\..\src\Experimental\Process.Core\Process.Core.csproj" />
-    <ProjectReference Include="..\..\..\..\src\Experimental\Process.Runtime.Dapr\Process.Runtime.Dapr.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj" />
     <ProjectReference Include="..\ProcessWithCloudEvents.Processes\ProcessWithCloudEvents.Processes.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapr.Actors" />
-    <PackageReference Include="Dapr.Actors.AspNetCore" />
     <PackageReference Include="Google.Protobuf" />
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" />
@@ -35,10 +37,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Media\" />
   </ItemGroup>
 
 </Project>
