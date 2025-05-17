@@ -211,6 +211,10 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     }
 
     #region Private Methods
+    private string GetChildStepId()
+    {
+        return $"{this.Id}_{Guid.NewGuid()}";
+    }
 
     /// <summary>
     /// Loads the process and initializes the steps. Once this is complete the process can be started.
@@ -285,7 +289,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             // Assign id to kernelStepInfo if any before creation of Local components
             if (!processInfoInstanceMap.TryGetValue(step.State.Name, out string? stepId) && stepId == null)
             {
-                stepId = Guid.NewGuid().ToString();
+                stepId = this.GetChildStepId();
             }
 
             KernelProcessStepInfo stepInfo = step.CloneWithIdAndEdges(stepId, this._logger);

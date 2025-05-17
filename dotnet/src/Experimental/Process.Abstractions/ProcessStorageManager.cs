@@ -71,7 +71,7 @@ public class ProcessStorageManager
 
     private string GetEntryId(string componentName, string componentId)
     {
-        return $"{componentName}.{componentId}";
+        return $"{componentId}.{componentName}";
     }
 
     private string GetParentId(string componentName, string componentId)
