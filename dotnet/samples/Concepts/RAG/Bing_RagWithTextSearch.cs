@@ -29,7 +29,7 @@ public sealed class Bing_RagWithTextSearch(ITestOutputHelper output) : BaseTest(
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search and add to the kernel
-        var searchPlugin = textSearch.CreateWithSearch("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithSearch(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -56,7 +56,7 @@ public sealed class Bing_RagWithTextSearch(ITestOutputHelper output) : BaseTest(
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search and add to the kernel
-        var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithGetTextSearchResults(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -103,7 +103,7 @@ public sealed class Bing_RagWithTextSearch(ITestOutputHelper output) : BaseTest(
         var textSearch = new BingTextSearch(new(TestConfiguration.Bing.ApiKey));
 
         // Build a text search plugin with Bing search and add to the kernel
-        var searchPlugin = textSearch.CreateWithGetSearchResults("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithGetSearchResults(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -155,7 +155,7 @@ public sealed class Bing_RagWithTextSearch(ITestOutputHelper output) : BaseTest(
         var searchOptions = new TextSearchOptions() { Filter = filter };
         var searchPlugin = KernelPluginFactory.CreateFromFunctions(
             "SearchPlugin", "Search Microsoft Developer Blogs site only",
-            [textSearch.CreateGetTextSearchResults(searchOptions: searchOptions)]);
+            [textSearch.CreateGetTextSearchResults(5, searchOptions: searchOptions)]);
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
