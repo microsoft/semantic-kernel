@@ -34,7 +34,7 @@ You must create the agents in an Azure AI Foundry project and then provide the c
 ```bash
 dotnet user-secrets set "A2AServer:ConnectionString" "..."
 dotnet user-secrets set "A2AServer:InvoiceAgentId" "..."
-dotnet user-secrets set "A2AServer:PolicyAgentId" "..."
+dotnet user-secrets set "A2AServer:PolicyA:qgentId" "..."
 dotnet user-secrets set "A2AServer:LogisticsAgentId" "..."
 ```
 
