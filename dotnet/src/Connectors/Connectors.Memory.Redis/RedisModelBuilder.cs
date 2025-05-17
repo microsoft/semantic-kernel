@@ -12,26 +12,12 @@ internal class RedisModelBuilder(CollectionModelBuildingOptions options) : Colle
     internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<double>, Embedding<double>, double[]";
 
     /// <inheritdoc />
-    protected override void SetupEmbeddingGeneration(
+    protected override Type? ResolveEmbeddingType(
         VectorPropertyModel vectorProperty,
         IEmbeddingGenerator embeddingGenerator,
-        Type? embeddingType)
-    {
-        if (!vectorProperty.TrySetupEmbeddingGeneration<Embedding<float>, ReadOnlyMemory<float>>(embeddingGenerator, embeddingType)
-            && !vectorProperty.TrySetupEmbeddingGeneration<Embedding<double>, ReadOnlyMemory<double>>(embeddingGenerator, embeddingType)
-            )
-        {
-            throw new InvalidOperationException(
-                VectorDataStrings.IncompatibleEmbeddingGenerator(
-                    embeddingGeneratorType: embeddingGenerator.GetType(),
-                    supportedInputTypes: vectorProperty.GetSupportedInputTypes(),
-                    supportedOutputTypes:
-                    [
-                        typeof(ReadOnlyMemory<float>),
-                        typeof(ReadOnlyMemory<double>)
-                    ]));
-        }
-    }
+        Type? userRequestedEmbeddingType)
+        => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
+            ?? vectorProperty.ResolveEmbeddingType<Embedding<double>>(embeddingGenerator, userRequestedEmbeddingType);
 
     protected override bool IsKeyPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

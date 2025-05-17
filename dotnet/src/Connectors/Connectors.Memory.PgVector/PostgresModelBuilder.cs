@@ -84,28 +84,13 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(PostgresModelBuil
     }
 
     /// <inheritdoc />
-    protected override void SetupEmbeddingGeneration(
+    protected override Type? ResolveEmbeddingType(
         VectorPropertyModel vectorProperty,
         IEmbeddingGenerator embeddingGenerator,
-        Type? embeddingType)
-    {
-        if (!vectorProperty.TrySetupEmbeddingGeneration<Embedding<float>, ReadOnlyMemory<float>>(embeddingGenerator, embeddingType)
+        Type? userRequestedEmbeddingType)
+        => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
 #if NET8_0_OR_GREATER
-            && !vectorProperty.TrySetupEmbeddingGeneration<Embedding<Half>, ReadOnlyMemory<Half>>(embeddingGenerator, embeddingType)
+        ?? vectorProperty.ResolveEmbeddingType<Embedding<Half>>(embeddingGenerator, userRequestedEmbeddingType)
 #endif
-            )
-        {
-            throw new InvalidOperationException(
-                VectorDataStrings.IncompatibleEmbeddingGenerator(
-                    embeddingGeneratorType: embeddingGenerator.GetType(),
-                    supportedInputTypes: vectorProperty.GetSupportedInputTypes(),
-                    supportedOutputTypes:
-                    [
-                        typeof(ReadOnlyMemory<float>),
-#if NET8_0_OR_GREATER
-                        typeof(ReadOnlyMemory<Half>)
-#endif
-                    ]));
-        }
-    }
+        ;
 }

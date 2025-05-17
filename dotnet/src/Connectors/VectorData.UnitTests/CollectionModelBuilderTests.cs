@@ -327,21 +327,12 @@ public class CollectionModelBuilderTests
             return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<Half>);
         }
 
-        protected override void SetupEmbeddingGeneration(
+        protected override Type? ResolveEmbeddingType(
             VectorPropertyModel vectorProperty,
             IEmbeddingGenerator embeddingGenerator,
-            Type? embeddingType)
-        {
-            if (!vectorProperty.TrySetupEmbeddingGeneration<Embedding<float>, ReadOnlyMemory<float>>(embeddingGenerator, embeddingType)
-                && !vectorProperty.TrySetupEmbeddingGeneration<Embedding<Half>, ReadOnlyMemory<Half>>(embeddingGenerator, embeddingType))
-            {
-                throw new InvalidOperationException(
-                    VectorDataStrings.IncompatibleEmbeddingGenerator(
-                        embeddingGenerator.GetType(),
-                        vectorProperty.GetSupportedInputTypes(),
-                        [typeof(ReadOnlyMemory<float>), typeof(ReadOnlyMemory<Half>)]));
-            }
-        }
+            Type? userRequestedEmbeddingType)
+            => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
+                ?? vectorProperty.ResolveEmbeddingType<Embedding<Half>>(embeddingGenerator, userRequestedEmbeddingType);
     }
 
     private sealed class FakeEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenerator<TInput, TEmbedding>
