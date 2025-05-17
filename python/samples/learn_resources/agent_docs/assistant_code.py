@@ -65,7 +65,12 @@ async def download_response_image(agent: AzureAssistantAgent, file_ids: list[str
 
 async def main():
     # Create the client using Azure OpenAI resources and configuration
-    client, model = AzureAssistantAgent.setup_resources()
+    client, model = AzureAssistantAgent.setup_resources(
+        endpoint="", # Azure OpenAI EndPoint URL
+        api_key="", # Azure OpenAI KEY
+        deployment_name="", # Azure OpenAI Model Name
+        api_version="" # Azure OpenAI API Version IE: "2024-08-01-preview"
+    )
 
     # Upload the files to the client
     file_ids: list[str] = []
