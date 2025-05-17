@@ -1,0 +1,76 @@
+﻿@host = http://localhost:5000
+
+### Query agent card for the invoice agent
+GET {{host}}/invoice/.well-known/agent.json
+
+### Send a task to the invoice agent
+POST {{host}}/invoice
+Content-Type: application/json
+
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "method": "task/send",
+    "params": {
+        "id": "12345",
+        "message": {
+            "role": "user",
+            "parts": [
+                {
+                    "type": "text",
+                    "text": "Show me all invoices for Contoso?"
+                }
+            ]
+        }
+    }
+}
+
+### Query agent card for the policy agent
+GET {{host}}/policy/.well-known/agent.json
+
+### Send a task to the policy agent
+POST {{host}}/policy
+Content-Type: application/json
+
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "method": "task/send",
+    "params": {
+        "id": "12345",
+        "message": {
+            "role": "user",
+            "parts": [
+                {
+                    "type": "text",
+                    "text": "What is the policy for short shipments?"
+                }
+            ]
+        }
+    }
+}
+
+### Query agent card for the logistics agent
+GET {{host}}/logistics/.well-known/agent.json
+
+### Send a task to the logistics agent
+POST {{host}}/logistics
+Content-Type: application/json
+
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "method": "task/send",
+    "params": {
+        "id": "12345",
+        "message": {
+            "role": "user",
+            "parts": [
+                {
+                    "type": "text",
+                    "text": "What is the status for SHPMT-SAP-001"
+                }
+            ]
+        }
+    }
+}
