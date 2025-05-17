@@ -15,32 +15,20 @@ public static class Program
     public static async Task<int> Main(string[] args)
     {
         // Create root command with options
-        var rootCommand = new RootCommand("A2AClient")
-        {
-            s_agentOption,
-        };
-
-        // Replace the problematic line with the following:
-        rootCommand.SetHandler(RunCliAsync);
+        var rootCommand = new RootCommand("A2AClient");
+        rootCommand.SetHandler(HandleCommandsAsync);
 
         // Run the command
         return await rootCommand.InvokeAsync(args);
     }
 
-    public static async System.Threading.Tasks.Task RunCliAsync(InvocationContext context)
+    public static async System.Threading.Tasks.Task HandleCommandsAsync(InvocationContext context)
     {
-        string agent = context.ParseResult.GetValueForOption<string>(s_agentOption)!;
-
-        await RunCliAsync(agent);
+        await RunCliAsync();
     }
 
     #region private
-    private static readonly Option<string> s_agentOption = new(
-                "--agent",
-                getDefaultValue: () => "http://localhost:10000",
-                description: "Agent URL");
-
-    private static async System.Threading.Tasks.Task RunCliAsync(string agentUrl)
+    private static async System.Threading.Tasks.Task RunCliAsync()
     {
         // Set up the logging
         using var loggerFactory = LoggerFactory.Create(builder =>
@@ -55,14 +43,14 @@ public static class Program
             .AddEnvironmentVariables()
             .AddUserSecrets(Assembly.GetExecutingAssembly())
             .Build();
-        string apiKey = configRoot["OPENAI_API_KEY"] ?? throw new ArgumentException("OPENAI_API_KEY must be provided");
-        string modelId = configRoot["OPENAI_CHAT_MODEL_ID"] ?? "gpt-4.1";
-        string baseAddress = configRoot["AGENT_URL"] ?? "http://localhost:5000";
+        var apiKey = configRoot["A2AClient:ApiKey"] ?? throw new ArgumentException("A2AClient:ApiKey must be provided");
+        var modelId = configRoot["A2AClient:ModelId"] ?? "gpt-4.1";
+        var agentUrls = configRoot["A2AClient:AgentUrls"] ?? "http://localhost:5000/policy/ http://localhost:5000/invoice/ http://localhost:5000/logistics/";
 
         // Create the Host agent
         var hostAgent = new HostClientAgent(logger);
-        await hostAgent.InitializeAgentAsync(modelId, apiKey, baseAddress);
-
+        await hostAgent.InitializeAgentAsync(modelId, apiKey, agentUrls!.Split(" "));
+        AgentThread thread = new ChatHistoryAgentThread();
         try
         {
             while (true)
@@ -81,12 +69,14 @@ public static class Program
                     break;
                 }
 
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                await foreach (AgentResponseItem<ChatMessageContent> response in hostAgent.Agent!.InvokeAsync(message))
+                await foreach (AgentResponseItem<ChatMessageContent> response in hostAgent.Agent!.InvokeAsync(message, thread))
                 {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine($"Agent: {response.Message.Content}");
+                    Console.ResetColor();
+
+                    thread = response.Thread;
                 }
-                Console.ResetColor();
             }
         }
         catch (Exception ex)

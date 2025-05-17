@@ -553,6 +553,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.A2A", "src\Agents\A2A\Agents.A2A.csproj", "{38F1D24F-C7B4-58CC-D104-311D786A73CF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "A2AClientServer", "A2AClientServer", "{5B1ECD1B-3C38-4458-A227-89846AF13760}"
+	ProjectSection(SolutionItems) = preProject
+		samples\Demos\A2AClientServer\README.md = samples\Demos\A2AClientServer\README.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "A2AClient", "samples\Demos\A2AClientServer\A2AClient\A2AClient.csproj", "{F293D014-97E2-18CB-FA0F-0A0FBE149286}"
 EndProject
