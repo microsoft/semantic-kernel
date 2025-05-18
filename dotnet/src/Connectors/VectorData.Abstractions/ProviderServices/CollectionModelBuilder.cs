@@ -71,7 +71,7 @@ public abstract class CollectionModelBuilder
     /// </summary>
     [RequiresDynamicCode("This model building variant is not compatible with NativeAOT. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     [RequiresUnreferencedCode("This model building variant is not compatible with trimming. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
-    public virtual CollectionModel Build(Type type, VectorStoreRecordDefinition? definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
+    public virtual CollectionModel Build(Type type, VectorStoreCollectionDefinition? definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
     {
         if (type == typeof(Dictionary<string, object?>))
         {
@@ -117,7 +117,7 @@ public abstract class CollectionModelBuilder
     /// <summary>
     /// Builds and returns an <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="definition"/>.
     /// </summary>
-    public virtual CollectionModel BuildDynamic(VectorStoreRecordDefinition definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
+    public virtual CollectionModel BuildDynamic(VectorStoreCollectionDefinition definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
     {
         if (definition is null)
         {
@@ -140,7 +140,7 @@ public abstract class CollectionModelBuilder
     // TODO: We could put [DynamicallyAccessedMembers] to preserve all properties, but that approach wouldn't
     // TODO: work with hierarchical data models (#10957).
     [RequiresUnreferencedCode("Traverses the CLR type's properties with reflection, so not compatible with trimming")]
-    protected virtual void ProcessTypeProperties(Type type, VectorStoreRecordDefinition? definition)
+    protected virtual void ProcessTypeProperties(Type type, VectorStoreCollectionDefinition? definition)
     {
         // We want to allow the user-provided record definition to override anything configured via attributes
         // (allowing the same CLR type + attributes to be used with different record definitions).
@@ -247,7 +247,7 @@ public abstract class CollectionModelBuilder
     /// <summary>
     /// As part of building the model, this method processes the given <paramref name="definition"/>.
     /// </summary>
-    protected virtual void ProcessRecordDefinition(VectorStoreRecordDefinition definition, Type? type)
+    protected virtual void ProcessRecordDefinition(VectorStoreCollectionDefinition definition, Type? type)
     {
         foreach (VectorStoreProperty definitionProperty in definition.Properties)
         {
@@ -290,7 +290,7 @@ public abstract class CollectionModelBuilder
                     if (property is not KeyPropertyModel keyPropertyModel)
                     {
                         throw new InvalidOperationException(
-                            $"Property '{property.ModelName}' is present in the {nameof(VectorStoreRecordDefinition)} as a key property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
+                            $"Property '{property.ModelName}' is present in the {nameof(VectorStoreCollectionDefinition)} as a key property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
                     }
 
                     break;
@@ -299,7 +299,7 @@ public abstract class CollectionModelBuilder
                     if (property is not DataPropertyModel dataProperty)
                     {
                         throw new InvalidOperationException(
-                            $"Property '{property.ModelName}' is present in the {nameof(VectorStoreRecordDefinition)} as a data property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
+                            $"Property '{property.ModelName}' is present in the {nameof(VectorStoreCollectionDefinition)} as a data property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
                     }
 
                     dataProperty.IsIndexed = definitionDataProperty.IsIndexed;
@@ -311,7 +311,7 @@ public abstract class CollectionModelBuilder
                     if (property is not VectorPropertyModel vectorProperty)
                     {
                         throw new InvalidOperationException(
-                            $"Property '{property.ModelName}' is present in the {nameof(VectorStoreRecordDefinition)} as a vector property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
+                            $"Property '{property.ModelName}' is present in the {nameof(VectorStoreCollectionDefinition)} as a vector property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
                     }
 
                     vectorProperty.Dimensions = definitionVectorProperty.Dimensions;
@@ -411,26 +411,26 @@ public abstract class CollectionModelBuilder
     /// <summary>
     /// Validates the model after all properties have been processed.
     /// </summary>
-    protected virtual void Validate(Type? type, VectorStoreRecordDefinition? definition)
+    protected virtual void Validate(Type? type, VectorStoreCollectionDefinition? definition)
     {
         if (!this.Options.SupportsMultipleKeys && this.KeyProperties.Count > 1)
         {
-            throw new NotSupportedException($"Multiple key properties found on {TypeMessage()}the provided {nameof(VectorStoreRecordDefinition)} while only one is supported.");
+            throw new NotSupportedException($"Multiple key properties found on {TypeMessage()}the provided {nameof(VectorStoreCollectionDefinition)} while only one is supported.");
         }
 
         if (this.KeyProperties.Count == 0)
         {
-            throw new NotSupportedException($"No key property found on {TypeMessage()}the provided {nameof(VectorStoreRecordDefinition)} while at least one is required.");
+            throw new NotSupportedException($"No key property found on {TypeMessage()}the provided {nameof(VectorStoreCollectionDefinition)} while at least one is required.");
         }
 
         if (this.Options.RequiresAtLeastOneVector && this.VectorProperties.Count == 0)
         {
-            throw new NotSupportedException($"No vector property found on {TypeMessage()}the provided {nameof(VectorStoreRecordDefinition)} while at least one is required.");
+            throw new NotSupportedException($"No vector property found on {TypeMessage()}the provided {nameof(VectorStoreCollectionDefinition)} while at least one is required.");
         }
 
         if (!this.Options.SupportsMultipleVectors && this.VectorProperties.Count > 1)
         {
-            throw new NotSupportedException($"Multiple vector properties found on {TypeMessage()}the provided {nameof(VectorStoreRecordDefinition)} while only one is supported.");
+            throw new NotSupportedException($"Multiple vector properties found on {TypeMessage()}the provided {nameof(VectorStoreCollectionDefinition)} while only one is supported.");
         }
 
         var storageNameMap = new Dictionary<string, PropertyModel>();
@@ -453,7 +453,7 @@ public abstract class CollectionModelBuilder
     /// <summary>
     /// Validates a single property, performing validation on it.
     /// </summary>
-    protected virtual void ValidateProperty(PropertyModel propertyModel, VectorStoreRecordDefinition? definition)
+    protected virtual void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
     {
         var type = propertyModel.Type;
 

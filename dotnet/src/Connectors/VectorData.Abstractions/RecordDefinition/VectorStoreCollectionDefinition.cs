@@ -7,12 +7,12 @@ using Microsoft.Extensions.AI;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Describes the properties of a record stored in a vector store.
+/// Describes the properties of a record in a vector store collection.
 /// </summary>
 /// <remarks>
 /// Each property contains additional information about how the property will be treated by the vector store.
 /// </remarks>
-public sealed class VectorStoreRecordDefinition
+public sealed class VectorStoreCollectionDefinition
 {
     private IList<VectorStoreProperty>? _properties;
 

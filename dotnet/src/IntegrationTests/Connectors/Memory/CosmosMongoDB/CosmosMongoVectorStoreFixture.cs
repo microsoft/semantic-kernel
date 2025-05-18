@@ -21,7 +21,7 @@ public class CosmosMongoVectorStoreFixture : IAsyncLifetime
     public IMongoDatabase MongoDatabase { get; }
 
     /// <summary>Gets the manually created vector store record definition for Azure CosmosDB MongoDB test model.</summary>
-    public VectorStoreRecordDefinition HotelVectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition HotelVectorStoreRecordDefinition { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CosmosMongoVectorStoreFixture"/> class.

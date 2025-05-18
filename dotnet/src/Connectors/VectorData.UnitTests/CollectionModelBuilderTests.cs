@@ -34,7 +34,7 @@ public class CollectionModelBuilderTests
     {
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<Half>>();
 
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -61,7 +61,7 @@ public class CollectionModelBuilderTests
     {
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<float>>();
 
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -84,7 +84,7 @@ public class CollectionModelBuilderTests
     {
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<Half>>();
 
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -110,7 +110,7 @@ public class CollectionModelBuilderTests
         using var propertyEmbeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<float>>();
         using var defaultEmbeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<float>>();
 
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -137,7 +137,7 @@ public class CollectionModelBuilderTests
 
         var model = dynamic
             ? new CustomModelBuilder().BuildDynamic(
-                new VectorStoreRecordDefinition
+                new VectorStoreCollectionDefinition
                 {
                     Properties =
                     [
@@ -161,7 +161,7 @@ public class CollectionModelBuilderTests
 
         var model = new CustomModelBuilder().Build(
             typeof(RecordWithEmbeddingVectorProperty),
-            new VectorStoreRecordDefinition
+            new VectorStoreCollectionDefinition
             {
                 Properties =
                 [
@@ -188,7 +188,7 @@ public class CollectionModelBuilderTests
         using var embeddingGenerator = new FakeEmbeddingGenerator<Customer, Embedding<float>>();
 
         // TODO: Allow custom input type without a record definition (i.e. generic attribute)
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -247,7 +247,7 @@ public class CollectionModelBuilderTests
     {
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<Half>>();
 
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -271,7 +271,7 @@ public class CollectionModelBuilderTests
     {
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<float>>();
 
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [

@@ -209,7 +209,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     public async Task UpsertWithModelWorksCorrectlyAsync()
     {
         // Arrange
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -257,7 +257,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     public async Task UpsertWithBsonModelWorksCorrectlyAsync()
     {
         // Arrange
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {

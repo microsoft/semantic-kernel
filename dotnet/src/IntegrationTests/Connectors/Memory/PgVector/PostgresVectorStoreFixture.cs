@@ -54,7 +54,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
 
     public VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
         string collectionName,
-        VectorStoreRecordDefinition? recordDefinition = default)
+        VectorStoreCollectionDefinition? recordDefinition = default)
         where TKey : notnull
         where TRecord : class
     {

@@ -15,7 +15,7 @@ public abstract class DynamicDataModelFixture<TKey> : VectorStoreCollectionFixtu
     protected override VectorStoreCollection<object, Dictionary<string, object?>> GetCollection()
         => this.TestStore.DefaultVectorStore.GetDynamicCollection(this.CollectionName, this.CreateRecordDefinition());
 
-    public override VectorStoreRecordDefinition CreateRecordDefinition()
+    public override VectorStoreCollectionDefinition CreateRecordDefinition()
         => new()
         {
             Properties =

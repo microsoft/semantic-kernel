@@ -17,7 +17,7 @@ public static class RedisFactory
     /// <summary>
     /// Record definition that matches the storage format used by Langchain for Redis.
     /// </summary>
-    private static readonly VectorStoreRecordDefinition s_recordDefinition = new()
+    private static readonly VectorStoreCollectionDefinition s_definition = new()
     {
         Properties = new List<VectorStoreProperty>
         {
@@ -43,7 +43,7 @@ public static class RedisFactory
     {
         private readonly IDatabase _database = database;
 
-        public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
         {
             if (typeof(TKey) != typeof(string) || typeof(TRecord) != typeof(LangchainDocument<string>))
             {
@@ -59,11 +59,11 @@ public static class RedisFactory
                 name,
                 new()
                 {
-                    Definition = s_recordDefinition
+                    Definition = s_definition
                 }) as VectorStoreCollection<TKey, TRecord>)!;
         }
 
-        public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition? definition = null)
         {
             // Create a hash set collection, since Langchain uses redis hashes for storing records.
             // Also pass in our custom record definition that matches the schema used by Langchain
@@ -74,7 +74,7 @@ public static class RedisFactory
                 name,
                 new()
                 {
-                    Definition = s_recordDefinition
+                    Definition = s_definition
                 });
         }
 

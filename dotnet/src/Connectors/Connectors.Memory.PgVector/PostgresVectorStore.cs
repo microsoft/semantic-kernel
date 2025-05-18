@@ -23,7 +23,7 @@ public sealed class PostgresVectorStore : VectorStore
     private readonly VectorStoreMetadata _metadata;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreCollectionDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>The database schema.</summary>
     private readonly string _schema;
@@ -85,9 +85,9 @@ public sealed class PostgresVectorStore : VectorStore
     [RequiresDynamicCode("This overload of GetCollection() is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
     [RequiresUnreferencedCode("This overload of GetCollecttion() is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
 #if NET8_0_OR_GREATER
-    public override PostgresCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override PostgresCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #endif
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
@@ -97,16 +97,16 @@ public sealed class PostgresVectorStore : VectorStore
                 new()
                 {
                     Schema = this._schema,
-                    Definition = vectorStoreRecordDefinition,
+                    Definition = definition,
                     EmbeddingGenerator = this._embeddingGenerator,
                 }
             );
 
     /// <inheritdoc />
 #if NET8_0_OR_GREATER
-    public override PostgresDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override PostgresDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new PostgresDynamicCollection(
             () => this._client.Share(),
@@ -114,7 +114,7 @@ public sealed class PostgresVectorStore : VectorStore
             new()
             {
                 Schema = this._schema,
-                Definition = vectorStoreRecordDefinition,
+                Definition = definition,
                 EmbeddingGenerator = this._embeddingGenerator,
             }
         );

@@ -533,7 +533,7 @@ public class RedisJsonCollectionTests
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    private readonly VectorStoreRecordDefinition _multiPropsDefinition = new()
+    private readonly VectorStoreCollectionDefinition _multiPropsDefinition = new()
     {
         Properties =
         [

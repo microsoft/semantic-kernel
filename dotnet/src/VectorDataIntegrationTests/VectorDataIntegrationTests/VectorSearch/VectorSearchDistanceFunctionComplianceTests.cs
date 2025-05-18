@@ -157,7 +157,7 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
         }
     }
 
-    private VectorStoreRecordDefinition GetRecordDefinition(string distanceFunction)
+    private VectorStoreCollectionDefinition GetRecordDefinition(string distanceFunction)
         => new()
         {
             Properties =

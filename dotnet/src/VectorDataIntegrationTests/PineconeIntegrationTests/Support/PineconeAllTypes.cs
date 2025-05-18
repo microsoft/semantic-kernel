@@ -73,7 +73,7 @@ public record PineconeAllTypes()
         Assert.Equal(this.Embedding!.Value.ToArray(), other.Embedding!.Value.ToArray());
     }
 
-    internal static VectorStoreRecordDefinition GetRecordDefinition()
+    internal static VectorStoreCollectionDefinition GetRecordDefinition()
         => new()
         {
             Properties =

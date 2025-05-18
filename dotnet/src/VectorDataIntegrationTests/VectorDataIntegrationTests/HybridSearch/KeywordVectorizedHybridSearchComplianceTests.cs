@@ -170,7 +170,7 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     {
         public override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
 
-        public override VectorStoreRecordDefinition CreateRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
                 Properties = new List<VectorStoreProperty>()
@@ -223,7 +223,7 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     {
         public override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
 
-        public override VectorStoreRecordDefinition CreateRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
                 Properties = new List<VectorStoreProperty>()

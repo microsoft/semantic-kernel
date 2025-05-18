@@ -19,11 +19,11 @@ public class CommonPostgresVectorStoreRecordCollectionTests(PostgresVectorStoreF
     protected override string Key3 => "3";
     protected override string Key4 => "4";
 
-    protected override VectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected override VectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreCollectionDefinition? definition)
     {
         return new PostgresCollection<string, TRecord>(fixture.DataSource!, recordCollectionName, ownsDataSource: false, new()
         {
-            Definition = vectorStoreRecordDefinition
+            Definition = definition
         });
     }
 

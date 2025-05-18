@@ -58,7 +58,7 @@ public class SqliteBasicFilterTests(SqliteBasicFilterTests.Fixture fixture)
         public override TestStore TestStore => SqliteTestStore.Instance;
 
         // Override to remove the string array property, which isn't (currently) supported on SQLite
-        public override VectorStoreRecordDefinition CreateRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
                 Properties = base.CreateRecordDefinition().Properties.Where(p => p.Type != typeof(string[]) && p.Type != typeof(List<string>)).ToList()

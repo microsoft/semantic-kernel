@@ -449,7 +449,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         };
     }
 
-    private VectorStoreRecordDefinition GetTestHotelRecordDefinition()
+    private VectorStoreCollectionDefinition GetTestHotelRecordDefinition()
     {
         return new()
         {

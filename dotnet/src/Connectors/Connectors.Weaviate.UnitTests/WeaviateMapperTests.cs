@@ -111,7 +111,7 @@ public sealed class WeaviateMapperTests
             new WeaviateModelBuilder(hasNamedVectors)
                 .Build(
                     typeof(WeaviateHotel),
-                    new VectorStoreRecordDefinition
+                    new VectorStoreCollectionDefinition
                     {
                         Properties =
                         [

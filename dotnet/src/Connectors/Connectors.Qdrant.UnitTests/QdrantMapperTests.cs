@@ -372,7 +372,7 @@ public class QdrantMapperTests
         pointStruct.Vectors = new VectorsOutput() { Vectors = namedVectors };
     }
 
-    private static VectorStoreRecordDefinition CreateSinglePropsVectorStoreRecordDefinition(Type keyType) => new()
+    private static VectorStoreCollectionDefinition CreateSinglePropsVectorStoreRecordDefinition(Type keyType) => new()
     {
         Properties = new List<VectorStoreProperty>
         {
@@ -396,7 +396,7 @@ public class QdrantMapperTests
         public string NotAnnotated { get; set; } = string.Empty;
     }
 
-    private static VectorStoreRecordDefinition CreateMultiPropsVectorStoreRecordDefinition(Type keyType) => new()
+    private static VectorStoreCollectionDefinition CreateMultiPropsVectorStoreRecordDefinition(Type keyType) => new()
     {
         Properties = new List<VectorStoreProperty>
         {

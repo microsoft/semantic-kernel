@@ -65,7 +65,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         Assert.NotNull(config);
         this.Config = config;
         this.SearchIndexClient = new SearchIndexClient(new Uri(config.ServiceUrl), new AzureKeyCredential(config.ApiKey));
-        this.VectorStoreRecordDefinition = new VectorStoreRecordDefinition
+        this.VectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -102,7 +102,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// Gets the manually created vector store record definition for our test model.
     /// </summary>
-    public VectorStoreRecordDefinition VectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition VectorStoreRecordDefinition { get; private set; }
 
     /// <summary>
     /// Gets the configuration for the Azure AI Search service.

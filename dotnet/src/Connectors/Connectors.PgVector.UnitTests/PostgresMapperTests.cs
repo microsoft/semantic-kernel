@@ -153,9 +153,9 @@ public sealed class PostgresMapperTests
 
     #region private
 
-    private static VectorStoreRecordDefinition GetRecordDefinition<TKey>()
+    private static VectorStoreCollectionDefinition GetRecordDefinition<TKey>()
     {
-        return new VectorStoreRecordDefinition
+        return new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -180,7 +180,7 @@ public sealed class PostgresMapperTests
         };
     }
 
-    private static CollectionModel GetModel<TRecord>(VectorStoreRecordDefinition definition)
+    private static CollectionModel GetModel<TRecord>(VectorStoreCollectionDefinition definition)
         => new PostgresModelBuilder().Build(typeof(TRecord), definition, defaultEmbeddingGenerator: null);
 
 #pragma warning disable CA1812
