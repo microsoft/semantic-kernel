@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "SK-dotnet.sln",
+    "path": "SK-dotnet.slnx",
     "projects":
     [
       "src/Connectors/Connectors.Memory.AzureAISearch/Connectors.Memory.AzureAISearch.csproj",
