@@ -64,6 +64,9 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     /// If <see cref="EmbeddingGenerator"/> is set, contains the type representing the embedding stored in the database.
     /// Otherwise, this property is identical to <see cref="Type"/>.
     /// </summary>
+    // TODO: sort out the nullability story here: EmbeddingType must be non-null after model building is complete, but can be null during
+    // model building as we're figuring things out (i.e. introduce a provider-facing interface where the property is non-nullable).
+    [AllowNull]
     public Type EmbeddingType { get; set; } = null!;
 
     /// <summary>
@@ -76,29 +79,23 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     /// The implementation on this non-generic <see cref="VectorPropertyModel"/> checks for <see cref="string"/>
     /// and <see cref="DataContent"/> as input types for <see cref="EmbeddingGenerator"/>.
     /// </summary>
-    public virtual bool TrySetupEmbeddingGeneration<TEmbedding, TUnwrappedEmbedding>(IEmbeddingGenerator embeddingGenerator, Type? embeddingType)
+    public virtual Type? ResolveEmbeddingType<TEmbedding>(IEmbeddingGenerator embeddingGenerator, Type? userRequestedEmbeddingType)
         where TEmbedding : Embedding
-    {
-        // On the TInput side, this out-of-the-box/simple implementation supports string and DataContent only
-        // (users who want arbitrary TInput types need to use the generic subclass of this type).
-        // The TEmbedding side is provided by the connector via the generic type parameter to this method, as the connector controls/knows which embedding types are supported.
-        // Note that if the user has manually specified an embedding type (e.g. to choose Embedding<Half> rather than the default Embedding<float>), that's provided via the embeddingType argument;
-        // we use that as a filter below.
-        switch (embeddingGenerator)
+        => embeddingGenerator switch
         {
-            case IEmbeddingGenerator<string, TEmbedding> when this.Type == typeof(string) && (embeddingType is null || embeddingType == typeof(TUnwrappedEmbedding)):
-            case IEmbeddingGenerator<DataContent, TEmbedding> when this.Type == typeof(DataContent) && (embeddingType is null || embeddingType == typeof(TUnwrappedEmbedding)):
-                this.EmbeddingGenerator = embeddingGenerator;
-                this.EmbeddingType = embeddingType ?? typeof(TUnwrappedEmbedding);
+            // On the TInput side, this out-of-the-box/simple implementation supports string and DataContent only
+            // (users who want arbitrary TInput types need to use the generic subclass of this type).
+            // The TEmbedding side is provided by the connector via the generic type parameter to this method, as the connector controls/knows which embedding types are supported.
+            // Note that if the user has manually specified an embedding type (e.g. to choose Embedding<Half> rather than the default Embedding<float>),
+            // that's provided via the userRequestedEmbeddingType argument; we use that as a filter.
+            IEmbeddingGenerator<string, TEmbedding> when this.Type == typeof(string) && (userRequestedEmbeddingType is null || userRequestedEmbeddingType == typeof(TEmbedding))
+                => typeof(TEmbedding),
+            IEmbeddingGenerator<DataContent, TEmbedding> when this.Type == typeof(DataContent) && (userRequestedEmbeddingType is null || userRequestedEmbeddingType == typeof(TEmbedding))
+                => typeof(TEmbedding),
 
-                return true;
-
-            case null:
-                throw new UnreachableException("This method should only be called when an embedding generator is configured.");
-            default:
-                return false;
-        }
-    }
+            null => throw new ArgumentNullException(nameof(embeddingGenerator), "This method should only be called when an embedding generator is configured."),
+            _ => null
+        };
 
     /// <summary>
     /// Attempts to generate an embedding of type <typeparamref name="TEmbedding"/> from the vector property represented by this instance on the given <paramref name="record"/>, using
@@ -114,13 +111,13 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     /// and <see cref="DataContent"/> as input types for <see cref="EmbeddingGenerator"/>.
     /// </para>
     /// </remarks>
-    public virtual bool TryGenerateEmbedding<TRecord, TEmbedding, TUnwrappedEmbedding>(TRecord record, CancellationToken cancellationToken, [NotNullWhen(true)] out Task<TEmbedding>? task)
+    public virtual bool TryGenerateEmbedding<TRecord, TEmbedding>(TRecord record, CancellationToken cancellationToken, [NotNullWhen(true)] out Task<TEmbedding>? task)
         where TRecord : class
         where TEmbedding : Embedding
     {
         switch (this.EmbeddingGenerator)
         {
-            case IEmbeddingGenerator<string, TEmbedding> generator when this.EmbeddingType == typeof(TUnwrappedEmbedding):
+            case IEmbeddingGenerator<string, TEmbedding> generator when this.EmbeddingType == typeof(TEmbedding):
             {
                 task = generator.GenerateAsync(
                     this.GetValueAsObject(record) is var value && value is string s
@@ -131,7 +128,7 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
                 return true;
             }
 
-            case IEmbeddingGenerator<DataContent, TEmbedding> generator when this.EmbeddingType == typeof(TUnwrappedEmbedding):
+            case IEmbeddingGenerator<DataContent, TEmbedding> generator when this.EmbeddingType == typeof(TEmbedding):
             {
                 task = generator.GenerateAsync(
                     this.GetValueAsObject(record) is var value && value is DataContent c
@@ -165,13 +162,13 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     /// and <see cref="DataContent"/> as input types for <see cref="EmbeddingGenerator"/>.
     /// </para>
     /// </remarks>
-    public virtual bool TryGenerateEmbeddings<TRecord, TEmbedding, TUnwrappedEmbedding>(IEnumerable<TRecord> records, CancellationToken cancellationToken, [NotNullWhen(true)] out Task<GeneratedEmbeddings<TEmbedding>>? task)
+    public virtual bool TryGenerateEmbeddings<TRecord, TEmbedding>(IEnumerable<TRecord> records, CancellationToken cancellationToken, [NotNullWhen(true)] out Task<GeneratedEmbeddings<TEmbedding>>? task)
         where TRecord : class
         where TEmbedding : Embedding
     {
         switch (this.EmbeddingGenerator)
         {
-            case IEmbeddingGenerator<string, TEmbedding> generator when this.EmbeddingType == typeof(TUnwrappedEmbedding):
+            case IEmbeddingGenerator<string, TEmbedding> generator when this.EmbeddingType == typeof(TEmbedding):
                 task = generator.GenerateAsync(
                     records.Select(r => this.GetValueAsObject(r) is var value && value is string s
                         ? s
@@ -180,7 +177,7 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
                     cancellationToken);
                 return true;
 
-            case IEmbeddingGenerator<DataContent, TEmbedding> generator when this.EmbeddingType == typeof(TUnwrappedEmbedding):
+            case IEmbeddingGenerator<DataContent, TEmbedding> generator when this.EmbeddingType == typeof(TEmbedding):
                 task = generator.GenerateAsync(
                     records.Select(r => this.GetValueAsObject(r) is var value && value is DataContent c
                         ? c

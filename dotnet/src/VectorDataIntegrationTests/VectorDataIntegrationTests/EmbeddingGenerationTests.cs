@@ -152,7 +152,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         var exception = await Assert.ThrowsAsync<NotSupportedException>(() => collection.SearchAsync("foo", top: 1).ToListAsync().AsTask());
 
         Assert.StartsWith(
-            "A value of type 'String' was passed to 'SearchAsync', but that isn't a supported vector type by your provider and no embedding generator was configured. The supported vector types are:",
+            "A value of type 'string' was passed to 'SearchAsync', but that isn't a supported vector type by your provider and no embedding generator was configured. The supported vector types are:",
             exception.Message);
     }
 
@@ -172,7 +172,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         // We have a generator configured for string, not int.
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => collection.SearchAsync(8, top: 1).ToListAsync().AsTask());
 
-        Assert.Equal($"An input of type 'Int32' was provided, but an incompatible embedding generator of type '{nameof(FakeEmbeddingGenerator)}' was configured.", exception.Message);
+        Assert.Equal($"An input of type 'int' was provided, but an incompatible embedding generator of type '{nameof(FakeEmbeddingGenerator)}' was configured.", exception.Message);
     }
 
     #endregion Search

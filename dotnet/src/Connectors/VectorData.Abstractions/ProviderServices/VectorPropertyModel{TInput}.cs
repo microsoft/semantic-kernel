@@ -16,29 +16,22 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 public sealed class VectorPropertyModel<TInput>(string modelName) : VectorPropertyModel(modelName, typeof(TInput))
 {
     /// <inheritdoc />
-    public override bool TrySetupEmbeddingGeneration<TEmbedding, TUnwrappedEmbedding>(IEmbeddingGenerator embeddingGenerator, Type? embeddingType)
-    {
-        switch (embeddingGenerator)
+    public override Type? ResolveEmbeddingType<TEmbedding>(IEmbeddingGenerator embeddingGenerator, Type? userRequestedEmbeddingType)
+        => embeddingGenerator switch
         {
-            case IEmbeddingGenerator<TInput, TEmbedding> when this.Type == typeof(TInput) && (embeddingType is null || embeddingType == typeof(TUnwrappedEmbedding)):
-                this.EmbeddingGenerator = embeddingGenerator;
-                this.EmbeddingType = embeddingType ?? typeof(TUnwrappedEmbedding);
+            IEmbeddingGenerator<TInput, TEmbedding> when this.Type == typeof(TInput) && (userRequestedEmbeddingType is null || userRequestedEmbeddingType == typeof(TEmbedding))
+                => typeof(TEmbedding),
 
-                return true;
-
-            case null:
-                throw new UnreachableException("This method should only be called when an embedding generator is configured.");
-            default:
-                return false;
-        }
-    }
+            null => throw new ArgumentNullException(nameof(embeddingGenerator), "This method should only be called when an embedding generator is configured."),
+            _ => null
+        };
 
     /// <inheritdoc />
-    public override bool TryGenerateEmbedding<TRecord, TEmbedding, TUnwrappedEmbedding>(TRecord record, CancellationToken cancellationToken, [NotNullWhen(true)] out Task<TEmbedding>? task)
+    public override bool TryGenerateEmbedding<TRecord, TEmbedding>(TRecord record, CancellationToken cancellationToken, [NotNullWhen(true)] out Task<TEmbedding>? task)
     {
         switch (this.EmbeddingGenerator)
         {
-            case IEmbeddingGenerator<TInput, TEmbedding> generator when this.EmbeddingType == typeof(TUnwrappedEmbedding):
+            case IEmbeddingGenerator<TInput, TEmbedding> generator when this.EmbeddingType == typeof(TEmbedding):
                 task = generator.GenerateAsync(
                     this.GetValueAsObject(record) is var value && value is TInput s
                         ? s
@@ -57,11 +50,11 @@ public sealed class VectorPropertyModel<TInput>(string modelName) : VectorProper
     }
 
     /// <inheritdoc />
-    public override bool TryGenerateEmbeddings<TRecord, TEmbedding, TUnwrappedEmbedding>(IEnumerable<TRecord> records, CancellationToken cancellationToken, [NotNullWhen(true)] out Task<GeneratedEmbeddings<TEmbedding>>? task)
+    public override bool TryGenerateEmbeddings<TRecord, TEmbedding>(IEnumerable<TRecord> records, CancellationToken cancellationToken, [NotNullWhen(true)] out Task<GeneratedEmbeddings<TEmbedding>>? task)
     {
         switch (this.EmbeddingGenerator)
         {
-            case IEmbeddingGenerator<TInput, TEmbedding> generator when this.EmbeddingType == typeof(TUnwrappedEmbedding):
+            case IEmbeddingGenerator<TInput, TEmbedding> generator when this.EmbeddingType == typeof(TEmbedding):
                 task = generator.GenerateAsync(
                     records.Select(r => this.GetValueAsObject(r) is var value && value is TInput s
                         ? s
