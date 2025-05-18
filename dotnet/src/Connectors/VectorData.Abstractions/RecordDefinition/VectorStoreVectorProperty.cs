@@ -20,6 +20,17 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class.
     /// </summary>
     /// <param name="name">The name of the property on the data model. If the record is mapped to a .NET type, this corresponds to the .NET property name on that type.</param>
+    /// <param name="dimensions">The number of dimensions that the vector has.</param>
+    public VectorStoreVectorProperty(string name, int dimensions)
+        : base(name, type: null)
+    {
+        this.Dimensions = dimensions;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class.
+    /// </summary>
+    /// <param name="name">The name of the property on the data model. If the record is mapped to a .NET type, this corresponds to the .NET property name on that type.</param>
     /// <param name="type">The type of the property.</param>
     /// <param name="dimensions">The number of dimensions that the vector has.</param>
     public VectorStoreVectorProperty(string name, Type type, int dimensions)
@@ -83,7 +94,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     public Type? EmbeddingType { get; set; }
 
     internal virtual VectorPropertyModel CreatePropertyModel()
-        => new(this.Name, this.Type)
+        => new(this.Name, this.Type ?? throw new InvalidOperationException(VectorDataStrings.MissingTypeOnPropertyDefinition(this)))
         {
             Dimensions = this.Dimensions,
             IndexKind = this.IndexKind,

@@ -255,17 +255,22 @@ public abstract class CollectionModelBuilder
             {
                 // Property wasn't found attribute-annotated on the CLR type, so we need to add it.
 
-                // TODO: Make the property CLR type optional - no need to specify it when using a CLR type.
+                var propertyType = definitionProperty.Type;
+                if (propertyType is null)
+                {
+                    throw new InvalidOperationException(VectorDataStrings.MissingTypeOnPropertyDefinition(definitionProperty));
+                }
+
                 switch (definitionProperty)
                 {
                     case VectorStoreKeyProperty definitionKeyProperty:
-                        var keyProperty = new KeyPropertyModel(definitionKeyProperty.Name, definitionKeyProperty.Type);
+                        var keyProperty = new KeyPropertyModel(definitionKeyProperty.Name, propertyType!);
                         this.KeyProperties.Add(keyProperty);
                         this.PropertyMap.Add(definitionKeyProperty.Name, keyProperty);
                         property = keyProperty;
                         break;
                     case VectorStoreDataProperty definitionDataProperty:
-                        var dataProperty = new DataPropertyModel(definitionDataProperty.Name, definitionDataProperty.Type);
+                        var dataProperty = new DataPropertyModel(definitionDataProperty.Name, propertyType);
                         this.DataProperties.Add(dataProperty);
                         this.PropertyMap.Add(definitionDataProperty.Name, dataProperty);
                         property = dataProperty;
@@ -281,7 +286,6 @@ public abstract class CollectionModelBuilder
                 }
             }
 
-            property.Type = definitionProperty.Type;
             this.SetPropertyStorageName(property, definitionProperty.StorageName, type);
 
             switch (definitionProperty)
@@ -330,10 +334,9 @@ public abstract class CollectionModelBuilder
 
                     vectorProperty.EmbeddingGenerator = definitionVectorProperty.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator;
 
-                    if (this.IsVectorPropertyTypeValid(definitionVectorProperty.Type, out _))
+                    if (this.IsVectorPropertyTypeValid(vectorProperty.Type, out _))
                     {
-                        if (definitionVectorProperty.EmbeddingType is not null
-                            && definitionVectorProperty.EmbeddingType != definitionVectorProperty.Type)
+                        if (definitionVectorProperty.EmbeddingType is not null && definitionVectorProperty.EmbeddingType != vectorProperty.Type)
                         {
                             throw new InvalidOperationException(VectorDataStrings.DifferentEmbeddingTypeSpecifiedForNativelySupportedType(vectorProperty, definitionVectorProperty.EmbeddingType));
                         }

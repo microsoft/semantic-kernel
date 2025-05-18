@@ -45,6 +45,9 @@ public static class VectorDataStrings
     public static string InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(Type inputType, string supportedVectorTypes)
         => $"A value of type '{TypeName(inputType)}' was passed to 'SearchAsync', but that isn't a supported vector type by your provider and no embedding generator was configured. The supported vector types are: {supportedVectorTypes}.";
 
+    public static string MissingTypeOnPropertyDefinition(VectorStoreProperty property)
+        => $"Property '{property.Name}' has no type specified in its definition, and does not have a corresponding .NET property. Specify the type on the definition.";
+
     public static string UnsupportedVectorPropertyWithoutEmbeddingGenerator(VectorPropertyModel vectorProperty)
         => $"Vector property '{vectorProperty.ModelName}' has type '{TypeName(vectorProperty.Type)}' which isn't supported by your provider, and no embedding generator is configured. Configure a generator that supports converting '{TypeName(vectorProperty.Type)}' to vector type supported by your provider.";
 
