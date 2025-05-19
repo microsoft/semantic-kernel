@@ -426,7 +426,7 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
 
 
 @release_candidate
-class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel]):
+class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]):
     """Base class for a vector store record collection."""
 
     collection_name: str = ""

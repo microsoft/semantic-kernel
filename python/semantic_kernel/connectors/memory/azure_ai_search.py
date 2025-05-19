@@ -167,21 +167,21 @@ def _get_search_index_client(
     azure_credential: AzureKeyCredential | None = None,
     token_credential: "AsyncTokenCredential | TokenCredential | None" = None,
 ) -> SearchIndexClient:
-    """Return a client for Azure Cognitive Search.
+    """Return a client for Azure AI Search.
 
     Args:
-        azure_ai_search_settings: Azure Cognitive Search settings.
+        azure_ai_search_settings: Azure AI Search settings.
         azure_credential: Optional Azure credentials (default: {None}).
         token_credential: Optional Token credential (default: {None}).
     """
     # Credentials
     credential: "AzureKeyCredential | AsyncTokenCredential | TokenCredential | None" = None
-    if azure_ai_search_settings.api_key:
-        credential = AzureKeyCredential(azure_ai_search_settings.api_key.get_secret_value())
-    elif azure_credential:
+    if azure_credential:
         credential = azure_credential
     elif token_credential:
         credential = token_credential
+    elif azure_ai_search_settings.api_key:
+        credential = AzureKeyCredential(azure_ai_search_settings.api_key.get_secret_value())
     else:
         raise ServiceInitializationError("Error: missing Azure AI Search client credentials.")
 

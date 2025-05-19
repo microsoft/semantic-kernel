@@ -6,12 +6,8 @@ from textwrap import dedent
 from typing import Annotated
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAIChatCompletion,
-    OpenAIChatPromptExecutionSettings,
-    OpenAITextEmbedding,
-)
-from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
+from semantic_kernel.connectors.memory import AzureAISearchCollection
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.data import (
     VectorStoreRecordDataField,
@@ -19,12 +15,14 @@ from semantic_kernel.data import (
     VectorStoreRecordVectorField,
     vectorstoremodel,
 )
+from semantic_kernel.functions.kernel_function import KernelFunction
 
 """
-This sample shows a really easy way to have RAG with a vector store.
+This sample shows a really easy way to perform RAG with a vector store.
 It creates a simple datamodel, and then creates a collection with that datamodel.
 Then we create a function that can search the collection.
-Finally, in two different ways we call the function to search the collection.
+Finally, we use the function in a prompt to get an grounding for a answer.
+And we then call a function that can check if the answer is grounded or not.
 """
 
 
@@ -60,10 +58,11 @@ async def main() -> None:
             ),
         )
 
-        print("Populating memory...")
+        print("Creating index for memory...")
         await collection.delete_collection()
         await collection.create_collection()
 
+        print("Populating memory...")
         # Add information to the collection
         await collection.upsert([
             InfoItem(key="info1", text="My name is Andrea"),
@@ -73,81 +72,107 @@ async def main() -> None:
             InfoItem(key="info5", text="My family is from New York"),
         ])
 
-        "It can give explicit instructions or say 'I don't know' if it does not have an answer."
-
-        sk_prompt_rag = dedent("""
+        chat_func: KernelFunction = kernel.add_function(  # type: ignore
+            function_name="rag",
+            plugin_name="RagPlugin",
+            prompt=dedent("""
         Assistant can have a conversation with you about any topic.
+        It can give explicit instructions or say 'I don't know' if it does not have an answer.
 
         Here is some background information about the user that you should use to answer the question below:
-        {{ memory.recall $user_input }}
-        User: {{$user_input}}
-        Assistant: """)
-
-        sk_prompt_rag_sc = dedent("""
+        Background: {{ memory.recall $question }}
+        User: {{$question}}"""),
+        )
+        self_critique_func: KernelFunction = kernel.add_function(  # type: ignore
+            function_name="self_critique_rag",
+            plugin_name="RagPlugin",
+            prompt=dedent("""
         You will get a question, background information to be used with that question and a answer that was given.
         You have to answer Grounded or Ungrounded or Unclear.
         Grounded if the answer is based on the background information and clearly answers the question.
         Ungrounded if the answer could be true but is not based on the background information.
         Unclear if the answer does not answer the question at all.
-        Question: {{$user_input}}
-        Background: {{ memory.recall $user_input }}
-        Answer: {{ $input }}
-        Remember, just answer Grounded or Ungrounded or Unclear: """)
-
-        user_input = "Do I live in Seattle?"
-        print(f"Question: {user_input}")
-        chat_func = kernel.add_function(
-            function_name="rag",
-            plugin_name="RagPlugin",
-            prompt=sk_prompt_rag,
-            prompt_execution_settings=OpenAIChatPromptExecutionSettings(),
-        )
-        self_critique_func = kernel.add_function(
-            function_name="self_critique_rag",
-            plugin_name="RagPlugin",
-            prompt=sk_prompt_rag_sc,
-            prompt_execution_settings=OpenAIChatPromptExecutionSettings(),
+        Question: {{$question}}
+        Background: {{ memory.recall $question }}
+        Answer: {{ $answer_to_question }}
+        Remember, just answer Grounded or Ungrounded or Unclear: """),
         )
 
+        print("Asking a question...")
+        question = "Do I live in Seattle?"
+        print(f"Question: {question}")
         chat_history = ChatHistory()
-        chat_history.add_user_message(user_input)
-
+        chat_history.add_user_message(question)
         answer = await kernel.invoke(
             chat_func,
-            user_input=user_input,
+            question=question,
             chat_history=chat_history,
         )
         chat_history.add_assistant_message(str(answer))
         print(f"Answer: {str(answer).strip()}")
+        print("Checking the answer...")
         check = await kernel.invoke(
             self_critique_func,
-            user_input=answer,
-            input=answer,
+            question=answer,
+            answer_to_question=answer,
             chat_history=chat_history,
         )
         print(f"The answer was {str(check).strip()}")
 
         print("-" * 50)
         print("   Let's pretend the answer was wrong...")
-        print(f"Answer: {str(answer).strip()}")
+        wrong_answer = "Yes, you live in New York City."
+        print(f"Question: {question}")
+        print(f"Answer: {str(wrong_answer).strip()}")
         check = await kernel.invoke(
             self_critique_func,
-            input=answer,
-            user_input="Yes, you live in New York City.",
+            question=question,
+            answer_to_question=wrong_answer,
             chat_history=chat_history,
         )
         print(f"The answer was {str(check).strip()}")
 
         print("-" * 50)
         print("   Let's pretend the answer is not related...")
-        print(f"Answer: {str(answer).strip()}")
+        unrelated_answer = "Yes, the earth is not flat."
+        print(f"Question: {question}")
+        print(f"Answer: {str(unrelated_answer).strip()}")
         check = await kernel.invoke(
             self_critique_func,
-            user_input=answer,
-            input="Yes, the earth is not flat.",
+            question=question,
+            answer_to_question=unrelated_answer,
             chat_history=chat_history,
         )
         print(f"The answer was {str(check).strip()}")
+
+        print("-" * 50)
+        print("Removing collection...")
+        await collection.delete_collection()
+
+
+"""
+Expected output:
+--------------------------------------------------
+Creating index for memory...
+Populating memory...
+Asking a question...
+Question: Do I live in Seattle?
+Answer: Yes, Andrea, you do live in Seattle.
+Checking the answer...
+The answer was Grounded
+--------------------------------------------------
+   Let's pretend the answer was wrong...
+Question: Do I live in Seattle?
+Answer: Yes, you live in New York City.
+The answer was Ungrounded
+--------------------------------------------------
+   Let's pretend the answer is not related...
+Question: Do I live in Seattle?
+Answer: Yes, the earth is not flat.
+The answer was Unclear
+--------------------------------------------------
+Removing collection...
+"""
 
 
 if __name__ == "__main__":
