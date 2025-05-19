@@ -172,8 +172,10 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         searchFields.Add(new VectorSearchField("DescriptionEmbedding", 1536, "my-vector-profile"));
 
         // Create an index definition with a vectorizer to use when doing vector searches using text.
-        var definition = new SearchIndex(indexName, searchFields);
-        definition.VectorSearch = new VectorSearch();
+        var definition = new SearchIndex(indexName, searchFields)
+        {
+            VectorSearch = new VectorSearch()
+        };
         definition.VectorSearch.Vectorizers.Add(new AzureOpenAIVectorizer("text-embedding-vectorizer")
         {
             Parameters = new AzureOpenAIVectorizerParameters
