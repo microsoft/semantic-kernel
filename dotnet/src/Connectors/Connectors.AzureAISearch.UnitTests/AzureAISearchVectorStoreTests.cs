@@ -39,41 +39,21 @@ public class AzureAISearchVectorStoreTests
     public void GetCollectionReturnsCollection()
     {
         // Arrange.
-        var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object);
+        using var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object);
 
         // Act.
         var actual = sut.GetCollection<string, SinglePropsModel>(TestCollectionName);
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<AzureAISearchVectorStoreRecordCollection<string, SinglePropsModel>>(actual);
+        Assert.IsType<AzureAISearchCollection<string, SinglePropsModel>>(actual);
     }
-
-#pragma warning disable CS0618 // IAzureAISearchVectorStoreRecordCollectionFactory is obsolete
-    [Fact]
-    public void GetCollectionCallsFactoryIfProvided()
-    {
-        // Arrange.
-        var factoryMock = new Mock<IAzureAISearchVectorStoreRecordCollectionFactory>(MockBehavior.Strict);
-        var collectionMock = new Mock<IVectorStoreRecordCollection<string, SinglePropsModel>>(MockBehavior.Strict);
-        factoryMock
-            .Setup(x => x.CreateVectorStoreRecordCollection<string, SinglePropsModel>(this._searchIndexClientMock.Object, TestCollectionName, null))
-            .Returns(collectionMock.Object);
-        var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object, new() { VectorStoreCollectionFactory = factoryMock.Object });
-
-        // Act.
-        var actual = sut.GetCollection<string, SinglePropsModel>(TestCollectionName);
-
-        // Assert.
-        Assert.Equal(collectionMock.Object, actual);
-    }
-#pragma warning restore CS0618 // Type or member is obsolete
 
     [Fact]
     public void GetCollectionThrowsForInvalidKeyType()
     {
         // Arrange.
-        var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object);
+        using var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object);
 
         // Act & Assert.
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<int, SinglePropsModel>(TestCollectionName));
@@ -96,7 +76,7 @@ public class AzureAISearchVectorStoreTests
         this._searchIndexClientMock
             .Setup(x => x.GetIndexNamesAsync(this._testCancellationToken))
             .Returns(pageableMock.Object);
-        var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object);
+        using var sut = new AzureAISearchVectorStore(this._searchIndexClientMock.Object);
 
         // Act.
         var actual = sut.ListCollectionNamesAsync(this._testCancellationToken);
@@ -110,13 +90,13 @@ public class AzureAISearchVectorStoreTests
 
     public sealed class SinglePropsModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(4)]
+        [VectorStoreVector(4)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }
