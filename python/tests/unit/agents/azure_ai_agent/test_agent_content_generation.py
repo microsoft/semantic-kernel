@@ -125,16 +125,20 @@ def test_generate_message_content_text_and_image():
     assert out.items[2].quote == "text"
     assert out.items[2].start_index == 0
     assert out.items[2].end_index == 9
+    assert out.items[2].citation_type == "file_citation"
 
     assert out.items[3].file_id == "file_id_2"
     assert out.items[3].quote == "text again"
     assert out.items[3].start_index == 1
     assert out.items[3].end_index == 10
+    assert out.items[3].citation_type == "file_path"
 
     assert out.items[4].url == "http://example.com"
     assert out.items[4].quote == "text"
     assert out.items[4].start_index == 1
     assert out.items[4].end_index == 10
+    assert out.items[4].title == "some title"
+    assert out.items[4].citation_type == "url_citation"
 
     assert out.metadata["step_id"] == "step_id"
     assert out.role == AuthorRole.USER
@@ -178,7 +182,7 @@ def test_generate_streaming_message_content_text_annotations():
             annotations=[
                 MessageDeltaTextFileCitationAnnotation(
                     index=0,
-                    file_citation=MessageDeltaTextFileCitationAnnotationObject(file_id="file123"),
+                    file_citation=MessageDeltaTextFileCitationAnnotationObject(file_id="file123", quote="some text"),
                     start_index=0,
                     end_index=9,
                     text="some text",
@@ -186,8 +190,8 @@ def test_generate_streaming_message_content_text_annotations():
                 MessageDeltaTextFilePathAnnotation(
                     index=0,
                     file_path=MessageDeltaTextFilePathAnnotationObject(file_id="file123"),
-                    start_index=0,
-                    end_index=9,
+                    start_index=1,
+                    end_index=10,
                     text="some text",
                 ),
                 MessageDeltaTextUrlCitationAnnotation(
@@ -196,8 +200,8 @@ def test_generate_streaming_message_content_text_annotations():
                         title="some title",
                         url="http://example.com",
                     ),
-                    start_index=0,
-                    end_index=9,
+                    start_index=2,
+                    end_index=11,
                 ),
             ],
         ),
@@ -221,18 +225,21 @@ def test_generate_streaming_message_content_text_annotations():
     assert out.items[2].quote == "some text"
     assert out.items[2].start_index == 0
     assert out.items[2].end_index == 9
+    assert out.items[2].citation_type == "file_citation"
 
     assert isinstance(out.items[3], StreamingAnnotationContent)
     assert out.items[3].file_id == "file123"
     assert out.items[3].quote == "some text"
-    assert out.items[3].start_index == 0
-    assert out.items[3].end_index == 9
+    assert out.items[3].start_index == 1
+    assert out.items[3].end_index == 10
+    assert out.items[3].citation_type == "file_path"
 
     assert isinstance(out.items[4], StreamingAnnotationContent)
     assert out.items[4].url == "http://example.com"
-    assert out.items[4].quote == "some title"
-    assert out.items[4].start_index == 0
-    assert out.items[4].end_index == 9
+    assert out.items[4].title == "some title"
+    assert out.items[4].start_index == 2
+    assert out.items[4].end_index == 11
+    assert out.items[4].citation_type == "url_citation"
 
 
 def test_generate_streaming_function_content_with_function():

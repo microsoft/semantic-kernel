@@ -28,7 +28,7 @@ from azure.ai.projects.models import (
     ThreadRun,
 )
 
-from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.annotation_content import AnnotationContent, CitationType
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -529,12 +529,18 @@ def generate_annotation_content(
     """Generate annotation content."""
     file_id = None
     url = None
+    title = None
+    citation_type = None
     if isinstance(annotation, MessageTextFilePathAnnotation) and annotation.file_path is not None:
         file_id = annotation.file_path.file_id
+        citation_type = CitationType.FILE_PATH
     elif isinstance(annotation, MessageTextFileCitationAnnotation) and annotation.file_citation is not None:
         file_id = annotation.file_citation.file_id
+        citation_type = CitationType.FILE_CITATION
     elif isinstance(annotation, MessageTextUrlCitationAnnotation) and annotation.url_citation is not None:
         url = annotation.url_citation.url if annotation.url_citation.url else None
+        title = annotation.url_citation.title if annotation.url_citation.title else None
+        citation_type = CitationType.URL_CITATION
 
     return AnnotationContent(
         file_id=file_id,
@@ -542,6 +548,8 @@ def generate_annotation_content(
         start_index=annotation.start_index if annotation.start_index is not None else None,
         end_index=annotation.end_index if annotation.end_index is not None else None,
         url=url,
+        title=title if title else None,
+        citation_type=citation_type,
     )
 
 
@@ -555,15 +563,20 @@ def generate_streaming_annotation_content(
     file_id = None
     url = None
     quote = None
+    title = None
+    citation_type = None
     if isinstance(annotation, MessageDeltaTextFilePathAnnotation) and annotation.file_path:
         file_id = annotation.file_path.file_id if annotation.file_path.file_id else None
         quote = annotation.text if annotation.text else None
+        citation_type = CitationType.FILE_PATH
     elif isinstance(annotation, MessageDeltaTextFileCitationAnnotation) and annotation.file_citation:
         file_id = annotation.file_citation.file_id if annotation.file_citation.file_id else None
         quote = annotation.text if annotation.text else None
+        citation_type = CitationType.FILE_CITATION
     elif isinstance(annotation, MessageDeltaTextUrlCitationAnnotation) and annotation.url_citation:
         url = annotation.url_citation.url if annotation.url_citation.url else None
-        quote = annotation.url_citation.title if annotation.url_citation.title else None
+        title = annotation.url_citation.title if annotation.url_citation.title else None
+        citation_type = CitationType.URL_CITATION
 
     return StreamingAnnotationContent(
         file_id=file_id,
@@ -571,4 +584,6 @@ def generate_streaming_annotation_content(
         start_index=annotation.start_index if annotation.start_index is not None else None,
         end_index=annotation.end_index if annotation.end_index is not None else None,
         url=url,
+        title=title if title else None,
+        citation_type=citation_type,
     )
