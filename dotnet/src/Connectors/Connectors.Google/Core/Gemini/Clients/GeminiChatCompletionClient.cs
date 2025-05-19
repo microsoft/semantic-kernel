@@ -359,9 +359,6 @@ internal sealed class GeminiChatCompletionClient : ClientBase
                     yield break;
                 }
 
-                // We disable auto-invoke because the first message in the stream doesn't contain ToolCalls or auto-invoke is already false
-                state.AutoInvoke = false;
-
                 // If we don't want to attempt to invoke any functions, just return the result.
                 yield return this.GetStreamingChatContentFromChatContent(messageContent);
             }
