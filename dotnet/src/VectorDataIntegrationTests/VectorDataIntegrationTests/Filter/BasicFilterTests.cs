@@ -15,8 +15,6 @@ namespace VectorDataSpecificationTests.Filter;
 public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixture)
     where TKey : notnull
 {
-    private const string SpecialCharactersText = """>with $om[ specia]"chara<ters'and\stuff""";
-
     #region Equality
 
     [ConditionalFact]
@@ -56,8 +54,8 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
     [ConditionalFact]
     public virtual Task Equal_with_string_containing_special_characters()
         => this.TestFilterAsync(
-            r => r.String == SpecialCharactersText,
-            r => r["String"] == SpecialCharactersText);
+            r => r.String == fixture.SpecialCharactersText,
+            r => r["String"] == fixture.SpecialCharactersText);
 
     [ConditionalFact]
     public virtual Task Equal_with_string_is_not_Contains()
@@ -562,6 +560,8 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
     {
         public override string CollectionName => "FilterTests";
 
+        public virtual string SpecialCharactersText => """>with $om[ specia]"chara<ters'and\stuff""";
+
         protected virtual ReadOnlyMemory<float> GetVector(int count)
             // All records have the same vector - this fixture is about testing criteria filtering only
             // Derived types may override this to provide different vectors for different records.
@@ -655,7 +655,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Key = this.GenerateNextKey<TKey>(),
                     Int = 11,
                     Bool = true,
-                    String = SpecialCharactersText,
+                    String = this.SpecialCharactersText,
                     Int2 = 101,
                     StringArray = ["y", "z"],
                     StringList = ["y", "z"],
