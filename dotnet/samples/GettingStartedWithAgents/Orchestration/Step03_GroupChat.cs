@@ -49,8 +49,11 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
                 If not, provide insight on how to refine suggested copy without example.
                 """);
 
-        // Define the orchestration
+        // Create a monitor to capturing agent responses (via ResponseCallback)
+        // to display at the end of this sample. (optional)
+        // NOTE: Create your own callback to capture responses in your application or service.
         OrchestrationMonitor monitor = new();
+        // Define the orchestration
         GroupChatOrchestration orchestration =
             new(new RoundRobinGroupChatManager()
             {
