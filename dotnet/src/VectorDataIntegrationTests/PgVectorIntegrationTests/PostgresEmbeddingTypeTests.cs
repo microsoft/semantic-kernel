@@ -45,7 +45,7 @@ public class PostgresEmbeddingTypeTests(PostgresEmbeddingTypeTests.Fixture fixtu
 
     [ConditionalFact]
     public virtual Task BitArray()
-        => this.Test<BitArray>(new BitArray([true, false, true]), distanceFunction: DistanceFunction.HammingDistance, embeddingGenerator: null);
+        => this.Test<BitArray>(new BitArray(new bool[] { true, false, true }), distanceFunction: DistanceFunction.HammingDistance, embeddingGenerator: null);
 
     [ConditionalFact]
     public virtual Task SparseVector()
