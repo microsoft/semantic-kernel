@@ -41,10 +41,11 @@ public class VectorStore_VectorSearch_MultiStore_AzureAISearch(ITestOutputHelper
         kernelBuilder.AddAzureOpenAIEmbeddingGenerator(
             deploymentName: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            credential: new AzureCliCredential());
+            credential: new AzureCliCredential(),
+            dimensions: 1536);
 
         // Register the Azure AI Search VectorStore.
-        kernelBuilder.AddAzureAISearchVectorStore(
+        kernelBuilder.Services.AddAzureAISearchVectorStore(
             new Uri(TestConfiguration.AzureAISearch.Endpoint),
             new AzureKeyCredential(TestConfiguration.AzureAISearch.ApiKey));
 
@@ -70,7 +71,7 @@ public class VectorStore_VectorSearch_MultiStore_AzureAISearch(ITestOutputHelper
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Construct the Azure AI Search VectorStore.
         var searchIndexClient = new SearchIndexClient(

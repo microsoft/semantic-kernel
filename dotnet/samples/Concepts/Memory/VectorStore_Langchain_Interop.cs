@@ -5,8 +5,8 @@ using Azure.Identity;
 using Memory.VectorStoreLangchainInterop;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Pinecone;
 using StackExchange.Redis;
-using Sdk = Pinecone;
 
 namespace Memory;
 
@@ -31,7 +31,7 @@ public class VectorStore_Langchain_Interop(ITestOutputHelper output) : BaseTest(
     [Fact]
     public async Task ReadDataFromLangchainPineconeAsync()
     {
-        var pineconeClient = new Sdk.PineconeClient(TestConfiguration.Pinecone.ApiKey);
+        var pineconeClient = new PineconeClient(TestConfiguration.Pinecone.ApiKey);
         var vectorStore = PineconeFactory.CreatePineconeLangchainInteropVectorStore(pineconeClient);
         await this.ReadDataFromCollectionAsync(vectorStore, "pets");
     }
@@ -53,7 +53,7 @@ public class VectorStore_Langchain_Interop(ITestOutputHelper output) : BaseTest(
     /// <param name="vectorStore">The vector store to search.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <returns>An async task.</returns>
-    private async Task ReadDataFromCollectionAsync(IVectorStore vectorStore, string collectionName)
+    private async Task ReadDataFromCollectionAsync(VectorStore vectorStore, string collectionName)
     {
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
@@ -66,7 +66,7 @@ public class VectorStore_Langchain_Interop(ITestOutputHelper output) : BaseTest(
         // Search the data set.
         var searchString = "I'm looking for an animal that is loyal and will make a great companion";
         var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
-        var resultRecords = await collection.SearchEmbeddingAsync(searchVector, top: 1).ToListAsync();
+        var resultRecords = await collection.SearchAsync(searchVector, top: 1).ToListAsync();
 
         this.Output.WriteLine("Search string: " + searchString);
         this.Output.WriteLine("Source: " + resultRecords.First().Record.Source);
