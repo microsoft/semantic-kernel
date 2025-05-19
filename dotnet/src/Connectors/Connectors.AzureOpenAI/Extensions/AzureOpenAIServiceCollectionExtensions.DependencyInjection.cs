@@ -9,8 +9,6 @@ using Azure.Core;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -66,16 +64,12 @@ public static partial class AzureOpenAIServiceCollectionExtensions
             var builder = client.GetChatClient(deploymentName)
                 .AsIChatClient()
                 .AsBuilder()
-                .UseKernelFunctionInvocation(loggerFactory);
+                .UseKernelFunctionInvocation(loggerFactory)
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
 
             if (loggerFactory is not null)
             {
                 builder.UseLogging(loggerFactory);
-            }
-
-            if (openTelemetrySourceName is not null || openTelemetryConfig is not null)
-            {
-                builder.UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
             }
 
             return builder.Build();
@@ -130,16 +124,12 @@ public static partial class AzureOpenAIServiceCollectionExtensions
             var builder = client.GetChatClient(deploymentName)
                 .AsIChatClient()
                 .AsBuilder()
-                .UseKernelFunctionInvocation(loggerFactory);
+                .UseKernelFunctionInvocation(loggerFactory)
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
 
             if (loggerFactory is not null)
             {
                 builder.UseLogging(loggerFactory);
-            }
-
-            if (openTelemetrySourceName is not null || openTelemetryConfig is not null)
-            {
-                builder.UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
             }
 
             return builder.Build();
@@ -183,16 +173,12 @@ public static partial class AzureOpenAIServiceCollectionExtensions
             var builder = client.GetChatClient(deploymentName)
                 .AsIChatClient()
                 .AsBuilder()
-                .UseKernelFunctionInvocation(loggerFactory);
+                .UseKernelFunctionInvocation(loggerFactory)
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
 
             if (loggerFactory is not null)
             {
                 builder.UseLogging(loggerFactory);
-            }
-
-            if (openTelemetrySourceName is not null || openTelemetryConfig is not null)
-            {
-                builder.UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
             }
 
             return builder.Build();
@@ -207,7 +193,7 @@ public static partial class AzureOpenAIServiceCollectionExtensions
 
     #region Embedding Generator
     /// <summary>
-    /// Adds the <see cref="AzureOpenAITextEmbeddingGenerationService"/> to the <see cref="IServiceCollection"/>.
+    /// Adds the <see cref="IEmbeddingGenerator"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -218,6 +204,8 @@ public static partial class AzureOpenAIServiceCollectionExtensions
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IEmbeddingGenerator{String, Embedding}"/> instance.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIEmbeddingGenerator(
@@ -229,70 +217,95 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         string? modelId = null,
         int? dimensions = null,
         string? apiVersion = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
+        Verify.NotNullOrWhiteSpace(deploymentName);
 
-#pragma warning disable CS0618 // Type or member is obsolete
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGenerationService(
-                deploymentName,
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            AzureOpenAIClient client = Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
                 endpoint,
-                apiKey,
-                modelId,
+                new ApiKeyCredential(apiKey),
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>(), dimensions,
-                apiVersion)
-            .AsEmbeddingGenerator());
-#pragma warning restore CS0618 // Type or member is obsolete
+                apiVersion);
+
+            var builder = client.GetEmbeddingClient(deploymentName)
+                .AsIEmbeddingGenerator(dimensions)
+                .AsBuilder()
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build();
+        });
     }
 
     /// <summary>
-    /// Adds the <see cref="AzureOpenAITextEmbeddingGenerationService"/> to the <see cref="IServiceCollection"/>.
+    /// Adds the <see cref="IEmbeddingGenerator"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IEmbeddingGenerator{String, Embedding}"/> instance.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIEmbeddingGenerator(
         this IServiceCollection services,
         string deploymentName,
         string endpoint,
-        TokenCredential credential,
+        TokenCredential credentials,
         string? serviceId = null,
         string? modelId = null,
         int? dimensions = null,
         string? apiVersion = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
-        Verify.NotNull(credential);
+        Verify.NotNull(credentials);
 
-#pragma warning disable CS0618 // Type or member is obsolete
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGenerationService(
-                deploymentName,
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
+            AzureOpenAIClient client = Microsoft.SemanticKernel.AzureOpenAIServiceCollectionExtensions.CreateAzureOpenAIClient(
                 endpoint,
-                credential,
-                modelId,
+                credentials,
                 HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                serviceProvider.GetService<ILoggerFactory>(),
-                dimensions,
-                apiVersion
-                )
-            .AsEmbeddingGenerator());
-#pragma warning restore CS0618 // Type or member is obsolete
+                apiVersion);
+
+            var builder = client.GetEmbeddingClient(deploymentName)
+                .AsIEmbeddingGenerator(dimensions)
+                .AsBuilder()
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build();
+        });
     }
 
     /// <summary>
-    /// Adds the <see cref="AzureOpenAITextEmbeddingGenerationService"/> to the <see cref="IServiceCollection"/>.
+    /// Adds the <see cref="IEmbeddingGenerator"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
     /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -300,6 +313,8 @@ public static partial class AzureOpenAIServiceCollectionExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IEmbeddingGenerator{String, Embedding}"/> instance.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IServiceCollection AddAzureOpenAIEmbeddingGenerator(
@@ -308,20 +323,29 @@ public static partial class AzureOpenAIServiceCollectionExtensions
         AzureOpenAIClient? azureOpenAIClient = null,
         string? serviceId = null,
         string? modelId = null,
-        int? dimensions = null)
+        int? dimensions = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
         Verify.NotNull(services);
 
-#pragma warning disable CS0618 // Type or member is obsolete
         return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-            new AzureOpenAITextEmbeddingGenerationService(
-                deploymentName,
-                azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>(),
-                modelId,
-                serviceProvider.GetService<ILoggerFactory>(),
-                dimensions)
-            .AsEmbeddingGenerator());
-#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            var client = azureOpenAIClient ?? serviceProvider.GetRequiredService<AzureOpenAIClient>();
+
+            var builder = client.GetEmbeddingClient(deploymentName)
+                .AsIEmbeddingGenerator(dimensions)
+                .AsBuilder()
+                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+            if (loggerFactory is not null)
+            {
+                builder.UseLogging(loggerFactory);
+            }
+
+            return builder.Build();
+        });
     }
 
     #endregion

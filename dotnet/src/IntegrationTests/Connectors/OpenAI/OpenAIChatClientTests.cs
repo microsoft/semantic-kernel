@@ -7,24 +7,22 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Identity;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.AzureOpenAI;
+namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
-public sealed class AzureOpenAIChatClientTests : BaseIntegrationTest
+public sealed class OpenAIChatClientTests : BaseIntegrationTest
 {
     [Fact]
-    public async Task ItCanUseAzureOpenAiChatForTextGenerationAsync()
+    public async Task ItCanUseOpenAiChatForTextGenerationAsync()
     {
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
@@ -43,7 +41,7 @@ public sealed class AzureOpenAIChatClientTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task AzureOpenAIStreamingTestAsync()
+    public async Task OpenAIStreamingTestAsync()
     {
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
@@ -65,21 +63,19 @@ public sealed class AzureOpenAIChatClientTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task AzureOpenAIHttpRetryPolicyTestAsync()
+    public async Task OpenAIHttpRetryPolicyTestAsync()
     {
         // Arrange
         List<HttpStatusCode?> statusCodes = [];
 
-        var config = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(config);
-        Assert.NotNull(config.DeploymentName);
-        Assert.NotNull(config.Endpoint);
+        var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+        Assert.NotNull(openAIConfiguration.ChatModelId);
 
         var kernelBuilder = Kernel.CreateBuilder();
 
-        kernelBuilder.AddAzureOpenAIChatCompletion(
-            deploymentName: config.DeploymentName,
-            endpoint: config.Endpoint,
+        kernelBuilder.AddOpenAIChatCompletion(
+            modelId: openAIConfiguration.ChatModelId,
             apiKey: "INVALID_KEY");
 
         kernelBuilder.Services.ConfigureHttpClientDefaults(c =>
@@ -111,7 +107,7 @@ public sealed class AzureOpenAIChatClientTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task AzureOpenAIShouldReturnUsageAsync()
+    public async Task OpenAIShouldReturnUsageAsync()
     {
         // Arrange
         var kernel = this.CreateAndInitializeKernel();
@@ -194,7 +190,7 @@ public sealed class AzureOpenAIChatClientTests : BaseIntegrationTest
     public async Task LogProbsDataIsReturnedWhenRequestedAsync(bool? logprobs, int? topLogprobs)
     {
         // Arrange
-        var settings = new AzureOpenAIPromptExecutionSettings { Logprobs = logprobs, TopLogprobs = topLogprobs };
+        var settings = new OpenAIPromptExecutionSettings { Logprobs = logprobs, TopLogprobs = topLogprobs };
 
         var kernel = this.CreateAndInitializeKernel();
 
@@ -219,19 +215,18 @@ public sealed class AzureOpenAIChatClientTests : BaseIntegrationTest
     }
     private Kernel CreateAndInitializeKernel(HttpClient? httpClient = null)
     {
-        var config = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(config);
-        Assert.NotNull(config.DeploymentName);
-        Assert.NotNull(config.Endpoint);
-        Assert.NotNull(config.ServiceId);
+        var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+        Assert.NotNull(openAIConfiguration.ChatModelId);
+        Assert.NotNull(openAIConfiguration.ApiKey);
+        Assert.NotNull(openAIConfiguration.ServiceId);
 
         var kernelBuilder = this.CreateKernelBuilder();
 
-        kernelBuilder.AddAzureOpenAIChatClient(
-            deploymentName: config.DeploymentName,
-            endpoint: config.Endpoint,
-            credentials: new AzureCliCredential(),
-            serviceId: config.ServiceId,
+        kernelBuilder.AddOpenAIChatClient(
+            modelId: openAIConfiguration.ChatModelId,
+            apiKey: openAIConfiguration.ApiKey,
+            serviceId: openAIConfiguration.ServiceId,
             httpClient: httpClient);
 
         return kernelBuilder.Build();
@@ -243,7 +238,7 @@ public sealed class AzureOpenAIChatClientTests : BaseIntegrationTest
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
-        .AddUserSecrets<AzureOpenAIChatClientTests>()
+        .AddUserSecrets<OpenAIChatCompletionStreamingTests>()
         .Build();
 
     private sealed class HttpHeaderHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
