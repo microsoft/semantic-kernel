@@ -386,9 +386,7 @@ public abstract class CollectionModelBuilder
             return;
         }
 
-        property.StorageName = this.Options.EscapeIdentifier is not null
-            ? this.Options.EscapeIdentifier(storageName)
-            : storageName;
+        property.StorageName = storageName;
     }
 
     /// <summary>

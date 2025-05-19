@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
@@ -37,9 +36,4 @@ public sealed class CollectionModelBuildingOptions
     /// When set, the model builder will manage the key storage name, and users may not customize it.
     /// </summary>
     public string? ReservedKeyStorageName { get; init; }
-
-    /// <summary>
-    /// A method for escaping storage names.
-    /// </summary>
-    public Func<string, string>? EscapeIdentifier { get; init; }
 }

@@ -51,7 +51,7 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    protected override void TranslateQueryParameter(string name, object? value)
+    protected override void TranslateQueryParameter(object? value)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)
@@ -61,20 +61,11 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
         }
         else
         {
-            // Duplicate parameter name, create a new parameter with a different name
-            // TODO: Share the same parameter when it references the same captured value
-            if (this._parameters.ContainsKey(name))
-            {
-                var baseName = name;
-                var i = 0;
-                do
-                {
-                    name = baseName + (i++);
-                } while (this._parameters.ContainsKey(name));
-            }
-
-            this._parameters.Add(name, value);
-            this._sql.Append('@').Append(name);
+            // The param name is just the index, so there is no need for escaping or quoting.
+            int index = this._sql.Length;
+            this._sql.Append('@').Append(this._parameters.Count + 1);
+            string paramName = this._sql.ToString(index, this._sql.Length - index);
+            this._parameters.Add(paramName, value);
         }
     }
 }

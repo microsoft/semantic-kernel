@@ -61,7 +61,7 @@ internal abstract class SqlFilterTranslator
                 return;
 
             case QueryParameterExpression { Name: var name, Value: var value }:
-                this.TranslateQueryParameter(name, value);
+                this.TranslateQueryParameter(value);
                 return;
 
             case MemberExpression member:
@@ -154,8 +154,10 @@ internal abstract class SqlFilterTranslator
                 this._sql.Append(l);
                 return;
 
-            case string s:
-                this._sql.Append('\'').Append(s.Replace("'", "''")).Append('\'');
+            case string untrustedInput:
+                // This is the only place where we allow untrusted input to be passed in, so we need to quote and escape it.
+                // Luckily for us, values are escaped in the same way for every provider that we support so far.
+                this._sql.Append('\'').Append(untrustedInput.Replace("'", "''")).Append('\'');
                 return;
             case bool b:
                 this._sql.Append(b ? "TRUE" : "FALSE");
@@ -182,17 +184,18 @@ internal abstract class SqlFilterTranslator
     {
         if (this.TryBindProperty(memberExpression, out var property))
         {
-            this.GenerateColumn(property.StorageName, isSearchCondition);
+            this.GenerateColumn(property, isSearchCondition);
             return;
         }
 
         throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
 
-    protected virtual void GenerateColumn(string column, bool isSearchCondition = false)
-        => this._sql.Append('"').Append(column.Replace("\"", "\"\"")).Append('"');
+    protected virtual void GenerateColumn(PropertyModel property, bool isSearchCondition = false)
+        // StorageName is considered to be a safe input, we quote and escape it mostly to produce valid SQL.
+        => this._sql.Append('"').Append(property.StorageName.Replace("\"", "\"\"")).Append('"');
 
-    protected abstract void TranslateQueryParameter(string name, object? value);
+    protected abstract void TranslateQueryParameter(object? value);
 
     private void TranslateMethodCall(MethodCallExpression methodCall, bool isSearchCondition = false)
     {
@@ -200,7 +203,7 @@ internal abstract class SqlFilterTranslator
         {
             // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
             case MethodCallExpression when this.TryBindProperty(methodCall, out var property):
-                this.GenerateColumn(property.StorageName, isSearchCondition);
+                this.GenerateColumn(property, isSearchCondition);
                 return;
 
             // Enumerable.Contains()
@@ -302,7 +305,7 @@ internal abstract class SqlFilterTranslator
 
             // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
             case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
-                this.GenerateColumn(property.StorageName, isSearchCondition);
+                this.GenerateColumn(property, isSearchCondition);
                 return;
 
             default:

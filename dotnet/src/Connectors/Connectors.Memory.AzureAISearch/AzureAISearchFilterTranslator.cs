@@ -114,8 +114,9 @@ internal class AzureAISearchFilterTranslator
                 this._filter.Append(l);
                 return;
 
-            case string s:
-                this._filter.Append('\'').Append(s.Replace("'", "''")).Append('\''); // TODO: escaping
+            case string untrustedInput:
+                // This is the only place where we allow untrusted input to be passed in, so we need to quote and escape it.
+                this._filter.Append('\'').Append(untrustedInput.Replace("'", "''")).Append('\'');
                 return;
             case bool b:
                 this._filter.Append(b ? "true" : "false");
