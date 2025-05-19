@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import inspect
 import logging
 import sys
 from collections.abc import AsyncIterable, Awaitable, Callable
 from copy import copy
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 from openai import AsyncOpenAI
 from openai.lib._parsing._responses import type_to_text_format_param
@@ -18,10 +19,12 @@ from openai.types.responses.web_search_tool_param import UserLocation, WebSearch
 from openai.types.shared_params.comparison_filter import ComparisonFilter
 from openai.types.shared_params.compound_filter import CompoundFilter
 from openai.types.shared_params.response_format_json_object import ResponseFormatJSONObject
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, SecretStr, ValidationError
 
 from semantic_kernel.agents import Agent, AgentResponseItem, AgentThread, RunPollingOptions
+from semantic_kernel.agents.agent import AgentSpec, ToolSpec, register_agent_type
 from semantic_kernel.agents.open_ai.responses_agent_thread_actions import ResponsesAgentThreadActions
+from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -55,11 +58,78 @@ if TYPE_CHECKING:
     from openai import AsyncOpenAI
 
     from semantic_kernel.kernel import Kernel
+    from semantic_kernel.kernel_pydantic import KernelBaseSettings
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
+_T = TypeVar("_T", bound="OpenAIResponsesAgent")
 ResponseFormatUnion = ResponseFormatText | ResponseFormatTextJSONSchemaConfigParam | ResponseFormatJSONObject
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+# region Declarative Spec
+
+_TOOL_BUILDERS: dict[str, Callable[[ToolSpec, Kernel | None], ToolParam]] = {}
+
+
+def _register_tool(tool_type: str):
+    def decorator(fn: Callable[[ToolSpec, Kernel | None], ToolParam]):
+        _TOOL_BUILDERS[tool_type.lower()] = fn
+        return fn
+
+    return decorator
+
+
+@_register_tool("file_search")
+def _file_search(spec: ToolSpec, kernel: Kernel | None = None) -> FileSearchToolParam:
+    vector_store_ids = spec.options.get("vector_store_ids")
+    if not vector_store_ids or not isinstance(vector_store_ids, list) or not vector_store_ids[0]:
+        raise AgentInitializationException(f"Missing or malformed 'vector_store_ids' in: {spec}")
+    return OpenAIResponsesAgent.configure_file_search_tool(vector_store_ids=vector_store_ids)
+
+
+@_register_tool("web_search")
+def _web_search(spec: ToolSpec, kernel: Kernel | None = None) -> WebSearchToolParam:
+    return OpenAIResponsesAgent.configure_web_search_tool()
+
+
+@_register_tool("function")
+def _function(spec: ToolSpec, kernel: "Kernel") -> ToolParam:
+    def parse_fqn(fqn: str) -> tuple[str, str]:
+        parts = fqn.split(".")
+        if len(parts) != 2:
+            raise AgentInitializationException(f"Function `{fqn}` must be in the form `pluginName.functionName`.")
+        return parts[0], parts[1]
+
+    if not spec.id:
+        raise AgentInitializationException("Function ID is required for function tools.")
+    plugin_name, function_name = parse_fqn(spec.id)
+    funcs = kernel.get_list_of_function_metadata_filters({"included_functions": f"{plugin_name}-{function_name}"})
+
+    match len(funcs):
+        case 0:
+            raise AgentInitializationException(f"Function `{spec.id}` not found in kernel.")
+        case 1:
+            return kernel_function_metadata_to_function_call_format(funcs[0])  # type: ignore[return-value]
+        case _:
+            raise AgentInitializationException(f"Multiple definitions found for `{spec.id}`. Please remove duplicates.")
+
+
+def _build_tool(spec: ToolSpec, kernel: "Kernel") -> ToolParam:
+    if not spec.type:
+        raise AgentInitializationException("Tool spec must include a 'type' field.")
+
+    try:
+        builder = _TOOL_BUILDERS[spec.type.lower()]
+    except KeyError as exc:
+        raise AgentInitializationException(f"Unsupported tool type: {spec.type}") from exc
+
+    sig = inspect.signature(builder)
+    return builder(spec) if len(sig.parameters) == 1 else builder(spec, kernel)  # type: ignore[call-arg]
+
+
+# endregion
+
 
 # region Agent Thread
 
@@ -177,6 +247,7 @@ class ResponsesAgentThread(AgentThread):
 
 
 @experimental
+@register_agent_type("openai_responses_agent")
 class OpenAIResponsesAgent(Agent):
     """OpenAI Responses Agent class.
 
@@ -361,6 +432,119 @@ class OpenAIResponsesAgent(Agent):
         )
 
         return client, openai_settings.responses_model_id
+
+    # endregion
+
+    # region Declarative Spec
+
+    @override
+    @classmethod
+    async def _from_dict(
+        cls: type[_T],
+        data: dict,
+        *,
+        kernel: Kernel,
+        prompt_template_config: "PromptTemplateConfig | None" = None,
+        **kwargs,
+    ) -> _T:
+        """Create an Assistant Agent from the provided dictionary.
+
+        Args:
+            data: The dictionary containing the agent data.
+            kernel: The kernel to use for the agent.
+            prompt_template_config: The prompt template configuration.
+            kwargs: Additional keyword arguments. Note: unsupported keys may raise validation errors.
+
+        Returns:
+            AzureAIAgent: The OpenAI Assistant Agent instance.
+        """
+        client: AsyncOpenAI = kwargs.pop("client", None)
+        if client is None:
+            raise AgentInitializationException("Missing required 'client' in OpenAIResponsesAgent._from_dict()")
+
+        spec = AgentSpec.model_validate(data)
+
+        if "settings" in kwargs:
+            kwargs.pop("settings")
+
+        args = data.pop("arguments", None)
+        if args:
+            arguments = KernelArguments(**args)
+
+        if not (spec.model and spec.model.id):
+            raise AgentInitializationException("model.id required when creating a new Azure AI agent")
+
+        # Build tool definitions & resources
+        tool_objs = [_build_tool(t, kernel) for t in spec.tools if t.type != "function"]
+
+        return cls(
+            ai_model_id=spec.model.id,
+            client=client,
+            arguments=arguments,
+            kernel=kernel,
+            prompt_template_config=prompt_template_config,
+            tools=tool_objs,
+            **kwargs,
+        )
+
+    @classmethod
+    def _get_setting(cls: type[_T], value: Any) -> Any:
+        """Return raw value if `SecretStr`, otherwise pass through."""
+        if isinstance(value, SecretStr):
+            return value.get_secret_value()
+        return value
+
+    @override
+    @classmethod
+    def resolve_placeholders(
+        cls: type[_T],
+        yaml_str: str,
+        settings: "KernelBaseSettings | None" = None,
+        extras: dict[str, Any] | None = None,
+    ) -> str:
+        """Substitute ${OpenAI:Key} placeholders with fields from OpenAIAgentSettings and extras."""
+        import re
+
+        pattern = re.compile(r"\$\{([^}]+)\}")
+
+        # Build the mapping only if settings is provided and valid
+        field_mapping: dict[str, Any] = {}
+
+        if settings is None:
+            settings = OpenAISettings()
+
+        if not isinstance(settings, OpenAISettings):
+            raise AgentInitializationException(f"Expected OpenAISettings, got {type(settings).__name__}")
+
+        field_mapping.update({
+            "ChatModelId": cls._get_setting(getattr(settings, "chat_model_id", None)),
+            "AgentId": cls._get_setting(getattr(settings, "agent_id", None)),
+            "ApiKey": cls._get_setting(getattr(settings, "api_key", None)),
+        })
+
+        if extras:
+            field_mapping.update(extras)
+
+        def replacer(match: re.Match[str]) -> str:
+            """Replace the matched placeholder with the corresponding value from field_mapping."""
+            full_key = match.group(1)  # for example, OpenAI:ApiKey
+            section, _, key = full_key.partition(":")
+            if section != "OpenAI":
+                return match.group(0)
+
+            # Try short key first (ApiKey), then full (OpenAI:ApiKey)
+            return str(field_mapping.get(key) or field_mapping.get(full_key) or match.group(0))
+
+        result = pattern.sub(replacer, yaml_str)
+
+        # Safety check for unresolved placeholders
+        unresolved = pattern.findall(result)
+        if unresolved:
+            raise AgentInitializationException(
+                f"Unresolved placeholders in spec: {', '.join(f'${{{key}}}' for key in unresolved)}"
+            )
+
+        return result
 
     # endregion
 

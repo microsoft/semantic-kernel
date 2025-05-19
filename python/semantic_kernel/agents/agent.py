@@ -658,8 +658,10 @@ _BUILTIN_AGENTS_LOCK = threading.Lock()
 _BUILTIN_AGENT_MODULES = [
     "semantic_kernel.agents.chat_completion.chat_completion_agent",
     "semantic_kernel.agents.azure_ai.azure_ai_agent",
-    "semantic_kernel.agents.open_ai.open_ai_assistant_agent",
+    "semantic_kernel.agents.open_ai.openai_assistant_agent",
     "semantic_kernel.agents.open_ai.azure_assistant_agent",
+    "semantic_kernel.agents.open_ai.openai_responses_agent",
+    "semantic_kernel.agents.open_ai.azure_responses_agent",
 ]
 
 

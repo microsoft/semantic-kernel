@@ -11,8 +11,8 @@ on an existing agent ID.
 
 # Define the YAML string for the sample
 spec = """
-id: ${AzureAI:AgentId}
-type: foundry_agent
+id: ${AzureOpenAI:AgentId}
+type: azure_openai_assistant
 instructions: You are helpful agent who always responds in French.
 """
 

@@ -134,7 +134,7 @@ class AzureAssistantAgent(OpenAIAssistantAgent):
         settings: "KernelBaseSettings | None" = None,
         extras: dict[str, Any] | None = None,
     ) -> str:
-        """Substitute ${OpenAI:Key} placeholders with fields from OpenAIAgentSettings and extras."""
+        """Substitute ${AzureOpenAI:Key} placeholders with fields from AzureOpenAIAgentSettings and extras."""
         import re
 
         pattern = re.compile(r"\$\{([^}]+)\}")

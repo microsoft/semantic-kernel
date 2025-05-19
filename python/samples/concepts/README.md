@@ -61,7 +61,7 @@
 - [Mixed Chat Reset](./agents/mixed_chat/mixed_chat_reset.py)
 - [Mixed Chat Streaming](./agents/mixed_chat/mixed_chat_streaming.py)
 
-#### [OpenAI Assistant Agent](../../semantic_kernel/agents/open_ai/open_ai_assistant_agent.py)
+#### [OpenAI Assistant Agent](../../semantic_kernel/agents/open_ai/openai_assistant_agent.py)
 
 - [OpenAI Assistant Auto Function Invocation Filter Streaming](./agents/openai_assistant/openai_assistant_auto_func_invocation_filter_streaming.py)
 - [OpenAI Assistant Auto Function Invocation Filter](./agents/openai_assistant/openai_assistant_auto_func_invocation_filter.py)

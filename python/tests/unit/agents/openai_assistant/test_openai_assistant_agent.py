@@ -8,7 +8,7 @@ from pydantic import BaseModel, ValidationError
 
 from semantic_kernel.agents import OpenAIAssistantAgent
 from semantic_kernel.agents.agent import AgentResponseItem
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantAgentThread
+from semantic_kernel.agents.open_ai.openai_assistant_agent import AssistantAgentThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent

@@ -482,6 +482,10 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         if "settings" in kwargs:
             kwargs.pop("settings")
 
+        args = data.pop("arguments", None)
+        if args:
+            arguments = KernelArguments(**args)
+
         if spec.id:
             existing_definition = await client.agents.get_agent(spec.id)
 
@@ -505,6 +509,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
                 client=client,
                 kernel=kernel,
                 prompt_template_config=prompt_template_config,
+                arguments=arguments,
                 **kwargs,
             )
 
@@ -534,6 +539,7 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             definition=agent_definition,
             client=client,
             kernel=kernel,
+            arguments=arguments,
             prompt_template_config=prompt_template_config,
             **kwargs,
         )
@@ -561,22 +567,24 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         # Build the mapping only if settings is provided and valid
         field_mapping: dict[str, Any] = {}
 
-        if settings is not None:
-            if not isinstance(settings, AzureAIAgentSettings):
-                raise AgentInitializationException(f"Expected AzureAIAgentSettings, got {type(settings).__name__}")
+        if settings is None:
+            settings = AzureAIAgentSettings()
 
-            field_mapping.update({
-                "ChatModelId": cls._get_setting(getattr(settings, "model_deployment_name", None)),
-                "ConnectionString": cls._get_setting(getattr(settings, "project_connection_string", None)),
-                "AgentId": cls._get_setting(getattr(settings, "agent_id", None)),
-                "Endpoint": cls._get_setting(getattr(settings, "endpoint", None)),
-                "SubscriptionId": cls._get_setting(getattr(settings, "subscription_id", None)),
-                "ResourceGroup": cls._get_setting(getattr(settings, "resource_group_name", None)),
-                "ProjectName": cls._get_setting(getattr(settings, "project_name", None)),
-                "BingConnectionId": cls._get_setting(getattr(settings, "bing_connection_id", None)),
-                "AzureAISearchConnectionId": cls._get_setting(getattr(settings, "azure_ai_search_connection_id", None)),
-                "AzureAISearchIndexName": cls._get_setting(getattr(settings, "azure_ai_search_index_name", None)),
-            })
+        if not isinstance(settings, AzureAIAgentSettings):
+            raise AgentInitializationException(f"Expected AzureAIAgentSettings, got {type(settings).__name__}")
+
+        field_mapping.update({
+            "ChatModelId": cls._get_setting(getattr(settings, "model_deployment_name", None)),
+            "ConnectionString": cls._get_setting(getattr(settings, "project_connection_string", None)),
+            "AgentId": cls._get_setting(getattr(settings, "agent_id", None)),
+            "Endpoint": cls._get_setting(getattr(settings, "endpoint", None)),
+            "SubscriptionId": cls._get_setting(getattr(settings, "subscription_id", None)),
+            "ResourceGroup": cls._get_setting(getattr(settings, "resource_group_name", None)),
+            "ProjectName": cls._get_setting(getattr(settings, "project_name", None)),
+            "BingConnectionId": cls._get_setting(getattr(settings, "bing_connection_id", None)),
+            "AzureAISearchConnectionId": cls._get_setting(getattr(settings, "azure_ai_search_connection_id", None)),
+            "AzureAISearchIndexName": cls._get_setting(getattr(settings, "azure_ai_search_index_name", None)),
+        })
 
         if extras:
             field_mapping.update(extras)
