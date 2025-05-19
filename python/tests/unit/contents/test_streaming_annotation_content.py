@@ -18,7 +18,7 @@ test_cases = [
     pytest.param(
         StreamingAnnotationContent(
             file_id="abc",
-            citation_type=CitationType.URL_CITATION,
+            citation_type=CitationType.URL_CITATION.value,
             url="http://example.com",
             quote="q",
             title="TITLE",
@@ -134,8 +134,9 @@ def test_element_roundtrip(annotation):
 
 @pytest.mark.parametrize("annotation", test_cases)
 def test_to_dict_call(annotation):
+    ctype = annotation.citation_type.value if annotation.citation_type else None
     expected_text = (
-        f"type={annotation.citation_type}, {annotation.file_id or annotation.url}, quote={annotation.quote}, title={annotation.title} "  # noqa: E501
+        f"type={ctype}, {annotation.file_id or annotation.url}, quote={annotation.quote}, title={annotation.title} "  # noqa: E501
         f"(Start Index={annotation.start_index}->End Index={annotation.end_index})"
     )
     expected_dict = {

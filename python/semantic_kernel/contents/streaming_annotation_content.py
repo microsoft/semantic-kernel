@@ -4,8 +4,7 @@ import logging
 from typing import Any, ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
-from pydantic import Field
-from pydantic_settings import SettingsConfigDict
+from pydantic import ConfigDict, Field
 
 from semantic_kernel.contents.annotation_content import CitationType
 from semantic_kernel.contents.const import STREAMING_ANNOTATION_CONTENT_TAG, ContentTypes
@@ -34,15 +33,15 @@ class StreamingAnnotationContent(KernelContent):
     title: str | None = None
     citation_type: CitationType | None = Field(None, alias="type")
 
-    model_config = SettingsConfigDict(
+    model_config = ConfigDict(
         extra="ignore",
-        case_sensitive=False,
         populate_by_name=True,
     )
 
     def __str__(self) -> str:
         """Return the string representation of the annotation content."""
-        return f"StreamingAnnotationContent(type={self.citation_type}, file_id={self.file_id}, url={self.url}, quote={self.quote}, title={self.title}, start_index={self.start_index}, end_index={self.end_index})"  # noqa: E501
+        ctype = self.citation_type.value if self.citation_type else None
+        return f"StreamingAnnotationContent(type={ctype}, file_id={self.file_id}, url={self.url}, quote={self.quote}, title={self.title}, start_index={self.start_index}, end_index={self.end_index})"  # noqa: E501
 
     def to_element(self) -> Element:
         """Convert the annotation content to an Element."""
@@ -78,7 +77,8 @@ class StreamingAnnotationContent(KernelContent):
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
+        ctype = self.citation_type.value if self.citation_type else None
         return {
             "type": "text",
-            "text": f"type={self.citation_type}, {self.file_id or self.url}, quote={self.quote}, title={self.title} (Start Index={self.start_index}->End Index={self.end_index})",  # noqa: E501
+            "text": f"type={ctype}, {self.file_id or self.url}, quote={self.quote}, title={self.title} (Start Index={self.start_index}->End Index={self.end_index})",  # noqa: E501
         }
