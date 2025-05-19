@@ -82,7 +82,7 @@ public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterT
             => base.SpecialCharactersText;
 #else
             // Redis client doesn't properly escape '"' on Full Framework.
-            => """>with $om[ specia]chara<ters'and\stuff""";
+            => base.SpecialCharactersText.Replace("\"", "");
 #endif
 
         // Override to remove the bool property, which isn't (currently) supported on Redis/JSON
@@ -142,7 +142,7 @@ public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicF
             => base.SpecialCharactersText;
 #else
             // Redis client doesn't properly escape '"' on Full Framework.
-            => """>with $om[ specia]chara<ters'and\stuff""";
+            => base.SpecialCharactersText.Replace("\"", "");
 #endif
 
         // Override to remove the bool property, which isn't (currently) supported on Redis
