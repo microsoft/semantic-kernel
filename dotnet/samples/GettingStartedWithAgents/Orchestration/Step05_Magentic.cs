@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -9,7 +10,6 @@ using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using AAIP = Azure.AI.Projects;
 
 namespace GettingStarted.Orchestration;
 
@@ -40,15 +40,14 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
                 instructions: "You are a Researcher. You find information without additional computation or quantitative analysis.",
                 kernel: researchKernel);
 
-        AAIP.AIProjectClient projectClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-        AAIP.AgentsClient agentsClient = projectClient.GetAgentsClient();
-        AAIP.Agent definition =
-            await agentsClient.CreateAgentAsync(
+        PersistentAgentsClient agentsClient = AzureAIAgent.CreateAgentsClient(TestConfiguration.AzureAI.Endpoint, new AzureCliCredential());
+        PersistentAgent definition =
+            await agentsClient.Administration.CreateAgentAsync(
                 TestConfiguration.AzureAI.ChatModelId,
                 name: "CoderAgent",
                 description: "Write and executes code to process and analyze data.",
                 instructions: "You solve questions using code. Please provide detailed analysis and computation process.",
-                tools: [new Azure.AI.Projects.CodeInterpreterToolDefinition()]);
+                tools: [new CodeInterpreterToolDefinition()]);
         AzureAIAgent coderAgent = new(definition, agentsClient);
 
         // Create a monitor to capturing agent responses (via ResponseCallback)
