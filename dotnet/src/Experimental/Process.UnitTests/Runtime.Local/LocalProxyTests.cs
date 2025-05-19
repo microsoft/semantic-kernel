@@ -29,8 +29,8 @@ public class LocalProxyTests
         var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithProxyWithSingleTopicCalledTwiceAsync));
 
-        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(name: nameof(ProcessWithProxyWithSingleTopicCalledTwiceAsync));
-        var proxyStep = process.AddProxyStep([this._topic1, this._topic2]);
+        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(id: nameof(ProcessWithProxyWithSingleTopicCalledTwiceAsync));
+        var proxyStep = process.AddProxyStep(id: "proxy", [this._topic1, this._topic2]);
 
         process.OnInputEvent(this._startProcessEvent).SendEventTo(new(counterStep));
         counterStep.OnFunctionResult().EmitExternalEvent(proxyStep, this._topic1);
@@ -78,8 +78,8 @@ public class LocalProxyTests
         var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithProxyFailsToCreateDueMissingTopicRegistration));
 
-        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(name: nameof(ProcessWithProxyFailsToCreateDueMissingTopicRegistration));
-        var proxyStep = process.AddProxyStep([this._topic1]);
+        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(id: nameof(ProcessWithProxyFailsToCreateDueMissingTopicRegistration));
+        var proxyStep = process.AddProxyStep(id: "proxy", [this._topic1]);
 
         process.OnInputEvent(this._startProcessEvent).SendEventTo(new(counterStep));
 
@@ -234,9 +234,9 @@ public class LocalProxyTests
     {
         ProcessBuilder process = new(processName);
 
-        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(name: counterName);
+        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(id: counterName);
         var evenNumberStep = process.AddStepFromType<CommonSteps.EvenNumberDetectorStep>();
-        var proxyStep = process.AddProxyStep([this._topic1, this._topic2]);
+        var proxyStep = process.AddProxyStep(id: "proxy", [this._topic1, this._topic2]);
 
         process
             .OnInputEvent(this._startProcessEvent)
@@ -245,12 +245,12 @@ public class LocalProxyTests
         counterStep
             .OnFunctionResult()
             .EmitExternalEvent(proxyStep, this._topic1)
-            .SendEventTo(new(evenNumberStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(evenNumberStep));
 
         // request another number if number is odd
         evenNumberStep
             .OnEvent(CommonSteps.EvenNumberDetectorStep.OutputEvents.OddNumber)
-            .SendEventTo(new(counterStep));
+            .SendEventTo(new ProcessFunctionTargetBuilder(counterStep));
 
         evenNumberStep
             .OnEvent(CommonSteps.EvenNumberDetectorStep.OutputEvents.EvenNumber)

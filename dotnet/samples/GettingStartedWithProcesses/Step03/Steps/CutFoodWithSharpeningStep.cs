@@ -12,7 +12,7 @@ namespace Step03.Steps;
 [KernelProcessStepMetadata("CutFoodStep.V2")]
 public class CutFoodWithSharpeningStep : KernelProcessStep<CutFoodWithSharpeningState>
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string ChopFood = nameof(ChopFood);
         public const string SliceFood = nameof(SliceFood);
@@ -35,7 +35,7 @@ public class CutFoodWithSharpeningStep : KernelProcessStep<CutFoodWithSharpening
         return ValueTask.CompletedTask;
     }
 
-    [KernelFunction(Functions.ChopFood)]
+    [KernelFunction(ProcessStepFunctions.ChopFood)]
     public async Task ChopFoodAsync(KernelProcessStepContext context, List<string> foodActions)
     {
         var foodToBeCut = foodActions.First();
@@ -54,7 +54,7 @@ public class CutFoodWithSharpeningStep : KernelProcessStep<CutFoodWithSharpening
         await context.EmitEventAsync(new() { Id = OutputEvents.ChoppingReady, Data = foodActions });
     }
 
-    [KernelFunction(Functions.SliceFood)]
+    [KernelFunction(ProcessStepFunctions.SliceFood)]
     public async Task SliceFoodAsync(KernelProcessStepContext context, List<string> foodActions)
     {
         var foodToBeCut = foodActions.First();
@@ -73,7 +73,7 @@ public class CutFoodWithSharpeningStep : KernelProcessStep<CutFoodWithSharpening
         await context.EmitEventAsync(new() { Id = OutputEvents.SlicingReady, Data = foodActions });
     }
 
-    [KernelFunction(Functions.SharpenKnife)]
+    [KernelFunction(ProcessStepFunctions.SharpenKnife)]
     public async Task SharpenKnifeAsync(KernelProcessStepContext context, List<string> foodActions)
     {
         this._state!.KnifeSharpness += this._state._sharpeningBoost;

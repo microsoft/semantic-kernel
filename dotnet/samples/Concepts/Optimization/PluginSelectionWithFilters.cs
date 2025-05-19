@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace Optimization;
 
@@ -34,7 +34,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         var builder = Kernel
             .CreateBuilder()
             .AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey)
-            .AddOpenAITextEmbeddingGeneration("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
+            .AddOpenAIEmbeddingGenerator("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
 
         // Add logging.
         var logger = this.LoggerFactory.CreateLogger<PluginSelectionWithFilters>();
@@ -108,7 +108,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         var builder = Kernel
             .CreateBuilder()
             .AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey)
-            .AddOpenAITextEmbeddingGeneration("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
+            .AddOpenAIEmbeddingGenerator("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
 
         // Add logging.
         var logger = this.LoggerFactory.CreateLogger<PluginSelectionWithFilters>();
@@ -181,7 +181,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         string collectionName,
         int numberOfBestFunctions) : IFunctionInvocationFilter
     {
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        public async Task OnFunctionInvocationAsync(Microsoft.SemanticKernel.FunctionInvocationContext context, Func<Microsoft.SemanticKernel.FunctionInvocationContext, Task> next)
         {
             var request = GetRequestArgument(context.Arguments);
 
@@ -280,7 +280,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
     }
 
     public class FunctionProvider(
-        ITextEmbeddingGenerationService textEmbeddingGenerationService,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         IVectorStore vectorStore,
         IFunctionKeyProvider functionKeyProvider) : IFunctionProvider
     {
@@ -292,7 +292,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             CancellationToken cancellationToken = default)
         {
             // Generate embedding for original request.
-            var requestEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(request, cancellationToken: cancellationToken);
+            var requestEmbedding = await embeddingGenerator.GenerateAsync(request, cancellationToken: cancellationToken);
 
             var collection = vectorStore.GetCollection<string, FunctionRecord>(collectionName);
             await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
@@ -309,7 +309,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
     }
 
     public class PluginStore(
-        ITextEmbeddingGenerationService textEmbeddingGenerationService,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         IVectorStore vectorStore,
         IFunctionKeyProvider functionKeyProvider) : IPluginStore
     {
@@ -320,8 +320,8 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             var functionsData = GetFunctionsData(plugins);
 
             // Generate embedding for each function.
-            var embeddings = await textEmbeddingGenerationService
-                .GenerateEmbeddingsAsync(functionsData.Select(l => l.TextToVectorize).ToArray(), cancellationToken: cancellationToken);
+            var embeddings = await embeddingGenerator
+                .GenerateAsync(functionsData.Select(l => l.TextToVectorize).ToArray(), cancellationToken: cancellationToken);
 
             // Create vector store record instances with function information and embedding.
             for (var i = 0; i < functionsData.Count; i++)
@@ -332,7 +332,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
                 {
                     Id = functionKeyProvider.GetFunctionKey(function),
                     FunctionInfo = functionInfo,
-                    FunctionInfoEmbedding = embeddings[i]
+                    FunctionInfoEmbedding = embeddings[i].Vector
                 });
             }
 

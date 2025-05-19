@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Text.Json;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
-using Microsoft.SemanticKernel.Embeddings;
 using Resources;
 
 namespace Memory;
@@ -24,10 +25,11 @@ public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
         var httpClient = new HttpClient(handler);
 
         // Create an embedding generation service.
-        var embeddingGenerationService = new OpenAITextEmbeddingGenerationService(
-                modelId: TestConfiguration.OpenAI.EmbeddingModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey,
-                httpClient: httpClient);
+        var embeddingGenerator = new OpenAI.OpenAIClient(
+            new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey),
+            new OpenAI.OpenAIClientOptions() { Transport = new HttpClientPipelineTransport(httpClient) })
+                .GetEmbeddingClient(TestConfiguration.OpenAI.EmbeddingModelId)
+                .AsIEmbeddingGenerator();
 
         // Construct an InMemory vector store.
         var vectorStore = new InMemoryVectorStore();
@@ -54,7 +56,7 @@ public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
 
             // Create a record collection from a list of strings using the provided delegate.
             var collection = await vectorStore.CreateCollectionFromListAsync<Guid, DataModel>(
-                collectionName, lines, embeddingGenerationService, CreateRecord);
+                collectionName, lines, embeddingGenerator, CreateRecord);
 
             // Save the record collection to a file stream.
             using (FileStream fileStream = new(filePath, FileMode.OpenOrCreate))
@@ -70,7 +72,7 @@ public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
 
             // Search the collection using a vector search.
             var searchString = "What is the Semantic Kernel?";
-            var searchVector = await embeddingGenerationService.GenerateEmbeddingAsync(searchString);
+            var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
             var resultRecords = await vectorSearch!.SearchEmbeddingAsync(searchVector, top: 1).ToListAsync();
 
             Console.WriteLine("Search string: " + searchString);
@@ -83,9 +85,9 @@ public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
     public async Task LoadTextSearchResultsAndSearchAsync()
     {
         // Create an embedding generation service.
-        var embeddingGenerationService = new OpenAITextEmbeddingGenerationService(
-                modelId: TestConfiguration.OpenAI.EmbeddingModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey);
+        var embeddingGenerator = new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+            .GetEmbeddingClient(TestConfiguration.OpenAI.EmbeddingModelId)
+            .AsIEmbeddingGenerator();
 
         // Construct an InMemory vector store.
         var vectorStore = new InMemoryVectorStore();
@@ -110,11 +112,11 @@ public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
 
         // Create a record collection from a list of strings using the provided delegate.
         var vectorSearch = await vectorStore.CreateCollectionFromTextSearchResultsAsync<Guid, DataModel>(
-            collectionName, searchResults!, embeddingGenerationService, CreateRecord);
+            collectionName, searchResults!, embeddingGenerator, CreateRecord);
 
         // Search the collection using a vector search.
         var searchString = "What is the Semantic Kernel?";
-        var searchVector = await embeddingGenerationService.GenerateEmbeddingAsync(searchString);
+        var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
         var resultRecords = await vectorSearch!.SearchEmbeddingAsync(searchVector, top: 1).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);

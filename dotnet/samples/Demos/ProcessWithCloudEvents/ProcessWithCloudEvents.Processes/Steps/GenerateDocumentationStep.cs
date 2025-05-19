@@ -14,7 +14,7 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
     /// <summary>
     /// Function names of the steps, to be refereced when hooking up the step in a SK process
     /// </summary>
-    public static class Functions
+    public static class ProcessFunctions
     {
         /// <summary>
         /// Genereta Doc function name
@@ -63,7 +63,7 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
     /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>
     /// <param name="productInfo">content to be used for document generation</param>
     /// <returns></returns>
-    [KernelFunction(Functions.GenerateDocs)]
+    [KernelFunction(ProcessFunctions.GenerateDocs)]
     public async Task GenerateDocumentationAsync(Kernel kernel, KernelProcessStepContext context, ProductInfo productInfo)
     {
         Console.WriteLine($"[{nameof(GenerateDocumentationStep)}]:\tGenerating documentation for provided productInfo...");
@@ -94,7 +94,7 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
     /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>
     /// <param name="suggestions">suggestions to be integrated into the document content</param>
     /// <returns></returns>
-    [KernelFunction(Functions.ApplySuggestions)]
+    [KernelFunction(ProcessFunctions.ApplySuggestions)]
     public async Task ApplySuggestionsAsync(Kernel kernel, KernelProcessStepContext context, string suggestions)
     {
         Console.WriteLine($"[{nameof(GenerateDocumentationStep)}]:\tRewriting documentation with provided suggestions...");
