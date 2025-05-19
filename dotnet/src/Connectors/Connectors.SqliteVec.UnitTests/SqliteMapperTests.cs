@@ -146,9 +146,9 @@ public sealed class SqliteMapperTests
 
     #region private
 
-    private static VectorStoreRecordDefinition GetRecordDefinition<TKey>()
+    private static VectorStoreCollectionDefinition GetRecordDefinition<TKey>()
     {
-        return new VectorStoreRecordDefinition
+        return new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -171,7 +171,7 @@ public sealed class SqliteMapperTests
         };
     }
 
-    private static CollectionModel BuildModel(Type type, VectorStoreRecordDefinition definition)
+    private static CollectionModel BuildModel(Type type, VectorStoreCollectionDefinition definition)
         => new SqliteModelBuilder().Build(type, definition, defaultEmbeddingGenerator: null);
 
 #pragma warning disable CA1812

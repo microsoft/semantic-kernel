@@ -23,18 +23,18 @@ public abstract class VectorStore : IDisposable
     /// <typeparam name="TKey">The data type of the record key.</typeparam>
     /// <typeparam name="TRecord">The record data model to use for adding, updating, and retrieving data from the collection.</typeparam>
     /// <param name="name">The name of the collection.</param>
-    /// <param name="vectorStoreRecordDefinition">The schema of the record type.</param>
+    /// <param name="definition">The schema of the record type.</param>
     /// <returns>A new <see cref="VectorStoreCollection{TKey, TRecord}"/> instance for managing the records in the collection.</returns>
     /// <remarks>
     /// To successfully request a collection, either <typeparamref name="TRecord"/> must be annotated with attributes that define the schema of
-    /// the record type, or <paramref name="vectorStoreRecordDefinition"/> must be provided.
+    /// the record type, or <paramref name="definition"/> must be provided.
     /// </remarks>
     /// <seealso cref="VectorStoreKeyAttribute"/>
     /// <seealso cref="VectorStoreDataAttribute"/>
     /// <seealso cref="VectorStoreVectorAttribute"/>
     [RequiresDynamicCode("This API is not compatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, use GetCollectionDynamic() instead.")]
     [RequiresUnreferencedCode("This API is not compatible with trimming. For dynamic mapping via Dictionary<string, object?>, use GetCollectionDynamic() instead.")]
-    public abstract VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public abstract VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
         where TKey : notnull
         where TRecord : class;
 
@@ -42,9 +42,9 @@ public abstract class VectorStore : IDisposable
     /// Gets a collection from the vector store, using dynamic mapping; the record type is represented as a <see cref="Dictionary{TKey, TValue}"/>.
     /// </summary>
     /// <param name="name">The name of the collection.</param>
-    /// <param name="vectorStoreRecordDefinition">The schema of the record type.</param>
+    /// <param name="definition">The schema of the record type.</param>
     /// <returns>A new <see cref="VectorStoreCollection{TKey, TRecord}"/> instance for managing the records in the collection.</returns>
-    public abstract VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition);
+    public abstract VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition);
 
     /// <summary>
     /// Retrieves the names of all the collections in the vector store.

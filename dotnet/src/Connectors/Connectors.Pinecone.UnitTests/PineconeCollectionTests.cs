@@ -25,7 +25,7 @@ public class PineconeCollectionTests
     public void CanCreateCollectionWithMismatchedDefinitionAndType()
     {
         // Arrange.
-        var definition = new VectorStoreRecordDefinition()
+        var definition = new VectorStoreCollectionDefinition()
         {
             Properties = new List<VectorStoreProperty>
             {

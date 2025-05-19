@@ -24,7 +24,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
 
     protected abstract HashSet<string> GetSupportedDistanceFunctions();
 
-    protected abstract VectorStoreCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TRecord : class;
+    protected abstract VectorStoreCollection<TKey, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreCollectionDefinition? definition) where TRecord : class;
 
     protected virtual int DelayAfterIndexCreateInMilliseconds { get; } = 0;
 
@@ -115,9 +115,9 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
         await sut.EnsureCollectionDeletedAsync();
     }
 
-    private static VectorStoreRecordDefinition CreateKeyWithVectorRecordDefinition(int vectorDimensions, string distanceFunction)
+    private static VectorStoreCollectionDefinition CreateKeyWithVectorRecordDefinition(int vectorDimensions, string distanceFunction)
     {
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
             Properties =
             [

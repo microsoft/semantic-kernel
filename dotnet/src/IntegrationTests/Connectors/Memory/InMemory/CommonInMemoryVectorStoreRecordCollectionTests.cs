@@ -16,11 +16,11 @@ public class CommonInMemoryVectorStoreRecordCollectionTests() : BaseVectorStoreR
     protected override string Key3 => "3";
     protected override string Key4 => "4";
 
-    protected override VectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected override VectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreCollectionDefinition? definition)
     {
         return new InMemoryCollection<string, TRecord>(recordCollectionName, new()
         {
-            Definition = vectorStoreRecordDefinition
+            Definition = definition
         });
     }
 

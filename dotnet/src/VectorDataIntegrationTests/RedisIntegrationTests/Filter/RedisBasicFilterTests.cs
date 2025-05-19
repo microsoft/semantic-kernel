@@ -78,7 +78,7 @@ public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterT
         public override string CollectionName => "JsonCollectionFilterTests";
 
         // Override to remove the bool property, which isn't (currently) supported on Redis/JSON
-        public override VectorStoreRecordDefinition CreateRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
                 Properties = base.CreateRecordDefinition().Properties.Where(p => p.Type != typeof(bool)).ToList()
@@ -130,7 +130,7 @@ public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicF
         public override string CollectionName => "HashSetCollectionFilterTests";
 
         // Override to remove the bool property, which isn't (currently) supported on Redis
-        public override VectorStoreRecordDefinition CreateRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
                 Properties = base.CreateRecordDefinition().Properties.Where(p =>

@@ -48,7 +48,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
     {
         using var dockerClientConfiguration = new DockerClientConfiguration();
         this._client = dockerClientConfiguration.CreateClient();
-        this.HotelVectorStoreRecordDefinition = new VectorStoreRecordDefinition
+        this.HotelVectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -63,7 +63,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
                 new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), VectorDimensions) { DistanceFunction = DistanceFunction.ManhattanDistance }
             }
         };
-        this.HotelWithGuidIdVectorStoreRecordDefinition = new VectorStoreRecordDefinition
+        this.HotelWithGuidIdVectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -94,10 +94,10 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
     public ITextEmbeddingGenerationService EmbeddingGenerator { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for our test model.</summary>
-    public VectorStoreRecordDefinition HotelVectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition HotelVectorStoreRecordDefinition { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for our test model.</summary>
-    public VectorStoreRecordDefinition HotelWithGuidIdVectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition HotelWithGuidIdVectorStoreRecordDefinition { get; private set; }
 
     /// <summary>
     /// Create / Recreate qdrant docker container and run it.

@@ -28,7 +28,7 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
     };
 
     [RequiresUnreferencedCode("Traverses the CLR type's properties with reflection, so not compatible with trimming")]
-    protected override void ProcessTypeProperties(Type type, VectorStoreRecordDefinition? definition)
+    protected override void ProcessTypeProperties(Type type, VectorStoreCollectionDefinition? definition)
     {
         base.ProcessTypeProperties(type, definition);
 

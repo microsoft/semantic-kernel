@@ -432,7 +432,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         };
     }
 
-    private VectorStoreRecordDefinition GetTestHotelRecordDefinition()
+    private VectorStoreCollectionDefinition GetTestHotelRecordDefinition()
     {
         return new()
         {

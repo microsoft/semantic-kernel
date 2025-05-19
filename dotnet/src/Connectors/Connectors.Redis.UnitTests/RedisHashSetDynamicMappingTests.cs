@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 /// </summary>
 public class RedisHashSetDynamicMappingTests
 {
-    private static readonly CollectionModel s_model = BuildModel(RedisHashSetMappingTestHelpers.s_vectorStoreRecordDefinition);
+    private static readonly CollectionModel s_model = BuildModel(RedisHashSetMappingTestHelpers.s_definition);
 
     private static readonly float[] s_floatVector = new float[] { 1.0f, 2.0f, 3.0f, 4.0f };
     private static readonly double[] s_doubleVector = new double[] { 5.0d, 6.0d, 7.0d, 8.0d };
@@ -206,7 +206,7 @@ public class RedisHashSetDynamicMappingTests
         Assert.Equal("key", dataModel["Key"]);
     }
 
-    private static CollectionModel BuildModel(VectorStoreRecordDefinition definition)
+    private static CollectionModel BuildModel(VectorStoreCollectionDefinition definition)
         => new RedisModelBuilder(RedisHashSetCollection<object, Dictionary<string, object?>>.ModelBuildingOptions)
             .BuildDynamic(definition, defaultEmbeddingGenerator: null);
 }

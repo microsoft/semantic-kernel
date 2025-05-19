@@ -92,7 +92,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
     public virtual VectorStoreCollection<TKey, SimpleRecord<TKey>> GetCollection()
         => fixture.TestStore.DefaultVectorStore.GetCollection<TKey, SimpleRecord<TKey>>(this.CollectionName, this.CreateRecordDefinition());
 
-    public virtual VectorStoreRecordDefinition CreateRecordDefinition()
+    public virtual VectorStoreCollectionDefinition CreateRecordDefinition()
         => new()
         {
             Properties =

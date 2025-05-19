@@ -28,7 +28,7 @@ public sealed class SqliteVectorStore : VectorStore
     private readonly string _connectionString;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreCollectionDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>Custom virtual table name to store vectors.</summary>
     private readonly string? _vectorVirtualTableName;
@@ -64,9 +64,9 @@ public sealed class SqliteVectorStore : VectorStore
     [RequiresDynamicCode("This overload of GetCollection() is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
     [RequiresUnreferencedCode("This overload of GetCollecttion() is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
 #if NET8_0_OR_GREATER
-    public override SqliteCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override SqliteCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #endif
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
@@ -75,23 +75,23 @@ public sealed class SqliteVectorStore : VectorStore
                 name,
                 new()
                 {
-                    Definition = vectorStoreRecordDefinition,
+                    Definition = definition,
                     VectorVirtualTableName = this._vectorVirtualTableName,
                     EmbeddingGenerator = this._embeddingGenerator
                 });
 
     /// <inheritdoc />
 #if NET8_0_OR_GREATER
-    public override SqliteDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override SqliteDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new SqliteDynamicCollection(
             this._connectionString,
             name,
             new()
             {
-                Definition = vectorStoreRecordDefinition,
+                Definition = definition,
                 VectorVirtualTableName = this._vectorVirtualTableName,
                 EmbeddingGenerator = this._embeddingGenerator
             }

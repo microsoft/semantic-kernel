@@ -29,7 +29,7 @@ public sealed class WeaviateVectorStore : VectorStore
     private readonly HttpClient _httpClient;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(Guid)), new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 1)] };
+    private static readonly VectorStoreCollectionDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(Guid)), new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 1)] };
 
     /// <summary>Weaviate endpoint for remote or local cluster.</summary>
     private readonly Uri? _endpoint;
@@ -79,9 +79,9 @@ public sealed class WeaviateVectorStore : VectorStore
     [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
-    public override WeaviateCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override WeaviateCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #endif
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
@@ -90,7 +90,7 @@ public sealed class WeaviateVectorStore : VectorStore
                 name,
                 new()
                 {
-                    Definition = vectorStoreRecordDefinition,
+                    Definition = definition,
                     Endpoint = this._endpoint,
                     ApiKey = this._apiKey,
                     HasNamedVectors = this._hasNamedVectors,
@@ -102,16 +102,16 @@ public sealed class WeaviateVectorStore : VectorStore
     [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
-    public override WeaviateDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override WeaviateDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new WeaviateDynamicCollection(
             this._httpClient,
             name,
             new()
             {
-                Definition = vectorStoreRecordDefinition,
+                Definition = definition,
                 Endpoint = this._endpoint,
                 ApiKey = this._apiKey,
                 HasNamedVectors = this._hasNamedVectors,

@@ -26,7 +26,7 @@ public class PostgresSqlBuilderTests
     [InlineData(false)]
     public void TestBuildCreateTableCommand(bool ifNotExists)
     {
-        var recordDefinition = new VectorStoreRecordDefinition()
+        var recordDefinition = new VectorStoreCollectionDefinition()
         {
             Properties = [
                 new VectorStoreKeyProperty("id", typeof(long)),
@@ -257,7 +257,7 @@ public class PostgresSqlBuilderTests
     public void TestBuildGetCommand()
     {
         // Arrange
-        var recordDefinition = new VectorStoreRecordDefinition()
+        var recordDefinition = new VectorStoreCollectionDefinition()
         {
             Properties = [
                 new VectorStoreKeyProperty("id", typeof(long)),
@@ -300,7 +300,7 @@ public class PostgresSqlBuilderTests
     public void TestBuildGetBatchCommand()
     {
         // Arrange
-        var recordDefinition = new VectorStoreRecordDefinition()
+        var recordDefinition = new VectorStoreCollectionDefinition()
         {
             Properties = [
                 new VectorStoreKeyProperty("id", typeof(long)),

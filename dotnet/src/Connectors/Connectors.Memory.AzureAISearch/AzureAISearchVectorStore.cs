@@ -34,7 +34,7 @@ public sealed class AzureAISearchVectorStore : VectorStore
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreCollectionDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAISearchVectorStore"/> class.
@@ -63,9 +63,9 @@ public sealed class AzureAISearchVectorStore : VectorStore
     [RequiresDynamicCode("This overload of GetCollection() is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
     [RequiresUnreferencedCode("This overload of GetCollecttion() is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
 #if NET8_0_OR_GREATER
-    public override AzureAISearchCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override AzureAISearchCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #endif
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
@@ -75,7 +75,7 @@ public sealed class AzureAISearchVectorStore : VectorStore
                 new AzureAISearchCollectionOptions()
                 {
                     JsonSerializerOptions = this._jsonSerializerOptions,
-                    Definition = vectorStoreRecordDefinition,
+                    Definition = definition,
                     EmbeddingGenerator = this._embeddingGenerator
                 });
 
@@ -83,9 +83,9 @@ public sealed class AzureAISearchVectorStore : VectorStore
     [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Azure AI Search provider is currently incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
-    public override AzureAISearchDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override AzureAISearchDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new AzureAISearchDynamicCollection(
             this._searchIndexClient,
@@ -93,7 +93,7 @@ public sealed class AzureAISearchVectorStore : VectorStore
             new()
             {
                 JsonSerializerOptions = this._jsonSerializerOptions,
-                Definition = vectorStoreRecordDefinition,
+                Definition = definition,
                 EmbeddingGenerator = this._embeddingGenerator
             }
         );

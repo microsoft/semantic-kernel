@@ -515,7 +515,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
     #region
 
-    private static VectorStoreRecordDefinition GetVectorStoreRecordDefinition<TKey>() => new()
+    private static VectorStoreCollectionDefinition GetVectorStoreRecordDefinition<TKey>() => new()
     {
         Properties =
         [

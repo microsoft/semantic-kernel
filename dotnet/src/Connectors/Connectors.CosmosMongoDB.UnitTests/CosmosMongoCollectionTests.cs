@@ -56,7 +56,7 @@ public sealed class CosmosMongoCollectionTests
     public void ConstructorWithImperativeModelInitializesCollection()
     {
         // Arrange
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
             Properties = [new VectorStoreKeyProperty("Id", typeof(string))]
         };
@@ -355,7 +355,7 @@ public sealed class CosmosMongoCollectionTests
     [Fact]
     public async Task UpsertWithModelWorksCorrectlyAsync()
     {
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -381,7 +381,7 @@ public sealed class CosmosMongoCollectionTests
     [Fact]
     public async Task UpsertWithBsonModelWorksCorrectlyAsync()
     {
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -601,7 +601,7 @@ public sealed class CosmosMongoCollectionTests
     private async Task TestUpsertWithModelAsync<TDataModel>(
         TDataModel dataModel,
         string expectedPropertyName,
-        VectorStoreRecordDefinition? definition = null)
+        VectorStoreCollectionDefinition? definition = null)
         where TDataModel : class
     {
         // Arrange

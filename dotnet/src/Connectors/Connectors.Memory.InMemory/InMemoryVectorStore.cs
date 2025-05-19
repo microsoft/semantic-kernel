@@ -49,9 +49,9 @@ public sealed class InMemoryVectorStore : VectorStore
     [RequiresUnreferencedCode("The InMemory provider is incompatible with trimming.")]
     [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
-    public override InMemoryCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override InMemoryCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #endif
     {
         if (typeof(TRecord) == typeof(Dictionary<string, object?>))
@@ -70,7 +70,7 @@ public sealed class InMemoryVectorStore : VectorStore
             name,
             new()
             {
-                Definition = vectorStoreRecordDefinition,
+                Definition = definition,
                 EmbeddingGenerator = this._embeddingGenerator
             });
         return collection!;
@@ -80,9 +80,9 @@ public sealed class InMemoryVectorStore : VectorStore
     [RequiresUnreferencedCode("The InMemory provider is incompatible with trimming.")]
     [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
-    public override InMemoryDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override InMemoryDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new InMemoryDynamicCollection(
             this._internalCollections,
@@ -90,7 +90,7 @@ public sealed class InMemoryVectorStore : VectorStore
             name,
             new()
             {
-                Definition = vectorStoreRecordDefinition,
+                Definition = definition,
                 EmbeddingGenerator = this._embeddingGenerator,
             }
         );

@@ -472,7 +472,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
     #region private ==================================================================================
 
-    private static VectorStoreRecordDefinition GetVectorStoreRecordDefinition<TKey>(string distanceFunction = DistanceFunction.CosineDistance) => new()
+    private static VectorStoreCollectionDefinition GetVectorStoreRecordDefinition<TKey>(string distanceFunction = DistanceFunction.CosineDistance) => new()
     {
         Properties =
         [

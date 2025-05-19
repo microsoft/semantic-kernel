@@ -33,7 +33,7 @@ public sealed class WeaviateDynamicMapperTests
 
     private static readonly CollectionModel s_model = new WeaviateModelBuilder(HasNamedVectors)
         .BuildDynamic(
-            new VectorStoreRecordDefinition
+            new VectorStoreCollectionDefinition
             {
                 Properties =
                 [
@@ -315,7 +315,7 @@ public sealed class WeaviateDynamicMapperTests
     public void MapFromDataToStorageModelSkipsMissingProperties()
     {
         // Arrange
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -346,7 +346,7 @@ public sealed class WeaviateDynamicMapperTests
     public void MapFromStorageToDataModelSkipsMissingProperties()
     {
         // Arrange
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -383,7 +383,7 @@ public sealed class WeaviateDynamicMapperTests
     public void MapFromDataToStorageModelMapsNamedVectorsCorrectly(bool hasNamedVectors)
     {
         // Arrange
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -415,7 +415,7 @@ public sealed class WeaviateDynamicMapperTests
     public void MapFromStorageToDataModelMapsNamedVectorsCorrectly(bool hasNamedVectors)
     {
         // Arrange
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [

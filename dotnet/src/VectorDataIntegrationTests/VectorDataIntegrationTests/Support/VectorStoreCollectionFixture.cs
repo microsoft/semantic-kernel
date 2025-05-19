@@ -16,7 +16,7 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
 {
     private List<TRecord>? _testData;
 
-    public abstract VectorStoreRecordDefinition CreateRecordDefinition();
+    public abstract VectorStoreCollectionDefinition CreateRecordDefinition();
     protected abstract List<TRecord> BuildTestData();
 
     public virtual string CollectionName => Guid.NewGuid().ToString();

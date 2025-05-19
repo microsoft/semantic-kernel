@@ -75,7 +75,7 @@ public sealed class CosmosNoSqlCollectionTests
     public void ConstructorWithImperativeModelInitializesCollection()
     {
         // Arrange
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
             Properties = [new VectorStoreKeyProperty("Id", typeof(string))]
         };

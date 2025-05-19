@@ -198,7 +198,7 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
     {
         public virtual string CollectionName => "EmbeddingTypeTests";
 
-        public virtual VectorStoreRecordDefinition CreateRecordDefinition<TVectorProperty>(IEmbeddingGenerator? embeddingGenerator, string? distanceFunction, int dimensions)
+        public virtual VectorStoreCollectionDefinition CreateRecordDefinition<TVectorProperty>(IEmbeddingGenerator? embeddingGenerator, string? distanceFunction, int dimensions)
             => new()
             {
                 Properties =

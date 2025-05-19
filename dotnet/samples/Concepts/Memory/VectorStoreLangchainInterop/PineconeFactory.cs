@@ -17,7 +17,7 @@ public static class PineconeFactory
     /// <summary>
     /// Record definition that matches the storage format used by Langchain for Pinecone.
     /// </summary>
-    private static readonly VectorStoreRecordDefinition s_recordDefinition = new()
+    private static readonly VectorStoreCollectionDefinition s_definition = new()
     {
         Properties = new List<VectorStoreProperty>
         {
@@ -43,7 +43,7 @@ public static class PineconeFactory
     {
         private readonly PineconeClient _pineconeClient = pineconeClient;
 
-        public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
         {
             if (typeof(TKey) != typeof(string) || typeof(TRecord) != typeof(LangchainDocument<string>))
             {
@@ -58,11 +58,11 @@ public static class PineconeFactory
                 name,
                 new()
                 {
-                    Definition = s_recordDefinition
+                    Definition = s_definition
                 }) as VectorStoreCollection<TKey, TRecord>)!;
         }
 
-        public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition? definition = null)
         {
             // Create a Pinecone collection and pass in our custom record definition that matches
             // the schema used by Langchain so that the default mapper can use the storage names
@@ -72,7 +72,7 @@ public static class PineconeFactory
                 name,
                 new()
                 {
-                    Definition = s_recordDefinition
+                    Definition = s_definition
                 });
         }
 

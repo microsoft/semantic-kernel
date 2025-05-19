@@ -61,7 +61,7 @@ public sealed class WeaviateCollectionTests : IDisposable
     public void ConstructorWithImperativeModelInitializesCollection()
     {
         // Arrange
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
             Properties = [new VectorStoreKeyProperty("Id", typeof(Guid))]
         };

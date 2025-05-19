@@ -427,7 +427,7 @@ public class RedisHashSetCollectionTests
     public void CanCreateCollectionWithMismatchedDefinitionAndType()
     {
         // Arrange.
-        var definition = new VectorStoreRecordDefinition()
+        var definition = new VectorStoreCollectionDefinition()
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -542,7 +542,7 @@ public class RedisHashSetCollectionTests
         };
     }
 
-    private readonly VectorStoreRecordDefinition _singlePropsDefinition = new()
+    private readonly VectorStoreCollectionDefinition _singlePropsDefinition = new()
     {
         Properties =
         [

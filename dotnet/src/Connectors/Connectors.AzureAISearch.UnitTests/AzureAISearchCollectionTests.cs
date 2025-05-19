@@ -406,7 +406,7 @@ public class AzureAISearchCollectionTests
     public void CanCreateCollectionWithMismatchedDefinitionAndType()
     {
         // Arrange.
-        var definition = new VectorStoreRecordDefinition()
+        var definition = new VectorStoreCollectionDefinition()
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -564,7 +564,7 @@ public class AzureAISearchCollectionTests
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    private readonly VectorStoreRecordDefinition _multiPropsDefinition = new()
+    private readonly VectorStoreCollectionDefinition _multiPropsDefinition = new()
     {
         Properties =
         [

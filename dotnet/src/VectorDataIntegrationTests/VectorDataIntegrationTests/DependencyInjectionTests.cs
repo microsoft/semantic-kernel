@@ -243,8 +243,8 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
     {
         public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-        public override VectorStoreCollection<TKey1, TRecord1> GetCollection<TKey1, TRecord1>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null) => throw new NotImplementedException();
-        public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null) => throw new NotImplementedException();
+        public override VectorStoreCollection<TKey1, TRecord1> GetCollection<TKey1, TRecord1>(string name, VectorStoreCollectionDefinition? definition = null) => throw new NotImplementedException();
+        public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition? definition = null) => throw new NotImplementedException();
         public override object? GetService(Type serviceType, object? serviceKey = null) => throw new NotImplementedException();
         public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }

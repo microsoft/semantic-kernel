@@ -443,7 +443,7 @@ public class QdrantCollectionTests
     public void CanCreateCollectionWithMismatchedDefinitionAndType()
     {
         // Arrange.
-        var definition = new VectorStoreRecordDefinition()
+        var definition = new VectorStoreCollectionDefinition()
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -706,7 +706,7 @@ public class QdrantCollectionTests
         };
     }
 
-    private static VectorStoreRecordDefinition CreateSinglePropsDefinition(Type keyType)
+    private static VectorStoreCollectionDefinition CreateSinglePropsDefinition(Type keyType)
     {
         return new()
         {

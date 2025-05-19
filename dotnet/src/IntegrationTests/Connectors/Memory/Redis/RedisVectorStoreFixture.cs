@@ -35,7 +35,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
     {
         using var dockerClientConfiguration = new DockerClientConfiguration();
         this._client = dockerClientConfiguration.CreateClient();
-        this.VectorStoreRecordDefinition = new VectorStoreRecordDefinition
+        this.VectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -52,7 +52,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
                 new VectorStoreDataProperty("Address", typeof(RedisHotelAddress))
             }
         };
-        this.BasicVectorStoreRecordDefinition = new VectorStoreRecordDefinition
+        this.BasicVectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -71,10 +71,10 @@ public class RedisVectorStoreFixture : IAsyncLifetime
     public IDatabase Database { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for our test model.</summary>
-    public VectorStoreRecordDefinition VectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition VectorStoreRecordDefinition { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for our basic test model.</summary>
-    public VectorStoreRecordDefinition BasicVectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition BasicVectorStoreRecordDefinition { get; private set; }
 
     /// <summary>
     /// Create / Recreate redis docker container, create an index and add test data.
