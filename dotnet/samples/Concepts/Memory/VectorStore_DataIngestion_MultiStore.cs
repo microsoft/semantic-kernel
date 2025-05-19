@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.ClientModel;
 using System.Text.Json;
 using Azure.AI.OpenAI;
+using Azure.Identity;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,7 +50,8 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         kernelBuilder.AddAzureOpenAIEmbeddingGenerator(
             deploymentName: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+            new AzureCliCredential(),
+            dimensions: 1536);
 
         // Register the chosen vector store with the DI container and initialize docker containers via the fixtures where needed.
         if (databaseType == "Redis")
@@ -61,7 +62,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         else if (databaseType == "Qdrant")
         {
             await qdrantFixture.ManualInitializeAsync();
-            kernelBuilder.Services.AddQdrantVectorStore("localhost");
+            kernelBuilder.Services.AddQdrantVectorStore("localhost", https: false);
         }
         else if (databaseType == "InMemory")
         {
@@ -100,9 +101,9 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
     public async Task ExampleWithoutDIAsync(string databaseType)
     {
         // Create an embedding generation service.
-        var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new ApiKeyCredential(TestConfiguration.AzureOpenAIEmbeddings.ApiKey))
+        var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Construct the chosen vector store and initialize docker containers via the fixtures where needed.
         VectorStore vectorStore;
@@ -115,7 +116,7 @@ public class VectorStore_DataIngestion_MultiStore(ITestOutputHelper output, Vect
         else if (databaseType == "Qdrant")
         {
             await qdrantFixture.ManualInitializeAsync();
-            var qdrantClient = new QdrantClient("localhost");
+            var qdrantClient = new QdrantClient("localhost", https: false);
             vectorStore = new QdrantVectorStore(qdrantClient, ownsClient: true);
         }
         else if (databaseType == "InMemory")

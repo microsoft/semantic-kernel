@@ -60,9 +60,16 @@ public abstract class PropertyModel(string modelName, Type type)
         {
             if (record is Dictionary<string, object?> dictionary)
             {
-                return dictionary.TryGetValue(this.ModelName, out var value)
-                    ? value
+                var value = dictionary.TryGetValue(this.ModelName, out var tempValue)
+                    ? tempValue
                     : null;
+
+                if (value is not null && value.GetType() != (Nullable.GetUnderlyingType(this.Type) ?? this.Type))
+                {
+                    throw new InvalidCastException($"Property '{this.ModelName}' has a value of type '{value.GetType().Name}', but its configured type is '{this.Type.Name}'.");
+                }
+
+                return value;
             }
 
             throw new UnreachableException("Non-dynamic mapping but PropertyInfo is null.");

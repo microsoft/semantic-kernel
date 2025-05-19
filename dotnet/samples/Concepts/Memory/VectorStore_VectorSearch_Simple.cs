@@ -25,7 +25,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Construct an InMemory vector store.
         var vectorStore = new InMemoryVectorStore();

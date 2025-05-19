@@ -47,6 +47,8 @@ public class VectorStore_VectorSearch_MultiStore_Common(VectorStore vectorStore,
         // Upsert the glossary entries into the collection.
         await collection.UpsertAsync(glossaryEntries);
 
+        await Task.Delay(5000); // Add a wait to ensure that indexing completes before we continue.
+
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
         var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;

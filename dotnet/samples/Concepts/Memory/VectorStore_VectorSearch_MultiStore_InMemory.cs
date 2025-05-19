@@ -34,7 +34,8 @@ public class VectorStore_VectorSearch_MultiStore_InMemory(ITestOutputHelper outp
         kernelBuilder.AddAzureOpenAIEmbeddingGenerator(
             deploymentName: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            credential: new AzureCliCredential());
+            credential: new AzureCliCredential(),
+            dimensions: 1536);
 
         // Register the InMemory VectorStore.
         kernelBuilder.Services.AddInMemoryVectorStore();
@@ -63,7 +64,7 @@ public class VectorStore_VectorSearch_MultiStore_InMemory(ITestOutputHelper outp
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Construct the InMemory VectorStore.
         var vectorStore = new InMemoryVectorStore();

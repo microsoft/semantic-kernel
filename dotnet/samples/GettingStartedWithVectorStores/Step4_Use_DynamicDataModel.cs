@@ -49,7 +49,7 @@ public class Step4_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFi
         };
 
         // Now, let's create a collection that uses a dynamic data model.
-        var dynamicDataModelCollection = vectorStore.GetCollection<string, Dictionary<string, object?>>("skglossary", recordDefinition);
+        var dynamicDataModelCollection = vectorStore.GetDynamicCollection("skglossary", recordDefinition);
 
         // Generate an embedding from the search string.
         var searchString = "How do I provide additional context to an LLM?";

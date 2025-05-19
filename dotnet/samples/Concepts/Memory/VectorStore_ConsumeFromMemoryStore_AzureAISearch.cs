@@ -24,7 +24,7 @@ namespace Memory;
 /// dotnet user-secrets set "AzureAISearch:Endpoint" "https://myazureaisearchinstance.search.windows.net"
 /// dotnet user-secrets set "AzureAISearch:ApiKey" "samplesecret"
 /// </remarks>
-public class VectorStore_ConsumeFromMemoryStore_AzureAISearch(ITestOutputHelper output, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
+public class VectorStore_ConsumeFromMemoryStore_AzureAISearch(ITestOutputHelper output) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
 {
     private const int VectorSize = 1536;
     private readonly static JsonSerializerOptions s_consoleFormatting = new() { WriteIndented = true };
@@ -32,9 +32,6 @@ public class VectorStore_ConsumeFromMemoryStore_AzureAISearch(ITestOutputHelper 
     [Fact]
     public async Task ConsumeExampleAsync()
     {
-        // Setup the supporting infra and embedding generation.
-        await qdrantFixture.ManualInitializeAsync();
-
         // Construct a VectorStore.
         var vectorStore = new AzureAISearchVectorStore(new SearchIndexClient(
             new Uri(TestConfiguration.AzureAISearch.Endpoint),
