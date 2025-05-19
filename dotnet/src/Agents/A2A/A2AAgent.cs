@@ -66,9 +66,42 @@ public sealed class A2AAgent : Agent
     }
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(messages);
+
+        var agentThread = await this.EnsureThreadExistsWithMessagesAsync(
+            messages,
+            thread,
+            () => new A2AAgentThread(this.Client),
+            cancellationToken).ConfigureAwait(false);
+
+        // Invoke the agent.
+        var chatMessages = new ChatHistory();
+        var invokeResults = this.InternalInvokeStreamingAsync(
+            this.AgentCard.Name,
+            messages,
+            agentThread,
+            options ?? new AgentInvokeOptions(),
+            chatMessages,
+            cancellationToken);
+
+        // Return the chunks to the caller.
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            yield return new(result, agentThread);
+        }
+
+        // Notify the thread of any new messages that were assembled from the streaming response.
+        foreach (var chatMessage in chatMessages)
+        {
+            await this.NotifyThreadOfNewMessage(agentThread, chatMessage, cancellationToken).ConfigureAwait(false);
+
+            if (options?.OnIntermediateMessage is not null)
+            {
+                await options.OnIntermediateMessage(chatMessage).ConfigureAwait(false);
+            }
+        }
     }
 
     /// <inheritdoc/>
@@ -138,6 +171,13 @@ public sealed class A2AAgent : Agent
             }
             Console.WriteLine();
         }
+    }
+
+    private IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InternalInvokeStreamingAsync(string name, ICollection<ChatMessageContent> messages, A2AAgentThread thread, AgentInvokeOptions options, ChatHistory chatMessages, CancellationToken cancellationToken)
+    {
+        Verify.NotNull(messages);
+
+        throw new NotImplementedException();
     }
     #endregion
 }
