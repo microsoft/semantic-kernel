@@ -51,8 +51,11 @@ public class Step05_Magentic(ITestOutputHelper output) : BaseOrchestrationTest(o
                 tools: [new Azure.AI.Projects.CodeInterpreterToolDefinition()]);
         AzureAIAgent coderAgent = new(definition, agentsClient);
 
-        // Define the orchestration
+        // Create a monitor to capturing agent responses (via ResponseCallback)
+        // to display at the end of this sample. (optional)
+        // NOTE: Create your own callback to capture responses in your application or service.
         OrchestrationMonitor monitor = new();
+        // Define the orchestration
         Kernel managerKernel = this.CreateKernelWithChatCompletion(ManagerModel);
         StandardMagenticManager manager =
             new(managerKernel.GetRequiredService<IChatCompletionService>(), new OpenAIPromptExecutionSettings())
