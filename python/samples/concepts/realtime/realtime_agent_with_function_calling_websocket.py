@@ -104,7 +104,6 @@ async def main() -> None:
 
     # the context manager calls the create_session method on the agent and starts listening to the audio stream
     async with (
-        audio_player,
         audio_recorder,
         realtime_agent(
             settings=settings,
@@ -112,6 +111,7 @@ async def main() -> None:
             kernel=kernel,
             create_response=True,
         ),
+        audio_player,
     ):
         # the audio_output_callback can be added here or in the constructor
         # using this gives the smoothest experience
