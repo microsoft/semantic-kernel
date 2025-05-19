@@ -24,7 +24,7 @@ public class PineconeEmbeddingGenerationTests(PineconeEmbeddingGenerationTests.S
         var exception = await Assert.ThrowsAsync<NotSupportedException>(() => collection.SearchAsync("foo", top: 1).ToListAsync().AsTask());
 
         Assert.StartsWith(
-            "A value of type 'String' was passed to 'SearchAsync', but that isn't a supported vector type by your provider and no embedding generator was configured. The supported vector types are:",
+            "A value of type 'string' was passed to 'SearchAsync', but that isn't a supported vector type by your provider and no embedding generator was configured. The supported vector types are:",
             exception.Message);
     }
 
