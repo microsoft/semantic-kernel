@@ -29,7 +29,7 @@ public class MongoDBVectorStoreFixture : IAsyncLifetime
     public IMongoDatabase MongoDatabase { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for MongoDB test model.</summary>
-    public VectorStoreRecordDefinition HotelVectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition HotelVectorStoreRecordDefinition { get; private set; }
 
     public async Task InitializeAsync()
     {

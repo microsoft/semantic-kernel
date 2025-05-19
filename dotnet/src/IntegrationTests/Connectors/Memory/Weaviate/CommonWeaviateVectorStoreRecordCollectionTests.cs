@@ -24,7 +24,7 @@ public class CommonWeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreF
 
     protected override int DelayAfterUploadInMilliseconds => 1000;
 
-    protected override VectorStoreCollection<Guid, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected override VectorStoreCollection<Guid, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreCollectionDefinition? definition)
     {
         // Weaviate collection names must start with an upper case letter.
         var recordCollectionNameChars = recordCollectionName.ToCharArray();
@@ -32,7 +32,7 @@ public class CommonWeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreF
 
         return new WeaviateCollection<Guid, TRecord>(fixture.HttpClient!, new string(recordCollectionNameChars), new()
         {
-            Definition = vectorStoreRecordDefinition
+            Definition = definition
         });
     }
 

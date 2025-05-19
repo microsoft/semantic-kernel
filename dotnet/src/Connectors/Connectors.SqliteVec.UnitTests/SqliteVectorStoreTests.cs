@@ -39,7 +39,7 @@ public sealed class SqliteVectorStoreTests
         var sut = new SqliteVectorStore(Mock.Of<SqliteConnection>());
 
         // Act
-        var collectionWithNumericKey = sut.GetCollection<ulong, SqliteHotel<ulong>>("collection1");
+        var collectionWithNumericKey = sut.GetCollection<long, SqliteHotel<long>>("collection1");
         var collectionWithStringKey = sut.GetCollection<string, SqliteHotel<string>>("collection2");
 
         // Assert

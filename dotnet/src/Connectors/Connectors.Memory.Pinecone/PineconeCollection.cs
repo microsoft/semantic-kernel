@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Pinecone as the underlying storage.
 /// </summary>
-/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
+/// <typeparam name="TKey">The data type of the record key. Must be <see cref="string"/>.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
@@ -78,7 +78,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
+            throw new NotSupportedException("Only string keys are supported.");
         }
 
         options ??= PineconeCollectionOptions.Default;
@@ -191,7 +191,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         var includeVectors = options?.IncludeVectors is true;
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -224,7 +224,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         Verify.NotNull(keys);
 
         var includeVectors = options?.IncludeVectors is true;
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -316,9 +316,12 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         Embedding<float>? generatedEmbedding = null;
 
         Debug.Assert(this._model.VectorProperties.Count <= 1);
-        if (this._model.VectorProperties is [{ EmbeddingGenerator: not null } vectorProperty])
+        if (this._model.VectorProperties is [var vectorProperty] && !PineconeModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
         {
-            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var task))
+            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
+            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
+
+            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>>(record, cancellationToken, out var task))
             {
                 generatedEmbedding = await task.ConfigureAwait(false);
             }
@@ -350,8 +353,11 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         // If an embedding generator is defined, invoke it once for all records.
         GeneratedEmbeddings<Embedding<float>>? generatedEmbeddings = null;
 
-        if (this._model.VectorProperties is [{ EmbeddingGenerator: not null } vectorProperty])
+        if (this._model.VectorProperties is [var vectorProperty] && !PineconeModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
         {
+            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
+            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
+
             var recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
 
             if (recordsList.Count == 0)
@@ -361,7 +367,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
             records = recordsList;
 
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var task))
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var task))
             {
                 generatedEmbeddings = await task.ConfigureAwait(false);
 
@@ -405,7 +411,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -492,7 +498,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         options ??= new();
 
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }

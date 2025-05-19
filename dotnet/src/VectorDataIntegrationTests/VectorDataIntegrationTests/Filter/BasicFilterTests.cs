@@ -575,7 +575,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             }
         }
 
-        public override VectorStoreRecordDefinition CreateRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
                 Properties =

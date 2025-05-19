@@ -226,7 +226,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <summary>
-    /// /// Result mapper which converts a TRecord to a <see cref="string"/>.
+    /// Result mapper which converts a TRecord to a <see cref="string"/>.
     /// </summary>
     private TextSearchStringMapper CreateTextSearchStringMapper()
     {

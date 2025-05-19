@@ -42,17 +42,17 @@ public sealed class SqliteMapperTests
     public void MapFromDataToStorageModelWithNumericKeyReturnsValidStorageModel()
     {
         // Arrange
-        var definition = GetRecordDefinition<ulong>();
-        var model = BuildModel(typeof(TestRecord<ulong>), definition);
-        var dataModel = GetDataModel<ulong>(1);
+        var definition = GetRecordDefinition<long>();
+        var model = BuildModel(typeof(TestRecord<long>), definition);
+        var dataModel = GetDataModel<long>(1);
 
-        var mapper = new SqliteMapper<TestRecord<ulong>>(model);
+        var mapper = new SqliteMapper<TestRecord<long>>(model);
 
         // Act
         var result = mapper.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
-        Assert.Equal((ulong)1, result["Key"]);
+        Assert.Equal((long)1, result["Key"]);
         Assert.Equal("Value1", result["StringProperty"]);
         Assert.Equal(5, result["IntProperty"]);
 
@@ -114,22 +114,22 @@ public sealed class SqliteMapperTests
 
         var storageModel = new Dictionary<string, object?>
         {
-            ["Key"] = (ulong)1,
+            ["Key"] = (long)1,
             ["StringProperty"] = "Value1",
             ["IntProperty"] = 5,
             ["FloatVector"] = storageVector
         };
 
-        var definition = GetRecordDefinition<ulong>();
-        var model = BuildModel(typeof(TestRecord<ulong>), definition);
+        var definition = GetRecordDefinition<long>();
+        var model = BuildModel(typeof(TestRecord<long>), definition);
 
-        var mapper = new SqliteMapper<TestRecord<ulong>>(model);
+        var mapper = new SqliteMapper<TestRecord<long>>(model);
 
         // Act
         var result = mapper.MapFromStorageToDataModel(storageModel, includeVectors);
 
         // Assert
-        Assert.Equal((ulong)1, result.Key);
+        Assert.Equal((long)1, result.Key);
         Assert.Equal("Value1", result.StringProperty);
         Assert.Equal(5, result.IntProperty);
 
@@ -146,9 +146,9 @@ public sealed class SqliteMapperTests
 
     #region private
 
-    private static VectorStoreRecordDefinition GetRecordDefinition<TKey>()
+    private static VectorStoreCollectionDefinition GetRecordDefinition<TKey>()
     {
-        return new VectorStoreRecordDefinition
+        return new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -171,7 +171,7 @@ public sealed class SqliteMapperTests
         };
     }
 
-    private static CollectionModel BuildModel(Type type, VectorStoreRecordDefinition definition)
+    private static CollectionModel BuildModel(Type type, VectorStoreCollectionDefinition definition)
         => new SqliteModelBuilder().Build(type, definition, defaultEmbeddingGenerator: null);
 
 #pragma warning disable CA1812

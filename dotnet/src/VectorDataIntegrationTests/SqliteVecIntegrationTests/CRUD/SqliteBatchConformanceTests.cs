@@ -11,7 +11,7 @@ public class SqliteBatchConformanceTests_string(SqliteSimpleModelFixture<string>
 {
 }
 
-public class SqliteBatchConformanceTests_ulong(SqliteSimpleModelFixture<ulong> fixture)
-    : BatchConformanceTests<ulong>(fixture), IClassFixture<SqliteSimpleModelFixture<ulong>>
+public class SqliteBatchConformanceTests_long(SqliteSimpleModelFixture<long> fixture)
+    : BatchConformanceTests<long>(fixture), IClassFixture<SqliteSimpleModelFixture<long>>
 {
 }

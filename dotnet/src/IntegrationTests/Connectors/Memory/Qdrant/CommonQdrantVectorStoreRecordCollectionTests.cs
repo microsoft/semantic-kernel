@@ -19,12 +19,12 @@ public class CommonQdrantVectorStoreRecordCollectionTests(QdrantVectorStoreFixtu
     protected override ulong Key3 => 3;
     protected override ulong Key4 => 4;
 
-    protected override VectorStoreCollection<ulong, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected override VectorStoreCollection<ulong, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreCollectionDefinition? definition)
     {
         return new QdrantCollection<ulong, TRecord>(fixture.QdrantClient, recordCollectionName, ownsClient: false, new()
         {
             HasNamedVectors = true,
-            Definition = vectorStoreRecordDefinition
+            Definition = definition
         });
     }
 

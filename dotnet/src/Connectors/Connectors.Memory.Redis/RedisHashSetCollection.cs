@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Redis HashSets as the underlying storage.
 /// </summary>
-/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
+/// <typeparam name="TKey">The data type of the record key. Must be <see cref="string"/>.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
@@ -90,7 +90,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping).");
+            throw new NotSupportedException("Only string keys are supported.");
         }
 
         options ??= RedisHashSetCollectionOptions.Default;
@@ -227,7 +227,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         var maybePrefixedKey = this.PrefixKeyIfNeeded(stringKey);
 
         var includeVectors = options?.IncludeVectors ?? false;
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -330,7 +330,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -409,8 +409,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         Verify.NotLessThan(top, 1);
 
         options ??= new();
-
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }

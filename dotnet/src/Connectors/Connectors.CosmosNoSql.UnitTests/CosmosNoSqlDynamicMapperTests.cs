@@ -21,7 +21,7 @@ public sealed class CosmosNoSqlDynamicMapperTests
 
     private static readonly CollectionModel s_model = new CosmosNoSqlModelBuilder()
         .BuildDynamic(
-            new VectorStoreRecordDefinition
+            new VectorStoreCollectionDefinition
             {
                 Properties = new List<VectorStoreProperty>
                 {
@@ -119,7 +119,7 @@ public sealed class CosmosNoSqlDynamicMapperTests
     public void MapFromDataToStorageModelMapsNullValues()
     {
         // Arrange
-        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
+        VectorStoreCollectionDefinition definition = new()
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -211,7 +211,7 @@ public sealed class CosmosNoSqlDynamicMapperTests
     public void MapFromStorageToDataModelMapsNullValues()
     {
         // Arrange
-        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
+        VectorStoreCollectionDefinition definition = new()
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -259,7 +259,7 @@ public sealed class CosmosNoSqlDynamicMapperTests
     public void MapFromDataToStorageModelSkipsMissingProperties()
     {
         // Arrange
-        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
+        VectorStoreCollectionDefinition definition = new()
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -285,7 +285,7 @@ public sealed class CosmosNoSqlDynamicMapperTests
     public void MapFromStorageToDataModelSkipsMissingProperties()
     {
         // Arrange
-        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
+        VectorStoreCollectionDefinition definition = new()
         {
             Properties = new List<VectorStoreProperty>
             {

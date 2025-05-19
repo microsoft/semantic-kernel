@@ -54,12 +54,20 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
 
     public VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
         string collectionName,
-        VectorStoreRecordDefinition? recordDefinition = default)
+        VectorStoreCollectionDefinition? recordDefinition = default)
         where TKey : notnull
         where TRecord : class
     {
         var vectorStore = this.VectorStore;
         return vectorStore.GetCollection<TKey, TRecord>(collectionName, recordDefinition);
+    }
+
+    public VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(
+        string collectionName,
+        VectorStoreRecordDefinition recordDefinition)
+    {
+        var vectorStore = this.VectorStore;
+        return vectorStore.GetDynamicCollection(collectionName, recordDefinition);
     }
 
     /// <summary>

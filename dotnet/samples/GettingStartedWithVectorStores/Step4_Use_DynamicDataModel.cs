@@ -36,7 +36,7 @@ public class Step4_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFi
         // using a record definition. The benefit over a custom data model is that this definition
         // does not have to be known at compile time.
         // E.g. it can be read from a configuration or retrieved from a service.
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {

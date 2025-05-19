@@ -26,7 +26,7 @@ public class CollectionModelBuilderTests
         // The embedding's .NET type (Embedding<float>) is inferred from the embedding generator.
         Assert.Same(embeddingGenerator, model.VectorProperty.EmbeddingGenerator);
         Assert.Same(typeof(string), model.VectorProperty.Type);
-        Assert.Same(typeof(ReadOnlyMemory<float>), model.VectorProperty.EmbeddingType);
+        Assert.Same(typeof(Embedding<float>), model.VectorProperty.EmbeddingType);
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public class CollectionModelBuilderTests
     {
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<Half>>();
 
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -42,8 +42,8 @@ public class CollectionModelBuilderTests
                 new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
                 new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
                 {
-                    // The following configures the property to be ReadOnlyMemory<Half> (non-default embedding type for this connector)
-                    EmbeddingType = typeof(ReadOnlyMemory<Half>)
+                    // The following configures the property to be Embedding<Half> (non-default embedding type for this connector)
+                    EmbeddingType = typeof(Embedding<Half>)
                 }
             ]
         };
@@ -53,7 +53,7 @@ public class CollectionModelBuilderTests
         // The embedding's .NET type (Embedding<float>) is inferred from the embedding generator.
         Assert.Same(embeddingGenerator, model.VectorProperty.EmbeddingGenerator);
         Assert.Same(typeof(string), model.VectorProperty.Type);
-        Assert.Same(typeof(ReadOnlyMemory<Half>), model.VectorProperty.EmbeddingType);
+        Assert.Same(typeof(Embedding<Half>), model.VectorProperty.EmbeddingType);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class CollectionModelBuilderTests
     {
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<float>>();
 
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -76,7 +76,7 @@ public class CollectionModelBuilderTests
         // The embedding's .NET type (Embedding<float>) is inferred from the embedding generator.
         Assert.Same(embeddingGenerator, model.VectorProperty.EmbeddingGenerator);
         Assert.Same(typeof(string), model.VectorProperty.Type);
-        Assert.Same(typeof(ReadOnlyMemory<float>), model.VectorProperty.EmbeddingType);
+        Assert.Same(typeof(Embedding<float>), model.VectorProperty.EmbeddingType);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class CollectionModelBuilderTests
     {
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<Half>>();
 
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -92,7 +92,7 @@ public class CollectionModelBuilderTests
                 new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
                 new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
                 {
-                    EmbeddingType = typeof(ReadOnlyMemory<Half>)
+                    EmbeddingType = typeof(Embedding<Half>)
                 }
             ]
         };
@@ -101,7 +101,7 @@ public class CollectionModelBuilderTests
 
         Assert.Same(embeddingGenerator, model.VectorProperty.EmbeddingGenerator);
         Assert.Same(typeof(string), model.VectorProperty.Type);
-        Assert.Same(typeof(ReadOnlyMemory<Half>), model.VectorProperty.EmbeddingType);
+        Assert.Same(typeof(Embedding<Half>), model.VectorProperty.EmbeddingType);
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public class CollectionModelBuilderTests
         using var propertyEmbeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<float>>();
         using var defaultEmbeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<float>>();
 
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -131,13 +131,13 @@ public class CollectionModelBuilderTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void Embedding_property_type_with_default_embedding_generator_ignores_generator(bool dynamic)
+    public void Embedding_property_type_with_default_embedding_generator(bool dynamic)
     {
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<float>>();
 
         var model = dynamic
             ? new CustomModelBuilder().BuildDynamic(
-                new VectorStoreRecordDefinition
+                new VectorStoreCollectionDefinition
                 {
                     Properties =
                     [
@@ -149,8 +149,35 @@ public class CollectionModelBuilderTests
                 embeddingGenerator)
             : new CustomModelBuilder().Build(typeof(RecordWithEmbeddingVectorProperty), definition: null, embeddingGenerator);
 
-        Assert.Null(model.VectorProperty.EmbeddingGenerator);
-        Assert.Same(typeof(ReadOnlyMemory<float>), model.VectorProperty.Type);
+        var vectorProperty = model.VectorProperty;
+        Assert.Same(embeddingGenerator, vectorProperty.EmbeddingGenerator);
+        Assert.Same(typeof(ReadOnlyMemory<float>), vectorProperty.Type);
+    }
+
+    [Fact]
+    public void Embedding_property_type_with_property_embedding_generator()
+    {
+        using var embeddingGenerator = new FakeEmbeddingGenerator<int, Embedding<float>>();
+
+        var model = new CustomModelBuilder().Build(
+            typeof(RecordWithEmbeddingVectorProperty),
+            new VectorStoreCollectionDefinition
+            {
+                Properties =
+                [
+                    new VectorStoreKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
+                    new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
+                    new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(ReadOnlyMemory<float>), dimensions: 3)
+                    {
+                        EmbeddingGenerator = embeddingGenerator
+                    }
+                ]
+            },
+            embeddingGenerator);
+
+        var vectorProperty = model.VectorProperty;
+        Assert.Same(embeddingGenerator, vectorProperty.EmbeddingGenerator);
+        Assert.Same(typeof(ReadOnlyMemory<float>), vectorProperty.EmbeddingType);
     }
 
     [Theory]
@@ -161,7 +188,7 @@ public class CollectionModelBuilderTests
         using var embeddingGenerator = new FakeEmbeddingGenerator<Customer, Embedding<float>>();
 
         // TODO: Allow custom input type without a record definition (i.e. generic attribute)
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
@@ -179,7 +206,7 @@ public class CollectionModelBuilderTests
 
         Assert.Same(embeddingGenerator, vectorProperty.EmbeddingGenerator);
         Assert.Same(typeof(Customer), vectorProperty.Type);
-        Assert.Same(typeof(ReadOnlyMemory<float>), vectorProperty.EmbeddingType);
+        Assert.Same(typeof(Embedding<float>), vectorProperty.EmbeddingType);
     }
 
     [Fact]
@@ -191,7 +218,7 @@ public class CollectionModelBuilderTests
         var exception = Assert.Throws<InvalidOperationException>(() =>
             new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), definition: null, embeddingGenerator));
 
-        Assert.Equal($"Embedding generator '{typeof(FakeEmbeddingGenerator<,>).Name}' is incompatible with the required input and output types. The property input type must be 'String, DataContent', and the output type must be 'ReadOnlyMemory<Single>, ReadOnlyMemory<Half>'.", exception.Message);
+        Assert.Equal($"Embedding generator 'FakeEmbeddingGenerator<string, Embedding<long>>' on vector property '{nameof(RecordWithStringVectorProperty.Embedding)}' cannot convert the input type 'string' to a supported vector type (one of: ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<Half>, Embedding<Half>, Half[]).", exception.Message);
     }
 
     [Fact]
@@ -203,7 +230,7 @@ public class CollectionModelBuilderTests
         var exception = Assert.Throws<InvalidOperationException>(() =>
             new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), definition: null, embeddingGenerator));
 
-        Assert.Equal($"Embedding generator '{typeof(FakeEmbeddingGenerator<,>).Name}' is incompatible with the required input and output types. The property input type must be 'String, DataContent', and the output type must be 'ReadOnlyMemory<Single>, ReadOnlyMemory<Half>'.", exception.Message);
+        Assert.Equal($"Embedding generator 'FakeEmbeddingGenerator<int, Embedding<float>>' on vector property '{nameof(RecordWithStringVectorProperty.Embedding)}' cannot convert the input type 'string' to a supported vector type (one of: ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<Half>, Embedding<Half>, Half[]).", exception.Message);
     }
 
     [Fact]
@@ -212,33 +239,55 @@ public class CollectionModelBuilderTests
         var exception = Assert.Throws<InvalidOperationException>(() =>
             new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), definition: null, defaultEmbeddingGenerator: null));
 
-        Assert.Equal($"Property '{nameof(RecordWithStringVectorProperty.Embedding)}' has non-Embedding type 'String', but no embedding generator is configured.", exception.Message);
+        Assert.Equal($"Vector property '{nameof(RecordWithStringVectorProperty.Embedding)}' has type 'string' which isn't supported by your provider, and no embedding generator is configured. Configure a generator that supports converting 'string' to vector type supported by your provider.", exception.Message);
     }
 
     [Fact]
-    public void Embedding_property_type_with_property_embedding_generator_throws()
+    public void EmbeddingType_not_supported_by_provider()
     {
-        using var embeddingGenerator = new FakeEmbeddingGenerator<int, Embedding<float>>();
+        using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<Half>>();
 
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties =
             [
                 new VectorStoreKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
                 new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
-                new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(ReadOnlyMemory<float>), dimensions: 3)
+                new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
                 {
-                    EmbeddingGenerator = embeddingGenerator
+                    EmbeddingType = typeof(Embedding<byte>) // The provider supports float/Half only, not byte
                 }
             ]
         };
 
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            new CustomModelBuilder().Build(typeof(RecordWithEmbeddingVectorProperty), recordDefinition, embeddingGenerator));
+            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), recordDefinition, embeddingGenerator));
 
-        Assert.Equal(
-            $"Property '{nameof(RecordWithEmbeddingVectorProperty.Embedding)}' has embedding type 'ReadOnlyMemory<Single>', but an embedding generator is configured on the property. Remove the embedding generator or change the property's .NET type to a non-embedding input type to the generator (e.g. string).",
-            exception.Message);
+        Assert.Equal("Vector property 'Embedding' has embedding type 'Embedding<Byte>' configured, but that type isn't supported by your provider. Supported types are ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<Half>, Embedding<Half>, Half[].", exception.Message);
+    }
+
+    [Fact]
+    public void EmbeddingType_not_supported_by_generator()
+    {
+        using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<float>>();
+
+        var recordDefinition = new VectorStoreCollectionDefinition
+        {
+            Properties =
+            [
+                new VectorStoreKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
+                new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
+                new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
+                {
+                    EmbeddingType = typeof(Embedding<Half>) // The generator (instantiated above) supports only Embedding<float>
+                }
+            ]
+        };
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            new CustomModelBuilder().Build(typeof(RecordWithStringVectorProperty), recordDefinition, embeddingGenerator));
+
+        Assert.Equal("Vector property 'Embedding' has embedding type 'Embedding<Half>' configured, but that type isn't supported by your embedding generator.", exception.Message);
     }
 
     public class RecordWithStringVectorProperty
@@ -317,31 +366,27 @@ public class CollectionModelBuilderTests
 
         internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
         {
-            supportedTypes = "ReadOnlyMemory<float>";
+            supportedTypes = "ReadOnlyMemory<float>, Embedding<float>, float[], ReadOnlyMemory<Half>, Embedding<Half>, Half[]";
 
             if (Nullable.GetUnderlyingType(type) is Type underlyingType)
             {
                 type = underlyingType;
             }
 
-            return type == typeof(ReadOnlyMemory<float>) || type == typeof(ReadOnlyMemory<Half>);
+            return type == typeof(ReadOnlyMemory<float>)
+                || type == typeof(Embedding<float>)
+                || type == typeof(float[])
+                || type == typeof(ReadOnlyMemory<Half>)
+                || type == typeof(Embedding<Half>)
+                || type == typeof(Half[]);
         }
 
-        protected override void SetupEmbeddingGeneration(
+        protected override Type? ResolveEmbeddingType(
             VectorPropertyModel vectorProperty,
             IEmbeddingGenerator embeddingGenerator,
-            Type? embeddingType)
-        {
-            if (!vectorProperty.TrySetupEmbeddingGeneration<Embedding<float>, ReadOnlyMemory<float>>(embeddingGenerator, embeddingType)
-                && !vectorProperty.TrySetupEmbeddingGeneration<Embedding<Half>, ReadOnlyMemory<Half>>(embeddingGenerator, embeddingType))
-            {
-                throw new InvalidOperationException(
-                    VectorDataStrings.IncompatibleEmbeddingGenerator(
-                        embeddingGenerator.GetType(),
-                        vectorProperty.GetSupportedInputTypes(),
-                        [typeof(ReadOnlyMemory<float>), typeof(ReadOnlyMemory<Half>)]));
-            }
-        }
+            Type? userRequestedEmbeddingType)
+            => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
+                ?? vectorProperty.ResolveEmbeddingType<Embedding<Half>>(embeddingGenerator, userRequestedEmbeddingType);
     }
 
     private sealed class FakeEmbeddingGenerator<TInput, TEmbedding> : IEmbeddingGenerator<TInput, TEmbedding>

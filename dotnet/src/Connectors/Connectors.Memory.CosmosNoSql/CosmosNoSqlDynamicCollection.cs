@@ -24,7 +24,11 @@ public sealed class CosmosNoSqlDynamicCollection : CosmosNoSqlCollection<object,
     [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
     public CosmosNoSqlDynamicCollection(Database database, string name, CosmosNoSqlCollectionOptions options)
-        : base(new(database.Client, ownsClient: false), _ => database, name, options)
+        : this(
+            new(database.Client, ownsClient: false),
+            _ => database,
+            name,
+            options)
     {
     }
 
@@ -44,8 +48,8 @@ public sealed class CosmosNoSqlDynamicCollection : CosmosNoSqlCollection<object,
         string collectionName,
         CosmosClientOptions? clientOptions = null,
         CosmosNoSqlCollectionOptions? options = null)
-        : base(
-            new ClientWrapper(new CosmosClient(connectionString, clientOptions), ownsClient: true),
+        : this(
+            new(new CosmosClient(connectionString, clientOptions), ownsClient: true),
             client => client.GetDatabase(databaseName),
             collectionName,
             options)

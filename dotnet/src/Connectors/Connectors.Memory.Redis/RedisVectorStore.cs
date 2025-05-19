@@ -30,7 +30,7 @@ public sealed class RedisVectorStore : VectorStore
     private readonly IDatabase _database;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreCollectionDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>The way in which data should be stored in redis..</summary>
     private readonly RedisStorageType? _storageType;
@@ -65,7 +65,7 @@ public sealed class RedisVectorStore : VectorStore
     // TODO: The provider uses unsafe JSON serialization in many places, #11963
     [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
     {
         if (typeof(TRecord) == typeof(Dictionary<string, object?>))
         {
@@ -76,13 +76,13 @@ public sealed class RedisVectorStore : VectorStore
         {
             RedisStorageType.HashSet => new RedisHashSetCollection<TKey, TRecord>(this._database, name, new RedisHashSetCollectionOptions()
             {
-                Definition = vectorStoreRecordDefinition,
+                Definition = definition,
                 EmbeddingGenerator = this._embeddingGenerator
             }),
 
             RedisStorageType.Json => new RedisJsonCollection<TKey, TRecord>(this._database, name, new RedisJsonCollectionOptions()
             {
-                Definition = vectorStoreRecordDefinition,
+                Definition = definition,
                 EmbeddingGenerator = this._embeddingGenerator
             }),
 
@@ -94,18 +94,18 @@ public sealed class RedisVectorStore : VectorStore
     // TODO: The provider uses unsafe JSON serialization in many places, #11963
     [RequiresUnreferencedCode("The Redis provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Redis provider is currently incompatible with NativeAOT.")]
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
         => this._storageType switch
         {
             RedisStorageType.HashSet => new RedisHashSetDynamicCollection(this._database, name, new RedisHashSetCollectionOptions()
             {
-                Definition = vectorStoreRecordDefinition,
+                Definition = definition,
                 EmbeddingGenerator = this._embeddingGenerator
             }),
 
             RedisStorageType.Json => new RedisJsonDynamicCollection(this._database, name, new RedisJsonCollectionOptions()
             {
-                Definition = vectorStoreRecordDefinition,
+                Definition = definition,
                 EmbeddingGenerator = this._embeddingGenerator
             }),
 

@@ -149,16 +149,15 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         var collectionName = "DeleteRecord";
         var sut = this.GetCollection(idType, collectionName);
 
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         try
         {
             var record = this.CreateRecord<TKey>(idType, key!);
             var recordKey = record.HotelId;
-            var upsertResult = await sut.UpsertAsync(record);
+            await sut.UpsertAsync(record);
             var getResult = await sut.GetAsync(recordKey);
 
-            Assert.Equal(key, upsertResult);
             Assert.NotNull(getResult);
 
             // Act
@@ -172,7 +171,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         finally
         {
             // Cleanup
-            await sut.DeleteCollectionAsync();
+            await sut.EnsureCollectionDeletedAsync();
         }
     }
 
@@ -282,7 +281,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     {
         const int HotelId = 5;
 
-        var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithNumericKey", GetVectorStoreRecordDefinition<int>());
+        var sut = fixture.GetDynamicCollection("DynamicMapperWithNumericKey", GetVectorStoreRecordDefinition<int>());
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -448,10 +447,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         {
             Id = 1,
             ListInts = new() { 1, 2, 3 },
-            CollectionInts = new HashSet<int>() { 4, 5, 6 },
-            EnumerableInts = [7, 8, 9],
-            ReadOnlyCollectionInts = new List<int> { 10, 11, 12 },
-            ReadOnlyListInts = new List<int> { 13, 14, 15 }
+            ArrayInts = new[] { 4, 5, 6 },
         };
 
         // Act
@@ -467,32 +463,16 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         Assert.Equal(1, getResult.ListInts![0]);
         Assert.Equal(2, getResult.ListInts![1]);
         Assert.Equal(3, getResult.ListInts![2]);
-        Assert.NotNull(getResult.CollectionInts);
-        Assert.Equal(3, getResult.CollectionInts!.Count);
-        Assert.Contains(4, getResult.CollectionInts);
-        Assert.Contains(5, getResult.CollectionInts);
-        Assert.Contains(6, getResult.CollectionInts);
-        Assert.NotNull(getResult.EnumerableInts);
-        Assert.Equal(3, getResult.EnumerableInts!.Count());
-        Assert.Equal(7, getResult.EnumerableInts.ElementAt(0));
-        Assert.Equal(8, getResult.EnumerableInts.ElementAt(1));
-        Assert.Equal(9, getResult.EnumerableInts.ElementAt(2));
-        Assert.NotNull(getResult.ReadOnlyCollectionInts);
-        Assert.Equal(3, getResult.ReadOnlyCollectionInts!.Count);
-        var readOnlyCollectionIntsList = getResult.ReadOnlyCollectionInts.ToList();
-        Assert.Equal(10, readOnlyCollectionIntsList[0]);
-        Assert.Equal(11, readOnlyCollectionIntsList[1]);
-        Assert.Equal(12, readOnlyCollectionIntsList[2]);
-        Assert.NotNull(getResult.ReadOnlyListInts);
-        Assert.Equal(3, getResult.ReadOnlyListInts!.Count);
-        Assert.Equal(13, getResult.ReadOnlyListInts[0]);
-        Assert.Equal(14, getResult.ReadOnlyListInts[1]);
-        Assert.Equal(15, getResult.ReadOnlyListInts[2]);
+        Assert.NotNull(getResult.ArrayInts);
+        Assert.Equal(3, getResult.ArrayInts!.Length);
+        Assert.Equal(4, getResult.ArrayInts![0]);
+        Assert.Equal(5, getResult.ArrayInts![1]);
+        Assert.Equal(6, getResult.ArrayInts![2]);
     }
 
     #region private ==================================================================================
 
-    private static VectorStoreRecordDefinition GetVectorStoreRecordDefinition<TKey>(string distanceFunction = DistanceFunction.CosineDistance) => new()
+    private static VectorStoreCollectionDefinition GetVectorStoreRecordDefinition<TKey>(string distanceFunction = DistanceFunction.CosineDistance) => new()
     {
         Properties =
         [
@@ -549,16 +529,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         public List<int>? ListInts { get; set; }
 
         [VectorStoreData]
-        public ICollection<int>? CollectionInts { get; set; }
-
-        [VectorStoreData]
-        public IEnumerable<int>? EnumerableInts { get; set; }
-
-        [VectorStoreData]
-        public IReadOnlyCollection<int>? ReadOnlyCollectionInts { get; set; }
-
-        [VectorStoreData]
-        public IReadOnlyList<int>? ReadOnlyListInts { get; set; }
+        public int[]? ArrayInts { get; set; }
     }
 #pragma warning restore CA1812, CA1859
 

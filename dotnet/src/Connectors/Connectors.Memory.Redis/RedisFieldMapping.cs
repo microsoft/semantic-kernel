@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -52,10 +53,13 @@ internal static class RedisFieldMapping
         {
             var vectorProperty = model.VectorProperties[i];
 
-            if (vectorProperty.EmbeddingGenerator is null)
+            if (RedisModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
                 continue;
             }
+
+            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
+            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
 
             // We have a property with embedding generation; materialize the records' enumerable if needed, to
             // prevent multiple enumeration.
@@ -73,12 +77,12 @@ internal static class RedisFieldMapping
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var floatTask))
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
             {
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
             }
-            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<double>, ReadOnlyMemory<double>>(records, cancellationToken, out var doubleTask))
+            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<double>>(records, cancellationToken, out var doubleTask))
             {
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = await doubleTask.ConfigureAwait(false);

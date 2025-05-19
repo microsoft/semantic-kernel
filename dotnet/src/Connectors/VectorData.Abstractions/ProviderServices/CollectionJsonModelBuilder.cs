@@ -27,32 +27,32 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
     }
 
     /// <summary>
-    /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="vectorStoreRecordDefinition"/>.
+    /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="definition"/>.
     /// </summary>
     [RequiresDynamicCode("This model building variant is not compatible with NativeAOT. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     [RequiresUnreferencedCode("This model building variant is not compatible with trimming. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     public virtual CollectionModel Build(
         Type type,
-        VectorStoreRecordDefinition? vectorStoreRecordDefinition,
+        VectorStoreCollectionDefinition? definition,
         IEmbeddingGenerator? defaultEmbeddingGenerator,
         JsonSerializerOptions jsonSerializerOptions)
     {
         this._jsonSerializerOptions = jsonSerializerOptions;
 
-        return this.Build(type, vectorStoreRecordDefinition, defaultEmbeddingGenerator);
+        return this.Build(type, definition, defaultEmbeddingGenerator);
     }
 
     /// <summary>
-    /// Builds and returns an <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="vectorStoreRecordDefinition"/>.
+    /// Builds and returns an <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="definition"/>.
     /// </summary>
     public virtual CollectionModel BuildDynamic(
-        VectorStoreRecordDefinition vectorStoreRecordDefinition,
+        VectorStoreCollectionDefinition definition,
         IEmbeddingGenerator? defaultEmbeddingGenerator,
         JsonSerializerOptions jsonSerializerOptions)
     {
         this._jsonSerializerOptions = jsonSerializerOptions;
 
-        return this.BuildDynamic(vectorStoreRecordDefinition, defaultEmbeddingGenerator);
+        return this.BuildDynamic(definition, defaultEmbeddingGenerator);
     }
 
     /// <inheritdoc/>

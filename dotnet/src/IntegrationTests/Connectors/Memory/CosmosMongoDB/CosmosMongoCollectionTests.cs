@@ -210,7 +210,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
     public async Task UpsertWithModelWorksCorrectlyAsync()
     {
         // Arrange
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -258,7 +258,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
     public async Task UpsertWithBsonModelWorksCorrectlyAsync()
     {
         // Arrange
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
             Properties = new List<VectorStoreProperty>
             {
@@ -421,7 +421,7 @@ public class CosmosMongoCollectionTests(CosmosMongoVectorStoreFixture fixture)
             Definition = fixture.HotelVectorStoreRecordDefinition
         };
 
-        using var sut = new CosmosMongoCollection<object, Dictionary<string, object?>>(fixture.MongoDatabase, fixture.TestCollection, options);
+        using var sut = new CosmosMongoDynamicCollection(fixture.MongoDatabase, fixture.TestCollection, options);
 
         // Act
         await sut.UpsertAsync(new Dictionary<string, object?>

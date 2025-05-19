@@ -18,11 +18,9 @@ public sealed class PostgresCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
-    internal PostgresCollectionOptions(PostgresCollectionOptions? source)
+    internal PostgresCollectionOptions(PostgresCollectionOptions? source) : base(source)
     {
         this.Schema = source?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
-        this.Definition = source?.Definition;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
     }
 
     /// <summary>

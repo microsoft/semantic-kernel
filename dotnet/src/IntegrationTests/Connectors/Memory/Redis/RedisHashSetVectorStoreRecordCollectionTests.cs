@@ -415,7 +415,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
             PrefixCollectionNameToKeyNames = true,
             Definition = fixture.BasicVectorStoreRecordDefinition
         };
-        using var sut = new RedisHashSetCollection<object, Dictionary<string, object?>>(fixture.Database, TestCollectionName, options);
+        using var sut = new RedisHashSetDynamicCollection(fixture.Database, TestCollectionName, options);
 
         // Act
         var baseSetGetResult = await sut.GetAsync("HBaseSet-1", new RecordRetrievalOptions { IncludeVectors = true });

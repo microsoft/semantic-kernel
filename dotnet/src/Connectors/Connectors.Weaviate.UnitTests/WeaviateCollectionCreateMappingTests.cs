@@ -22,7 +22,7 @@ public sealed class WeaviateCollectionCreateMappingTests
         // Arrange
         var model = new WeaviateModelBuilder(HasNamedVectors)
             .BuildDynamic(
-                new VectorStoreRecordDefinition
+                new VectorStoreCollectionDefinition
                 {
                     Properties =
                     [
@@ -45,7 +45,7 @@ public sealed class WeaviateCollectionCreateMappingTests
         // Arrange
         var model = new WeaviateModelBuilder(HasNamedVectors)
             .BuildDynamic(
-                new VectorStoreRecordDefinition
+                new VectorStoreCollectionDefinition
                 {
                     Properties =
                     [
@@ -69,7 +69,7 @@ public sealed class WeaviateCollectionCreateMappingTests
         // Arrange
         var model = new WeaviateModelBuilder(HasNamedVectors)
             .BuildDynamic(
-                new VectorStoreRecordDefinition
+                new VectorStoreCollectionDefinition
                 {
                     Properties =
                     [
@@ -94,7 +94,7 @@ public sealed class WeaviateCollectionCreateMappingTests
         // Arrange
         var model = new WeaviateModelBuilder(HasNamedVectors)
             .BuildDynamic(
-                new VectorStoreRecordDefinition
+                new VectorStoreCollectionDefinition
                 {
                     Properties =
                     [
@@ -165,7 +165,7 @@ public sealed class WeaviateCollectionCreateMappingTests
         // Arrange
         var model = new WeaviateModelBuilder(HasNamedVectors)
             .BuildDynamic(
-                new VectorStoreRecordDefinition
+                new VectorStoreCollectionDefinition
                 {
                     Properties =
                     [
@@ -197,7 +197,7 @@ public sealed class WeaviateCollectionCreateMappingTests
         // Arrange
         var model = new WeaviateModelBuilder(hasNamedVectors)
             .BuildDynamic(
-                new VectorStoreRecordDefinition
+                new VectorStoreCollectionDefinition
                 {
                     Properties =
                     [

@@ -24,7 +24,7 @@ public sealed class SqlServerVectorStore : VectorStore
     private readonly VectorStoreMetadata _metadata;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreCollectionDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     /// <summary>The database schema.</summary>
     private readonly string? _schema;
@@ -62,9 +62,9 @@ public sealed class SqlServerVectorStore : VectorStore
     [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
-    public override SqlServerCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override SqlServerCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #endif
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
@@ -74,7 +74,7 @@ public sealed class SqlServerVectorStore : VectorStore
                 new()
                 {
                     Schema = this._schema,
-                    Definition = vectorStoreRecordDefinition,
+                    Definition = definition,
                     EmbeddingGenerator = this._embeddingGenerator
                 });
 
@@ -83,9 +83,9 @@ public sealed class SqlServerVectorStore : VectorStore
     [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
-    public override SqlServerDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override SqlServerDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new SqlServerDynamicCollection(
             this._connectionString,
@@ -93,7 +93,7 @@ public sealed class SqlServerVectorStore : VectorStore
             new()
             {
                 Schema = this._schema,
-                Definition = vectorStoreRecordDefinition,
+                Definition = definition,
                 EmbeddingGenerator = this._embeddingGenerator,
             }
         );

@@ -18,10 +18,8 @@ public sealed class MongoCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
-    internal MongoCollectionOptions(MongoCollectionOptions? source)
+    internal MongoCollectionOptions(MongoCollectionOptions? source) : base(source)
     {
-        this.Definition = source?.Definition;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
         this.VectorIndexName = source?.VectorIndexName ?? Default.VectorIndexName;
         this.FullTextSearchIndexName = source?.FullTextSearchIndexName ?? Default.FullTextSearchIndexName;
         this.MaxRetries = source?.MaxRetries ?? Default.MaxRetries;

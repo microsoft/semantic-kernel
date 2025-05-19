@@ -244,6 +244,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         // Act
         record.HotelName = "Updated name";
         record.HotelRating = 10;
+        await sut.UpsertAsync(record);
 
         getResult = await sut.GetAsync(HotelId);
 
@@ -352,7 +353,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
             Definition = this.GetTestHotelRecordDefinition()
         };
 
-        using var sut = new CosmosNoSqlCollection<object, Dictionary<string, object?>>(fixture.Database!, "dynamic-mapper", options);
+        using var sut = new CosmosNoSqlDynamicCollection(fixture.Database!, "dynamic-mapper", options);
 
         await sut.EnsureCollectionExistsAsync();
 
@@ -431,7 +432,7 @@ public sealed class CosmosNoSqlCollectionTests(CosmosNoSqlVectorStoreFixture fix
         };
     }
 
-    private VectorStoreRecordDefinition GetTestHotelRecordDefinition()
+    private VectorStoreCollectionDefinition GetTestHotelRecordDefinition()
     {
         return new()
         {

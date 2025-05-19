@@ -3,7 +3,6 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
 using RedisIntegrationTests.Support;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
@@ -32,7 +31,7 @@ public class RedisJsonEmbeddingGenerationTests(RedisJsonEmbeddingGenerationTests
         [
             services => services
                 .AddSingleton(RedisTestStore.JsonInstance.Database)
-                .AddRedisJsonVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddRedisJsonCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 
@@ -54,7 +53,7 @@ public class RedisJsonEmbeddingGenerationTests(RedisJsonEmbeddingGenerationTests
         [
             services => services
                 .AddSingleton(RedisTestStore.JsonInstance.Database)
-                .AddRedisJsonVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddRedisJsonCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 }

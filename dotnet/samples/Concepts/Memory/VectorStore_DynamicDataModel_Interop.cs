@@ -24,7 +24,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
 {
     private static readonly JsonSerializerOptions s_indentedSerializerOptions = new() { WriteIndented = true };
 
-    private static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
+    private static readonly VectorStoreCollectionDefinition s_definition = new()
     {
         Properties = new List<VectorStoreProperty>
         {
@@ -49,7 +49,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
         var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"), ownsClient: true);
 
         // Get and create collection if it doesn't exist using the dynamic data model and record definition that defines the schema.
-        var dynamicDataModelCollection = vectorStore.GetCollection<object, Dictionary<string, object?>>("skglossary", s_vectorStoreRecordDefinition);
+        var dynamicDataModelCollection = vectorStore.GetCollection<object, Dictionary<string, object?>>("skglossary", s_definition);
         await dynamicDataModelCollection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
@@ -102,7 +102,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
         await customDataModelCollection.UpsertAsync(glossaryEntries);
 
         // Get the collection using the dynamic data model.
-        var dynamicDataModelCollection = vectorStore.GetCollection<object, Dictionary<string, object?>>("skglossary", s_vectorStoreRecordDefinition);
+        var dynamicDataModelCollection = vectorStore.GetCollection<object, Dictionary<string, object?>>("skglossary", s_definition);
 
         // Retrieve one of the upserted records from the collection.
         var upsertedRecord = await dynamicDataModelCollection.GetAsync(glossaryEntries.First().Key, new() { IncludeVectors = true });

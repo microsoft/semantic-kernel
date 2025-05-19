@@ -25,7 +25,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Redis JSON as the underlying storage.
 /// </summary>
-/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
+/// <typeparam name="TKey">The data type of the record key. Must be <see cref="string"/>.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>
@@ -99,7 +99,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping).");
+            throw new NotSupportedException("Only string keys are supported.");
         }
 
         var isDynamic = typeof(TRecord) == typeof(Dictionary<string, object?>);
@@ -239,8 +239,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
         // Create Options
         var maybePrefixedKey = this.PrefixKeyIfNeeded(stringKey);
         var includeVectors = options?.IncludeVectors ?? false;
-
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -292,7 +291,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
         var maybePrefixedKeys = keysList.Select(key => this.PrefixKeyIfNeeded(key));
         var redisKeys = maybePrefixedKeys.Select(x => new RedisKey(x)).ToArray();
         var includeVectors = options?.IncludeVectors ?? false;
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -413,7 +412,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -488,7 +487,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
-        if (options?.IncludeVectors == true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options?.IncludeVectors == true && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }

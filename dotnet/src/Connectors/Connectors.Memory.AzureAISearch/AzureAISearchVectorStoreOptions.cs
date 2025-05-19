@@ -12,6 +12,19 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 public sealed class AzureAISearchVectorStoreOptions
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="AzureAISearchVectorStoreOptions"/> class.
+    /// </summary>
+    public AzureAISearchVectorStoreOptions()
+    {
+    }
+
+    internal AzureAISearchVectorStoreOptions(AzureAISearchVectorStoreOptions? source)
+    {
+        this.JsonSerializerOptions = source?.JsonSerializerOptions;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+    }
+
+    /// <summary>
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure AI Search record.
     /// Note that when using the default mapper and you are constructing your own <see cref="SearchIndexClient"/>, you will need
     /// to provide the same set of <see cref="System.Text.Json.JsonSerializerOptions"/> both here and when constructing the <see cref="SearchIndexClient"/>.

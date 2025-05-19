@@ -31,7 +31,7 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     private readonly ClientWrapper _clientWrapper;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreCollectionDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
     private readonly IEmbeddingGenerator? _embeddingGenerator;
@@ -102,9 +102,9 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
-    public override CosmosNoSqlCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override CosmosNoSqlCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
 #endif
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
@@ -114,7 +114,7 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
                 name,
                 new()
                 {
-                    Definition = vectorStoreRecordDefinition,
+                    Definition = definition,
                     JsonSerializerOptions = this._jsonSerializerOptions,
                     EmbeddingGenerator = this._embeddingGenerator
                 });
@@ -123,9 +123,9 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
 #if NET8_0_OR_GREATER
-    public override CosmosNoSqlDynamicCollection GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override CosmosNoSqlDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreRecordDefinition vectorStoreRecordDefinition)
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new CosmosNoSqlDynamicCollection(
             this._clientWrapper.Share(),
@@ -133,7 +133,7 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
             name,
             new()
             {
-                Definition = vectorStoreRecordDefinition,
+                Definition = definition,
                 JsonSerializerOptions = this._jsonSerializerOptions,
                 EmbeddingGenerator = this._embeddingGenerator
             }

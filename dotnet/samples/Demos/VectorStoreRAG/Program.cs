@@ -71,7 +71,7 @@ switch (appConfig.RagConfig.AIEmbeddingService)
 switch (appConfig.RagConfig.VectorStoreType)
 {
     case "AzureAISearch":
-        kernelBuilder.Services.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddAzureAISearchCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             new Uri(appConfig.AzureAISearchConfig.Endpoint),
             new AzureKeyCredential(appConfig.AzureAISearchConfig.ApiKey));
@@ -93,7 +93,7 @@ switch (appConfig.RagConfig.VectorStoreType)
             appConfig.RagConfig.CollectionName);
         break;
     case "Qdrant":
-        kernelBuilder.Services.AddQdrantVectorStoreRecordCollection<Guid, TextSnippet<Guid>>(
+        kernelBuilder.Services.AddQdrantCollection<Guid, TextSnippet<Guid>>(
             appConfig.RagConfig.CollectionName,
             appConfig.QdrantConfig.Host,
             appConfig.QdrantConfig.Port,
@@ -101,16 +101,16 @@ switch (appConfig.RagConfig.VectorStoreType)
             appConfig.QdrantConfig.ApiKey);
         break;
     case "Redis":
-        kernelBuilder.Services.AddRedisJsonVectorStoreRecordCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddRedisJsonCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             appConfig.RedisConfig.ConnectionConfiguration);
         break;
     case "Weaviate":
-        kernelBuilder.Services.AddWeaviateVectorStoreRecordCollection<TextSnippet<Guid>>(
+        kernelBuilder.Services.AddWeaviateCollection<TextSnippet<Guid>>(
             // Weaviate collection names must start with an upper case letter.
             char.ToUpper(appConfig.RagConfig.CollectionName[0], CultureInfo.InvariantCulture) + appConfig.RagConfig.CollectionName.Substring(1),
-            null,
-            new() { Endpoint = new Uri(appConfig.WeaviateConfig.Endpoint) });
+            endpoint: new Uri(appConfig.WeaviateConfig.Endpoint),
+            apiKey: null);
         break;
     default:
         throw new NotSupportedException($"Vector store type '{appConfig.RagConfig.VectorStoreType}' is not supported.");

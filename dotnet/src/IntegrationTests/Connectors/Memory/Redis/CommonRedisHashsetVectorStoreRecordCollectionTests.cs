@@ -21,11 +21,11 @@ public class CommonRedisHashsetVectorStoreRecordCollectionTests(RedisVectorStore
     protected override string Key3 => "3";
     protected override string Key4 => "4";
 
-    protected override VectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected override VectorStoreCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreCollectionDefinition? definition)
     {
         return new RedisHashSetCollection<string, TRecord>(fixture.Database, recordCollectionName + "hashset", new()
         {
-            Definition = vectorStoreRecordDefinition
+            Definition = definition
         });
     }
 

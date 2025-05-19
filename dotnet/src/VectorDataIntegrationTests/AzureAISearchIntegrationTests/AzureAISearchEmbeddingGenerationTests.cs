@@ -4,7 +4,6 @@ using AzureAISearchIntegrationTests.Support;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
 using Xunit;
@@ -39,7 +38,7 @@ public class AzureAISearchEmbeddingGenerationTests(AzureAISearchEmbeddingGenerat
         [
             services => services
                 .AddSingleton(AzureAISearchTestStore.Instance.Client)
-                .AddAzureAISearchVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddAzureAISearchCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 
@@ -64,7 +63,7 @@ public class AzureAISearchEmbeddingGenerationTests(AzureAISearchEmbeddingGenerat
         [
             services => services
                 .AddSingleton(AzureAISearchTestStore.Instance.Client)
-                .AddAzureAISearchVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddAzureAISearchCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 }

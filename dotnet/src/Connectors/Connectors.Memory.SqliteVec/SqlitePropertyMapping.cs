@@ -112,13 +112,10 @@ internal static class SqlitePropertyMapping
         {
             Type t when t == typeof(int) => reader.GetInt32(propertyIndex),
             Type t when t == typeof(long) => reader.GetInt64(propertyIndex),
-            Type t when t == typeof(ulong) => (ulong)reader.GetInt64(propertyIndex),
             Type t when t == typeof(short) => reader.GetInt16(propertyIndex),
-            Type t when t == typeof(ushort) => (ushort)reader.GetInt16(propertyIndex),
             Type t when t == typeof(bool) => reader.GetBoolean(propertyIndex),
             Type t when t == typeof(float) => reader.GetFloat(propertyIndex),
             Type t when t == typeof(double) => reader.GetDouble(propertyIndex),
-            Type t when t == typeof(decimal) => reader.GetDecimal(propertyIndex),
             Type t when t == typeof(string) => reader.GetString(propertyIndex),
             Type t when t == typeof(byte[]) => (byte[])reader[propertyIndex],
             Type t when t == typeof(ReadOnlyMemory<float>) => (byte[])reader[propertyIndex],
@@ -137,14 +134,11 @@ internal static class SqlitePropertyMapping
             // Integer types
             Type t when t == typeof(int) || t == typeof(int?) => "INTEGER",
             Type t when t == typeof(long) || t == typeof(long?) => "INTEGER",
-            Type t when t == typeof(ulong) || t == typeof(ulong?) => "INTEGER",
             Type t when t == typeof(short) || t == typeof(short?) => "INTEGER",
-            Type t when t == typeof(ushort) || t == typeof(ushort?) => "INTEGER",
 
             // Floating-point types
             Type t when t == typeof(float) || t == typeof(float?) => "REAL",
             Type t when t == typeof(double) || t == typeof(double?) => "REAL",
-            Type t when t == typeof(decimal) || t == typeof(decimal?) => "REAL",
 
             // String type
             Type t when t == typeof(string) => "TEXT",

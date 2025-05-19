@@ -106,7 +106,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     [ConditionalFact]
     public virtual async Task SearchAsync_with_custom_input_type()
     {
-        var recordDefinition = new VectorStoreRecordDefinition()
+        var recordDefinition = new VectorStoreCollectionDefinition()
         {
             Properties = stringVectorFixture.CreateRecordDefinition().Properties
                 .Select(p => p is VectorStoreVectorProperty vectorProperty
@@ -152,7 +152,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         var exception = await Assert.ThrowsAsync<NotSupportedException>(() => collection.SearchAsync("foo", top: 1).ToListAsync().AsTask());
 
         Assert.StartsWith(
-            "A value of type 'String' was passed to 'SearchAsync', but that isn't a supported vector type by your provider and no embedding generator was configured. The supported vector types are:",
+            "A value of type 'string' was passed to 'SearchAsync', but that isn't a supported vector type by your provider and no embedding generator was configured. The supported vector types are:",
             exception.Message);
     }
 
@@ -172,7 +172,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         // We have a generator configured for string, not int.
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => collection.SearchAsync(8, top: 1).ToListAsync().AsTask());
 
-        Assert.Equal($"An input of type 'Int32' was provided, but an incompatible embedding generator of type '{nameof(FakeEmbeddingGenerator)}' was configured.", exception.Message);
+        Assert.Equal($"An input of type 'int' was provided, but an incompatible embedding generator of type '{nameof(FakeEmbeddingGenerator)}' was configured.", exception.Message);
     }
 
     #endregion Search
@@ -410,7 +410,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         return stringVectorFixture.GetDynamicCollection(vectorStore, stringVectorFixture.CollectionName, recordDefinition);
     }
 
-    private (VectorStore, VectorStoreRecordDefinition) GetStoreAndRecordDefinition(
+    private (VectorStore, VectorStoreCollectionDefinition) GetStoreAndRecordDefinition(
         bool storeGenerator = false,
         bool collectionGenerator = false,
         bool propertyGenerator = false)
@@ -441,7 +441,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         public override string CollectionName => "EmbeddingGenerationTests";
 
-        public override VectorStoreRecordDefinition CreateRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
                 Properties =
@@ -487,14 +487,14 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         public virtual VectorStoreCollection<TKey, TRecord> GetCollection<TRecord>(
             VectorStore vectorStore,
             string collectionName,
-            VectorStoreRecordDefinition? recordDefinition = null)
+            VectorStoreCollectionDefinition? recordDefinition = null)
             where TRecord : class
             => vectorStore.GetCollection<TKey, TRecord>(collectionName, recordDefinition);
 
         public virtual VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(
             VectorStore vectorStore,
             string collectionName,
-            VectorStoreRecordDefinition recordDefinition)
+            VectorStoreCollectionDefinition recordDefinition)
             => vectorStore.GetDynamicCollection(collectionName, recordDefinition);
 
         public abstract VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator = null);
@@ -512,7 +512,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
 
         public override string CollectionName => "SearchOnlyEmbeddingGenerationTests";
 
-        public override VectorStoreRecordDefinition CreateRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
                 Properties =
@@ -558,14 +558,14 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
         public virtual VectorStoreCollection<TKey, TRecord> GetCollection<TRecord>(
             VectorStore vectorStore,
             string collectionName,
-            VectorStoreRecordDefinition? recordDefinition = null)
+            VectorStoreCollectionDefinition? recordDefinition = null)
             where TRecord : class
             => vectorStore.GetCollection<TKey, TRecord>(collectionName, recordDefinition);
 
         public virtual VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(
             VectorStore vectorStore,
             string collectionName,
-            VectorStoreRecordDefinition recordDefinition)
+            VectorStoreCollectionDefinition recordDefinition)
             => vectorStore.GetDynamicCollection(collectionName, recordDefinition);
 
         public abstract VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator = null);

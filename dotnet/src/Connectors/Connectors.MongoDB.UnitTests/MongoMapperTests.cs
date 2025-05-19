@@ -20,7 +20,7 @@ public sealed class MongoMapperTests
     {
         var keyProperty = new VectorStoreKeyProperty("HotelId", typeof(string));
 
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
             Properties =
             [

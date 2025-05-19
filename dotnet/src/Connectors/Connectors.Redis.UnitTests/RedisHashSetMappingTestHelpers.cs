@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 /// </summary>
 internal static class RedisHashSetMappingTestHelpers
 {
-    public static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
+    public static readonly VectorStoreCollectionDefinition s_definition = new()
     {
         Properties = new List<VectorStoreProperty>()
         {

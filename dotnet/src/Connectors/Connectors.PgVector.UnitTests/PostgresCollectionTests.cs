@@ -15,7 +15,7 @@ public class PostgresCollectionTests
     public void ThrowsForUnsupportedType()
     {
         // Arrange
-        var recordDefinition = new VectorStoreRecordDefinition
+        var recordDefinition = new VectorStoreCollectionDefinition
         {
             Properties = [
                 new VectorStoreKeyProperty("HotelId", typeof(ulong)),

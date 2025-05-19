@@ -12,7 +12,7 @@ namespace SqliteVecIntegrationTests.Filter;
 #pragma warning disable CS0252 // Possible unintended reference comparison; left hand side needs cast
 
 public class SqliteBasicQueryTests(SqliteBasicQueryTests.Fixture fixture)
-    : BasicQueryTests<ulong>(fixture), IClassFixture<SqliteBasicQueryTests.Fixture>
+    : BasicQueryTests<long>(fixture), IClassFixture<SqliteBasicQueryTests.Fixture>
 {
     public override async Task Not_over_Or()
     {
@@ -44,12 +44,12 @@ public class SqliteBasicQueryTests(SqliteBasicQueryTests.Fixture fixture)
     public override Task Contains_over_field_string_List()
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_over_field_string_List());
 
-    public new class Fixture : BasicQueryTests<ulong>.QueryFixture
+    public new class Fixture : BasicQueryTests<long>.QueryFixture
     {
         public override TestStore TestStore => SqliteTestStore.Instance;
 
         // Override to remove the string array property, which isn't (currently) supported on SQLite
-        public override VectorStoreRecordDefinition CreateRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
                 Properties = base.CreateRecordDefinition().Properties.Where(p => p.Type != typeof(string[]) && p.Type != typeof(List<string>)).ToList()

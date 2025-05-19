@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Qdrant as the underlying storage.
 /// </summary>
-/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="Guid"/> or <see cref="ulong"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
+/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="Guid"/> or <see cref="ulong"/>.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
@@ -103,7 +103,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
         if (typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only ulong and Guid keys are supported (and object for dynamic mapping).");
+            throw new NotSupportedException("Only ulong and Guid keys are supported.");
         }
 
         options ??= QdrantCollectionOptions.Default;
@@ -319,7 +319,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         }
 
         var includeVectors = options?.IncludeVectors ?? false;
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -469,10 +469,13 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         {
             var vectorProperty = this._model.VectorProperties[i];
 
-            if (vectorProperty.EmbeddingGenerator is null)
+            if (QdrantModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
                 continue;
             }
+
+            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
+            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
 
             if (recordsList is null)
             {
@@ -488,7 +491,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var task))
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var task))
             {
                 generatedEmbeddings ??= new GeneratedEmbeddings<Embedding<float>>?[vectorPropertyCount];
                 generatedEmbeddings[i] = await task.ConfigureAwait(false);
@@ -527,7 +530,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }

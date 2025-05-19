@@ -71,14 +71,14 @@ public abstract class CollectionModelBuilder
     /// </summary>
     [RequiresDynamicCode("This model building variant is not compatible with NativeAOT. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     [RequiresUnreferencedCode("This model building variant is not compatible with trimming. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
-    public virtual CollectionModel Build(Type type, VectorStoreRecordDefinition? definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
+    public virtual CollectionModel Build(Type type, VectorStoreCollectionDefinition? definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
     {
         if (type == typeof(Dictionary<string, object?>))
         {
             throw new ArgumentException("Dynamic mapping with Dictionary<string, object?> requires calling BuildDynamic().");
         }
 
-        this.DefaultEmbeddingGenerator = defaultEmbeddingGenerator;
+        this.DefaultEmbeddingGenerator = definition?.EmbeddingGenerator ?? defaultEmbeddingGenerator;
 
         this.ProcessTypeProperties(type, definition);
 
@@ -103,7 +103,7 @@ public abstract class CollectionModelBuilder
         }
 
         this.Customize();
-        this.Validate(type);
+        this.Validate(type, definition);
 
         // Extra validation for non-dynamic mapping scenarios: ensure the type has a parameterless constructor.
         if (!this.Options.UsesExternalSerializer && type.GetConstructor(Type.EmptyTypes) is null)
@@ -117,7 +117,7 @@ public abstract class CollectionModelBuilder
     /// <summary>
     /// Builds and returns an <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="definition"/>.
     /// </summary>
-    public virtual CollectionModel BuildDynamic(VectorStoreRecordDefinition definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
+    public virtual CollectionModel BuildDynamic(VectorStoreCollectionDefinition definition, IEmbeddingGenerator? defaultEmbeddingGenerator)
     {
         if (definition is null)
         {
@@ -127,7 +127,7 @@ public abstract class CollectionModelBuilder
         this.DefaultEmbeddingGenerator = defaultEmbeddingGenerator;
         this.ProcessRecordDefinition(definition, type: null);
         this.Customize();
-        this.Validate(type: null);
+        this.Validate(type: null, definition);
 
         return new(typeof(Dictionary<string, object?>), new DynamicRecordCreator(), this.KeyProperties, this.DataProperties, this.VectorProperties, this.PropertyMap);
     }
@@ -140,7 +140,7 @@ public abstract class CollectionModelBuilder
     // TODO: We could put [DynamicallyAccessedMembers] to preserve all properties, but that approach wouldn't
     // TODO: work with hierarchical data models (#10957).
     [RequiresUnreferencedCode("Traverses the CLR type's properties with reflection, so not compatible with trimming")]
-    protected virtual void ProcessTypeProperties(Type type, VectorStoreRecordDefinition? definition)
+    protected virtual void ProcessTypeProperties(Type type, VectorStoreCollectionDefinition? definition)
     {
         // We want to allow the user-provided record definition to override anything configured via attributes
         // (allowing the same CLR type + attributes to be used with different record definitions).
@@ -193,23 +193,37 @@ public abstract class CollectionModelBuilder
                 vectorProperty.IndexKind = vectorAttribute.IndexKind;
                 vectorProperty.DistanceFunction = vectorAttribute.DistanceFunction;
 
-                // If a default embedding generator is defined and the property type isn't an Embedding, we set up that embedding generator on the property.
-                // At this point we don't know the embedding type (it might get specified in the record definition, that's processed later). So we infer
-                //
-                // This also means that the property type is the input type (e.g. string, DataContent) rather than the embedding type.
-                // Since we need the property type to be the embedding type, we infer that from the generator. This allows users
-                // to just stick an IEmbeddingGenerator in DI, define a string property as their vector property, and as long as the embedding generator
-                // is compatible (supports string and ROM<float>, assuming that's what the connector requires), everything just works.
-                // Note that inferring the embedding type from the IEmbeddingGenerator isn't trivial, involving both connector logic (around which embedding
-                // types are supported/preferred), as well as the vector property type (which knows about supported input types).
+                // Set up the embedding generator for the property. For this pass over .NET properties, we only have the default embedding generator (configured)
+                // at the collection/store level) - this may get overridden later by the record definition.
 
-                if (this.DefaultEmbeddingGenerator is null || this.IsVectorPropertyTypeValid(clrProperty.PropertyType, out _))
+                // 1. We also attempt to set the EmbeddingType for the property. If the type is natively supported (e.g. ReadOnlyMemory<float>), we use that.
+                // 2. If an embedding generator is configured, we try to resolve the embedding type from that. This allows users to just e.g. stick an
+                //    IEmbeddingGenerator in DI, define a string property as their vector property, and as long as the embedding generator is compatible (supports
+                //    string and ROM<float>, assuming that's what the connector requires), everything just works.
+                //    Note that inferring the embedding type from the IEmbeddingGenerator isn't trivial, involving both connector logic (around which embedding
+                //    types are supported/preferred), as well as the vector property type (which knows about supported input types).
+                // 3. Otherwise, if we can't infer the embedding type from the generator (no generator or the default generator isn't compatible), we leave it
+                //    null to allow it to get configured later (e.g. via a property-specific generator configured in the record definition).
+
+                vectorProperty.EmbeddingGenerator = this.DefaultEmbeddingGenerator;
+
+                if (this.IsVectorPropertyTypeValid(clrProperty.PropertyType, out _))
                 {
                     vectorProperty.EmbeddingType = clrProperty.PropertyType;
                 }
+                else if (this.DefaultEmbeddingGenerator is not null)
+                {
+                    // The property type isn't a valid embedding type (e.g. ReadOnlyMemory<float>), but an embedding generator is configured.
+                    // Try to resolve the embedding type from that: if the configured generator supports translating the input type (e.g. string) to
+                    // an output type supported by the provider, we set that as the embedding type.
+                    // Note that this can fail (if the configured generator doesn't support the required translation). In that case, EmbeddingType
+                    // remains null, and we may succeed configuring it later (e.g. from the record definition). If that fails, we throw in validation at the end.
+                    vectorProperty.EmbeddingType = this.ResolveEmbeddingType(vectorProperty, this.DefaultEmbeddingGenerator, userRequestedEmbeddingType: null);
+                }
                 else
                 {
-                    this.SetupEmbeddingGeneration(vectorProperty, this.DefaultEmbeddingGenerator, embeddingType: null);
+                    // If the property type isn't valid and there's no embedding generator, that's an error.
+                    // However, we throw only later in validation, to allow e.g. for arbitrary provider customization after this step.
                 }
 
                 this.VectorProperties.Add(vectorProperty);
@@ -233,7 +247,7 @@ public abstract class CollectionModelBuilder
     /// <summary>
     /// As part of building the model, this method processes the given <paramref name="definition"/>.
     /// </summary>
-    protected virtual void ProcessRecordDefinition(VectorStoreRecordDefinition definition, Type? type)
+    protected virtual void ProcessRecordDefinition(VectorStoreCollectionDefinition definition, Type? type)
     {
         foreach (VectorStoreProperty definitionProperty in definition.Properties)
         {
@@ -276,7 +290,7 @@ public abstract class CollectionModelBuilder
                     if (property is not KeyPropertyModel keyPropertyModel)
                     {
                         throw new InvalidOperationException(
-                            $"Property '{property.ModelName}' is present in the {nameof(VectorStoreRecordDefinition)} as a key property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
+                            $"Property '{property.ModelName}' is present in the {nameof(VectorStoreCollectionDefinition)} as a key property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
                     }
 
                     break;
@@ -285,7 +299,7 @@ public abstract class CollectionModelBuilder
                     if (property is not DataPropertyModel dataProperty)
                     {
                         throw new InvalidOperationException(
-                            $"Property '{property.ModelName}' is present in the {nameof(VectorStoreRecordDefinition)} as a data property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
+                            $"Property '{property.ModelName}' is present in the {nameof(VectorStoreCollectionDefinition)} as a data property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
                     }
 
                     dataProperty.IsIndexed = definitionDataProperty.IsIndexed;
@@ -297,7 +311,7 @@ public abstract class CollectionModelBuilder
                     if (property is not VectorPropertyModel vectorProperty)
                     {
                         throw new InvalidOperationException(
-                            $"Property '{property.ModelName}' is present in the {nameof(VectorStoreRecordDefinition)} as a vector property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
+                            $"Property '{property.ModelName}' is present in the {nameof(VectorStoreCollectionDefinition)} as a vector property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
                     }
 
                     vectorProperty.Dimensions = definitionVectorProperty.Dimensions;
@@ -312,42 +326,35 @@ public abstract class CollectionModelBuilder
                         vectorProperty.DistanceFunction = definitionVectorProperty.DistanceFunction;
                     }
 
-                    if (definitionVectorProperty.EmbeddingType is not null)
-                    {
-                        vectorProperty.EmbeddingType = definitionVectorProperty.EmbeddingType;
-                    }
+                    // See comment above in ProcessTypeProperties() on embedding generation.
 
-                    // Check if embedding generation is configured, either on the property directly or via a default
-                    IEmbeddingGenerator? embeddingGenerator = null;
+                    vectorProperty.EmbeddingGenerator = definitionVectorProperty.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator;
 
-                    // Check if an embedding generator is defined specifically on the property.
-                    if (definitionVectorProperty.EmbeddingGenerator is not null)
+                    if (this.IsVectorPropertyTypeValid(definitionVectorProperty.Type, out _))
                     {
-                        // If we have a property CLR type (POCO, not dynamic mapping) and it's an embedding type, throw as that's incompatible.
-                        if (this.IsVectorPropertyTypeValid(vectorProperty.Type, out _))
+                        if (definitionVectorProperty.EmbeddingType is not null
+                            && definitionVectorProperty.EmbeddingType != definitionVectorProperty.Type)
                         {
-                            throw new InvalidOperationException(VectorDataStrings.EmbeddingPropertyTypeIncompatibleWithEmbeddingGenerator(vectorProperty));
+                            throw new InvalidOperationException(VectorDataStrings.DifferentEmbeddingTypeSpecifiedForNativelySupportedType(vectorProperty, definitionVectorProperty.EmbeddingType));
                         }
 
-                        embeddingGenerator = definitionVectorProperty.EmbeddingGenerator;
+                        vectorProperty.EmbeddingType = definitionVectorProperty.Type;
                     }
-                    // If a default embedding generator is defined (at the collection or store level), configure that on the property, but only if the property type is not an embedding type.
-                    // If the property type is an embedding type, just ignore the default embedding generator.
-                    else if ((definition.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator) is IEmbeddingGenerator defaultEmbeddingGenerator
-                        && !this.IsVectorPropertyTypeValid(vectorProperty.Type, out _))
+                    else if (vectorProperty.EmbeddingGenerator is not null)
                     {
-                        embeddingGenerator = definition.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator;
-                    }
-
-                    if (embeddingGenerator is null)
-                    {
-                        // No embedding generation - the embedding type and the property (model) type are the same.
-                        vectorProperty.EmbeddingType = vectorProperty.Type;
+                        // The property type isn't a valid embedding type (e.g. ReadOnlyMemory<float>), but an embedding generator is configured.
+                        // Try to resolve the embedding type from the generator: if the configured generator supports translating the input type (e.g. string) to
+                        // an output type supported by the provider, we set that as the embedding type.
+                        // Note that this can fail (if the configured generator doesn't support the required translation). In that case, EmbeddingType
+                        // remains null - we defer throwing to the validation phase at the end, to allow for possible later provider customization later.
+                        vectorProperty.EmbeddingType = this.ResolveEmbeddingType(vectorProperty, vectorProperty.EmbeddingGenerator, definitionVectorProperty.EmbeddingType);
                     }
                     else
                     {
-                        this.SetupEmbeddingGeneration(vectorProperty, embeddingGenerator, vectorProperty.EmbeddingType);
+                        // If the property type isn't valid and there's no embedding generator, that's an error.
+                        // However, we throw only later in validation, to allow e.g. for arbitrary provider customization after this step.
                     }
+
                     break;
 
                 default:
@@ -386,20 +393,11 @@ public abstract class CollectionModelBuilder
     /// Attempts to setup embedding generation on the given vector property, with the given embedding generator and user-configured embedding type.
     /// Can be overridden by connectors to provide support for other embedding types.
     /// </summary>
-    protected virtual void SetupEmbeddingGeneration(
+    protected virtual Type? ResolveEmbeddingType(
         VectorPropertyModel vectorProperty,
         IEmbeddingGenerator embeddingGenerator,
-        Type? embeddingType)
-    {
-        if (!vectorProperty.TrySetupEmbeddingGeneration<Embedding<float>, ReadOnlyMemory<float>>(embeddingGenerator, embeddingType))
-        {
-            throw new InvalidOperationException(
-                VectorDataStrings.IncompatibleEmbeddingGenerator(
-                    embeddingGeneratorType: embeddingGenerator.GetType(),
-                    supportedInputTypes: vectorProperty.GetSupportedInputTypes(),
-                    supportedOutputTypes: [typeof(ReadOnlyMemory<float>)]));
-        }
-    }
+        Type? userRequestedEmbeddingType)
+        => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType);
 
     /// <summary>
     /// Extension hook for connectors to be able to customize the model.
@@ -411,33 +409,33 @@ public abstract class CollectionModelBuilder
     /// <summary>
     /// Validates the model after all properties have been processed.
     /// </summary>
-    protected virtual void Validate(Type? type)
+    protected virtual void Validate(Type? type, VectorStoreCollectionDefinition? definition)
     {
         if (!this.Options.SupportsMultipleKeys && this.KeyProperties.Count > 1)
         {
-            throw new NotSupportedException($"Multiple key properties found on {TypeMessage()}the provided {nameof(VectorStoreRecordDefinition)} while only one is supported.");
+            throw new NotSupportedException($"Multiple key properties found on {TypeMessage()}the provided {nameof(VectorStoreCollectionDefinition)} while only one is supported.");
         }
 
         if (this.KeyProperties.Count == 0)
         {
-            throw new NotSupportedException($"No key property found on {TypeMessage()}the provided {nameof(VectorStoreRecordDefinition)} while at least one is required.");
+            throw new NotSupportedException($"No key property found on {TypeMessage()}the provided {nameof(VectorStoreCollectionDefinition)} while at least one is required.");
         }
 
         if (this.Options.RequiresAtLeastOneVector && this.VectorProperties.Count == 0)
         {
-            throw new NotSupportedException($"No vector property found on {TypeMessage()}the provided {nameof(VectorStoreRecordDefinition)} while at least one is required.");
+            throw new NotSupportedException($"No vector property found on {TypeMessage()}the provided {nameof(VectorStoreCollectionDefinition)} while at least one is required.");
         }
 
         if (!this.Options.SupportsMultipleVectors && this.VectorProperties.Count > 1)
         {
-            throw new NotSupportedException($"Multiple vector properties found on {TypeMessage()}the provided {nameof(VectorStoreRecordDefinition)} while only one is supported.");
+            throw new NotSupportedException($"Multiple vector properties found on {TypeMessage()}the provided {nameof(VectorStoreCollectionDefinition)} while only one is supported.");
         }
 
         var storageNameMap = new Dictionary<string, PropertyModel>();
 
         foreach (var property in this.PropertyMap.Values)
         {
-            this.ValidateProperty(property);
+            this.ValidateProperty(property, definition);
 
             if (storageNameMap.TryGetValue(property.StorageName, out var otherproperty))
             {
@@ -453,7 +451,7 @@ public abstract class CollectionModelBuilder
     /// <summary>
     /// Validates a single property, performing validation on it.
     /// </summary>
-    protected virtual void ValidateProperty(PropertyModel propertyModel)
+    protected virtual void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
     {
         var type = propertyModel.Type;
 
@@ -478,14 +476,35 @@ public abstract class CollectionModelBuilder
                 break;
 
             case VectorPropertyModel vectorProperty:
-                Debug.Assert(vectorProperty.EmbeddingGenerator is null ^ vectorProperty.Type != vectorProperty.EmbeddingType);
-
-                if (!this.IsVectorPropertyTypeValid(vectorProperty.EmbeddingType, out supportedTypes))
+                if (vectorProperty.EmbeddingType is null)
                 {
-                    throw new InvalidOperationException(
-                        vectorProperty.EmbeddingGenerator is null
-                            ? VectorDataStrings.NonEmbeddingVectorPropertyWithoutEmbeddingGenerator(vectorProperty)
-                            : VectorDataStrings.EmbeddingPropertyTypeIncompatibleWithEmbeddingGenerator(vectorProperty));
+                    if (this.IsVectorPropertyTypeValid(vectorProperty.Type, out string? supportedVectorTypes))
+                    {
+                        throw new UnreachableException("EmbeddingType cannot be null when the property type is supported.");
+                    }
+
+                    if (vectorProperty.EmbeddingGenerator is null)
+                    {
+                        throw new InvalidOperationException(VectorDataStrings.UnsupportedVectorPropertyWithoutEmbeddingGenerator(vectorProperty));
+                    }
+
+                    // If the user has configured a desired embedding type (done to use en embedding type other than the provider's default one), throw errors tailored to that.
+                    // Throw errors related to that.
+                    var userRequestedEmbeddingType = definition?.Properties.OfType<VectorStoreVectorProperty>().SingleOrDefault(p => p.Name == vectorProperty.ModelName)?.EmbeddingType;
+                    if (userRequestedEmbeddingType is not null)
+                    {
+                        throw new InvalidOperationException(this.IsVectorPropertyTypeValid(userRequestedEmbeddingType, out _)
+                            ? VectorDataStrings.ConfiguredEmbeddingTypeIsUnsupportedByTheGenerator(vectorProperty, userRequestedEmbeddingType, supportedVectorTypes)
+                            : VectorDataStrings.ConfiguredEmbeddingTypeIsUnsupportedByTheProvider(vectorProperty, userRequestedEmbeddingType, supportedVectorTypes));
+                    }
+
+                    throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGenerator(vectorProperty, vectorProperty.EmbeddingGenerator, supportedVectorTypes));
+                }
+
+                if (!this.IsVectorPropertyTypeValid(vectorProperty.EmbeddingType, out string? supportedVectorTypes2))
+                {
+                    // Should in principle never happen, only with incorrect provider customization.
+                    throw new InvalidOperationException($"Property '{vectorProperty.ModelName}' has unsupported embedding type '{vectorProperty.EmbeddingType.Name}'. Vector properties must be one of the supported types: {supportedVectorTypes2}.");
                 }
 
                 if (vectorProperty.Dimensions <= 0)

@@ -26,7 +26,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Azure AI Search as the underlying storage.
 /// </summary>
-/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
+/// <typeparam name="TKey">The data type of the record key. Must be <see cref="string"/>.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
@@ -85,7 +85,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
         {
-            throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
+            throw new NotSupportedException("Only string keys are supported.");
         }
 
         options ??= AzureAISearchCollectionOptions.Default;
@@ -234,8 +234,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         // Create Options.
         var innerOptions = this.ConvertGetDocumentOptions(options);
         var includeVectors = options?.IncludeVectors ?? false;
-
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -252,8 +251,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         // Create Options
         var innerOptions = this.ConvertGetDocumentOptions(options);
         var includeVectors = options?.IncludeVectors ?? false;
-
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -335,7 +333,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         options ??= new();
 
         var includeVectors = options.IncludeVectors;
-        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (includeVectors && this._model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -630,7 +628,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
         }
 
-        if (options.IncludeVectors && model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
+        if (options.IncludeVectors && model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -690,10 +688,13 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         {
             var vectorProperty = model.VectorProperties[i];
 
-            if (vectorProperty.EmbeddingGenerator is null)
+            if (AzureAISearchModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
                 continue;
             }
+
+            // We have a vector property whose type isn't natively supported - we need to generate embeddings.
+            Debug.Assert(vectorProperty.EmbeddingGenerator is not null);
 
             // We have a property with embedding generation; materialize the records' enumerable if needed, to
             // prevent multiple enumeration.
@@ -711,7 +712,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var floatTask))
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
             {
                 generatedEmbeddings ??= new IReadOnlyList<MEAI.Embedding>?[vectorPropertyCount];
                 generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
