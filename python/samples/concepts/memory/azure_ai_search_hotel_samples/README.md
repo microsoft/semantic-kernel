@@ -20,7 +20,7 @@ The Python samples in this folder will:
 ### How It Works
 
 1. **Data Model and Index Creation**  
-   The data model and index schema are defined in `step_0_data_model.py`.  
+   The data model and index schema are defined in `data_model.py`.  
    This script is called by the other two, so no need to run manually.
 
 2. **Loading Data and Generating Vectors**  
@@ -41,7 +41,7 @@ The Python samples in this folder will:
    - Perform vector and hybrid search queries and print the results
 
 4. **Customizing the Search**  
-   You can modify the search query in `step_1_interact_with_the_collection.py` by changing the `query` variable at the bottom of the script.
+   You can modify the search query in `1_interact_with_the_collection.py` by changing the `query` variable at the bottom of the script.
 
 5. **Cleanup**  
    The sample script deletes the index at the end of execution. You can comment out this step if you want to keep the index for further experimentation.
@@ -71,7 +71,7 @@ Search results using hybrid:
 
 ### Advanced: Agent and Plugin Integration
 
-For a more advanced example, see `step_2_use_as_a_plugin.py`, which demonstrates how to expose the hotel search as a plugin to a agent, this showcases how you can use the collection to create multiple search functions for different purposes and with some set filters and customized output. It then uses those in an Agent to help the user.
+For a more advanced example, see `2_use_as_a_plugin.py`, which demonstrates how to expose the hotel search as a plugin to a agent, this showcases how you can use the collection to create multiple search functions for different purposes and with some set filters and customized output. It then uses those in an Agent to help the user.
 
 ### Advanced: Use the Azure AI Search integrated embedding generation
 
@@ -79,7 +79,7 @@ For more info on this topic, see the [Azure AI Search documentation](https://lea
 
 To use this, next to the steps needed to create the embedding skillset, you need to:
 
-1. Adapt the `vectorizers` list and the profiles list in `custom_index` in `step_0_data_model.py`.
+1. Adapt the `vectorizers` list and the profiles list in `custom_index` in `data_model.py`.
 1. Remove the `embedding_generator` param from the collection in both scripts.  
     By removing this, we indicate that the embedding generation takes place in the service.
 

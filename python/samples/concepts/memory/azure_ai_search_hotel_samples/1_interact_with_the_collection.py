@@ -2,8 +2,11 @@
 
 import asyncio
 
-from step_0_data_model import HotelSampleClass, custom_index, load_records
-
+from samples.concepts.memory.azure_ai_search_hotel_samples.data_model import (
+    HotelSampleClass,
+    custom_index,
+    load_records,
+)
 from semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding
 from semantic_kernel.connectors.memory import AzureAISearchCollection
 

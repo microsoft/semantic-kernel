@@ -28,6 +28,10 @@ The source can be found here: https://github.com/Azure/azure-search-vector-sampl
 The version in this folder, is modified to have python style names and no vectors.
 Below we define a custom index for the hotel data model.
 The reason for this is that the built-in connector cannot properly handle the complex data types.
+
+This file is referenced by the two scripts and does not have to be executed directly.
+The first script (1_interact_with_the_collection.py) will show interacting with the records.
+The second script (2_use_as_a_plugin.py) will show interacting with the collection as a plugin.
 """
 
 

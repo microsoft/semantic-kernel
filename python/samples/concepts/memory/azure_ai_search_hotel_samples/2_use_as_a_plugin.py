@@ -5,8 +5,11 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
 
-from step_0_data_model import HotelSampleClass, custom_index, load_records
-
+from samples.concepts.memory.azure_ai_search_hotel_samples.data_model import (
+    HotelSampleClass,
+    custom_index,
+    load_records,
+)
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.agents.agent import AgentThread
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
