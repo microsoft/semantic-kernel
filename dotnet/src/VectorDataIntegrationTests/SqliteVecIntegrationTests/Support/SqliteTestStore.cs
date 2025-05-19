@@ -26,7 +26,7 @@ internal sealed class SqliteTestStore : TestStore
     protected override Task StartAsync()
     {
         this._databasePath = Path.GetTempFileName();
-        this._connectionString = $"Data Source={this._databasePath}";
+        this._connectionString = $"Data Source={this._databasePath};Pooling=false";
         this.DefaultVectorStore = new SqliteVectorStore(this._connectionString);
         return Task.CompletedTask;
     }
