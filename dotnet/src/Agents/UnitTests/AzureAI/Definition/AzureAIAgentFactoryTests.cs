@@ -4,7 +4,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -32,12 +32,14 @@ public class AzureAIAgentFactoryTests : IDisposable
         this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
 
         var builder = Kernel.CreateBuilder();
-        var client = new AIProjectClient(
-            "endpoint;subscription_id;resource_group_name;project_name",
+        var client = new PersistentAgentsClient(
+            "https://test",
             new FakeTokenCredential(),
-            new AIProjectClientOptions()
-            { Transport = new HttpClientTransport(this._httpClient) });
-        builder.Services.AddSingleton<AIProjectClient>(client);
+            new PersistentAgentsAdministrationClientOptions
+            {
+                Transport = new HttpClientTransport(this._httpClient)
+            });
+        builder.Services.AddSingleton(client);
         this._kernel = builder.Build();
     }
 
