@@ -4,12 +4,9 @@
 from unittest.mock import patch
 
 import pytest
+from azure.cosmos.aio import CosmosClient
 
-from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
-    AzureCosmosDBNoSQLCollection,
-)
-from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_store import AzureCosmosDBNoSQLStore
-from semantic_kernel.connectors.memory.azure_cosmos_db.utils import CosmosClientWrapper
+from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBNoSQLCollection, AzureCosmosDBNoSQLStore
 from semantic_kernel.exceptions import VectorStoreInitializationException
 
 
@@ -76,26 +73,26 @@ def test_azure_cosmos_db_no_sql_store_get_collection(
     """Test the get_collection method of an AzureCosmosDBNoSQLStore object."""
     vector_store = AzureCosmosDBNoSQLStore()
 
-    # Before calling get_collection, the collection should not exist.
-    assert vector_store.vector_record_collections.get(collection_name) is None
-
     collection = vector_store.get_collection(collection_name=collection_name, data_model_type=data_model_type)
 
     assert collection is not None
-    assert vector_store.vector_record_collections.get(collection_name) is not None
     mock_azure_cosmos_db_no_sql_collection_init.assert_called_once_with(
-        data_model_type,
-        collection_name,
-        database_name=azure_cosmos_db_no_sql_unit_test_env["AZURE_COSMOS_DB_NO_SQL_DATABASE_NAME"],
+        data_model_type=data_model_type,
         data_model_definition=None,
+        collection_name=collection_name,
+        database_name=azure_cosmos_db_no_sql_unit_test_env["AZURE_COSMOS_DB_NO_SQL_DATABASE_NAME"],
+        embedding_generator=None,
+        url=azure_cosmos_db_no_sql_unit_test_env["AZURE_COSMOS_DB_NO_SQL_URL"],
+        key=azure_cosmos_db_no_sql_unit_test_env["AZURE_COSMOS_DB_NO_SQL_KEY"],
         cosmos_client=vector_store.cosmos_client,
+        partition_key=None,
         create_database=vector_store.create_database,
-        env_file_path=vector_store.cosmos_db_nosql_settings.env_file_path,
-        env_file_encoding=vector_store.cosmos_db_nosql_settings.env_file_encoding,
+        env_file_path=None,
+        env_file_encoding=None,
     )
 
 
-@patch.object(CosmosClientWrapper, "close", return_value=None)
+@patch.object(CosmosClient, "close", return_value=None)
 async def test_client_is_closed(mock_cosmos_client_close, azure_cosmos_db_no_sql_unit_test_env) -> None:
     """Test the close method of an AzureCosmosDBNoSQLStore object."""
     async with AzureCosmosDBNoSQLStore() as vector_store:
