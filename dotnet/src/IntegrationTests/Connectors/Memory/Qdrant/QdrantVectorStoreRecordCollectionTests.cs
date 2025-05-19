@@ -417,8 +417,8 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             ["HotelName"] = "Dynamic Mapper Hotel",
             ["HotelCode"] = 40,
             ["ParkingIncluded"] = false,
-            ["HotelRating"] = 3.6d,
-            ["Tags"] = new string[] { "dynamic" },
+            ["HotelRating"] = 3.6f,
+            ["Tags"] = new List<string> { "dynamic" },
             ["Description"] = "This is a dynamic mapper hotel",
 
             ["DescriptionEmbedding"] = (await fixture.EmbeddingGenerator.GenerateAsync("This is a dynamic mapper hotel")).Vector
