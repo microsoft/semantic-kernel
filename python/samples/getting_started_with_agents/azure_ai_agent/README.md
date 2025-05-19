@@ -14,7 +14,7 @@ Before running an Azure AI Agent, modify your .env file to include:
 
 ```bash
 AZURE_AI_AGENT_ENDPOINT = "<example-endpoint-string>"
-AZURE_AI_AGENT_DEPLOYMENT_NAME = "<example-deployment-name>"
+AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME = "<example-deployment-name>"
 AZURE_AI_AGENT_API_VERSION = "<example-api-version>"
 ```
 

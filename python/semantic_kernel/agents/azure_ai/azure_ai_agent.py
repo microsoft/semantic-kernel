@@ -559,18 +559,20 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
         # Build the mapping only if settings is provided and valid
         field_mapping: dict[str, Any] = {}
 
-        if settings is not None:
-            if not isinstance(settings, AzureAIAgentSettings):
-                raise AgentInitializationException(f"Expected AzureAIAgentSettings, got {type(settings).__name__}")
+        if settings is None:
+            settings = AzureAIAgentSettings()
 
-            field_mapping.update({
-                "ChatModelId": getattr(settings, "model_deployment_name", None),
-                "Endpoint": getattr(settings, "endpoint", None),
-                "AgentId": getattr(settings, "agent_id", None),
-                "BingConnectionId": getattr(settings, "bing_connection_id", None),
-                "AzureAISearchConnectionId": getattr(settings, "azure_ai_search_connection_id", None),
-                "AzureAISearchIndexName": getattr(settings, "azure_ai_search_index_name", None),
-            })
+        if not isinstance(settings, AzureAIAgentSettings):
+            raise AgentInitializationException(f"Expected AzureAIAgentSettings, got {type(settings).__name__}")
+
+        field_mapping.update({
+            "ChatModelId": getattr(settings, "model_deployment_name", None),
+            "Endpoint": getattr(settings, "endpoint", None),
+            "AgentId": getattr(settings, "agent_id", None),
+            "BingConnectionId": getattr(settings, "bing_connection_id", None),
+            "AzureAISearchConnectionId": getattr(settings, "azure_ai_search_connection_id", None),
+            "AzureAISearchIndexName": getattr(settings, "azure_ai_search_index_name", None),
+        })
 
         if extras:
             field_mapping.update(extras)
