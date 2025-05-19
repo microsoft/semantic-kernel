@@ -16,7 +16,7 @@ GitHub issues based on their content. The orchestration consists of 3 agents, ea
 specialized in a different area.
 
 The input to the orchestration is not longer a string or a chat message, but a Pydantic
-model (i.e. structure input). The model will get transformed into a chat message before
+model (i.e. structured inputs). The model will get transformed into a chat message before
 being passed to the agents. This allows the orchestration to become more flexible and
 easier reusable.
 

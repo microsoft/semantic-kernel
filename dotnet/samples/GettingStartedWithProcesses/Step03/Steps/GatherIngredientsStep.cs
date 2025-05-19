@@ -9,7 +9,7 @@ namespace Step03.Steps;
 /// </summary>
 public class GatherIngredientsStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string GatherIngredients = nameof(GatherIngredients);
     }
@@ -32,7 +32,7 @@ public class GatherIngredientsStep : KernelProcessStep
     /// <param name="context">The context for the current step and process. <see cref="KernelProcessStepContext"/></param>
     /// <param name="foodActions">list of actions taken to the food</param>
     /// <returns></returns>
-    [KernelFunction(Functions.GatherIngredients)]
+    [KernelFunction(ProcessStepFunctions.GatherIngredients)]
     public virtual async Task GatherIngredientsAsync(KernelProcessStepContext context, List<string> foodActions)
     {
         var ingredient = this._ingredient.ToFriendlyString();
@@ -55,7 +55,7 @@ public class GatherIngredientsStep : KernelProcessStep
 /// </summary>
 public class GatherIngredientsWithStockStep : KernelProcessStep<GatherIngredientsState>
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string GatherIngredients = nameof(GatherIngredients);
     }
@@ -87,7 +87,7 @@ public class GatherIngredientsWithStockStep : KernelProcessStep<GatherIngredient
     /// <param name="context">The context for the current step and process. <see cref="KernelProcessStepContext"/></param>
     /// <param name="foodActions">list of actions taken to the food</param>
     /// <returns></returns>
-    [KernelFunction(Functions.GatherIngredients)]
+    [KernelFunction(ProcessStepFunctions.GatherIngredients)]
     public virtual async Task GatherIngredientsAsync(KernelProcessStepContext context, List<string> foodActions)
     {
         var ingredient = this._ingredient.ToFriendlyString(); ;
