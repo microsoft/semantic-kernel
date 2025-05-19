@@ -27,7 +27,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Construct the AzureAISearch VectorStore.
         var searchIndexClient = new SearchIndexClient(

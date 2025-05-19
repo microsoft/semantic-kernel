@@ -31,7 +31,7 @@ public class VectorStore_DataIngestion_Simple(ITestOutputHelper output, VectorSt
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Initiate the docker container and construct the vector store.
         await qdrantFixture.ManualInitializeAsync();

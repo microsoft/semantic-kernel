@@ -37,11 +37,12 @@ public class VectorStore_VectorSearch_MultiStore_Postgres(ITestOutputHelper outp
         kernelBuilder.AddAzureOpenAIEmbeddingGenerator(
             deploymentName: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            credential: new AzureCliCredential());
+            credential: new AzureCliCredential(),
+            dimensions: 1536);
 
         // Initialize the Postgres docker container via the fixtures and register the Postgres VectorStore.
         await PostgresFixture.ManualInitializeAsync();
-        kernelBuilder.Services.AddPostgresVectorStore(TestConfiguration.Postgres.ConnectionString);
+        kernelBuilder.Services.AddPostgresVectorStore("Host=localhost;Port=5432;Username=postgres;Password=example;Database=postgres;");
 
         // Register the test output helper common processor with the DI container.
         kernelBuilder.Services.AddSingleton<ITestOutputHelper>(this.Output);
@@ -65,11 +66,11 @@ public class VectorStore_VectorSearch_MultiStore_Postgres(ITestOutputHelper outp
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Initialize the Postgres docker container via the fixtures and construct the Postgres VectorStore.
         await PostgresFixture.ManualInitializeAsync();
-        using PostgresVectorStore vectorStore = new(TestConfiguration.Postgres.ConnectionString);
+        using PostgresVectorStore vectorStore = new("Host=localhost;Port=5432;Username=postgres;Password=example;Database=postgres;");
 
         // Create the common processor that works for any vector store.
         var processor = new VectorStore_VectorSearch_MultiStore_Common(vectorStore, embeddingGenerator, this.Output);

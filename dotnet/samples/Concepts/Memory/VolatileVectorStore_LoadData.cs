@@ -29,7 +29,7 @@ public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
             new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey),
             new OpenAI.OpenAIClientOptions() { Transport = new HttpClientPipelineTransport(httpClient) })
                 .GetEmbeddingClient(TestConfiguration.OpenAI.EmbeddingModelId)
-                .AsIEmbeddingGenerator();
+                .AsIEmbeddingGenerator(1536);
 
         // Construct an InMemory vector store.
         var vectorStore = new InMemoryVectorStore();
@@ -87,7 +87,7 @@ public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
         // Create an embedding generation service.
         var embeddingGenerator = new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey)
             .GetEmbeddingClient(TestConfiguration.OpenAI.EmbeddingModelId)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Construct an InMemory vector store.
         var vectorStore = new InMemoryVectorStore();
