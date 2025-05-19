@@ -19,7 +19,6 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException, AgentInitializationException
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -42,6 +41,21 @@ TThreadType = TypeVar("TThreadType", bound="AgentThread")
 
 
 # region Declarative Spec Definitions
+
+
+class InputSpec(KernelBaseModel):
+    """Class representing an input specification."""
+
+    description: str | None = None
+    required: bool = False
+    default: Any = None
+
+
+class OutputSpec(KernelBaseModel):
+    """Class representing an output specification."""
+
+    description: str | None = None
+    type: str | None = None
 
 
 class ModelConnection(KernelBaseModel):
@@ -83,6 +97,8 @@ class AgentSpec(KernelBaseModel):
     tools: list[ToolSpec] = Field(default_factory=list)
     template: dict[str, Any] | None = None
     extras: dict[str, Any] = Field(default_factory=dict)
+    inputs: dict[str, InputSpec] = Field(default_factory=dict)
+    outputs: dict[str, OutputSpec] = Field(default_factory=dict)
 
 
 # endregion
@@ -897,12 +913,11 @@ class DeclarativeSpecMixin(ABC):
         **kwargs,
     ) -> _D:
         """Default implementation: call the protected _from_dict."""
-        # Compose `data` and extracted common fields for the subclass
         extracted, kernel = cls._normalize_spec_fields(data, kernel=kernel, plugins=plugins, **kwargs)
         return await cls._from_dict(
             {**data, **extracted},
             kernel=kernel,
-            prompt_template_config=prompt_template_config,
+            prompt_template_config=extracted.get("prompt_template"),
             settings=settings,
             **kwargs,
         )
@@ -961,11 +976,27 @@ class DeclarativeSpecMixin(ABC):
         if "tools" in data:
             cls._validate_tools(data["tools"], kernel)
 
+        model_options = data.get("model", {}).get("options", {}) if data.get("model") else {}
+
+        inputs = data.get("inputs", {})
+        input_defaults = {
+            k: v.get("default")
+            for k, v in (inputs.items() if isinstance(inputs, dict) else [])
+            if v.get("default") is not None
+        }
+
+        # Step 1: Start with model options
+        arguments = KernelArguments(**model_options)
+        # Step 2: Update with input defaults (only if not already provided by model options)
+        for k, v in input_defaults.items():
+            if k not in arguments:
+                arguments[k] = v
+
         fields = {
             "name": data.get("name"),
             "description": data.get("description"),
             "instructions": data.get("instructions"),
-            "arguments": KernelArguments(**(data.get("model", {}).get("options", {}))) if data.get("model") else None,
+            "arguments": arguments,
         }
 
         # Handle prompt_template if available
@@ -973,12 +1004,13 @@ class DeclarativeSpecMixin(ABC):
             template_data = data.get("prompt_template") or data.get("template")
             if isinstance(template_data, dict):
                 prompt_template_config = PromptTemplateConfig(**template_data)
-                fields["prompt_template"] = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
-                    prompt_template_config=prompt_template_config
-                )
-                # Overwrite instructions from prompt template if explicitly provided
-                if prompt_template_config.template is not None:
-                    fields["instructions"] = prompt_template_config.template
+                # If 'instructions' is set in YAML, override the template field in config
+                instructions = data.get("instructions")
+                if instructions is not None:
+                    prompt_template_config.template = instructions
+                fields["prompt_template"] = prompt_template_config
+                # Always set fields["instructions"] to the template being used
+                fields["instructions"] = prompt_template_config.template
 
         return fields, kernel
 

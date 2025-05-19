@@ -19,7 +19,7 @@ from openai.types.beta.assistant_response_format_option_param import AssistantRe
 from openai.types.beta.assistant_tool_param import AssistantToolParam
 from openai.types.beta.code_interpreter_tool_param import CodeInterpreterToolParam
 from openai.types.beta.file_search_tool_param import FileSearchToolParam
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, SecretStr, ValidationError
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.agent import (
@@ -72,6 +72,7 @@ else:
     from typing_extensions import override  # pragma: no cover
 
 _T = TypeVar("_T", bound="OpenAIAssistantAgent")
+ToolParam = dict[str, Any]
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -81,7 +82,7 @@ _TOOL_BUILDERS: dict[str, Callable[[ToolSpec, Kernel | None], ToolResources]] = 
 
 
 def _register_tool(tool_type: str):
-    def decorator(fn: Callable[[ToolSpec, Kernel | None], ToolResources]):
+    def decorator(fn: Callable[[ToolSpec, Kernel | None], tuple[list[ToolParam], ToolResources]]):
         _TOOL_BUILDERS[tool_type.lower()] = fn
         return fn
 
@@ -89,17 +90,17 @@ def _register_tool(tool_type: str):
 
 
 @_register_tool("code_interpreter")
-def _code_interpreter(spec: ToolSpec) -> CodeInterpreterToolParam:
+def _code_interpreter(spec: ToolSpec, kernel: Kernel | None = None) -> tuple[list[ToolParam], ToolResources]:
     file_ids = spec.options.get("file_ids")
-    return CodeInterpreterToolParam(file_ids=file_ids) if file_ids else CodeInterpreterToolParam()
+    return OpenAIAssistantAgent.configure_code_interpreter_tool(file_ids=file_ids)
 
 
 @_register_tool("file_search")
-def _file_search(spec: ToolSpec) -> FileSearchToolParam:
+def _file_search(spec: ToolSpec, kernel: Kernel | None = None) -> tuple[list[ToolParam], ToolResources]:
     vector_store_ids = spec.options.get("vector_store_ids")
     if not vector_store_ids or not isinstance(vector_store_ids, list) or not vector_store_ids[0]:
         raise AgentInitializationException(f"Missing or malformed 'vector_store_ids' in: {spec}")
-    return FileSearchToolParam(vector_store_ids=vector_store_ids)
+    return OpenAIAssistantAgent.configure_file_search_tool(vector_store_ids=vector_store_ids)
 
 
 @_register_tool("function")
@@ -424,6 +425,10 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
         if "settings" in kwargs:
             kwargs.pop("settings")
 
+        args = data.pop("arguments", None)
+        if args:
+            arguments = KernelArguments(**args)
+
         if spec.id:
             existing_definition = await client.beta.assistants.retrieve(spec.id)
 
@@ -447,6 +452,7 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
                 client=client,
                 kernel=kernel,
                 prompt_template_config=prompt_template_config,
+                arguments=arguments,
                 **kwargs,
             )
 
@@ -455,8 +461,12 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
 
         # Build tool definitions & resources
         tool_objs = [_build_tool(t, kernel) for t in spec.tools if t.type != "function"]
-        tool_defs = [d for tool in tool_objs for d in (tool.definitions if hasattr(tool, "definitions") else [tool])]
-        tool_resources = _build_tool_resources(tool_objs)
+        all_tools: list[ToolParam] = []
+        all_resources: ToolResources = {}
+
+        for tool_list, resource in tool_objs:
+            all_tools.extend(tool_list)
+            all_resources.update(resource)
 
         try:
             agent_definition = await client.beta.assistants.create(
@@ -464,8 +474,8 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
                 name=spec.name,
                 description=spec.description,
                 instructions=spec.instructions,
-                tools=tool_defs,
-                tool_resources=tool_resources,
+                tools=all_tools,
+                tool_resources=all_resources,
                 metadata=spec.extras,
                 **kwargs,
             )
@@ -475,10 +485,18 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
         return cls(
             definition=agent_definition,
             client=client,
+            arguments=arguments,
             kernel=kernel,
             prompt_template_config=prompt_template_config,
             **kwargs,
         )
+
+    @classmethod
+    def _get_setting(cls: type[_T], value: Any) -> Any:
+        """Return raw value if `SecretStr`, otherwise pass through."""
+        if isinstance(value, SecretStr):
+            return value.get_secret_value()
+        return value
 
     @override
     @classmethod
@@ -503,9 +521,9 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
             raise AgentInitializationException(f"Expected OpenAISettings, got {type(settings).__name__}")
 
         field_mapping.update({
-            "ChatModelId": getattr(settings, "chat_model_id", None),
-            "AgentId": getattr(settings, "agent_id", None),
-            "ApiKey": getattr(settings, "api_key", None),
+            "ChatModelId": cls._get_setting(getattr(settings, "chat_model_id", None)),
+            "AgentId": cls._get_setting(getattr(settings, "agent_id", None)),
+            "ApiKey": cls._get_setting(getattr(settings, "api_key", None)),
         })
 
         if extras:

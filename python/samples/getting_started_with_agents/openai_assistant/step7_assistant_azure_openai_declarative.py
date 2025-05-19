@@ -2,12 +2,12 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import AgentRegistry, OpenAIAssistantAgent
+from semantic_kernel.agents import AgentRegistry, AzureAssistantAgent
 from semantic_kernel.functions import kernel_function
 
 """
-The following sample demonstrates how to create an OpenAI Assistant agent that answers
-questions about a sample menu using a Semantic Kernel Plugin. The agent is created
+The following sample demonstrates how to create an Azure OpenAI Assistant agent that
+answers questions about a sample menu using a Semantic Kernel Plugin. The agent is created
 using a yaml declarative spec.
 """
 
@@ -21,11 +21,11 @@ USER_INPUTS = [
 
 # Define the YAML string for the sample
 SPEC = """
-type: openai_assistant
+type: azure_openai_assistant
 name: Host
 instructions: Respond politely to the user's questions.
 model:
-  id: ${OpenAI:ChatModelId}
+  id: ${AzureOpenAI:ChatModelId}
 tools:
   - id: MenuPlugin.get_specials
     type: function
@@ -55,10 +55,10 @@ class MenuPlugin:
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, _ = OpenAIAssistantAgent.setup_resources()
+    client, _ = AzureAssistantAgent.setup_resources()
 
     # 2. Create the assistant on the Azure OpenAI service
-    agent: OpenAIAssistantAgent = await AgentRegistry.create_from_yaml(
+    agent: AzureAssistantAgent = await AgentRegistry.create_from_yaml(
         SPEC,
         plugins=[MenuPlugin()],
         client=client,
