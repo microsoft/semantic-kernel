@@ -77,6 +77,14 @@ public class RedisJsonCollectionBasicQueryTests(RedisJsonCollectionBasicQueryTes
 
         public override string CollectionName => "JsonCollectionQueryTests";
 
+        public override string SpecialCharactersText
+#if NET8_0_OR_GREATER
+            => base.SpecialCharactersText;
+#else
+            // Redis client doesn't properly escape '"' on Full Framework.
+            => """>with $om[ specia]chara<ters'and\stuff""";
+#endif
+
         // Override to remove the bool property, which isn't (currently) supported on Redis/JSON
         public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
@@ -120,6 +128,14 @@ public class RedisHashSetCollectionBasicQueryTests(RedisHashSetCollectionBasicQu
         public override TestStore TestStore => RedisTestStore.HashSetInstance;
 
         public override string CollectionName => "HashSetCollectionQueryTests";
+
+        public override string SpecialCharactersText
+#if NET8_0_OR_GREATER
+            => base.SpecialCharactersText;
+#else
+            // Redis client doesn't properly escape '"' on Full Framework.
+            => """>with $om[ specia]chara<ters'and\stuff""";
+#endif
 
         // Override to remove the bool property, which isn't (currently) supported on Redis
         public override VectorStoreCollectionDefinition CreateRecordDefinition()
