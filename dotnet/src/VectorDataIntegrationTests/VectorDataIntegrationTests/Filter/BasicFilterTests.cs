@@ -15,6 +15,8 @@ namespace VectorDataSpecificationTests.Filter;
 public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixture)
     where TKey : notnull
 {
+    private const string SpecialCharactersText = """>with $om[ specia]"chara<ters'and\stuff""";
+
     #region Equality
 
     [ConditionalFact]
@@ -48,8 +50,8 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
     [ConditionalFact]
     public virtual Task Equal_with_string_containing_special_characters()
         => this.TestFilterAsync(
-            r => r.String == """with some special"characters'and\stuff""",
-            r => r["String"] == """with some special"characters'and\stuff""");
+            r => r.String == SpecialCharactersText,
+            r => r["String"] == SpecialCharactersText);
 
     [ConditionalFact]
     public virtual Task Equal_with_string_is_not_Contains()
@@ -647,7 +649,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                     Key = this.GenerateNextKey<TKey>(),
                     Int = 11,
                     Bool = true,
-                    String = """with some special"characters'and\stuff""",
+                    String = SpecialCharactersText,
                     Int2 = 101,
                     StringArray = ["y", "z"],
                     StringList = ["y", "z"],
