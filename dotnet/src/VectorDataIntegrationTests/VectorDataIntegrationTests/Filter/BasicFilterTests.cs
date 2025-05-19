@@ -43,9 +43,15 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
     }
 
     [ConditionalFact]
-    public virtual Task Equal_with_string_sql_injection_in_name()
-        => Assert.ThrowsAsync<InvalidOperationException>(() => this.GetDynamicRecords(r => r["String = \"not\"; DROP TABLE FilterTests;"] == "",
+    public virtual async Task Equal_with_string_sql_injection_in_name()
+    {
+        if (fixture.TestDynamic)
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => this.GetDynamicRecords(r => r["String = \"not\"; DROP TABLE FilterTests;"] == "",
             fixture.TestData.Count, new ReadOnlyMemory<float>([1, 2, 3])));
+        }
+    }
 
     [ConditionalFact]
     public virtual Task Equal_with_string_containing_special_characters()

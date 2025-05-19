@@ -263,7 +263,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         string collectionName = GetUniqueCollectionName();
         var testStore = fixture.TestStore;
 
-        Assert.Throws<ArgumentException>(() => testStore.DefaultVectorStore.GetCollection<string, TimeModel>(collectionName));
+        Assert.Throws<NotSupportedException>(() => testStore.DefaultVectorStore.GetCollection<string, TimeModel>(collectionName));
     }
 #else
     [ConditionalFact]

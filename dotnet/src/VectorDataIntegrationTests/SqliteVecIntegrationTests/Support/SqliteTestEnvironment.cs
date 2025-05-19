@@ -1,50 +1,34 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Data;
 using Microsoft.Data.Sqlite;
 
 namespace SqliteVecIntegrationTests.Support;
 
 internal static class SqliteTestEnvironment
 {
-    private static bool? s_isSqliteVecInstalled;
+    private static readonly Lazy<bool> s_canUseSqlite = new(CanCreateConnectionAndLoadExtension);
 
-    internal static bool TryLoadSqliteVec(SqliteConnection connection)
+    internal static bool CanUseSqlite => s_canUseSqlite.Value;
+
+    private static bool CanCreateConnectionAndLoadExtension()
     {
-        if (!s_isSqliteVecInstalled.HasValue)
+        try
         {
-            if (connection.State != ConnectionState.Open)
-            {
-                throw new ArgumentException("Connection must be open");
-            }
-
-            try
-            {
-                connection.LoadVector();
-                s_isSqliteVecInstalled = true;
-            }
-            catch (SqliteException)
-            {
-                s_isSqliteVecInstalled = false;
-            }
+            using var connection = new SqliteConnection("Data Source=:memory:;");
+            connection.Open();
+            connection.LoadVector();
+        }
+        catch (TypeInitializationException ex)
+        {
+            Console.WriteLine("Failed to load sqlite native dependency: " + ex.Message);
+            return false;
+        }
+        catch (SqliteException ex)
+        {
+            Console.WriteLine("Failed to load sqlite_vec extension: " + ex.Message);
+            return false;
         }
 
-        return s_isSqliteVecInstalled.Value;
-    }
-
-    internal static bool IsSqliteVecInstalled
-    {
-        get
-        {
-            if (!s_isSqliteVecInstalled.HasValue)
-            {
-                using var connection = new SqliteConnection("Data Source=:memory:;");
-                connection.Open();
-
-                s_isSqliteVecInstalled = TryLoadSqliteVec(connection);
-            }
-
-            return s_isSqliteVecInstalled.Value;
-        }
+        return true;
     }
 }

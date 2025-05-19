@@ -5,7 +5,6 @@ using VectorDataSpecificationTests.Filter;
 using VectorDataSpecificationTests.Support;
 using WeaviateIntegrationTests.Support;
 using Xunit;
-using Xunit.Sdk;
 
 namespace WeaviateIntegrationTests.Filter;
 
@@ -60,11 +59,6 @@ public class WeaviateBasicQueryTests(WeaviateBasicQueryTests.Fixture fixture)
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_inline_string_array_with_weird_chars());
 
     #endregion
-
-    // In Weaviate, string equality on multi-word textual properties depends on tokenization
-    // (https://weaviate.io/developers/weaviate/api/graphql/filters#multi-word-queries-in-equal-filters)
-    public override Task Equal_with_string_is_not_Contains()
-        => Assert.ThrowsAsync<FailException>(() => base.Equal_with_string_is_not_Contains());
 
     public new class Fixture : BasicQueryTests<Guid>.QueryFixture
     {
