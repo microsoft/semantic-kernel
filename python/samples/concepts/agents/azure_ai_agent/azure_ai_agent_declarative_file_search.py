@@ -28,7 +28,7 @@ instructions: >
 model:
   id: ${AzureAI:ChatModelId}
   connection:
-    connection_string: ${AzureAI:Endpoint}
+    endpoint: ${AzureAI:Endpoint}
 tools:
   - type: file_search
     options:

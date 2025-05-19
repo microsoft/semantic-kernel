@@ -24,7 +24,7 @@ description: This agent answers question about the weather.
 model:
   id: ${AzureAI:ChatModelId}
   connection:
-    connection_string: ${AzureAI:Endpoint}
+    endpoint: ${AzureAI:Endpoint}
   options:
     temperature: 0.4
 tools:
