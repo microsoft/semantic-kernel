@@ -127,7 +127,7 @@ public class AzureAISearchAllTypes
         }
     }
 
-    internal static VectorStoreRecordDefinition GetRecordDefinition()
+    internal static VectorStoreCollectionDefinition GetRecordDefinition()
         => new()
         {
             Properties =
