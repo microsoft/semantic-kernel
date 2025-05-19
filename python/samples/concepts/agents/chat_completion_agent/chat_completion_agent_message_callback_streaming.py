@@ -37,9 +37,6 @@ class MenuPlugin:
         return "$9.99"
 
 
-intermediate_steps: list[ChatMessageContent] = []
-
-
 # This callback function will be called for each intermediate message
 # Which will allow one to handle FunctionCallContent and FunctionResultContent
 # If the callback is not provided, the agent will return the final response

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
+import sys
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.const import DEFAULT_SERVICE_NAME, METADATA_EXCEPTION_KEY
@@ -14,6 +15,11 @@ from semantic_kernel.planners.sequential_planner.sequential_planner_config impor
 from semantic_kernel.planners.sequential_planner.sequential_planner_extensions import SequentialPlannerKernelExtension
 from semantic_kernel.planners.sequential_planner.sequential_planner_parser import SequentialPlanParser
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 SEQUENTIAL_PLANNER_DEFAULT_DESCRIPTION = (
     "Given a request or command or goal generate a step by step plan to "
@@ -31,6 +37,7 @@ def read_file(file_path: str) -> str:
         return file.read()
 
 
+@deprecated("This is no longer maintained and will be removed after June 1, 2025. Use function calling instead.")
 class SequentialPlanner:
     """Sequential planner class."""
 

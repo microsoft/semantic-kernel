@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
-using Microsoft.SemanticKernel.Embeddings;
 using Qdrant.Client.Grpc;
 using Xunit;
 using Xunit.Abstractions;
@@ -64,8 +64,8 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         // Act
         await sut.EnsureCollectionExistsAsync();
         await sut.UpsertAsync(record);
-        var getResult = await sut.GetAsync(30, new RecordRetrievalOptions { IncludeVectors = true });
-        var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
+        var getResult = await sut.GetAsync(30, new() { IncludeVectors = true });
+        var vector = (await fixture.EmbeddingGenerator.GenerateAsync("A great hotel")).Vector;
         var searchResults = await sut.SearchAsync(
             vector,
             top: 3,
@@ -168,7 +168,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             HotelId = Guid.Parse("55555555-5555-5555-5555-555555555555"),
             HotelName = "My Hotel 5",
             Description = "This is a great hotel.",
-            DescriptionEmbedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel."),
+            DescriptionEmbedding = (await fixture.EmbeddingGenerator.GenerateAsync("This is a great hotel.")).Vector,
         };
 
         // Act.
@@ -376,7 +376,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, ownsClient: false, options);
 
         // Act.
-        var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
+        var vector = (await fixture.EmbeddingGenerator.GenerateAsync("A great hotel")).Vector;
         var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "My Hotel 13").EqualTo("LastRenovationDate", new DateTimeOffset(2020, 02, 01, 0, 0, 0, TimeSpan.Zero)) : new VectorSearchFilter().AnyTagEqualTo("Tags", "t13.2");
         var searchResults = await sut.SearchAsync(
             vector,
@@ -421,7 +421,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             ["Tags"] = new string[] { "dynamic" },
             ["Description"] = "This is a dynamic mapper hotel",
 
-            ["DescriptionEmbedding"] = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a dynamic mapper hotel")
+            ["DescriptionEmbedding"] = (await fixture.EmbeddingGenerator.GenerateAsync("This is a dynamic mapper hotel")).Vector
         });
         var localGetResult = await sut.GetAsync(40ul, new RecordRetrievalOptions { IncludeVectors = true });
 
@@ -449,7 +449,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.IsType<ReadOnlyMemory<float>>(localGetResult["DescriptionEmbedding"]);
     }
 
-    private async Task<HotelInfo> CreateTestHotelAsync(uint hotelId, ITextEmbeddingGenerationService embeddingGenerator)
+    private async Task<HotelInfo> CreateTestHotelAsync(uint hotelId, IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
     {
         return new HotelInfo
         {
@@ -461,7 +461,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             LastRenovationDate = new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.Zero),
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
-            DescriptionEmbedding = await embeddingGenerator.GenerateEmbeddingAsync("This is a great hotel."),
+            DescriptionEmbedding = (await embeddingGenerator.GenerateAsync("This is a great hotel.")).Vector,
         };
     }
 }

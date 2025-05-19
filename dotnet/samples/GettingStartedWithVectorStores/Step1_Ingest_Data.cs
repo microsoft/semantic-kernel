@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace GettingStartedWithVectorStores;
 
@@ -22,7 +22,7 @@ public class Step1_Ingest_Data(ITestOutputHelper output, VectorStoresFixture fix
         var collection = vectorStore.GetCollection<string, Glossary>("skglossary");
 
         // Ingest data into the collection.
-        await IngestDataIntoVectorStoreAsync(collection, fixture.TextEmbeddingGenerationService);
+        await IngestDataIntoVectorStoreAsync(collection, fixture.EmbeddingGenerator);
 
         // Retrieve an item from the collection and write it to the console.
         var record = await collection.GetAsync("4");
@@ -33,11 +33,11 @@ public class Step1_Ingest_Data(ITestOutputHelper output, VectorStoresFixture fix
     /// Ingest data into the given collection.
     /// </summary>
     /// <param name="collection">The collection to ingest data into.</param>
-    /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings.</param>
+    /// <param name="embeddingGenerator">The service to use for generating embeddings.</param>
     /// <returns>The keys of the upserted records.</returns>
     internal static async Task<IEnumerable<string>> IngestDataIntoVectorStoreAsync(
         VectorStoreCollection<string, Glossary> collection,
-        ITextEmbeddingGenerationService textEmbeddingGenerationService)
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
     {
         // Create the collection if it doesn't exist.
         await collection.EnsureCollectionExistsAsync();
@@ -46,7 +46,7 @@ public class Step1_Ingest_Data(ITestOutputHelper output, VectorStoresFixture fix
         var glossaryEntries = CreateGlossaryEntries().ToList();
         var tasks = glossaryEntries.Select(entry => Task.Run(async () =>
         {
-            entry.DefinitionEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(entry.Definition);
+            entry.DefinitionEmbedding = (await embeddingGenerator.GenerateAsync(entry.Definition)).Vector;
         }));
         await Task.WhenAll(tasks);
 
@@ -107,7 +107,7 @@ public class Step1_Ingest_Data(ITestOutputHelper output, VectorStoresFixture fix
             Key = "6",
             Category = "AI",
             Term = "LLM",
-            Definition = "Large language model. A type of artificial ingelligence algorithm that is designed to understand and generate human language."
+            Definition = "Large language model. A type of artificial intelligence algorithm that is designed to understand and generate human language."
         };
     }
 }

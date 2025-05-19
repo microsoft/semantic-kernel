@@ -45,6 +45,8 @@
     <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="AWSSDK.Core" />
+    <PackageReference Include="AWSSDK.SecurityToken" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -53,6 +55,7 @@
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Amazon\Connectors.Amazon.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.MistralAI\Connectors.MistralAI.csproj" />

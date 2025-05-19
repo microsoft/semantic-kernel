@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using Microsoft.SemanticKernel.Embeddings;
 using StackExchange.Redis;
 
 namespace GettingStartedWithVectorStores;
@@ -30,7 +30,7 @@ public class Step4_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFi
         // the data into the database previously.
         var collection = vectorStore.GetCollection<string, Glossary>("skglossary");
         var customDataModelCollection = vectorStore.GetCollection<string, Glossary>("skglossary");
-        await Step1_Ingest_Data.IngestDataIntoVectorStoreAsync(customDataModelCollection, fixture.TextEmbeddingGenerationService);
+        await Step1_Ingest_Data.IngestDataIntoVectorStoreAsync(customDataModelCollection, fixture.EmbeddingGenerator);
 
         // To use dynamic data modeling, we still have to describe the storage schema to the vector store
         // using a record definition. The benefit over a custom data model is that this definition
@@ -53,7 +53,7 @@ public class Step4_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFi
 
         // Generate an embedding from the search string.
         var searchString = "How do I provide additional context to an LLM?";
-        var searchVector = await fixture.TextEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
+        var searchVector = (await fixture.EmbeddingGenerator.GenerateAsync(searchString)).Vector;
 
         // Search the generic data model collection and get the single most relevant result.
         var searchResultItems = await dynamicDataModelCollection.SearchAsync(

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace MCPServer;
 
@@ -25,14 +25,14 @@ public static class VectorStoreExtensions
     /// <param name="vectorStore">The instance of <see cref="VectorStore"/> used to create the collection.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="entries">The list of strings to create records from.</param>
-    /// <param name="embeddingGenerationService">The text embedding generation service.</param>
+    /// <param name="embeddingGenerator">The text embedding generation service.</param>
     /// <param name="createRecord">The delegate which can create a record for each string and its embedding.</param>
     /// <returns>The created collection.</returns>
     public static async Task<VectorStoreCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
         this VectorStore vectorStore,
         string collectionName,
         string[] entries,
-        ITextEmbeddingGenerationService embeddingGenerationService,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
         CreateRecordFromString<TKey, TRecord> createRecord)
         where TKey : notnull
         where TRecord : class
@@ -44,7 +44,7 @@ public static class VectorStoreExtensions
         // Create records and generate embeddings for them.
         var tasks = entries.Select(entry => Task.Run(async () =>
         {
-            var record = createRecord(entry, await embeddingGenerationService.GenerateEmbeddingAsync(entry).ConfigureAwait(false));
+            var record = createRecord(entry, (await embeddingGenerator.GenerateAsync(entry).ConfigureAwait(false)).Vector);
             await collection.UpsertAsync(record).ConfigureAwait(false);
         }));
         await Task.WhenAll(tasks).ConfigureAwait(false);
