@@ -17,22 +17,18 @@ public class SqliteVectorStoreFixture : IDisposable
         SqliteCollectionOptions? options = default)
         where TKey : notnull
         where TRecord : class
-    {
-        return new SqliteCollection<TKey, TRecord>(
+        => new(
             this.ConnectionString,
             collectionName,
             options);
-    }
 
     public SqliteDynamicCollection GetDynamicCollection(
         string collectionName,
         SqliteCollectionOptions options)
-    {
-        return new SqliteDynamicCollection(
+        => new(
             this.ConnectionString,
             collectionName,
             options);
-    }
 
     public void Dispose()
     {
