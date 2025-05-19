@@ -30,9 +30,9 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVec
 
         // Search and return results as TextSearchResult items
         var query = "What is the Semantic Kernel?";
-        KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new() { Top = 2, Skip = 0 });
+        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, 2, new() { Skip = 0 });
         Console.WriteLine("\n--- Text Search Results ---\n");
-        await foreach (TextSearchResult result in textResults.Results)
+        await foreach (TextSearchResult result in textResults)
         {
             Console.WriteLine($"Name:  {result.Name}");
             Console.WriteLine($"Value: {result.Value}");
@@ -62,7 +62,7 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVec
         var textSearch = new VectorStoreTextSearch<DataModel>(collection);
 
         // Build a text search plugin with vector store search and add to the kernel
-        var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithGetTextSearchResults(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information
@@ -113,7 +113,7 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVec
         var textSearch = new VectorStoreTextSearch<DataModel>(collection);
 
         // Build a text search plugin with vector store search and add to the kernel
-        var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithGetTextSearchResults(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Invoke prompt and use text search plugin to provide grounding information

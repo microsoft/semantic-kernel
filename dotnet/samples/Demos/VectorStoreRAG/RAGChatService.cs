@@ -91,7 +91,7 @@ internal sealed class RAGChatService<TKey>(
 
         // Add a search plugin to the kernel which we will use in the template below
         // to do a vector search for related information to the user query.
-        kernel.Plugins.Add(vectorStoreTextSearch.CreateWithGetTextSearchResults("SearchPlugin"));
+        kernel.Plugins.Add(vectorStoreTextSearch.CreateWithGetTextSearchResults(top: 5, "SearchPlugin"));
 
         // Start the chat loop.
         while (!cancellationToken.IsCancellationRequested)

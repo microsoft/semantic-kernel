@@ -43,10 +43,48 @@ public sealed class TavilyTextSearch : ITextSearch
     }
 
     /// <inheritdoc/>
+    public async IAsyncEnumerable<string> SearchAsync(string query, int top, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        searchOptions ??= new TextSearchOptions();
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, top, searchOptions, cancellationToken).ConfigureAwait(false);
+
+        await foreach (var result in this.GetResultsAsStringAsync(searchResponse, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<TextSearchResult> GetTextSearchResultsAsync(string query, int top, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        searchOptions ??= new TextSearchOptions();
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, top, searchOptions, cancellationToken).ConfigureAwait(false);
+
+        await foreach (var result in this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<object> GetSearchResultsAsync(string query, int top, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        searchOptions ??= new TextSearchOptions();
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, top, searchOptions, cancellationToken).ConfigureAwait(false);
+
+        await foreach (var result in this.GetSearchResultsAsync(searchResponse, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
+    }
+
+    #region obsolete
+    /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
@@ -54,10 +92,11 @@ public sealed class TavilyTextSearch : ITextSearch
     }
 
     /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
@@ -65,18 +104,19 @@ public sealed class TavilyTextSearch : ITextSearch
     }
 
     /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions.Top, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
         return new KernelSearchResults<object>(this.GetSearchResultsAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
+    #endregion
 
     #region private
-
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
@@ -102,11 +142,12 @@ public sealed class TavilyTextSearch : ITextSearch
     /// Execute a Tavily search query and return the results.
     /// </summary>
     /// <param name="query">What to search for.</param>
+    /// <param name="top">Index of the first result to return.</param>
     /// <param name="searchOptions">Search options.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    private async Task<TavilySearchResponse?> ExecuteSearchAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken)
+    private async Task<TavilySearchResponse?> ExecuteSearchAsync(string query, int top, TextSearchOptions searchOptions, CancellationToken cancellationToken)
     {
-        using HttpResponseMessage response = await this.SendGetRequestAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await this.SendGetRequestAsync(query, top, searchOptions, cancellationToken).ConfigureAwait(false);
 
         this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
@@ -122,17 +163,18 @@ public sealed class TavilyTextSearch : ITextSearch
     /// Sends a POST request to the specified URI.
     /// </summary>
     /// <param name="query">The query string.</param>
+    /// <param name="top">Index of the first result to return.</param>
     /// <param name="searchOptions">The search options.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
     /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
-    private async Task<HttpResponseMessage> SendGetRequestAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage> SendGetRequestAsync(string query, int top, TextSearchOptions searchOptions, CancellationToken cancellationToken)
     {
-        if (searchOptions.Top is <= 0 or > 50)
+        if (top is <= 0 or > 50)
         {
             throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions, $"{nameof(searchOptions)} count value must be greater than 0 and have a maximum value of 50.");
         }
 
-        var requestContent = this.BuildRequestContent(query, searchOptions);
+        var requestContent = this.BuildRequestContent(query, top, searchOptions);
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, this._uri)
         {
@@ -296,13 +338,14 @@ public sealed class TavilyTextSearch : ITextSearch
     /// Build a query string from the <see cref="TextSearchOptions"/>
     /// </summary>
     /// <param name="query">The query.</param>
+    /// <param name="top">The maximum number of results to return.</param>
     /// <param name="searchOptions">The search options.</param>
-    private TavilySearchRequest BuildRequestContent(string query, TextSearchOptions searchOptions)
+    private TavilySearchRequest BuildRequestContent(string query, int top, TextSearchOptions searchOptions)
     {
         string? topic = null;
         string? timeRange = null;
         int? days = null;
-        int? maxResults = searchOptions.Top - searchOptions.Skip;
+        int? maxResults = top - searchOptions.Skip;
         IList<string>? includeDomains = null;
         IList<string>? excludeDomains = null;
 
