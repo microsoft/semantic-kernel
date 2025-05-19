@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import os
+import sys
 from copy import copy
 from typing import Any
 
@@ -35,6 +36,10 @@ from semantic_kernel.planners.function_calling_stepwise_planner.function_calling
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 PLAN_YAML_FILE_PATH = os.path.join(CUR_DIR, "generate_plan.yaml")
 STEP_PROMPT_FILE_PATH = os.path.join(CUR_DIR, "step_prompt.txt")
@@ -52,6 +57,7 @@ USER_INTERACTION_SEND_FINAL_ANSWER = "UserInteraction-SendFinalAnswer"
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@deprecated("This is no longer maintained and will be removed after June 1, 2025. Use function calling instead.")
 class FunctionCallingStepwisePlanner(KernelBaseModel):
     """A Function Calling Stepwise Planner."""
 
