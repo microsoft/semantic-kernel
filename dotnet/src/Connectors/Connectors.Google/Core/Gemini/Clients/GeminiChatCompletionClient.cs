@@ -356,6 +356,13 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
                     // If function call was returned there is no more data in stream
                     state.LastMessage = messageContent;
+
+                    // Yield the message also if it contains text
+                    if (!string.IsNullOrWhiteSpace(messageContent.Content))
+                    {
+                        yield return this.GetStreamingChatContentFromChatContent(messageContent);
+                    }
+
                     yield break;
                 }
 
