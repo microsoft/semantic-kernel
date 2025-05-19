@@ -221,14 +221,15 @@ public sealed class AzureOpenAIChatClientTests : BaseIntegrationTest
     {
         var config = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(config);
-        Assert.NotNull(config.DeploymentName);
+        Assert.NotNull(config.ChatDeploymentName);
         Assert.NotNull(config.Endpoint);
         Assert.NotNull(config.ServiceId);
 
         var kernelBuilder = this.CreateKernelBuilder();
 
         kernelBuilder.AddAzureOpenAIChatClient(
-            deploymentName: config.DeploymentName,
+            deploymentName: config.ChatDeploymentName,
+            modelId: config.ChatModelId,
             endpoint: config.Endpoint,
             credentials: new AzureCliCredential(),
             serviceId: config.ServiceId,
