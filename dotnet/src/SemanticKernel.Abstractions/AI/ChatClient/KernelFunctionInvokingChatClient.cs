@@ -23,17 +23,6 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
         this.MaximumIterationsPerRequest = 128;
     }
 
-    private static void UpdateOptionsForAutoFunctionInvocation(ChatOptions options, ChatMessageContent content)
-    {
-        if (options.AdditionalProperties?.ContainsKey(ChatOptionsExtensions.ChatMessageContentKey) ?? false)
-        {
-            return;
-        }
-
-        options.AdditionalProperties ??= [];
-        options.AdditionalProperties[ChatOptionsExtensions.ChatMessageContentKey] = content;
-    }
-
     /// <summary>
     /// Invokes the auto function invocation filters.
     /// </summary>
@@ -79,16 +68,16 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
     /// <inheritdoc/>
     protected override async ValueTask<object?> InvokeFunctionAsync(Microsoft.Extensions.AI.FunctionInvocationContext context, CancellationToken cancellationToken)
     {
-        if (context.Options is null)
+        if (context.Options is null || context.Options is not KernelChatOptions kernelChatOptions)
         {
             return await context.Function.InvokeAsync(context.Arguments, cancellationToken).ConfigureAwait(false);
         }
 
         object? result = null;
 
-        UpdateOptionsForAutoFunctionInvocation(context.Options, context.Messages.Last().ToChatMessageContent());
+        kernelChatOptions.ChatMessageContent = context.Messages.Last().ToChatMessageContent();
 
-        var autoContext = new AutoFunctionInvocationContext(context.Options, context.Function)
+        var autoContext = new AutoFunctionInvocationContext(kernelChatOptions, context.Function)
         {
             AIFunction = context.Function,
             Arguments = new KernelArguments(context.Arguments) { Services = this.FunctionInvocationServices },

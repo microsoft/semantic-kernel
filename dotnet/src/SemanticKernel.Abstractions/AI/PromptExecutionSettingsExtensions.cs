@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.AI;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
 
@@ -158,7 +157,9 @@ public static class PromptExecutionSettingsExtensions
         }
 
         // Enables usage of AutoFunctionInvocationFilters
-        return options.AddKernel(kernel!);
+        return kernel is null
+            ? options
+            : new KernelChatOptions(kernel, options, settings: settings);
 
         // Be a little lenient on the types of the values used in the extension data,
         // e.g. allow doubles even when requesting floats.
