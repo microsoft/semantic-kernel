@@ -17,16 +17,11 @@ public abstract class VectorStoreProperty
     /// </summary>
     /// <param name="name">The name of the property on the data model. If the record is mapped to a .NET type, this corresponds to the .NET property name on that type.</param>
     /// <param name="type">The type of the property.</param>
-    private protected VectorStoreProperty(string name, Type type)
+    private protected VectorStoreProperty(string name, Type? type)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
-        }
-
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
         }
 
         this.Name = name;
@@ -59,5 +54,5 @@ public abstract class VectorStoreProperty
     /// <summary>
     /// Gets the type of the property.
     /// </summary>
-    public Type Type { get; set; }
+    public Type? Type { get; set; }
 }

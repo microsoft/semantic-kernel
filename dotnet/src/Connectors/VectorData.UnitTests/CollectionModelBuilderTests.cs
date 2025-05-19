@@ -290,6 +290,37 @@ public class CollectionModelBuilderTests
         Assert.Equal("Vector property 'Embedding' has embedding type 'Embedding<Half>' configured, but that type isn't supported by your embedding generator.", exception.Message);
     }
 
+    [Fact]
+    public void Missing_Type_on_property_definition()
+    {
+        var recordDefinition = new VectorStoreCollectionDefinition
+        {
+            Properties =
+            [
+                new VectorStoreKeyProperty(nameof(RecordWithEmbeddingVectorProperty.Id), typeof(int)),
+                new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
+                new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(ReadOnlyMemory<float>), dimensions: 3)
+            ]
+        };
+
+        // Key
+        recordDefinition.Properties[0].Type = null;
+        var exception = Assert.Throws<InvalidOperationException>(() => new CustomModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null));
+        Assert.Equal($"Property '{nameof(RecordWithEmbeddingVectorProperty.Id)}' has no type specified in its definition, and does not have a corresponding .NET property. Specify the type on the definition.", exception.Message);
+
+        // Data
+        recordDefinition.Properties[0].Type = typeof(int);
+        recordDefinition.Properties[1].Type = null;
+        exception = Assert.Throws<InvalidOperationException>(() => new CustomModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null));
+        Assert.Equal($"Property '{nameof(RecordWithEmbeddingVectorProperty.Name)}' has no type specified in its definition, and does not have a corresponding .NET property. Specify the type on the definition.", exception.Message);
+
+        // Vector
+        recordDefinition.Properties[1].Type = typeof(string);
+        recordDefinition.Properties[2].Type = null;
+        exception = Assert.Throws<InvalidOperationException>(() => new CustomModelBuilder().BuildDynamic(recordDefinition, defaultEmbeddingGenerator: null));
+        Assert.Equal($"Property '{nameof(RecordWithEmbeddingVectorProperty.Embedding)}' has no type specified in its definition, and does not have a corresponding .NET property. Specify the type on the definition.", exception.Message);
+    }
+
     public class RecordWithStringVectorProperty
     {
         [VectorStoreKey]
