@@ -1,12 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planners.planner_options import PlannerOptions
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 logger: logging.Logger = logging.getLogger(__name__)
 
 # NOTE these extensions will be used going forward by the FunctionCallingStepWisePlanner and others.
@@ -14,6 +19,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 # and will be removed once we deprecate it.
 
 
+@deprecated("Will be removed in a future version.")
 class PlannerFunctionExtension:
     """Function extension for the planner."""
 
