@@ -3,11 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.VisualStudio.Threading;
@@ -21,7 +24,8 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
-    private readonly Lazy<ValueTask> _initializeTask;
+    private new readonly Lazy<ValueTask> _initializeTask;
+    private readonly Dictionary<string, KernelProcessAgentThread> _threads = [];
 
     internal readonly List<KernelProcessStepInfo> _stepsInfos;
     internal readonly List<LocalStep> _steps = [];
@@ -31,6 +35,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
     private JoinableTask? _processTask;
     private CancellationTokenSource? _processCancelSource;
+    private ProcessStateManager? _processStateManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LocalProcess"/> class.
@@ -89,6 +94,25 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         await Task.Yield(); // Ensure that the process has an opportunity to run in a different synchronization context.
         await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
         await this.StartAsync(kernel, keepAlive: false).ConfigureAwait(false);
+        await this._processTask!.JoinAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Starts the process with an initial event and then waits for the process to finish. In this case the process will not
+    /// keep alive waiting for external events after the internal messages have stopped.
+    /// </summary>
+    /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
+    /// <param name="kernel">Optional. A <see cref="Kernel"/> to use when executing the process.</param>
+    /// <param name="timeout">Optional. A <see cref="TimeSpan"/> to wait for the process to finish.</param>
+    /// <returns>A <see cref="Task"/></returns>
+    internal async Task RunUntilEndAsync(KernelProcessEvent processEvent, Kernel? kernel = null, TimeSpan? timeout = null)
+    {
+        Verify.NotNull(processEvent, nameof(processEvent));
+        Verify.NotNullOrWhiteSpace(processEvent.Id, $"{nameof(processEvent)}.{nameof(KernelProcessEvent.Id)}");
+
+        await Task.Yield(); // Ensure that the process has an opportunity to run in a different synchronization context.
+        await this._externalEventChannel.Writer.WriteAsync(processEvent).ConfigureAwait(false);
+        await this.StartAsync(kernel, keepAlive: true).ConfigureAwait(false);
         await this._processTask!.JoinAsync().ConfigureAwait(false);
     }
 
@@ -178,10 +202,44 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     /// Loads the process and initializes the steps. Once this is complete the process can be started.
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
-    private ValueTask InitializeProcessAsync()
+    private async ValueTask InitializeProcessAsync()
     {
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
+
+        // TODO: Pull user state from persisted state on resume.
+        this._processStateManager = new ProcessStateManager(this._process.UserStateType, null);
+
+        // Initialize threads. TODO: Need to implement state management here.
+        foreach (var kvp in this._process.Threads)
+        {
+            var threadDefinition = kvp.Value;
+            KernelProcessAgentThread? processThread = null;
+            if (threadDefinition.ThreadPolicy == KernelProcessThreadLifetime.Scoped)
+            {
+                // Create scoped threads now as they may be shared across steps
+                AgentThread thread = await threadDefinition.CreateAgentThreadAsync(this._kernel).ConfigureAwait(false);
+                processThread = new KernelProcessAgentThread
+                {
+                    ThreadId = thread.Id,
+                    ThreadName = kvp.Key,
+                    ThreadType = threadDefinition.ThreadType,
+                    ThreadPolicy = threadDefinition.ThreadPolicy
+                };
+            }
+            else
+            {
+                var thread = new KernelProcessAgentThread
+                {
+                    ThreadId = null,
+                    ThreadName = kvp.Key,
+                    ThreadType = threadDefinition.ThreadType,
+                    ThreadPolicy = threadDefinition.ThreadPolicy
+                };
+            }
+
+            this._threads.Add(kvp.Key, processThread ?? throw new KernelException("Failed to create process thread."));
+        }
 
         // Initialize the steps within this process
         foreach (var step in this._stepsInfos)
@@ -223,8 +281,17 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     {
                         ParentProcessId = this.RootProcessId,
                         EventProxy = this.EventProxy,
-                        ExternalMessageChannel = this.ExternalMessageChannel,
+                        ExternalMessageChannel = this.ExternalMessageChannel
                     };
+            }
+            else if (step is KernelProcessAgentStep agentStep)
+            {
+                if (!this._threads.TryGetValue(agentStep.ThreadName, out KernelProcessAgentThread? thread) || thread is null)
+                {
+                    throw new KernelException($"The thread name {agentStep.ThreadName} does not have a matching thread variable defined.").Log(this._logger);
+                }
+
+                localStep = new LocalAgentStep(agentStep, this._kernel, thread, this._processStateManager, this.ParentProcessId);
             }
             else
             {
@@ -235,14 +302,12 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     new LocalStep(step, this._kernel)
                     {
                         ParentProcessId = this.Id,
-                        EventProxy = this.EventProxy,
+                        EventProxy = this.EventProxy
                     };
             }
 
             this._steps.Add(localStep);
         }
-
-        return default;
     }
 
     /// <summary>
@@ -257,13 +322,16 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         return default;
     }
 
-    private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, CancellationToken cancellationToken = default)
+    private async Task Internal_ExecuteAsync(Kernel? kernel = null, int maxSupersteps = 100, bool keepAlive = true, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
         Kernel localKernel = kernel ?? this._kernel;
         Queue<ProcessMessage> messageChannel = new();
 
         try
         {
+            // 
+            await this.EnqueueOnEnterMessagesAsync(messageChannel).ConfigureAwait(false);
+
             // Run the Pregel algorithm until there are no more messages being sent.
             LocalStep? finalStep = null;
             for (int superstep = 0; superstep < maxSupersteps; superstep++)
@@ -274,7 +342,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                 // Get all of the messages that have been sent to the steps within the process and queue them up for processing.
                 foreach (var step in this._steps)
                 {
-                    this.EnqueueStepMessages(step, messageChannel);
+                    await this.EnqueueStepMessagesAsync(step, messageChannel).ConfigureAwait(false);
                 }
 
                 // Complete the writing side, indicating no more messages in this superstep.
@@ -325,6 +393,104 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         return;
     }
 
+    private async Task EnqueueEdgesAsync(IEnumerable<KernelProcessEdge> edges, Queue<ProcessMessage> messageChannel, ProcessEvent processEvent)
+    {
+        bool foundEdge = false;
+        List<KernelProcessEdge> defaultConditionedEdges = [];
+        foreach (var edge in edges)
+        {
+            if (edge.Condition.DeclarativeDefinition?.Equals(ProcessConstants.Declarative.DefaultCondition, StringComparison.OrdinalIgnoreCase) ?? false)
+            {
+                defaultConditionedEdges.Add(edge);
+                continue;
+            }
+
+            bool isConditionMet = await edge.Condition.Callback(processEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
+            if (!isConditionMet)
+            {
+                continue;
+            }
+
+            // Handle different target types
+            if (edge.OutputTarget is KernelProcessStateTarget stateTarget)
+            {
+                if (this._processStateManager is null)
+                {
+                    throw new KernelException("The process state manager is not initialized.").Log(this._logger);
+                }
+
+                await (this._processStateManager.ReduceAsync((stateType, state) =>
+                {
+                    var stateJson = JsonDocument.Parse(JsonSerializer.Serialize(state));
+                    stateJson = JMESUpdate.UpdateState(stateJson, stateTarget.VariableUpdate.Path, stateTarget.VariableUpdate.Operation, stateTarget.VariableUpdate.Value);
+                    return Task.FromResult(stateJson.Deserialize(stateType));
+                })).ConfigureAwait(false);
+            }
+            else if (edge.OutputTarget is KernelProcessEmitTarget emitTarget)
+            {
+                // Emit target from process
+            }
+            else if (edge.OutputTarget is KernelProcessFunctionTarget functionTarget)
+            {
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, processEvent.SourceId, processEvent.Data);
+                messageChannel.Enqueue(message);
+            }
+            else if (edge.OutputTarget is KernelProcessAgentInvokeTarget agentInvokeTarget)
+            {
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, processEvent.SourceId, processEvent.Data);
+                messageChannel.Enqueue(message);
+            }
+            else
+            {
+                throw new KernelException("Failed to process edge type.");
+            }
+
+            foundEdge = true;
+        }
+
+        // If no edges were found for the event, check if there are any default conditioned edges to process.
+        if (!foundEdge && defaultConditionedEdges.Count > 0)
+        {
+            foreach (KernelProcessEdge edge in defaultConditionedEdges)
+            {
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, this._process.State.Id!, null, null);
+                messageChannel.Enqueue(message);
+
+                // TODO: Handle state here as well
+            }
+        }
+
+        // Error event was raised with no edge to handle it, send it to an edge defined as the global error target.
+        if (!foundEdge && processEvent.IsError)
+        {
+            if (this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? errorEdges))
+            {
+                foreach (KernelProcessEdge edge in errorEdges)
+                {
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, processEvent.SourceId, processEvent.Data);
+                    messageChannel.Enqueue(message);
+                }
+            }
+        }
+    }
+
+    private async Task EnqueueOnEnterMessagesAsync(Queue<ProcessMessage> messageChannel)
+    {
+        // TODO: Process edges for the OnProcessStart event
+        foreach (var kvp in this._process.Edges.Where(e => e.Key.EndsWith(ProcessConstants.Declarative.OnEnterEvent, StringComparison.OrdinalIgnoreCase)))
+        {
+            var processEvent = new ProcessEvent
+            {
+                Namespace = this.Name,
+                SourceId = this._process.State.Id!,
+                Data = null,
+                Visibility = KernelProcessEventVisibility.Internal
+            };
+
+            await this.EnqueueEdgesAsync(kvp.Value, messageChannel, processEvent).ConfigureAwait(false);
+        }
+    }
+
     /// <summary>
     /// Processes external events that have been sent to the process, translates them to <see cref="ProcessMessage"/>s, and enqueues
     /// them to the provided message channel so that they can be processed in the next superstep.
@@ -351,7 +517,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     /// </summary>
     /// <param name="step">The step containing outgoing events to process.</param>
     /// <param name="messageChannel">The message channel where messages should be enqueued.</param>
-    private void EnqueueStepMessages(LocalStep step, Queue<ProcessMessage> messageChannel)
+    private async Task EnqueueStepMessagesAsync(LocalStep step, Queue<ProcessMessage> messageChannel)
     {
         var allStepEvents = step.GetAllEvents();
         foreach (ProcessEvent stepEvent in allStepEvents)
@@ -362,27 +528,73 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                 base.EmitEvent(stepEvent);
             }
 
-            // Get the edges for the event and queue up the messages to be sent to the next steps.
-            bool foundEdge = false;
-            foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
-            {
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data);
-                messageChannel.Enqueue(message);
-                foundEdge = true;
-            }
+            await this.EnqueueEdgesAsync(step.GetEdgeForEvent(stepEvent.QualifiedId), messageChannel, stepEvent).ConfigureAwait(false);
 
-            // Error event was raised with no edge to handle it, send it to an edge defined as the global error target.
-            if (!foundEdge && stepEvent.IsError)
-            {
-                if (this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
-                {
-                    foreach (KernelProcessEdge edge in edges)
-                    {
-                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data);
-                        messageChannel.Enqueue(message);
-                    }
-                }
-            }
+            //// Get the edges for the event and queue up the messages to be sent to the next steps.
+            //bool foundEdge = false;
+            //List<KernelProcessEdge> defaultConditionedEdges = [];
+            //foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
+            //{
+            //    // TODO: Make this not a string comparison
+            //    // Save default conditions for the end
+            //    if (edge.Condition.DeclarativeDefinition?.Equals(ProcessConstants.Declarative.DefaultCondition, StringComparison.OrdinalIgnoreCase) ?? false)
+            //    {
+            //        defaultConditionedEdges.Add(edge);
+            //        continue;
+            //    }
+
+            //    bool isConditionMet = await edge.Condition.Callback(stepEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
+            //    if (!isConditionMet)
+            //    {
+            //        continue;
+            //    }
+
+            //    // Handle different target types
+            //    if (edge.OutputTarget is KernelProcessStateTarget stateTarget)
+            //    {
+            //        // TODO: Update state
+            //    }
+            //    else if (edge.OutputTarget is KernelProcessEmitTarget emitTarget)
+            //    {
+            //        // Emit target from process
+            //    }
+            //    else if (edge.OutputTarget is KernelProcessFunctionTarget functionTarget)
+            //    {
+            //        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
+            //        messageChannel.Enqueue(message);
+            //    }
+            //    else
+            //    {
+            //        throw new KernelException("Failed to process edge type.");
+            //    }
+
+            //    foundEdge = true;
+            //}
+
+            //// If no edges were found for the event, check if there are any default conditioned edges to process.
+            //if (!foundEdge && defaultConditionedEdges.Count > 0)
+            //{
+            //    foreach (KernelProcessEdge edge in defaultConditionedEdges)
+            //    {
+            //        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
+            //        messageChannel.Enqueue(message);
+
+            //        // TODO: Handle state here as well
+            //    }
+            //}
+
+            //// Error event was raised with no edge to handle it, send it to an edge defined as the global error target.
+            //if (!foundEdge && stepEvent.IsError)
+            //{
+            //    if (this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
+            //    {
+            //        foreach (KernelProcessEdge edge in edges)
+            //        {
+            //            ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data);
+            //            messageChannel.Enqueue(message);
+            //        }
+            //    }
+            //}
         }
     }
 
@@ -396,7 +608,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         var processState = new KernelProcessState(this.Name, this._stepState.Version, this.Id);
         var stepTasks = this._steps.Select(step => step.ToKernelProcessStepInfoAsync()).ToList();
         var steps = await Task.WhenAll(stepTasks).ConfigureAwait(false);
-        return new KernelProcess(processState, steps, this._outputEdges);
+        return new KernelProcess(processState, steps, this._outputEdges, this._process.Threads);
     }
 
     /// <summary>
