@@ -426,6 +426,7 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
             kwargs.pop("settings")
 
         args = data.pop("arguments", None)
+        arguments = None
         if args:
             arguments = KernelArguments(**args)
 

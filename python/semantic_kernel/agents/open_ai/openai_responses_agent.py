@@ -22,7 +22,7 @@ from openai.types.shared_params.response_format_json_object import ResponseForma
 from pydantic import BaseModel, Field, SecretStr, ValidationError
 
 from semantic_kernel.agents import Agent, AgentResponseItem, AgentThread, RunPollingOptions
-from semantic_kernel.agents.agent import AgentSpec, ToolSpec, register_agent_type
+from semantic_kernel.agents.agent import AgentSpec, DeclarativeSpecMixin, ToolSpec, register_agent_type
 from semantic_kernel.agents.open_ai.responses_agent_thread_actions import ResponsesAgentThreadActions
 from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
@@ -40,6 +40,7 @@ from semantic_kernel.exceptions.agent_exceptions import (
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.naming import generate_random_ascii_name
@@ -57,7 +58,6 @@ else:
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
 
-    from semantic_kernel.kernel import Kernel
     from semantic_kernel.kernel_pydantic import KernelBaseSettings
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -82,15 +82,35 @@ def _register_tool(tool_type: str):
 
 @_register_tool("file_search")
 def _file_search(spec: ToolSpec, kernel: Kernel | None = None) -> FileSearchToolParam:
-    vector_store_ids = spec.options.get("vector_store_ids")
+    options = spec.options or {}
+    vector_store_ids = options.get("vector_store_ids")
     if not vector_store_ids or not isinstance(vector_store_ids, list) or not vector_store_ids[0]:
         raise AgentInitializationException(f"Missing or malformed 'vector_store_ids' in: {spec}")
-    return OpenAIResponsesAgent.configure_file_search_tool(vector_store_ids=vector_store_ids)
+
+    filters = options.get("filters")
+    max_num_results = options.get("max_num_results")
+    ranking_options = options.get("ranking_options", {})
+    score_threshold = ranking_options.get("score_threshold")
+    ranker = ranking_options.get("ranker")
+
+    return OpenAIResponsesAgent.configure_file_search_tool(
+        vector_store_ids=vector_store_ids,
+        filters=filters,
+        max_num_results=max_num_results,
+        score_threshold=score_threshold,
+        ranker=ranker,
+    )
 
 
 @_register_tool("web_search")
 def _web_search(spec: ToolSpec, kernel: Kernel | None = None) -> WebSearchToolParam:
-    return OpenAIResponsesAgent.configure_web_search_tool()
+    options = spec.options or {}
+    context_size = options.get("search_context_size")
+    user_location = options.get("user_location")
+    return OpenAIResponsesAgent.configure_web_search_tool(
+        context_size=context_size,
+        user_location=user_location,
+    )
 
 
 @_register_tool("function")
@@ -248,7 +268,7 @@ class ResponsesAgentThread(AgentThread):
 
 @experimental
 @register_agent_type("openai_responses_agent")
-class OpenAIResponsesAgent(Agent):
+class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
     """OpenAI Responses Agent class.
 
     Provides the ability to interact with OpenAI's Responses API.
@@ -468,16 +488,20 @@ class OpenAIResponsesAgent(Agent):
             kwargs.pop("settings")
 
         args = data.pop("arguments", None)
+        arguments = None
         if args:
             arguments = KernelArguments(**args)
 
         if not (spec.model and spec.model.id):
-            raise AgentInitializationException("model.id required when creating a new Azure AI agent")
+            raise AgentInitializationException("model.id required when creating a new OpenAI Responses Agent.")
 
         # Build tool definitions & resources
         tool_objs = [_build_tool(t, kernel) for t in spec.tools if t.type != "function"]
 
         return cls(
+            name=spec.name,
+            description=spec.description,
+            instruction_role=spec.instructions,
             ai_model_id=spec.model.id,
             client=client,
             arguments=arguments,

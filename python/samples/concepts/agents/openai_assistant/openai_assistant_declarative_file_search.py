@@ -85,13 +85,9 @@ async def main():
         Sample output:
 
         # User: 'Who can help me if I have a sales question?'
-        # FileSearchAgent: If you have a sales question, you may contact the following individuals:
-
-        1. **Hicran Bea** - Sales Manager
-        2. **Mariam Jaslyn** - Sales Representative
-        3. **Angelino Embla** - Sales Representative
-
-        This information comes from the employee records【4:0†source】.
+        # FileSearchAgent: If you have a sales question, you can contact either Mariam Jaslyn or Angelino Embla, who 
+          are both listed as Sales Representatives. Alternatively, you may also reach out to Hicran Bea,
+          the Sales Manager【4:0†employees.pdf】.
         """
 
 

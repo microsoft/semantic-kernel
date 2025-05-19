@@ -20,14 +20,14 @@ type: openai_responses_agent
 name: FileSearchAgent
 description: Agent with code interpreter tool.
 instructions: >
-  Use the code interpreter tool to answer questions that require code to be generated
-  and executed.
+  Find answers to the user's questions in the provided file.
 model:
   id: ${OpenAI:ChatModelId}
   connection:
     api_key: ${OpenAI:ApiKey}
 tools:
   - type: file_search
+    description: File search for document retrieval.
     options:
       vector_store_ids:
         - ${OpenAI:VectorStoreId}
@@ -66,18 +66,23 @@ async def main():
         )
 
         # Define the task for the agent
-        TASK = "Who can help me if I have a sales question?"
+        USER_INPUTS = ["Who can help me if I have a sales question?", "Who works in sales?"]
 
-        print(f"# User: '{TASK}'")
+        thread = None
 
-        # Invoke the agent for the specified task
-        async for response in agent.invoke(
-            messages=TASK,
-        ):
-            print(f"# {response.name}: {response}")
+        for user_input in USER_INPUTS:
+            # Print the user input
+            print(f"# User: '{user_input}'")
+
+            # Invoke the agent for the specified task
+            async for response in agent.invoke(
+                messages=user_input,
+                thread=thread,
+            ):
+                print(f"# {response.name}: {response}")
+                thread = response.thread
     finally:
-        # Cleanup: Delete the agent, vector store, and file
-        await client.beta.assistants.delete(agent.id)
+        # Cleanup: Delete the vector store, and file
         await client.vector_stores.delete(vector_store.id)
         await client.files.delete(file.id)
 
