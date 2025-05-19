@@ -11,6 +11,7 @@ from azure.ai.agents.models import (
     AsyncAgentEventHandler,
     AsyncAgentRunStream,
     BaseAsyncAgentEventHandler,
+    FunctionToolDefinition,
     ResponseFormatJsonSchemaType,
     RunStep,
     RunStepAzureAISearchToolCall,
@@ -53,6 +54,7 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 from semantic_kernel.functions import KernelArguments
+from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
@@ -797,10 +799,42 @@ class AgentThreadActions:
         """Get the tools for the agent."""
         tools: list[Any] = list(agent.definition.tools)
         funcs = kernel.get_full_list_of_function_metadata()
+        cls._validate_function_tools_registered(tools, funcs)
         dict_defs = [kernel_function_metadata_to_function_call_format(f) for f in funcs]
         deduped_defs = cls._deduplicate_tools(tools, dict_defs)
         tools.extend(deduped_defs)
         return [cls._prepare_tool_definition(tool) for tool in tools]
+
+    @staticmethod
+    def _validate_function_tools_registered(
+        tools: list[Any],
+        funcs: list[Any],
+    ) -> None:
+        """Validate that all function tools are registered with the kernel."""
+        function_tool_names = set()
+        for tool in tools:
+            if isinstance(tool, FunctionToolDefinition):
+                agent_tool_func_name = getattr(tool.function, "name", None)
+                if agent_tool_func_name:
+                    function_tool_names.add(agent_tool_func_name)
+
+        kernel_function_names = set()
+        for f in funcs:
+            kernel_func_name = (
+                f.fully_qualified_name
+                if isinstance(f, KernelFunctionMetadata)
+                else getattr(f, "full_qualified_name", None)
+            )
+            if kernel_func_name:
+                kernel_function_names.add(kernel_func_name)
+
+        missing_functions = function_tool_names - kernel_function_names
+        if missing_functions:
+            raise AgentInvokeException(
+                f"The following function tool(s) are defined on the agent but missing from the kernel: "
+                f"{sorted(missing_functions)}. "
+                f"Please ensure all required tools are registered with the kernel."
+            )
 
     @classmethod
     async def _poll_run_status(
