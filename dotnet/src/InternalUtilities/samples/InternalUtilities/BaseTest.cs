@@ -52,7 +52,7 @@ public abstract class BaseTest : TextWriter
     protected Kernel CreateKernelWithChatCompletion(string? modelName = null)
         => this.CreateKernelWithChatCompletion(useChatClient: false, out _);
 
-    protected Kernel CreateKernelWithChatCompletion(bool useChatClient, out IChatClient? chatClient)
+    protected Kernel CreateKernelWithChatCompletion(bool useChatClient, out IChatClient? chatClient, string? modelName = null)
     {
         var builder = Kernel.CreateBuilder();
 
