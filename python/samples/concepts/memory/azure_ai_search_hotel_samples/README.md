@@ -1,72 +1,93 @@
 ## Azure AI Search with Hotel Sample Data
 
-This guide walks you through setting up your Azure AI Search Service with the correct index, data source, and indexer to run the hotel sample.
+This guide explains how to use the provided Python samples to set up your Azure AI Search index, load hotel data, and run search queries—all programmatically, without manual configuration in the Azure Portal.
 
-### Setting Up the Azure AI Search Service
+### Overview
 
-1. **Import the Sample Data**  
-   - Navigate to the **Search Service Overview** page and click **Import Data**.
-   - From the dropdown, select **Samples**, then choose **hotels-sample**.
-   - Click **Next: Add Cognitive Skills (Optional)**.
+The Python samples in this folder will:
 
-2. **Skip the Cognitive Skills Page**  
-   - No changes are needed here. Click **Next** to proceed.
+- Define the hotel data model and index schema.
+- Download and load the hotel sample data.
+- Create the Azure AI Search index (if it does not exist).
+- Upsert the data into your Azure AI Search index.
+- Run text, vector, and hybrid search queries.
 
-3. **Configure the Index Fields**  
-   - The Python sample uses **snake_case** field names. Update the default field names accordingly.
-   - Since `HotelId` is the primary key, you cannot rename it directly. Instead, create a new field:
-     - Click **+ Add Field** and name it `hotel_id`.
-     - Enable **Retrievable**, **Filterable**, **Facetable**, and **Searchable** options.
-   - Rename other fields to snake case:
-     - `HotelName` → `hotel_name`
-       - There may be a current issue with index config that has trouble mapping the `HotelName` -> `hotel_name`, so as to not hit issues
-         deselect `retrievable` for `hotel_name`. It should still be `searchable`.
-     - Use the dropdown to rename complex fields like `Address` -> `address` and `Rooms` -> `rooms` with their sub-fields renamed.
-   - Add two new vector fields:
-     - `description_vector`
-     - `description_fr_vector`
-   - Configure these fields as:
-     - **Type**: `Collection(Edm.Single)` (for vector fields)
-     - **Retrievable**: Enabled (default setting)
-     - Click the **three dots (...)** on the right, then **Configure vector field**:
-       - Set **Dimensions** to `1536`.
-       - If no vector search profiles exist, click **Create**.
-       - Under **Algorithms**, click **Create** to set up a vector algorithm (default values are fine).
-       - If no vectorizer exists, create one:
-         - Select the **Kind** (e.g., Azure OpenAI).
-         - Choose your **subscription, Azure OpenAI service, and model deployment**.
-         - Select your **authentication type**.
-   - Repeat this process for both `description_vector` and `description_fr_vector`.
+### Prerequisites
 
-4. **Create an Indexer**  
-   - On the next page, create an indexer with **default settings**, as the sample data is static.
-   - Click **Submit** to start the indexer.  
-   - The indexing process may take a few minutes.
+- An Azure AI Search service instance.
+- OpenAI resource (for embedding generation), can be replaced with Azure OpenAI Embeddings.
 
-### Generating Vectors on First Run
+### How It Works
 
-In the `step_1_interact_with_the_collection.py` script:
-- Set `first_run = True` to generate vectors for all entries in the index.
-- This process may take a few minutes.
+1. **Data Model and Index Creation**  
+   The data model and index schema are defined in `data_model.py`.  
+   This script is called by the other two, so no need to run manually.
 
-### Using Precomputed Vectors for Subsequent Runs
+2. **Loading Data and Generating Vectors**  
+   The script downloads hotel data from the Azure samples repository.  
+   It uses OpenAI to generate vector embeddings for hotel descriptions, which are stored in the index.
 
-If your index already contains vectors:
-- Set `first_run = False` to skip vector generation and perform only text and vector searches.
+3. **Running the Sample**  
+   To run the main sample and see search results:
 
-### Example Search Results
+   ```bash
+   python step_1_interact_with_the_collection.py
+   ```
 
-After running `step_1_interact_with_the_collection.py` you should see output similar to:
+   This will:
+   - Create the index (if needed)
+   - Load and upsert the hotel data
+   - Get the first five records
+   - Perform vector and hybrid search queries and print the results
 
-#### **Text Search Results**
-```text
-Search results using text: 
-    eitRUkFJSmFmWG93QUFBQUFBQUFBQT090 (in Nashville, USA): All of the suites feature full-sized kitchens stocked with cookware, separate living and sleeping areas and sofa beds. Some of the larger rooms have fireplaces and patios or balconies. Experience real country hospitality in the heart of bustling Nashville. The most vibrant music scene in the world is just outside your front door. (score: 7.613796)
-    eitRUkFJSmFmWG9jQUFBQUFBQUFBQT090 (in Sarasota, USA): The hotel is situated in a nineteenth century plaza, which has been expanded and renovated to the highest architectural standards to create a modern, functional and first-class hotel in which art and unique historical elements coexist with the most modern comforts. The hotel also regularly hosts events like wine tastings, beer dinners, and live music. (score: 6.1204605)
-    eitRUkFJSmFmWG9SQUFBQUFBQUFBQT090 (in Durham, USA): Save up to 50% off traditional hotels. Free WiFi, great location near downtown, full kitchen, washer & dryer, 24/7 support, bowling alley, fitness center and more. (score: 6.0284567)
+4. **Customizing the Search**  
+   You can modify the search query in `1_interact_with_the_collection.py` by changing the `query` variable at the bottom of the script.
+
+5. **Cleanup**  
+   The sample script deletes the index at the end of execution. You can comment out this step if you want to keep the index for further experimentation.
+
+### Example Output
+
+```python
+Get first five records: 
+    31 (in Nashville, USA): All of the suites feature full-sized kitchens stocked with cookware, separate living and sleeping areas and sofa beds. Some of the larger rooms have fireplaces and patios or balconies. Experience real country hospitality in the heart of bustling Nashville. The most vibrant music scene in the world is just outside your front door.
+    23 (in Kirkland, USA): Mix and mingle in the heart of the city. Shop and dine, mix and mingle in the heart of downtown, where fab lake views unite with a cheeky design.
+    3 (in Atlanta, USA): The Gastronomic Hotel stands out for its culinary excellence under the management of William Dough, who advises on and oversees all of the Hotel’s restaurant services.
+    20 (in Albuquerque, USA): The Best Gaming Resort in the area. With elegant rooms & suites, pool, cabanas, spa, brewery & world-class gaming. This is the best place to play, stay & dine.
+    45 (in Seattle, USA): The largest year-round resort in the area offering more of everything for your vacation – at the best value! What can you enjoy while at the resort, aside from the mile-long sandy beaches of the lake? Check out our activities sure to excite both young and young-at-heart guests. We have it all, including being named “Property of the Year” and a “Top Ten Resort” by top publications.
+
 
 Search results using vector: 
-    eitRUkFJSmFmWG93QUFBQUFBQUFBQT090 (in Nashville, USA): All of the suites feature full-sized kitchens stocked with cookware, separate living and sleeping areas and sofa beds. Some of the larger rooms have fireplaces and patios or balconies. Experience real country hospitality in the heart of bustling Nashville. The most vibrant music scene in the world is just outside your front door. (score: 0.6944429)
-    eitRUkFJSmFmWG9SQUFBQUFBQUFBQT090 (in Durham, USA): Save up to 50% off traditional hotels. Free WiFi, great location near downtown, full kitchen, washer & dryer, 24/7 support, bowling alley, fitness center and more. (score: 0.6776492)
-    eitRUkFJSmFmWG9PQUFBQUFBQUFBQT090 (in San Diego, USA): Extend Your Stay. Affordable home away from home, with amenities like free Wi-Fi, full kitchen, and convenient laundry service. (score: 0.67669696)
+    6 (in San Francisco, USA): Newest kid on the downtown block. Steps away from the most popular destinations in downtown, enjoy free WiFi, an indoor rooftop pool & fitness center, 24 Grab'n'Go & drinks at the bar (score: 0.6350645)
+    27 (in Aventura, USA): Complimentary Airport Shuttle & WiFi. Book Now and save - Spacious All Suite Hotel, Indoor Outdoor Pool, Fitness Center, Florida Green certified, Complimentary Coffee, HDTV (score: 0.62773544)
+    25 (in Metairie, USA): Newly Redesigned Rooms & airport shuttle. Minutes from the airport, enjoy lakeside amenities, a resort-style pool & stylish new guestrooms with Internet TVs. (score: 0.6193533)
+
+
+Search results using hybrid: 
+    25 (in Metairie, USA): Newly Redesigned Rooms & airport shuttle. Minutes from the airport, enjoy lakeside amenities, a resort-style pool & stylish new guestrooms with Internet TVs. (score: 0.03279569745063782)
+    27 (in Aventura, USA): Complimentary Airport Shuttle & WiFi. Book Now and save - Spacious All Suite Hotel, Indoor Outdoor Pool, Fitness Center, Florida Green certified, Complimentary Coffee, HDTV (score: 0.032786883413791656)
+    36 (in Memphis, USA): Stunning Downtown Hotel with indoor Pool. Ideally located close to theatres, museums and the convention center. Indoor Pool and Sauna and fitness centre. Popular Bar & Restaurant (score: 0.0317460335791111)
 ```
+
+### Advanced: Agent and Plugin Integration
+
+For a more advanced example, see `2_use_as_a_plugin.py`, which demonstrates how to expose the hotel search as a plugin to a agent, this showcases how you can use the collection to create multiple search functions for different purposes and with some set filters and customized output. It then uses those in an Agent to help the user.
+
+### Advanced: Use the Azure AI Search integrated embedding generation
+
+For more info on this topic, see the [Azure AI Search documentation](https://learn.microsoft.com/en-us/azure/search/search-how-to-integrated-vectorization?tabs=prepare-data-storage%2Cprepare-model-aoai).
+
+To use this, next to the steps needed to create the embedding skillset, you need to:
+
+1. Adapt the `vectorizers` list and the profiles list in `custom_index` in `data_model.py`.
+1. Remove the `embedding_generator` param from the collection in both scripts.  
+    By removing this, we indicate that the embedding generation takes place in the service.
+
+---
+
+**Note:**  
+You no longer need to manually configure the index or upload data via the Azure Portal. All setup is handled by the Python code.
+
+If you encounter issues, ensure your Azure credentials and endpoints are correctly configured in your environment.
+
+---

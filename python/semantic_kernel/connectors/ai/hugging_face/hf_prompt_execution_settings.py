@@ -27,9 +27,10 @@ class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
 
     def get_generation_config(self) -> "GenerationConfig":
         """Get the generation config."""
+        from transformers import GenerationConfig
+
         if not ready:
             raise ImportError("transformers is not installed.")
-        from transformers import GenerationConfig
 
         return GenerationConfig(
             **self.model_dump(
