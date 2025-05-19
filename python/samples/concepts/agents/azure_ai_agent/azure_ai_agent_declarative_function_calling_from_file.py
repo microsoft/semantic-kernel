@@ -35,11 +35,6 @@ class MenuPlugin:
         return "$9.99"
 
 
-# Function spec
-
-settings = AzureAIAgentSettings()  # The Spec's ChatModelId & ConnectionString come from .env/env vars
-
-
 async def main():
     async with (
         DefaultAzureCredential() as creds,
@@ -59,7 +54,7 @@ async def main():
                 file_path,
                 plugins=[MenuPlugin()],
                 client=client,
-                settings=settings,
+                settings=AzureAIAgentSettings(),  # The Spec's ChatModelId & Endpoint come from .env/env vars
             )
 
             # Create the agent
