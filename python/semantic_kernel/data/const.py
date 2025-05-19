@@ -39,6 +39,11 @@ class IndexKind(str, Enum):
     Dynamic
         Dynamic index allows to automatically switch from FLAT to HNSW indexes.
 
+    Default
+        Default index type.
+        Used when no index type is specified.
+        Will differ per vector store.
+
     """
 
     HNSW = "hnsw"
@@ -47,6 +52,7 @@ class IndexKind(str, Enum):
     DISK_ANN = "disk_ann"
     QUANTIZED_FLAT = "quantized_flat"
     DYNAMIC = "dynamic"
+    DEFAULT = "default"
 
 
 class DistanceFunction(str, Enum):
@@ -79,6 +85,10 @@ class DistanceFunction(str, Enum):
         measures the Manhattan distance between two vectors
     Hamming
         number of differences between vectors at each dimensions
+    DEFAULT
+        default distance function
+        used when no distance function is specified
+        will differ per vector store.
     """
 
     COSINE_SIMILARITY = "cosine_similarity"
@@ -88,6 +98,7 @@ class DistanceFunction(str, Enum):
     EUCLIDEAN_SQUARED_DISTANCE = "euclidean_squared_distance"
     MANHATTAN = "manhattan"
     HAMMING = "hamming"
+    DEFAULT = "DEFAULT"
 
 
 DISTANCE_FUNCTION_DIRECTION_HELPER: Final[dict[DistanceFunction, Callable[[int | float, int | float], bool]]] = {
