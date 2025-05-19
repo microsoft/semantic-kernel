@@ -5,7 +5,6 @@ using VectorDataSpecificationTests.Filter;
 using VectorDataSpecificationTests.Support;
 using WeaviateIntegrationTests.Support;
 using Xunit;
-using Xunit.Sdk;
 
 namespace WeaviateIntegrationTests.Filter;
 
