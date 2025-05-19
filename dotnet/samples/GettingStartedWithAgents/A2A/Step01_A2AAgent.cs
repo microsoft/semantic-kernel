@@ -20,7 +20,7 @@ public class Step01_A2AAgent(ITestOutputHelper output) : BaseAzureAgentTest(outp
         // Create an A2A agent instance
         using var httpClient = new HttpClient
         {
-            BaseAddress = new Uri(TestConfiguration.A2A.Agent)
+            BaseAddress = TestConfiguration.A2A.AgentUrl
         };
         var client = new A2AClient(httpClient);
         var cardResolver = new A2ACardResolver(httpClient);

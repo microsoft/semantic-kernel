@@ -361,6 +361,6 @@ public sealed class TestConfiguration
 
     public class A2AConfig
     {
-        public string Agent { get; set; } = "http://localhost:5000";
+        public Uri AgentUrl { get; set; } = new Uri("http://localhost:5000");
     }
 }
