@@ -197,7 +197,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
             }
 
             state.LastMessage = chatResponses[0];
-            if (state.LastMessage.ToolCalls is null)
+            if (state.LastMessage.ToolCalls is null || state.LastMessage.ToolCalls.Count == 0)
             {
                 return chatResponses;
             }
@@ -604,11 +604,17 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
     {
-        GeminiPart? part = candidate.Content?.Parts?[0];
-        GeminiPart.FunctionCallPart[]? toolCalls = part?.FunctionCall is { } function ? [function] : null;
+        // Join text parts
+        string text = string.Concat(candidate.Content?.Parts?.Select(part => part.Text) ?? []);
+
+        // Gemini sometimes returns function calls with text parts, so collect them
+        var toolCalls = candidate.Content?.Parts?
+            .Select(part => part.FunctionCall!)
+            .Where(toolCall => toolCall is not null).ToArray();
+
         return new GeminiChatMessageContent(
             role: candidate.Content?.Role ?? AuthorRole.Assistant,
-            content: part?.Text ?? string.Empty,
+            content: text,
             modelId: this._modelId,
             functionsToolCalls: toolCalls,
             metadata: GetResponseMetadata(geminiResponse, candidate));
