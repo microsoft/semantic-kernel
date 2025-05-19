@@ -10,9 +10,9 @@ namespace SqliteVecIntegrationTests.Support;
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly)]
 public sealed class SqliteVecRequiredAttribute : Attribute, ITestCondition
 {
-    public ValueTask<bool> IsMetAsync() => new(SqliteTestEnvironment.IsSqliteVecInstalled);
+    public ValueTask<bool> IsMetAsync() => new(SqliteTestEnvironment.CanUseSqlite);
 
-    public string Skip { get; set; } = "The sqlite_vec extension is not installed.";
+    public string Skip { get; set; } = "Some native Sqlite dependencies are missing.";
 
     public string SkipReason
         => this.Skip;
