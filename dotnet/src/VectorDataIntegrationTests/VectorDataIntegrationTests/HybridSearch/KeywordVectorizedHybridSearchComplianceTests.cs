@@ -8,7 +8,7 @@ using Xunit;
 namespace VectorDataSpecificationTests.HybridSearch;
 
 /// <summary>
-/// Base class for common integration tests that should pass for any <see cref="IKeywordHybridSearch{TRecord}"/>.
+/// Base class for common integration tests that should pass for any <see cref="IKeywordHybridSearchable{TRecord}"/>.
 /// </summary>
 /// <typeparam name="TKey">The type of key to use with the record collection.</typeparam>
 public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
@@ -22,7 +22,7 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     public async Task SearchShouldReturnExpectedResultsAsync()
     {
         // Arrange
-        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearch<VectorAndStringRecord<TKey>>;
+        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearchable<VectorAndStringRecord<TKey>>;
 
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
@@ -40,7 +40,7 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     public async Task SearchWithFilterShouldReturnExpectedResultsAsync()
     {
         // Arrange
-        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearch<VectorAndStringRecord<TKey>>;
+        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearchable<VectorAndStringRecord<TKey>>;
 
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
@@ -65,7 +65,7 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     public async Task SearchWithTopShouldReturnExpectedResultsAsync()
     {
         // Arrange
-        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearch<VectorAndStringRecord<TKey>>;
+        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearchable<VectorAndStringRecord<TKey>>;
 
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
@@ -84,7 +84,7 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     public async Task SearchWithSkipShouldReturnExpectedResultsAsync()
     {
         // Arrange
-        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearch<VectorAndStringRecord<TKey>>;
+        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearchable<VectorAndStringRecord<TKey>>;
 
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
@@ -103,7 +103,7 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     public async Task SearchWithMultipleKeywordsShouldRankMatchedKeywordsHigherAsync()
     {
         // Arrange
-        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearch<VectorAndStringRecord<TKey>>;
+        var hybridSearch = vectorAndStringFixture.Collection as IKeywordHybridSearchable<VectorAndStringRecord<TKey>>;
 
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
@@ -122,7 +122,7 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     public async Task SearchWithMultiTextRecordSearchesRequestedFieldAsync()
     {
         // Arrange
-        var hybridSearch = multiTextFixture.Collection as IKeywordHybridSearch<MultiTextStringRecord<TKey>>;
+        var hybridSearch = multiTextFixture.Collection as IKeywordHybridSearchable<MultiTextStringRecord<TKey>>;
 
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
@@ -170,15 +170,15 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     {
         public override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
 
-        public override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
-                Properties = new List<VectorStoreRecordProperty>()
+                Properties = new List<VectorStoreProperty>()
                 {
-                    new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                    new VectorStoreRecordDataProperty("Text", typeof(string)) { IsFullTextIndexed = true },
-                    new VectorStoreRecordDataProperty("Code", typeof(int)) { IsIndexed = true },
-                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
+                    new VectorStoreKeyProperty("Key", typeof(TKey)),
+                    new VectorStoreDataProperty("Text", typeof(string)) { IsFullTextIndexed = true },
+                    new VectorStoreDataProperty("Code", typeof(int)) { IsIndexed = true },
+                    new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
                 }
             };
 
@@ -223,16 +223,16 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
     {
         public override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
 
-        public override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
-                Properties = new List<VectorStoreRecordProperty>()
+                Properties = new List<VectorStoreProperty>()
                 {
-                    new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                    new VectorStoreRecordDataProperty("Text1", typeof(string)) { IsFullTextIndexed = true },
-                    new VectorStoreRecordDataProperty("Text2", typeof(string)) { IsFullTextIndexed = true },
-                    new VectorStoreRecordDataProperty("Code", typeof(int)) { IsIndexed = true },
-                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
+                    new VectorStoreKeyProperty("Key", typeof(TKey)),
+                    new VectorStoreDataProperty("Text1", typeof(string)) { IsFullTextIndexed = true },
+                    new VectorStoreDataProperty("Text2", typeof(string)) { IsFullTextIndexed = true },
+                    new VectorStoreDataProperty("Code", typeof(int)) { IsIndexed = true },
+                    new VectorStoreVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
                 }
             };
 
