@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core;
@@ -98,25 +100,15 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// <summary>
     /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
     /// </summary>
-    /// <param name="eventName"> The name of the event to listen for.</param>
-    /// <param name="condition"></param>
-    /// <returns></returns>
-    public FoundryListenForTargetBuilder OnWorkflowEvent(string eventName, string? condition = null)
-    {
-        Verify.NotNullOrWhiteSpace(eventName);
-        return new FoundryListenForBuilder(this._processBuilder).Message(eventName, this._processBuilder, condition);
-    }
-
-    /// <summary>
-    /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
-    /// </summary>
     /// <param name="step"> The process step from which the message originates.</param>
-    /// <param name="condition"></param>
+    /// <param name="eventName"> The name of the event to listen for.</param>
+    /// <param name="condition">An optional condition using JMESPath syntax.</param>
     /// <returns></returns>
-    public FoundryListenForTargetBuilder OnResultFromStep(ProcessStepBuilder step, string? condition = null)
+    public FoundryListenForTargetBuilder OnEvent(ProcessStepBuilder step, string eventName, string? condition = null)
     {
         Verify.NotNull(step);
-        return new FoundryListenForBuilder(this._processBuilder).ResultFrom(step, condition);
+        Verify.NotNullOrWhiteSpace(eventName);
+        return new FoundryListenForBuilder(this._processBuilder).Message(eventName, step, condition);
     }
 
     /// <summary>
@@ -170,7 +162,7 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// <param name="credential">The credential to use.</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task DeployToFoundryAsync(KernelProcess process, string endpoint, TokenCredential? credential = null, CancellationToken cancellationToken = default)
+    public async Task<string> DeployToFoundryAsync(KernelProcess process, string endpoint, TokenCredential? credential = null, CancellationToken cancellationToken = default)
     {
         using var httpClient = new HttpClient();
         if (credential != null)
@@ -194,6 +186,16 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
             var errorContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             throw new KernelException($"Failed to deploy process. Response: {errorContent}");
         }
+
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var foundryWorkflow = JsonSerializer.Deserialize<FoundryWorkflow>(responseContent);
+        return foundryWorkflow?.Id ?? throw new KernelException("Failed to parse the response from Foundry.");
+    }
+
+    private class FoundryWorkflow
+    {
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
     }
 }
 
