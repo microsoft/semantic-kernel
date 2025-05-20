@@ -18,8 +18,8 @@ namespace Microsoft.SemanticKernel.Connectors.Onnx;
 /// </summary>
 public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionService, IDisposable
 {
-    private readonly OnnxRuntimeGenAIChatClient _chatClient;
-    private readonly IChatCompletionService _chatClientWrapper;
+    private OnnxRuntimeGenAIChatClient? _chatClient;
+    private IChatCompletionService? _chatClientWrapper;
     private readonly Dictionary<string, object?> _attributesInternal = [];
 
     /// <inheritdoc/>
@@ -43,31 +43,50 @@ public sealed class OnnxRuntimeGenAIChatCompletionService : IChatCompletionServi
 
         this._attributesInternal.Add(AIServiceExtensions.ModelIdKey, modelId);
 
-        this._chatClient = new OnnxRuntimeGenAIChatClient(modelPath, new OnnxRuntimeGenAIChatClientOptions()
+        this._chatFactory = () =>
         {
-            PromptFormatter = (messages, options) =>
+            var chatClient = new OnnxRuntimeGenAIChatClient(modelPath, new OnnxRuntimeGenAIChatClientOptions()
             {
-                StringBuilder promptBuilder = new();
-                foreach (var message in messages)
+                PromptFormatter = (messages, options) =>
                 {
-                    promptBuilder.Append($"<|{message.Role}|>\n{message.Text}");
-                }
-                promptBuilder.Append("<|end|>\n<|assistant|>");
+                    StringBuilder promptBuilder = new();
+                    foreach (var message in messages)
+                    {
+                        promptBuilder.Append($"<|{message.Role}|>\n{message.Text}");
+                    }
+                    promptBuilder.Append("<|end|>\n<|assistant|>");
 
-                return promptBuilder.ToString();
-            }
-        });
-        this._chatClientWrapper = this._chatClient.AsChatCompletionService();
+                    return promptBuilder.ToString();
+                }
+            });
+
+            var chatClientWrapper = chatClient.AsChatCompletionService();
+
+            return (chatClient, chatClientWrapper);
+        };
     }
 
+    private readonly Func<(OnnxRuntimeGenAIChatClient, IChatCompletionService)> _chatFactory;
+
+    private IChatCompletionService GetChatCompletionService()
+    {
+        if (this._chatClientWrapper is null)
+        {
+            var (chatClient, chatClientWrapper) = this._chatFactory();
+            this._chatClient = chatClient;
+            this._chatClientWrapper = chatClientWrapper;
+        }
+
+        return this._chatClientWrapper;
+    }
     /// <inheritdoc/>
-    public void Dispose() => this._chatClient.Dispose();
+    public void Dispose() => this._chatClient?.Dispose();
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
-        this._chatClientWrapper.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        this.GetChatCompletionService().GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default) =>
-        this._chatClientWrapper.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        this.GetChatCompletionService().GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
 }
