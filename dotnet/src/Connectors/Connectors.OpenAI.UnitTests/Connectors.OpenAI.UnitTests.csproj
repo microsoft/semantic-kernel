@@ -96,6 +96,15 @@
     <None Update="TestData\text-to-image-response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="TestData\filters_chatclient_multiple_function_calls_test_response.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\chat_completion_streaming_chatclient_multiple_function_calls_test_response.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\filters_chatclient_streaming_multiple_function_calls_test_response.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
