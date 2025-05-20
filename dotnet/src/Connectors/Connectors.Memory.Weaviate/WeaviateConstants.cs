@@ -1,9 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateConstants
 {
+    /// <summary>The name of this vector store for telemetry purposes.</summary>
+    public const string VectorStoreSystemName = "weaviate";
+
     /// <summary>Reserved key property name in Weaviate.</summary>
     internal const string ReservedKeyPropertyName = "id";
 
@@ -12,6 +17,9 @@ internal sealed class WeaviateConstants
 
     /// <summary>Reserved vector property name in Weaviate.</summary>
     internal const string ReservedVectorPropertyName = "vectors";
+
+    /// <summary>Reserved single vector property name in Weaviate.</summary>
+    internal const string ReservedSingleVectorPropertyName = "vector";
 
     /// <summary>Collection property name in Weaviate.</summary>
     internal const string CollectionPropertyName = "class";
@@ -24,4 +32,18 @@ internal sealed class WeaviateConstants
 
     /// <summary>Additional properties property name in Weaviate.</summary>
     internal const string AdditionalPropertiesPropertyName = "_additional";
+
+    /// <summary>Default vectorizer for vector properties in Weaviate.</summary>
+    internal const string DefaultVectorizer = "none";
+
+    /// <summary>Default JSON serializer options.</summary>
+    internal static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters =
+        {
+            new WeaviateDateTimeOffsetConverter(),
+            new WeaviateNullableDateTimeOffsetConverter()
+        }
+    };
 }

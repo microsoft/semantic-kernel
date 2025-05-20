@@ -138,12 +138,12 @@ public static class Program
         {
             case AzureOpenAIEmbeddingsConfig.ConfigSectionName:
             {
-                builder.Services.AddAzureOpenAITextEmbeddingGeneration(config.AzureOpenAIEmbeddings.DeploymentName, modelId: config.AzureOpenAIEmbeddings.ModelName);
+                builder.Services.AddAzureOpenAIEmbeddingGenerator(config.AzureOpenAIEmbeddings.DeploymentName, modelId: config.AzureOpenAIEmbeddings.ModelName);
                 break;
             }
             case OpenAIEmbeddingsConfig.ConfigSectionName:
             {
-                builder.Services.AddOpenAITextEmbeddingGeneration(config.OpenAIEmbeddings.ModelName);
+                builder.Services.AddOpenAIEmbeddingGenerator(config.OpenAIEmbeddings.ModelName);
                 break;
             }
             default:
@@ -175,7 +175,7 @@ public static class Program
                         ? new DefaultAzureCredential()
                         : new AzureCliCredential()
                 );
-                builder.Services.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<string>>(config.Rag.CollectionName);
+                builder.Services.AddAzureAISearchCollection<TextSnippet<string>>(config.Rag.CollectionName);
                 builder.Services.AddVectorStoreTextSearch<TextSnippet<string>>();
                 break;
             }

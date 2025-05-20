@@ -35,34 +35,34 @@ public class RedisVectorStoreFixture : IAsyncLifetime
     {
         using var dockerClientConfiguration = new DockerClientConfiguration();
         this._client = dockerClientConfiguration.CreateClient();
-        this.VectorStoreRecordDefinition = new VectorStoreRecordDefinition
+        this.VectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("Description", typeof(string)) { IsFullTextSearchable = true },
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
-                new VectorStoreRecordDataProperty("Tags", typeof(string[])) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("FTSTags", typeof(string[])) { IsFullTextSearchable = true },
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset)),
-                new VectorStoreRecordDataProperty("Rating", typeof(double)),
-                new VectorStoreRecordDataProperty("Address", typeof(RedisHotelAddress))
+                new VectorStoreKeyProperty("HotelId", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true },
+                new VectorStoreDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
+                new VectorStoreDataProperty("Description", typeof(string)) { IsFullTextIndexed = true },
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4),
+                new VectorStoreDataProperty("Tags", typeof(string[])) { IsIndexed = true },
+                new VectorStoreDataProperty("FTSTags", typeof(string[])) { IsFullTextIndexed = true },
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StorageName = "parking_is_included" },
+                new VectorStoreDataProperty("LastRenovationDate", typeof(DateTimeOffset)),
+                new VectorStoreDataProperty("Rating", typeof(double)),
+                new VectorStoreDataProperty("Address", typeof(RedisHotelAddress))
             }
         };
-        this.BasicVectorStoreRecordDefinition = new VectorStoreRecordDefinition
+        this.BasicVectorStoreRecordDefinition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("Description", typeof(string)) { IsFullTextSearchable = true },
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("Rating", typeof(double)),
+                new VectorStoreKeyProperty("HotelId", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string)) { IsIndexed = true },
+                new VectorStoreDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
+                new VectorStoreDataProperty("Description", typeof(string)) { IsFullTextIndexed = true },
+                new VectorStoreVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4),
+                new VectorStoreDataProperty("ParkingIncluded", typeof(bool)) { StorageName = "parking_is_included" },
+                new VectorStoreDataProperty("Rating", typeof(double)),
             }
         };
     }
@@ -71,10 +71,10 @@ public class RedisVectorStoreFixture : IAsyncLifetime
     public IDatabase Database { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for our test model.</summary>
-    public VectorStoreRecordDefinition VectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition VectorStoreRecordDefinition { get; private set; }
 
     /// <summary>Gets the manually created vector store record definition for our basic test model.</summary>
-    public VectorStoreRecordDefinition BasicVectorStoreRecordDefinition { get; private set; }
+    public VectorStoreCollectionDefinition BasicVectorStoreRecordDefinition { get; private set; }
 
     /// <summary>
     /// Create / Recreate redis docker container, create an index and add test data.

@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.Services;
 
@@ -58,7 +58,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
             .AddOpenAIChatCompletion(
                 modelId: "gpt-4",
                 apiKey: TestConfiguration.OpenAI.ApiKey)
-            .AddOpenAITextEmbeddingGeneration(
+            .AddOpenAIEmbeddingGenerator(
                 modelId: "text-embedding-3-small",
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
@@ -99,10 +99,10 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
         // Add few-shot prompt optimization filter.
         // The filter uses in-memory store for vector similarity search and text embedding generation service to generate embeddings.
         var vectorStore = new InMemoryVectorStore();
-        var textEmbeddingGenerationService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        var embeddingGenerator = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
         // Register optimization filter.
-        kernel.PromptRenderFilters.Add(new FewShotPromptOptimizationFilter(vectorStore, textEmbeddingGenerationService));
+        kernel.PromptRenderFilters.Add(new FewShotPromptOptimizationFilter(vectorStore, embeddingGenerator));
 
         // Get result again and compare the usage.
         result = await kernel.InvokeAsync(function, arguments);
@@ -168,8 +168,8 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
     /// which are similar to original request.
     /// </summary>
     private sealed class FewShotPromptOptimizationFilter(
-        IVectorStore vectorStore,
-        ITextEmbeddingGenerationService textEmbeddingGenerationService) : IPromptRenderFilter
+        VectorStore vectorStore,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator) : IPromptRenderFilter
     {
         /// <summary>
         /// Maximum number of examples to use which are similar to original request.
@@ -192,7 +192,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
                 var exampleRecords = new List<ExampleRecord>();
 
                 // Generate embedding for each example.
-                var embeddings = await textEmbeddingGenerationService.GenerateEmbeddingsAsync(examples);
+                var embeddings = (await embeddingGenerator.GenerateAsync(examples));
 
                 // Create vector store record instances with example text and embedding.
                 for (var i = 0; i < examples.Count; i++)
@@ -201,23 +201,23 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
                     {
                         Id = Guid.NewGuid().ToString(),
                         Example = examples[i],
-                        ExampleEmbedding = embeddings[i]
+                        ExampleEmbedding = embeddings[i].Vector
                     });
                 }
 
                 // Create collection and upsert all vector store records for search.
                 // It's possible to do it only once and re-use the same examples for future requests.
                 var collection = vectorStore.GetCollection<string, ExampleRecord>(CollectionName);
-                await collection.CreateCollectionIfNotExistsAsync(context.CancellationToken);
+                await collection.EnsureCollectionExistsAsync(context.CancellationToken);
 
-                await collection.UpsertBatchAsync(exampleRecords, cancellationToken: context.CancellationToken).ToListAsync(context.CancellationToken);
+                await collection.UpsertAsync(exampleRecords, cancellationToken: context.CancellationToken);
 
                 // Generate embedding for original request.
-                var requestEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(request, cancellationToken: context.CancellationToken);
+                var requestEmbedding = await embeddingGenerator.GenerateAsync(request, cancellationToken: context.CancellationToken);
 
                 // Find top N examples which are similar to original request.
-                var searchResults = await collection.VectorizedSearchAsync(requestEmbedding, new() { Top = TopN }, cancellationToken: context.CancellationToken);
-                var topNExamples = (await searchResults.Results.ToListAsync(context.CancellationToken)).Select(l => l.Record).ToList();
+                var topNExamples = (await collection.SearchAsync(requestEmbedding, top: TopN, cancellationToken: context.CancellationToken)
+                    .ToListAsync(context.CancellationToken)).Select(l => l.Record).ToList();
 
                 // Override arguments to use only top N examples, which will be sent to LLM.
                 context.Arguments["Examples"] = topNExamples.Select(l => l.Example);
@@ -237,7 +237,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
         Predicate<string> acceptanceCriteria,
         ITestOutputHelper output) : IFunctionInvocationFilter
     {
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        public async Task OnFunctionInvocationAsync(Microsoft.SemanticKernel.FunctionInvocationContext context, Func<Microsoft.SemanticKernel.FunctionInvocationContext, Task> next)
         {
             // Get registered chat completion services from kernel.
             var registeredServices = context.Kernel
@@ -317,13 +317,13 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
 
     private sealed class ExampleRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Example { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> ExampleEmbedding { get; set; }
     }
 }

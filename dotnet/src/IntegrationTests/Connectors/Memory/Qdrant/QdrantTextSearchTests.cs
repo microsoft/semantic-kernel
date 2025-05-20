@@ -22,19 +22,20 @@ public class QdrantTextSearchTests(QdrantVectorStoreFixture fixture) : BaseVecto
         if (this.VectorStore is null)
         {
             this.EmbeddingGenerator = fixture.EmbeddingGenerator;
-            this.VectorStore = new QdrantVectorStore(fixture.QdrantClient);
+            this.VectorStore = new QdrantVectorStore(fixture.QdrantClient, ownsClient: false, new QdrantVectorStoreOptions { EmbeddingGenerator = fixture.EmbeddingGenerator });
         }
 
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = true,
-            VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition,
+            Definition = fixture.HotelVectorStoreRecordDefinition,
         };
-        var vectorSearch = new QdrantVectorStoreRecordCollection<HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", options);
+        using var collection = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", ownsClient: false, options);
         var stringMapper = new HotelInfoTextSearchStringMapper();
         var resultMapper = new HotelInfoTextSearchResultMapper();
 
-        var result = new VectorStoreTextSearch<HotelInfo>(vectorSearch, this.EmbeddingGenerator!, stringMapper, resultMapper);
+        var result = new VectorStoreTextSearch<HotelInfo>(collection, this.EmbeddingGenerator!, stringMapper, resultMapper);
+
         return Task.FromResult<ITextSearch>(result);
     }
 

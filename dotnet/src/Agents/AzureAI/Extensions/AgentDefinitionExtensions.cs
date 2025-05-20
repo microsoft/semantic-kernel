@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Http;
@@ -20,24 +20,20 @@ internal static class AgentDefinitionExtensions
     private const string CodeInterpreterType = "code_interpreter";
     private const string FileSearchType = "file_search";
     private const string FunctionType = "function";
-    private const string MicrosoftFabricType = "fabric_aiskill";
     private const string OpenApiType = "openapi";
-    private const string SharepointGroundingType = "sharepoint_grounding";
 
-    private static readonly string[] s_validToolTypes = new string[]
-    {
+    private static readonly string[] s_validToolTypes =
+    [
         AzureAISearchType,
         AzureFunctionType,
         BingGroundingType,
         CodeInterpreterType,
         FileSearchType,
         FunctionType,
-        MicrosoftFabricType,
         OpenApiType,
-        SharepointGroundingType
-    };
+    ];
 
-    private const string ConnectionString = "connection_string";
+    private const string Endpoint = "endpoint";
 
     /// <summary>
     /// Return the Azure AI tool definitions which corresponds with the provided <see cref="AgentDefinition"/>.
@@ -58,9 +54,7 @@ internal static class AgentDefinitionExtensions
                 CodeInterpreterType => CreateCodeInterpreterToolDefinition(tool),
                 FileSearchType => CreateFileSearchToolDefinition(tool),
                 FunctionType => CreateFunctionToolDefinition(tool),
-                MicrosoftFabricType => CreateMicrosoftFabricToolDefinition(tool),
                 OpenApiType => CreateOpenApiToolDefinition(tool),
-                SharepointGroundingType => CreateSharepointGroundingToolDefinition(tool),
                 _ => throw new NotSupportedException($"Unable to create Azure AI tool definition because of unsupported tool type: {tool.Type}, supported tool types are: {string.Join(",", s_validToolTypes)}"),
             };
         }) ?? [];
@@ -108,11 +102,11 @@ internal static class AgentDefinitionExtensions
     }
 
     /// <summary>
-    /// Return the <see cref="AIProjectClient"/> to be used with the specified <see cref="AgentDefinition"/>.
+    /// Return the <see cref="PersistentAgentsClient"/> to be used with the specified <see cref="AgentDefinition"/>.
     /// </summary>
-    /// <param name="agentDefinition">Agent definition which will be used to provide connection for the <see cref="AIProjectClient"/>.</param>
-    /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="AIProjectClient"/>.</param>
-    public static AIProjectClient GetAIProjectClient(this AgentDefinition agentDefinition, Kernel kernel)
+    /// <param name="agentDefinition">Agent definition which will be used to provide connection for the <see cref="PersistentAgentsClient"/>.</param>
+    /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="PersistentAgentsClient"/>.</param>
+    public static PersistentAgentsClient GetAgentsClient(this AgentDefinition agentDefinition, Kernel kernel)
     {
         Verify.NotNull(agentDefinition);
 
@@ -120,28 +114,49 @@ internal static class AgentDefinitionExtensions
         var connection = agentDefinition?.Model?.Connection;
         if (connection is not null)
         {
-            if (connection.ExtensionData.TryGetValue(ConnectionString, out var value) && value is string connectionString)
+            if (connection.ExtensionData.TryGetValue(Endpoint, out var value) && value is string endpoint)
             {
 #pragma warning disable CA2000 // Dispose objects before losing scope, not relevant because the HttpClient is created and may be used elsewhere
                 var httpClient = HttpClientProvider.GetHttpClient(kernel.Services);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-                AIProjectClientOptions clientOptions = AzureAIClientProvider.CreateAzureClientOptions(httpClient);
 
                 var tokenCredential = kernel.Services.GetRequiredService<TokenCredential>();
-                return new(connectionString, tokenCredential, clientOptions);
+                return AzureAIAgent.CreateAgentsClient(endpoint, tokenCredential, httpClient);
             }
         }
 
         // Return the client registered on the kernel
-        var client = kernel.GetAllServices<AIProjectClient>().FirstOrDefault();
-        return (AIProjectClient?)client ?? throw new InvalidOperationException("AzureAI project client not found.");
+        var client = kernel.GetAllServices<PersistentAgentsClient>().FirstOrDefault();
+        return (PersistentAgentsClient?)client ?? throw new InvalidOperationException("AzureAI project client not found.");
     }
 
     #region private
     private static CodeInterpreterToolResource? GetCodeInterpreterToolResource(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
-        return null;
+
+        CodeInterpreterToolResource? resource = null;
+
+        var codeInterpreter = agentDefinition.GetFirstToolDefinition(CodeInterpreterType);
+        if (codeInterpreter is not null)
+        {
+            var fileIds = codeInterpreter.GetFileIds();
+            var dataSources = codeInterpreter.GetDataSources();
+            if (fileIds is not null || dataSources is not null)
+            {
+                resource = new CodeInterpreterToolResource();
+                if (fileIds is not null)
+                {
+                    resource.FileIds.AddRange(fileIds);
+                }
+                if (dataSources is not null)
+                {
+                    resource.DataSources.AddRange(dataSources);
+                }
+            }
+        }
+
+        return resource;
     }
 
     private static FileSearchToolResource? GetFileSearchToolResource(this AgentDefinition agentDefinition)
@@ -152,18 +167,40 @@ internal static class AgentDefinitionExtensions
         if (fileSearch is not null)
         {
             var vectorStoreIds = fileSearch.GetVectorStoreIds();
-            if (vectorStoreIds is not null)
+            var vectorStores = fileSearch.GetVectorStoreConfigurations();
+            if (vectorStoreIds is not null || vectorStores is not null)
             {
-                return new FileSearchToolResource(vectorStoreIds, vectorStores: null);
+                return new FileSearchToolResource(vectorStoreIds, vectorStores);
             }
         }
 
         return null;
     }
 
-    private static AzureAISearchResource? GetAzureAISearchResource(this AgentDefinition agentDefinition)
+    private static AzureAISearchToolResource? GetAzureAISearchResource(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
+
+        var azureAISearch = agentDefinition.GetFirstToolDefinition(AzureAISearchType);
+        if (azureAISearch is not null)
+        {
+            string? indexConnectionId = azureAISearch.GetOption<string>("index_connection_id");
+            string? indexName = azureAISearch.GetOption<string>("index_name");
+            if (string.IsNullOrEmpty(indexConnectionId) && string.IsNullOrEmpty(indexName))
+            {
+                return null;
+            }
+            if (string.IsNullOrEmpty(indexConnectionId) || string.IsNullOrEmpty(indexName))
+            {
+                throw new InvalidOperationException("Azure AI Search tool definition must have both 'index_connection_id' and 'index_name' options set.");
+            }
+            int topK = azureAISearch.GetTopK() ?? 5;
+            string filter = azureAISearch.GetFilter() ?? string.Empty;
+            AzureAISearchQueryType? queryType = azureAISearch.GetAzureAISearchQueryType();
+
+            return new AzureAISearchToolResource(indexConnectionId, indexName, topK, filter, queryType);
+        }
+
         return null;
     }
 
@@ -193,9 +230,9 @@ internal static class AgentDefinitionExtensions
     {
         Verify.NotNull(tool);
 
-        ToolConnectionList bingGrounding = tool.GetToolConnectionList();
+        BingGroundingSearchToolParameters bingToolParameters = new(tool.GetToolConnections().Select(connectionId => new BingGroundingSearchConfiguration(connectionId)));
 
-        return new BingGroundingToolDefinition(bingGrounding);
+        return new BingGroundingToolDefinition(bingToolParameters);
     }
 
     private static CodeInterpreterToolDefinition CreateCodeInterpreterToolDefinition(AgentToolDefinition tool)
@@ -226,15 +263,6 @@ internal static class AgentDefinitionExtensions
         return new FunctionToolDefinition(name, description, parameters);
     }
 
-    private static MicrosoftFabricToolDefinition CreateMicrosoftFabricToolDefinition(AgentToolDefinition tool)
-    {
-        Verify.NotNull(tool);
-
-        ToolConnectionList fabricAiskill = tool.GetToolConnectionList();
-
-        return new MicrosoftFabricToolDefinition(fabricAiskill);
-    }
-
     private static OpenApiToolDefinition CreateOpenApiToolDefinition(AgentToolDefinition tool)
     {
         Verify.NotNull(tool);
@@ -247,15 +275,6 @@ internal static class AgentDefinitionExtensions
         OpenApiAuthDetails auth = tool.GetOpenApiAuthDetails();
 
         return new OpenApiToolDefinition(name, description, spec, auth);
-    }
-
-    private static SharepointToolDefinition CreateSharepointGroundingToolDefinition(AgentToolDefinition tool)
-    {
-        Verify.NotNull(tool);
-
-        ToolConnectionList sharepointGrounding = tool.GetToolConnectionList();
-
-        return new SharepointToolDefinition(sharepointGrounding);
     }
     #endregion
 }

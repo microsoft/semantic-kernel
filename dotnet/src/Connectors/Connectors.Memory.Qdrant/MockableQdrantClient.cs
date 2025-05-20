@@ -12,19 +12,24 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// <summary>
 /// Decorator class for <see cref="QdrantClient"/> that exposes the required methods as virtual allowing for mocking in unit tests.
 /// </summary>
-internal class MockableQdrantClient
+internal class MockableQdrantClient : IDisposable
 {
     /// <summary>Qdrant client that can be used to manage the collections and points in a Qdrant store.</summary>
     private readonly QdrantClient _qdrantClient;
+    private readonly bool _ownsClient;
+    private int _referenceCount = 1;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MockableQdrantClient"/> class.
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
-    public MockableQdrantClient(QdrantClient qdrantClient)
+    /// <param name="ownsClient">A value indicating whether <paramref name="qdrantClient"/> is disposed when the vector store is disposed.</param>
+    public MockableQdrantClient(QdrantClient qdrantClient, bool ownsClient = true)
     {
         Verify.NotNull(qdrantClient);
+
         this._qdrantClient = qdrantClient;
+        this._ownsClient = ownsClient;
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -42,6 +47,17 @@ internal class MockableQdrantClient
     /// Gets the internal <see cref="QdrantClient"/> that this mockable instance wraps.
     /// </summary>
     public QdrantClient QdrantClient => this._qdrantClient;
+
+    public void Dispose()
+    {
+        if (this._ownsClient)
+        {
+            if (Interlocked.Decrement(ref this._referenceCount) == 0)
+            {
+                this._qdrantClient.Dispose();
+            }
+        }
+    }
 
     /// <summary>
     /// Check if a collection exists.
@@ -312,4 +328,33 @@ internal class MockableQdrantClient
             lookupFrom,
             timeout,
             cancellationToken);
+
+    public virtual Task<ScrollResponse> ScrollAsync(
+        string collectionName,
+        Filter filter,
+        WithVectorsSelector vectorsSelector,
+        uint limit = 10,
+        OrderBy? orderBy = null,
+        CancellationToken cancellationToken = default)
+        => this._qdrantClient.ScrollAsync(
+            collectionName,
+            filter,
+            limit,
+            offset: null,
+            payloadSelector: null,
+            vectorsSelector,
+            readConsistency: null,
+            shardKeySelector: null,
+            orderBy,
+            cancellationToken);
+
+    internal MockableQdrantClient Share()
+    {
+        if (this._ownsClient)
+        {
+            Interlocked.Increment(ref this._referenceCount);
+        }
+
+        return this;
+    }
 }

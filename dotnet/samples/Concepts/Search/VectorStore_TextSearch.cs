@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
-using Microsoft.SemanticKernel.Embeddings;
+using OpenAI;
 
 namespace Search;
 
@@ -21,22 +21,21 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
     public async Task UsingInMemoryVectorStoreRecordTextSearchAsync()
     {
         // Create an embedding generation service.
-        var textEmbeddingGeneration = new OpenAITextEmbeddingGenerationService(
-                modelId: TestConfiguration.OpenAI.EmbeddingModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey);
+        var embeddingGenerator = new OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+            .GetEmbeddingClient(TestConfiguration.OpenAI.EmbeddingModelId)
+            .AsIEmbeddingGenerator();
 
         // Construct an InMemory vector store.
-        var vectorStore = new InMemoryVectorStore();
+        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
         var collectionName = "records";
 
         // Delegate which will create a record.
-        static DataModel CreateRecord(string text, ReadOnlyMemory<float> embedding)
+        static DataModel CreateRecord(string text)
         {
             return new()
             {
                 Key = Guid.NewGuid(),
-                Text = text,
-                Embedding = embedding
+                Text = text
             };
         }
 
@@ -47,16 +46,15 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
             "Semantic Kernel is a new AI SDK, and a simple and yet powerful programming model that lets you add large language capabilities to your app in just a matter of minutes. It uses natural language prompting to create and execute semantic kernel AI tasks across multiple languages and platforms.",
             "In this guide, you learned how to quickly get started with Semantic Kernel by building a simple AI agent that can interact with an AI service and run your code. To see more examples and learn how to build more complex AI agents, check out our in-depth samples."
         ];
-        var vectorizedSearch = await CreateCollectionFromListAsync<Guid, DataModel>(
-            vectorStore, collectionName, lines, textEmbeddingGeneration, CreateRecord);
+        var collection = await CreateCollectionFromListAsync<Guid, DataModel>(
+            vectorStore, collectionName, lines, CreateRecord);
 
         // Create a text search instance using the InMemory vector store.
-        var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration);
+        var textSearch = new VectorStoreTextSearch<DataModel>(collection);
         await ExecuteSearchesAsync(textSearch);
 
         // Create a text search instance using a vectorized search wrapper around the InMemory vector store.
-        IVectorizableTextSearch<DataModel> vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorizedSearch, textEmbeddingGeneration);
-        textSearch = new VectorStoreTextSearch<DataModel>(vectorizableTextSearch);
+        textSearch = new VectorStoreTextSearch<DataModel>(collection);
         await ExecuteSearchesAsync(textSearch);
     }
 
@@ -101,55 +99,36 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
     /// </summary>
     /// <typeparam name="TKey">Type of the record key.</typeparam>
     /// <typeparam name="TRecord">Type of the record.</typeparam>
-    internal delegate TRecord CreateRecord<TKey, TRecord>(string text, ReadOnlyMemory<float> vector) where TKey : notnull;
+    internal delegate TRecord CreateRecord<TKey, TRecord>(string text) where TKey : notnull;
 
     /// <summary>
-    /// Create a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> from a list of strings by:
-    /// 1. Creating an instance of <see cref="InMemoryVectorStoreRecordCollection{TKey, TRecord}"/>
+    /// Create a <see cref="VectorStoreCollection{TKey, TRecord}"/> from a list of strings by:
+    /// 1. Creating an instance of <see cref="InMemoryCollection{TKey, TRecord}"/>
     /// 2. Generating embeddings for each string.
     /// 3. Creating a record with a valid key for each string and it's embedding.
     /// 4. Insert the records into the collection.
     /// </summary>
-    /// <param name="vectorStore">Instance of <see cref="IVectorStore"/> used to created the collection.</param>
+    /// <param name="vectorStore">Instance of <see cref="VectorStore"/> used to created the collection.</param>
     /// <param name="collectionName">The collection name.</param>
     /// <param name="entries">A list of strings.</param>
-    /// <param name="embeddingGenerationService">A text embedding generation service.</param>
     /// <param name="createRecord">A delegate which can create a record with a valid key for each string and it's embedding.</param>
-    internal static async Task<IVectorStoreRecordCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
-        IVectorStore vectorStore,
+    internal static async Task<VectorStoreCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
+        VectorStore vectorStore,
         string collectionName,
         string[] entries,
-        ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecord<TKey, TRecord> createRecord)
         where TKey : notnull
+        where TRecord : class
     {
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
-        await collection.CreateCollectionIfNotExistsAsync().ConfigureAwait(false);
+        await collection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
-        // Create records and generate embeddings for them.
-        var tasks = entries.Select(entry => Task.Run(async () =>
-        {
-            var record = createRecord(entry, await embeddingGenerationService.GenerateEmbeddingAsync(entry).ConfigureAwait(false));
-            await collection.UpsertAsync(record).ConfigureAwait(false);
-        }));
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+        // Generate the records and upsert them.
+        var records = entries.Select(x => createRecord(x));
+        await collection.UpsertAsync(records);
 
         return collection;
-    }
-
-    /// <summary>
-    /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
-    /// </summary>
-    private sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
-    {
-        /// <inheritdoc/>
-        public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-        {
-            var vectorizedQuery = await textEmbeddingGeneration!.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            return await vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, options, cancellationToken);
-        }
     }
 
     /// <summary>
@@ -161,15 +140,15 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
     /// </remarks>
     private sealed class DataModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         [TextSearchResultName]
         public Guid Key { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         [TextSearchResultValue]
         public string Text { get; init; }
 
-        [VectorStoreRecordVector(1536)]
-        public ReadOnlyMemory<float> Embedding { get; init; }
+        [VectorStoreVector(1536)]
+        public string Embedding => this.Text;
     }
 }

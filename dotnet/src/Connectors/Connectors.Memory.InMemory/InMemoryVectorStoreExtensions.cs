@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -12,13 +13,13 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 
 /// <summary>
 /// Extension methods for <see cref="InMemoryVectorStore"/> which allow:
-/// 1. Serializing an instance of <see cref="InMemoryVectorStoreRecordCollection{TKey, TRecord}"/> to a stream.
-/// 2. Deserializing an instance of <see cref="InMemoryVectorStoreRecordCollection{TKey, TRecord}"/> from a stream.
+/// 1. Serializing an instance of <see cref="InMemoryCollection{TKey, TRecord}"/> to a stream.
+/// 2. Deserializing an instance of <see cref="InMemoryCollection{TKey, TRecord}"/> from a stream.
 /// </summary>
 public static class InMemoryVectorStoreExtensions
 {
     /// <summary>
-    /// Serialize a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> to a stream as JSON.
+    /// Serialize a <see cref="VectorStoreCollection{TKey, TRecord}"/> to a stream as JSON.
     /// </summary>
     /// <typeparam name="TKey">Type of the record key.</typeparam>
     /// <typeparam name="TRecord">Type of the record.</typeparam>
@@ -26,12 +27,15 @@ public static class InMemoryVectorStoreExtensions
     /// <param name="collectionName">The collection name.</param>
     /// <param name="stream">The stream to write the serialized JSON to.</param>
     /// <param name="jsonSerializerOptions">The JSON serializer options to use.</param>
+    [RequiresDynamicCode("This method is incompatible with NativeAOT.")]
+    [RequiresUnreferencedCode("This method is incompatible with trimming.")]
     public static async Task SerializeCollectionAsJsonAsync<TKey, TRecord>(
         this InMemoryVectorStore vectorStore,
         string collectionName,
         Stream stream,
         JsonSerializerOptions? jsonSerializerOptions = null)
         where TKey : notnull
+        where TRecord : class
     {
         // Get collection and verify that it exists.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
@@ -41,7 +45,7 @@ public static class InMemoryVectorStoreExtensions
             throw new InvalidOperationException($"Collection '{collectionName}' does not exist.");
         }
 
-        var inMemoryCollection = collection as InMemoryVectorStoreRecordCollection<TKey, TRecord>;
+        var inMemoryCollection = collection as InMemoryCollection<TKey, TRecord>;
         var records = inMemoryCollection!.GetCollectionDictionary();
         InMemoryRecordCollection<object, object> recordCollection = new(collectionName, records);
 
@@ -49,18 +53,21 @@ public static class InMemoryVectorStoreExtensions
     }
 
     /// <summary>
-    /// Deserialize a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> to a stream as JSON.
+    /// Deserialize a <see cref="VectorStoreCollection{TKey, TRecord}"/> to a stream as JSON.
     /// </summary>
     /// <typeparam name="TKey">Type of the record key.</typeparam>
     /// <typeparam name="TRecord">Type of the record.</typeparam>
     /// <param name="vectorStore">Instance of <see cref="InMemoryVectorStore"/> used to retrieve the collection.</param>
     /// <param name="stream">The stream to read the serialized JSON from.</param>
-    public static async Task<IVectorStoreRecordCollection<TKey, TRecord>?> DeserializeCollectionFromJsonAsync<TKey, TRecord>(
+    [RequiresDynamicCode("This method is incompatible with NativeAOT.")]
+    [RequiresUnreferencedCode("This method is incompatible with trimming.")]
+    public static async Task<VectorStoreCollection<TKey, TRecord>?> DeserializeCollectionFromJsonAsync<TKey, TRecord>(
         this InMemoryVectorStore vectorStore,
         Stream stream)
         where TKey : notnull
+        where TRecord : class
     {
-        IVectorStoreRecordCollection<TKey, TRecord>? collection = null;
+        VectorStoreCollection<TKey, TRecord>? collection = null;
 
         using (StreamReader streamReader = new(stream))
         {
@@ -73,7 +80,7 @@ public static class InMemoryVectorStoreExtensions
 
             // Get and create collection if it doesn't exist.
             collection = vectorStore.GetCollection<TKey, TRecord>(recordCollection.Name);
-            await collection.CreateCollectionIfNotExistsAsync().ConfigureAwait(false);
+            await collection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
             // Upsert records.
             var tasks = recordCollection.Records.Values.Select(record => Task.Run(async () =>
@@ -87,7 +94,7 @@ public static class InMemoryVectorStoreExtensions
     }
 
     #region private
-    /// <summary>Model class used when storing a <see cref="InMemoryVectorStoreRecordCollection{TKey, TRecord}" />.</summary>
+    /// <summary>Model class used when storing a <see cref="InMemoryCollection{TKey, TRecord}" />.</summary>
     private sealed class InMemoryRecordCollection<TKey, TRecord>(string name, IDictionary<TKey, TRecord> records)
         where TKey : notnull
     {

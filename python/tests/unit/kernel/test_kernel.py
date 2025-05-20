@@ -296,6 +296,70 @@ async def test_invoke_function_call(kernel: Kernel, get_tool_call_mock):
         )
 
 
+class LightsPlugin:
+    lights = [
+        {"id": 1, "name": "Table Lamp", "is_on": False},
+        {"id": 2, "name": "Porch light", "is_on": False},
+        {"id": 3, "name": "Chandelier", "is_on": False},
+    ]
+
+    @kernel_function(
+        name="get_lights_states",
+        description="Gets a list of lights and their current state",
+    )
+    def get_lights_states(self) -> list[dict]:
+        """Return a list of lights and their states (read-only)."""
+        return self.lights  # returns by reference, but deep-copy fix will snapshot it
+
+
+@pytest.mark.asyncio
+async def test_kernel_invoke_deep_copy_preserves_previous_state():
+    kernel = Kernel()
+    plugin = LightsPlugin()
+    kernel.add_plugin(plugin, plugin_name="lights")
+
+    func_call = FunctionCallContent(
+        plugin_name="lights", function_name="get_lights_states", name="get_lights_states", arguments={}
+    )
+
+    chat_history = ChatHistory()
+
+    # 1st invocation: capture snapshot of the list
+    _ = await kernel.invoke_function_call(
+        function_call=func_call,
+        chat_history=chat_history,
+        arguments=None,
+        function_call_count=1,
+        request_index=0,
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+    snapshot1 = chat_history.messages[-1].items[0].result
+
+    # Mutate the plugin's internal state after the first call
+    plugin.lights.append({"id": 4, "name": "Desk lamp", "is_on": True})
+
+    # The snapshot from the first invocation did not change
+    assert snapshot1 == [
+        {"id": 1, "name": "Table Lamp", "is_on": False},
+        {"id": 2, "name": "Porch light", "is_on": False},
+        {"id": 3, "name": "Chandelier", "is_on": False},
+    ]
+
+    # 2nd invocation: should pick up the new item
+    _ = await kernel.invoke_function_call(
+        function_call=func_call,
+        chat_history=chat_history,
+        arguments=None,
+        function_call_count=1,
+        request_index=1,
+        function_behavior=FunctionChoiceBehavior.Auto(),
+    )
+    snapshot2 = chat_history.messages[-1].items[0].result
+
+    # The new invoke reflects the mutated state
+    assert snapshot2[-1] == {"id": 4, "name": "Desk lamp", "is_on": True}
+
+
 async def test_invoke_function_call_throws_during_invoke(kernel: Kernel, get_tool_call_mock):
     tool_call_mock = get_tool_call_mock
     result_mock = MagicMock(spec=ChatMessageContent)
@@ -437,7 +501,10 @@ async def test_invoke_function_call_with_continuation_on_malformed_arguments(ker
     func_mock.invoke = AsyncMock(return_value=func_result)
     arguments = KernelArguments()
 
-    with patch("semantic_kernel.kernel.logger", autospec=True) as logger_mock:
+    with (
+        patch("semantic_kernel.kernel.logger", autospec=True) as logger_mock,
+        patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
+    ):
         await kernel.invoke_function_call(
             function_call=tool_call_mock,
             chat_history=chat_history_mock,
@@ -459,6 +526,58 @@ async def test_invoke_function_call_with_continuation_on_malformed_arguments(ker
         and call[1]["message"].items[0].name == "test-function"
         for call in add_message_calls
     ), "Expected call to add_message not found with the expected message content and metadata."
+
+
+async def test_invoke_function_call_with_missing_or_unexpected_args(kernel: Kernel):
+    tool_call_mock = MagicMock(spec=FunctionCallContent)
+    tool_call_mock.to_kernel_arguments.return_value = {"unexpected_arg": "value"}
+    tool_call_mock.name = "test-function"
+    tool_call_mock.function_name = "function"
+    tool_call_mock.plugin_name = "test"
+    tool_call_mock.arguments = {"unexpected_arg": "value"}
+    tool_call_mock.ai_model_id = None
+    tool_call_mock.metadata = {}
+    tool_call_mock.index = 0
+    tool_call_mock.id = "test_id"
+
+    chat_history_mock = MagicMock(spec=ChatHistory)
+
+    # One required parameter called "required_arg"
+    required_param = KernelParameterMetadata(name="required_arg", is_required=True)
+    func_meta = KernelFunctionMetadata(name="function", is_prompt=False, parameters=[required_param])
+    func_mock = MagicMock(spec=KernelFunction)
+    func_mock.metadata = func_meta
+    func_mock.name = "function"
+    func_mock.parameters = [required_param]
+
+    with (
+        patch("semantic_kernel.kernel.logger", autospec=True) as logger_mock,
+        patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
+    ):
+        result = await kernel.invoke_function_call(
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=KernelArguments(),
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
+        )
+
+    assert result is None
+
+    logger_msg = (
+        "Missing required argument(s): ['required_arg']. "
+        "Received unexpected argument(s): ['unexpected_arg']. "
+        "Please revise the arguments to match the function signature."
+    )
+    logger_mock.info.assert_called_with(logger_msg)
+
+    add_message_calls = chat_history_mock.add_message.call_args_list
+    assert any(
+        call[1]["message"].items[0].result.startswith("Missing required argument")
+        and call[1]["message"].items[0].id == "test_id"
+        for call in add_message_calls
+    ), "Expected fallback message not found in chat history."
 
 
 # endregion

@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace Optimization;
 
@@ -34,7 +34,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         var builder = Kernel
             .CreateBuilder()
             .AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey)
-            .AddOpenAITextEmbeddingGeneration("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
+            .AddOpenAIEmbeddingGenerator("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
 
         // Add logging.
         var logger = this.LoggerFactory.CreateLogger<PluginSelectionWithFilters>();
@@ -108,7 +108,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         var builder = Kernel
             .CreateBuilder()
             .AddOpenAIChatCompletion("gpt-4", TestConfiguration.OpenAI.ApiKey)
-            .AddOpenAITextEmbeddingGeneration("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
+            .AddOpenAIEmbeddingGenerator("text-embedding-3-small", TestConfiguration.OpenAI.ApiKey);
 
         // Add logging.
         var logger = this.LoggerFactory.CreateLogger<PluginSelectionWithFilters>();
@@ -181,7 +181,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         string collectionName,
         int numberOfBestFunctions) : IFunctionInvocationFilter
     {
-        public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
+        public async Task OnFunctionInvocationAsync(Microsoft.SemanticKernel.FunctionInvocationContext context, Func<Microsoft.SemanticKernel.FunctionInvocationContext, Task> next)
         {
             var request = GetRequestArgument(context.Arguments);
 
@@ -280,8 +280,8 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
     }
 
     public class FunctionProvider(
-        ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        IVectorStore vectorStore,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        VectorStore vectorStore,
         IFunctionKeyProvider functionKeyProvider) : IFunctionProvider
     {
         public async Task<List<KernelFunction>> GetBestFunctionsAsync(
@@ -292,14 +292,14 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             CancellationToken cancellationToken = default)
         {
             // Generate embedding for original request.
-            var requestEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(request, cancellationToken: cancellationToken);
+            var requestEmbedding = await embeddingGenerator.GenerateAsync(request, cancellationToken: cancellationToken);
 
             var collection = vectorStore.GetCollection<string, FunctionRecord>(collectionName);
-            await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
+            await collection.EnsureCollectionExistsAsync(cancellationToken);
 
             // Find best functions to call for original request.
-            var searchResults = await collection.VectorizedSearchAsync(requestEmbedding, new() { Top = numberOfBestFunctions }, cancellationToken);
-            var recordKeys = (await searchResults.Results.ToListAsync(cancellationToken)).Select(l => l.Record.Id);
+            var recordKeys = (await collection.SearchAsync(requestEmbedding, top: numberOfBestFunctions, cancellationToken: cancellationToken)
+                .ToListAsync(cancellationToken)).Select(l => l.Record.Id);
 
             return plugins
                 .SelectMany(plugin => plugin)
@@ -309,8 +309,8 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
     }
 
     public class PluginStore(
-        ITextEmbeddingGenerationService textEmbeddingGenerationService,
-        IVectorStore vectorStore,
+        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        VectorStore vectorStore,
         IFunctionKeyProvider functionKeyProvider) : IPluginStore
     {
         public async Task SaveAsync(string collectionName, KernelPluginCollection plugins, CancellationToken cancellationToken = default)
@@ -320,8 +320,8 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             var functionsData = GetFunctionsData(plugins);
 
             // Generate embedding for each function.
-            var embeddings = await textEmbeddingGenerationService
-                .GenerateEmbeddingsAsync(functionsData.Select(l => l.TextToVectorize).ToArray(), cancellationToken: cancellationToken);
+            var embeddings = await embeddingGenerator
+                .GenerateAsync(functionsData.Select(l => l.TextToVectorize).ToArray(), cancellationToken: cancellationToken);
 
             // Create vector store record instances with function information and embedding.
             for (var i = 0; i < functionsData.Count; i++)
@@ -332,16 +332,16 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
                 {
                     Id = functionKeyProvider.GetFunctionKey(function),
                     FunctionInfo = functionInfo,
-                    FunctionInfoEmbedding = embeddings[i]
+                    FunctionInfoEmbedding = embeddings[i].Vector
                 });
             }
 
             // Create collection and upsert all vector store records for search.
             // It's possible to do it only once and re-use the same functions for future requests.
             var collection = vectorStore.GetCollection<string, FunctionRecord>(collectionName);
-            await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
+            await collection.EnsureCollectionExistsAsync(cancellationToken);
 
-            await collection.UpsertBatchAsync(functionRecords, cancellationToken: cancellationToken).ToListAsync(cancellationToken);
+            await collection.UpsertAsync(functionRecords, cancellationToken: cancellationToken);
         }
 
         private static List<(KernelFunction Function, string TextToVectorize)> GetFunctionsData(KernelPluginCollection plugins)
@@ -416,13 +416,13 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
 
     private sealed class FunctionRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string FunctionInfo { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> FunctionInfoEmbedding { get; set; }
     }
 

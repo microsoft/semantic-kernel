@@ -379,13 +379,14 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     }
 
     /// <inheritdoc/>
-    public override KernelFunction Clone(string pluginName)
+    public override KernelFunction Clone(string? pluginName = null)
     {
-        Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
-
-        if (base.JsonSerializerOptions is not null)
+        if (pluginName is not null)
         {
-            return new KernelFunctionFromMethod(
+            Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
+        }
+
+        return new KernelFunctionFromMethod(
             this.UnderlyingMethod!,
             this._function,
             this.Name,
@@ -395,24 +396,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             this.Metadata.ReturnParameter,
             base.JsonSerializerOptions,
             this.Metadata.AdditionalProperties);
-        }
-
-        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Non AOT scenario.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Non AOT scenario.")]
-        KernelFunctionFromMethod Clone()
-        {
-            return new KernelFunctionFromMethod(
-            this.UnderlyingMethod!,
-            this._function,
-            this.Name,
-            pluginName,
-            this.Description,
-            this.Metadata.Parameters,
-            this.Metadata.ReturnParameter,
-            this.Metadata.AdditionalProperties);
-        }
-
-        return Clone();
     }
 
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
@@ -467,10 +450,10 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
         base(functionName, pluginName, description, parameters, returnParameter, additionalMetadata: additionalMetadata)
     {
-        Verify.ValidFunctionName(functionName);
+        KernelVerify.ValidFunctionName(functionName);
 
         this._function = implementationFunc;
-        this.UnderlyingMethod = method;
+        this._underlyingMethod = method;
     }
 
     private KernelFunctionFromMethod(
@@ -485,10 +468,10 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
         base(functionName, pluginName, description, parameters, jsonSerializerOptions, returnParameter, additionalMetadata: additionalMetadata)
     {
-        Verify.ValidFunctionName(functionName);
+        KernelVerify.ValidFunctionName(functionName);
 
         this._function = implementationFunc;
-        this.UnderlyingMethod = method;
+        this._underlyingMethod = method;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
@@ -525,7 +508,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             }
         }
 
-        Verify.ValidFunctionName(functionName);
+        KernelVerify.ValidFunctionName(functionName);
 
         // Build up a list of KernelParameterMetadata for the parameters we expect to be populated
         // from arguments. Some arguments are populated specially, not from arguments, and thus
@@ -546,7 +529,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         }
 
         // Check for param names conflict
-        Verify.ParametersUniqueness(argParameterViews);
+        KernelVerify.ParametersUniqueness(argParameterViews);
 
         // Get the return type and a marshaling func for the return value.
         (Type returnType, Func<Kernel, KernelFunction, object?, ValueTask<FunctionResult>> returnFunc) = GetReturnValueMarshalerDelegate(method);
@@ -811,7 +794,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                 JsonDocument document => document.Deserialize(targetType, jsonSerializerOptions),
                 JsonNode node => node.Deserialize(targetType, jsonSerializerOptions),
                 JsonElement element => element.Deserialize(targetType, jsonSerializerOptions),
-                // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.  
+                // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.
                 // Since we don't take dependencies on these libraries and don't have access to the types here,
                 // the only way to deserialize those types is to convert them to a string first by calling the 'ToString' method.
                 // Attempting to use the 'JsonSerializer.Serialize' method, instead of calling the 'ToString' directly on those types, can lead to unpredictable outcomes.
@@ -1095,7 +1078,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                     {
                         if (input?.GetType() is Type type && converter.CanConvertFrom(type))
                         {
-                            // This line performs string to type conversion 
+                            // This line performs string to type conversion
                             return converter.ConvertFrom(context: null, culture, input);
                         }
 

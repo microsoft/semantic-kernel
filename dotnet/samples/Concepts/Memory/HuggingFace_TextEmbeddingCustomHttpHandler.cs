@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Connectors.SqliteVec;
+using Microsoft.SemanticKernel.Embeddings;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
@@ -15,6 +16,7 @@ namespace Memory;
 /// For example, the <a href="https://huggingface.co/cointegrated/LaBSE-en-ru">cointegrated/LaBSE-en-ru</a> model returns results as a 1 * 1 * 4 * 768 matrix, which is different from Hugging Face embedding generation service implementation.
 /// To address this, a custom <see cref="HttpClientHandler"/> can be used to modify the response before sending it back.
 /// </summary>
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output) : BaseTest(output)
 {
     public async Task RunInferenceApiEmbeddingCustomHttpHandlerAsync()
@@ -30,14 +32,29 @@ public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output
             })
         );
 
-        var sqliteMemory = await SqliteMemoryStore.ConnectAsync("./../../../Sqlite.sqlite");
+        var sqliteCollection = new SqliteCollection<string, Record>(
+            "Data Source=./../../../Sqlite.sqlite",
+            name: "Test",
+            new() { EmbeddingGenerator = hf.AsEmbeddingGenerator() });
 
-        var skMemory = new MemoryBuilder()
-            .WithTextEmbeddingGeneration(hf)
-            .WithMemoryStore(sqliteMemory)
-            .Build();
+        await sqliteCollection.UpsertAsync(new Record
+        {
+            Id = "1",
+            Text = "THIS IS A SAMPLE",
+            Embedding = "An embedding will be generated from this text"
+        });
+    }
 
-        await skMemory.SaveInformationAsync("Test", "THIS IS A SAMPLE", "sample", "TEXT");
+    public class Record
+    {
+        [VectorStoreKey]
+        public string Id { get; set; }
+
+        [VectorStoreData]
+        public string Text { get; set; }
+
+        [VectorStoreVector(Dimensions: 768)]
+        public string Embedding { get; set; }
     }
 
     private sealed class CustomHttpClientHandler : HttpClientHandler

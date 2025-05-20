@@ -4,15 +4,17 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 
 /// <summary>
-/// Inherits common integration tests that should pass for any <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.
+/// Inherits common integration tests that should pass for any <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
 /// <param name="fixture">Weaviate setup and teardown.</param>
 [Collection("WeaviateVectorStoreCollection")]
+[DisableVectorStoreTests(Skip = "Weaviate tests are failing on the build server with connection reset errors, but passing locally.")]
 public class CommonWeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreFixture fixture) : BaseVectorStoreRecordCollectionTests<Guid>
 {
     protected override Guid Key1 => new("11111111-1111-1111-1111-111111111111");
@@ -22,20 +24,20 @@ public class CommonWeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreF
 
     protected override int DelayAfterUploadInMilliseconds => 1000;
 
-    protected override IVectorStoreRecordCollection<Guid, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    protected override VectorStoreCollection<Guid, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreCollectionDefinition? definition)
     {
         // Weaviate collection names must start with an upper case letter.
         var recordCollectionNameChars = recordCollectionName.ToCharArray();
         recordCollectionNameChars[0] = char.ToUpperInvariant(recordCollectionNameChars[0]);
 
-        return new WeaviateVectorStoreRecordCollection<TRecord>(fixture.HttpClient!, new string(recordCollectionNameChars), new()
+        return new WeaviateCollection<Guid, TRecord>(fixture.HttpClient!, new string(recordCollectionNameChars), new()
         {
-            VectorStoreRecordDefinition = vectorStoreRecordDefinition
+            Definition = definition
         });
     }
 
     protected override HashSet<string> GetSupportedDistanceFunctions()
     {
-        return [DistanceFunction.CosineDistance, DistanceFunction.NegativeDotProductSimilarity, DistanceFunction.EuclideanSquaredDistance, DistanceFunction.Hamming, DistanceFunction.ManhattanDistance];
+        return [DistanceFunction.CosineDistance, DistanceFunction.NegativeDotProductSimilarity, DistanceFunction.EuclideanSquaredDistance, DistanceFunction.HammingDistance, DistanceFunction.ManhattanDistance];
     }
 }

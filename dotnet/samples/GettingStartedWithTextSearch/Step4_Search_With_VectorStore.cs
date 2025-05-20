@@ -11,7 +11,7 @@ namespace GettingStartedWithTextSearch;
 
 /// <summary>
 /// This example shows how to create a <see cref="ITextSearch"/> from a
-/// <see cref="IVectorStore"/>.
+/// <see cref="VectorStore"/>.
 /// </summary>
 [Collection("InMemoryVectorStoreCollection")]
 public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVectorStoreFixture fixture) : BaseTest(output)
@@ -23,11 +23,10 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVec
     public async Task UsingInMemoryVectorStoreRecordTextSearchAsync()
     {
         // Use embedding generation service and record collection for the fixture.
-        var textEmbeddingGeneration = fixture.TextEmbeddingGenerationService;
-        var vectorizedSearch = fixture.VectorStoreRecordCollection;
+        var collection = fixture.VectorStoreRecordCollection;
 
         // Create a text search instance using the InMemory vector store.
-        var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration);
+        var textSearch = new VectorStoreTextSearch<DataModel>(collection);
 
         // Search and return results as TextSearchResult items
         var query = "What is the Semantic Kernel?";
@@ -56,11 +55,11 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVec
         Kernel kernel = kernelBuilder.Build();
 
         // Use embedding generation service and record collection for the fixture.
-        var textEmbeddingGeneration = fixture.TextEmbeddingGenerationService;
-        var vectorizedSearch = fixture.VectorStoreRecordCollection;
+        var embeddingGenerator = fixture.EmbeddingGenerator;
+        var collection = fixture.VectorStoreRecordCollection;
 
         // Create a text search instance using the InMemory vector store.
-        var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration);
+        var textSearch = new VectorStoreTextSearch<DataModel>(collection);
 
         // Build a text search plugin with vector store search and add to the kernel
         var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");
@@ -69,14 +68,14 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVec
         // Invoke prompt and use text search plugin to provide grounding information
         var query = "What is the Semantic Kernel?";
         string promptTemplate = """
-            {{#with (SearchPlugin-GetTextSearchResults query)}}  
-              {{#each this}}  
+            {{#with (SearchPlugin-GetTextSearchResults query)}}
+              {{#each this}}
                 Name: {{Name}}
                 Value: {{Value}}
                 Link: {{Link}}
                 -----------------
-              {{/each}}  
-            {{/with}}  
+              {{/each}}
+            {{/with}}
 
             {{query}}
 
@@ -107,11 +106,11 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVec
         Kernel kernel = kernelBuilder.Build();
 
         // Use embedding generation service and record collection for the fixture.
-        var textEmbeddingGeneration = fixture.TextEmbeddingGenerationService;
-        var vectorizedSearch = fixture.VectorStoreRecordCollection;
+        var embeddingGenerator = fixture.EmbeddingGenerator;
+        var collection = fixture.VectorStoreRecordCollection;
 
         // Create a text search instance using the InMemory vector store.
-        var textSearch = new VectorStoreTextSearch<DataModel>(vectorizedSearch, textEmbeddingGeneration);
+        var textSearch = new VectorStoreTextSearch<DataModel>(collection);
 
         // Build a text search plugin with vector store search and add to the kernel
         var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");

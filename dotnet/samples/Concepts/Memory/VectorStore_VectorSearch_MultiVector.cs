@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.AI.OpenAI;
 using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Embeddings;
 
 namespace Memory;
 
@@ -23,44 +23,40 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
     public async Task VectorSearchWithMultiVectorRecordAsync()
     {
         // Create an embedding generation service.
-        var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
-                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                new AzureCliCredential());
+        var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
+            .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
+            .AsIEmbeddingGenerator(1536);
 
         // Construct an InMemory vector store.
         var vectorStore = new InMemoryVectorStore();
 
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<int, Product>("skproducts");
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create product records and generate embeddings for them.
         var productRecords = CreateProductRecords().ToList();
         var tasks = productRecords.Select(entry => Task.Run(async () =>
         {
-            var descriptionEmbeddingTask = textEmbeddingGenerationService.GenerateEmbeddingAsync(entry.Description);
-            var featureListEmbeddingTask = textEmbeddingGenerationService.GenerateEmbeddingAsync(string.Join("\n", entry.FeatureList));
+            var descriptionEmbeddingTask = embeddingGenerator.GenerateAsync(entry.Description);
+            var featureListEmbeddingTask = embeddingGenerator.GenerateAsync(string.Join("\n", entry.FeatureList));
 
-            entry.DescriptionEmbedding = await descriptionEmbeddingTask;
-            entry.FeatureListEmbedding = await featureListEmbeddingTask;
+            entry.DescriptionEmbedding = (await descriptionEmbeddingTask).Vector;
+            entry.FeatureListEmbedding = (await featureListEmbeddingTask).Vector;
         }));
         await Task.WhenAll(tasks);
 
-        // Upsert the product records into the collection and return their keys.
-        var upsertedKeysTasks = productRecords.Select(x => collection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        // Upsert the product records into the collection.
+        await collection.UpsertAsync(productRecords);
 
         // Search the store using the description embedding.
         var searchString = "I am looking for a reasonably priced coffee maker";
-        var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var searchResult = await collection.VectorizedSearchAsync(
-            searchVector, new()
+        var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
+        var resultRecords = await collection.SearchAsync(
+            searchVector, top: 1, new()
             {
-                Top = 1,
                 VectorProperty = r => r.DescriptionEmbedding
-            });
-        var resultRecords = await searchResult.Results.ToListAsync();
+            }).ToListAsync();
 
         WriteLine("Search string: " + searchString);
         WriteLine("Result: " + resultRecords.First().Record.Description);
@@ -69,15 +65,14 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
 
         // Search the store using the feature list embedding.
         searchString = "I am looking for a handheld vacuum cleaner that will remove pet hair";
-        searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        searchResult = await collection.VectorizedSearchAsync(
+        searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
+        resultRecords = await collection.SearchAsync(
             searchVector,
+            top: 1,
             new()
             {
-                Top = 1,
                 VectorProperty = r => r.FeatureListEmbedding
-            });
-        resultRecords = await searchResult.Results.ToListAsync();
+            }).ToListAsync();
 
         WriteLine("Search string: " + searchString);
         WriteLine("Result: " + resultRecords.First().Record.Description);
@@ -129,19 +124,19 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
     /// </remarks>
     private sealed class Product
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public int Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Description { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public List<string> FeatureList { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DescriptionEmbedding { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> FeatureListEmbedding { get; set; }
     }
 }

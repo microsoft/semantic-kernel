@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Services;
@@ -7,6 +8,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Services;
 
+[Obsolete("Temporary test for Obsolete ITextEmbeddingGenerationService")]
 public sealed class VertexAITextEmbeddingGenerationServiceTests
 {
     [Fact]

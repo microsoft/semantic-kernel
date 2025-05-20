@@ -5,7 +5,6 @@ using System.Net.Http;
 #pragma warning restore IDE0005 // Using directive is unnecessary.
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Pinecone;
 using VectorDataSpecificationTests.Support;
@@ -28,12 +27,15 @@ internal sealed class PineconeTestStore : TestStore
     public static PineconeTestStore Instance { get; } = new();
 
     private IContainer? _container;
-    private Pinecone.PineconeClient? _client;
-    private PineconeVectorStore? _defaultVectorStore;
+    private PineconeClient? _client;
+    private ClientOptions? _clientOptions;
 
-    public Pinecone.PineconeClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
+    public PineconeClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
 
-    public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+    public ClientOptions ClientOptions => this._clientOptions ?? throw new InvalidOperationException("Not initialized");
+
+    public PineconeVectorStore GetVectorStore(PineconeVectorStoreOptions options)
+        => new(this.Client, options);
 
     // Pinecone does not support distance functions other than PGA which is always enabled.
     public override string DefaultIndexKind => "";
@@ -56,7 +58,7 @@ internal sealed class PineconeTestStore : TestStore
             Port = this._container.GetMappedPublicPort(FirstPort)
         };
 
-        ClientOptions clientOptions = new()
+        this._clientOptions = new()
         {
             BaseUrl = baseAddress.Uri.ToString(),
             MaxRetries = 0,
@@ -70,11 +72,11 @@ internal sealed class PineconeTestStore : TestStore
             }
         };
 
-        this._client = new Pinecone.PineconeClient(
+        this._client = new(
             apiKey: "ForPineconeLocalTheApiKeysAreIgnored",
-            clientOptions: clientOptions);
+            clientOptions: this._clientOptions);
 
-        this._defaultVectorStore = new(this._client);
+        this.DefaultVectorStore = new PineconeVectorStore(this._client);
     }
 
     protected override async Task StopAsync()

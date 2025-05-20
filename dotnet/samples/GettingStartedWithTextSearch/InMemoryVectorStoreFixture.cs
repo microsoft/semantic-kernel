@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Reflection;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Data;
-using Microsoft.SemanticKernel.Embeddings;
+using OpenAI;
 
 namespace GettingStartedWithTextSearch;
 
@@ -15,11 +15,11 @@ namespace GettingStartedWithTextSearch;
 /// </summary>
 public class InMemoryVectorStoreFixture : IAsyncLifetime
 {
-    public ITextEmbeddingGenerationService TextEmbeddingGenerationService { get; private set; }
+    public IEmbeddingGenerator<string, Embedding<float>> EmbeddingGenerator { get; private set; }
 
     public InMemoryVectorStore InMemoryVectorStore { get; private set; }
 
-    public IVectorStoreRecordCollection<Guid, DataModel> VectorStoreRecordCollection { get; private set; }
+    public VectorStoreCollection<Guid, DataModel> VectorStoreRecordCollection { get; private set; }
 
     public string CollectionName => "records";
 
@@ -35,19 +35,19 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
             .Build();
         TestConfiguration.Initialize(configRoot);
 
-        // Create an InMemory vector store.
-        this.InMemoryVectorStore = new InMemoryVectorStore();
-
         // Create an embedding generation service.
-        this.TextEmbeddingGenerationService = new OpenAITextEmbeddingGenerationService(
-                TestConfiguration.OpenAI.EmbeddingModelId,
-                TestConfiguration.OpenAI.ApiKey);
+        this.EmbeddingGenerator = new OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+            .GetEmbeddingClient(TestConfiguration.OpenAI.EmbeddingModelId)
+            .AsIEmbeddingGenerator();
+
+        // Create an InMemory vector store.
+        this.InMemoryVectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = this.EmbeddingGenerator });
     }
 
     /// <inheritdoc/>
     public async Task DisposeAsync()
     {
-        await this.VectorStoreRecordCollection.DeleteCollectionAsync().ConfigureAwait(false);
+        await this.VectorStoreRecordCollection.EnsureCollectionDeletedAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -58,9 +58,9 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
 
     #region private
     /// <summary>
-    /// Initialize a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with a list of strings.
+    /// Initialize a <see cref="VectorStoreCollection{TKey, TRecord}"/> with a list of strings.
     /// </summary>
-    private async Task<IVectorStoreRecordCollection<Guid, DataModel>> InitializeRecordCollectionAsync()
+    private async Task<VectorStoreCollection<Guid, DataModel>> InitializeRecordCollectionAsync()
     {
         // Delegate which will create a record.
         static DataModel CreateRecord(int index, string text, ReadOnlyMemory<float> embedding)
@@ -72,7 +72,6 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
                 Text = text,
                 Link = $"guid://{guid}",
                 Tag = index % 2 == 0 ? "Even" : "Odd",
-                Embedding = embedding
             };
         }
 
@@ -101,27 +100,28 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
     internal delegate TRecord CreateRecord<TKey, TRecord>(int index, string text, ReadOnlyMemory<float> vector) where TKey : notnull;
 
     /// <summary>
-    /// Create a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> from a list of strings by:
-    /// 1. Creating an instance of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>
+    /// Create a <see cref="VectorStoreCollection{TKey, TRecord}"/> from a list of strings by:
+    /// 1. Creating an instance of <see cref="VectorStoreCollection{TKey, TRecord}"/>
     /// 2. Generating embeddings for each string.
     /// 3. Creating a record with a valid key for each string and it's embedding.
     /// 4. Insert the records into the collection.
     /// </summary>
     /// <param name="entries">A list of strings.</param>
     /// <param name="createRecord">A delegate which can create a record with a valid key for each string and it's embedding.</param>
-    private async Task<IVectorStoreRecordCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
+    private async Task<VectorStoreCollection<TKey, TRecord>> CreateCollectionFromListAsync<TKey, TRecord>(
         string[] entries,
         CreateRecord<TKey, TRecord> createRecord)
         where TKey : notnull
+        where TRecord : class
     {
         // Get and create collection if it doesn't exist.
         var collection = this.InMemoryVectorStore.GetCollection<TKey, TRecord>(this.CollectionName);
-        await collection.CreateCollectionIfNotExistsAsync().ConfigureAwait(false);
+        await collection.EnsureCollectionExistsAsync().ConfigureAwait(false);
 
         // Create records and generate embeddings for them.
         var tasks = entries.Select((entry, i) => Task.Run(async () =>
         {
-            var record = createRecord(i, entry, await this.TextEmbeddingGenerationService.GenerateEmbeddingAsync(entry).ConfigureAwait(false));
+            var record = createRecord(i, entry, (await this.EmbeddingGenerator.GenerateAsync(entry).ConfigureAwait(false)).Vector);
             await collection.UpsertAsync(record).ConfigureAwait(false);
         }));
         await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -138,23 +138,23 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
     /// </remarks>
     public sealed class DataModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         [TextSearchResultName]
         public Guid Key { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         [TextSearchResultValue]
         public string Text { get; init; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         [TextSearchResultLink]
         public string Link { get; init; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreData(IsIndexed = true)]
         public required string Tag { get; init; }
 
-        [VectorStoreRecordVector(1536)]
-        public ReadOnlyMemory<float> Embedding { get; init; }
+        [VectorStoreVector(1536)]
+        public string Embedding => Text;
     }
     #endregion
 }

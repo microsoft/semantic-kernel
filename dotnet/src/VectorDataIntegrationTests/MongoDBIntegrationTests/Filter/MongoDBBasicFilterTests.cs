@@ -14,7 +14,9 @@ public class MongoDBBasicFilterTests(MongoDBBasicFilterTests.Fixture fixture)
     // Specialized MongoDB syntax for NOT over Contains ($nin)
     [ConditionalFact]
     public virtual Task Not_over_Contains()
-        => this.TestFilterAsync(r => !new[] { 8, 10 }.Contains(r.Int));
+        => this.TestFilterAsync(
+            r => !new[] { 8, 10 }.Contains(r.Int),
+            r => !new[] { 8, 10 }.Contains((int)r["Int"]!));
 
     #region Null checking
 
@@ -30,6 +32,9 @@ public class MongoDBBasicFilterTests(MongoDBBasicFilterTests.Fixture fixture)
 
     public override Task NotEqual_with_null_captured()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.NotEqual_with_null_captured());
+
+    public override Task Equal_int_property_with_null_nullable_int()
+        => Assert.ThrowsAsync<NotSupportedException>(() => base.Equal_int_property_with_null_nullable_int());
 
     #endregion
 

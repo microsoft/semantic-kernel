@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>VectorData.UnitTests</AssemblyName>
+    <RootNamespace>VectorData.UnitTests</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsTestProject>true</IsTestProject>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);VSTHRD111,CA2007,CS8618</NoWarn>
+    <NoWarn>$(NoWarn);MEVD9001</NoWarn>
+    <!-- Experimental MEVD connector-facing APIs -->
+
+    <NoWarn>$(NoWarn);CA1515</NoWarn> <!-- Because an application's API isn't typically referenced from outside the assembly, types can be made internal -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn> <!-- Remove the underscores from member name -->
+    <NoWarn>$(NoWarn);CA1716</NoWarn> <!-- Rename virtual/interface member so that it no longer conflicts with the reserved language keyword -->
+    <NoWarn>$(NoWarn);CA1720</NoWarn> <!-- Identifier contains type name -->
+    <NoWarn>$(NoWarn);CA1721</NoWarn> <!-- The property name X is confusing given the existence of method Y. Rename or remove one of these members. -->
+    <NoWarn>$(NoWarn);CA1861</NoWarn> <!-- Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array -->
+    <NoWarn>$(NoWarn);CA1863</NoWarn> <!-- Cache a 'CompositeFormat' for repeated use in this formatting operation -->
+    <NoWarn>$(NoWarn);CA2007;VSTHRD111</NoWarn> <!-- Consider calling ConfigureAwait on the awaited task -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn> <!-- Missing XML comment for publicly visible type or member -->
+    <NoWarn>$(NoWarn);IDE1006</NoWarn> <!-- Naming rule violation: Missing suffix: 'Async' -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

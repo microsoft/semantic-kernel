@@ -7,10 +7,13 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel, ValidationError
 
 from semantic_kernel.agents import OpenAIAssistantAgent
+from semantic_kernel.agents.agent import AgentResponseItem
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantAgentThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
@@ -116,21 +119,6 @@ def test_configure_response_format_invalid_input_type():
 
 
 @pytest.mark.parametrize(
-    "message",
-    [
-        pytest.param(ChatMessageContent(role=AuthorRole.USER, content="text")),
-        pytest.param("text"),
-    ],
-)
-async def test_open_ai_assistant_agent_add_chat_message(message, openai_client, assistant_definition):
-    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
-    with patch(
-        "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.create_message",
-    ):
-        await agent.add_chat_message("threadId", message)
-
-
-@pytest.mark.parametrize(
     "arguments, include_args",
     [
         pytest.param({"extra_args": "extra_args"}, True),
@@ -220,6 +208,46 @@ async def test_open_ai_assistant_agent_invoke(arguments, include_args, openai_cl
     assert len(results) == 1
 
 
+async def test_open_ai_assistant_agent_invoke_message_ordering(openai_client, assistant_definition):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
+    mock_thread = AsyncMock(spec=AssistantAgentThread)
+
+    tool_call_msg = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        content="",
+        items=[FunctionCallContent(name="ToolA", arguments="{}")],
+    )
+    tool_result_msg = ChatMessageContent(
+        role=AuthorRole.ASSISTANT,
+        content="",
+        items=[FunctionResultContent(name="ToolA", result="$9.99", id="func_1")],
+    )
+    assistant_msg = ChatMessageContent(role=AuthorRole.ASSISTANT, content="Here is your answer.")
+
+    emitted_callback_messages = []
+    yielded_messages = []
+
+    async def on_intermediate_message(msg: ChatMessageContent):
+        emitted_callback_messages.append(msg)
+
+    async def fake_invoke(*args, **kwargs):
+        yield False, tool_call_msg
+        yield False, tool_result_msg
+        yield True, assistant_msg
+
+    with patch(
+        "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke",
+        side_effect=fake_invoke,
+    ):
+        async for item in agent.invoke(
+            messages="test", thread=mock_thread, on_intermediate_message=on_intermediate_message
+        ):
+            yielded_messages.append(item)
+
+    assert emitted_callback_messages == [tool_call_msg, tool_result_msg]
+    assert yielded_messages == [AgentResponseItem(message=assistant_msg, thread=mock_thread)]
+
+
 @pytest.mark.parametrize(
     "arguments, include_args",
     [
@@ -268,31 +296,33 @@ async def test_open_ai_assistant_agent_invoke_stream_with_on_new_message_callbac
     async def handle_stream_completion(message: ChatMessageContent) -> None:
         final_chat_history.add_message(message)
 
-    # Fake collected messages
-    fake_message = StreamingChatMessageContent(role=AuthorRole.ASSISTANT, content="fake content", choice_index=0)
+    tool_msg = ChatMessageContent(
+        role=AuthorRole.ASSISTANT, content="", items=[FunctionCallContent(name="ToolA", arguments="{}")]
+    )
+
+    streamed_msg = StreamingChatMessageContent(role=AuthorRole.ASSISTANT, content="fake content", choice_index=0)
 
     async def fake_invoke(*args, output_messages=None, **kwargs):
         if output_messages is not None:
-            output_messages.append(fake_message)
-        yield fake_message
+            output_messages.append(tool_msg)
+        yield streamed_msg
 
-    kwargs = None
-    if include_args:
-        kwargs = arguments
+    kwargs = arguments if include_args else {}
 
     with patch(
         "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke_stream",
         side_effect=fake_invoke,
     ):
         async for item in agent.invoke_stream(
-            messages="test", thread=mock_thread, on_intermediate_message=handle_stream_completion, **(kwargs or {})
+            messages="test", thread=mock_thread, on_intermediate_message=handle_stream_completion, **kwargs
         ):
             results.append(item)
 
     assert len(results) == 1
     assert results[0].message.content == "fake content"
+
     assert len(final_chat_history.messages) == 1
-    assert final_chat_history.messages[0].content == "fake content"
+    assert final_chat_history.messages[0] == tool_msg
 
 
 def test_open_ai_assistant_agent_get_channel_keys(openai_client, assistant_definition):

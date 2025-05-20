@@ -4,9 +4,6 @@ import logging
 from collections.abc import Callable, Coroutine, Mapping
 from typing import TYPE_CHECKING, Any
 
-from aiortc import (
-    MediaStreamTrack,
-)
 from numpy import ndarray
 from openai import AsyncOpenAI
 from pydantic import ValidationError
@@ -25,6 +22,7 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from aiortc.mediastreams import MediaStreamTrack
+    from numpy import ndarray
 
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -44,7 +42,7 @@ class OpenAIRealtimeWebRTC(OpenAIRealtimeWebRTCBase, OpenAIConfigBase):
     def __init__(
         self,
         audio_track: "MediaStreamTrack",
-        audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None,
+        audio_output_callback: Callable[["ndarray"], Coroutine[Any, Any, None]] | None = None,
         ai_model_id: str | None = None,
         api_key: str | None = None,
         org_id: str | None = None,
@@ -58,6 +56,8 @@ class OpenAIRealtimeWebRTC(OpenAIRealtimeWebRTCBase, OpenAIConfigBase):
         """Initialize an OpenAIRealtime service.
 
         Args:
+            audio_track: The audio track to use for the service, only used by WebRTC.
+                It can be any class that implements the AudioStreamTrack interface.
             audio_output_callback: The audio output callback, optional.
                 This should be a coroutine, that takes a ndarray with audio as input.
                 The goal of this function is to allow you to play the audio with the
@@ -65,9 +65,6 @@ class OpenAIRealtimeWebRTC(OpenAIRealtimeWebRTCBase, OpenAIConfigBase):
                 It can also be set in the `receive` method.
                 Even when passed, the audio content will still be
                 added to the receiving queue.
-            audio_track: The audio track to use for the service, only used by WebRTC.
-                A default is supplied if not provided.
-                It can be any class that implements the AudioStreamTrack interface.
             ai_model_id (str | None): OpenAI model name, see
                 https://platform.openai.com/docs/models
             service_id (str | None): Service ID tied to the execution settings.
@@ -125,7 +122,7 @@ class OpenAIRealtimeWebsocket(OpenAIRealtimeWebsocketBase, OpenAIConfigBase):
 
     def __init__(
         self,
-        audio_output_callback: Callable[[ndarray], Coroutine[Any, Any, None]] | None = None,
+        audio_output_callback: Callable[["ndarray"], Coroutine[Any, Any, None]] | None = None,
         ai_model_id: str | None = None,
         api_key: str | None = None,
         org_id: str | None = None,

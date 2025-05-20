@@ -8,7 +8,9 @@ using Xunit;
 namespace SemanticKernel.Functions.UnitTests.OpenApi.Extensions;
 public sealed class ApiManifestKernelExtensionsTests
 {
-    [Fact]
+    private const string SkipReason = "Failing intermittently in the integration pipeline with a 429 HTTP status code. To be migrated to the integration tests project.";
+
+    [Fact(Skip = SkipReason)]
     public async Task ItCanCreatePluginFromApiManifestAsync()
     {
         // Act
@@ -24,7 +26,7 @@ public sealed class ApiManifestKernelExtensionsTests
         Assert.Equal(3, plugin.FunctionCount);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanCreatePluginFromApiManifestWithDescriptionParameterAsync()
     {
         // Act
@@ -41,7 +43,7 @@ public sealed class ApiManifestKernelExtensionsTests
         Assert.Equal(description, plugin.Description);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanCreatePluginFromApiManifestWithEmptyDescriptionParameterAsync()
     {
         // Act
@@ -57,7 +59,7 @@ public sealed class ApiManifestKernelExtensionsTests
         Assert.Empty(plugin.Description);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanImportPluginFromApiManifestAsync()
     {
         // Act
@@ -74,7 +76,7 @@ public sealed class ApiManifestKernelExtensionsTests
         Assert.Single(kernel.Plugins);
     }
 
-    [Fact]
+    [Fact(Skip = SkipReason)]
     public async Task ItCanImportPluginFromApiManifestWithDescriptionParameterAsync()
     {
         // Act
@@ -89,5 +91,46 @@ public sealed class ApiManifestKernelExtensionsTests
         // Assert
         Assert.NotNull(plugin);
         Assert.Equal(description, plugin.Description);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanImportPluginFromApiManifestWithLocalAndRemoteApiDescriptionUrlAsync()
+    {
+        // Act
+        var kernel = new Kernel();
+        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "OpenApi", "TestPlugins");
+        var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest-local.json");
+
+        // Arrange
+        var plugin = await kernel.ImportPluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath);
+
+        // Assert
+        Assert.NotNull(plugin);
+        Assert.Equal(2, plugin.FunctionCount);
+    }
+
+    [Fact(Skip = SkipReason)]
+    // Verify that functions are correctly imported
+    public async Task VerifyPluginFunctionsFromApiManifestAsync()
+    {
+        // Act
+        var kernel = new Kernel();
+        var testPluginsDir = Path.Combine(Directory.GetCurrentDirectory(), "OpenApi", "TestPlugins");
+        var manifestFilePath = Path.Combine(testPluginsDir, "example-apimanifest-local.json");
+
+        // Arrange
+        var plugin = await kernel.ImportPluginFromApiManifestAsync("ApiManifestPlugin", manifestFilePath);
+
+        // Assert
+        Assert.NotNull(plugin);
+        Assert.Equal(2, plugin.FunctionCount);
+
+        // Assert functions imported from local openapi.json
+        Assert.True(plugin.Contains("listRepairs"));
+        Assert.Contains(plugin["listRepairs"].Metadata.AdditionalProperties, static p => p.Key == "method" && p.Value?.ToString() == "GET");
+
+        // Assert functions imported from remote openapi.json
+        Assert.True(plugin.Contains("directoryObject_GetDirectoryObject"));
+        Assert.Contains(plugin["directoryObject_GetDirectoryObject"].Metadata.AdditionalProperties, static p => p.Key == "method" && p.Value?.ToString() == "GET");
     }
 }
