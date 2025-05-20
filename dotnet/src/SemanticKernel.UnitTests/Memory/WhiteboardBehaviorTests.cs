@@ -35,7 +35,7 @@ public class WhiteboardBehaviorTests
             .ReturnsAsync(new ChatResponse(new ChatMessage(ChatRole.Assistant, """{"newWhiteboard":["REQUIREMENT - User wants to create a presentation."]}""")));
 
         // Act
-        await sut.OnNewMessageAsync(null, chatMessage);
+        await sut.MessageAddingAsync(null, chatMessage);
 
         // Assert
         this._mockChatClient.Verify(service => service.GetResponseAsync(
@@ -44,7 +44,7 @@ public class WhiteboardBehaviorTests
             It.IsAny<CancellationToken>()), Times.Once);
 
         await sut.WhenProcessingCompleteAsync();
-        var actualContext = await sut.OnModelInvokeAsync([chatMessage]);
+        var actualContext = await sut.ModelInvokingAsync([chatMessage]);
         Assert.Contains("REQUIREMENT - User wants to create a presentation", actualContext.Instructions);
     }
 }

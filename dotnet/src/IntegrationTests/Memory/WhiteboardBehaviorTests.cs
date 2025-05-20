@@ -141,12 +141,12 @@ public class WhiteboardBehaviorTests
         // Act
         foreach (var chatMessage in chatMessages)
         {
-            await whiteboardBehavior.OnNewMessageAsync(null, chatMessage);
+            await whiteboardBehavior.MessageAddingAsync(null, chatMessage);
         }
 
         // Assert
         await whiteboardBehavior.WhenProcessingCompleteAsync();
-        var aiContextAdditions = await whiteboardBehavior.OnModelInvokeAsync(new List<ChatMessage> { new(ChatRole.User, string.Empty) });
+        var aiContextAdditions = await whiteboardBehavior.ModelInvokingAsync(new List<ChatMessage> { new(ChatRole.User, string.Empty) });
         var whiteboardContent = aiContextAdditions.Instructions!;
         this._output.WriteLine(string.Join(Environment.NewLine, whiteboardContent));
 

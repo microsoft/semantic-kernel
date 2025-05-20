@@ -20,7 +20,7 @@ namespace Agents;
 /// <remarks>
 /// This example shows how to use the <see cref="TextSearchStore{TKey}"/> class which is designed
 /// to simplify the process of storing and searching text documents by having a built in schema.
-/// If you want to control the schema yourself, you can use an implementation of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>
+/// If you want to control the schema yourself, you can use an implementation of <see cref="VectorStoreCollection{TKey, TRecord}"/>
 /// with the <see cref="VectorStoreTextSearch{TRecord}"/> class instead.
 /// </remarks>
 public class ChatCompletion_Rag(ITestOutputHelper output) : BaseTest(output)

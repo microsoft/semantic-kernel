@@ -84,7 +84,7 @@ public sealed class Mem0Behavior : AIContextBehavior
     }
 
     /// <inheritdoc/>
-    public override Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
+    public override Task ThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
     {
         this.ValidatePerOperationThreadId(threadId);
 
@@ -93,7 +93,7 @@ public sealed class Mem0Behavior : AIContextBehavior
     }
 
     /// <inheritdoc/>
-    public override async Task OnNewMessageAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
+    public override async Task MessageAddingAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessage);
         this.ValidatePerOperationThreadId(threadId);
@@ -123,7 +123,7 @@ public sealed class Mem0Behavior : AIContextBehavior
     }
 
     /// <inheritdoc/>
-    public override async Task<AIContextPart> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override async Task<AIContextPart> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessages);
 

@@ -122,7 +122,7 @@ public sealed class BedrockAgent : Agent
 
         // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var behaviorsContext = await bedrockThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        var behaviorsContext = await bedrockThread.AIContextBehaviors.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Ensure that the last message provided is a user message
@@ -358,7 +358,7 @@ public sealed class BedrockAgent : Agent
 
         // Get the context contributions from the AIContextBehaviors.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var behaviorsContext = await bedrockThread.AIContextBehaviors.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        var behaviorsContext = await bedrockThread.AIContextBehaviors.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Ensure that the last message provided is a user message

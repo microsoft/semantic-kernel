@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// <para>
 /// This class provides an opinionated schema for storing documents in a vector store. It is valuable for simple scenarios
 /// where you want to store text + embedding, or a reference to an external document + embedding without needing to customize the schema.
-/// If you want to control the schema yourself, you can use an implementation of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>
+/// If you want to control the schema yourself, you can use an implementation of <see cref="VectorStoreCollection{TKey, TRecord}"/>
 /// with the <see cref="VectorStoreTextSearch{TRecord}"/> class instead.
 /// </para>
 /// <para>
@@ -27,14 +27,16 @@ namespace Microsoft.SemanticKernel.Data;
 /// </remarks>
 /// <typeparam name="TKey">The key type to use with the vector store. Choose a key type supported by your chosen vector store type. Currently this class only supports string or Guid.</typeparam>
 [Experimental("SKEXP0130")]
+[RequiresDynamicCode("This API is not compatible with NativeAOT.")]
+[RequiresUnreferencedCode("This API is not compatible with trimming.")]
 public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
     where TKey : notnull
 {
-    private readonly IVectorStore _vectorStore;
+    private readonly VectorStore _vectorStore;
     private readonly int _vectorDimensions;
     private readonly TextSearchStoreOptions _options;
 
-    private readonly Lazy<IVectorStoreRecordCollection<TKey, TextRagStorageDocument<TKey>>> _vectorStoreRecordCollection;
+    private readonly Lazy<VectorStoreCollection<TKey, TextRagStorageDocument<TKey>>> _vectorStoreRecordCollection;
     private readonly SemaphoreSlim _collectionInitializationLock = new(1, 1);
     private bool _collectionInitialized = false;
     private bool _disposedValue;
@@ -48,7 +50,7 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// <param name="options">Options to configure the behavior of this class.</param>
     /// <exception cref="NotSupportedException">Thrown if the key type provided is not supported.</exception>
     public TextSearchStore(
-        IVectorStore vectorStore,
+        VectorStore vectorStore,
         string collectionName,
         int vectorDimensions,
         TextSearchStoreOptions? options = default)
@@ -74,21 +76,21 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
         this._options = options ?? new TextSearchStoreOptions();
 
         // Create a definition so that we can use the dimensions provided at runtime.
-        VectorStoreRecordDefinition ragDocumentDefinition = new()
+        VectorStoreCollectionDefinition ragDocumentDefinition = new()
         {
-            Properties = new List<VectorStoreRecordProperty>()
+            Properties = new List<VectorStoreProperty>()
             {
-                new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                new VectorStoreRecordDataProperty("Namespaces", typeof(List<string>)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("SourceId", typeof(string)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordDataProperty("SourceName", typeof(string)),
-                new VectorStoreRecordDataProperty("SourceLink", typeof(string)),
-                new VectorStoreRecordVectorProperty("TextEmbedding", typeof(string), vectorDimensions),
+                new VectorStoreKeyProperty("Key", typeof(TKey)),
+                new VectorStoreDataProperty("Namespaces", typeof(List<string>)) { IsIndexed = true },
+                new VectorStoreDataProperty("SourceId", typeof(string)) { IsIndexed = true },
+                new VectorStoreDataProperty("Text", typeof(string)),
+                new VectorStoreDataProperty("SourceName", typeof(string)),
+                new VectorStoreDataProperty("SourceLink", typeof(string)),
+                new VectorStoreVectorProperty("TextEmbedding", typeof(string), vectorDimensions),
             }
         };
 
-        this._vectorStoreRecordCollection = new Lazy<IVectorStoreRecordCollection<TKey, TextRagStorageDocument<TKey>>>(() =>
+        this._vectorStoreRecordCollection = new Lazy<VectorStoreCollection<TKey, TextRagStorageDocument<TKey>>>(() =>
             this._vectorStore.GetCollection<TKey, TextRagStorageDocument<TKey>>(collectionName, ragDocumentDefinition));
     }
 
@@ -277,7 +279,7 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The created collection.</returns>
-    private async Task<IVectorStoreRecordCollection<TKey, TextRagStorageDocument<TKey>>> EnsureCollectionExistsAsync(CancellationToken cancellationToken)
+    private async Task<VectorStoreCollection<TKey, TextRagStorageDocument<TKey>>> EnsureCollectionExistsAsync(CancellationToken cancellationToken)
     {
         var vectorStoreRecordCollection = this._vectorStoreRecordCollection.Value;
 
@@ -301,7 +303,7 @@ public sealed class TextSearchStore<TKey> : ITextSearch, IDisposable
         // Only the winning thread should reach this point and create the collection.
         try
         {
-            await vectorStoreRecordCollection.CreateCollectionIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
+            await vectorStoreRecordCollection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
             this._collectionInitialized = true;
         }
         finally

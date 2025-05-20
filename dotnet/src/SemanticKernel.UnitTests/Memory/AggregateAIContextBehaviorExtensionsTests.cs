@@ -12,32 +12,32 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
-/// Tests for the AIContextBehaviorsManagerExtensions class.
+/// Tests for the AggregateAIContextBehaviorExtensions class.
 /// </summary>
-public class AIContextBehaviorsManagerExtensionsTests
+public class AggregateAIContextBehaviorExtensionsTests
 {
     [Fact]
     public async Task OnNewMessageShouldConvertMessageAndInvokeRegisteredPartsAsync()
     {
         // Arrange
-        var manager = new AIContextBehaviorsManager();
+        var manager = new AggregateAIContextBehavior();
         var partMock = new Mock<AIContextBehavior>();
         manager.Add(partMock.Object);
 
         var newMessage = new ChatMessageContent(AuthorRole.User, "Test Message");
 
         // Act
-        await manager.OnNewMessageAsync("test-thread-id", newMessage);
+        await manager.MessageAddingAsync("test-thread-id", newMessage);
 
         // Assert
-        partMock.Verify(x => x.OnNewMessageAsync("test-thread-id", It.Is<ChatMessage>(m => m.Text == "Test Message" && m.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
+        partMock.Verify(x => x.MessageAddingAsync("test-thread-id", It.Is<ChatMessage>(m => m.Text == "Test Message" && m.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task OnAIInvocationShouldConvertMessagesInvokeRegisteredPartsAsync()
     {
         // Arrange
-        var manager = new AIContextBehaviorsManager();
+        var manager = new AggregateAIContextBehavior();
         var partMock = new Mock<AIContextBehavior>();
         manager.Add(partMock.Object);
 
@@ -48,14 +48,14 @@ public class AIContextBehaviorsManagerExtensionsTests
         };
 
         partMock
-            .Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AIContextPart { Instructions = "Combined Context" });
 
         // Act
-        var result = await manager.OnModelInvokeAsync(messages);
+        var result = await manager.ModelInvokingAsync(messages);
 
         // Assert
         Assert.Equal("Combined Context", result.Instructions);
-        partMock.Verify(x => x.OnModelInvokeAsync(It.Is<ICollection<ChatMessage>>(m => m.Count == 2), It.IsAny<CancellationToken>()), Times.Once);
+        partMock.Verify(x => x.ModelInvokingAsync(It.Is<ICollection<ChatMessage>>(m => m.Count == 2), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

@@ -14,16 +14,16 @@ namespace SemanticKernel.UnitTests.Data;
 
 public class TextSearchStoreTests
 {
-    private readonly Mock<IVectorStore> _vectorStoreMock;
-    private readonly Mock<IVectorStoreRecordCollection<string, TextSearchStore<string>.TextRagStorageDocument<string>>> _recordCollectionMock;
+    private readonly Mock<VectorStore> _vectorStoreMock;
+    private readonly Mock<VectorStoreCollection<string, TextSearchStore<string>.TextRagStorageDocument<string>>> _recordCollectionMock;
 
     public TextSearchStoreTests()
     {
-        this._vectorStoreMock = new Mock<IVectorStore>();
-        this._recordCollectionMock = new Mock<IVectorStoreRecordCollection<string, TextSearchStore<string>.TextRagStorageDocument<string>>>();
+        this._vectorStoreMock = new Mock<VectorStore>();
+        this._recordCollectionMock = new Mock<VectorStoreCollection<string, TextSearchStore<string>.TextRagStorageDocument<string>>>();
 
         this._vectorStoreMock
-            .Setup(v => v.GetCollection<string, TextSearchStore<string>.TextRagStorageDocument<string>>("testCollection", It.IsAny<VectorStoreRecordDefinition>()))
+            .Setup(v => v.GetCollection<string, TextSearchStore<string>.TextRagStorageDocument<string>>("testCollection", It.IsAny<VectorStoreCollectionDefinition>()))
             .Returns(this._recordCollectionMock.Object);
     }
 
@@ -62,7 +62,7 @@ public class TextSearchStoreTests
                     // Enumerate upserted documents to trigger the exception.
                     var a = documents.ToList();
                 })
-            .ReturnsAsync(new List<string>());
+            .Returns(Task.CompletedTask);
 
         var documents = new List<TextSearchDocument>
         {
@@ -88,7 +88,7 @@ public class TextSearchStoreTests
                     // Enumerate upserted documents to trigger the exception.
                     var a = documents.ToList();
                 })
-            .ReturnsAsync(new List<string>());
+            .Returns(Task.CompletedTask);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => store.UpsertTextAsync([text!]));
@@ -100,7 +100,7 @@ public class TextSearchStoreTests
         // Arrange
         this._recordCollectionMock
             .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<string>());
+            .Returns(Task.CompletedTask);
 
         using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
 
@@ -113,7 +113,7 @@ public class TextSearchStoreTests
         await store.UpsertDocumentsAsync(documents);
 
         // Assert
-        this._recordCollectionMock.Verify(r => r.CreateCollectionIfNotExistsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        this._recordCollectionMock.Verify(r => r.EnsureCollectionExistsAsync(It.IsAny<CancellationToken>()), Times.Once);
         this._recordCollectionMock.Verify(r => r.UpsertAsync(
             It.Is<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(doc =>
                 doc.Count() == 1 &&
@@ -133,7 +133,7 @@ public class TextSearchStoreTests
         // Arrange
         this._recordCollectionMock
             .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<string>());
+            .Returns(Task.CompletedTask);
 
         using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128, new() { UseSourceIdAsPrimaryKey = true });
 
@@ -166,7 +166,7 @@ public class TextSearchStoreTests
         // Arrange
         this._recordCollectionMock
             .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<string>());
+            .Returns(Task.CompletedTask);
 
         using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
 
@@ -198,7 +198,7 @@ public class TextSearchStoreTests
         // Arrange
         this._recordCollectionMock
             .Setup(r => r.UpsertAsync(It.IsAny<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<string>());
+            .Returns(Task.CompletedTask);
 
         using var store = new TextSearchStore<string>(this._vectorStoreMock.Object, "testCollection", 128);
 
@@ -206,7 +206,7 @@ public class TextSearchStoreTests
         await store.UpsertTextAsync(["Sample text"]);
 
         // Assert
-        this._recordCollectionMock.Verify(r => r.CreateCollectionIfNotExistsAsync(It.IsAny<CancellationToken>()), Times.Once);
+        this._recordCollectionMock.Verify(r => r.EnsureCollectionExistsAsync(It.IsAny<CancellationToken>()), Times.Once);
         this._recordCollectionMock.Verify(r => r.UpsertAsync(
             It.Is<IEnumerable<TextSearchStore<string>.TextRagStorageDocument<string>>>(doc =>
                 doc.Count() == 1 &&

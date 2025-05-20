@@ -12,15 +12,15 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
-/// Contains tests for the <see cref="AIContextBehaviorsManager"/> class.
+/// Contains tests for the <see cref="AggregateAIContextBehavior"/> class.
 /// </summary>
-public class AIContextBehaviorsManagerTests
+public class AggregateAIContextBehaviorTests
 {
     [Fact]
     public void ConstructorShouldInitializeEmptyPartsList()
     {
         // Act
-        var manager = new AIContextBehaviorsManager();
+        var manager = new AggregateAIContextBehavior();
 
         // Assert
         Assert.NotNull(manager.Behaviors);
@@ -34,7 +34,7 @@ public class AIContextBehaviorsManagerTests
         var mockPart = new Mock<AIContextBehavior>();
 
         // Act
-        var manager = new AIContextBehaviorsManager(new[] { mockPart.Object });
+        var manager = new AggregateAIContextBehavior(new[] { mockPart.Object });
 
         // Assert
         Assert.Single(manager.Behaviors);
@@ -45,7 +45,7 @@ public class AIContextBehaviorsManagerTests
     public void AddShouldRegisterNewPart()
     {
         // Arrange
-        var manager = new AIContextBehaviorsManager();
+        var manager = new AggregateAIContextBehavior();
         var mockPart = new Mock<AIContextBehavior>();
 
         // Act
@@ -65,7 +65,7 @@ public class AIContextBehaviorsManagerTests
         serviceCollection.AddSingleton(mockPart.Object);
         var serviceProvider = serviceCollection.BuildServiceProvider();
 
-        var manager = new AIContextBehaviorsManager();
+        var manager = new AggregateAIContextBehavior();
 
         // Act
         manager.AddFromServiceProvider(serviceProvider);
@@ -79,58 +79,58 @@ public class AIContextBehaviorsManagerTests
     public async Task OnThreadCreatedAsyncShouldCallOnThreadCreatedOnAllParts()
     {
         // Arrange
-        var manager = new AIContextBehaviorsManager();
+        var manager = new AggregateAIContextBehavior();
         var mockPart = new Mock<AIContextBehavior>();
         manager.Add(mockPart.Object);
 
         // Act
-        await manager.OnThreadCreatedAsync("test-thread-id");
+        await manager.ThreadCreatedAsync("test-thread-id");
 
         // Assert
-        mockPart.Verify(x => x.OnThreadCreatedAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+        mockPart.Verify(x => x.ThreadCreatedAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task OnThreadDeleteAsyncShouldCallOnThreadDeleteOnAllParts()
     {
         // Arrange
-        var manager = new AIContextBehaviorsManager();
+        var manager = new AggregateAIContextBehavior();
         var mockPart = new Mock<AIContextBehavior>();
         manager.Add(mockPart.Object);
 
         // Act
-        await manager.OnThreadDeleteAsync("test-thread-id");
+        await manager.ThreadDeletingAsync("test-thread-id");
 
         // Assert
-        mockPart.Verify(x => x.OnThreadDeleteAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+        mockPart.Verify(x => x.ThreadDeletingAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task OnNewMessageAsyncShouldCallOnNewMessageOnAllParts()
     {
         // Arrange
-        var manager = new AIContextBehaviorsManager();
+        var manager = new AggregateAIContextBehavior();
         var mockPart = new Mock<AIContextBehavior>();
         var message = new ChatMessage(ChatRole.User, "Hello");
         manager.Add(mockPart.Object);
 
         // Act
-        await manager.OnNewMessageAsync("test-thread-id", message);
+        await manager.MessageAddingAsync("test-thread-id", message);
 
         // Assert
-        mockPart.Verify(x => x.OnNewMessageAsync("test-thread-id", message, It.IsAny<CancellationToken>()), Times.Once);
+        mockPart.Verify(x => x.MessageAddingAsync("test-thread-id", message, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task OnAIInvocationAsyncShouldAggregateContextsFromAllParts()
     {
         // Arrange
-        var manager = new AIContextBehaviorsManager();
+        var manager = new AggregateAIContextBehavior();
         var mockPart1 = new Mock<AIContextBehavior>();
         var mockPart2 = new Mock<AIContextBehavior>();
-        mockPart1.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+        mockPart1.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
                       .ReturnsAsync(new AIContextPart { Instructions = "Context1" });
-        mockPart2.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+        mockPart2.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
                       .ReturnsAsync(new AIContextPart { Instructions = "Context2" });
         manager.Add(mockPart1.Object);
         manager.Add(mockPart2.Object);
@@ -138,7 +138,7 @@ public class AIContextBehaviorsManagerTests
         var messages = new List<ChatMessage>();
 
         // Act
-        var result = await manager.OnModelInvokeAsync(messages);
+        var result = await manager.ModelInvokingAsync(messages);
 
         // Assert
         Assert.Equal("Context1\nContext2", result.Instructions);
@@ -148,29 +148,29 @@ public class AIContextBehaviorsManagerTests
     public async Task OnSuspendAsyncShouldCallOnSuspendOnAllParts()
     {
         // Arrange
-        var manager = new AIContextBehaviorsManager();
+        var manager = new AggregateAIContextBehavior();
         var mockPart = new Mock<AIContextBehavior>();
         manager.Add(mockPart.Object);
 
         // Act
-        await manager.OnSuspendAsync("test-thread-id");
+        await manager.SuspendingAsync("test-thread-id");
 
         // Assert
-        mockPart.Verify(x => x.OnSuspendAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+        mockPart.Verify(x => x.SuspendingAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task OnResumeAsyncShouldCallOnResumeOnAllParts()
     {
         // Arrange
-        var manager = new AIContextBehaviorsManager();
+        var manager = new AggregateAIContextBehavior();
         var mockPart = new Mock<AIContextBehavior>();
         manager.Add(mockPart.Object);
 
         // Act
-        await manager.OnResumeAsync("test-thread-id");
+        await manager.ResumingAsync("test-thread-id");
 
         // Assert
-        mockPart.Verify(x => x.OnResumeAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+        mockPart.Verify(x => x.ResumingAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
 }

@@ -66,7 +66,7 @@ public class TextSearchBehaviorTests
         var component = new TextSearchBehavior(mockTextSearch.Object, options);
 
         // Act
-        var result = await component.OnModelInvokeAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
+        var result = await component.ModelInvokingAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
 
         // Assert
         Assert.Contains(expectedContextPrompt, result.Instructions);
@@ -100,7 +100,7 @@ public class TextSearchBehaviorTests
         var component = new TextSearchBehavior(mockTextSearch.Object, options);
 
         // Act
-        var aiContextAdditions = await component.OnModelInvokeAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
+        var aiContextAdditions = await component.ModelInvokingAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
 
         // Assert
         var aiFunctions = aiContextAdditions.AIFunctions;
@@ -216,7 +216,7 @@ public class TextSearchBehaviorTests
         var component = new TextSearchBehavior(mockTextSearch.Object, options);
 
         // Act
-        var result = await component.OnModelInvokeAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
+        var result = await component.ModelInvokingAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
 
         // Assert
         Assert.Equal("Custom formatted context with 2 results.", result.Instructions);
