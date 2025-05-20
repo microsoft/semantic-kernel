@@ -226,7 +226,7 @@ class InMemoryCollection(
             return self.inner_storage
         try:
             callable_filters = [
-                eval(filter) if isinstance(filter, str) else filter  # nosec
+                self._parse_and_validate_filter(filter) if isinstance(filter, str) else filter
                 for filter in ([options.filter] if not isinstance(options.filter, list) else options.filter)
             ]
         except Exception as e:
@@ -237,6 +237,27 @@ class InMemoryCollection(
                 if self._run_filter(filter, record):
                     filtered_records[key] = record
         return filtered_records
+
+    def _parse_and_validate_filter(self, filter_str: str) -> Callable:
+        """Parse and validate a string filter as a lambda expression, then return the callable."""
+        try:
+            tree = ast.parse(filter_str, mode="eval")
+        except SyntaxError as e:
+            raise VectorStoreOperationException(f"Filter string is not valid Python: {e}") from e
+        # Only allow lambda expressions
+        if not (isinstance(tree, ast.Expression) and isinstance(tree.body, ast.Lambda)):
+            raise VectorStoreOperationException(
+                "Filter string must be a lambda expression, e.g. 'lambda x: x.key == 1'"
+            )
+        # Optionally, further validation of the AST can be done here
+        try:
+            code = compile(tree, filename="<filter>", mode="eval")
+            func = eval(code, {"__builtins__": {}}, {})  # nosec
+        except Exception as e:
+            raise VectorStoreOperationException(f"Error compiling filter: {e}") from e
+        if not callable(func):
+            raise VectorStoreOperationException("Compiled filter is not callable.")
+        return func
 
     def _run_filter(self, filter: Callable, record: AttributeDict[TAKey, TAValue]) -> bool:
         """Run the filter on the record, supporting attribute access."""
