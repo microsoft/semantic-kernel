@@ -3,7 +3,7 @@
 import asyncio
 import json
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
@@ -45,11 +45,13 @@ on the Pydantic model.
 
 
 class Step(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     explanation: str
     output: str
 
 
 class Reasoning(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     steps: list[Step]
     final_answer: str
 
