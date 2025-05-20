@@ -4,8 +4,9 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
-from azure.ai.inference.models import UserMessage
+from azure.ai.inference.models import JsonSchemaFormat, UserMessage
 from azure.core.credentials import AzureKeyCredential
+from pydantic import BaseModel, Field
 
 from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceChatCompletion,
@@ -335,6 +336,55 @@ async def test_azure_ai_inference_chat_completion_with_function_choice_behavior_
     assert responses[0].content == "Hello"
 
 
+class MockResponseModel(BaseModel):
+    a: int = Field(..., description="The a field")
+    b: str = Field(..., description="The b field")
+
+
+@pytest.mark.parametrize(
+    "azure_ai_inference_service",
+    [AzureAIInferenceChatCompletion.__name__],
+    indirect=True,
+)
+@patch.object(ChatCompletionsClient, "complete", new_callable=AsyncMock)
+async def test_azure_ai_inference_response_format_json_schema(
+    mock_complete,
+    azure_ai_inference_service,
+    model_id,
+    chat_history: ChatHistory,
+    mock_azure_ai_inference_chat_completion_response,
+):
+    chat_history.add_user_message("Return an object with fields a and b.")
+    settings = AzureAIInferenceChatPromptExecutionSettings(
+        response_format=MockResponseModel,
+        structured_json_response=True,
+    )
+
+    mock_complete.return_value = mock_azure_ai_inference_chat_completion_response
+
+    _ = await azure_ai_inference_service.get_chat_message_contents(chat_history=chat_history, settings=settings)
+
+    assert mock_complete.call_count == 1
+    kwargs = mock_complete.call_args.kwargs
+
+    assert "response_format" in kwargs
+    response_format = kwargs["response_format"]
+    assert isinstance(response_format, JsonSchemaFormat)
+    assert response_format.name == "MockResponseModel"
+    assert response_format.strict is True
+
+    schema = response_format.schema
+    assert schema["title"] == "MockResponseModel"
+    assert "properties" in schema
+    assert "a" in schema["properties"]
+    assert schema["properties"]["a"]["type"] == "integer"
+    assert "b" in schema["properties"]
+    assert schema["properties"]["b"]["type"] == "string"
+
+    assert kwargs["messages"][0].content == "Return an object with fields a and b."
+    assert kwargs["model"] == model_id
+
+
 # endregion chat completion
 
 
@@ -592,6 +642,53 @@ async def test_azure_ai_inference_streaming_chat_completion_with_function_choice
         model_extras=None,
         **settings.prepare_settings_dict(),
     )
+
+
+class MockStreamingResponseModel(BaseModel):
+    foo: float = Field(..., description="Foo value")
+    bar: bool = Field(..., description="Bar value")
+
+
+@pytest.mark.parametrize(
+    "azure_ai_inference_service",
+    [AzureAIInferenceChatCompletion.__name__],
+    indirect=True,
+)
+@patch.object(ChatCompletionsClient, "complete", new_callable=AsyncMock)
+async def test_azure_ai_inference_streaming_response_format_json_schema(
+    mock_complete,
+    azure_ai_inference_service,
+    model_id,
+    chat_history: ChatHistory,
+    mock_azure_ai_inference_streaming_chat_completion_response,
+):
+    chat_history.add_user_message("Stream a response with foo and bar.")
+    settings = AzureAIInferenceChatPromptExecutionSettings(
+        response_format=MockStreamingResponseModel,
+        structured_json_response=True,
+    )
+
+    mock_complete.return_value = mock_azure_ai_inference_streaming_chat_completion_response
+
+    messages = []
+    async for chunk in azure_ai_inference_service.get_streaming_chat_message_contents(chat_history, settings):
+        messages.extend(chunk)
+
+    assert mock_complete.call_count == 1
+    kwargs = mock_complete.call_args.kwargs
+    assert "response_format" in kwargs
+    response_format = kwargs["response_format"]
+    assert isinstance(response_format, JsonSchemaFormat)
+    assert response_format.name == "MockStreamingResponseModel"
+    assert response_format.strict is True
+    schema = response_format.schema
+    assert schema["title"] == "MockStreamingResponseModel"
+    assert "foo" in schema["properties"]
+    assert schema["properties"]["foo"]["type"] == "number"
+    assert "bar" in schema["properties"]
+    assert schema["properties"]["bar"]["type"] == "boolean"
+    assert kwargs["stream"] is True
+    assert kwargs["model"] == model_id
 
 
 # endregion streaming chat completion
