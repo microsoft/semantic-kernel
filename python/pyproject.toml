@@ -88,7 +88,7 @@ faiss = [
     "faiss-cpu>=1.10.0"
 ]
 google = [
-    "google-cloud-aiplatform == 1.91.0",
+    "google-cloud-aiplatform == 1.93.0",
     "google-generativeai ~= 0.8"
 ]
 hugging_face = [
@@ -118,7 +118,7 @@ ollama = [
 ]
 onnx = [
     "onnxruntime-genai ~= 0.5; python_version < '3.13' and platform_system != 'Windows'",
-    "onnxruntime == 1.21.0; platform_system == 'Windows'"
+    "onnxruntime == 1.22.0; platform_system == 'Windows'"
 ]
 pandas = [
     "pandas ~= 2.2"
@@ -133,7 +133,7 @@ qdrant = [
     "qdrant-client ~= 1.9"
 ]
 redis = [
-    "redis[hiredis] ~= 5.0",
+    "redis[hiredis] >= 5,< 7",
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]

@@ -157,13 +157,16 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
     /// <summary>
     /// Deploys the process to Azure Foundry.
     /// </summary>
-    /// <param name="process">The built process to deploy.</param>
     /// <param name="endpoint">Th workflow endpoint to deploy to.</param>
     /// <param name="credential">The credential to use.</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<string> DeployToFoundryAsync(KernelProcess process, string endpoint, TokenCredential? credential = null, CancellationToken cancellationToken = default)
+    public async Task<string> DeployToFoundryAsync(string endpoint, TokenCredential? credential = null, CancellationToken cancellationToken = default)
     {
+        // Build the process
+        var process = this.Build();
+
+        // Serialize and deploy
         using var httpClient = new HttpClient();
         if (credential != null)
         {
@@ -190,6 +193,16 @@ public class FoundryProcessBuilder<TProcessState> where TProcessState : class, n
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         var foundryWorkflow = JsonSerializer.Deserialize<FoundryWorkflow>(responseContent);
         return foundryWorkflow?.Id ?? throw new KernelException("Failed to parse the response from Foundry.");
+    }
+
+    /// <summary>
+    /// Serializes the process to JSON.
+    /// </summary>
+    public async Task<string> ToJsonAsync()
+    {
+        var process = this.Build();
+        var workflow = await WorkflowBuilder.BuildWorkflow(process).ConfigureAwait(false);
+        return WorkflowSerializer.SerializeToJson(workflow);
     }
 
     private class FoundryWorkflow

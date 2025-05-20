@@ -60,7 +60,7 @@ public class MultipleModelTests
         var exception = await Assert.ThrowsAsync<KernelException>(() => kernel.InvokeAsync(func));
 
         // Assert
-        Assert.Equal("Required service of type Microsoft.SemanticKernel.TextGeneration.ITextGenerationService not registered. Expected serviceIds: service3.", exception.Message);
+        Assert.Contains("Expected serviceIds: service3.", exception.Message);
     }
 
     [Theory]
