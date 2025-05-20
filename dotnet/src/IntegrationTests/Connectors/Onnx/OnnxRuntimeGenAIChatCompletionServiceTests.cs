@@ -15,7 +15,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Onnx;
 
 public class OnnxRuntimeGenAIChatCompletionServiceTests : BaseIntegrationTest
 {
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItCanUseKernelInvokeAsyncAsync()
     {
         // Arrange
@@ -32,7 +32,7 @@ public class OnnxRuntimeGenAIChatCompletionServiceTests : BaseIntegrationTest
         Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItCanUseKernelInvokeStreamingAsyncAsync()
     {
         // Arrange
@@ -54,7 +54,7 @@ public class OnnxRuntimeGenAIChatCompletionServiceTests : BaseIntegrationTest
         Assert.Contains("Pike Place", fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItCanUseServiceGetStreamingChatMessageContentsAsync()
     {
         using var chat = CreateService();
@@ -73,7 +73,7 @@ public class OnnxRuntimeGenAIChatCompletionServiceTests : BaseIntegrationTest
         Assert.Contains("Pike Place", fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]//(Skip = "For manual verification only")]
+    [Fact(Skip = "For manual verification only")]
     public async Task ItCanUseServiceGetChatMessageContentsAsync()
     {
         using var chat = CreateService();
