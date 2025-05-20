@@ -2,7 +2,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;

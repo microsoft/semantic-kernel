@@ -46,7 +46,7 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
         // Create the collection and add data
         var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = textEmbeddingGenerator });
         var collection = vectorStore.GetCollection<string, FinanceInfo>("finances");
-        await collection.CreateCollectionAsync();
+        await collection.EnsureCollectionExistsAsync();
         string[] budgetInfo =
         {
             "The budget for 2020 is EUR 100 000",
@@ -118,14 +118,14 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
 
     private sealed class FinanceInfo
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Key { get; set; } = string.Empty;
 
         [TextSearchResultValue]
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Text { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public string Embedding => this.Text;
     }
 

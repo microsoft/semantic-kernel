@@ -27,6 +27,9 @@ public abstract class RedisBasicQueryTests(BasicQueryTests<string>.QueryFixture 
     public override Task NotEqual_with_null_captured()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.NotEqual_with_null_captured());
 
+    public override Task Equal_int_property_with_null_nullable_int()
+        => Assert.ThrowsAsync<NotSupportedException>(() => base.Equal_int_property_with_null_nullable_int());
+
     #endregion
 
     #region Bool
@@ -74,18 +77,26 @@ public class RedisJsonCollectionBasicQueryTests(RedisJsonCollectionBasicQueryTes
 
         public override string CollectionName => "JsonCollectionQueryTests";
 
+        public override string SpecialCharactersText
+#if NET8_0_OR_GREATER
+            => base.SpecialCharactersText;
+#else
+            // Redis client doesn't properly escape '"' on Full Framework.
+            => base.SpecialCharactersText.Replace("\"", "");
+#endif
+
         // Override to remove the bool property, which isn't (currently) supported on Redis/JSON
-        public override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
-                Properties = base.GetRecordDefinition().Properties.Where(p => p.PropertyType != typeof(bool)).ToList()
+                Properties = base.CreateRecordDefinition().Properties.Where(p => p.Type != typeof(bool)).ToList()
             };
 
-        protected override IVectorStoreRecordCollection<string, FilterRecord> GetCollection()
-            => new RedisJsonVectorStoreRecordCollection<string, FilterRecord>(
+        protected override VectorStoreCollection<string, FilterRecord> GetCollection()
+            => new RedisJsonCollection<string, FilterRecord>(
                 RedisTestStore.JsonInstance.Database,
                 this.CollectionName,
-                new() { VectorStoreRecordDefinition = this.GetRecordDefinition() });
+                new() { Definition = this.CreateRecordDefinition() });
     }
 }
 
@@ -118,21 +129,29 @@ public class RedisHashSetCollectionBasicQueryTests(RedisHashSetCollectionBasicQu
 
         public override string CollectionName => "HashSetCollectionQueryTests";
 
+        public override string SpecialCharactersText
+#if NET8_0_OR_GREATER
+            => base.SpecialCharactersText;
+#else
+            // Redis client doesn't properly escape '"' on Full Framework.
+            => base.SpecialCharactersText.Replace("\"", "");
+#endif
+
         // Override to remove the bool property, which isn't (currently) supported on Redis
-        public override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
-                Properties = base.GetRecordDefinition().Properties.Where(p =>
-                    p.PropertyType != typeof(bool) &&
-                    p.PropertyType != typeof(string[]) &&
-                    p.PropertyType != typeof(List<string>)).ToList()
+                Properties = base.CreateRecordDefinition().Properties.Where(p =>
+                    p.Type != typeof(bool) &&
+                    p.Type != typeof(string[]) &&
+                    p.Type != typeof(List<string>)).ToList()
             };
 
-        protected override IVectorStoreRecordCollection<string, FilterRecord> GetCollection()
-            => new RedisHashSetVectorStoreRecordCollection<string, FilterRecord>(
+        protected override VectorStoreCollection<string, FilterRecord> GetCollection()
+            => new RedisHashSetCollection<string, FilterRecord>(
                 RedisTestStore.HashSetInstance.Database,
                 this.CollectionName,
-                new() { VectorStoreRecordDefinition = this.GetRecordDefinition() });
+                new() { Definition = this.CreateRecordDefinition() });
 
         protected override List<FilterRecord> BuildTestData()
         {

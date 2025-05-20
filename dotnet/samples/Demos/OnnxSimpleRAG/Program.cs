@@ -48,7 +48,7 @@ var embeddingService = kernel.GetRequiredService<IEmbeddingGenerator<string, Emb
 // Create a vector store and a collection to store information
 var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = embeddingService });
 var collection = vectorStore.GetCollection<string, InformationItem>("ExampleCollection");
-await collection.CreateCollectionIfNotExistsAsync();
+await collection.EnsureCollectionExistsAsync();
 
 // Save some information to the memory
 var collectionName = "ExampleCollection";
@@ -126,14 +126,14 @@ static void DisposeServices(Kernel kernel)
 /// </summary>
 internal sealed class InformationItem
 {
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     [TextSearchResultName]
     public string Id { get; set; } = string.Empty;
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     [TextSearchResultValue]
     public string Text { get; set; } = string.Empty;
 
-    [VectorStoreRecordVector(Dimensions: 384)]
+    [VectorStoreVector(Dimensions: 384)]
     public string Embedding => this.Text;
 }

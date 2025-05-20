@@ -35,8 +35,7 @@ public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
         var keys = inserted.Select(record => record.Id).ToArray();
 
         Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
-        var receivedKeys = await collection.UpsertAsync(inserted);
-        Assert.Equal(keys.ToHashSet(), receivedKeys.ToHashSet()); // .ToHashSet() to ignore order
+        await collection.UpsertAsync(inserted);
 
         var received = await collection.GetAsync(keys, new() { IncludeVectors = includeVectors }).ToArrayAsync();
         foreach (var record in inserted)
@@ -64,10 +63,10 @@ public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
         var keys = inserted.Select(record => record.Id).Where(key => key is not null).ToArray();
         Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
 
-        VectorStoreOperationException ex = await Assert.ThrowsAsync<VectorStoreOperationException>(() => collection.UpsertAsync(inserted));
+        VectorStoreException ex = await Assert.ThrowsAsync<VectorStoreException>(() => collection.UpsertAsync(inserted));
         Assert.Equal("UpsertBatch", ex.OperationName);
 
-        var metadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
+        var metadata = collection.GetService(typeof(VectorStoreCollectionMetadata)) as VectorStoreCollectionMetadata;
 
         Assert.NotNull(metadata?.CollectionName);
         Assert.Equal(metadata.CollectionName, ex.CollectionName);

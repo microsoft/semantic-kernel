@@ -4,9 +4,11 @@
     <AssemblyName>Microsoft.SemanticKernel.Agents.Runtime.Core</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents.Runtime.Core</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <VersionSuffix>preview</VersionSuffix>
     <DefineConstants>SKIPSKABSTRACTION</DefineConstants>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/*" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />

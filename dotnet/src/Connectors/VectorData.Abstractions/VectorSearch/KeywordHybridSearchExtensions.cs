@@ -4,11 +4,11 @@ using System;
 
 namespace Microsoft.Extensions.VectorData;
 
-/// <summary>Provides a collection of static methods for extending <see cref="IKeywordHybridSearch{TRecord}"/> instances.</summary>
+/// <summary>Provides a collection of static methods for extending <see cref="IKeywordHybridSearchable{TRecord}"/> instances.</summary>
 public static class KeywordHybridSearchExtensions
 {
     /// <summary>
-    /// Asks the <see cref="IKeywordHybridSearch{TRecord}"/> for an object of the specified type <paramref name="serviceType"/>
+    /// Asks the <see cref="IKeywordHybridSearchable{TRecord}"/> for an object of the specified type <paramref name="serviceType"/>
     /// and throw an exception if one isn't available.
     /// </summary>
     /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
@@ -19,7 +19,7 @@ public static class KeywordHybridSearchExtensions
     /// <exception cref="ArgumentNullException"><paramref name="keywordHybridSearch"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">No service of the requested type for the specified key is available.</exception>
-    public static object GetRequiredService<TRecord>(this IKeywordHybridSearch<TRecord> keywordHybridSearch, Type serviceType, object? serviceKey = null)
+    public static object GetRequiredService<TRecord>(this IKeywordHybridSearchable<TRecord> keywordHybridSearch, Type serviceType, object? serviceKey = null)
     {
         if (keywordHybridSearch is null) { throw new ArgumentNullException(nameof(keywordHybridSearch)); }
         if (serviceType is null) { throw new ArgumentNullException(nameof(serviceType)); }

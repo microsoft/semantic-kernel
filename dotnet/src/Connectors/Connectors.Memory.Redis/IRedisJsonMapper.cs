@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -17,5 +16,5 @@ internal interface IRedisJsonMapper<TRecord>
     /// <summary>
     /// Maps from the storage model to the consumer record data model.
     /// </summary>
-    TRecord MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, StorageToDataModelMapperOptions options);
+    TRecord MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, bool includeVectors);
 }

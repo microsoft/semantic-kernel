@@ -48,8 +48,7 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
         };
 
         Assert.Null(await collection.GetAsync(expectedKey));
-        TKey key = await collection.UpsertAsync(inserted);
-        Assert.Equal(expectedKey, key);
+        await collection.UpsertAsync(inserted);
 
         var received = await collection.GetAsync(expectedKey, new() { IncludeVectors = includeVectors });
         inserted.AssertEqual(received, includeVectors, fixture.TestStore.VectorsComparable);
@@ -74,8 +73,7 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
         };
 
         Assert.NotNull(await collection.GetAsync(existingRecord.Id, new() { IncludeVectors = true }));
-        TKey key = await collection.UpsertAsync(updated);
-        Assert.Equal(existingRecord.Id, key);
+        await collection.UpsertAsync(updated);
 
         var received = await collection.GetAsync(existingRecord.Id, new() { IncludeVectors = includeVectors });
         updated.AssertEqual(received, includeVectors, fixture.TestStore.VectorsComparable);
@@ -98,10 +96,10 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
     {
         public const int DimensionCount = 3;
 
-        [VectorStoreRecordKey(StoragePropertyName = "key")]
+        [VectorStoreKey(StorageName = "key")]
         public TKey Id { get; set; } = default!;
 
-        [VectorStoreRecordVector(DimensionCount, StoragePropertyName = "embedding")]
+        [VectorStoreVector(DimensionCount, StorageName = "embedding")]
         public ReadOnlyMemory<float> Floats { get; set; }
 
         public void AssertEqual(NoDataRecord? other, bool includeVectors, bool compareVectors)
@@ -150,15 +148,15 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
             }
         ];
 
-        public override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreCollectionDefinition CreateRecordDefinition()
             => new()
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty(nameof(NoDataRecord.Id), typeof(TKey)) { StoragePropertyName = "key" },
-                    new VectorStoreRecordVectorProperty(nameof(NoDataRecord.Floats), typeof(ReadOnlyMemory<float>), NoDataRecord.DimensionCount)
+                    new VectorStoreKeyProperty(nameof(NoDataRecord.Id), typeof(TKey)) { StorageName = "key" },
+                    new VectorStoreVectorProperty(nameof(NoDataRecord.Floats), typeof(ReadOnlyMemory<float>), NoDataRecord.DimensionCount)
                     {
-                        StoragePropertyName = "embedding",
+                        StorageName = "embedding",
                         IndexKind = this.IndexKind,
                     }
                 ]
@@ -168,7 +166,7 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
         {
             for (var i = 0; i < 20; i++)
             {
-                var getOptions = new GetRecordOptions { IncludeVectors = true };
+                var getOptions = new RecordRetrievalOptions { IncludeVectors = true };
                 var results = await this.Collection.GetAsync([this.TestData[0].Id, this.TestData[1].Id, this.TestData[2].Id, this.TestData[3].Id], getOptions).ToArrayAsync();
                 if (results.Length == 4 && results.All(r => r != null))
                 {

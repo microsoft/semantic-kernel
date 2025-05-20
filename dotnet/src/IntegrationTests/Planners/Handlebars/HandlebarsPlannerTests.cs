@@ -127,7 +127,7 @@ public sealed class HandlebarsPlannerTests
                 deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
                 modelId: azureOpenAIEmbeddingsConfiguration.EmbeddingModelId,
                 endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                credential: new AzureCliCredential());
+                credentials: new AzureCliCredential());
         }
 
         return builder.Build();

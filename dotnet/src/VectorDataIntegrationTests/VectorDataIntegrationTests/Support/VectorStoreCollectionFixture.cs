@@ -12,19 +12,19 @@ namespace VectorDataSpecificationTests.Support;
 /// </summary>
 public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreFixture
     where TKey : notnull
-    where TRecord : notnull
+    where TRecord : class
 {
     private List<TRecord>? _testData;
 
-    public abstract VectorStoreRecordDefinition GetRecordDefinition();
+    public abstract VectorStoreCollectionDefinition CreateRecordDefinition();
     protected abstract List<TRecord> BuildTestData();
 
     public virtual string CollectionName => Guid.NewGuid().ToString();
     protected virtual string DistanceFunction => this.TestStore.DefaultDistanceFunction;
     protected virtual string IndexKind => this.TestStore.DefaultIndexKind;
 
-    protected virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection()
-        => this.TestStore.DefaultVectorStore.GetCollection<TKey, TRecord>(this.CollectionName, this.GetRecordDefinition());
+    protected virtual VectorStoreCollection<TKey, TRecord> GetCollection()
+        => this.TestStore.DefaultVectorStore.GetCollection<TKey, TRecord>(this.CollectionName, this.CreateRecordDefinition());
 
     public override async Task InitializeAsync()
     {
@@ -34,14 +34,14 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
 
         if (await this.Collection.CollectionExistsAsync())
         {
-            await this.Collection.DeleteCollectionAsync();
+            await this.Collection.EnsureCollectionDeletedAsync();
         }
 
-        await this.Collection.CreateCollectionAsync();
+        await this.Collection.EnsureCollectionExistsAsync();
         await this.SeedAsync();
     }
 
-    public virtual IVectorStoreRecordCollection<TKey, TRecord> Collection { get; private set; } = null!;
+    public virtual VectorStoreCollection<TKey, TRecord> Collection { get; private set; } = null!;
 
     public List<TRecord> TestData => this._testData ??= this.BuildTestData();
 

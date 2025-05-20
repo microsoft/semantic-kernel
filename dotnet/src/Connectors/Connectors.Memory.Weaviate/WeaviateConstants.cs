@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateConstants
@@ -33,4 +35,15 @@ internal sealed class WeaviateConstants
 
     /// <summary>Default vectorizer for vector properties in Weaviate.</summary>
     internal const string DefaultVectorizer = "none";
+
+    /// <summary>Default JSON serializer options.</summary>
+    internal static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters =
+        {
+            new WeaviateDateTimeOffsetConverter(),
+            new WeaviateNullableDateTimeOffsetConverter()
+        }
+    };
 }

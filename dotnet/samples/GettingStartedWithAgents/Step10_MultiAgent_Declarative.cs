@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ClientModel;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
@@ -79,7 +79,7 @@ public class Step10_MultiAgent_Declarative : BaseAgentsTest
         {
             var azureaiAgent = agent as AzureAIAgent;
             Assert.NotNull(azureaiAgent);
-            await azureaiAgent.Client.DeleteAgentAsync(azureaiAgent.Id);
+            await azureaiAgent.Client.Administration.DeleteAgentAsync(azureaiAgent.Id);
 
             if (agentThread is not null)
             {
@@ -97,19 +97,19 @@ public class Step10_MultiAgent_Declarative : BaseAgentsTest
                    OpenAIAssistantAgent.CreateAzureOpenAIClient(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
                    OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(this.Endpoint!));
 
-        var aiProjectClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
+        var agentsClient = AzureAIAgent.CreateAgentsClient(TestConfiguration.AzureAI.Endpoint, new AzureCliCredential());
 
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<OpenAIClient>(openaiClient);
-        builder.Services.AddSingleton<AIProjectClient>(aiProjectClient);
+        builder.Services.AddSingleton<PersistentAgentsClient>(agentsClient);
         AddChatCompletionToKernel(builder);
         this._kernel = builder.Build();
 
-        this._kernelAgentFactory = new AggregatorKernelAgentFactory(
-            new ChatCompletionAgentFactory(),
-            new OpenAIAssistantAgentFactory(),
-            new AzureAIAgentFactory()
-            );
+        this._kernelAgentFactory =
+            new AggregatorKernelAgentFactory(
+                new ChatCompletionAgentFactory(),
+                new OpenAIAssistantAgentFactory(),
+                new AzureAIAgentFactory());
     }
 
     #region private

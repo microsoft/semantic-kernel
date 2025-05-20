@@ -19,14 +19,14 @@ namespace VectorStoreRAG;
 /// <param name="chatCompletionService">The chat completion service to use for generating text from images.</param>
 internal sealed class DataLoader<TKey>(
     UniqueKeyGenerator<TKey> uniqueKeyGenerator,
-    IVectorStoreRecordCollection<TKey, TextSnippet<TKey>> vectorStoreRecordCollection,
+    VectorStoreCollection<TKey, TextSnippet<TKey>> vectorStoreRecordCollection,
     IChatCompletionService chatCompletionService) : IDataLoader where TKey : notnull
 {
     /// <inheritdoc/>
     public async Task LoadPdf(string pdfPath, int batchSize, int betweenBatchDelayInMs, CancellationToken cancellationToken)
     {
         // Create the collection if it doesn't exist.
-        await vectorStoreRecordCollection.CreateCollectionIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
+        await vectorStoreRecordCollection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         // Load the text and images from the PDF file and split them into batches.
         var sections = LoadTextAndImages(pdfPath, cancellationToken);
@@ -63,11 +63,7 @@ internal sealed class DataLoader<TKey>(
             });
 
             // Upsert the records into the vector store.
-            var upsertedKeys = await vectorStoreRecordCollection.UpsertAsync(records, cancellationToken: cancellationToken).ConfigureAwait(false);
-            foreach (var key in upsertedKeys)
-            {
-                Console.WriteLine($"Upserted record '{key}' into VectorDB");
-            }
+            await vectorStoreRecordCollection.UpsertAsync(records, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             await Task.Delay(betweenBatchDelayInMs, cancellationToken).ConfigureAwait(false);
         }

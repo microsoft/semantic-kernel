@@ -7,8 +7,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
-using Microsoft.Extensions.VectorData.ConnectorSupport.Filter;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData.ProviderServices.Filter;
 
 namespace Microsoft.SemanticKernel.Connectors;
 
@@ -16,13 +16,13 @@ namespace Microsoft.SemanticKernel.Connectors;
 
 internal abstract class SqlFilterTranslator
 {
-    private readonly VectorStoreRecordModel _model;
+    private readonly CollectionModel _model;
     private readonly LambdaExpression _lambdaExpression;
     private readonly ParameterExpression _recordParameter;
     protected readonly StringBuilder _sql;
 
     internal SqlFilterTranslator(
-        VectorStoreRecordModel model,
+        CollectionModel model,
         LambdaExpression lambdaExpression,
         StringBuilder? sql = null)
     {
@@ -42,8 +42,8 @@ internal abstract class SqlFilterTranslator
             this._sql.Append("WHERE ");
         }
 
-        var preprocessor = new FilterTranslationPreprocessor { TransformCapturedVariablesToQueryParameterExpressions = true };
-        var preprocessedExpression = preprocessor.Visit(this._lambdaExpression.Body);
+        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = true };
+        var preprocessedExpression = preprocessor.Preprocess(this._lambdaExpression.Body);
 
         this.Translate(preprocessedExpression, isSearchCondition: true);
     }
@@ -61,7 +61,7 @@ internal abstract class SqlFilterTranslator
                 return;
 
             case QueryParameterExpression { Name: var name, Value: var value }:
-                this.TranslateQueryParameter(name, value);
+                this.TranslateQueryParameter(value);
                 return;
 
             case MemberExpression member:
@@ -154,8 +154,10 @@ internal abstract class SqlFilterTranslator
                 this._sql.Append(l);
                 return;
 
-            case string s:
-                this._sql.Append('\'').Append(s.Replace("'", "''")).Append('\'');
+            case string untrustedInput:
+                // This is the only place where we allow untrusted input to be passed in, so we need to quote and escape it.
+                // Luckily for us, values are escaped in the same way for every provider that we support so far.
+                this._sql.Append('\'').Append(untrustedInput.Replace("'", "''")).Append('\'');
                 return;
             case bool b:
                 this._sql.Append(b ? "TRUE" : "FALSE");
@@ -182,17 +184,18 @@ internal abstract class SqlFilterTranslator
     {
         if (this.TryBindProperty(memberExpression, out var property))
         {
-            this.GenerateColumn(property.StorageName, isSearchCondition);
+            this.GenerateColumn(property, isSearchCondition);
             return;
         }
 
         throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
 
-    protected virtual void GenerateColumn(string column, bool isSearchCondition = false)
-        => this._sql.Append('"').Append(column.Replace("\"", "\"\"")).Append('"');
+    protected virtual void GenerateColumn(PropertyModel property, bool isSearchCondition = false)
+        // StorageName is considered to be a safe input, we quote and escape it mostly to produce valid SQL.
+        => this._sql.Append('"').Append(property.StorageName.Replace("\"", "\"\"")).Append('"');
 
-    protected abstract void TranslateQueryParameter(string name, object? value);
+    protected abstract void TranslateQueryParameter(object? value);
 
     private void TranslateMethodCall(MethodCallExpression methodCall, bool isSearchCondition = false)
     {
@@ -200,7 +203,7 @@ internal abstract class SqlFilterTranslator
         {
             // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
             case MethodCallExpression when this.TryBindProperty(methodCall, out var property):
-                this.GenerateColumn(property.StorageName, isSearchCondition);
+                this.GenerateColumn(property, isSearchCondition);
                 return;
 
             // Enumerable.Contains()
@@ -295,9 +298,14 @@ internal abstract class SqlFilterTranslator
                 this._sql.Append(')');
                 return;
 
+            // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
+            case ExpressionType.Convert when Nullable.GetUnderlyingType(unary.Type) == unary.Operand.Type:
+                this.Translate(unary.Operand, isSearchCondition);
+                return;
+
             // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
             case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
-                this.GenerateColumn(property.StorageName, isSearchCondition);
+                this.GenerateColumn(property, isSearchCondition);
                 return;
 
             default:
@@ -305,17 +313,15 @@ internal abstract class SqlFilterTranslator
         }
     }
 
-    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? property)
     {
-        Type? convertedClrType = null;
-
-        if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
+        var unwrappedExpression = expression;
+        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
-            expression = unary.Operand;
-            convertedClrType = unary.Type;
+            unwrappedExpression = convert.Operand;
         }
 
-        var modelName = expression switch
+        var modelName = unwrappedExpression switch
         {
             // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
             MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
@@ -343,9 +349,17 @@ internal abstract class SqlFilterTranslator
             throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
         }
 
-        if (convertedClrType is not null && convertedClrType != property.Type)
+        // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
+        unwrappedExpression = expression;
+        while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
-            throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convertedClrType.Name}', but its configured type is '{property.Type.Name}'.");
+            var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
+            if (convertType != property.Type && convertType != typeof(object))
+            {
+                throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{property.Type.Name}'.");
+            }
+
+            unwrappedExpression = convert.Operand;
         }
 
         return true;

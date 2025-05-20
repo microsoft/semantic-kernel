@@ -20,7 +20,7 @@ namespace Memory;
 /// <param name="vectorStore">The vector store to ingest data into.</param>
 /// <param name="embeddingGenerator">The service to use for generating embeddings.</param>
 /// <param name="output">A helper to write output to the xUnit test output stream.</param>
-public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore, IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator, ITestOutputHelper output)
+public class VectorStore_VectorSearch_MultiStore_Common(VectorStore vectorStore, IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator, ITestOutputHelper output)
 {
     /// <summary>
     /// Ingest data into a collection with the given name, and search over that data.
@@ -34,7 +34,7 @@ public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore
     {
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<TKey, Glossary<TKey>>(collectionName);
-        await collection.CreateCollectionIfNotExistsAsync();
+        await collection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateGlossaryEntries(uniqueKeyGenerator).ToList();
@@ -44,14 +44,15 @@ public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore
         }));
         await Task.WhenAll(tasks);
 
-        // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => collection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        // Upsert the glossary entries into the collection.
+        await collection.UpsertAsync(glossaryEntries);
+
+        await Task.Delay(5000); // Add a wait to ensure that indexing completes before we continue.
 
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
         var searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
-        var resultRecords = await collection.SearchEmbeddingAsync(searchVector, top: 1).ToListAsync();
+        var resultRecords = await collection.SearchAsync(searchVector, top: 1).ToListAsync();
 
         output.WriteLine("Search string: " + searchString);
         output.WriteLine("Result: " + resultRecords.First().Record.Definition);
@@ -60,7 +61,7 @@ public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore
         // Search the collection using a vector search.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
-        resultRecords = await collection.SearchEmbeddingAsync(searchVector, top: 1).ToListAsync();
+        resultRecords = await collection.SearchAsync(searchVector, top: 1).ToListAsync();
 
         output.WriteLine("Search string: " + searchString);
         output.WriteLine("Result: " + resultRecords.First().Record.Definition);
@@ -69,7 +70,7 @@ public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore
         // Search the collection using a vector search with pre-filtering.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = (await embeddingGenerator.GenerateAsync(searchString)).Vector;
-        resultRecords = await collection.SearchEmbeddingAsync(searchVector, top: 3, new() { Filter = g => g.Category == "External Definitions" }).ToListAsync();
+        resultRecords = await collection.SearchAsync(searchVector, top: 3, new() { Filter = g => g.Category == "External Definitions" }).ToListAsync();
 
         output.WriteLine("Search string: " + searchString);
         output.WriteLine("Number of results: " + resultRecords.Count);
@@ -122,19 +123,19 @@ public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore
     /// <typeparam name="TKey">The type of the model key.</typeparam>
     private sealed class Glossary<TKey>
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public TKey Key { get; set; }
 
-        [VectorStoreRecordData(IsIndexed = true)]
+        [VectorStoreData(IsIndexed = true)]
         public string Category { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Term { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Definition { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 }

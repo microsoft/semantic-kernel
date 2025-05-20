@@ -17,35 +17,33 @@ public static class RedisFactory
     /// <summary>
     /// Record definition that matches the storage format used by Langchain for Redis.
     /// </summary>
-    private static readonly VectorStoreRecordDefinition s_recordDefinition = new()
+    private static readonly VectorStoreCollectionDefinition s_definition = new()
     {
-        Properties = new List<VectorStoreRecordProperty>
+        Properties = new List<VectorStoreProperty>
         {
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("Content", typeof(string)) { StoragePropertyName = "text" },
-            new VectorStoreRecordDataProperty("Source", typeof(string)) { StoragePropertyName = "source" },
-            new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 1536) { StoragePropertyName = "embedding" }
+            new VectorStoreKeyProperty("Key", typeof(string)),
+            new VectorStoreDataProperty("Content", typeof(string)) { StorageName = "text" },
+            new VectorStoreDataProperty("Source", typeof(string)) { StorageName = "source" },
+            new VectorStoreVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 1536) { StorageName = "embedding" }
         }
     };
 
     /// <summary>
-    /// Create a new Redis-backed <see cref="IVectorStore"/> that can be used to read data that was ingested using Langchain.
+    /// Create a new Redis-backed <see cref="VectorStore"/> that can be used to read data that was ingested using Langchain.
     /// </summary>
     /// <param name="database">The redis database to read/write from.</param>
-    /// <returns>The <see cref="IVectorStore"/>.</returns>
-    public static IVectorStore CreateRedisLangchainInteropVectorStore(IDatabase database)
+    /// <returns>The <see cref="VectorStore"/>.</returns>
+    public static VectorStore CreateRedisLangchainInteropVectorStore(IDatabase database)
         => new RedisLangchainInteropVectorStore(new RedisVectorStore(database), database);
 
     private sealed class RedisLangchainInteropVectorStore(
-        IVectorStore innerStore,
+        VectorStore innerStore,
         IDatabase database)
-        : IVectorStore
+        : VectorStore
     {
         private readonly IDatabase _database = database;
 
-        public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-            where TKey : notnull
-            where TRecord : notnull
+        public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
         {
             if (typeof(TKey) != typeof(string) || typeof(TRecord) != typeof(LangchainDocument<string>))
             {
@@ -56,21 +54,36 @@ public static class RedisFactory
             // Also pass in our custom record definition that matches the schema used by Langchain
             // so that the default mapper can use the storage names in it, to map to the storage
             // scheme.
-            return (new RedisHashSetVectorStoreRecordCollection<TKey, TRecord>(
+            return (new RedisHashSetCollection<TKey, TRecord>(
                 _database,
                 name,
                 new()
                 {
-                    VectorStoreRecordDefinition = s_recordDefinition
-                }) as IVectorStoreRecordCollection<TKey, TRecord>)!;
+                    Definition = s_definition
+                }) as VectorStoreCollection<TKey, TRecord>)!;
         }
 
-        public object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);
+        public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition? definition = null)
+        {
+            // Create a hash set collection, since Langchain uses redis hashes for storing records.
+            // Also pass in our custom record definition that matches the schema used by Langchain
+            // so that the default mapper can use the storage names in it, to map to the storage
+            // scheme.
+            return new RedisHashSetDynamicCollection(
+                _database,
+                name,
+                new()
+                {
+                    Definition = s_definition
+                });
+        }
 
-        public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => innerStore.ListCollectionNamesAsync(cancellationToken);
+        public override object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);
 
-        public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) => innerStore.CollectionExistsAsync(name, cancellationToken);
+        public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => innerStore.ListCollectionNamesAsync(cancellationToken);
 
-        public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default) => innerStore.DeleteCollectionAsync(name, cancellationToken);
+        public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) => innerStore.CollectionExistsAsync(name, cancellationToken);
+
+        public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default) => innerStore.EnsureCollectionDeletedAsync(name, cancellationToken);
     }
 }

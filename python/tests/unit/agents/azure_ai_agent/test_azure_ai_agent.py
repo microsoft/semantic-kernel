@@ -15,7 +15,7 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
+from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 
 
 async def test_azure_ai_agent_init(ai_project_client, ai_agent_definition):
@@ -311,7 +311,7 @@ async def test_azure_ai_agent_invoke_stream_mixed_messages(ai_project_client, ai
 def test_azure_ai_agent_get_channel_keys(ai_project_client, ai_agent_definition):
     agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
     keys = list(agent.get_channel_keys())
-    assert len(keys) >= 3
+    assert len(keys) >= 2
 
 
 async def test_azure_ai_agent_create_channel(ai_project_client, ai_agent_definition):
@@ -339,25 +339,62 @@ async def test_azure_ai_agent_create_channel(ai_project_client, ai_agent_definit
         assert ch.thread_id == "mock-thread-id"
 
 
-def test_create_client():
-    conn_str = "endpoint;subscription_id;resource_group;project_name"
+def test_create_client_with_explicit_endpoint():
     credential = MagicMock(spec=DefaultAzureCredential)
 
-    with patch("azure.ai.projects.aio.AIProjectClient.from_connection_string") as mock_from_conn_str:
+    with patch("semantic_kernel.agents.azure_ai.azure_ai_agent.AIProjectClient") as mock_client_cls:
         mock_client = MagicMock(spec=AIProjectClient)
-        mock_from_conn_str.return_value = mock_client
+        mock_client_cls.return_value = mock_client
 
-        client = AzureAIAgent.create_client(
+        result = AzureAIAgent.create_client(
             credential=credential,
-            conn_str=conn_str,
+            endpoint="https://my-endpoint",
             extra_arg="extra_value",
         )
 
-        mock_from_conn_str.assert_called_once()
-        _, actual_kwargs = mock_from_conn_str.call_args
+        mock_client_cls.assert_called_once()
+        _, kwargs = mock_client_cls.call_args
 
-        assert actual_kwargs["credential"] is credential
-        assert actual_kwargs["conn_str"] == conn_str
-        assert actual_kwargs["extra_arg"] == "extra_value"
-        assert actual_kwargs["user_agent"] is not None
-        assert client is mock_client
+        assert kwargs["credential"] is credential
+        assert kwargs["endpoint"] == "https://my-endpoint"
+        assert kwargs["extra_arg"] == "extra_value"
+        assert result is mock_client
+
+
+def test_create_client_uses_settings_when_endpoint_none():
+    credential = MagicMock(spec=DefaultAzureCredential)
+
+    with (
+        patch("semantic_kernel.agents.azure_ai.azure_ai_agent.AzureAIAgentSettings") as mock_settings_cls,
+        patch("semantic_kernel.agents.azure_ai.azure_ai_agent.AIProjectClient") as mock_client_cls,
+    ):
+        mock_settings = MagicMock()
+        mock_settings.endpoint = "https://configured-endpoint"
+        mock_settings_cls.return_value = mock_settings
+
+        mock_client = MagicMock(spec=AIProjectClient)
+        mock_client_cls.return_value = mock_client
+
+        result = AzureAIAgent.create_client(credential=credential)
+
+        mock_client_cls.assert_called_once()
+        _, kwargs = mock_client_cls.call_args
+
+        assert kwargs["endpoint"] == "https://configured-endpoint"
+        assert result is mock_client
+
+
+def test_create_client_raises_if_no_endpoint():
+    credential = MagicMock(spec=DefaultAzureCredential)
+
+    with patch("semantic_kernel.agents.azure_ai.azure_ai_agent.AzureAIAgentSettings") as mock_settings_cls:
+        mock_settings = MagicMock()
+        mock_settings.endpoint = None
+        mock_settings_cls.return_value = mock_settings
+
+        try:
+            AzureAIAgent.create_client(credential=credential)
+        except AgentInitializationException as e:
+            assert "Azure AI endpoint" in str(e)
+        else:
+            assert False, "Expected AgentInitializationException to be raised"

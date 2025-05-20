@@ -35,8 +35,8 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
         => this.SimpleSearch(DistanceFunction.EuclideanSquaredDistance, 0, 4, 3, [0, 2, 1]);
 
     [ConditionalFact]
-    public virtual Task Hamming()
-        => this.SimpleSearch(DistanceFunction.Hamming, 0, 1, 3, [0, 1, 2]);
+    public virtual Task HammingDistance()
+        => this.SimpleSearch(DistanceFunction.HammingDistance, 0, 1, 3, [0, 1, 2]);
 
     [ConditionalFact]
     public virtual Task ManhattanDistance()
@@ -95,19 +95,17 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
         var collection = fixture.TestStore.DefaultVectorStore.GetCollection<TKey, SearchRecord>(
             uniqueCollectionName, this.GetRecordDefinition(distanceFunction));
 
-        await collection.CreateCollectionAsync();
-
-        await collection.CreateCollectionIfNotExistsAsync(); // just to make sure it's idempotent
+        await collection.EnsureCollectionExistsAsync();
 
         try
         {
             await collection.UpsertAsync(insertedRecords);
 
-            var searchResult = collection.SearchEmbeddingAsync(baseVector, top: 3);
+            var searchResult = collection.SearchAsync(baseVector, top: 3);
             var results = await searchResult.ToListAsync();
             VerifySearchResults(expectedRecords, expectedScores, results, includeVectors: false);
 
-            searchResult = collection.SearchEmbeddingAsync(baseVector, top: 3, new() { IncludeVectors = true });
+            searchResult = collection.SearchAsync(baseVector, top: 3, new() { IncludeVectors = true });
             results = await searchResult.ToListAsync();
             VerifySearchResults(expectedRecords, expectedScores, results, includeVectors: true);
 
@@ -115,7 +113,7 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
             {
                 for (int top = Math.Max(1, skip); top <= insertedRecords.Count; top++)
                 {
-                    searchResult = collection.SearchEmbeddingAsync(baseVector,
+                    searchResult = collection.SearchAsync(baseVector,
                         top: top,
                         new()
                         {
@@ -133,7 +131,7 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
         }
         finally
         {
-            await collection.DeleteCollectionAsync();
+            await collection.EnsureCollectionDeletedAsync();
         }
 
         static void VerifySearchResults(SearchRecord[] expectedRecords, double[] expectedScores,
@@ -159,19 +157,19 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
         }
     }
 
-    private VectorStoreRecordDefinition GetRecordDefinition(string distanceFunction)
+    private VectorStoreCollectionDefinition GetRecordDefinition(string distanceFunction)
         => new()
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty(nameof(SearchRecord.Key), typeof(TKey)),
-                new VectorStoreRecordVectorProperty(nameof(SearchRecord.Vector), typeof(ReadOnlyMemory<float>), 4)
+                new VectorStoreKeyProperty(nameof(SearchRecord.Key), typeof(TKey)),
+                new VectorStoreVectorProperty(nameof(SearchRecord.Vector), typeof(ReadOnlyMemory<float>), 4)
                 {
                     DistanceFunction = distanceFunction,
                     IndexKind = this.IndexKind
                 },
-                new VectorStoreRecordDataProperty(nameof(SearchRecord.Int), typeof(int)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty(nameof(SearchRecord.String), typeof(string)) { IsIndexed = true },
+                new VectorStoreDataProperty(nameof(SearchRecord.Int), typeof(int)) { IsIndexed = true },
+                new VectorStoreDataProperty(nameof(SearchRecord.String), typeof(string)) { IsIndexed = true },
             ]
         };
 

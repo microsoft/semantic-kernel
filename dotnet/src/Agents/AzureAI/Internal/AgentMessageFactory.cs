@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 internal static class AgentMessageFactory
 {
     /// <summary>
-    /// Translate metadata from a <see cref="ChatMessageContent"/> to be used for a <see cref="ThreadMessage"/> or
+    /// Translate metadata from a <see cref="ChatMessageContent"/> to be used for a <see cref="PersistentThreadMessage"/> or
     /// <see cref="ThreadMessageOptions"/>.
     /// </summary>
     /// <param name="message">The message content.</param>
@@ -25,7 +25,7 @@ internal static class AgentMessageFactory
     }
 
     /// <summary>
-    /// Translate attachments from a <see cref="ChatMessageContent"/> to be used for a <see cref="ThreadMessage"/> or
+    /// Translate attachments from a <see cref="ChatMessageContent"/> to be used for a <see cref="PersistentThreadMessage"/> or
     /// </summary>
     /// <param name="message">The message content.</param>
     public static IEnumerable<MessageAttachment> GetAttachments(ChatMessageContent message)
@@ -35,7 +35,7 @@ internal static class AgentMessageFactory
                 .OfType<FileReferenceContent>()
                 .Select(
                     fileContent =>
-                        new MessageAttachment(fileContent.FileId, GetToolDefinition(fileContent.Tools).ToList()));
+                        new MessageAttachment(fileContent.FileId, [.. GetToolDefinition(fileContent.Tools)]));
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ internal static class AgentMessageFactory
                     role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Agent,
                     content: message.Content)
                 {
-                    Attachments = GetAttachments(message).ToArray(),
+                    Attachments = [.. GetAttachments(message)],
                 };
 
                 if (message.Metadata != null)

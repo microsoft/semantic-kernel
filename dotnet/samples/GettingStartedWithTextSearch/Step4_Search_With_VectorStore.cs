@@ -11,7 +11,7 @@ namespace GettingStartedWithTextSearch;
 
 /// <summary>
 /// This example shows how to create a <see cref="ITextSearch"/> from a
-/// <see cref="IVectorStore"/>.
+/// <see cref="VectorStore"/>.
 /// </summary>
 [Collection("InMemoryVectorStoreCollection")]
 public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVectorStoreFixture fixture) : BaseTest(output)

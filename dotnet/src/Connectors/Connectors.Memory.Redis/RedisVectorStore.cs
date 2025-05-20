@@ -2,10 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using NRedisStack.RedisStackCommands;
 using StackExchange.Redis;
 
@@ -17,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public sealed class RedisVectorStore : IVectorStore
+public sealed class RedisVectorStore : VectorStore
 {
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
@@ -25,23 +29,30 @@ public sealed class RedisVectorStore : IVectorStore
     /// <summary>The redis database to read/write indices from.</summary>
     private readonly IDatabase _database;
 
-    /// <summary>Optional configuration options for this class.</summary>
-    private readonly RedisVectorStoreOptions _options;
-
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(string))] };
+    private static readonly VectorStoreCollectionDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
+
+    /// <summary>The way in which data should be stored in redis..</summary>
+    private readonly RedisStorageType? _storageType;
+
+    private readonly IEmbeddingGenerator? _embeddingGenerator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisVectorStore"/> class.
     /// </summary>
     /// <param name="database">The redis database to read/write indices from.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [RequiresUnreferencedCode("The Redis provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Redis provider is currently incompatible with NativeAOT.")]
     public RedisVectorStore(IDatabase database, RedisVectorStoreOptions? options = default)
     {
         Verify.NotNull(database);
 
         this._database = database;
-        this._options = options ?? new RedisVectorStoreOptions();
+
+        options ??= RedisVectorStoreOptions.Default;
+        this._storageType = options.StorageType;
+        this._embeddingGenerator = options.EmbeddingGenerator;
 
         this._metadata = new()
         {
@@ -51,56 +62,65 @@ public sealed class RedisVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        where TKey : notnull
-        where TRecord : notnull
+    // TODO: The provider uses unsafe JSON serialization in many places, #11963
+    [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
+    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
     {
-#pragma warning disable CS0618 // IRedisVectorStoreRecordCollectionFactory is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
+        if (typeof(TRecord) == typeof(Dictionary<string, object?>))
         {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._database, name, vectorStoreRecordDefinition);
+            throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported);
         }
-#pragma warning restore CS0618
 
-        if (this._options.StorageType == RedisStorageType.HashSet)
+        return this._storageType switch
         {
-            var recordCollection = new RedisHashSetVectorStoreRecordCollection<TKey, TRecord>(this._database, name, new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>()
+            RedisStorageType.HashSet => new RedisHashSetCollection<TKey, TRecord>(this._database, name, new RedisHashSetCollectionOptions()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
-            return recordCollection!;
-        }
-        else
-        {
-            var recordCollection = new RedisJsonVectorStoreRecordCollection<TKey, TRecord>(this._database, name, new RedisJsonVectorStoreRecordCollectionOptions<TRecord>()
+                Definition = definition,
+                EmbeddingGenerator = this._embeddingGenerator
+            }),
+
+            RedisStorageType.Json => new RedisJsonCollection<TKey, TRecord>(this._database, name, new RedisJsonCollectionOptions()
             {
-                VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                EmbeddingGenerator = this._options.EmbeddingGenerator
-            }) as IVectorStoreRecordCollection<TKey, TRecord>;
-            return recordCollection!;
-        }
+                Definition = definition,
+                EmbeddingGenerator = this._embeddingGenerator
+            }),
+
+            _ => throw new UnreachableException()
+        };
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        const string OperationName = "";
-        RedisResult[] listResult;
-
-        try
+    // TODO: The provider uses unsafe JSON serialization in many places, #11963
+    [RequiresUnreferencedCode("The Redis provider is currently incompatible with trimming.")]
+    [RequiresDynamicCode("The Redis provider is currently incompatible with NativeAOT.")]
+    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
+        => this._storageType switch
         {
-            listResult = await this._database.FT()._ListAsync().ConfigureAwait(false);
-        }
-        catch (RedisException ex)
-        {
-            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            RedisStorageType.HashSet => new RedisHashSetDynamicCollection(this._database, name, new RedisHashSetCollectionOptions()
             {
-                VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
-                VectorStoreName = this._metadata.VectorStoreName,
-                OperationName = OperationName
-            };
-        }
+                Definition = definition,
+                EmbeddingGenerator = this._embeddingGenerator
+            }),
+
+            RedisStorageType.Json => new RedisJsonDynamicCollection(this._database, name, new RedisJsonCollectionOptions()
+            {
+                Definition = definition,
+                EmbeddingGenerator = this._embeddingGenerator
+            }),
+
+            _ => throw new UnreachableException()
+        };
+
+    /// <inheritdoc />
+    public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        const string OperationName = "FT._LIST";
+
+        var listResult = await VectorStoreErrorHandler.RunOperationAsync<RedisResult[], RedisException>(
+            this._metadata,
+            OperationName,
+            () => this._database.FT()._ListAsync()).ConfigureAwait(false);
 
         foreach (var item in listResult)
         {
@@ -113,21 +133,21 @@ public sealed class RedisVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
+    public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
-        return collection.DeleteCollectionAsync(cancellationToken);
+        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public object? GetService(Type serviceType, object? serviceKey = null)
+    public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 

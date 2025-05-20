@@ -281,7 +281,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
 
     public class FunctionProvider(
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-        IVectorStore vectorStore,
+        VectorStore vectorStore,
         IFunctionKeyProvider functionKeyProvider) : IFunctionProvider
     {
         public async Task<List<KernelFunction>> GetBestFunctionsAsync(
@@ -295,10 +295,10 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             var requestEmbedding = await embeddingGenerator.GenerateAsync(request, cancellationToken: cancellationToken);
 
             var collection = vectorStore.GetCollection<string, FunctionRecord>(collectionName);
-            await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
+            await collection.EnsureCollectionExistsAsync(cancellationToken);
 
             // Find best functions to call for original request.
-            var recordKeys = (await collection.SearchEmbeddingAsync(requestEmbedding, top: numberOfBestFunctions, cancellationToken: cancellationToken)
+            var recordKeys = (await collection.SearchAsync(requestEmbedding, top: numberOfBestFunctions, cancellationToken: cancellationToken)
                 .ToListAsync(cancellationToken)).Select(l => l.Record.Id);
 
             return plugins
@@ -310,7 +310,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
 
     public class PluginStore(
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-        IVectorStore vectorStore,
+        VectorStore vectorStore,
         IFunctionKeyProvider functionKeyProvider) : IPluginStore
     {
         public async Task SaveAsync(string collectionName, KernelPluginCollection plugins, CancellationToken cancellationToken = default)
@@ -339,7 +339,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             // Create collection and upsert all vector store records for search.
             // It's possible to do it only once and re-use the same functions for future requests.
             var collection = vectorStore.GetCollection<string, FunctionRecord>(collectionName);
-            await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
+            await collection.EnsureCollectionExistsAsync(cancellationToken);
 
             await collection.UpsertAsync(functionRecords, cancellationToken: cancellationToken);
         }
@@ -416,13 +416,13 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
 
     private sealed class FunctionRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string FunctionInfo { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> FunctionInfoEmbedding { get; set; }
     }
 

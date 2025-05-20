@@ -24,14 +24,14 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
 {
     private static readonly JsonSerializerOptions s_indentedSerializerOptions = new() { WriteIndented = true };
 
-    private static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
+    private static readonly VectorStoreCollectionDefinition s_definition = new()
     {
-        Properties = new List<VectorStoreRecordProperty>
+        Properties = new List<VectorStoreProperty>
         {
-            new VectorStoreRecordKeyProperty("Key", typeof(ulong)),
-            new VectorStoreRecordDataProperty("Term", typeof(string)),
-            new VectorStoreRecordDataProperty("Definition", typeof(string)),
-            new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536)
+            new VectorStoreKeyProperty("Key", typeof(ulong)),
+            new VectorStoreDataProperty("Term", typeof(string)),
+            new VectorStoreDataProperty("Definition", typeof(string)),
+            new VectorStoreVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536)
         }
     };
 
@@ -41,15 +41,15 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Initiate the docker container and construct the vector store.
         await qdrantFixture.ManualInitializeAsync();
-        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"));
+        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"), ownsClient: true);
 
         // Get and create collection if it doesn't exist using the dynamic data model and record definition that defines the schema.
-        var dynamicDataModelCollection = vectorStore.GetCollection<object, Dictionary<string, object?>>("skglossary", s_vectorStoreRecordDefinition);
-        await dynamicDataModelCollection.CreateCollectionIfNotExistsAsync();
+        var dynamicDataModelCollection = vectorStore.GetDynamicCollection("skglossary", s_definition);
+        await dynamicDataModelCollection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateDynamicGlossaryEntries().ToList();
@@ -59,18 +59,16 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
         }));
         await Task.WhenAll(tasks);
 
-        // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => dynamicDataModelCollection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        // Upsert the glossary entries into the collection.
+        await dynamicDataModelCollection.UpsertAsync(glossaryEntries);
 
         // Get the collection using the custom data model.
         var customDataModelCollection = vectorStore.GetCollection<ulong, Glossary>("skglossary");
 
         // Retrieve one of the upserted records from the collection.
-        var upsertedRecord = await customDataModelCollection.GetAsync((ulong)upsertedKeys.First(), new() { IncludeVectors = true });
+        var upsertedRecord = await customDataModelCollection.GetAsync((ulong)glossaryEntries.First()["Key"]!, new() { IncludeVectors = true });
 
-        // Write upserted keys and one of the upserted records to the console.
-        Console.WriteLine($"Upserted keys: {string.Join(", ", upsertedKeys)}");
+        // Write one of the upserted records to the console.
         Console.WriteLine($"Upserted record: {JsonSerializer.Serialize(upsertedRecord, s_indentedSerializerOptions)}");
     }
 
@@ -80,15 +78,15 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
         // Create an embedding generation service.
         var embeddingGenerator = new AzureOpenAIClient(new Uri(TestConfiguration.AzureOpenAIEmbeddings.Endpoint), new AzureCliCredential())
             .GetEmbeddingClient(TestConfiguration.AzureOpenAIEmbeddings.DeploymentName)
-            .AsIEmbeddingGenerator();
+            .AsIEmbeddingGenerator(1536);
 
         // Initiate the docker container and construct the vector store.
         await qdrantFixture.ManualInitializeAsync();
-        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"));
+        var vectorStore = new QdrantVectorStore(new QdrantClient("localhost"), ownsClient: true);
 
         // Get and create collection if it doesn't exist using the custom data model.
         var customDataModelCollection = vectorStore.GetCollection<ulong, Glossary>("skglossary");
-        await customDataModelCollection.CreateCollectionIfNotExistsAsync();
+        await customDataModelCollection.EnsureCollectionExistsAsync();
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateCustomGlossaryEntries().ToList();
@@ -99,17 +97,15 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
         await Task.WhenAll(tasks);
 
         // Upsert the glossary entries into the collection and return their keys.
-        var upsertedKeysTasks = glossaryEntries.Select(x => customDataModelCollection.UpsertAsync(x));
-        var upsertedKeys = await Task.WhenAll(upsertedKeysTasks);
+        await customDataModelCollection.UpsertAsync(glossaryEntries);
 
         // Get the collection using the dynamic data model.
-        var dynamicDataModelCollection = vectorStore.GetCollection<object, Dictionary<string, object?>>("skglossary", s_vectorStoreRecordDefinition);
+        var dynamicDataModelCollection = vectorStore.GetDynamicCollection("skglossary", s_definition);
 
         // Retrieve one of the upserted records from the collection.
-        var upsertedRecord = await dynamicDataModelCollection.GetAsync(upsertedKeys.First(), new() { IncludeVectors = true });
+        var upsertedRecord = await dynamicDataModelCollection.GetAsync(glossaryEntries.First().Key, new() { IncludeVectors = true });
 
-        // Write upserted keys and one of the upserted records to the console.
-        Console.WriteLine($"Upserted keys: {string.Join(", ", upsertedKeys)}");
+        // Write one of the upserted records to the console.
         Console.WriteLine($"Upserted record: {JsonSerializer.Serialize(upsertedRecord, s_indentedSerializerOptions)}");
     }
 
@@ -122,16 +118,16 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
     /// </remarks>
     private sealed class Glossary
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public ulong Key { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Term { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Definition { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> DefinitionEmbedding { get; set; }
     }
 
@@ -171,21 +167,21 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
     {
         yield return new Dictionary<string, object?>
         {
-            ["Key"] = 1,
+            ["Key"] = 1ul,
             ["Term"] = "API",
             ["Definition"] = "Application Programming Interface. A set of rules and specifications that allow software components to communicate and exchange data."
         };
 
         yield return new Dictionary<string, object?>
         {
-            ["Key"] = 2,
+            ["Key"] = 2ul,
             ["Term"] = "Connectors",
             ["Definition"] = "Connectors allow you to integrate with various services provide AI capabilities, including LLM, AudioToText, TextToAudio, Embedding generation, etc."
         };
 
         yield return new Dictionary<string, object?>
         {
-            ["Key"] = 3,
+            ["Key"] = 3ul,
             ["Term"] = "RAG",
             ["Definition"] = "Retrieval Augmented Generation - a term that refers to the process of retrieving additional data to provide as context to an LLM to use when generating a response (completion) to a user’s question (prompt)."
         };

@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Azure.AI.OpenAI;
 using Azure.Core;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AudioToText;
@@ -26,6 +27,127 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static partial class AzureOpenAIKernelBuilderExtensions
 {
+    #region Chat Client
+
+    /// <summary>
+    /// Adds an Azure OpenAI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddAzureOpenAIChatClient(
+        this IKernelBuilder builder,
+        string deploymentName,
+        string endpoint,
+        string apiKey,
+        string? serviceId = null,
+        string? modelId = null,
+        string? apiVersion = null,
+        HttpClient? httpClient = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddAzureOpenAIChatClient(
+            deploymentName,
+            endpoint,
+            apiKey,
+            serviceId,
+            modelId,
+            apiVersion,
+            httpClient,
+            openTelemetrySourceName,
+            openTelemetryConfig);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an Azure OpenAI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="credentials">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
+    /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddAzureOpenAIChatClient(
+        this IKernelBuilder builder,
+        string deploymentName,
+        string endpoint,
+        TokenCredential credentials,
+        string? serviceId = null,
+        string? modelId = null,
+        string? apiVersion = null,
+        HttpClient? httpClient = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddAzureOpenAIChatClient(
+            deploymentName,
+            endpoint,
+            credentials,
+            serviceId,
+            modelId,
+            apiVersion,
+            httpClient,
+            openTelemetrySourceName,
+            openTelemetryConfig);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an Azure OpenAI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="azureOpenAIClient"><see cref="AzureOpenAIClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
+    /// <returns>The same instance as <paramref name="builder"/>.</returns>
+    public static IKernelBuilder AddAzureOpenAIChatClient(
+        this IKernelBuilder builder,
+        string deploymentName,
+        AzureOpenAIClient? azureOpenAIClient = null,
+        string? serviceId = null,
+        string? modelId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddAzureOpenAIChatClient(
+            deploymentName,
+            azureOpenAIClient,
+            serviceId,
+            modelId,
+            openTelemetrySourceName,
+            openTelemetryConfig);
+
+        return builder;
+    }
+
+    #endregion
+
     #region Chat Completion
 
     /// <summary>
@@ -314,6 +436,8 @@ public static partial class AzureOpenAIKernelBuilderExtensions
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IEmbeddingGenerator{String, Embedding}"/> instance.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIEmbeddingGenerator(
@@ -325,7 +449,9 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? modelId = null,
         int? dimensions = null,
         string? apiVersion = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
@@ -337,7 +463,9 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             modelId,
             dimensions,
             apiVersion,
-            httpClient);
+            httpClient,
+            openTelemetrySourceName,
+            openTelemetryConfig);
 
         return builder;
     }
@@ -354,6 +482,8 @@ public static partial class AzureOpenAIKernelBuilderExtensions
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <param name="apiVersion">Optional Azure OpenAI API version, see available here <see cref="AzureOpenAIClientOptions.ServiceVersion"/></param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IEmbeddingGenerator{String, Embedding}"/> instance.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIEmbeddingGenerator(
@@ -365,7 +495,9 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         string? modelId = null,
         int? dimensions = null,
         string? apiVersion = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
         Verify.NotNull(credential);
@@ -378,7 +510,9 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             modelId,
             dimensions,
             apiVersion,
-            httpClient);
+            httpClient,
+            openTelemetrySourceName,
+            openTelemetryConfig);
 
         return builder;
     }
@@ -392,6 +526,8 @@ public static partial class AzureOpenAIKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="modelId">Model identifier, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
+    /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IEmbeddingGenerator{String, Embedding}"/> instance.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     [Experimental("SKEXP0010")]
     public static IKernelBuilder AddAzureOpenAIEmbeddingGenerator(
@@ -400,7 +536,9 @@ public static partial class AzureOpenAIKernelBuilderExtensions
         AzureOpenAIClient? azureOpenAIClient = null,
         string? serviceId = null,
         string? modelId = null,
-        int? dimensions = null)
+        int? dimensions = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryEmbeddingGenerator<string, Embedding<float>>>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
@@ -409,7 +547,9 @@ public static partial class AzureOpenAIKernelBuilderExtensions
             azureOpenAIClient,
             serviceId,
             modelId,
-            dimensions);
+            dimensions,
+            openTelemetrySourceName,
+            openTelemetryConfig);
 
         return builder;
     }

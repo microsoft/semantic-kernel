@@ -168,7 +168,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
     /// which are similar to original request.
     /// </summary>
     private sealed class FewShotPromptOptimizationFilter(
-        IVectorStore vectorStore,
+        VectorStore vectorStore,
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator) : IPromptRenderFilter
     {
         /// <summary>
@@ -208,7 +208,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
                 // Create collection and upsert all vector store records for search.
                 // It's possible to do it only once and re-use the same examples for future requests.
                 var collection = vectorStore.GetCollection<string, ExampleRecord>(CollectionName);
-                await collection.CreateCollectionIfNotExistsAsync(context.CancellationToken);
+                await collection.EnsureCollectionExistsAsync(context.CancellationToken);
 
                 await collection.UpsertAsync(exampleRecords, cancellationToken: context.CancellationToken);
 
@@ -216,7 +216,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
                 var requestEmbedding = await embeddingGenerator.GenerateAsync(request, cancellationToken: context.CancellationToken);
 
                 // Find top N examples which are similar to original request.
-                var topNExamples = (await collection.SearchEmbeddingAsync(requestEmbedding, top: TopN, cancellationToken: context.CancellationToken)
+                var topNExamples = (await collection.SearchAsync(requestEmbedding, top: TopN, cancellationToken: context.CancellationToken)
                     .ToListAsync(context.CancellationToken)).Select(l => l.Record).ToList();
 
                 // Override arguments to use only top N examples, which will be sent to LLM.
@@ -317,13 +317,13 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
 
     private sealed class ExampleRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Example { get; set; }
 
-        [VectorStoreRecordVector(1536)]
+        [VectorStoreVector(1536)]
         public ReadOnlyMemory<float> ExampleEmbedding { get; set; }
     }
 }

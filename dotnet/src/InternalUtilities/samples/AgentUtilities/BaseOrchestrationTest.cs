@@ -12,15 +12,15 @@ public abstract class BaseOrchestrationTest(ITestOutputHelper output) : BaseAgen
 {
     protected const int ResultTimeoutInSeconds = 30;
 
-    protected ChatCompletionAgent CreateAgent(string instructions, string? name = null, string? description = null)
+    protected ChatCompletionAgent CreateAgent(string instructions, string? description = null, string? name = null, Kernel? kernel = null)
     {
         return
             new ChatCompletionAgent
             {
-                Instructions = instructions,
                 Name = name,
                 Description = description,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Instructions = instructions,
+                Kernel = kernel ?? this.CreateKernelWithChatCompletion(),
             };
     }
 

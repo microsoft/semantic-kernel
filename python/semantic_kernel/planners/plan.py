@@ -2,6 +2,7 @@
 
 import logging
 import re
+import sys
 import threading
 from collections.abc import Callable
 from copy import copy
@@ -18,9 +19,15 @@ from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 from semantic_kernel.utils.naming import generate_random_ascii_name
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
+
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@deprecated("This is no longer maintained and will be removed after June 1, 2025. Use function calling instead.")
 class Plan:
     """A plan for the kernel."""
 

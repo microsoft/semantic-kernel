@@ -9,6 +9,7 @@
     <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
+    <NoWarn>$(NoWarn);IDE0290;IDE0079</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

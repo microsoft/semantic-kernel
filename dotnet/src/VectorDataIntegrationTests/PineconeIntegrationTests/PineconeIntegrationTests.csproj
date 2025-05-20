@@ -10,6 +10,7 @@
     <IsTestProject>true</IsTestProject>
 
     <NoWarn>$(NoWarn);CA2007,SKEXP0001,VSTHRD111;CS1685</NoWarn>
+    <NoWarn>$(NoWarn);MEVD9001</NoWarn> <!-- Microsoft.Extensions.VectorData experimental provider-facing APIs -->
     <UserSecretsId>b7762d10-e29b-4bb1-8b74-b6d69a667dd4</UserSecretsId>
   </PropertyGroup>
 

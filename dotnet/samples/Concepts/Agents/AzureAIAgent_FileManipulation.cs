@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
-using Agent = Azure.AI.Projects.Agent;
 
 namespace Agents;
 
@@ -17,10 +16,10 @@ public class AzureAIAgent_FileManipulation(ITestOutputHelper output) : BaseAzure
     public async Task AnalyzeCSVFileUsingAzureAIAgentAsync()
     {
         await using Stream stream = EmbeddedResource.ReadStream("sales.csv")!;
-        AgentFile fileInfo = await this.AgentsClient.UploadFileAsync(stream, AgentFilePurpose.Agents, "sales.csv");
+        PersistentAgentFileInfo fileInfo = await this.Client.Files.UploadFileAsync(stream, PersistentAgentFilePurpose.Agents, "sales.csv");
 
         // Define the agent
-        Agent definition = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new CodeInterpreterToolDefinition()],
             toolResources:
@@ -31,8 +30,8 @@ public class AzureAIAgent_FileManipulation(ITestOutputHelper output) : BaseAzure
                         FileIds = { fileInfo.Id },
                     }
                 });
-        AzureAIAgent agent = new(definition, this.AgentsClient);
-        AzureAIAgentThread thread = new(this.AgentsClient);
+        AzureAIAgent agent = new(definition, this.Client);
+        AzureAIAgentThread thread = new(this.Client);
 
         // Respond to user input
         try
@@ -44,8 +43,8 @@ public class AzureAIAgent_FileManipulation(ITestOutputHelper output) : BaseAzure
         finally
         {
             await thread.DeleteAsync();
-            await this.AgentsClient.DeleteAgentAsync(agent.Id);
-            await this.AgentsClient.DeleteFileAsync(fileInfo.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
+            await this.Client.Files.DeleteFileAsync(fileInfo.Id);
         }
 
         // Local function to invoke agent and display the conversation messages.

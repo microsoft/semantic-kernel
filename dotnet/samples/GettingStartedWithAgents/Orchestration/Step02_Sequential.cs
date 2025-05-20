@@ -50,8 +50,11 @@ public class Step02_Sequential(ITestOutputHelper output) : BaseOrchestrationTest
                 """,
                 description: "An agent that formats and proofreads the marketing copy.");
 
-        // Define the orchestration
+        // Create a monitor to capturing agent responses (via ResponseCallback)
+        // to display at the end of this sample. (optional)
+        // NOTE: Create your own callback to capture responses in your application or service.
         OrchestrationMonitor monitor = new();
+        // Define the orchestration
         SequentialOrchestration orchestration =
             new(analystAgent, writerAgent, editorAgent)
             {

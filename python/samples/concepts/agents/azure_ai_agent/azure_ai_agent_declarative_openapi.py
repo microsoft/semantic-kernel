@@ -24,7 +24,7 @@ description: This agent answers question about the weather.
 model:
   id: ${AzureAI:ChatModelId}
   connection:
-    connection_string: ${AzureAI:ConnectionString}
+    endpoint: ${AzureAI:Endpoint}
   options:
     temperature: 0.4
 tools:
@@ -153,7 +153,7 @@ tools:
           schemes: {}
 """
 
-settings = AzureAIAgentSettings()  # ChatModelId & ConnectionString come from .env/env vars
+settings = AzureAIAgentSettings()  # ChatModelId & Endpoint come from .env/env vars
 
 
 async def main():

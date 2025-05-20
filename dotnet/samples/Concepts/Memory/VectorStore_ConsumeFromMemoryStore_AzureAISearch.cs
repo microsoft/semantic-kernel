@@ -3,12 +3,10 @@
 using System.Text;
 using System.Text.Json;
 using Azure;
-using Azure.Identity;
 using Azure.Search.Documents.Indexes;
 using Memory.VectorStoreFixtures;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Memory;
@@ -26,42 +24,22 @@ namespace Memory;
 /// dotnet user-secrets set "AzureAISearch:Endpoint" "https://myazureaisearchinstance.search.windows.net"
 /// dotnet user-secrets set "AzureAISearch:ApiKey" "samplesecret"
 /// </remarks>
-[Obsolete("The IMemoryStore abstraction is being obsoleted")]
-public class VectorStore_ConsumeFromMemoryStore_AzureAISearch(ITestOutputHelper output, VectorStoreQdrantContainerFixture qdrantFixture) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
+public class VectorStore_ConsumeFromMemoryStore_AzureAISearch(ITestOutputHelper output) : BaseTest(output), IClassFixture<VectorStoreQdrantContainerFixture>
 {
     private const int VectorSize = 1536;
-    private const string MemoryStoreCollectionName = "memorystorecollection";
     private readonly static JsonSerializerOptions s_consoleFormatting = new() { WriteIndented = true };
 
     [Fact]
     public async Task ConsumeExampleAsync()
     {
-        // Setup the supporting infra and embedding generation.
-        await qdrantFixture.ManualInitializeAsync();
-        var textEmbeddingService = new AzureOpenAITextEmbeddingGenerationService(
-            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-            TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            new AzureCliCredential());
-
-        // Construct a legacy MemoryStore.
-        var memoryStore = new AzureAISearchMemoryStore(
-            TestConfiguration.AzureAISearch.Endpoint,
-            TestConfiguration.AzureAISearch.ApiKey);
-
         // Construct a VectorStore.
         var vectorStore = new AzureAISearchVectorStore(new SearchIndexClient(
             new Uri(TestConfiguration.AzureAISearch.Endpoint),
             new AzureKeyCredential(TestConfiguration.AzureAISearch.ApiKey)));
 
-        // Build a collection with sample data using the MemoryStore abstraction.
-        await VectorStore_ConsumeFromMemoryStore_Common.CreateCollectionAndAddSampleDataAsync(
-            memoryStore,
-            MemoryStoreCollectionName,
-            textEmbeddingService);
-
-        // Connect to the same collection using the VectorStore abstraction.
-        var collection = vectorStore.GetCollection<string, VectorStoreRecord>(MemoryStoreCollectionName);
-        await collection.CreateCollectionIfNotExistsAsync();
+        // Use the VectorStore abstraction to connect to an existing collection which was previously created via the IMemoryStore abstraction
+        var collection = vectorStore.GetCollection<string, VectorStoreRecord>("memorystorecollection");
+        await collection.EnsureCollectionExistsAsync();
 
         // Show that the data can be read using the VectorStore abstraction.
         // Note that AzureAISearchMemoryStore converts all keys to base64
@@ -77,29 +55,29 @@ public class VectorStore_ConsumeFromMemoryStore_AzureAISearch(ITestOutputHelper 
 
     /// <summary>
     /// A data model with Vector Store attributes that matches the storage representation of
-    /// <see cref="MemoryRecord"/> objects as created by <see cref="AzureAISearchMemoryStore"/>.
+    /// <see cref="MemoryRecord"/> objects as created by <c>AzureAISearchMemoryStore</c>.
     /// </summary>
     private sealed class VectorStoreRecord
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string Id { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Description { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string Text { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public bool IsReference { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string ExternalSourceName { get; set; }
 
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string AdditionalMetadata { get; set; }
 
-        [VectorStoreRecordVector(VectorSize)]
+        [VectorStoreVector(VectorSize)]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 }

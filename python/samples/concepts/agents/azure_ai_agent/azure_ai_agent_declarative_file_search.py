@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from azure.ai.projects.models import OpenAIFile, VectorStore
+from azure.ai.agents.models import VectorStore
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
@@ -28,7 +28,7 @@ instructions: >
 model:
   id: ${AzureAI:ChatModelId}
   connection:
-    connection_string: ${AzureAI:ConnectionString}
+    endpoint: ${AzureAI:Endpoint}
 tools:
   - type: file_search
     options:
@@ -36,7 +36,7 @@ tools:
         - ${AzureAI:VectorStoreId}
 """
 
-settings = AzureAIAgentSettings()  # ChatModelId & ConnectionString come from .env/env vars
+settings = AzureAIAgentSettings()  # ChatModelId & Endpoint come from .env/env vars
 
 
 async def main():
@@ -52,10 +52,8 @@ async def main():
             "employees.pdf",
         )
         # Upload the pdf file to the agent service
-        file: OpenAIFile = await client.agents.upload_file_and_poll(file_path=pdf_file_path, purpose="assistants")
-        vector_store: VectorStore = await client.agents.create_vector_store_and_poll(
-            file_ids=[file.id], name="my_vectorstore"
-        )
+        file = await client.agents.files.upload_and_poll(file_path=pdf_file_path, purpose="assistants")
+        vector_store: VectorStore = await client.agents.vector_stores.create(file_ids=[file.id], name="my_vectorstore")
 
         try:
             # Create the AzureAI Agent from the YAML spec
@@ -82,8 +80,8 @@ async def main():
         finally:
             # Cleanup: Delete the agent, vector store, and file
             await client.agents.delete_agent(agent.id)
-            await client.agents.delete_vector_store(vector_store.id)
-            await client.agents.delete_file(file.id)
+            await client.agents.vector_stores.delete(vector_store.id)
+            await client.agents.files.delete(file.id)
 
         """
         Sample output:

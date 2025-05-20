@@ -307,7 +307,7 @@ def test_cmc_to_dict_keys():
             },
             {
                 "role": "user",
-                "content": [{"type": "text", "text": "test None (Start Index=None->End Index=None)"}],
+                "content": [{"type": "text", "text": "type=None, test None (Start Index=None->End Index=None)"}],
             },
         ),
         (

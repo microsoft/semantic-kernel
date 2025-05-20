@@ -10,16 +10,27 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </summary>
 public sealed class WeaviateVectorStoreOptions
 {
+    internal static readonly WeaviateVectorStoreOptions Default = new();
+
     /// <summary>
-    /// An optional factory to use for constructing <see cref="WeaviateVectorStoreRecordCollection{TKey, TRecord}"/> instances, if a custom record collection is required.
+    /// Initializes a new instance of the <see cref="WeaviateVectorStoreOptions"/> class.
     /// </summary>
-    [Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
-    public IWeaviateVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
+    public WeaviateVectorStoreOptions()
+    {
+    }
+
+    internal WeaviateVectorStoreOptions(WeaviateVectorStoreOptions? source)
+    {
+        this.Endpoint = source?.Endpoint;
+        this.ApiKey = source?.ApiKey;
+        this.HasNamedVectors = source?.HasNamedVectors ?? Default.HasNamedVectors;
+        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+    }
 
     /// <summary>
     /// Weaviate endpoint for remote or local cluster.
     /// </summary>
-    public Uri? Endpoint { get; set; } = null;
+    public Uri? Endpoint { get; set; }
 
     /// <summary>
     /// Weaviate API key.
@@ -27,7 +38,7 @@ public sealed class WeaviateVectorStoreOptions
     /// <remarks>
     /// This parameter is optional because authentication may be disabled in local clusters for testing purposes.
     /// </remarks>
-    public string? ApiKey { get; set; } = null;
+    public string? ApiKey { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector in Weaviate collection.
@@ -39,5 +50,5 @@ public sealed class WeaviateVectorStoreOptions
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
-    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 }

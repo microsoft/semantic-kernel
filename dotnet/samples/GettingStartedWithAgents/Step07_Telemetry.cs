@@ -31,10 +31,12 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
     /// Logging is enabled through the <see cref="Agent.LoggerFactory"/> and <see cref="AgentChat.LoggerFactory"/> properties.
     /// This example uses <see cref="XunitLogger"/> to output logs to the test console, but any compatible logging provider can be used.
     /// </summary>
-    [Fact]
-    public async Task Logging()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Logging(bool useChatClient)
     {
-        await RunExampleAsync(loggerFactory: this.LoggerFactory);
+        await RunExampleAsync(loggerFactory: this.LoggerFactory, useChatClient: useChatClient);
 
         // Output:
         // [AddChatMessages] Adding Messages: 1.
@@ -51,18 +53,22 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
     /// For output this example uses Console as well as Application Insights.
     /// </summary>
     [Theory]
-    [InlineData(true, false)]
-    [InlineData(false, false)]
-    [InlineData(true, true)]
-    [InlineData(false, true)]
-    public async Task Tracing(bool useApplicationInsights, bool useStreaming)
+    [InlineData(true, false, false)]
+    [InlineData(false, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, true)]
+    [InlineData(false, false, true)]
+    [InlineData(true, true, true)]
+    [InlineData(false, true, true)]
+    public async Task Tracing(bool useApplicationInsights, bool useStreaming, bool useChatClient)
     {
         using var tracerProvider = GetTracerProvider(useApplicationInsights);
 
         using var activity = s_activitySource.StartActivity("MainActivity");
         Console.WriteLine($"Operation/Trace ID: {Activity.Current?.TraceId}");
 
-        await RunExampleAsync(useStreaming: useStreaming);
+        await RunExampleAsync(useStreaming: useStreaming, useChatClient: useChatClient);
 
         // Output:
         // Operation/Trace ID: 132d831ef39c13226cdaa79873f375b8
@@ -82,7 +88,8 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
 
     private async Task RunExampleAsync(
         bool useStreaming = false,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        bool useChatClient = false)
     {
         // Define the agents
         ChatCompletionAgent agentReviewer =
@@ -97,7 +104,7 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
                     If not, provide insight on how to refine suggested copy without examples.
                     """,
                 Description = "An art director who has opinions about copywriting born of a love for David Ogilvy",
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
                 LoggerFactory = GetLoggerFactoryOrDefault(loggerFactory),
             };
 
@@ -190,6 +197,8 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
         }
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
+
+        chatClient?.Dispose();
     }
 
     private TracerProvider? GetTracerProvider(bool useApplicationInsights)
