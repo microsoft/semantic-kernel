@@ -3,7 +3,7 @@
 import asyncio
 from functools import reduce
 
-from azure.ai.projects.models import BingGroundingTool
+from azure.ai.agents.models import BingGroundingTool
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread

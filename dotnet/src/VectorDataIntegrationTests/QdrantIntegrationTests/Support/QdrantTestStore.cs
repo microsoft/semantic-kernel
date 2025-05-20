@@ -3,7 +3,7 @@
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client;
-using QdrantIntegrationTests.Support.TestContainer;
+using Testcontainers.Qdrant;
 using VectorDataSpecificationTests.Support;
 
 namespace QdrantIntegrationTests.Support;

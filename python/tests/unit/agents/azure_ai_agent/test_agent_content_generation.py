@@ -3,7 +3,7 @@
 
 from unittest.mock import MagicMock
 
-from azure.ai.projects.models import (
+from azure.ai.agents.models import (
     MessageDelta,
     MessageDeltaChunk,
     MessageDeltaImageFileContent,
@@ -31,6 +31,8 @@ from azure.ai.projects.models import (
     RunStepDeltaFunction,
     RunStepDeltaFunctionToolCall,
     RunStepDeltaToolCallObject,
+    RunStepFunctionToolCall,
+    RunStepFunctionToolCallDetails,
     ThreadMessage,
 )
 
@@ -382,10 +384,14 @@ def test_generate_function_call_content():
 def test_generate_function_result_content():
     step = FunctionCallContent(id="123", name="func_name", arguments={"k": "v"})
 
-    class FakeToolCall:
-        function = type("Function", (), {"output": "result_data"})
-
-    tool_call = FakeToolCall()
+    tool_call = RunStepFunctionToolCall(
+        id="123",
+        function=RunStepFunctionToolCallDetails({
+            "name": "func_name",
+            "arguments": '{"k": "v"}',
+            "output": "result_data",
+        }),
+    )
     msg = generate_function_result_content("my_agent", step, tool_call)
     assert len(msg.items) == 1
     assert msg.items[0].result == "result_data"

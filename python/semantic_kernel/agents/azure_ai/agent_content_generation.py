@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Any, cast
 
-from azure.ai.projects.models import (
+from azure.ai.agents.models import (
     MessageDeltaImageFileContent,
     MessageDeltaImageFileContentObject,
     MessageDeltaTextContent,
@@ -43,7 +43,7 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
-    from azure.ai.projects.models import (
+    from azure.ai.agents.models import (
         MessageDeltaChunk,
         RunStepDeltaToolCallObject,
     )
@@ -271,7 +271,7 @@ def generate_function_result_content(
             function_name=function_step.function_name,
             plugin_name=function_step.plugin_name,
             id=function_step.id,
-            result=tool_call.function.output,  # type: ignore
+            result=tool_call.function.get("output"),  # type: ignore
         )
     )
     return function_call_content

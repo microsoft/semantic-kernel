@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Agent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted.AzureAgents;
 
@@ -39,18 +39,18 @@ public class Step03_AzureAIAgent_Chat(ITestOutputHelper output) : BaseAzureAgent
     public async Task UseGroupChatWithTwoAgents()
     {
         // Define the agents
-        Agent reviewerModel = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent reviewerModel = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             ReviewerName,
             null,
             ReviewerInstructions);
-        AzureAIAgent agentReviewer = new(reviewerModel, this.AgentsClient);
-        Agent writerModel = await this.AgentsClient.CreateAgentAsync(
+        AzureAIAgent agentReviewer = new(reviewerModel, this.Client);
+        PersistentAgent writerModel = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             CopyWriterName,
             null,
             CopyWriterInstructions);
-        AzureAIAgent agentWriter = new(writerModel, this.AgentsClient);
+        AzureAIAgent agentWriter = new(writerModel, this.Client);
 
         // Create a chat for agent interaction.
         AgentGroupChat chat =
@@ -89,6 +89,8 @@ public class Step03_AzureAIAgent_Chat(ITestOutputHelper output) : BaseAzureAgent
         finally
         {
             await chat.ResetAsync();
+            await agentReviewer.Client.Administration.DeleteAgentAsync(agentReviewer.Id);
+            await agentWriter.Client.Administration.DeleteAgentAsync(agentWriter.Id);
         }
     }
 
