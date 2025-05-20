@@ -18,8 +18,6 @@ using Microsoft.SemanticKernel.TextToImage;
 using Moq;
 using OpenAI.Images;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Services;
 
 /// <summary>
@@ -77,7 +75,7 @@ public sealed class AzureOpenAITextToImageServiceTests : IDisposable
         // Arrange
         var sut = new AzureOpenAITextToImageService("deployment", "https://api-host", "api-key", modelId, this._httpClient, loggerFactory: this._mockLoggerFactory.Object);
 
-        // Act 
+        // Act
         var result = await sut.GenerateImageAsync("description", width, height);
 
         // Assert

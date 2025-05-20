@@ -27,13 +27,17 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
                 instructions: "You are an expert in chemistry. You answer questions from a chemistry perspective.",
                 description: "An expert in chemistry");
 
-        // Define the orchestration
+        // Create a monitor to capturing agent responses (via ResponseCallback)
+        // to display at the end of this sample. (optional)
+        // NOTE: Create your own callback to capture responses in your application or service.
         OrchestrationMonitor monitor = new();
+
+        // Define the orchestration
         ConcurrentOrchestration orchestration =
             new(physicist, chemist)
             {
                 ResponseCallback = monitor.ResponseCallback,
-                LoggerFactory = this.LoggerFactory
+                LoggerFactory = this.LoggerFactory,
             };
 
         // Start the runtime

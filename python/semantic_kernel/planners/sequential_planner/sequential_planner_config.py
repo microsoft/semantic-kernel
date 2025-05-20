@@ -1,8 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from collections.abc import Callable
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
+
+@deprecated("Will be removed in a future version.")
 class SequentialPlannerConfig:
     """Configuration for the SequentialPlanner."""
 

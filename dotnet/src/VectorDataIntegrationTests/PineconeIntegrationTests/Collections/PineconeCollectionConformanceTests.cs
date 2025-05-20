@@ -9,4 +9,6 @@ namespace PineconeIntegrationTests.Collections;
 public class PineconeCollectionConformanceTests(PineconeFixture fixture)
     : CollectionConformanceTests<string>(fixture), IClassFixture<PineconeFixture>
 {
+    // https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
+    public override string CollectionName => "collection-tests";
 }

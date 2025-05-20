@@ -30,7 +30,7 @@ kernelBuilder.Plugins.AddFromType<MailboxUtils>();
 kernelBuilder.Plugins.AddFromFunctions("Agents", [AgentKernelFunctionFactory.CreateFromAgent(CreateSalesAssistantAgent(chatModelId, apiKey))]);
 
 // Register embedding generation service and in-memory vector store
-kernelBuilder.Services.AddSingleton<IVectorStore, InMemoryVectorStore>();
+kernelBuilder.Services.AddSingleton<VectorStore, InMemoryVectorStore>();
 kernelBuilder.Services.AddOpenAIEmbeddingGenerator(embeddingModelId, apiKey);
 
 // Register MCP server
@@ -96,11 +96,11 @@ static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel
             string collection,
             string prompt,
             [FromKernelServices] IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-            [FromKernelServices] IVectorStore vectorStore,
+            [FromKernelServices] VectorStore vectorStore,
             CancellationToken cancellationToken) =>
         {
             // Get the vector store collection
-            IVectorStoreRecordCollection<Guid, TextDataModel> vsCollection = vectorStore.GetCollection<Guid, TextDataModel>(collection);
+            VectorStoreCollection<Guid, TextDataModel> vsCollection = vectorStore.GetCollection<Guid, TextDataModel>(collection);
 
             // Check if the collection exists, if not create and populate it
             if (!await vsCollection.CollectionExistsAsync(cancellationToken))
@@ -125,7 +125,7 @@ static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel
             ReadOnlyMemory<float> promptEmbedding = (await embeddingGenerator.GenerateAsync(prompt, cancellationToken: cancellationToken)).Vector;
 
             // Retrieve top three matching records from the vector store
-            var result = vsCollection.SearchEmbeddingAsync(promptEmbedding, top: 3, cancellationToken: cancellationToken);
+            var result = vsCollection.SearchAsync(promptEmbedding, top: 3, cancellationToken: cancellationToken);
 
             // Return the records as resource contents
             List<ResourceContents> contents = [];
