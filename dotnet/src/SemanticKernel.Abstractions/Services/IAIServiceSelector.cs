@@ -16,7 +16,7 @@ public interface IAIServiceSelector
     /// </summary>
     /// <typeparam name="T">
     /// Specifies the type of the <see cref="IAIService"/> required. This must be the same type
-    /// with which the service was registered in the <see cref="IServiceCollection"/> orvia
+    /// with which the service was registered in the <see cref="IServiceCollection"/> or via
     /// the <see cref="IKernelBuilder"/>.
     /// </typeparam>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>

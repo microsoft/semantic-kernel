@@ -8,12 +8,13 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI;
 using OpenAI.Chat;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -44,6 +45,40 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task ItCanUseOpenAiChatClientAndContentsAsync()
+    {
+        var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+        Assert.NotNull(openAIConfiguration.ChatModelId);
+        Assert.NotNull(openAIConfiguration.ApiKey);
+        Assert.NotNull(openAIConfiguration.ServiceId);
+
+        // Arrange
+        var openAIClient = new OpenAIClient(openAIConfiguration.ApiKey);
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddChatClient(openAIClient.GetChatClient(openAIConfiguration.ChatModelId).AsIChatClient());
+        var kernel = builder.Build();
+
+        var func = kernel.CreateFunctionFromPrompt(
+            "List the two planets after '{{$input}}', excluding moons, using bullet points.",
+            new OpenAIPromptExecutionSettings());
+
+        // Act
+        var result = await func.InvokeAsync(kernel, new() { [InputParameterName] = "Jupiter" });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("Saturn", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
+        var chatResponse = Assert.IsType<ChatResponse>(result.GetValue<ChatResponse>());
+        Assert.Contains("Saturn", chatResponse.Text, StringComparison.InvariantCultureIgnoreCase);
+        var chatMessage = Assert.IsType<Microsoft.Extensions.AI.ChatMessage>(result.GetValue<Microsoft.Extensions.AI.ChatMessage>());
+        Assert.Contains("Uranus", chatMessage.Text, StringComparison.InvariantCultureIgnoreCase);
+        var chatMessageContent = Assert.IsType<Microsoft.SemanticKernel.ChatMessageContent>(result.GetValue<Microsoft.SemanticKernel.ChatMessageContent>());
+        Assert.Contains("Uranus", chatMessageContent.Content, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    [Fact]
     public async Task OpenAIStreamingTestAsync()
     {
         // Arrange
@@ -63,6 +98,43 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 
         // Assert
         Assert.Contains("Pike Place", fullResult.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ItCanUseOpenAiStreamingChatClientAndContentsAsync()
+    {
+        var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+        Assert.NotNull(openAIConfiguration.ChatModelId);
+        Assert.NotNull(openAIConfiguration.ApiKey);
+        Assert.NotNull(openAIConfiguration.ServiceId);
+
+        // Arrange
+        var openAIClient = new OpenAIClient(openAIConfiguration.ApiKey);
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddChatClient(openAIClient.GetChatClient(openAIConfiguration.ChatModelId).AsIChatClient());
+        var kernel = builder.Build();
+
+        var plugins = TestHelpers.ImportSamplePlugins(kernel, "ChatPlugin");
+
+        StringBuilder fullResultSK = new();
+        StringBuilder fullResultMEAI = new();
+
+        var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
+
+        // Act
+        await foreach (var content in kernel.InvokeStreamingAsync<StreamingKernelContent>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
+        {
+            fullResultSK.Append(content);
+        }
+        await foreach (var content in kernel.InvokeStreamingAsync<ChatResponseUpdate>(plugins["ChatPlugin"]["Chat"], new() { [InputParameterName] = prompt }))
+        {
+            fullResultMEAI.Append(content);
+        }
+
+        // Assert
+        Assert.Contains("Pike Place", fullResultSK.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Pike Place", fullResultMEAI.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -106,7 +178,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 
         // Assert
         Assert.All(statusCodes, s => Assert.Equal(HttpStatusCode.Unauthorized, s));
-        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)exception).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, exception.StatusCode);
     }
 
     [Fact]
@@ -185,11 +257,11 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         var kernel = this.CreateAndInitializeKernel(httpClient);
 
         // Act
-        var result = await kernel.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?");
+        await kernel.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?");
 
         // Assert
         Assert.NotNull(httpHeaderHandler.RequestHeaders);
-        Assert.True(httpHeaderHandler.RequestHeaders.TryGetValues("Semantic-Kernel-Version", out var values));
+        Assert.True(httpHeaderHandler.RequestHeaders.TryGetValues("Semantic-Kernel-Version", out var _));
     }
 
     //[Theory(Skip = "This test is for manual verification.")]
@@ -228,18 +300,18 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 
     private Kernel CreateAndInitializeKernel(HttpClient? httpClient = null)
     {
-        var OpenAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
-        Assert.NotNull(OpenAIConfiguration);
-        Assert.NotNull(OpenAIConfiguration.ChatModelId);
-        Assert.NotNull(OpenAIConfiguration.ApiKey);
-        Assert.NotNull(OpenAIConfiguration.ServiceId);
+        var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+        Assert.NotNull(openAIConfiguration.ChatModelId);
+        Assert.NotNull(openAIConfiguration.ApiKey);
+        Assert.NotNull(openAIConfiguration.ServiceId);
 
-        var kernelBuilder = base.CreateKernelBuilder();
+        var kernelBuilder = this.CreateKernelBuilder();
 
         kernelBuilder.AddOpenAIChatCompletion(
-            modelId: OpenAIConfiguration.ChatModelId,
-            apiKey: OpenAIConfiguration.ApiKey,
-            serviceId: OpenAIConfiguration.ServiceId,
+            modelId: openAIConfiguration.ChatModelId,
+            apiKey: openAIConfiguration.ApiKey,
+            serviceId: openAIConfiguration.ServiceId,
             httpClient: httpClient);
 
         return kernelBuilder.Build();
