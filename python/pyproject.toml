@@ -67,9 +67,11 @@ autogen = [
 aws = [
     "boto3>=1.36.4,<1.39.0",
 ]
+# This is temporary to get the PR reviewed, and will be replaced when their new version is public.
 azure = [
+    "azure-ai-projects >= 1.0.0b11",
+    "azure-ai-agents >= 1.0.0",
     "azure-ai-inference >= 1.0.0b6",
-    "azure-ai-projects >= 1.0.0b7, <1.0.0b11",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
     "azure-cosmos ~= 4.7"

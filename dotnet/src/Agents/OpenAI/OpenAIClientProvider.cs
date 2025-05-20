@@ -19,6 +19,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// Provides an <see cref="OpenAIClient"/> for use by <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
 [Experimental("SKEXP0110")]
+[Obsolete("Use OpenAIAssistantAgent.CreateAzureOpenAIClient(...) or OpenAIAssistantAgent.CreateOpenAIClient(...)")]
 public sealed class OpenAIClientProvider
 {
     /// <summary>

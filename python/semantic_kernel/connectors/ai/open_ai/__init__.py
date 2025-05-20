@@ -37,7 +37,7 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_tex
 from semantic_kernel.connectors.ai.open_ai.services._open_ai_realtime import ListenEvents, SendEvents
 from semantic_kernel.connectors.ai.open_ai.services.azure_audio_to_text import AzureAudioToText
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.connectors.ai.open_ai.services.azure_realtime import AzureRealtimeWebsocket
+from semantic_kernel.connectors.ai.open_ai.services.azure_realtime import AzureRealtimeWebRTC, AzureRealtimeWebsocket
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import AzureTextCompletion
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_embedding import AzureTextEmbedding
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_to_audio import AzureTextToAudio
@@ -68,6 +68,7 @@ __all__ = [
     "AzureEmbeddingDependency",
     "AzureOpenAISettings",
     "AzureRealtimeExecutionSettings",
+    "AzureRealtimeWebRTC",
     "AzureRealtimeWebsocket",
     "AzureTextCompletion",
     "AzureTextEmbedding",
