@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -14,31 +15,31 @@ public sealed class GeminiGroundingMetadata
     /// Search entry point information.
     /// </summary>
     [JsonPropertyName("searchEntryPoint")]
-    public SearchEntryPointElement SearchEntryPoint { get; set; } = null!;
+    public SearchEntryPointElement? SearchEntryPoint { get; set; }
 
     /// <summary>
     /// Grounding chunks.
     /// </summary>
     [JsonPropertyName("groundingChunks")]
-    public IList<GroundingChunkElement> GroundingChunks { get; set; } = null!;
+    public IList<GroundingChunkElement>? GroundingChunks { get; set; }
 
     /// <summary>
     /// Grounding supports.
     /// </summary>
     [JsonPropertyName("groundingSupports")]
-    public IList<GroundingSupportElement> GroundingSupports { get; set; } = null!;
+    public IList<GroundingSupportElement>? GroundingSupports { get; set; }
 
     /// <summary>
     /// Retrieval metadata.
     /// </summary>
     [JsonPropertyName("retrievalMetadata")]
-    public Dictionary<string, object> RetrievalMetadata { get; set; } = null!;
+    public Dictionary<string, object>? RetrievalMetadata { get; set; }
 
     /// <summary>
     /// Web search queries.
     /// </summary>
     [JsonPropertyName("webSearchQueries")]
-    public IList<string> WebSearchQueries { get; set; } = null!;
+    public IList<string>? WebSearchQueries { get; set; }
 
     /// <summary>
     /// Search entry point element.
@@ -49,7 +50,7 @@ public sealed class GeminiGroundingMetadata
         /// Rendered content.
         /// </summary>
         [JsonPropertyName("renderedContent")]
-        public string RenderedContent { get; set; } = null!;
+        public string? RenderedContent { get; set; }
     }
 
     /// <summary>
@@ -61,7 +62,7 @@ public sealed class GeminiGroundingMetadata
         /// Web information.
         /// </summary>
         [JsonPropertyName("web")]
-        public WebElement Web { get; set; } = null!;
+        public WebElement? Web { get; set; }
     }
 
     /// <summary>
@@ -73,13 +74,13 @@ public sealed class GeminiGroundingMetadata
         /// URI of the web resource.
         /// </summary>
         [JsonPropertyName("uri")]
-        public string Uri { get; set; } = null!;
+        public Uri? Uri { get; set; }
 
         /// <summary>
         /// Title of the web resource.
         /// </summary>
         [JsonPropertyName("title")]
-        public string Title { get; set; } = null!;
+        public string? Title { get; set; }
     }
 
     /// <summary>
@@ -91,19 +92,19 @@ public sealed class GeminiGroundingMetadata
         /// Segment information.
         /// </summary>
         [JsonPropertyName("segment")]
-        public SegmentElement Segment { get; set; } = null!;
+        public SegmentElement? Segment { get; set; }
 
         /// <summary>
         /// Grounding chunk indices.
         /// </summary>
         [JsonPropertyName("groundingChunkIndices")]
-        public IList<int> GroundingChunkIndices { get; set; } = null!;
+        public IList<int>? GroundingChunkIndices { get; set; }
 
         /// <summary>
         /// Confidence scores.
         /// </summary>
         [JsonPropertyName("confidenceScores")]
-        public IList<double> ConfidenceScores { get; set; } = null!;
+        public IList<double>? ConfidenceScores { get; set; }
     }
 
     /// <summary>
@@ -127,6 +128,6 @@ public sealed class GeminiGroundingMetadata
         /// Text of the segment.
         /// </summary>
         [JsonPropertyName("text")]
-        public string Text { get; set; } = null!;
+        public string? Text { get; set; }
     }
 }
