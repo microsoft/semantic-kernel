@@ -40,11 +40,11 @@ internal static class ResponseItemExtensions
             }
             else if (part.Kind == ResponseContentPartKind.InputImage)
             {
-                collection.Add(new FileReferenceContent(part.InputImageFileId, innerContent: part));
+                collection.Add(new FileReferenceContent(part.InputImageFileId) { InnerContent = part });
             }
             else if (part.Kind == ResponseContentPartKind.InputFile)
             {
-                collection.Add(new FileReferenceContent(part.InputFileId, innerContent: part));
+                collection.Add(new FileReferenceContent(part.InputFileId) { InnerContent = part });
             }
             else if (part.Kind == ResponseContentPartKind.Refusal)
             {
