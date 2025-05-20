@@ -33,7 +33,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
             {
                 Name = ParrotName,
                 Instructions = ParrotInstructions,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = kernel,
             };
 
         // Respond to user input
