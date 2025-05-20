@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.Agents.Persistent;
@@ -31,7 +30,7 @@ public class AzureAIAgentFixture : AgentFixture
     private AzureAIAgentThread? _serviceFailingAgentThread;
     private AzureAIAgentThread? _createdServiceFailingAgentThread;
 
-    public AAIP.AgentsClient AgentsClient => this._agentsClient!;
+    public PersistentAgentsClient AgentsClient => this._agentsClient!;
 
     public override Agent Agent => this._agent!;
 

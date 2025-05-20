@@ -49,17 +49,17 @@ public class Mem0BehaviorTests : IDisposable
         var sut = new Mem0Behavior(this._httpClient, new() { ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = true });
 
         await sut.ClearStoredMemoriesAsync();
-        var answerBeforeAdding = await sut.OnModelInvokeAsync([question]);
+        var answerBeforeAdding = await sut.ModelInvokingAsync([question]);
         Assert.DoesNotContain("Caoimhe", answerBeforeAdding.Instructions);
 
         // Act
-        await sut.OnNewMessageAsync("test-thread-id", input);
+        await sut.MessageAddingAsync("test-thread-id", input);
 
-        await sut.OnNewMessageAsync("test-thread-id", question);
-        var answerAfterAdding = await sut.OnModelInvokeAsync([question]);
+        await sut.MessageAddingAsync("test-thread-id", question);
+        var answerAfterAdding = await sut.ModelInvokingAsync([question]);
 
         await sut.ClearStoredMemoriesAsync();
-        var answerAfterClearing = await sut.OnModelInvokeAsync([question]);
+        var answerAfterClearing = await sut.ModelInvokingAsync([question]);
 
         // Assert
         Assert.Contains("Caoimhe", answerAfterAdding.Instructions);
@@ -76,17 +76,17 @@ public class Mem0BehaviorTests : IDisposable
         var sut = new Mem0Behavior(this._httpClient, new() { AgentId = "test-agent-id" });
 
         await sut.ClearStoredMemoriesAsync();
-        var answerBeforeAdding = await sut.OnModelInvokeAsync([question]);
+        var answerBeforeAdding = await sut.ModelInvokingAsync([question]);
         Assert.DoesNotContain("Caoimhe", answerBeforeAdding.Instructions);
 
         // Act
-        await sut.OnNewMessageAsync("test-thread-id", input);
+        await sut.MessageAddingAsync("test-thread-id", input);
 
-        await sut.OnNewMessageAsync("test-thread-id", question);
-        var answerAfterAdding = await sut.OnModelInvokeAsync([question]);
+        await sut.MessageAddingAsync("test-thread-id", question);
+        var answerAfterAdding = await sut.ModelInvokingAsync([question]);
 
         await sut.ClearStoredMemoriesAsync();
-        var answerAfterClearing = await sut.OnModelInvokeAsync([question]);
+        var answerAfterClearing = await sut.ModelInvokingAsync([question]);
 
         // Assert
         Assert.Contains("Caoimhe", answerAfterAdding.Instructions);
@@ -106,17 +106,17 @@ public class Mem0BehaviorTests : IDisposable
         await sut1.ClearStoredMemoriesAsync();
         await sut2.ClearStoredMemoriesAsync();
 
-        var answerBeforeAdding1 = await sut1.OnModelInvokeAsync([question]);
-        var answerBeforeAdding2 = await sut2.OnModelInvokeAsync([question]);
+        var answerBeforeAdding1 = await sut1.ModelInvokingAsync([question]);
+        var answerBeforeAdding2 = await sut2.ModelInvokingAsync([question]);
         Assert.DoesNotContain("Caoimhe", answerBeforeAdding1.Instructions);
         Assert.DoesNotContain("Caoimhe", answerBeforeAdding2.Instructions);
 
         // Act
-        await sut1.OnNewMessageAsync("test-thread-id-1", input);
-        var answerAfterAdding = await sut1.OnModelInvokeAsync([question]);
+        await sut1.MessageAddingAsync("test-thread-id-1", input);
+        var answerAfterAdding = await sut1.ModelInvokingAsync([question]);
 
-        await sut2.OnNewMessageAsync("test-thread-id-2", question);
-        var answerAfterAddingOnOtherScope = await sut2.OnModelInvokeAsync([question]);
+        await sut2.MessageAddingAsync("test-thread-id-2", question);
+        var answerAfterAddingOnOtherScope = await sut2.ModelInvokingAsync([question]);
 
         // Assert
         Assert.Contains("Caoimhe", answerAfterAdding.Instructions);
@@ -138,11 +138,11 @@ public class Mem0BehaviorTests : IDisposable
         await sut.ClearStoredMemoriesAsync();
 
         // Act & Assert
-        await sut.OnThreadCreatedAsync("test-thread-id-1");
-        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.OnThreadCreatedAsync("test-thread-id-2"));
+        await sut.ThreadCreatedAsync("test-thread-id-1");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ThreadCreatedAsync("test-thread-id-2"));
 
-        await sut.OnNewMessageAsync("test-thread-id-1", input);
-        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.OnNewMessageAsync("test-thread-id-2", input));
+        await sut.MessageAddingAsync("test-thread-id-1", input);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.MessageAddingAsync("test-thread-id-2", input));
 
         // Cleanup
         await sut.ClearStoredMemoriesAsync();

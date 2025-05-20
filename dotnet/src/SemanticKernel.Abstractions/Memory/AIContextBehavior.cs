@@ -29,13 +29,13 @@ public abstract class AIContextBehavior
     /// <param name="threadId">The ID of the new thread, if the thread has an ID.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been loaded.</returns>
-    public virtual Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
+    public virtual Task ThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
 
     /// <summary>
-    /// This method is called when a new message has been contributed to the chat by any participant.
+    /// This method is called just before a message is added to the chat by any participant.
     /// </summary>
     /// <remarks>
     /// Inheritors can use this method to update their context based on the new message.
@@ -44,7 +44,7 @@ public abstract class AIContextBehavior
     /// <param name="newMessage">The new message.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been updated.</returns>
-    public virtual Task OnNewMessageAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
+    public virtual Task MessageAddingAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -59,7 +59,7 @@ public abstract class AIContextBehavior
     /// <param name="threadId">The ID of the thread that will be deleted, if the thread has an ID.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been saved.</returns>
-    public virtual Task OnThreadDeleteAsync(string? threadId, CancellationToken cancellationToken = default)
+    public virtual Task ThreadDeletingAsync(string? threadId, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -72,7 +72,7 @@ public abstract class AIContextBehavior
     /// <param name="newMessages">The most recent messages that the Model/Agent/etc. is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been rendered and returned.</returns>
-    public abstract Task<AIContextPart> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
+    public abstract Task<AIContextPart> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Called when the current conversion is temporarily suspended and any state should be saved.
@@ -84,7 +84,7 @@ public abstract class AIContextBehavior
     /// In a service that hosts an agent, that is invoked via calls to the service, this might be at the end of each service call.
     /// In a client application, this might be when the user closes the chat window or the application.
     /// </remarks>
-    public virtual Task OnSuspendAsync(string? threadId, CancellationToken cancellationToken = default)
+    public virtual Task SuspendingAsync(string? threadId, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -99,7 +99,7 @@ public abstract class AIContextBehavior
     /// In a service that hosts an agent, that is invoked via calls to the service, this might be at the start of each service call where a previous conversation is being continued.
     /// In a client application, this might be when the user re-opens the chat window to resume a conversation after having previously closed it.
     /// </remarks>
-    public virtual Task OnResumeAsync(string? threadId, CancellationToken cancellationToken = default)
+    public virtual Task ResumingAsync(string? threadId, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }

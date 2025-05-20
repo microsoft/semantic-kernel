@@ -56,7 +56,7 @@ public sealed class TextSearchBehavior : AIContextBehavior
     public TextSearchBehaviorOptions Options { get; }
 
     /// <inheritdoc/>
-    public override async Task<AIContextPart> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override async Task<AIContextPart> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         if (this.Options.SearchTime != TextSearchBehaviorOptions.RagBehavior.BeforeAIInvoke)
         {

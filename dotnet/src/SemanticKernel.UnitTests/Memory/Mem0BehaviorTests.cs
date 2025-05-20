@@ -61,7 +61,7 @@ public class Mem0BehaviorTests : IDisposable
         var sut = new Mem0Behavior(this._httpClient, new() { ApplicationId = "test-app-id", AgentId = "test-agent-id", ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = scopePerOperationThread });
 
         // Act
-        await sut.OnNewMessageAsync("test-thread-id-1", new ChatMessage(ChatRole.User, "Hello, my name is Caoimhe."));
+        await sut.MessageAddingAsync("test-thread-id-1", new ChatMessage(ChatRole.User, "Hello, my name is Caoimhe."));
 
         // Assert
         var expectedPayload = $$"""
@@ -98,10 +98,10 @@ public class Mem0BehaviorTests : IDisposable
             ScopeToPerOperationThreadId = scopePerOperationThread,
             ContextPrompt = customContextPrompt
         });
-        await sut.OnThreadCreatedAsync("test-thread-id-1");
+        await sut.ThreadCreatedAsync("test-thread-id-1");
 
         // Act
-        var actual = await sut.OnModelInvokeAsync(new[] { new ChatMessage(ChatRole.User, "What is my name?") });
+        var actual = await sut.ModelInvokingAsync(new[] { new ChatMessage(ChatRole.User, "What is my name?") });
 
         // Assert
         var expectedPayload = $$"""
@@ -124,7 +124,7 @@ public class Mem0BehaviorTests : IDisposable
             .ReturnsAsync(httpResponse);
 
         var sut = new Mem0Behavior(this._httpClient, new() { ApplicationId = "test-app-id", AgentId = "test-agent-id", ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = scopePerOperationThread });
-        await sut.OnThreadCreatedAsync("test-thread-id-1");
+        await sut.ThreadCreatedAsync("test-thread-id-1");
 
         // Act
         await sut.ClearStoredMemoriesAsync();
@@ -141,12 +141,12 @@ public class Mem0BehaviorTests : IDisposable
         var sut = new Mem0Behavior(this._httpClient, new() { ScopeToPerOperationThreadId = true });
 
         // Act
-        await sut.OnThreadCreatedAsync("initial-thread-id");
+        await sut.ThreadCreatedAsync("initial-thread-id");
 
         // Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            await sut.OnThreadCreatedAsync("new-thread-id");
+            await sut.ThreadCreatedAsync("new-thread-id");
         });
 
         Assert.Equal("The Mem0Behavior can only be used with one thread at a time when ScopeToPerOperationThreadId is set to true.", exception.Message);

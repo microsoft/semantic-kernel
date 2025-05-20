@@ -21,7 +21,7 @@ public class AIContextBehaviorTests
         var mockPart = new Mock<AIContextBehavior>() { CallBase = true };
 
         // Act & Assert.
-        await mockPart.Object.OnThreadCreatedAsync("threadId", CancellationToken.None);
+        await mockPart.Object.ThreadCreatedAsync("threadId", CancellationToken.None);
     }
 
     [Fact]
@@ -32,7 +32,7 @@ public class AIContextBehaviorTests
         var newMessage = new ChatMessage(ChatRole.User, "Hello");
 
         // Act & Assert.
-        await mockPart.Object.OnNewMessageAsync("threadId", newMessage, CancellationToken.None);
+        await mockPart.Object.MessageAddingAsync("threadId", newMessage, CancellationToken.None);
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public class AIContextBehaviorTests
         var mockPart = new Mock<AIContextBehavior>() { CallBase = true };
 
         // Act & Assert.
-        await mockPart.Object.OnThreadDeleteAsync("threadId", CancellationToken.None);
+        await mockPart.Object.ThreadDeletingAsync("threadId", CancellationToken.None);
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public class AIContextBehaviorTests
         var mockPart = new Mock<AIContextBehavior>() { CallBase = true };
 
         // Act & Assert.
-        await mockPart.Object.OnSuspendAsync("threadId", CancellationToken.None);
+        await mockPart.Object.SuspendingAsync("threadId", CancellationToken.None);
     }
 
     [Fact]
@@ -62,6 +62,6 @@ public class AIContextBehaviorTests
         var mockPart = new Mock<AIContextBehavior>() { CallBase = true };
 
         // Act & Assert.
-        await mockPart.Object.OnResumeAsync("threadId", CancellationToken.None);
+        await mockPart.Object.ResumingAsync("threadId", CancellationToken.None);
     }
 }

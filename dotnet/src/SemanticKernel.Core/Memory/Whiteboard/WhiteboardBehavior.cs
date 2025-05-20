@@ -60,7 +60,7 @@ public sealed class WhiteboardBehavior : AIContextBehavior
     public IReadOnlyList<string> CurrentWhiteboardContent => this._currentWhiteboardContent;
 
     /// <inheritdoc/>
-    public override async Task OnNewMessageAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
+    public override async Task MessageAddingAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(newMessage.Text))
         {
@@ -92,7 +92,7 @@ public sealed class WhiteboardBehavior : AIContextBehavior
     }
 
     /// <inheritdoc/>
-    public override Task<AIContextPart> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override Task<AIContextPart> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         if (this._currentWhiteboardContent.Count == 0)
         {

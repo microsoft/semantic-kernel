@@ -26,8 +26,8 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     {
         // Arrange
         var mockStatePart = new Mock<AIContextBehavior>() { CallBase = true };
-        mockStatePart.Setup(x => x.OnNewMessageAsync(It.IsAny<string>(), It.IsAny<ChatMessage>(), It.IsAny<CancellationToken>()));
-        mockStatePart.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContextPart());
+        mockStatePart.Setup(x => x.MessageAddingAsync(It.IsAny<string>(), It.IsAny<ChatMessage>(), It.IsAny<CancellationToken>()));
+        mockStatePart.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContextPart());
 
         var agent = this.Fixture.Agent;
 
@@ -44,8 +44,8 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
 
             // Assert
             Assert.Contains("Paris", result.Message.Content);
-            mockStatePart.Verify(x => x.OnNewMessageAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == inputMessage), It.IsAny<CancellationToken>()), Times.Once);
-            mockStatePart.Verify(x => x.OnNewMessageAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == result.Message.Content), It.IsAny<CancellationToken>()), Times.Once);
+            mockStatePart.Verify(x => x.MessageAddingAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == inputMessage), It.IsAny<CancellationToken>()), Times.Once);
+            mockStatePart.Verify(x => x.MessageAddingAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == result.Message.Content), It.IsAny<CancellationToken>()), Times.Once);
         }
         finally
         {
@@ -59,8 +59,8 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     {
         // Arrange
         var mockStatePart = new Mock<AIContextBehavior>() { CallBase = true };
-        mockStatePart.Setup(x => x.OnNewMessageAsync(It.IsAny<string>(), It.IsAny<ChatMessage>(), It.IsAny<CancellationToken>()));
-        mockStatePart.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContextPart());
+        mockStatePart.Setup(x => x.MessageAddingAsync(It.IsAny<string>(), It.IsAny<ChatMessage>(), It.IsAny<CancellationToken>()));
+        mockStatePart.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContextPart());
 
         var agent = this.Fixture.Agent;
 
@@ -78,8 +78,8 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
             // Assert
             var responseMessage = string.Concat(results.Select(x => x.Message.Content));
             Assert.Contains("Paris", responseMessage);
-            mockStatePart.Verify(x => x.OnNewMessageAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == inputMessage), It.IsAny<CancellationToken>()), Times.Once);
-            mockStatePart.Verify(x => x.OnNewMessageAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == responseMessage), It.IsAny<CancellationToken>()), Times.Once);
+            mockStatePart.Verify(x => x.MessageAddingAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == inputMessage), It.IsAny<CancellationToken>()), Times.Once);
+            mockStatePart.Verify(x => x.MessageAddingAsync(It.IsAny<string>(), It.Is<ChatMessage>(cm => cm.Text == responseMessage), It.IsAny<CancellationToken>()), Times.Once);
         }
         finally
         {
@@ -93,7 +93,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     {
         // Arrange
         var mockStatePart = new Mock<AIContextBehavior>() { CallBase = true };
-        mockStatePart.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContextPart { Instructions = "User name is Caoimhe" });
+        mockStatePart.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContextPart { Instructions = "User name is Caoimhe" });
 
         var agent = this.Fixture.Agent;
 
@@ -123,7 +123,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     {
         // Arrange
         var mockStatePart = new Mock<AIContextBehavior>() { CallBase = true };
-        mockStatePart.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContextPart { Instructions = "User name is Caoimhe" });
+        mockStatePart.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContextPart { Instructions = "User name is Caoimhe" });
 
         var agent = this.Fixture.Agent;
 

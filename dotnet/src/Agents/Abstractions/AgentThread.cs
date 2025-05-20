@@ -31,7 +31,7 @@ public abstract class AgentThread
     /// Gets or sets the container for <see cref="AIContextBehavior"/> objects that manages their lifecycle and interactions.
     /// </summary>
     [Experimental("SKEXP0110")]
-    public virtual AIContextBehaviorsManager AIContextBehaviors { get; init; } = new AIContextBehaviorsManager();
+    public virtual AggregateAIContextBehavior AIContextBehaviors { get; init; } = new AggregateAIContextBehavior();
 
     /// <summary>
     /// Called when the current conversion is temporarily suspended and any state should be saved.
@@ -45,7 +45,7 @@ public abstract class AgentThread
     [Experimental("SKEXP0110")]
     public virtual Task OnSuspendAsync(CancellationToken cancellationToken = default)
     {
-        return this.AIContextBehaviors.OnSuspendAsync(this.Id, cancellationToken);
+        return this.AIContextBehaviors.SuspendingAsync(this.Id, cancellationToken);
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public abstract class AgentThread
             throw new InvalidOperationException("This thread cannot be resumed, since it has not been created.");
         }
 
-        return this.AIContextBehaviors.OnResumeAsync(this.Id, cancellationToken);
+        return this.AIContextBehaviors.ResumingAsync(this.Id, cancellationToken);
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ public abstract class AgentThread
         this.Id = await this.CreateInternalAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        await this.AIContextBehaviors.OnThreadCreatedAsync(this.Id, cancellationToken).ConfigureAwait(false);
+        await this.AIContextBehaviors.ThreadCreatedAsync(this.Id, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
@@ -117,7 +117,7 @@ public abstract class AgentThread
         }
 
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        await this.AIContextBehaviors.OnThreadDeleteAsync(this.Id, cancellationToken).ConfigureAwait(false);
+        await this.AIContextBehaviors.ThreadDeletingAsync(this.Id, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         await this.DeleteInternalAsync(cancellationToken).ConfigureAwait(false);
@@ -148,7 +148,7 @@ public abstract class AgentThread
         }
 
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        await this.AIContextBehaviors.OnNewMessageAsync(this.Id, newMessage, cancellationToken).ConfigureAwait(false);
+        await this.AIContextBehaviors.MessageAddingAsync(this.Id, newMessage, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         await this.OnNewMessageInternalAsync(newMessage, cancellationToken).ConfigureAwait(false);
