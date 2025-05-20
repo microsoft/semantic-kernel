@@ -240,6 +240,7 @@ class InMemoryCollection(
 
     def _parse_and_validate_filter(self, filter_str: str) -> Callable:
         """Parse and validate a string filter as a lambda expression, then return the callable."""
+        forbidden_names = {"__import__", "open", "eval", "exec", "__builtins__"}
         try:
             tree = ast.parse(filter_str, mode="eval")
         except SyntaxError as e:
@@ -249,7 +250,12 @@ class InMemoryCollection(
             raise VectorStoreOperationException(
                 "Filter string must be a lambda expression, e.g. 'lambda x: x.key == 1'"
             )
-        # Optionally, further validation of the AST can be done here
+        # Walk the AST to look for forbidden names and attribute access
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Name) and node.id in forbidden_names:
+                raise VectorStoreOperationException(f"Use of '{node.id}' is not allowed in filter expressions.")
+            if isinstance(node, ast.Attribute) and node.attr in forbidden_names:
+                raise VectorStoreOperationException(f"Use of '{node.attr}' is not allowed in filter expressions.")
         try:
             code = compile(tree, filename="<filter>", mode="eval")
             func = eval(code, {"__builtins__": {}}, {})  # nosec
