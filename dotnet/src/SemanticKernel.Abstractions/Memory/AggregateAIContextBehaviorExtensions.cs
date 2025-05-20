@@ -25,7 +25,7 @@ public static class AggregateAIContextBehaviorExtensions
     /// <returns>A task that represents the asynchronous operation.</returns>
     public static Task MessageAddingAsync(this AggregateAIContextBehavior aggregateAIContextBehavior, string? threadId, ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
-        return aggregateAIContextBehavior.MessageAddingAsync(threadId, ChatCompletionServiceExtensions.ToChatMessage(newMessage), cancellationToken);
+        return aggregateAIContextBehavior.MessageAddingAsync(threadId, newMessage.ToChatMessage(), cancellationToken);
     }
 
     /// <summary>
@@ -37,6 +37,6 @@ public static class AggregateAIContextBehaviorExtensions
     /// <returns>A task that represents the asynchronous operation, containing the combined context from all <see cref="AIContextBehavior"/> objects.</returns>
     public static Task<AIContextPart> ModelInvokingAsync(this AggregateAIContextBehavior aggregateAIContextBehavior, ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
     {
-        return aggregateAIContextBehavior.ModelInvokingAsync(newMessages.Select(ChatCompletionServiceExtensions.ToChatMessage).ToList(), cancellationToken);
+        return aggregateAIContextBehavior.ModelInvokingAsync(newMessages.Select(m => m.ToChatMessage()).ToList(), cancellationToken);
     }
 }
