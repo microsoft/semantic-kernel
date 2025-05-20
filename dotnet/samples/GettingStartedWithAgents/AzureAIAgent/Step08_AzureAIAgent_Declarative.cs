@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.Projects;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +7,6 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Plugins;
-using Agent = Microsoft.SemanticKernel.Agents.Agent;
 
 namespace GettingStarted.AzureAgents;
 
@@ -37,6 +35,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
 
         var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton(this.Client);
         builder.Services.AddSingleton<TokenCredential>(new AzureCliCredential());
         var kernel = builder.Build();
 
@@ -54,6 +53,8 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             name: MyAgent
             description: My helpful agent.
             instructions: You are helpful agent.
+            model:
+              id: ${AzureOpenAI:ChatModelId}
             """;
         AzureAIAgentFactory factory = new();
 
@@ -189,9 +190,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                     - {TestConfiguration.AzureAI.VectorStoreId}
             """;
         AzureAIAgentFactory factory = new();
-
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        this._kernel.Plugins.Add(plugin);
 
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
 
@@ -382,7 +380,9 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
         var promptTemplateFactory = new KernelPromptTemplateFactory();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
+        var agent =
+            await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot) ??
+            throw new InvalidOperationException("Unable to create agent");
 
         var options = new AgentInvokeOptions()
         {
@@ -404,8 +404,8 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         }
         finally
         {
-            var azureaiAgent = agent as AzureAIAgent;
-            await azureaiAgent!.Client.DeleteAgentAsync(azureaiAgent.Id);
+            var azureaiAgent = (AzureAIAgent)agent;
+            await azureaiAgent.Client.Administration.DeleteAgentAsync(azureaiAgent.Id);
 
             if (agentThread is not null)
             {
@@ -417,7 +417,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     public Step08_AzureAIAgent_Declarative(ITestOutputHelper output) : base(output)
     {
         var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<AIProjectClient>(this.Client);
+        builder.Services.AddSingleton(this.Client);
         this._kernel = builder.Build();
     }
 
@@ -448,7 +448,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             {
                 var azureaiAgent = agent as AzureAIAgent;
                 Assert.NotNull(azureaiAgent);
-                await azureaiAgent.Client.DeleteAgentAsync(azureaiAgent.Id);
+                await azureaiAgent.Client.Administration.DeleteAgentAsync(azureaiAgent.Id);
 
                 if (agentThread is not null)
                 {
