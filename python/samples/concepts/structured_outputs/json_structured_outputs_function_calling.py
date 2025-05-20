@@ -146,6 +146,20 @@ async def main():
         print(f"{reasoned_result.model_dump_json(indent=4)}")
         history.add_assistant_message(str(result))
 
+    """
+    Sample Output:
+
+    {
+        "steps": [
+            {
+                "explanation": "User requested the current weather condition in Paris, so I utilized the 'weather-get_weather_for_city' function to retrieve the data.",
+                "output": "The weather in Paris is 60 degrees Fahrenheit and rainy."
+            }
+        ],
+        "final_answer": "The current weather in Paris is 60 degrees Fahrenheit and rainy."
+    }
+    """  # noqa: E501
+
 
 if __name__ == "__main__":
     asyncio.run(main())

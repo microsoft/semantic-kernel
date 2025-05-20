@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import json
 
 from pydantic import BaseModel
 
@@ -112,9 +113,23 @@ async def main():
             chat_function,
             chat_history=history,
         )
-        reasoned_result = Reasoning.model_validate_json(result.value[0].content)
-        print(f"Mosscap:> {reasoned_result}")
-    history.add_assistant_message(str(result))
+        reasoned_result = Reasoning.model_validate(json.loads(result.value[0].content))
+        print(f"{reasoned_result.model_dump_json(indent=4)}")
+        history.add_assistant_message(str(result))
+
+    """
+    Sample Output:
+
+    {
+        "steps": [
+            {
+                "explanation": "User requested the current weather condition in Paris, so I utilized the 'weather-get_weather_for_city' function to retrieve the data.",
+                "output": "The weather in Paris is 60 degrees Fahrenheit and rainy."
+            }
+        ],
+        "final_answer": "The current weather in Paris is 60 degrees Fahrenheit and rainy."
+    }
+    """  # noqa: E501
 
 
 if __name__ == "__main__":
