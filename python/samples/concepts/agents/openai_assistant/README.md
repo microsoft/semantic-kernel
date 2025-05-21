@@ -36,7 +36,7 @@ client, model = OpenAIAssistantAgent.setup_resources()
 
 # Create the assistant definition
 definition = await client.beta.assistants.create(
-    model=model,
+    model=AzureOpenAISettings().chat_deployment_name
     instructions="<instructions>",
     name="<name>",
 )
@@ -73,11 +73,11 @@ Alternatively, you can pass the `api_version` parameter when creating an `AzureA
 from semantic_kernel.agents import AzureAssistantAgent
 
 # Create the client using Azure OpenAI resources and configuration
-client, model = AzureAssistantAgent.setup_resources()
+client = AzureAssistantAgent.create_client()
 
 # Create the assistant definition
 definition = await client.beta.assistants.create(
-    model=model,
+    model=AzureOpenAISettings().chat_deployment_name
     instructions="<instructions>",
     name="<name>",
 )

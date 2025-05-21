@@ -5,10 +5,10 @@ import os
 from typing import Annotated
 
 from semantic_kernel.agents import AgentRegistry, AzureAssistantAgent
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions import kernel_function
 
 """
-The following sample demonstrates how to create an Azure AI agent that answers
+The following sample demonstrates how to create an Azure Assistant Agent that answers
 user questions. The sample shows how to load a declarative spec from a file. 
 The plugins/functions must already exist in the kernel.
 They are not created declaratively via the spec.
@@ -35,7 +35,7 @@ class MenuPlugin:
 
 async def main():
     try:
-        client, _ = AzureAssistantAgent.setup_resources()
+        client = AzureAssistantAgent.create_client()
 
         # Define the YAML file path for the sample
         file_path = os.path.join(

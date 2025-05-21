@@ -34,7 +34,6 @@ from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
-from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -71,61 +70,50 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
+
 _T = TypeVar("_T", bound="OpenAIAssistantAgent")
-ToolParam = dict[str, Any]
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 # region Declarative Spec
 
-_TOOL_BUILDERS: dict[str, Callable[[ToolSpec, Kernel | None], ToolResources]] = {}
+_TOOL_BUILDERS: dict[
+    str,
+    Callable[[ToolSpec, Kernel | None], tuple[list[AssistantToolParam], ToolResources]],
+] = {}
 
 
 def _register_tool(tool_type: str):
-    def decorator(fn: Callable[[ToolSpec, Kernel | None], tuple[list[ToolParam], ToolResources]]):
+    def decorator(
+        fn: Callable[[ToolSpec, Kernel | None], tuple[list[AssistantToolParam], ToolResources]],
+    ):
         _TOOL_BUILDERS[tool_type.lower()] = fn
         return fn
 
     return decorator
 
 
+# Update _code_interpreter
 @_register_tool("code_interpreter")
-def _code_interpreter(spec: ToolSpec, kernel: Kernel | None = None) -> tuple[list[ToolParam], ToolResources]:
+def _code_interpreter(spec: ToolSpec, kernel: Kernel | None = None) -> tuple[list[AssistantToolParam], ToolResources]:
     file_ids = spec.options.get("file_ids")
     return OpenAIAssistantAgent.configure_code_interpreter_tool(file_ids=file_ids)
 
 
+# Update _file_search
 @_register_tool("file_search")
-def _file_search(spec: ToolSpec, kernel: Kernel | None = None) -> tuple[list[ToolParam], ToolResources]:
+def _file_search(spec: ToolSpec, kernel: Kernel | None = None) -> tuple[list[AssistantToolParam], ToolResources]:
     vector_store_ids = spec.options.get("vector_store_ids")
     if not vector_store_ids or not isinstance(vector_store_ids, list) or not vector_store_ids[0]:
         raise AgentInitializationException(f"Missing or malformed 'vector_store_ids' in: {spec}")
     return OpenAIAssistantAgent.configure_file_search_tool(vector_store_ids=vector_store_ids)
 
 
-@_register_tool("function")
-def _function(spec: ToolSpec, kernel: "Kernel") -> ToolResources:
-    def parse_fqn(fqn: str) -> tuple[str, str]:
-        parts = fqn.split(".")
-        if len(parts) != 2:
-            raise AgentInitializationException(f"Function `{fqn}` must be in the form `pluginName.functionName`.")
-        return parts[0], parts[1]
-
-    if not spec.id:
-        raise AgentInitializationException("Function ID is required for function tools.")
-    plugin_name, function_name = parse_fqn(spec.id)
-    funcs = kernel.get_list_of_function_metadata_filters({"included_functions": f"{plugin_name}-{function_name}"})
-
-    match len(funcs):
-        case 0:
-            raise AgentInitializationException(f"Function `{spec.id}` not found in kernel.")
-        case 1:
-            return kernel_function_metadata_to_function_call_format(funcs[0])  # type: ignore[return-value]
-        case _:
-            raise AgentInitializationException(f"Multiple definitions found for `{spec.id}`. Please remove duplicates.")
-
-
-def _build_tool(spec: ToolSpec, kernel: "Kernel") -> ToolResources:
+def _build_tool(spec: ToolSpec, kernel: "Kernel") -> tuple[list[AssistantToolParam], ToolResources]:
     if not spec.type:
         raise AgentInitializationException("Tool spec must include a 'type' field.")
 
@@ -136,19 +124,6 @@ def _build_tool(spec: ToolSpec, kernel: "Kernel") -> ToolResources:
 
     sig = inspect.signature(builder)
     return builder(spec) if len(sig.parameters) == 1 else builder(spec, kernel)  # type: ignore[call-arg]
-
-
-def _build_tool_resources(tool_defs: list[ToolResources]) -> ToolResources | None:
-    """Collects tool resources from known tool types with resource needs."""
-    resources: dict[str, Any] = {}
-
-    for tool in tool_defs:
-        if isinstance(tool, CodeInterpreterToolParam):
-            resources["code_interpreter"] = tool.code_interpreter
-        elif isinstance(tool, FileSearchToolParam):
-            resources["file_search"] = tool.file_search
-
-    return ToolResources(**resources) if resources else None
 
 
 # endregion
@@ -332,6 +307,9 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
         super().__init__(**args)
 
     @staticmethod
+    @deprecated(
+        "setup_resources is deprecated. Use AzureAssistantAgent.create_client() instead. This method will be removed by 2025-06-15."  # noqa: E501
+    )
     def setup_resources(
         *,
         ai_model_id: str | None = None,
@@ -390,6 +368,64 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
         )
 
         return client, openai_settings.chat_model_id
+
+    @staticmethod
+    def create_client(
+        *,
+        ai_model_id: str | None = None,
+        api_key: str | None = None,
+        org_id: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+        default_headers: dict[str, str] | None = None,
+        **kwargs: Any,
+    ) -> AsyncOpenAI:
+        """A method to create the OpenAI client.
+
+        Any arguments provided will override the values in the environment variables/environment file.
+
+        Args:
+            ai_model_id: The AI model ID
+            api_key: The API key
+            org_id: The organization ID
+            env_file_path: The environment file path
+            env_file_encoding: The environment file encoding, defaults to utf-8
+            default_headers: The default headers to add to the client
+            kwargs: Additional keyword arguments
+
+        Returns:
+            An OpenAI client instance.
+        """
+        try:
+            openai_settings = OpenAISettings(
+                chat_model_id=ai_model_id,
+                api_key=api_key,
+                org_id=org_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
+
+        if not openai_settings.api_key:
+            raise AgentInitializationException("The OpenAI API key is required.")
+
+        if not openai_settings.chat_model_id:
+            raise AgentInitializationException("The OpenAI model ID is required.")
+
+        merged_headers = dict(copy(default_headers)) if default_headers else {}
+        if default_headers:
+            merged_headers.update(default_headers)
+        if APP_INFO:
+            merged_headers.update(APP_INFO)
+            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
+
+        return AsyncOpenAI(
+            api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+            organization=openai_settings.org_id,
+            default_headers=merged_headers,
+            **kwargs,
+        )
 
     # endregion
 
@@ -461,8 +497,10 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
             raise ValueError("model.id required when creating a new Azure AI agent")
 
         # Build tool definitions & resources
-        tool_objs = [_build_tool(t, kernel) for t in spec.tools if t.type != "function"]
-        all_tools: list[ToolParam] = []
+        tool_objs = [
+            _build_tool(t, kernel) for t in spec.tools if t.type != "function"
+        ]  # List[tuple[list[ToolParam], ToolResources]]
+        all_tools: list[AssistantToolParam] = []
         all_resources: ToolResources = {}
 
         for tool_list, resource in tool_objs:
@@ -558,7 +596,7 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
     @staticmethod
     def configure_code_interpreter_tool(
         file_ids: str | list[str] | None = None, **kwargs: Any
-    ) -> tuple[list["CodeInterpreterToolParam"], ToolResources]:
+    ) -> tuple[list["AssistantToolParam"], ToolResources]:
         """Generate tool + tool_resources for the code_interpreter."""
         if isinstance(file_ids, str):
             file_ids = [file_ids]
@@ -571,7 +609,7 @@ class OpenAIAssistantAgent(DeclarativeSpecMixin, Agent):
     @staticmethod
     def configure_file_search_tool(
         vector_store_ids: str | list[str], **kwargs: Any
-    ) -> tuple[list[FileSearchToolParam], ToolResources]:
+    ) -> tuple[list[AssistantToolParam], ToolResources]:
         """Generate tool + tool_resources for the file_search."""
         if isinstance(vector_store_ids, str):
             vector_store_ids = [vector_store_ids]

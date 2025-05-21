@@ -55,7 +55,7 @@ class MenuPlugin:
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, _ = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # 2. Create the assistant on the Azure OpenAI service
     agent: AzureAssistantAgent = await AgentRegistry.create_from_yaml(

@@ -6,7 +6,7 @@ import os
 from semantic_kernel.agents import AgentRegistry, OpenAIAssistantAgent
 
 """
-The following sample demonstrates how to create an Azure AI agent that answers
+The following sample demonstrates how to create an OpenAI Assistant Agent that answers
 user questions using the code interpreter tool.
 
 The agent is then used to answer user questions that require code to be generated and 
@@ -34,7 +34,7 @@ tools:
 
 
 async def main():
-    client, _ = OpenAIAssistantAgent.setup_resources()
+    client = OpenAIAssistantAgent.create_client()
 
     csv_file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),

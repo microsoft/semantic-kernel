@@ -6,7 +6,7 @@ import os
 from semantic_kernel.agents import AgentRegistry, AzureAssistantAgent
 
 """
-The following sample demonstrates how to create an Azure AI agent that answers
+The following sample demonstrates how to create an Azure Assistant Agent that answers
 user questions using the code interpreter tool.
 
 The agent is then used to answer user questions that require code to be generated and 
@@ -15,26 +15,26 @@ executed. The responses are handled in a streaming manner.
 
 # Define the YAML string for the sample
 spec = """
-type: openai_assistant
+type: azure_openai_assistant
 name: CodeInterpreterAgent
 description: Agent with code interpreter tool.
 instructions: >
   Use the code interpreter tool to answer questions that require code to be generated
   and executed.
 model:
-  id: ${OpenAI:ChatModelId}
+  id: ${AzureOpenAI:ChatModelId}
   connection:
-    api_key: ${OpenAI:ApiKey}
+    api_key: ${AzureOpenAI:ApiKey}
 tools:
   - type: code_interpreter
     options:
       file_ids:
-        - ${OpenAI:FileId1}
+        - ${AzureOpenAI:FileId1}
 """
 
 
 async def main():
-    client, _ = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     csv_file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),
@@ -55,7 +55,7 @@ async def main():
         agent: AzureAssistantAgent = await AgentRegistry.create_from_yaml(
             yaml_str=spec,
             client=client,
-            extras={"OpenAI:FileId1": file.id},
+            extras={"AzureOpenAI:FileId1": file.id},
         )
 
         # Define the task for the agent

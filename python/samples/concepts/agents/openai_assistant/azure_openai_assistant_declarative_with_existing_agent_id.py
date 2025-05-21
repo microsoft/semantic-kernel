@@ -5,7 +5,7 @@ import asyncio
 from semantic_kernel.agents import AgentRegistry, AzureAssistantAgent
 
 """
-The following sample demonstrates how to create an Azure AI agent based 
+The following sample demonstrates how to create an Azure Assistant Agent based 
 on an existing agent ID.
 """
 
@@ -19,7 +19,7 @@ instructions: You are helpful agent who always responds in French.
 
 async def main():
     try:
-        client, _ = AzureAssistantAgent.setup_resources()
+        client = AzureAssistantAgent.create_client()
         # Create the AzureAI Agent from the YAML spec
         # Note: the extras can be provided in the short-format (shown below) or
         # in the long-format (as shown in the YAML spec, with the `AzureAI:` prefix).

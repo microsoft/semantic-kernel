@@ -2,11 +2,11 @@
 
 import asyncio
 
-from semantic_kernel.agents import OpenAIAssistantAgent
+from semantic_kernel.agents import AzureAssistantAgent
 from semantic_kernel.agents.agent import AgentRegistry
 
 """
-The following sample demonstrates how to create an Azure AI agent that answers
+The following sample demonstrates how to create an Azure Assistant Agent that answers
 user questions using the file search tool.
 
 The agent is used to answer user questions that require file search to help ground 
@@ -42,14 +42,14 @@ template:
 
 async def main():
     # Setup the OpenAI Assistant client
-    client, _ = OpenAIAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     try:
         # Create the AzureAI Agent from the YAML spec
         # Note: the extras can be provided in the short-format (shown below) or
         # in the long-format (as shown in the YAML spec, with the `AzureAI:` prefix).
         # The short-format is used here for brevity
-        agent: OpenAIAssistantAgent = await AgentRegistry.create_from_yaml(
+        agent: AzureAssistantAgent = await AgentRegistry.create_from_yaml(
             yaml_str=spec,
             client=client,
         )

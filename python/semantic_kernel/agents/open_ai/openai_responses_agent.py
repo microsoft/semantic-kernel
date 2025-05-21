@@ -24,7 +24,6 @@ from pydantic import BaseModel, Field, SecretStr, ValidationError
 from semantic_kernel.agents import Agent, AgentResponseItem, AgentThread, RunPollingOptions
 from semantic_kernel.agents.agent import AgentSpec, DeclarativeSpecMixin, ToolSpec, register_agent_type
 from semantic_kernel.agents.open_ai.responses_agent_thread_actions import ResponsesAgentThreadActions
-from semantic_kernel.connectors.ai.function_calling_utils import kernel_function_metadata_to_function_call_format
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -50,16 +49,23 @@ from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
 )
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
 
     from semantic_kernel.kernel_pydantic import KernelBaseSettings
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
+
 
 _T = TypeVar("_T", bound="OpenAIResponsesAgent")
 ResponseFormatUnion = ResponseFormatText | ResponseFormatTextJSONSchemaConfigParam | ResponseFormatJSONObject
@@ -111,28 +117,6 @@ def _web_search(spec: ToolSpec, kernel: Kernel | None = None) -> WebSearchToolPa
         context_size=context_size,
         user_location=user_location,
     )
-
-
-@_register_tool("function")
-def _function(spec: ToolSpec, kernel: "Kernel") -> ToolParam:
-    def parse_fqn(fqn: str) -> tuple[str, str]:
-        parts = fqn.split(".")
-        if len(parts) != 2:
-            raise AgentInitializationException(f"Function `{fqn}` must be in the form `pluginName.functionName`.")
-        return parts[0], parts[1]
-
-    if not spec.id:
-        raise AgentInitializationException("Function ID is required for function tools.")
-    plugin_name, function_name = parse_fqn(spec.id)
-    funcs = kernel.get_list_of_function_metadata_filters({"included_functions": f"{plugin_name}-{function_name}"})
-
-    match len(funcs):
-        case 0:
-            raise AgentInitializationException(f"Function `{spec.id}` not found in kernel.")
-        case 1:
-            return kernel_function_metadata_to_function_call_format(funcs[0])  # type: ignore[return-value]
-        case _:
-            raise AgentInitializationException(f"Multiple definitions found for `{spec.id}`. Please remove duplicates.")
 
 
 def _build_tool(spec: ToolSpec, kernel: "Kernel") -> ToolParam:
@@ -394,6 +378,9 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
         super().__init__(**args)
 
     @staticmethod
+    @deprecated(
+        "setup_resources is deprecated. Use OpenAIResponsesAgent.create_client() instead. This method will be removed by 2025-06-15."  # noqa: E501
+    )
     def setup_resources(
         *,
         ai_model_id: str | None = None,
@@ -452,6 +439,64 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
         )
 
         return client, openai_settings.responses_model_id
+
+    @staticmethod
+    def create_client(
+        *,
+        ai_model_id: str | None = None,
+        api_key: str | None = None,
+        org_id: str | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+        default_headers: dict[str, str] | None = None,
+        **kwargs: Any,
+    ) -> AsyncOpenAI:
+        """A method to create the OpenAI client.
+
+        Any arguments provided will override the values in the environment variables/environment file.
+
+        Args:
+            ai_model_id: The AI model ID
+            api_key: The API key
+            org_id: The organization ID
+            env_file_path: The environment file path
+            env_file_encoding: The environment file encoding, defaults to utf-8
+            default_headers: The default headers to add to the client
+            kwargs: Additional keyword arguments
+
+        Returns:
+            An OpenAI client instance.
+        """
+        try:
+            openai_settings = OpenAISettings(
+                responses_model_id=ai_model_id,
+                api_key=api_key,
+                org_id=org_id,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as ex:
+            raise AgentInitializationException("Failed to create OpenAI settings.", ex) from ex
+
+        if not openai_settings.api_key:
+            raise AgentInitializationException("The OpenAI API key is required.")
+
+        if not openai_settings.responses_model_id:
+            raise AgentInitializationException("The OpenAI Responses model ID is required.")
+
+        merged_headers = dict(copy(default_headers)) if default_headers else {}
+        if default_headers:
+            merged_headers.update(default_headers)
+        if APP_INFO:
+            merged_headers.update(APP_INFO)
+            merged_headers = prepend_semantic_kernel_to_user_agent(merged_headers)
+
+        return AsyncOpenAI(
+            api_key=openai_settings.api_key.get_secret_value() if openai_settings.api_key else None,
+            organization=openai_settings.org_id,
+            default_headers=merged_headers,
+            **kwargs,
+        )
 
     # endregion
 

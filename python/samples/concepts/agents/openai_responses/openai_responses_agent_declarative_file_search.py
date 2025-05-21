@@ -36,7 +36,7 @@ tools:
 
 async def main():
     # Setup the OpenAI Assistant client
-    client, _ = OpenAIResponsesAgent.setup_resources()
+    client = OpenAIResponsesAgent.create_client()
 
     # Read and upload the file to the OpenAI AI service
     pdf_file_path = os.path.join(

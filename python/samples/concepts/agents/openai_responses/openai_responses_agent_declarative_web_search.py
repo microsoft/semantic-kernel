@@ -34,7 +34,7 @@ tools:
 
 async def main():
     # Setup the OpenAI Assistant client
-    client, _ = OpenAIResponsesAgent.setup_resources()
+    client = OpenAIResponsesAgent.create_client()
 
     try:
         # Create the AzureAI Agent from the YAML spec

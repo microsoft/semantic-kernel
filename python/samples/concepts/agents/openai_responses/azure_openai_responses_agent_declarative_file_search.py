@@ -23,20 +23,20 @@ instructions: >
   Use the code interpreter tool to answer questions that require code to be generated
   and executed.
 model:
-  id: ${OpenAI:ChatModelId}
+  id: ${AzureOpenAI:ChatModelId}
   connection:
-    api_key: ${OpenAI:ApiKey}
+    endpoint: ${AzureOpenAI:Endpoint}
 tools:
   - type: file_search
     options:
       vector_store_ids:
-        - ${OpenAI:VectorStoreId}
+        - ${AzureOpenAI:VectorStoreId}
 """
 
 
 async def main():
     # Setup the OpenAI Assistant client
-    client, _ = AzureAssistantAgent.setup_resources()
+    client = AzureAssistantAgent.create_client()
 
     # Read and upload the file to the OpenAI AI service
     pdf_file_path = os.path.join(

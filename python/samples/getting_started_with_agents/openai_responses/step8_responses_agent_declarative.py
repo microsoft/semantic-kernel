@@ -2,7 +2,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import AgentRegistry, OpenAIAssistantAgent
+from semantic_kernel.agents import AgentRegistry, OpenAIResponsesAgent
 from semantic_kernel.functions import kernel_function
 
 """
@@ -21,7 +21,7 @@ USER_INPUTS = [
 
 # Define the YAML string for the sample
 SPEC = """
-type: openai_assistant
+type: openai_responses_agent
 name: Host
 instructions: Respond politely to the user's questions.
 model:
@@ -55,10 +55,10 @@ class MenuPlugin:
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client = OpenAIAssistantAgent.create_client()
+    client = OpenAIResponsesAgent.create_client()
 
     # 2. Create the assistant on the Azure OpenAI service
-    agent: OpenAIAssistantAgent = await AgentRegistry.create_from_yaml(
+    agent: OpenAIResponsesAgent = await AgentRegistry.create_from_yaml(
         SPEC,
         plugins=[MenuPlugin()],
         client=client,
@@ -82,7 +82,6 @@ async def main():
     finally:
         # 5. Clean up the resources
         await thread.delete() if thread else None
-        await agent.client.beta.assistants.delete(assistant_id=agent.id)
 
     """
     Sample Output:

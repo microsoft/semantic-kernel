@@ -35,7 +35,7 @@ class MenuPlugin:
 
 async def main():
     try:
-        client, _ = OpenAIResponsesAgent.setup_resources()
+        client = OpenAIResponsesAgent.create_client()
 
         # Define the YAML file path for the sample
         file_path = os.path.join(

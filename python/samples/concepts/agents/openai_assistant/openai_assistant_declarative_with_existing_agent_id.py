@@ -8,7 +8,7 @@ from semantic_kernel.agents import AzureAIAgent
 from semantic_kernel.agents.agent import AgentRegistry
 
 """
-The following sample demonstrates how to create an Azure AI agent based 
+The following sample demonstrates how to create an OpenAI Assistant Agent based 
 on an existing agent ID.
 """
 
