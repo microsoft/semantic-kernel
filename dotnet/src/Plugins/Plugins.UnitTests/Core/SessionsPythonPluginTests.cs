@@ -72,6 +72,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
         {
             Content = new StringContent(responseContent),
         };
+
         // Arrange
         var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
