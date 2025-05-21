@@ -13,6 +13,8 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Redis;
 [Collection("RedisVectorStoreCollection")]
 [DisableVectorStoreTests(Skip = "Redis tests fail intermittently on build server")]
 public class RedisVectorStoreTests(RedisVectorStoreFixture fixture)
+#pragma warning disable CA2000 // Dispose objects before losing scope
     : BaseVectorStoreTests<string, RedisHotel>(new RedisVectorStore(fixture.Database))
+#pragma warning restore CA2000 // Dispose objects before losing scope
 {
 }

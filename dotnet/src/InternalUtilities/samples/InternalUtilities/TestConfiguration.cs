@@ -49,9 +49,10 @@ public sealed class TestConfiguration
     public static MistralAIConfig MistralAI => LoadSection<MistralAIConfig>();
     public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
     public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
-    public static AzureCosmosDbMongoDbConfig AzureCosmosDbMongoDb => LoadSection<AzureCosmosDbMongoDbConfig>();
+    public static CosmosMongoConfig CosmosMongo => LoadSection<CosmosMongoConfig>();
     public static ApplicationInsightsConfig ApplicationInsights => LoadSection<ApplicationInsightsConfig>();
     public static CrewAIConfig CrewAI => LoadSection<CrewAIConfig>();
+    public static BedrockConfig Bedrock => LoadSection<BedrockConfig>();
     public static BedrockAgentConfig BedrockAgent => LoadSection<BedrockAgentConfig>();
 
     public static IConfiguration GetSection(string caller)
@@ -105,8 +106,9 @@ public sealed class TestConfiguration
 
     public class AzureAIConfig
     {
-        public string ConnectionString { get; set; }
         public string ChatModelId { get; set; }
+        public string Endpoint { get; set; }
+        public string WorkflowEndpoint { get; set; }
         public string BingConnectionId { get; set; }
         public string VectorStoreId { get; set; }
         public string AgentId { get; set; }
@@ -280,7 +282,7 @@ public sealed class TestConfiguration
         public string Endpoint { get; set; } = "http://localhost:11434";
     }
 
-    public class AzureCosmosDbMongoDbConfig
+    public class CosmosMongoConfig
     {
         public string ConnectionString { get; set; }
         public string DatabaseName { get; set; }
@@ -342,6 +344,11 @@ public sealed class TestConfiguration
     {
         public string Endpoint { get; set; }
         public string AuthToken { get; set; }
+    }
+
+    public class BedrockConfig
+    {
+        public string? EmbeddingModelId { get; set; }
     }
 
     public class BedrockAgentConfig

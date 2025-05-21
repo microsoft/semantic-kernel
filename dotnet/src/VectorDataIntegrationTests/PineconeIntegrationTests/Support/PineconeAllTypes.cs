@@ -8,47 +8,47 @@ namespace PineconeIntegrationTests.Support;
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 public record PineconeAllTypes()
 {
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     public string Id { get; set; }
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public bool BoolProperty { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public bool? NullableBoolProperty { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public string StringProperty { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public string? NullableStringProperty { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public int IntProperty { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public int? NullableIntProperty { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public long LongProperty { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public long? NullableLongProperty { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public float FloatProperty { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public float? NullableFloatProperty { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public double DoubleProperty { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public double? NullableDoubleProperty { get; set; }
 
 #pragma warning disable CA1819 // Properties should not return arrays
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public string[] StringArray { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public string[]? NullableStringArray { get; set; }
 #pragma warning restore CA1819 // Properties should not return arrays
 
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public List<string> StringList { get; set; }
-    [VectorStoreRecordData]
+    [VectorStoreData]
     public List<string>? NullableStringList { get; set; }
 
-    [VectorStoreRecordVector(Dimensions: 8, DistanceFunction = DistanceFunction.DotProductSimilarity)]
+    [VectorStoreVector(Dimensions: 8, DistanceFunction = DistanceFunction.DotProductSimilarity)]
     public ReadOnlyMemory<float>? Embedding { get; set; }
 
     internal void AssertEqual(PineconeAllTypes other)
@@ -73,29 +73,29 @@ public record PineconeAllTypes()
         Assert.Equal(this.Embedding!.Value.ToArray(), other.Embedding!.Value.ToArray());
     }
 
-    internal static VectorStoreRecordDefinition GetRecordDefinition()
+    internal static VectorStoreCollectionDefinition GetRecordDefinition()
         => new()
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty(nameof(PineconeAllTypes.Id), typeof(string)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.BoolProperty), typeof(bool)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableBoolProperty), typeof(bool?)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.StringProperty), typeof(string)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableStringProperty), typeof(string)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.IntProperty), typeof(int)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableIntProperty), typeof(int?)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.LongProperty), typeof(long)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableLongProperty), typeof(long?)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.FloatProperty), typeof(float)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableFloatProperty), typeof(float?)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.DoubleProperty), typeof(double)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableDoubleProperty), typeof(double?)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.StringArray), typeof(string[])),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableStringArray), typeof(string[])),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.StringList), typeof(List<string>)),
-                new VectorStoreRecordDataProperty(nameof(PineconeAllTypes.NullableStringList), typeof(List<string?>)),
-                new VectorStoreRecordVectorProperty(nameof(PineconeAllTypes.Embedding), typeof(ReadOnlyMemory<float>?), 8) { DistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction.DotProductSimilarity }
+                new VectorStoreKeyProperty(nameof(PineconeAllTypes.Id), typeof(string)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.BoolProperty), typeof(bool)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.NullableBoolProperty), typeof(bool?)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.StringProperty), typeof(string)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.NullableStringProperty), typeof(string)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.IntProperty), typeof(int)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.NullableIntProperty), typeof(int?)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.LongProperty), typeof(long)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.NullableLongProperty), typeof(long?)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.FloatProperty), typeof(float)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.NullableFloatProperty), typeof(float?)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.DoubleProperty), typeof(double)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.NullableDoubleProperty), typeof(double?)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.StringArray), typeof(string[])),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.NullableStringArray), typeof(string[])),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.StringList), typeof(List<string>)),
+                new VectorStoreDataProperty(nameof(PineconeAllTypes.NullableStringList), typeof(List<string?>)),
+                new VectorStoreVectorProperty(nameof(PineconeAllTypes.Embedding), typeof(ReadOnlyMemory<float>?), 8) { DistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction.DotProductSimilarity }
             ]
         };
 }

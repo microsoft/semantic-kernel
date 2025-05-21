@@ -17,8 +17,8 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessProxyBuilder"/> class.
     /// </summary>
-    internal ProcessProxyBuilder(IReadOnlyList<string> externalTopics, string name)
-        : base(name)
+    internal ProcessProxyBuilder(IReadOnlyList<string> externalTopics, string name, ProcessBuilder? processBuilder)
+        : base(name, processBuilder)
     {
         if (externalTopics.Count == 0)
         {
@@ -45,7 +45,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
 
     internal ProcessFunctionTargetBuilder GetExternalFunctionTargetBuilder()
     {
-        return new ProcessFunctionTargetBuilder(this, functionName: KernelProxyStep.Functions.EmitExternalEvent, parameterName: "proxyEvent");
+        return new ProcessFunctionTargetBuilder(this, functionName: KernelProxyStep.ProcessFunctions.EmitExternalEvent, parameterName: "proxyEvent");
     }
 
     internal void LinkTopicToStepEdgeInfo(string topicName, ProcessStepBuilder sourceStep, ProcessEventData eventData)
@@ -65,7 +65,7 @@ public sealed class ProcessProxyBuilder : ProcessStepBuilder<KernelProxyStep>
     }
 
     /// <inheritdoc/>
-    internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
     {
         if (this._externalTopicUsage.All(topic => !topic.Value))
         {

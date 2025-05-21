@@ -12,7 +12,7 @@ public sealed class KernelProxyStep : KernelProcessStep
     /// <summary>
     /// SK Function names in this SK Step as entry points
     /// </summary>
-    public static class Functions
+    public static class ProcessFunctions
     {
         /// <summary>
         /// Function name used to emit events externally
@@ -36,7 +36,7 @@ public sealed class KernelProxyStep : KernelProcessStep
     /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>
     /// <param name="proxyEvent">event data passed to proxy step</param>
     /// <returns></returns>
-    [KernelFunction(Functions.EmitExternalEvent)]
+    [KernelFunction(ProcessFunctions.EmitExternalEvent)]
     public Task EmitExternalEventAsync(KernelProcessStepExternalContext context, KernelProcessProxyMessage proxyEvent)
     {
         Verify.NotNull(proxyEvent.ExternalTopicName, nameof(proxyEvent.ExternalTopicName));

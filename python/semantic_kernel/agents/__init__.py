@@ -37,6 +37,18 @@ _AGENTS = {
     "ToolSpec": ".agent",
     "ConcurrentOrchestration": ".orchestration.concurrent",
     "SequentialOrchestration": ".orchestration.sequential",
+    "HandoffOrchestration": ".orchestration.handoffs",
+    "OrchestrationHandoffs": ".orchestration.handoffs",
+    "GroupChatOrchestration": ".orchestration.group_chat",
+    "RoundRobinGroupChatManager": ".orchestration.group_chat",
+    "BooleanResult": ".orchestration.group_chat",
+    "StringResult": ".orchestration.group_chat",
+    "MessageResult": ".orchestration.group_chat",
+    "GroupChatManager": ".orchestration.group_chat",
+    "MagenticOrchestration": ".orchestration.magentic",
+    "ProgressLedger": ".orchestration.magentic",
+    "MagenticManagerBase": ".orchestration.magentic",
+    "StandardMagenticManager": ".orchestration.magentic",
 }
 
 

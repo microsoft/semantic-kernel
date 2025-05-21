@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Http;
@@ -22,6 +23,7 @@ public static class GoogleAIMemoryBuilderExtensions
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated memory builder.</returns>
+    [Obsolete("This method is now obsolete and will be removed in future. Use an EmbeddingGenerator with your VectorStore instead.")]
     public static MemoryBuilder WithGoogleAITextEmbeddingGeneration(
         this MemoryBuilder builder,
         string modelId,

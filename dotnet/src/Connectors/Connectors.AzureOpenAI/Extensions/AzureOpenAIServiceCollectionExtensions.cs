@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for <see cref="IServiceCollection"/> to configure Azure OpenAI connectors.
 /// </summary>
-public static class AzureOpenAIServiceCollectionExtensions
+public static partial class AzureOpenAIServiceCollectionExtensions
 {
     #region Chat Completion
 
@@ -160,6 +160,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("Use AddAzureOpenAIEmbeddingGenerator instead.")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string deploymentName,
@@ -199,6 +200,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("Use AddAzureOpenAIEmbeddingGenerator instead.")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string deploymentName,
@@ -236,6 +238,7 @@ public static class AzureOpenAIServiceCollectionExtensions
     /// <param name="dimensions">The number of dimensions the resulting output embeddings should have. Only supported in "text-embedding-3" and later models.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
+    [Obsolete("Use AddAzureOpenAIEmbeddingGenerator instead.")]
     public static IServiceCollection AddAzureOpenAITextEmbeddingGeneration(
         this IServiceCollection services,
         string deploymentName,
@@ -520,9 +523,9 @@ public static class AzureOpenAIServiceCollectionExtensions
 
     #endregion
 
-    private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient, string? apiVersion) =>
+    internal static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, ApiKeyCredential credentials, HttpClient? httpClient, string? apiVersion) =>
         new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion));
 
-    private static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, TokenCredential credentials, HttpClient? httpClient, string? apiVersion) =>
+    internal static AzureOpenAIClient CreateAzureOpenAIClient(string endpoint, TokenCredential credentials, HttpClient? httpClient, string? apiVersion) =>
         new(new Uri(endpoint), credentials, AzureClientCore.GetAzureOpenAIClientOptions(httpClient, apiVersion));
 }

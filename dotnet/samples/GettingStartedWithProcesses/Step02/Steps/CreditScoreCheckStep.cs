@@ -10,14 +10,14 @@ namespace Step02.Steps;
 /// </summary>
 public class CreditScoreCheckStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string DetermineCreditScore = nameof(DetermineCreditScore);
     }
 
     private const int MinCreditScore = 600;
 
-    [KernelFunction(Functions.DetermineCreditScore)]
+    [KernelFunction(ProcessStepFunctions.DetermineCreditScore)]
     public async Task DetermineCreditScoreAsync(KernelProcessStepContext context, NewCustomerForm customerDetails, Kernel _kernel)
     {
         // Placeholder for a call to API to validate credit score with customerDetails

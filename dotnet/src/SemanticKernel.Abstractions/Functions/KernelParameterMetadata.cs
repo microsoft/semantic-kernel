@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -122,6 +123,7 @@ public sealed class KernelParameterMetadata
     public bool IsRequired { get; init; }
 
     /// <summary>Gets the .NET type of the parameter.</summary>
+    [JsonIgnore]
     public Type? ParameterType
     {
         get => this._parameterType;

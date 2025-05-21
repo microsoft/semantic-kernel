@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #pragma warning disable IDE0005 // Using directive is unnecessary.
-using System;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -239,7 +237,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         // Arrange
         Kernel kernel = this._kernelBuilder.Build();
         var processBuilder = new ProcessBuilder("StepAndFanIn");
-        var startStep = processBuilder.AddStepFromType<StartStep>();
+        var startStep = processBuilder.AddStepFromType<StartStep>(id: "startStep");
         var fanInStepName = "InnerFanIn";
         var fanInStep = processBuilder.AddStepFromProcess(this.CreateFanInProcess(fanInStepName));
 
@@ -328,6 +326,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     }
 
     #region Predefined ProcessBuilders for testing
+
     /// <summary>
     /// Sample long sequential process, each step has a delay.<br/>
     /// Input Event: <see cref="EmitterStep.InputEvent"/><br/>
@@ -385,8 +384,8 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     private ProcessBuilder CreateLinearProcess(string name)
     {
         var processBuilder = new ProcessBuilder(name);
-        var echoStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>();
-        var repeatStep = processBuilder.AddStepFromType<RepeatStep>();
+        var echoStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>(id: nameof(CommonSteps.EchoStep));
+        var repeatStep = processBuilder.AddStepFromType<RepeatStep>(id: nameof(RepeatStep));
 
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
@@ -420,7 +419,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var processBuilder = new ProcessBuilder(name);
         var echoAStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>("EchoStepA");
         var repeatBStep = processBuilder.AddStepFromType<RepeatStep>("RepeatStepB");
-        var fanInCStep = processBuilder.AddStepFromType<FanInStep>();
+        var fanInCStep = processBuilder.AddStepFromType<FanInStep>(id: nameof(FanInStep));
 
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(echoAStep));
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(repeatBStep, parameterName: "message"));
@@ -461,6 +460,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         return processBuilder;
     }
     #endregion
+
     #region Assert Utils
     private void AssertStepStateLastMessage(KernelProcess processInfo, string stepName, string? expectedLastMessage, int? expectedInvocationCount = null)
     {
@@ -474,5 +474,16 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
             Assert.Equal(expectedInvocationCount.Value, outputStepResult.State.InvocationCount);
         }
     }
+
+#if !NET
+    private void AssertStepState<T>(KernelProcess processInfo, string stepName, Predicate<KernelProcessStepState<T>> predicate) where T : class, new()
+    {
+        KernelProcessStepInfo? stepInfo = processInfo.Steps.FirstOrDefault(s => s.State.Name == stepName);
+        Assert.NotNull(stepInfo);
+        var outputStepResult = stepInfo.State as KernelProcessStepState<T>;
+        Assert.NotNull(outputStepResult?.State);
+        Assert.True(predicate(outputStepResult));
+    }
+#endif
     #endregion
 }

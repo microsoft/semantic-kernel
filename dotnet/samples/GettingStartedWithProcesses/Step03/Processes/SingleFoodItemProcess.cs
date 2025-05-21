@@ -76,7 +76,7 @@ public static class SingleFoodItemProcess
 
     private sealed class DispatchSingleOrderStep : KernelProcessStep
     {
-        public static class Functions
+        public static class ProcessFunctions
         {
             public const string PrepareSingleOrder = nameof(PrepareSingleOrder);
         }
@@ -89,7 +89,7 @@ public static class SingleFoodItemProcess
             public const string PrepareFishAndChips = nameof(PrepareFishAndChips);
         }
 
-        [KernelFunction(Functions.PrepareSingleOrder)]
+        [KernelFunction(ProcessFunctions.PrepareSingleOrder)]
         public async Task DispatchSingleOrderAsync(KernelProcessStepContext context, FoodItem foodItem)
         {
             var foodName = foodItem.ToFriendlyString();
@@ -118,7 +118,7 @@ public static class SingleFoodItemProcess
 
     private sealed class PackOrderStep : KernelProcessStep
     {
-        public static class Functions
+        public static class ProcessFunctions
         {
             public const string PackFood = nameof(PackFood);
         }
@@ -127,7 +127,7 @@ public static class SingleFoodItemProcess
             public const string FoodPacked = nameof(FoodPacked);
         }
 
-        [KernelFunction(Functions.PackFood)]
+        [KernelFunction(ProcessFunctions.PackFood)]
         public async Task PackFoodAsync(KernelProcessStepContext context, List<string> foodActions)
         {
             Console.WriteLine($"PACKING_FOOD: Food {foodActions.First()} Packed! - {JsonSerializer.Serialize(foodActions)}");

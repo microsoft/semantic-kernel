@@ -2,12 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
-using Microsoft.SemanticKernel.Embeddings;
 using Qdrant.Client.Grpc;
 using Xunit;
 using Xunit.Abstractions;
@@ -19,7 +18,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Qdrant;
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
 
 /// <summary>
-/// Contains tests for the <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> class.
+/// Contains tests for the <see cref="QdrantCollection{TKey, TRecord}"/> class.
 /// </summary>
 /// <param name="output">Used for logging.</param>
 /// <param name="fixture">Qdrant setup and teardown.</param>
@@ -32,7 +31,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, ownsClient: false);
 
         // Act.
         var actual = await sut.CollectionExistsAsync();
@@ -53,21 +52,21 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var collectionNamePostfix2 = hasNamedVectors ? "HasNamedVectors" : "SingleUnnamedVector";
         var testCollectionName = $"createtest{collectionNamePostfix1}{collectionNamePostfix2}";
 
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, testCollectionName, options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, testCollectionName, ownsClient: false, options);
 
         var record = await this.CreateTestHotelAsync(30, fixture.EmbeddingGenerator);
 
         // Act
-        await sut.CreateCollectionAsync();
-        var upsertResult = await sut.UpsertAsync(record);
-        var getResult = await sut.GetAsync(30, new GetRecordOptions { IncludeVectors = true });
-        var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
-        var searchResults = await sut.VectorizedSearchAsync(
+        await sut.EnsureCollectionExistsAsync();
+        await sut.UpsertAsync(record);
+        var getResult = await sut.GetAsync(30, new() { IncludeVectors = true });
+        var vector = (await fixture.EmbeddingGenerator.GenerateAsync("A great hotel")).Vector;
+        var searchResults = await sut.SearchAsync(
             vector,
             top: 3,
             new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 30).AnyTagEqualTo("Tags", "t2") }).ToListAsync();
@@ -75,9 +74,8 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
         Assert.True(collectionExistResult);
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
-        Assert.Equal(30ul, upsertResult);
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -100,7 +98,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
         // Output
         output.WriteLine(collectionExistResult.ToString());
-        output.WriteLine(upsertResult.ToString(CultureInfo.InvariantCulture));
         output.WriteLine(getResult?.ToString());
     }
 
@@ -113,10 +110,10 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             tempCollectionName,
             new VectorParams { Size = 4, Distance = Distance.Cosine });
 
-        var sut = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, tempCollectionName);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, tempCollectionName, ownsClient: false);
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         Assert.False(await sut.CollectionExistsAsync());
@@ -130,21 +127,20 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanUpsertDocumentToVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, ownsClient: false, options);
 
         var record = await this.CreateTestHotelAsync(20, fixture.EmbeddingGenerator);
 
         // Act.
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
 
         // Assert.
-        var getResult = await sut.GetAsync(20, new GetRecordOptions { IncludeVectors = true });
-        Assert.Equal(20ul, upsertResult);
+        var getResult = await sut.GetAsync(20, new RecordRetrievalOptions { IncludeVectors = true });
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.HotelCode, getResult?.HotelCode);
@@ -157,7 +153,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         //Assert.Equal(record.DescriptionEmbedding?.ToArray(), getResult?.DescriptionEmbedding?.ToArray());
 
         // Output.
-        output.WriteLine(upsertResult.ToString(CultureInfo.InvariantCulture));
         output.WriteLine(getResult?.ToString());
     }
 
@@ -165,23 +160,22 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanUpsertAndRemoveDocumentWithGuidIdToVectorStoreAsync()
     {
         // Arrange.
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfoWithGuidId> { HasNamedVectors = false };
-        IVectorStoreRecordCollection<Guid, HotelInfoWithGuidId> sut = new QdrantVectorStoreRecordCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
+        var options = new QdrantCollectionOptions { HasNamedVectors = false };
+        using VectorStoreCollection<Guid, HotelInfoWithGuidId> sut = new QdrantCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", ownsClient: false, options);
 
         var record = new HotelInfoWithGuidId
         {
             HotelId = Guid.Parse("55555555-5555-5555-5555-555555555555"),
             HotelName = "My Hotel 5",
             Description = "This is a great hotel.",
-            DescriptionEmbedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a great hotel."),
+            DescriptionEmbedding = (await fixture.EmbeddingGenerator.GenerateAsync("This is a great hotel.")).Vector,
         };
 
         // Act.
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
 
         // Assert.
-        var getResult = await sut.GetAsync(Guid.Parse("55555555-5555-5555-5555-555555555555"), new GetRecordOptions { IncludeVectors = true });
-        Assert.Equal(Guid.Parse("55555555-5555-5555-5555-555555555555"), upsertResult);
+        var getResult = await sut.GetAsync(Guid.Parse("55555555-5555-5555-5555-555555555555"), new RecordRetrievalOptions { IncludeVectors = true });
         Assert.Equal(record.HotelId, getResult?.HotelId);
         Assert.Equal(record.HotelName, getResult?.HotelName);
         Assert.Equal(record.Description, getResult?.Description);
@@ -193,7 +187,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Null(await sut.GetAsync(Guid.Parse("55555555-5555-5555-5555-555555555555")));
 
         // Output.
-        output.WriteLine(upsertResult.ToString("D"));
         output.WriteLine(getResult?.ToString());
     }
 
@@ -209,15 +202,15 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanGetDocumentFromVectorStoreAsync(bool useRecordDefinition, bool withEmbeddings, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, ownsClient: false, options);
 
         // Act.
-        var getResult = await sut.GetAsync(11, new GetRecordOptions { IncludeVectors = withEmbeddings });
+        var getResult = await sut.GetAsync(11, new RecordRetrievalOptions { IncludeVectors = withEmbeddings });
 
         // Assert.
         Assert.Equal(11ul, getResult?.HotelId);
@@ -251,15 +244,15 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanGetDocumentWithGuidIdFromVectorStoreAsync(bool useRecordDefinition, bool withEmbeddings)
     {
         // Arrange.
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfoWithGuidId>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = false,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelWithGuidIdVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelWithGuidIdVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantVectorStoreRecordCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", options);
+        using var sut = new QdrantCollection<Guid, HotelInfoWithGuidId>(fixture.QdrantClient, "singleVectorGuidIdHotels", ownsClient: false, options);
 
         // Act.
-        var getResult = await sut.GetAsync(Guid.Parse("11111111-1111-1111-1111-111111111111"), new GetRecordOptions { IncludeVectors = withEmbeddings });
+        var getResult = await sut.GetAsync(Guid.Parse("11111111-1111-1111-1111-111111111111"), new RecordRetrievalOptions { IncludeVectors = withEmbeddings });
 
         // Assert.
         Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), getResult?.HotelId);
@@ -282,12 +275,12 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanGetManyDocumentsFromVectorStoreAsync()
     {
         // Arrange
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo> { HasNamedVectors = true };
-        var sut = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", options);
+        var options = new QdrantCollectionOptions { HasNamedVectors = true };
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "namedVectorsHotels", ownsClient: false, options);
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
-        var hotels = sut.GetAsync([11, 15, 12], new GetRecordOptions { IncludeVectors = true });
+        var hotels = sut.GetAsync([11, 15, 12], new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(hotels);
@@ -309,12 +302,12 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanRemoveDocumentFromVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, ownsClient: false, options);
 
         await sut.UpsertAsync(await this.CreateTestHotelAsync(20, fixture.EmbeddingGenerator));
 
@@ -335,12 +328,12 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanRemoveManyDocumentsFromVectorStoreAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors)
     {
         // Arrange.
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, ownsClient: false, options);
 
         await sut.UpsertAsync(await this.CreateTestHotelAsync(20, fixture.EmbeddingGenerator));
 
@@ -356,11 +349,11 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItReturnsNullWhenGettingNonExistentRecordAsync()
     {
         // Arrange
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo> { HasNamedVectors = false };
-        var sut = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, "singleVectorHotels", options);
+        var options = new QdrantCollectionOptions { HasNamedVectors = false };
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, "singleVectorHotels", ownsClient: false, options);
 
         // Act & Assert
-        Assert.Null(await sut.GetAsync(15, new GetRecordOptions { IncludeVectors = true }));
+        Assert.Null(await sut.GetAsync(15, new RecordRetrievalOptions { IncludeVectors = true }));
     }
 
     [Theory]
@@ -375,17 +368,17 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanSearchWithFilterAsync(bool useRecordDefinition, string collectionName, bool hasNamedVectors, string filterType)
     {
         // Arrange.
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo>
+        var options = new QdrantCollectionOptions
         {
             HasNamedVectors = hasNamedVectors,
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
-        var sut = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, options);
+        using var sut = new QdrantCollection<ulong, HotelInfo>(fixture.QdrantClient, collectionName, ownsClient: false, options);
 
         // Act.
-        var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
+        var vector = (await fixture.EmbeddingGenerator.GenerateAsync("A great hotel")).Vector;
         var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "My Hotel 13").EqualTo("LastRenovationDate", new DateTimeOffset(2020, 02, 01, 0, 0, 0, TimeSpan.Zero)) : new VectorSearchFilter().AnyTagEqualTo("Tags", "t13.2");
-        var searchResults = await sut.VectorizedSearchAsync(
+        var searchResults = await sut.SearchAsync(
             vector,
             top: 3,
             new()
@@ -409,28 +402,28 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
-        var options = new QdrantVectorStoreRecordCollectionOptions<Dictionary<string, object?>>
+        var options = new QdrantCollectionOptions
         {
-            VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
+            Definition = fixture.HotelVectorStoreRecordDefinition
         };
-        var sut = new QdrantVectorStoreRecordCollection<object, Dictionary<string, object?>>(fixture.QdrantClient, "singleVectorHotels", options);
+        using var sut = new QdrantDynamicCollection(fixture.QdrantClient, "singleVectorHotels", ownsClient: false, options);
 
         // Act
-        var baseSetGetResult = await sut.GetAsync(11ul, new GetRecordOptions { IncludeVectors = true });
-        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
+        var baseSetGetResult = await sut.GetAsync(11ul, new RecordRetrievalOptions { IncludeVectors = true });
+        await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = 40ul,
 
             ["HotelName"] = "Dynamic Mapper Hotel",
             ["HotelCode"] = 40,
             ["ParkingIncluded"] = false,
-            ["HotelRating"] = 3.6d,
-            ["Tags"] = new string[] { "dynamic" },
+            ["HotelRating"] = 3.6f,
+            ["Tags"] = new List<string> { "dynamic" },
             ["Description"] = "This is a dynamic mapper hotel",
 
-            ["DescriptionEmbedding"] = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a dynamic mapper hotel")
+            ["DescriptionEmbedding"] = (await fixture.EmbeddingGenerator.GenerateAsync("This is a dynamic mapper hotel")).Vector
         });
-        var localGetResult = await sut.GetAsync(40ul, new GetRecordOptions { IncludeVectors = true });
+        var localGetResult = await sut.GetAsync(40ul, new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(baseSetGetResult);
@@ -444,8 +437,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.NotNull(baseSetGetResult["DescriptionEmbedding"]);
         Assert.IsType<ReadOnlyMemory<float>>(baseSetGetResult["DescriptionEmbedding"]);
 
-        Assert.Equal(40ul, upsertResult);
-
         Assert.NotNull(localGetResult);
         Assert.Equal(40ul, localGetResult["HotelId"]);
         Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
@@ -458,7 +449,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.IsType<ReadOnlyMemory<float>>(localGetResult["DescriptionEmbedding"]);
     }
 
-    private async Task<HotelInfo> CreateTestHotelAsync(uint hotelId, ITextEmbeddingGenerationService embeddingGenerator)
+    private async Task<HotelInfo> CreateTestHotelAsync(uint hotelId, IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
     {
         return new HotelInfo
         {
@@ -470,7 +461,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             LastRenovationDate = new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.Zero),
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
-            DescriptionEmbedding = await embeddingGenerator.GenerateEmbeddingAsync("This is a great hotel."),
+            DescriptionEmbedding = (await embeddingGenerator.GenerateAsync("This is a great hotel.")).Vector,
         };
     }
 }
