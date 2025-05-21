@@ -13,7 +13,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Memory;
 
 /// <summary>
-/// Contains tests for the <see cref="Mem0Behavior"/> class.
+/// Contains tests for the <see cref="Mem0Provider"/> class.
 /// </summary>
 public class Mem0BehaviorTests : IDisposable
 {
@@ -46,7 +46,7 @@ public class Mem0BehaviorTests : IDisposable
         var question = new ChatMessage(ChatRole.User, "What is my name?");
         var input = new ChatMessage(ChatRole.User, "Hello, my name is Caoimhe.");
 
-        var sut = new Mem0Behavior(this._httpClient, new() { ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = true });
+        var sut = new Mem0Provider(this._httpClient, new() { ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = true });
 
         await sut.ClearStoredMemoriesAsync();
         var answerBeforeAdding = await sut.ModelInvokingAsync([question]);
@@ -73,7 +73,7 @@ public class Mem0BehaviorTests : IDisposable
         var question = new ChatMessage(ChatRole.User, "What is your name?");
         var input = new ChatMessage(ChatRole.Assistant, "Hello, I'm a friendly assistant and my name is Caoimhe.");
 
-        var sut = new Mem0Behavior(this._httpClient, new() { AgentId = "test-agent-id" });
+        var sut = new Mem0Provider(this._httpClient, new() { AgentId = "test-agent-id" });
 
         await sut.ClearStoredMemoriesAsync();
         var answerBeforeAdding = await sut.ModelInvokingAsync([question]);
@@ -100,8 +100,8 @@ public class Mem0BehaviorTests : IDisposable
         var question = new ChatMessage(ChatRole.User, "What is your name?");
         var input = new ChatMessage(ChatRole.Assistant, "I'm an AI tutor with a personality. My name is Caoimhe.");
 
-        var sut1 = new Mem0Behavior(this._httpClient, new() { AgentId = "test-agent-id-1" });
-        var sut2 = new Mem0Behavior(this._httpClient, new() { AgentId = "test-agent-id-2" });
+        var sut1 = new Mem0Provider(this._httpClient, new() { AgentId = "test-agent-id-1" });
+        var sut2 = new Mem0Provider(this._httpClient, new() { AgentId = "test-agent-id-2" });
 
         await sut1.ClearStoredMemoriesAsync();
         await sut2.ClearStoredMemoriesAsync();
@@ -133,13 +133,13 @@ public class Mem0BehaviorTests : IDisposable
         // Arrange
         var input = new ChatMessage(ChatRole.User, "Hello, my name is Caoimhe.");
 
-        var sut = new Mem0Behavior(this._httpClient, new() { UserId = "test-user-id", ScopeToPerOperationThreadId = true });
+        var sut = new Mem0Provider(this._httpClient, new() { UserId = "test-user-id", ScopeToPerOperationThreadId = true });
 
         await sut.ClearStoredMemoriesAsync();
 
         // Act & Assert
-        await sut.ThreadCreatedAsync("test-thread-id-1");
-        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ThreadCreatedAsync("test-thread-id-2"));
+        await sut.ConversationCreatedAsync("test-thread-id-1");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ConversationCreatedAsync("test-thread-id-2"));
 
         await sut.MessageAddingAsync("test-thread-id-1", input);
         await Assert.ThrowsAsync<InvalidOperationException>(() => sut.MessageAddingAsync("test-thread-id-2", input));

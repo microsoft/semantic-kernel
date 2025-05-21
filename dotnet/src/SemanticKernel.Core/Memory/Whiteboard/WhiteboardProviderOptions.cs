@@ -5,10 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// Options for configuring the <see cref="WhiteboardBehavior"/>.
+/// Options for configuring the <see cref="WhiteboardProvider"/>.
 /// </summary>
 [Experimental("SKEXP0130")]
-public sealed class WhiteboardBehaviorOptions
+public sealed class WhiteboardProviderOptions
 {
     /// <summary>
     /// Gets or sets the maximum number of messages to keep on the whiteboard.

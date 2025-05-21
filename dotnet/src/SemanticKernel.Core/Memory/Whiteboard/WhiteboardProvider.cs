@@ -15,10 +15,10 @@ using Microsoft.Extensions.AI;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// An <see cref="AIContextBehavior"/> that maintains a whiteboard during a conversation.
+/// An <see cref="AIContextProvider"/> that maintains a whiteboard during a conversation.
 /// </summary>
 [Experimental("SKEXP0130")]
-public sealed class WhiteboardBehavior : AIContextBehavior
+public sealed class WhiteboardProvider : AIContextProvider
 {
     private readonly static JsonDocument s_structuredOutputSchema = JsonDocument.Parse("""{"type":"object","properties":{"newWhiteboard":{"type":"array","items":{"type":"string"}}}}""");
     private const string DefaultContextPrompt = "## Whiteboard\nThe following list of messages are currently on the whiteboard:";
@@ -39,11 +39,11 @@ public sealed class WhiteboardBehavior : AIContextBehavior
     private Task _updateWhiteboardTask = Task.CompletedTask;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="WhiteboardBehavior"/> class.
+    /// Initializes a new instance of the <see cref="WhiteboardProvider"/> class.
     /// </summary>
     /// <param name="chatClient">A <see cref="IChatClient"/> to use for making chat completion calls.</param>
-    /// <param name="options">Options for configuring the behavior.</param>
-    public WhiteboardBehavior(IChatClient chatClient, WhiteboardBehaviorOptions? options = default)
+    /// <param name="options">Options for configuring the provider.</param>
+    public WhiteboardProvider(IChatClient chatClient, WhiteboardProviderOptions? options = default)
     {
         Verify.NotNull(chatClient);
 
@@ -92,16 +92,16 @@ public sealed class WhiteboardBehavior : AIContextBehavior
     }
 
     /// <inheritdoc/>
-    public override Task<AIContextPart> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         if (this._currentWhiteboardContent.Count == 0)
         {
-            return Task.FromResult(new AIContextPart() { Instructions = this._whiteboardEmptyPrompt });
+            return Task.FromResult(new AIContext() { Instructions = this._whiteboardEmptyPrompt });
         }
 
         var numberedMessages = this._currentWhiteboardContent.Select((x, i) => $"{i} {x}");
         var joinedMessages = string.Join(Environment.NewLine, numberedMessages);
-        return Task.FromResult(new AIContextPart()
+        return Task.FromResult(new AIContext()
         {
             Instructions = $"{this._contextPrompt}\n{joinedMessages}"
         });
@@ -139,8 +139,8 @@ public sealed class WhiteboardBehavior : AIContextBehavior
             });
 
         // Serialize the input messages and the current whiteboard content to JSON.
-        var inputMessagesJson = JsonSerializer.Serialize(basicMessages, WhiteboardBehaviorSourceGenerationContext.Default.IEnumerableBasicMessage);
-        var currentWhiteboardJson = JsonSerializer.Serialize(this._currentWhiteboardContent, WhiteboardBehaviorSourceGenerationContext.Default.ListString);
+        var inputMessagesJson = JsonSerializer.Serialize(basicMessages, WhiteboardProviderSourceGenerationContext.Default.IEnumerableBasicMessage);
+        var currentWhiteboardJson = JsonSerializer.Serialize(this._currentWhiteboardContent, WhiteboardProviderSourceGenerationContext.Default.ListString);
 
         // Inovke the LLM to extract the latest information from the input messages and update the whiteboard.
         var result = await this._chatClient.GetResponseAsync(
@@ -153,7 +153,7 @@ public sealed class WhiteboardBehavior : AIContextBehavior
             cancellationToken).ConfigureAwait(false);
 
         // Update the current whiteboard content with the LLM result.
-        var newWhiteboardResponse = JsonSerializer.Deserialize(result.ToString(), WhiteboardBehaviorSourceGenerationContext.Default.NewWhiteboardResponse);
+        var newWhiteboardResponse = JsonSerializer.Deserialize(result.ToString(), WhiteboardProviderSourceGenerationContext.Default.NewWhiteboardResponse);
         this._currentWhiteboardContent = newWhiteboardResponse?.NewWhiteboard ?? [];
     }
 
@@ -301,17 +301,17 @@ public sealed class WhiteboardBehavior : AIContextBehavior
 }
 
 /// <summary>
-/// Source generated json serializer for <see cref="WhiteboardBehavior"/>.
+/// Source generated json serializer for <see cref="WhiteboardProvider"/>.
 /// </summary>
 [Experimental("SKEXP0130")]
 [JsonSourceGenerationOptions(JsonSerializerDefaults.General,
     UseStringEnumConverter = false,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     WriteIndented = false)]
-[JsonSerializable(typeof(IEnumerable<WhiteboardBehavior.BasicMessage>))]
-[JsonSerializable(typeof(WhiteboardBehavior.BasicMessage))]
+[JsonSerializable(typeof(IEnumerable<WhiteboardProvider.BasicMessage>))]
+[JsonSerializable(typeof(WhiteboardProvider.BasicMessage))]
 [JsonSerializable(typeof(List<string>))]
-[JsonSerializable(typeof(WhiteboardBehavior.NewWhiteboardResponse))]
-internal partial class WhiteboardBehaviorSourceGenerationContext : JsonSerializerContext
+[JsonSerializable(typeof(WhiteboardProvider.NewWhiteboardResponse))]
+internal partial class WhiteboardProviderSourceGenerationContext : JsonSerializerContext
 {
 }

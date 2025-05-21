@@ -16,7 +16,7 @@ using Xunit.Abstractions;
 namespace SemanticKernel.IntegrationTests.Memory;
 
 /// <summary>
-/// Contains tests for the <see cref="WhiteboardBehavior"/> class.
+/// Contains tests for the <see cref="WhiteboardProvider"/> class.
 /// </summary>
 public class WhiteboardBehaviorTests
 {
@@ -136,7 +136,7 @@ public class WhiteboardBehaviorTests
     private async Task CanAddMessagesToWhiteboardAsync(ChatMessage[] chatMessages, string[][] expectedWhiteboardContent)
     {
         // Arrange
-        var whiteboardBehavior = new WhiteboardBehavior(this._chatClient);
+        var whiteboardBehavior = new WhiteboardProvider(this._chatClient);
 
         // Act
         foreach (var chatMessage in chatMessages)

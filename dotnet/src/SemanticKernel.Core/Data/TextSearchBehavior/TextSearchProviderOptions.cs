@@ -7,10 +7,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
-/// Contains options for the <see cref="TextSearchBehavior"/>.
+/// Contains options for the <see cref="TextSearchProvider"/>.
 /// </summary>
 [Experimental("SKEXP0130")]
-public sealed class TextSearchBehaviorOptions
+public sealed class TextSearchProviderOptions
 {
     private int _top = 3;
 
@@ -80,7 +80,7 @@ public sealed class TextSearchBehaviorOptions
     /// <remarks>
     /// <para>
     /// If provided, this delegate will be used to do the following:
-    /// 1. Create the output context provided by the <see cref="TextSearchBehavior"/> when invoking the AI model.
+    /// 1. Create the output context provided by the <see cref="TextSearchProvider"/> when invoking the AI model.
     /// 2. Create the response text when invoking the component via a plugin.
     /// </para>
     /// <para>
@@ -93,7 +93,7 @@ public sealed class TextSearchBehaviorOptions
     public Func<List<TextSearchResult>, string>? ContextFormatter { get; init; }
 
     /// <summary>
-    /// Choices for controlling the behavior of the <see cref="TextSearchBehavior"/>.
+    /// Choices for controlling the behavior of the <see cref="TextSearchProvider"/>.
     /// </summary>
     public enum RagBehavior
     {

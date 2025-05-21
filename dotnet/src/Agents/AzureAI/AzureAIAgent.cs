@@ -187,13 +187,13 @@ public sealed partial class AzureAIAgent : Agent
 
         var kernel = (options?.Kernel ?? this.Kernel).Clone();
 
-        // Get the context contributions from the AIContextBehaviors.
+        // Get the context contributions from the AIContextProviders.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var behaviorsContext = await azureAIAgentThread.AIContextBehaviors.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
-        kernel.Plugins.AddFromAIContextPart(behaviorsContext, "Tools");
+        var providersContext = await azureAIAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, behaviorsContext.Instructions);
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, providersContext.Instructions);
         var extensionsContextOptions = options is null ?
             new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
@@ -317,13 +317,13 @@ public sealed partial class AzureAIAgent : Agent
 
         var kernel = (options?.Kernel ?? this.Kernel).Clone();
 
-        // Get the context contributions from the AIContextBehaviors.
+        // Get the context contributions from the AIContextProviders.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var behaviorsContext = await azureAIAgentThread.AIContextBehaviors.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
-        kernel.Plugins.AddFromAIContextPart(behaviorsContext, "Tools");
+        var providersContext = await azureAIAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, behaviorsContext.Instructions);
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, providersContext.Instructions);
         var extensionsContextOptions = options is null ?
             new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
             new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };

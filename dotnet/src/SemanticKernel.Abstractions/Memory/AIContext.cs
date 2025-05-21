@@ -8,16 +8,16 @@ namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A class containing any context that should be provided to the AI model
-/// as supplied by an <see cref="AIContextBehavior"/>.
+/// as supplied by an <see cref="AIContextProvider"/>.
 /// </summary>
 /// <remarks>
-/// Each <see cref="AIContextBehavior"/> has the ability to provide its own context for each invocation.
-/// The <see cref="AIContextPart"/> class contains the additional context supplied by the <see cref="AIContextBehavior"/>.
-/// This context will be combined with context supplied by other behaviors before being passed to the AI model.
+/// Each <see cref="AIContextProvider"/> has the ability to provide its own context for each invocation.
+/// The <see cref="AIContext"/> class contains the additional context supplied by the <see cref="AIContextProvider"/>.
+/// This context will be combined with context supplied by other providers before being passed to the AI model.
 /// This context is per invocation, and will not be stored as part of the chat history.
 /// </remarks>
 [Experimental("SKEXP0130")]
-public sealed class AIContextPart
+public sealed class AIContext
 {
     /// <summary>
     /// Any instructions to pass to the AI model in addition to any other prompts

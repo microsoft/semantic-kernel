@@ -181,8 +181,8 @@ public class AgentThreadTests
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockPart = new Mock<AIContextBehavior>();
-        thread.AIContextBehaviors.Add(mockPart.Object);
+        var mockPart = new Mock<AIContextProvider>();
+        thread.AIContextProviders.Add(mockPart.Object);
         await thread.CreateAsync();
 
         // Act.
@@ -201,8 +201,8 @@ public class AgentThreadTests
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockPart = new Mock<AIContextBehavior>();
-        thread.AIContextBehaviors.Add(mockPart.Object);
+        var mockPart = new Mock<AIContextProvider>();
+        thread.AIContextProviders.Add(mockPart.Object);
         await thread.CreateAsync();
 
         // Act.
@@ -221,14 +221,14 @@ public class AgentThreadTests
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockPart = new Mock<AIContextBehavior>();
-        thread.AIContextBehaviors.Add(mockPart.Object);
+        var mockPart = new Mock<AIContextProvider>();
+        thread.AIContextProviders.Add(mockPart.Object);
 
         // Act.
         await thread.CreateAsync();
 
         // Assert.
-        mockPart.Verify(x => x.ThreadCreatedAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+        mockPart.Verify(x => x.ConversationCreatedAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>
@@ -240,15 +240,15 @@ public class AgentThreadTests
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockPart = new Mock<AIContextBehavior>();
-        thread.AIContextBehaviors.Add(mockPart.Object);
+        var mockPart = new Mock<AIContextProvider>();
+        thread.AIContextProviders.Add(mockPart.Object);
         await thread.CreateAsync();
 
         // Act.
         await thread.DeleteAsync();
 
         // Assert.
-        mockPart.Verify(x => x.ThreadDeletingAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+        mockPart.Verify(x => x.ConversationDeletingAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>
@@ -260,8 +260,8 @@ public class AgentThreadTests
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockPart = new Mock<AIContextBehavior>();
-        thread.AIContextBehaviors.Add(mockPart.Object);
+        var mockPart = new Mock<AIContextProvider>();
+        thread.AIContextProviders.Add(mockPart.Object);
         var message = new ChatMessageContent(AuthorRole.User, "Test Message.");
 
         await thread.CreateAsync();

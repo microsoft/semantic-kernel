@@ -24,18 +24,18 @@ namespace Microsoft.SemanticKernel.Memory;
 /// There are some special considerations when using thread as a scope.
 /// A thread id may not be available at the time that this component is instantiated.
 /// It is therefore possible to provide no thread id when instantiating this class and instead set
-/// <see cref="Mem0BehaviorOptions.ScopeToPerOperationThreadId"/> to <see langword="true"/>.
+/// <see cref="Mem0ProviderOptions.ScopeToPerOperationThreadId"/> to <see langword="true"/>.
 /// The component will then capture a thread id when a thread is created or when messages are received
 /// and use this thread id to scope the memories in mem0.
 /// </para>
 /// <para>
 /// Note that this component will keep the current thread id in a private field for the duration of
 /// the component's lifetime, and therefore using the component with multiple threads, with
-/// <see cref="Mem0BehaviorOptions.ScopeToPerOperationThreadId"/> set to <see langword="true"/> is not supported.
+/// <see cref="Mem0ProviderOptions.ScopeToPerOperationThreadId"/> set to <see langword="true"/> is not supported.
 /// </para>
 /// </remarks>
 [Experimental("SKEXP0130")]
-public sealed class Mem0Behavior : AIContextBehavior
+public sealed class Mem0Provider : AIContextProvider
 {
     private const string DefaultContextPrompt = "## Memories\nConsider the following memories when answering user questions:";
 
@@ -50,7 +50,7 @@ public sealed class Mem0Behavior : AIContextBehavior
     private readonly Mem0Client _mem0Client;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Mem0Behavior"/> class.
+    /// Initializes a new instance of the <see cref="Mem0Provider"/> class.
     /// </summary>
     /// <param name="httpClient">The HTTP client used for making requests.</param>
     /// <param name="options">Options for configuring the component.</param>
@@ -64,7 +64,7 @@ public sealed class Mem0Behavior : AIContextBehavior
     /// new Mem0Client(httpClient);
     /// </code>
     /// </remarks>
-    public Mem0Behavior(HttpClient httpClient, Mem0BehaviorOptions? options = default)
+    public Mem0Provider(HttpClient httpClient, Mem0ProviderOptions? options = default)
     {
         Verify.NotNull(httpClient);
 
@@ -84,7 +84,7 @@ public sealed class Mem0Behavior : AIContextBehavior
     }
 
     /// <inheritdoc/>
-    public override Task ThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
+    public override Task ConversationCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
     {
         this.ValidatePerOperationThreadId(threadId);
 
@@ -123,7 +123,7 @@ public sealed class Mem0Behavior : AIContextBehavior
     }
 
     /// <inheritdoc/>
-    public override async Task<AIContextPart> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override async Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessages);
 
@@ -172,7 +172,7 @@ public sealed class Mem0Behavior : AIContextBehavior
     {
         if (this._scopeToPerOperationThreadId && !string.IsNullOrWhiteSpace(threadId) && this._perOperationThreadId != null && threadId != this._perOperationThreadId)
         {
-            throw new InvalidOperationException($"The {nameof(Mem0Behavior)} can only be used with one thread at a time when {nameof(Mem0BehaviorOptions.ScopeToPerOperationThreadId)} is set to true.");
+            throw new InvalidOperationException($"The {nameof(Mem0Provider)} can only be used with one thread at a time when {nameof(Mem0ProviderOptions.ScopeToPerOperationThreadId)} is set to true.");
         }
     }
 }

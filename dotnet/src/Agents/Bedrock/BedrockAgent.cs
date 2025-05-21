@@ -120,9 +120,9 @@ public sealed class BedrockAgent : Agent
             () => new BedrockAgentThread(this.RuntimeClient),
             cancellationToken).ConfigureAwait(false);
 
-        // Get the context contributions from the AIContextBehaviors.
+        // Get the context contributions from the AIContextProviders.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var behaviorsContext = await bedrockThread.AIContextBehaviors.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        var providersContext = await bedrockThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Ensure that the last message provided is a user message
@@ -130,7 +130,7 @@ public sealed class BedrockAgent : Agent
 
         // Build session state with conversation history and override instructions if needed
         SessionState sessionState = this.ExtractSessionState(messages);
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, behaviorsContext.Instructions);
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, providersContext.Instructions);
         sessionState.PromptSessionAttributes = new() { [AdditionalInstructionsSessionAttributeName] = mergedAdditionalInstructions };
 
         // Configure the agent request with the provided options
@@ -356,9 +356,9 @@ public sealed class BedrockAgent : Agent
             () => new BedrockAgentThread(this.RuntimeClient),
             cancellationToken).ConfigureAwait(false);
 
-        // Get the context contributions from the AIContextBehaviors.
+        // Get the context contributions from the AIContextProviders.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var behaviorsContext = await bedrockThread.AIContextBehaviors.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        var providersContext = await bedrockThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Ensure that the last message provided is a user message
@@ -366,7 +366,7 @@ public sealed class BedrockAgent : Agent
 
         // Build session state with conversation history and override instructions if needed
         SessionState sessionState = this.ExtractSessionState(messages);
-        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, behaviorsContext.Instructions);
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, providersContext.Instructions);
         sessionState.PromptSessionAttributes = new() { [AdditionalInstructionsSessionAttributeName] = mergedAdditionalInstructions };
 
         // Configure the agent request with the provided options

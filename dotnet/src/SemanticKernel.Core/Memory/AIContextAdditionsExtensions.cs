@@ -8,18 +8,18 @@ using Microsoft.Extensions.AI;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Extension methods for <see cref="ICollection{KernelPlugin}"/> to add <see cref="AIContextPart"/> plugins.
+/// Extension methods for <see cref="ICollection{KernelPlugin}"/> to add <see cref="AIContext"/> plugins.
 /// </summary>
 [Experimental("SKEXP0130")]
 public static class AIContextAdditionsExtensions
 {
     /// <summary>
-    /// Registers the <see cref="AIFunction"/> objects available on the provided <see cref="AIContextPart"/> as a plugin.
+    /// Registers the <see cref="AIFunction"/> objects available on the provided <see cref="AIContext"/> as a plugin.
     /// </summary>
     /// <param name="plugins">The plugins collection to register the <see cref="AIFunction"/> objects on.</param>
-    /// <param name="aiContextAdditions">The <see cref="AIContextPart"/> to get plugins from.</param>
+    /// <param name="aiContextAdditions">The <see cref="AIContext"/> to get plugins from.</param>
     /// <param name="pluginName">The name to give to the plugin.</param>
-    public static void AddFromAIContextPart(this ICollection<KernelPlugin> plugins, AIContextPart aiContextAdditions, string pluginName)
+    public static void AddFromAIContext(this ICollection<KernelPlugin> plugins, AIContext aiContextAdditions, string pluginName)
     {
         plugins.AddFromFunctions(pluginName, aiContextAdditions.AIFunctions.Select(x => x.AsKernelFunction()));
     }
