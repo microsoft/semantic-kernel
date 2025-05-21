@@ -14,12 +14,12 @@ namespace SemanticKernel.UnitTests.Data;
 /// <summary>
 /// Contains tests for <see cref="TextSearchProvider"/>
 /// </summary>
-public class TextSearchBehaviorTests
+public class TextSearchProviderTests
 {
     [Theory]
     [InlineData(null, null, "Consider the following information from source documents when responding to the user:", "Include citations to the source document with document name and link if document name and link is available.")]
     [InlineData("Custom context prompt", "Custom citations prompt", "Custom context prompt", "Custom citations prompt")]
-    public async Task OnModelInvokeShouldIncludeSearchResultsInOutputAsync(
+    public async Task ModelInvokingShouldIncludeSearchResultsInOutputAsync(
         string? overrideContextPrompt,
         string? overrideCitationsPrompt,
         string expectedContextPrompt,
@@ -174,7 +174,7 @@ public class TextSearchBehaviorTests
     }
 
     [Fact]
-    public async Task OnModelInvokeShouldUseOverrideContextFormatterIfProvidedAsync()
+    public async Task ModelInvokingShouldUseOverrideContextFormatterIfProvidedAsync()
     {
         // Arrange
         var mockTextSearch = new Mock<ITextSearch>();
