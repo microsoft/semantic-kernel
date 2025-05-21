@@ -43,6 +43,12 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
 
     public override KernelFunction Clone(string? pluginName = null)
     {
+        // Should allow null but not empty or whitespace
+        if (pluginName is not null)
+        {
+            Verify.NotNullOrWhiteSpace(pluginName);
+        }
+
         return new AIFunctionKernelFunction(this, pluginName);
     }
 
