@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// Extension methods for <see cref="AggregateAIContextProvider"/>.
 /// </summary>
 [Experimental("SKEXP0130")]
-public static class AggregateAIContextBehaviorExtensions
+public static class AggregateAIContextProviderExtensions
 {
     /// <summary>
     /// This method is called when a new message has been contributed to the chat by any participant.
