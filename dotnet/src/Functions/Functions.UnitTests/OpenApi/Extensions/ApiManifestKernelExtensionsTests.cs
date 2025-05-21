@@ -6,7 +6,6 @@ using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi.Extensions;
-
 public sealed class ApiManifestKernelExtensionsTests
 {
     private const string SkipReason = "Failing intermittently in the integration pipeline with a 429 HTTP status code. To be migrated to the integration tests project.";
