@@ -14,7 +14,10 @@ else:
 
 
 # Abstract class similar to the original data store that allows API level abstraction
-@deprecated("Will be removed in a future version.")
+@deprecated(
+    "This class will be removed in a future release, use the AzureCosmosDBNoSQLStore and "
+    "Collection or AzureCosmosDBMongoDBStore and collection instead."
+)
 class AzureCosmosDBStoreApi(ABC):
     """AzureCosmosDBStoreApi."""
 
