@@ -846,7 +846,7 @@ internal partial class ClientCore
             // HTTP 400 (invalid_request_error:) [] should be non-empty - 'messages.3.tool_calls'
             if (toolCalls.Count == 0)
             {
-                return [new AssistantChatMessage(message.Content) { ParticipantName = message.AuthorName }];
+                return [new AssistantChatMessage(message.Content ?? string.Empty) { ParticipantName = message.AuthorName }];
             }
 
             var assistantMessage = new AssistantChatMessage(SanitizeFunctionNames(toolCalls)) { ParticipantName = message.AuthorName };

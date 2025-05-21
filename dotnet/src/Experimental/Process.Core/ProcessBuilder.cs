@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
+using Microsoft.SemanticKernel.Process.Tools;
 
 namespace Microsoft.SemanticKernel;
 
@@ -247,7 +248,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         if (string.IsNullOrWhiteSpace(threadName))
         {
             // No thread name was specified so add a new thread for the agent.
-            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            this.AddThread(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
             threadName = agentDefinition.Name;
         }
 
@@ -275,11 +276,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         if (string.IsNullOrWhiteSpace(threadName))
         {
             // No thread name was specified so add a new thread for the agent.
-            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            this.AddThread(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
             threadName = agentDefinition.Name;
         }
 
-        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this.ProcessBuilder, id) { HumanInLoopMode = humanInLoopMode }; // TODO: Add inputs to the agent
+        var stepBuilder = new ProcessAgentBuilder(agentDefinition, threadName: threadName, [], this.ProcessBuilder, id) { HumanInLoopMode = humanInLoopMode };
         return this.AddStep(stepBuilder, aliases);
     }
 
@@ -310,7 +311,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         if (string.IsNullOrWhiteSpace(threadName))
         {
             // No thread name was specified so add a new thread for the agent.
-            this.AddThread<AzureAIAgentThread>(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
+            this.AddThread(agentDefinition.Name, KernelProcessThreadLifetime.Scoped);
             threadName = agentDefinition.Name;
         }
 
@@ -420,12 +421,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     /// <typeparam name="T">The concrete type of the <see cref="AgentThread"/></typeparam>
     /// <param name="threadName">The name of the thread.</param>
+    /// <param name="threadPolicy">The policy that determines the lifetime of the <see cref="AgentThread"/></param>
     /// <param name="threadId">The Id of an existing thread that should be used.</param>
-    /// <returns></returns>
-    public ProcessBuilder AddThread<T>(string threadName, string threadId) where T : AgentThread
+    public ProcessBuilder AddThread<T>(string threadName, KernelProcessThreadLifetime threadPolicy, string? threadId = null) where T : AgentThread
     {
         Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
-        Verify.NotNullOrWhiteSpace(threadId, nameof(threadId));
 
         var threadType = typeof(T) switch
         {
@@ -441,11 +441,9 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <summary>
     /// Adds a thread to the process.
     /// </summary>
-    /// <typeparam name="T">The concrete type of the <see cref="AgentThread"/></typeparam>
     /// <param name="threadName">The name of the thread.</param>
     /// <param name="threadPolicy">The policy that determines the lifetime of the <see cref="AgentThread"/></param>
-    /// <returns></returns>
-    public ProcessBuilder AddThread<T>(string threadName, KernelProcessThreadLifetime threadPolicy) where T : AgentThread
+    public ProcessBuilder AddThread(string threadName, KernelProcessThreadLifetime threadPolicy)
     {
         Verify.NotNullOrWhiteSpace(threadName, nameof(threadName));
         Verify.NotNull(threadPolicy, nameof(threadPolicy));
@@ -482,7 +480,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
     /// </summary>
     /// <returns></returns>
-    public ListenForBuilder ListenFor()
+    internal ListenForBuilder ListenFor()
     {
         return new ListenForBuilder(this);
     }
@@ -516,7 +514,6 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// Builds the process.
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public KernelProcess Build(KernelProcessStateMetadata? stateMetadata = null)
     {
         // Build the edges first
@@ -527,7 +524,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
 
         // Create the process
         KernelProcessState state = new(this.Name, version: this.Version, id: this.Id);
-        KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads, UserStateype = this.StateType, Description = this.Description };
+        KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads, UserStateType = this.StateType, Description = this.Description };
 
         return process;
     }
@@ -535,18 +532,34 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
     /// </summary>
-    /// <param name="yaml">The declarative process in yaml.</param>
+    /// <param name="yaml">Workflow definition in YAML format.</param>
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public static async Task<KernelProcess?> LoadFromYamlAsync(string yaml)
-    {
-        Verify.NotNullOrWhiteSpace(yaml);
+    public static Task<KernelProcess?> LoadFromYamlAsync(string yaml)
+        => LoadFromYamlInternalAsync(yaml);
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
+    /// </summary>
+    /// <param name="yaml">Workflow definition in YAML format.</param>
+    /// <param name="stepTypes">Collection of preloaded step types.</param>
+    /// <returns>An instance of <see cref="KernelProcess"/></returns>
+    public static Task<KernelProcess?> LoadFromYamlAsync(string yaml, Dictionary<string, Type> stepTypes)
+        => LoadFromYamlInternalAsync(yaml, stepTypes: stepTypes);
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
+    /// </summary>
+    /// <param name="yaml">Workflow definition in YAML format.</param>
+    /// <param name="assemblyPaths">Collection of names or paths of the files that contain the manifest of the assembly.</param>
+    /// <returns>An instance of <see cref="KernelProcess"/></returns>
+    public static Task<KernelProcess?> LoadFromYamlAsync(string yaml, List<string> assemblyPaths)
+        => LoadFromYamlInternalAsync(yaml, assemblyPaths: assemblyPaths);
 
         try
         {
             var workflow = WorkflowSerializer.DeserializeFromYaml(yaml);
-            var builder = new WorkflowBuilder();
-            var process = await builder.BuildProcessAsync(workflow, yaml).ConfigureAwait(false);
+    var builder = new WorkflowBuilder();
+    var process = await builder.BuildProcessAsync(workflow, yaml).ConfigureAwait(false);
 
             return process;
         }
@@ -555,5 +568,45 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
             throw new ArgumentException("Failed to deserialize the process string.", ex);
         }
     }
+    #endregion
+
+    #region private
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
+    /// </summary>
+    /// <param name="yaml">Workflow definition in YAML format.</param>
+    /// <param name="assemblyPaths">Collection of names or paths of the files that contain the manifest of the assembly.</param>
+    /// <param name="stepTypes">Collection of preloaded step types.</param>
+    /// <returns>An instance of <see cref="KernelProcess"/></returns>
+    private static async Task<KernelProcess?> LoadFromYamlInternalAsync(
+        string yaml,
+        List<string>? assemblyPaths = null,
+        Dictionary<string, Type>? stepTypes = null)
+{
+    Verify.NotNullOrWhiteSpace(yaml);
+
+    try
+    {
+        var workflow = WorkflowSerializer.DeserializeFromYaml(yaml);
+        var builder = new WorkflowBuilder();
+
+        if (stepTypes is not null)
+        {
+            return await builder.BuildProcessAsync(workflow, yaml, stepTypes).ConfigureAwait(false);
+        }
+        else if (assemblyPaths is { Count: > 0 })
+        {
+            var loadedStepTypes = ProcessStepLoader.LoadStepTypesFromAssemblies(assemblyPaths);
+            return await builder.BuildProcessAsync(workflow, yaml, loadedStepTypes).ConfigureAwait(false);
+        }
+
+        return await builder.BuildProcessAsync(workflow, yaml).ConfigureAwait(false);
+    }
+    catch (Exception ex)
+    {
+        throw new ArgumentException("Failed to deserialize the process string.", ex);
+    }
+}
     #endregion
 }

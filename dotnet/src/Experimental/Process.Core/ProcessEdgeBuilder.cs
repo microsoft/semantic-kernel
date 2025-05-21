@@ -38,13 +38,20 @@ public sealed class ProcessEdgeBuilder : ProcessStepEdgeBuilder
     /// </summary>
     public new ProcessEdgeBuilder SendEventTo(ProcessTargetBuilder target, Dictionary<string, object?>? metadata = null)
     {
+        return this.SendEventTo(target as ProcessTargetBuilder);
+    }
+
+    /// <summary>
+    /// Sends the output of the source step to the specified target when the associated event fires.
+    /// </summary>
+    public new ProcessEdgeBuilder SendEventTo(ProcessTargetBuilder target)
+    {
         if (this.Target is not null)
         {
             throw new InvalidOperationException("An output target has already been set.");
         }
 
         this.Target = target;
-        this.Metadata = metadata ?? [];
         ProcessStepEdgeBuilder edgeBuilder = new(this.Source, this.EventData.EventId, this.EventData.EventId) { Target = this.Target };
         this.Source.LinkTo(this.EventData.EventId, edgeBuilder);
 

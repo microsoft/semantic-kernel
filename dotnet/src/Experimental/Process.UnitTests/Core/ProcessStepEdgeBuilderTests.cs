@@ -30,7 +30,7 @@ public class ProcessStepEdgeBuilderTests
     }
 
     /// <summary>
-    /// Verify that the <see cref="ProcessStepEdgeBuilder.SendEventTo_Internal(ProcessTargetBuilder, System.Collections.Generic.Dictionary{string, object?}?)"/> method sets the output target.
+    /// Verify that the <see cref="ProcessStepEdgeBuilder.SendEventTo_Internal(ProcessTargetBuilder)"/> method sets the output target.
     /// </summary>
     [Fact]
     public void SendEventToShouldSetOutputTarget()
@@ -48,7 +48,7 @@ public class ProcessStepEdgeBuilderTests
     }
 
     /// <summary>
-    /// Verify that the <see cref="ProcessStepEdgeBuilder.SendEventTo_Internal(ProcessTargetBuilder, System.Collections.Generic.Dictionary{string, object?}?)"/> method sets chained output targets.
+    /// Verify that the <see cref="ProcessStepEdgeBuilder.SendEventTo_Internal(ProcessTargetBuilder)"/> method sets chained output targets.
     /// </summary>
     [Fact]
     public void SendEventToShouldSetMultipleOutputTargets()
@@ -69,7 +69,7 @@ public class ProcessStepEdgeBuilderTests
     }
 
     /// <summary>
-    /// Verify that the <see cref="ProcessStepEdgeBuilder.SendEventTo_Internal(ProcessTargetBuilder, System.Collections.Generic.Dictionary{string, object?}?)"/> method throws if the output target is already set.
+    /// Verify that the <see cref="ProcessStepEdgeBuilder.SendEventTo_Internal(ProcessTargetBuilder)"/> method throws if the output target is already set.
     /// </summary>
     [Fact]
     public void SendEventToShouldThrowIfOutputTargetAlreadySet()

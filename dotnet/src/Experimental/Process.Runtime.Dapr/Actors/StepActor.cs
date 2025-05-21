@@ -495,9 +495,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         {
             if (edge.OutputTarget is not KernelProcessFunctionTarget functionTarget)
             {
-                throw new KernelException("Only KernelProcessFunctionTarget can be used as input events.");
+                throw new KernelException("The target for the edge is not a function target.").Log(this._logger);
             }
-
             ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.SourceId, daprEvent.Data);
             ActorId scopedStepId = this.ScopedActorId(new ActorId(functionTarget.StepId));
             IMessageBuffer targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));

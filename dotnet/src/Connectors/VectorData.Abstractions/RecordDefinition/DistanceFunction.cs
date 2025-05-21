@@ -71,7 +71,7 @@ public static class DistanceFunction
     /// <summary>
     /// The number of differences between vectors at each dimensions.
     /// </summary>
-    public const string Hamming = nameof(Hamming);
+    public const string HammingDistance = nameof(HammingDistance);
 
     /// <summary>
     /// Measures the Manhattan distance between two vectors.

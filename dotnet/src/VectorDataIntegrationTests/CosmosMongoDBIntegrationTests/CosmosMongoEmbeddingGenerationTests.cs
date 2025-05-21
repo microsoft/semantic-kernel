@@ -4,35 +4,56 @@ using CosmosMongoDBIntegrationTests.Support;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
 using VectorDataSpecificationTests;
 using VectorDataSpecificationTests.Support;
 using Xunit;
 
 namespace CosmosMongoDBIntegrationTests;
 
-public class CosmosMongoEmbeddingGenerationTests(CosmosMongoEmbeddingGenerationTests.Fixture fixture)
-    : EmbeddingGenerationTests<string>(fixture), IClassFixture<CosmosMongoEmbeddingGenerationTests.Fixture>
+public class CosmosMongoEmbeddingGenerationTests(CosmosMongoEmbeddingGenerationTests.StringVectorFixture stringVectorFixture, CosmosMongoEmbeddingGenerationTests.RomOfFloatVectorFixture romOfFloatVectorFixture)
+    : EmbeddingGenerationTests<string>(stringVectorFixture, romOfFloatVectorFixture), IClassFixture<CosmosMongoEmbeddingGenerationTests.StringVectorFixture>, IClassFixture<CosmosMongoEmbeddingGenerationTests.RomOfFloatVectorFixture>
 {
-    public new class Fixture : EmbeddingGenerationTests<string>.Fixture
+    public new class StringVectorFixture : EmbeddingGenerationTests<string>.StringVectorFixture
     {
-        public override TestStore TestStore => CosmosMongoDBTestStore.Instance;
+        public override TestStore TestStore => CosmosMongoTestStore.Instance;
 
-        public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
-            => CosmosMongoDBTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+            => CosmosMongoTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
         [
             services => services
-                .AddSingleton(CosmosMongoDBTestStore.Instance.Database)
-                .AddAzureCosmosDBMongoDBVectorStore()
+                .AddSingleton(CosmosMongoTestStore.Instance.Database)
+                .AddCosmosMongoVectorStore()
         ];
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
         [
             services => services
-                .AddSingleton(CosmosMongoDBTestStore.Instance.Database)
-                .AddAzureCosmosDBMongoDBVectorStoreRecordCollection<RecordWithAttributes>(this.CollectionName)
+                .AddSingleton(CosmosMongoTestStore.Instance.Database)
+                .AddCosmosMongoCollection<RecordWithAttributes>(this.CollectionName)
+        ];
+    }
+
+    public new class RomOfFloatVectorFixture : EmbeddingGenerationTests<string>.RomOfFloatVectorFixture
+    {
+        public override TestStore TestStore => CosmosMongoTestStore.Instance;
+
+        public override VectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
+            => CosmosMongoTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
+        [
+            services => services
+                .AddSingleton(CosmosMongoTestStore.Instance.Database)
+                .AddCosmosMongoVectorStore()
+        ];
+
+        public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
+        [
+            services => services
+                .AddSingleton(CosmosMongoTestStore.Instance.Database)
+                .AddCosmosMongoCollection<RecordWithAttributes>(this.CollectionName)
         ];
     }
 }

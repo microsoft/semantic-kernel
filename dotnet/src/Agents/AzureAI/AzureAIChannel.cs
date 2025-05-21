@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// A <see cref="AgentChannel"/> specialization for use with <see cref="AzureAIAgent"/>.
 /// </summary>
-internal sealed class AzureAIChannel(AgentsClient client, string threadId)
+internal sealed class AzureAIChannel(PersistentAgentsClient client, string threadId)
     : AgentChannel<AzureAIAgent>
 {
     /// <inheritdoc/>
@@ -53,7 +53,7 @@ internal sealed class AzureAIChannel(AgentsClient client, string threadId)
     /// <inheritdoc/>
     protected override Task ResetAsync(CancellationToken cancellationToken = default)
     {
-        return client.DeleteThreadAsync(threadId, cancellationToken);
+        return client.Threads.DeleteThreadAsync(threadId, cancellationToken);
     }
 
     /// <inheritdoc/>

@@ -1,4 +1,4 @@
-
+id: dotnetOnlyWorkflow1
 format_version: "1.0" # The version of the declarative spec being used to define this workflow.
 workflow_version: "1.5" # The version of the workflow itself.
 name: report_generation_pipeline
@@ -16,10 +16,10 @@ inputs: # The structured inputs supported by the workflow.
   events:
     cloud_events:
       - type: "StartRequested"
-        data_schema: 
+        data_schema:
           type: string
       - type: "StartARequested"
-        data_schema: 
+        data_schema:
           type: string
 
 # Schemas for the data types used in the workflow. These can be defined inline or referenced from an external schema.
@@ -73,8 +73,8 @@ nodes:
           expression: "results.articles.length > '0'"
           emits:
             - event_type: data_fetched
-              schema: 
-                  $ref: "#/workflow/schemas/research_data"
+              schema:
+                $ref: "#/workflow/schemas/research_data"
               payload: "$agent.outputs.results"
       - on_condition:
           type: default
@@ -89,7 +89,7 @@ nodes:
       research_data:
         schema:
           $ref: "#/workflow/schemas/research_data"
-      last_feedback: 
+      last_feedback:
         type: string
     agent:
       type: "Microsoft.SemanticKernel.Process.UnitTests.Steps.AStep, SemanticKernel.Process.UnitTests"
@@ -99,8 +99,8 @@ nodes:
           type: default
           emits:
             - event_type: draft_created
-              schema: 
-                  $ref: "#/workflow/schemas/draft"
+              schema:
+                $ref: "#/workflow/schemas/draft"
               payload: "$agent.outputs.draft"
 
   - id: b_step
@@ -116,7 +116,7 @@ nodes:
           expression: "report_feedback.passed == 'true'"
           emits:
             - event_type: report_approved
-              schema: 
+              schema:
               $ref: "#/workflow/schemas/report"
               payload:
                 object:
@@ -126,7 +126,7 @@ nodes:
           type: default
           emits:
             - event_type: report_rejected
-              schema: 
+              schema:
                 $ref: "#/workflow/schemas/report_feedback"
               payload: "$agent.outputs.report_feedback"
           updates:
@@ -141,7 +141,7 @@ nodes:
     type: dotnet
     version: "1.0"
     description: "C Step"
-    agent: 
+    agent:
       type: "Microsoft.SemanticKernel.Process.UnitTests.Steps.CStep, SemanticKernel.Process.UnitTests"
       id: c_step_agent
     # inputs:
@@ -154,19 +154,18 @@ nodes:
           type: default
           emits:
             - event_type: human_approved
-              schema: 
+              schema:
                 $ref: "#/workflow/schemas/report"
           updates:
-          - variable: approved_report
-            operation: set
-            value: "$agent.outputs.report"
-          - variable: $workflow.thread
-            operation: set
-            value: "$agent.outputs.report"
+            - variable: approved_report
+              operation: set
+              value: "$agent.outputs.report"
+            - variable: $workflow.thread
+              operation: set
+              value: "$agent.outputs.report"
 
 # The orchestration of the workflow. This defines the sequence of events and actions that make up the workflow.
 orchestration:
-
   - listen_for:
       event: "StartRequested"
       from: _workflow_
@@ -182,16 +181,16 @@ orchestration:
 
   - listen_for:
       all_of:
-      - event: "AStepDone"
-        from: a_step
-      - event: "BStepDone"
-        from: b_step
+        - event: "AStepDone"
+          from: a_step
+        - event: "BStepDone"
+          from: b_step
     then:
       - node: c_step
         inputs:
           aStepData: a_step.AStepDone
           bStepData: b_step.BStepDone
-  
+
   - listen_for:
       event: "CStepDone"
       from: c_step

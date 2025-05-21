@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Process.Internal;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Builder class for defining message sources in a Foundry process.
 /// </summary>
+[Experimental("SKEXP0081")]
 public class FoundryMessageSourceBuilder
 {
     /// <summary>
@@ -38,6 +40,10 @@ public class FoundryMessageSourceBuilder
     /// </summary>
     public string? Condition { get; }
 
+    /// <summary>
+    /// Builds the message source.
+    /// </summary>
+    /// <returns></returns>
     internal MessageSourceBuilder Build()
     {
         KernelProcessEdgeCondition? edgeCondition = null;

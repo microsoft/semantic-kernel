@@ -8,6 +8,11 @@ namespace Microsoft.SemanticKernel;
 public enum KernelProcessThreadType
 {
     /// <summary>
+    /// A thread is a general chat completion type.
+    /// </summary>
+    ChatCompletion,
+
+    /// <summary>
     /// A thread is an AzureAI or Foundry type.
     /// </summary>
     AzureAI

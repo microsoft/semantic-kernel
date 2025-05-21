@@ -3,7 +3,7 @@
 from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
-from azure.ai.projects.models import (
+from azure.ai.agents.models import (
     CodeInterpreterTool,
     FileSearchTool,
     MessageAttachment,

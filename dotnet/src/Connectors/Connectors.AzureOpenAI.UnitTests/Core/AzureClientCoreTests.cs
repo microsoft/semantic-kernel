@@ -44,19 +44,6 @@ public sealed class AzureClientCoreTests : IDisposable
     }
 
     [Fact]
-    public void ConstructorWithInvalidEndpointShouldThrowArgumentException()
-    {
-        // Arrange
-        var deploymentName = "test-deployment";
-        var invalidEndpoint = "http://invalid-endpoint";
-        var apiKey = "test-api-key";
-
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() =>
-            new AzureClientCore(deploymentName, invalidEndpoint, apiKey, this._httpClient, this._mockLogger.Object));
-    }
-
-    [Fact]
     public void ConstructorWithTokenCredentialShouldInitializeCorrectly()
     {
         // Arrange

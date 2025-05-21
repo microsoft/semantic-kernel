@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
@@ -52,11 +51,14 @@ internal sealed class KernelProcessAgentExecutorInternal : KernelProcessStep<Ker
     /// <param name="writtenToThread"> <see langword="true"/> if the message has already been written to the thread</param>
     /// <returns></returns>
     [KernelFunction]
-    public async Task<ChatMessageContent?> InvokeAsync(Kernel kernel, object? message = null, bool writtenToThread = false)
+    public async Task<AgentInvokeOutputWrapper?> InvokeAsync(Kernel kernel, object? message = null, bool writtenToThread = false)
     {
         ChatMessageContent? inputMessageContent = null;
         try
         {
+            // TODO: Update agent inputs to include messages_in, thread, user_messages, etc.
+            // TODO: copy messages_in to the thread
+
             if (!writtenToThread)
             {
                 inputMessageContent = null;
@@ -87,7 +89,7 @@ internal sealed class KernelProcessAgentExecutorInternal : KernelProcessStep<Ker
             }
 
             List<ChatMessageContent> agentResponses = [];
-            AgentFactory agentFactory = ProcessAgentFactory.CreateAgentFactoryAsync(this._agentStep.AgentDefinition);
+            AgentFactory agentFactory = ProcessAgentFactory.CreateAgentFactory(this._agentStep.AgentDefinition);
             Agent agent = await agentFactory.CreateAsync(kernel, this._agentStep.AgentDefinition).ConfigureAwait(false);
             this._state!.AgentId = agent.Id;
 
@@ -112,7 +114,13 @@ internal sealed class KernelProcessAgentExecutorInternal : KernelProcessStep<Ker
                 }
             }
 
-            return agentResponses.FirstOrDefault();
+            var outputWrapper = new AgentInvokeOutputWrapper
+            {
+                MessagesOut = agentResponses,
+                // TODO: Events
+            };
+
+            return outputWrapper;
         }
         catch (System.Exception)
         {
@@ -135,4 +143,20 @@ public sealed class KernelProcessAgentExecutorState
     /// Thread related information used for checking thread details by the specific agent
     /// </summary>
     public string? ThreadId { get; set; }
+}
+
+/// <summary>
+/// Output wrapper for agent invocation.
+/// </summary>
+public sealed class AgentInvokeOutputWrapper
+{
+    /// <summary>
+    /// Collection of output messages produced by agent.
+    /// </summary>
+    public List<ChatMessageContent> MessagesOut { get; set; } = [];
+
+    /// <summary>
+    /// Collection of events produced by agent.
+    /// </summary>
+    public Dictionary<string, object?>? Events { get; set; } = [];
 }

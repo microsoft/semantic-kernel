@@ -2,7 +2,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -66,7 +66,14 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         {
             if (item is AnnotationContent annotation)
             {
-                Console.WriteLine($"  [{item.GetType().Name}] {annotation.Quote}: File #{annotation.FileId}");
+                if (annotation.Kind == AnnotationKind.UrlCitation)
+                {
+                    Console.WriteLine($"  [{item.GetType().Name}] {annotation.Label}: {annotation.ReferenceId} - {annotation.Title}");
+                }
+                else
+                {
+                    Console.WriteLine($"  [{item.GetType().Name}] {annotation.Label}: File #{annotation.ReferenceId}");
+                }
             }
             else if (item is FileReferenceContent fileReference)
             {
@@ -114,7 +121,7 @@ public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output
         {
             if (item is AnnotationContent annotation)
             {
-                await this.DownloadFileContentAsync(client, annotation.FileId!);
+                await this.DownloadFileContentAsync(client, annotation.ReferenceId!);
             }
         }
     }

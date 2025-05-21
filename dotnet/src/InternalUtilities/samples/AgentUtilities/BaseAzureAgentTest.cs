@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.ClientModel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Azure.AI.Projects;
-using Azure.Identity;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
@@ -42,27 +39,6 @@ public abstract class BaseAzureTest(ITestOutputHelper output) : BaseTest(output,
         });
 
     /// <summary>
-    /// Provide a <see cref="OpenAIClientProvider"/> according to the configuration settings.
-    /// </summary>
-    protected AzureAIClientProvider GetAzureProvider()
-    {
-        return AzureAIClientProvider.FromConnectionString(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-    }
-
-    /// <summary>
-    /// Provide a <see cref="OpenAIClientProvider"/> according to the configuration settings.
-    /// </summary>
-    protected OpenAIClientProvider GetClientProvider()
-    {
-        return
-            this.UseOpenAIConfig ?
-                OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
-                !string.IsNullOrWhiteSpace(this.ApiKey) ?
-                    OpenAIClientProvider.ForAzureOpenAI(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
-                    OpenAIClientProvider.ForAzureOpenAI(new AzureCliCredential(), new Uri(this.Endpoint!));
-    }
-
-    /// <summary>
     /// Common method to write formatted agent chat content to the console.
     /// </summary>
     protected void WriteAgentChatMessage(ChatMessageContent message)
@@ -80,7 +56,7 @@ public abstract class BaseAzureTest(ITestOutputHelper output) : BaseTest(output,
         {
             if (item is AnnotationContent annotation)
             {
-                Console.WriteLine($"  [{item.GetType().Name}] {annotation.Quote}: File #{annotation.FileId}");
+                Console.WriteLine($"  [{item.GetType().Name}] {annotation.Label}: File #{annotation.ReferenceId}");
             }
             else if (item is FileReferenceContent fileReference)
             {
@@ -128,7 +104,7 @@ public abstract class BaseAzureTest(ITestOutputHelper output) : BaseTest(output,
         {
             if (item is AnnotationContent annotation)
             {
-                await this.DownloadFileContentAsync(client, annotation.FileId!);
+                await this.DownloadFileContentAsync(client, annotation.ReferenceId!);
             }
         }
     }
