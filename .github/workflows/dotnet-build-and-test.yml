@@ -83,6 +83,16 @@ jobs:
           for solution in $SOLUTIONS; do
             dotnet build $solution -c ${{ matrix.configuration }} --warnaserror
           done
+      - name: Package install check
+        shell: bash
+        run: |
+          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
+          for solution in $SOLUTIONS; do
+            dotnet pack $solution -c ${{ matrix.configuration }} --no-build --no-restore --output ./artifacts
+          done
+          dotnet new console --name packcheck --output test
+          dotnet add packcheck/packcheck.csproj package Microsoft.SemanticKernel --source ./artifacts
+          dotnet build packcheck/packcheck.csproj
 
       - name: Run Unit Tests
         shell: bash
