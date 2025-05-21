@@ -67,10 +67,17 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Returns the event Id that is used to identify the step specific event.
     /// </summary>
-    /// <param name="eventName"></param>
+    /// <param name="eventName">used for custom events emitted by step</param>
+    /// <param name="functionName">used for return objects from specific function, if step has only 1 function no need to provide functionName</param>
     /// <returns></returns>
-    public string GetFullEventId(string eventName)
+    public string GetFullEventId(string? eventName = null, string? functionName = null)
     {
+        if (eventName == null)
+        {
+            // default function result are used
+            eventName = this.GetFunctionResultEventId(functionName);
+        }
+
         return $"{this.Id}.{eventName}";
     }
 

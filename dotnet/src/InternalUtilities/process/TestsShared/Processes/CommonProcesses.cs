@@ -24,6 +24,8 @@ public static class CommonProcesses
     {
         public const string CounterProcess = nameof(CounterProcess);
         public const string CounterWithEvenNumberDetectionProcess = nameof(CounterWithEvenNumberDetectionProcess);
+        public const string NestedCounterWithEvenDetectionAndMergeProcess = nameof(NestedCounterWithEvenDetectionAndMergeProcess);
+        public const string InternalNestedCounterWithEvenDetectionAndMergeProcess = nameof(InternalNestedCounterWithEvenDetectionAndMergeProcess);
         public const string DelayedMergeProcess = nameof(DelayedMergeProcess);
         public const string SimpleMergeProcess = nameof(SimpleMergeProcess);
     }
@@ -46,13 +48,12 @@ public static class CommonProcesses
         return process.Build();
     }
 
-    public static KernelProcess GetCounterWithEventDetectionProcess(string processName = ProcessKeys.CounterWithEvenNumberDetectionProcess)
+    public static ProcessBuilder GetCounterWithEvenDetectionProcess(string processName = ProcessKeys.CounterWithEvenNumberDetectionProcess)
     {
         ProcessBuilder process = new(processName);
 
-        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(id: "counterStep");
+        var counterStep = process.AddStepFromType<CommonSteps.SimpleCountStep>(id: "counterStep");
         var evenNumberStep = process.AddStepFromType<CommonSteps.EvenNumberDetectorStep>(id: nameof(CommonSteps.EvenNumberDetectorStep));
-        var echoStep = process.AddStepFromType<CommonSteps.EchoStep>(id: nameof(CommonSteps.EchoStep));
 
         process
             .OnInputEvent(ProcessEvents.StartProcess)
@@ -62,9 +63,126 @@ public static class CommonProcesses
             .OnFunctionResult()
             .SendEventTo(new ProcessFunctionTargetBuilder(evenNumberStep));
 
-        evenNumberStep
+        return process;
+    }
+
+    /// <summary>
+    /// <code>
+    ///                                                                                                     ┌───────┐
+    ///                                                                                                     │       │
+    ///                            ┌───────────────────────────────────────────────────────────────────────►│       │
+    ///                            │                                                                        │       │
+    ///                            │                                 EvenNumber Event                       │       │   ┌───────────┐
+    ///                            │                     ┌─────────────────────────────────────────────────►│ merge ├──►│ finalEcho │
+    ///                            │                     │                                                  │       │   └───────────┘
+    ///                            │                     │   ┌─────────────────────────────────────┐        │       │
+    ///                            │                     │   │ innerCounterProcess                 │    ┌──►│       │
+    ///  Start       ┌───────────┐ │  ┌──────────────┐   │   │  ┌───────────┐    ┌──────────────┐  │    │   │       │
+    /// Process ────►│   outer   ├─┴─►│    outer     ├───┴──►│  │  counter  ├───►│ evenDetector ├──┼────┘   └───────┘
+    ///  Event       │  counter  │    │ evenDetector │       │  └───────────┘    └──────────────┘  │  EvenNumber
+    ///              └───────────┘    └──────────────┘       └─────────────────────────────────────┘    Event
+    ///</code>
+    /// </summary>
+    /// <param name="processName"></param>
+    /// <returns></returns>
+    public static ProcessBuilder GetNestedCounterWithEvenDetectionAndMergeProcess(string processName = ProcessKeys.NestedCounterWithEvenDetectionAndMergeProcess)
+    {
+        ProcessBuilder process = new(processName);
+
+        var outerCounterStep = process.AddStepFromType<CommonSteps.SimpleCountStep>(id: "outerCounterStep");
+        var outerEvenNumberStep = process.AddStepFromType<CommonSteps.EvenNumberDetectorStep>(id: $"outer{nameof(CommonSteps.EvenNumberDetectorStep)}");
+        var innerCounterProcess = process.AddStepFromProcess(GetCounterWithEvenDetectionProcess("innerCounterProcess"));
+        var mergeStep = process.AddStepFromType<CommonSteps.MergeStringsStep>(id: nameof(CommonSteps.MergeStringsStep));
+        var finalEchoStep = process.AddStepFromType<CommonSteps.EchoStep>(id: nameof(CommonSteps.EchoStep));
+
+        process
+            .OnInputEvent(ProcessEvents.StartProcess)
+            .SendEventTo(new ProcessFunctionTargetBuilder(outerCounterStep));
+
+        outerCounterStep
+            .OnFunctionResult()
+            .SendEventTo(new ProcessFunctionTargetBuilder(outerEvenNumberStep));
+
+        outerEvenNumberStep
             .OnEvent(CommonSteps.EvenNumberDetectorStep.OutputEvents.EvenNumber)
-            .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
+            .SendEventTo(innerCounterProcess.WhereInputEventIs(ProcessEvents.StartProcess));
+
+        // merging inputs
+        process
+            .ListenFor()
+            .AllOf([
+                new(messageType: outerCounterStep.GetFunctionResultEventId(), outerCounterStep),
+                new(messageType: CommonSteps.EvenNumberDetectorStep.OutputEvents.EvenNumber, outerEvenNumberStep),
+                new(messageType: CommonSteps.EvenNumberDetectorStep.OutputEvents.EvenNumber, innerCounterProcess),
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(mergeStep, inputMapping: (inputEvents) =>
+            {
+                return new()
+                {
+                    { "str1", inputEvents[outerCounterStep.GetFullEventId()] },
+                    { "str2", inputEvents[outerEvenNumberStep.GetFullEventId(CommonSteps.EvenNumberDetectorStep.OutputEvents.EvenNumber)] },
+                    { "str3", inputEvents[innerCounterProcess.GetFullEventId(CommonSteps.EvenNumberDetectorStep.OutputEvents.EvenNumber)] },
+                };
+            }));
+
+        mergeStep
+            .OnFunctionResult()
+            .SendEventTo(new ProcessFunctionTargetBuilder(finalEchoStep));
+
+        return process;
+    }
+
+    /// <summary>
+    /// Process that merges string from process onInput and nested AllOf triggered events from a nested process.
+    /// <code>
+    ///                                             ┌───────┐
+    ///                                             │       │
+    ///            ┌───────────────────────────────►│       │
+    ///            │                                │       │
+    ///            │                                │       │   ┌───────────┐
+    ///            │                            ┌──►│ merge ├──►│ finalEcho │
+    ///            │                            │   │       │   └───────────┘
+    ///            │                            │   │       │
+    ///            │  ┌───────────────┐         ├──►│       │
+    ///  Start     │  │    Nested     │         │   │       │
+    /// Process ───┴─►│    Counter    ├─────────┘   └───────┘
+    ///  Event        │    Process    │  Echo
+    ///               └───────────────┘  Event
+    /// </code>
+    /// </summary>
+    /// <param name="processName"></param>
+    /// <returns></returns>
+    public static KernelProcess GetInternalNestedCounterWithEvenDetectionAndMergeProcess(string processName = ProcessKeys.InternalNestedCounterWithEvenDetectionAndMergeProcess)
+    {
+        ProcessBuilder process = new(processName);
+
+        var internalNestedCounterProcess = process.AddStepFromProcess(GetNestedCounterWithEvenDetectionAndMergeProcess("internalNestedCounterProcess"));
+        var mergeStep = process.AddStepFromType<CommonSteps.MergeStringsStep>(id: nameof(CommonSteps.MergeStringsStep));
+        var finalEchoStep = process.AddStepFromType<CommonSteps.EchoStep>(id: nameof(CommonSteps.EchoStep));
+
+        process
+            .OnInputEvent(ProcessEvents.StartProcess)
+            .SendEventTo(internalNestedCounterProcess.WhereInputEventIs(ProcessEvents.StartProcess));
+
+        // merging inputs
+        process.ListenFor()
+            .AllOf([
+                new(messageType: ProcessEvents.StartProcess, process),
+                new(messageType: CommonSteps.EchoStep.OutputEvents.EchoMessage, internalNestedCounterProcess),
+            ])
+            .SendEventTo(new ProcessStepTargetBuilder(mergeStep, inputMapping: (inputEvents) =>
+            {
+                return new()
+                {
+                    { "str1", inputEvents[process.GetFullEventId(ProcessEvents.StartProcess)] },
+                    { "str2", inputEvents[internalNestedCounterProcess.GetFullEventId(CommonSteps.EchoStep.OutputEvents.EchoMessage)] },
+                    { "str3", inputEvents[internalNestedCounterProcess.GetFullEventId(CommonSteps.EchoStep.OutputEvents.EchoMessage)] },
+                };
+            }));
+
+        mergeStep
+            .OnFunctionResult()
+            .SendEventTo(new ProcessFunctionTargetBuilder(finalEchoStep));
 
         return process.Build();
     }
@@ -208,7 +326,9 @@ public static class CommonProcesses
     {
         return new Dictionary<string, KernelProcess>() {
             { ProcessKeys.CounterProcess, GetCounterProcess() },
-            { ProcessKeys.CounterWithEvenNumberDetectionProcess, GetCounterWithEventDetectionProcess() },
+            { ProcessKeys.CounterWithEvenNumberDetectionProcess, GetCounterWithEvenDetectionProcess().Build() },
+            { ProcessKeys.NestedCounterWithEvenDetectionAndMergeProcess, GetNestedCounterWithEvenDetectionAndMergeProcess().Build() },
+            { ProcessKeys.InternalNestedCounterWithEvenDetectionAndMergeProcess, GetInternalNestedCounterWithEvenDetectionAndMergeProcess() },
             { ProcessKeys.DelayedMergeProcess, GetDelayedMergeProcess() },
             { ProcessKeys.SimpleMergeProcess, GetSimpleMergeProcess() },
         };

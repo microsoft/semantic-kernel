@@ -4,6 +4,8 @@ using System;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Castle.Components.DictionaryAdapter.Xml;
+using Microsoft.SemanticKernel.Process.Models;
 using Microsoft.SemanticKernel.Process.Models.Storage;
 using SemanticKernel.Process.TestsShared.Services;
 using SemanticKernel.Process.TestsShared.Setup;
@@ -294,7 +296,7 @@ public class LocalProcessTests
     {
         // Arrange
         var processId = "myProcessId";
-        var mergeStepStorageEntry = "MergeStringsStep.{0}.StepEdgesData";
+        var mergeStepStorageEntry = "{0}.MergeStringsStep.StepEdgesData";
         var processKey = CommonProcesses.ProcessKeys.DelayedMergeProcess;
 
         var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
@@ -323,7 +325,6 @@ public class LocalProcessTests
         var mergeStepFullEntry = string.Format(mergeStepStorageEntry, mergeStepId);
         processStorage._dbMock.TryGetValue(mergeStepFullEntry, out var entry);
         Assert.NotNull(entry?.Content);
-        Assert.IsType<string>(entry?.Content);
 
         var edgeData = JsonSerializer.Deserialize<StorageStepEdgesData>(entry.Content);
         Assert.NotNull(edgeData);
@@ -367,7 +368,7 @@ public class LocalProcessTests
     {
         // Arrange
         var processId = "myProcessId";
-        var mergeStepStorageEntry = "MergeStringsStep.{0}.StepEdgesData";
+        var mergeStepStorageEntry = "{0}.MergeStringsStep.StepEdgesData";
         var processKey = CommonProcesses.ProcessKeys.SimpleMergeProcess;
 
         var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
@@ -423,6 +424,163 @@ public class LocalProcessTests
         Assert.Single(edgeData2.EdgesData);
         // All parameters in merge step should have been processed and edge data should be empty
         Assert.Empty(edgeData2.EdgesData.First().Value!);
+    }
+
+    [Fact]
+    public async Task StartProcessWithKeyedProcessUseOfNestedStatefulStepsAndAllOfAsync()
+    {
+        // Arrange
+        var processId = "myProcessId";
+        var mergeStepStorageEntry = "{0}.MergeStringsStep.StepEdgesData";
+        var outerCounterStorageEntry = "{0}.outerCounterStep.StepState";
+        var innerCounterStorageEntry = "{0}.counterStep.StepState";
+        var processKey = CommonProcesses.ProcessKeys.NestedCounterWithEvenDetectionAndMergeProcess;
+
+        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
+        var processStorage = new MockStorage();
+        // To use local storage, comment line above and uncomment line below + replacing <TEST_DIR> with existing directory path
+        //var processStorage = new JsonFileStorage("<TEST_DIR>");
+
+        Kernel kernel = new();
+        var iterationCount = 4;
+        string? outerCounterStepFullEntry = null;
+        string? innerCounterStepFullEntry = null;
+        string? mergeStepFullEntry = null;
+
+        for (int i = 1; i < iterationCount; i++)
+        {
+            // Act - 1,2,3
+            await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
+                kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+                {
+                    Id = CommonProcesses.ProcessEvents.StartProcess,
+                }, storageConnector: processStorage);
+
+            // Assert - 1,2,3
+            var processState = await runningProcess.GetStateAsync();
+            Assert.NotNull(processState);
+            Assert.Equal(processId, processState.State.Id);
+
+            outerCounterStepFullEntry ??= string.Format(outerCounterStorageEntry, processState.Steps.Where(s => s.State.Name == "outerCounterStep").FirstOrDefault()?.State.Id);
+            this.AssertCounterState(processStorage, outerCounterStepFullEntry, i);
+
+            var innerCounterStepId = (processState.Steps.Where(s => s.State.Name == "innerCounterProcess").FirstOrDefault() as KernelProcess)?.Steps.Where(s => s.State.Name == "counterStep").FirstOrDefault()?.State.Id;
+            if (i == 1)
+            {
+                Assert.Null(innerCounterStepId);
+            }
+            else
+            {
+                innerCounterStepFullEntry ??= string.Format(innerCounterStorageEntry, innerCounterStepId);
+                this.AssertCounterState(processStorage, innerCounterStepFullEntry, i / 2);
+            }
+
+            // Merge Step entry should have parameter entries pending until iteration 4
+            mergeStepFullEntry ??= string.Format(mergeStepStorageEntry, processState.Steps.Where(s => s.State.Name == "MergeStringsStep").FirstOrDefault()?.State.Id);
+            processStorage._dbMock.TryGetValue(mergeStepFullEntry, out var mergeStorageEntry);
+            Assert.NotNull(mergeStorageEntry?.Content);
+
+            var mergeEdgeData = JsonSerializer.Deserialize<StorageStepEdgesData>(mergeStorageEntry.Content);
+            Assert.NotNull(mergeEdgeData);
+            Assert.Single(mergeEdgeData.EdgesData);
+            Assert.NotEmpty(mergeEdgeData.EdgesData.Values);
+        }
+
+        // Act - 4
+        await using LocalKernelProcessContext runningProcess2 = await LocalKernelProcessFactory.StartAsync(
+            kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+            {
+                Id = CommonProcesses.ProcessEvents.StartProcess,
+            }, storageConnector: processStorage);
+
+        // Assert - 4
+        var processState2 = await runningProcess2.GetStateAsync();
+        Assert.NotNull(processState2);
+        Assert.Equal(processId, processState2.State.Id);
+
+        Assert.NotNull(outerCounterStepFullEntry);
+        this.AssertCounterState(processStorage, outerCounterStepFullEntry, 4);
+
+        Assert.NotNull(innerCounterStepFullEntry);
+        this.AssertCounterState(processStorage, innerCounterStepFullEntry, 2);
+
+        Assert.NotNull(mergeStepFullEntry);
+        processStorage._dbMock.TryGetValue(mergeStepFullEntry, out var mergeStorageEntry2);
+        Assert.NotNull(mergeStorageEntry2?.Content);
+
+        var mergeEdgeData2 = JsonSerializer.Deserialize<StorageStepEdgesData>(mergeStorageEntry2.Content);
+        Assert.NotNull(mergeEdgeData2);
+        Assert.Single(mergeEdgeData2.EdgesData);
+        Assert.Empty(mergeEdgeData2.EdgesData.Values.First());
+    }
+
+    private void AssertCounterState(MockStorage processStorage, string stepStorageEntry, int expectedCount)
+    {
+        processStorage._dbMock.TryGetValue(stepStorageEntry, out var outerCounterEntry);
+        Assert.NotNull(outerCounterEntry?.Content);
+        var outerCounterData = JsonSerializer.Deserialize<KernelProcessStepStateMetadata>(outerCounterEntry?.Content!);
+        Assert.NotNull(outerCounterData?.State?.ToString());
+        var counterStateData = JsonSerializer.Deserialize<KernelProcessEventData>(outerCounterData.State.ToString()!)?.ToObject();
+        Assert.NotNull(counterStateData);
+        Assert.IsType<CommonSteps.CounterState>(counterStateData);
+        Assert.Equal(expectedCount, ((CommonSteps.CounterState)counterStateData).Count);
+    }
+
+    [Fact]
+    public async Task StartProcessWithKeyedProcessUseOfInternalNestedStatefulStepsAndAllOfInternallyAndExternallyAsync()
+    {
+        // Arrange
+        var processId = "myProcessId";
+        var mergeStepStorageEntry = "{0}.MergeStringsStep.StepEdgesData";
+        var processKey = CommonProcesses.ProcessKeys.InternalNestedCounterWithEvenDetectionAndMergeProcess;
+
+        var keyedProcesses = CommonProcesses.GetCommonProcessesKeyedDictionary();
+        var processStorage = new MockStorage();
+        // To use local storage, comment line above and uncomment line below + replacing <TEST_DIR> with existing directory path
+        //var processStorage = new JsonFileStorage("<TEST_DIR>");
+
+        Kernel kernel = new();
+        var iterationCount = 4;
+
+        string? mergeStepFullEntry = null;
+
+        for (int i = 1; i <= iterationCount; i++)
+        {
+            // Act - 1,2,3,4
+            await using LocalKernelProcessContext runningProcess = await LocalKernelProcessFactory.StartAsync(
+                kernel, keyedProcesses, processKey, processId, new KernelProcessEvent()
+                {
+                    Id = CommonProcesses.ProcessEvents.StartProcess,
+                    Data = i.ToString(),
+                }, storageConnector: processStorage);
+
+            // Assert - 1,2,3,4
+            var processState = await runningProcess.GetStateAsync();
+            Assert.NotNull(processState);
+            Assert.Equal(processId, processState.State.Id);
+
+            mergeStepFullEntry ??= string.Format(mergeStepStorageEntry, processState.Steps.Where(s => s.State.Name == "MergeStringsStep").FirstOrDefault()?.State.Id);
+            processStorage._dbMock.TryGetValue(mergeStepFullEntry, out var mergeStorageEntry);
+            Assert.NotNull(mergeStorageEntry?.Content);
+
+            var mergeEdgeData = JsonSerializer.Deserialize<StorageStepEdgesData>(mergeStorageEntry.Content);
+            Assert.NotNull(mergeEdgeData);
+            Assert.Single(mergeEdgeData.EdgesData);
+            Assert.Single(mergeEdgeData.EdgesData.Values);
+            if (i < 4)
+            {
+                // outer merge is waiting on missing parameters pending from internal nested subprocess
+                // in the meantime on each iteration, the only piped event/parameter keeps changing
+                Assert.Single(mergeEdgeData.EdgesData.Values.First().Values);
+                var firstEventValue = mergeEdgeData.EdgesData.Values.First().Values.First()?.ToObject();
+                Assert.Equal(i.ToString(), firstEventValue?.ToString());
+            }
+            else
+            {
+                // finally the missing event, that is piped for 2 parameters, arrived and now the merge edge data is empty since it was processed
+                Assert.Empty(mergeEdgeData.EdgesData.Values.First().Values);
+            }
+        }
     }
 
     /// <summary>

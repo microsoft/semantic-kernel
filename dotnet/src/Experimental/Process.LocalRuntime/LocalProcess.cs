@@ -171,16 +171,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
     internal override async Task SaveStepDataAsync()
     {
-        if (this.StorageManager != null && !string.IsNullOrEmpty(this._stepInfo.State.Id))
-        {
-            var storageKeyValues = this.GetStepStorageKeyValues();
-            var updatedProcess = this._process with { State = this._stepState, Steps = this._steps.Select(step => step._stepInfo).ToList() };
-            await this.StorageManager.SaveProcessDataAsync(storageKeyValues.Item1, storageKeyValues.Item2, updatedProcess).ConfigureAwait(false);
-            foreach (var step in this._steps)
-            {
-                await step.SaveStepDataAsync().ConfigureAwait(false);
-            }
-        }
+        await this.SaveStepDataAsync().ConfigureAwait(false);
     }
 
     /// <summary>
@@ -214,6 +205,23 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
     private string GetChildStepId()
     {
         return $"{this.Id}_{Guid.NewGuid()}";
+    }
+
+    private async Task SaveStepDataAsync(bool saveChildrenState = true)
+    {
+        if (this.StorageManager != null && !string.IsNullOrEmpty(this._stepInfo.State.Id))
+        {
+            var storageKeyValues = this.GetStepStorageKeyValues();
+            var updatedProcess = this._process with { State = this._stepState, Steps = this._steps.Select(step => step._stepInfo).ToList() };
+            await this.StorageManager.SaveProcessDataAsync(storageKeyValues.Item1, storageKeyValues.Item2, updatedProcess).ConfigureAwait(false);
+            if (saveChildrenState)
+            {
+                foreach (var step in this._steps)
+                {
+                    await step.SaveStepDataAsync().ConfigureAwait(false);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -296,14 +304,10 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
             if (stepInfo is KernelProcess processStep)
             {
-                // The process will only have an Id if its already been executed.
-                if (string.IsNullOrWhiteSpace(processStep.State.Id))
-                {
-                    processStep = processStep with { State = processStep.State with { Id = Guid.NewGuid().ToString() } };
-                }
-
+                // Subprocess should be created with an assigned id, only root process can be without the id
+                Verify.NotNullOrWhiteSpace(processStep.State.Id);
                 localStep =
-                    new LocalProcess(processStep, this._kernel)
+                    new LocalProcess(processStep, this._kernel, stepId)
                     {
                         ParentProcessId = this.Id,
                         RootProcessId = this.RootProcessId,
@@ -357,7 +361,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         }
 
         // Process steps local instances have been created, saving process state
-        await this.SaveStepDataAsync().ConfigureAwait(false);
+        await this.SaveStepDataAsync(saveChildrenState: false).ConfigureAwait(false);
     }
 
     /// <summary>

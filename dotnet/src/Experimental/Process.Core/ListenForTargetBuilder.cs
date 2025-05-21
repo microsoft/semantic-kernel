@@ -115,22 +115,16 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
 
             // Link all the source steps to the event listener
             ProcessStepEdgeBuilder? onEventBuilder = null;
-            // TODO: seems on function result is not properly supported
-            //if (messageSource.MessageType == "default")
-            //{
-            //    onEventBuilder = messageSource.Source.OnFunctionResult();
-            //}
-            //else
-            //{
-            //    onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
-            //}
 
-            if (messageSource.Source is ProcessBuilder processSource)
+            if (messageSource.Source is ProcessBuilder processSource && !processSource.HasParentProcess)
             {
+                // process has no parent, it is root process an only output event from root is external input events
                 onEventBuilder = processSource.OnInputEvent(messageSource.MessageType);
             }
             else
             {
+                // if it is a process and has parent process, process is seen as step by other steps.
+                // if it is a step it seen as step by other steps
                 onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
             }
 
