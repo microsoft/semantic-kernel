@@ -48,9 +48,9 @@ public sealed class AggregateAIContextProvider : AIContextProvider
     /// <param name="serviceProvider">The dependency injection service provider to read <see cref="AIContextProvider"/> objects from.</param>
     public void AddFromServiceProvider(IServiceProvider serviceProvider)
     {
-        foreach (var behavior in serviceProvider.GetServices<AIContextProvider>())
+        foreach (var aiContextProvider in serviceProvider.GetServices<AIContextProvider>())
         {
-            this.Add(behavior);
+            this.Add(aiContextProvider);
         }
     }
 

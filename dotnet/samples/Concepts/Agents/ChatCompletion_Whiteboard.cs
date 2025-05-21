@@ -35,7 +35,7 @@ public class ChatCompletion_Whiteboard(ITestOutputHelper output) : BaseTest(outp
             .AsIChatClient();
 
         // Create the whiteboard.
-        var whiteboardBehavior = new WhiteboardProvider(chatClient);
+        var whiteboardProvider = new WhiteboardProvider(chatClient);
 
         // Create our agent and add our finance plugin with auto function invocation.
         Kernel kernel = this.CreateKernelWithChatCompletion();
@@ -57,7 +57,7 @@ public class ChatCompletion_Whiteboard(ITestOutputHelper output) : BaseTest(outp
 
         // Create a thread for the agent and add the whiteboard to it.
         ChatHistoryAgentThread agentThread = new();
-        agentThread.AIContextProviders.Add(whiteboardBehavior);
+        agentThread.AIContextProviders.Add(whiteboardProvider);
 
         // Simulate a conversation with the agent.
         // We will also truncate the conversation once it goes over a few items.
@@ -84,11 +84,11 @@ public class ChatCompletion_Whiteboard(ITestOutputHelper output) : BaseTest(outp
             Console.WriteLine($"Assistant:\n{response.Content}\n");
 
             // Make sure any async whiteboard processing is complete before we print out its contents.
-            await whiteboardBehavior.WhenProcessingCompleteAsync();
+            await whiteboardProvider.WhenProcessingCompleteAsync();
 
             // Print out the whiteboard contents.
             Console.WriteLine("Whiteboard contents:");
-            foreach (var item in whiteboardBehavior.CurrentWhiteboardContent)
+            foreach (var item in whiteboardProvider.CurrentWhiteboardContent)
             {
                 Console.WriteLine($"- {item}");
             }
