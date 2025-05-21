@@ -479,7 +479,7 @@ class QdrantCollection(
 
     @override
     async def create_collection(self, **kwargs) -> None:
-        """Create a new collection in Azure AI Search.
+        """Create a new collection in Qdrant.
 
         Args:
             **kwargs: Additional keyword arguments.
