@@ -23,13 +23,12 @@
 
     <!-- Report low, moderate, high and critical advisories -->
     <NuGetAuditLevel>low</NuGetAuditLevel>
-
+    
     <!-- Default description and tags. Packages can override. -->
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <Product>Semantic Kernel</Product>
-    <Description>Empowers app owners to integrate cutting-edge LLM technology quickly and easily
-      into their apps.</Description>
+    <Description>Empowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.</Description>
     <PackageTags>AI, Artificial Intelligence, SDK</PackageTags>
     <PackageId>$(AssemblyName)</PackageId>
 
