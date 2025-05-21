@@ -183,6 +183,7 @@ public sealed partial class AzureAIAgent : Agent
             messages,
             thread,
             () => new AzureAIAgentThread(this.Client),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
@@ -300,6 +301,7 @@ public sealed partial class AzureAIAgent : Agent
             messages,
             thread,
             () => new AzureAIAgentThread(this.Client),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
 #pragma warning disable CS0618 // Type or member is obsolete
