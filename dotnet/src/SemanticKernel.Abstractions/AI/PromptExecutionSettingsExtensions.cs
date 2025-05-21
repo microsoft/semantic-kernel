@@ -21,9 +21,10 @@ public static class PromptExecutionSettingsExtensions
         {
             return null;
         }
-
         if (settings.GetType() != typeof(PromptExecutionSettings))
         {
+            var originalFunctionChoiceBehavior = settings.FunctionChoiceBehavior;
+
             // If the settings are of a derived type, roundtrip through JSON to the base type in order to try
             // to get the derived strongly-typed properties to show up in the loosely-typed ExtensionData dictionary.
             // This has the unfortunate effect of making all the ExtensionData values into JsonElements, so we lose
@@ -33,11 +34,13 @@ public static class PromptExecutionSettingsExtensions
             settings = JsonSerializer.Deserialize(
                 JsonSerializer.Serialize(settings, AbstractionsJsonContext.GetTypeInfo(settings.GetType(), null)),
                 AbstractionsJsonContext.Default.PromptExecutionSettings);
+
+            settings!.FunctionChoiceBehavior = originalFunctionChoiceBehavior;
         }
 
         ChatOptions options = new()
         {
-            ModelId = settings!.ModelId
+            ModelId = settings.ModelId
         };
 
         if (settings!.ExtensionData is IDictionary<string, object> extensionData)
@@ -146,7 +149,27 @@ public static class PromptExecutionSettingsExtensions
 
         if (settings.FunctionChoiceBehavior?.GetConfiguration(new([]) { Kernel = kernel }).Functions is { Count: > 0 } functions)
         {
-            options.ToolMode = settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior ? ChatToolMode.RequireAny : ChatToolMode.Auto;
+            if (settings.FunctionChoiceBehavior is AutoFunctionChoiceBehavior autoChoiceBehavior)
+            {
+                options.ToolMode = ChatToolMode.Auto;
+                options.AllowMultipleToolCalls = autoChoiceBehavior.Options?.AllowParallelCalls;
+            }
+            else
+            if (settings.FunctionChoiceBehavior is NoneFunctionChoiceBehavior noneFunctionChoiceBehavior)
+            {
+                // If the function choice behavior is None, we don't need to set the tools.
+                // The model will not call any functions.
+                options.ToolMode = ChatToolMode.None;
+            }
+            else
+            if (settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior)
+            {
+                // If the function choice behavior is Required, we need to set the tools.
+                // The model will call all functions.
+                options.ToolMode = ChatToolMode.RequireAny;
+                options.AllowMultipleToolCalls = requiredFunctionChoiceBehavior.Options?.AllowParallelCalls;
+            }
+
             options.Tools = [];
             foreach (var function in functions)
             {
