@@ -21,6 +21,7 @@ public static class PromptExecutionSettingsExtensions
         {
             return null;
         }
+
         if (settings.GetType() != typeof(PromptExecutionSettings))
         {
             var originalFunctionChoiceBehavior = settings.FunctionChoiceBehavior;
@@ -43,7 +44,7 @@ public static class PromptExecutionSettingsExtensions
             ModelId = settings.ModelId
         };
 
-        if (settings!.ExtensionData is IDictionary<string, object> extensionData)
+        if (settings.ExtensionData is IDictionary<string, object> extensionData)
         {
             foreach (var entry in extensionData)
             {
