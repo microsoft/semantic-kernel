@@ -7,13 +7,13 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 /// <remarks>
 /// Not all Vector Store connectors support all distance functions, and some connectors might
-/// support additional distance functions that aren't defined here. See the documentation
-/// for each connector for more information on what is supported.
+/// support additional distance functions that aren't defined here.
+/// For more information on what's supported, see the documentation for each connector.
 /// </remarks>
 public static class DistanceFunction
 {
     /// <summary>
-    /// The cosine (angular) similarity between two vectors.
+    /// Specifies the cosine (angular) similarity between two vectors.
     /// </summary>
     /// <remarks>
     /// Measures only the angle between the two vectors, without taking into account the length of the vectors.
@@ -25,7 +25,7 @@ public static class DistanceFunction
     public const string CosineSimilarity = nameof(CosineSimilarity);
 
     /// <summary>
-    /// The cosine (angular) similarity between two vectors.
+    /// Specifies the cosine (angular) distance between two vectors.
     /// </summary>
     /// <remarks>
     /// CosineDistance = 1 - CosineSimilarity.
@@ -69,7 +69,7 @@ public static class DistanceFunction
     public const string EuclideanSquaredDistance = nameof(EuclideanSquaredDistance);
 
     /// <summary>
-    /// The number of differences between vectors at each dimensions.
+    /// Specifies the number of differences between vectors at each dimensions.
     /// </summary>
     public const string HammingDistance = nameof(HammingDistance);
 

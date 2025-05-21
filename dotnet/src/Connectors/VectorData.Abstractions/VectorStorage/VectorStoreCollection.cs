@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Represents a named collection of records in a vector store, which can be used to search and manage records, and to create or delete the collection itself.
+/// Represents a named collection of records in a vector store, and can be used to search and manage records, and to create or delete the collection itself.
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The record data model to use for adding, updating, and retrieving data from the store.</typeparam>
@@ -174,7 +174,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <param name="top">The maximum number of results to return.</param>
     /// <param name="options">Options for retrieving the records.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The records matching given predicate.</returns>
+    /// <returns>The records that match the given predicate.</returns>
     /// <exception cref="VectorStoreException">The command fails to execute for any reason.</exception>
     public abstract IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default);
 
@@ -188,7 +188,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <summary>
     /// Disposes the <see cref="VectorStoreCollection{TKey, TRecord}"/> and releases any resources it holds.
     /// </summary>
-    /// <param name="disposing">True if called from <see cref="Dispose()"/>, false if called from a finalizer.</param>
+    /// <param name="disposing"><see langword="true"/> if called from <see cref="Dispose()"/>; <see cref="false"/> if called from a finalizer.</param>
     protected virtual void Dispose(bool disposing)
     {
     }
