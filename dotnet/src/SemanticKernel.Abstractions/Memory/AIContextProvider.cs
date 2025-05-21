@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// Base class for all AI context providers.
 /// </summary>
 /// <remarks>
-/// An AI context behavior is a component that can be used to enhance the AI's context management.
+/// An AI context provider is a component that can be used to enhance the AI's context management.
 /// It can listen to changes in the conversation, provide additional context to
 /// the AI model just before invocation and supply additional tools for function invocation.
 /// </remarks>

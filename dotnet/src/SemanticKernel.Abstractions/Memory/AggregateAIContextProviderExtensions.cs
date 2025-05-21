@@ -17,25 +17,25 @@ public static class AggregateAIContextProviderExtensions
     /// <summary>
     /// This method is called when a new message has been contributed to the chat by any participant.
     /// </summary>
-    /// <param name="aggregateAIContextBehavior">The <see cref="AggregateAIContextProvider"/> to pass the new message to.</param>
+    /// <param name="aggregateAIContextProvider">The <see cref="AggregateAIContextProvider"/> to pass the new message to.</param>
     /// <param name="conversationId">The ID of the conversation/thread for the new message, if the conversation/thread has an ID.</param>
     /// <param name="newMessage">The new message.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public static Task MessageAddingAsync(this AggregateAIContextProvider aggregateAIContextBehavior, string? conversationId, ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    public static Task MessageAddingAsync(this AggregateAIContextProvider aggregateAIContextProvider, string? conversationId, ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
-        return aggregateAIContextBehavior.MessageAddingAsync(conversationId, newMessage.ToChatMessage(), cancellationToken);
+        return aggregateAIContextProvider.MessageAddingAsync(conversationId, newMessage.ToChatMessage(), cancellationToken);
     }
 
     /// <summary>
     /// Called just before the Model/Agent/etc. is invoked
     /// </summary>
-    /// <param name="aggregateAIContextBehavior">The <see cref="AggregateAIContextProvider"/> to call.</param>
+    /// <param name="aggregateAIContextProvider">The <see cref="AggregateAIContextProvider"/> to call.</param>
     /// <param name="newMessages">The most recent messages that the Model/Agent/etc. is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation, containing the combined context from all <see cref="AIContextProvider"/> objects.</returns>
-    public static Task<AIContext> ModelInvokingAsync(this AggregateAIContextProvider aggregateAIContextBehavior, ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
+    public static Task<AIContext> ModelInvokingAsync(this AggregateAIContextProvider aggregateAIContextProvider, ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
     {
-        return aggregateAIContextBehavior.ModelInvokingAsync(newMessages.Select(m => m.ToChatMessage()).ToList(), cancellationToken);
+        return aggregateAIContextProvider.ModelInvokingAsync(newMessages.Select(m => m.ToChatMessage()).ToList(), cancellationToken);
     }
 }
