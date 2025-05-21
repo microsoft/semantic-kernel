@@ -11,7 +11,7 @@ namespace GettingStarted.OpenAIResponseAgents;
 /// This example demonstrates how to manage conversation state during a model interaction using <see cref="OpenAIResponseAgent"/>.
 /// OpenAI provides a few ways to manage conversation state, which is important for preserving information across multiple messages or turns in a conversation.
 /// </summary>
-public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesAgentTest(output)
+public class Step02_OpenAIResponseAgent_ConversationState(ITestOutputHelper output) : BaseResponsesAgentTest(output)
 {
     [Fact]
     public async Task ManuallyConstructPastConversationAsync()

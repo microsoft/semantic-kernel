@@ -66,30 +66,55 @@ public sealed class OpenAIResponseAgent : Agent
     }
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+    public async override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(messages);
+
+        var agentThread = await this.EnsureThreadExistsWithMessagesAsync(messages, thread, cancellationToken).ConfigureAwait(false);
+
+        // Invoke responses with the updated chat history.
+        var chatHistory = new ChatHistory();
+        chatHistory.AddRange(messages);
+        int messageCount = chatHistory.Count;
+        var invokeResults = this.InternalInvokeStreamingAsync(
+            this.Name,
+            chatHistory,
+            agentThread,
+            options,
+            cancellationToken);
+
+        // Return streaming chat message content to the caller.
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            yield return new(result, agentThread);
+        }
+
+        // Notify the thread of new messages
+        for (int i = messageCount; i < chatHistory.Count; i++)
+        {
+            await this.NotifyThreadOfNewMessage(agentThread, chatHistory[i], cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
     protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException("API will be removed in a future release.");
     }
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
     protected override IEnumerable<string> GetChannelKeys()
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException("API will be removed in a future release.");
     }
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException("API will be removed in a future release.");
     }
 
     #region private
@@ -146,6 +171,54 @@ public sealed class OpenAIResponseAgent : Agent
             message.AuthorName = this.Name;
 
             yield return message;
+        }
+    }
+
+    private async IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync(
+        string? agentName,
+        ChatHistory history,
+        AgentThread agentThread,
+        AgentInvokeOptions? options,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var kernel = options?.Kernel ?? this.Kernel;
+
+        var overrideHistory = history;
+        if (!this.StoreEnabled)
+        {
+            // Use the thread chat history
+            overrideHistory = [.. this.GetChatHistory(agentThread), .. history];
+        }
+
+        var inputItems = overrideHistory.Select(c => c.ToResponseItem());
+        var creationOptions = new ResponseCreationOptions()
+        {
+            EndUserId = this.GetDisplayName(),
+            Instructions = $"{this.Instructions}\n{options?.AdditionalInstructions}",
+            StoredOutputEnabled = this.StoreEnabled,
+        };
+        if (this.StoreEnabled && agentThread.Id != null)
+        {
+            creationOptions.PreviousResponseId = agentThread.Id;
+        }
+
+        await foreach (StreamingResponseUpdate update in this.Client.CreateResponseStreamingAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false))
+        {
+            if (update is StreamingResponseOutputTextDeltaUpdate outputTextUpdate)
+            {
+                yield return outputTextUpdate.ToStreamingChatMessageContent();
+            }
+            else if (update is StreamingResponseCompletedUpdate responseCompletedUpdate)
+            {
+                if (this.StoreEnabled)
+                {
+                    this.UpdateResponseId(agentThread, responseCompletedUpdate.Response.Id);
+                }
+                foreach (var item in responseCompletedUpdate.Response.OutputItems)
+                {
+                    history.Add(item.ToChatMessageContent());
+                }
+            }
         }
     }
 
