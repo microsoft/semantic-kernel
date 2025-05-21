@@ -8,11 +8,8 @@ from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
-from azure.ai.projects.aio import AIProjectClient
-from azure.ai.projects.models import Agent as AzureAIAgentModel
-from azure.ai.projects.models import (
-    AgentsApiResponseFormat,
-    AgentsApiResponseFormatMode,
+from azure.ai.agents.models import Agent as AzureAIAgentModel
+from azure.ai.agents.models import (
     AzureAISearchQueryType,
     AzureAISearchTool,
     BingGroundingTool,
@@ -26,7 +23,8 @@ from azure.ai.projects.models import (
     ToolResources,
     TruncationObject,
 )
-from pydantic import Field, SecretStr
+from azure.ai.projects.aio import AIProjectClient
+from pydantic import Field
 
 from semantic_kernel.agents import (
     Agent,
@@ -64,7 +62,7 @@ from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
-    from azure.ai.projects.models import ToolResources
+    from azure.ai.agents.models import ToolResources
     from azure.identity.aio import DefaultAzureCredential
 
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
@@ -77,9 +75,7 @@ else:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-AgentsApiResponseFormatOption = (
-    str | AgentsApiResponseFormatMode | AgentsApiResponseFormat | ResponseFormatJsonSchemaType
-)
+AgentsApiResponseFormatOption = str | ResponseFormatJsonSchemaType
 
 _T = TypeVar("_T", bound="AzureAIAgent")
 
@@ -285,7 +281,7 @@ class AzureAIAgentThread(AgentThread):
     async def _create(self) -> str:
         """Starts the thread and returns its ID."""
         try:
-            response = await self._client.agents.create_thread(
+            response = await self._client.agents.threads.create(
                 messages=self._messages,
                 metadata=self._metadata,
                 tool_resources=self._tool_resources,
@@ -302,7 +298,7 @@ class AzureAIAgentThread(AgentThread):
         if self._id is None:
             raise AgentThreadOperationException("The thread cannot be deleted because it has not been created yet.")
         try:
-            await self._client.agents.delete_thread(self._id)
+            await self._client.agents.threads.delete(self._id)
         except Exception as ex:
             raise AgentThreadOperationException(
                 "The thread could not be deleted due to an error response from the service."
@@ -424,30 +420,39 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
     @staticmethod
     def create_client(
         credential: "DefaultAzureCredential",
-        conn_str: str | None = None,
+        endpoint: str | None = None,
+        api_version: str | None = None,
         **kwargs: Any,
     ) -> AIProjectClient:
         """Create the Azure AI Project client using the connection string.
 
         Args:
             credential: The credential
-            conn_str: The connection string
+            endpoint: The Azure AI Foundry endpoint
+            api_version: Optional API version to use
             kwargs: Additional keyword arguments
 
         Returns:
             AIProjectClient: The Azure AI Project client
         """
-        if conn_str is None:
+        if endpoint is None:
             ai_agent_settings = AzureAIAgentSettings()
-            if not ai_agent_settings.project_connection_string:
-                raise AgentInitializationException("Please provide a valid Azure AI connection string.")
-            conn_str = ai_agent_settings.project_connection_string.get_secret_value()
+            if not ai_agent_settings.endpoint:
+                raise AgentInitializationException("Please provide a valid Azure AI endpoint.")
+            endpoint = ai_agent_settings.endpoint
 
-        return AIProjectClient.from_connection_string(
-            credential=credential,
-            conn_str=conn_str,
-            **({"user_agent": SEMANTIC_KERNEL_USER_AGENT} if APP_INFO else {}),
+        client_kwargs: dict[str, Any] = {
             **kwargs,
+            **({"user_agent": SEMANTIC_KERNEL_USER_AGENT} if APP_INFO else {}),
+        }
+
+        if api_version:
+            client_kwargs["api_version"] = api_version
+
+        return AIProjectClient(
+            credential=credential,
+            endpoint=endpoint,
+            **client_kwargs,
         )
 
     # region Declarative Spec
@@ -545,13 +550,6 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             **kwargs,
         )
 
-    @classmethod
-    def _get_setting(cls: type[_T], value: Any) -> Any:
-        """Return raw value if `SecretStr`, otherwise pass through."""
-        if isinstance(value, SecretStr):
-            return value.get_secret_value()
-        return value
-
     @override
     @classmethod
     def resolve_placeholders(
@@ -575,16 +573,12 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
             raise AgentInitializationException(f"Expected AzureAIAgentSettings, got {type(settings).__name__}")
 
         field_mapping.update({
-            "ChatModelId": cls._get_setting(getattr(settings, "model_deployment_name", None)),
-            "ConnectionString": cls._get_setting(getattr(settings, "project_connection_string", None)),
-            "AgentId": cls._get_setting(getattr(settings, "agent_id", None)),
-            "Endpoint": cls._get_setting(getattr(settings, "endpoint", None)),
-            "SubscriptionId": cls._get_setting(getattr(settings, "subscription_id", None)),
-            "ResourceGroup": cls._get_setting(getattr(settings, "resource_group_name", None)),
-            "ProjectName": cls._get_setting(getattr(settings, "project_name", None)),
-            "BingConnectionId": cls._get_setting(getattr(settings, "bing_connection_id", None)),
-            "AzureAISearchConnectionId": cls._get_setting(getattr(settings, "azure_ai_search_connection_id", None)),
-            "AzureAISearchIndexName": cls._get_setting(getattr(settings, "azure_ai_search_index_name", None)),
+            "ChatModelId": getattr(settings, "model_deployment_name", None),
+            "Endpoint": getattr(settings, "endpoint", None),
+            "AgentId": getattr(settings, "agent_id", None),
+            "BingConnectionId": getattr(settings, "bing_connection_id", None),
+            "AzureAISearchConnectionId": getattr(settings, "azure_ai_search_connection_id", None),
+            "AzureAISearchIndexName": getattr(settings, "azure_ai_search_index_name", None),
         })
 
         if extras:
@@ -950,9 +944,6 @@ class AzureAIAgent(DeclarativeSpecMixin, Agent):
 
         # Distinguish between agent names
         yield self.name
-
-        # Distinguish between different scopes
-        yield str(self.client.scope)
 
     async def create_channel(self, thread_id: str | None = None) -> AgentChannel:
         """Create a channel.

@@ -3,7 +3,7 @@
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client;
-using QdrantIntegrationTests.Support.TestContainer;
+using Testcontainers.Qdrant;
 using VectorDataSpecificationTests.Support;
 
 namespace QdrantIntegrationTests.Support;
@@ -21,14 +21,17 @@ internal sealed class QdrantTestStore : TestStore
     private readonly QdrantContainer _container = new QdrantBuilder().Build();
     private readonly bool _hasNamedVectors;
     private QdrantClient? _client;
-    private QdrantVectorStore? _defaultVectorStore;
 
     public QdrantClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
 
-    public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
-
     public QdrantVectorStore GetVectorStore(QdrantVectorStoreOptions options)
-        => new(this.Client, options);
+        => new(this.Client,
+            ownsClient: false, // The client is shared, it's not owned by the vector store.
+            new()
+            {
+                HasNamedVectors = options.HasNamedVectors,
+                EmbeddingGenerator = options.EmbeddingGenerator
+            });
 
     private QdrantTestStore(bool hasNamedVectors) => this._hasNamedVectors = hasNamedVectors;
 
@@ -44,9 +47,13 @@ internal sealed class QdrantTestStore : TestStore
     {
         await this._container.StartAsync();
         this._client = new QdrantClient(this._container.Hostname, this._container.GetMappedPublicPort(QdrantBuilder.QdrantGrpcPort));
-        this._defaultVectorStore = new(this._client, new() { HasNamedVectors = this._hasNamedVectors });
+        // The client is shared, it's not owned by the vector store.
+        this.DefaultVectorStore = new QdrantVectorStore(this._client, ownsClient: false, new() { HasNamedVectors = this._hasNamedVectors });
     }
 
-    protected override Task StopAsync()
-        => this._container.StopAsync();
+    protected override async Task StopAsync()
+    {
+        this._client?.Dispose();
+        await this._container.StopAsync();
+    }
 }

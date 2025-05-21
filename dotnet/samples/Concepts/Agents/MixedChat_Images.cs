@@ -19,8 +19,10 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAssistantTest(outp
     private const string SummarizerName = "Summarizer";
     private const string SummarizerInstructions = "Summarize the entire conversation for the user in natural language.";
 
-    [Fact]
-    public async Task AnalyzeDataAndGenerateChartAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AnalyzeDataAndGenerateChartAsync(bool useChatClient)
     {
         // Define the assistant
         Assistant assistant =
@@ -39,7 +41,7 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAssistantTest(outp
             {
                 Instructions = SummarizerInstructions,
                 Name = SummarizerName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
         // Create a chat for agent interaction.
@@ -72,6 +74,8 @@ public class MixedChat_Images(ITestOutputHelper output) : BaseAssistantTest(outp
         {
             await this.AssistantClient.DeleteAssistantAsync(analystAgent.Id);
         }
+
+        chatClient?.Dispose();
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(Agent agent, string? input = null)

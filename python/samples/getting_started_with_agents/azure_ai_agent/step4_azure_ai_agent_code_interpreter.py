@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from azure.ai.projects.models import CodeInterpreterTool, FilePurpose
+from azure.ai.agents.models import CodeInterpreterTool, FilePurpose
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
@@ -28,7 +28,7 @@ async def main() -> None:
         )
 
         # 2. Upload the CSV file to the Azure AI agent service
-        file = await client.agents.upload_file_and_poll(file_path=csv_file_path, purpose=FilePurpose.AGENTS)
+        file = await client.agents.files.upload_and_poll(file_path=csv_file_path, purpose=FilePurpose.AGENTS)
 
         # 3. Create a code interpreter tool referencing the uploaded file
         code_interpreter = CodeInterpreterTool(file_ids=[file.id])
@@ -60,7 +60,7 @@ async def main() -> None:
             # 7. Cleanup: Delete the thread, agent, and file
             await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
-            await client.agents.delete_file(file.id)
+            await client.agents.files.delete(file.id)
 
         """
         Sample Output:

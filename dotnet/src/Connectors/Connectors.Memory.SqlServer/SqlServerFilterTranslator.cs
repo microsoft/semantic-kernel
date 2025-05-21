@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -15,7 +15,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
     private int _parameterIndex;
 
     internal SqlServerFilterTranslator(
-        VectorStoreRecordModel model,
+        CollectionModel model,
         LambdaExpression lambdaExpression,
         StringBuilder sql,
         int startParamIndex)
@@ -45,9 +45,10 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         }
     }
 
-    protected override void GenerateColumn(string column, bool isSearchCondition = false)
+    protected override void GenerateColumn(PropertyModel property, bool isSearchCondition = false)
     {
-        this._sql.Append('[').Append(column).Append(']');
+        // StorageName is considered to be a safe input, we quote and escape it mostly to produce valid SQL.
+        this._sql.Append('[').Append(property.StorageName.Replace("]", "]]")).Append(']');
 
         // "SELECT * FROM MyTable WHERE BooleanColumn;" is not supported.
         // "SELECT * FROM MyTable WHERE BooleanColumn = 1;" is supported.
@@ -88,7 +89,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    protected override void TranslateQueryParameter(string name, object? value)
+    protected override void TranslateQueryParameter(object? value)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)
@@ -99,6 +100,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         else
         {
             this._parameterValues.Add(value);
+            // The param name is just the index, so there is no need for escaping or quoting.
             // SQL Server parameters can't start with a digit (but underscore is OK).
             this._sql.Append("@_").Append(this._parameterIndex++);
         }

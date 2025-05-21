@@ -33,6 +33,7 @@
     <ProjectReference Include="..\AzureAI\Agents.AzureAI.csproj" />
     <ProjectReference Include="..\Bedrock\Agents.Bedrock.csproj" />
     <ProjectReference Include="..\Core\Agents.Core.csproj" />
+    <ProjectReference Include="..\Magentic\Agents.Magentic.csproj" />
     <ProjectReference Include="..\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\Orchestration\Agents.Orchestration.csproj" />
     <ProjectReference Include="..\Runtime\Abstractions\Runtime.Abstractions.csproj" />

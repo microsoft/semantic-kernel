@@ -23,7 +23,7 @@ public class ProcessEdgeBuilderTests
 
         // Assert
         Assert.StrictEqual(processBuilder, edgeBuilder.Source);
-        Assert.Equal("TestEvent", edgeBuilder.EventId);
+        Assert.Equal("TestEvent", edgeBuilder.EventData.EventId);
     }
 
     /// <summary>

@@ -28,7 +28,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange
-        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, collectionName);
+        using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, collectionName);
 
         // Act
         var actual = await sut.CollectionExistsAsync();
@@ -38,18 +38,18 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     }
 
     [RetryFact(typeof(MongoCommandException), Skip = SkipReason)]
-    public async Task ItCanCreateCollectionAsync()
+    public async Task ItCanEnsureCollectionExistsAsync()
     {
         // Arrange
         var newCollection = Guid.NewGuid().ToString();
-        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, newCollection);
+        using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, newCollection);
 
         // Act
-        await sut.CreateCollectionAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
     }
 
     [RetryTheory(typeof(MongoCommandException), Skip = SkipReason)]
@@ -66,25 +66,24 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         collectionNamePostfix += includeVectors ? "-with-vectors" : "-without-vectors";
         var collectionName = $"collection-{collectionNamePostfix}";
 
-        var options = new MongoDBVectorStoreRecordCollectionOptions<MongoDBHotel>
+        var options = new MongoCollectionOptions
         {
-            VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
+            Definition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
 
-        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, collectionName, options);
+        using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, collectionName, options);
 
         var record = this.CreateTestHotel(HotelId);
 
         // Act
-        await sut.CreateCollectionAsync();
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.EnsureCollectionExistsAsync();
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId, new() { IncludeVectors = includeVectors });
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
-        Assert.Equal(HotelId, upsertResult);
         Assert.NotNull(getResult);
 
         Assert.Equal(record.HotelId, getResult.HotelId);
@@ -114,12 +113,12 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         const string TempCollectionName = "temp-test";
         await fixture.MongoDatabase.CreateCollectionAsync(TempCollectionName);
 
-        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, TempCollectionName);
+        using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, TempCollectionName);
 
         Assert.True(await sut.CollectionExistsAsync());
 
         // Act
-        await sut.DeleteCollectionAsync();
+        await sut.EnsureCollectionDeletedAsync();
 
         // Assert
         Assert.False(await sut.CollectionExistsAsync());
@@ -130,14 +129,13 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
-        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+        using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
 
         var record = this.CreateTestHotel(HotelId);
 
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId);
 
-        Assert.Equal(HotelId, upsertResult);
         Assert.NotNull(getResult);
 
         // Act
@@ -157,16 +155,15 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         const string HotelId2 = "22222222-2222-2222-2222-222222222222";
         const string HotelId3 = "33333333-3333-3333-3333-333333333333";
 
-        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+        using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
 
         var record1 = this.CreateTestHotel(HotelId1);
         var record2 = this.CreateTestHotel(HotelId2);
         var record3 = this.CreateTestHotel(HotelId3);
 
-        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
-        var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+        await sut.UpsertAsync([record1, record2, record3]);
 
-        Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
+        var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId1));
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId2));
@@ -186,21 +183,20 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     {
         // Arrange
         const string HotelId = "55555555-5555-5555-5555-555555555555";
-        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+        using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
 
         var record = this.CreateTestHotel(HotelId);
 
-        var upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(HotelId);
 
-        Assert.Equal(HotelId, upsertResult);
         Assert.NotNull(getResult);
 
         // Act
         record.HotelName = "Updated name";
         record.HotelRating = 10;
 
-        upsertResult = await sut.UpsertAsync(record);
+        await sut.UpsertAsync(record);
         getResult = await sut.GetAsync(HotelId);
 
         // Assert
@@ -213,29 +209,27 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     public async Task UpsertWithModelWorksCorrectlyAsync()
     {
         // Arrange
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string))
+                new VectorStoreKeyProperty("Id", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string))
             }
         };
 
         var model = new TestModel { Id = "key", HotelName = "Test Name" };
 
-        var sut = new MongoDBVectorStoreRecordCollection<string, TestModel>(
+        using var sut = new MongoCollection<string, TestModel>(
             fixture.MongoDatabase,
             fixture.TestCollection,
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
 
         // Act
-        var upsertResult = await sut.UpsertAsync(model);
+        await sut.UpsertAsync(model);
         var getResult = await sut.GetAsync(model.Id);
 
         // Assert
-        Assert.Equal("key", upsertResult);
-
         Assert.NotNull(getResult);
         Assert.Equal("key", getResult.Id);
         Assert.Equal("Test Name", getResult.HotelName);
@@ -247,15 +241,13 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         // Arrange
         var model = new VectorStoreTestModel { HotelId = "key", HotelName = "Test Name" };
 
-        var sut = new MongoDBVectorStoreRecordCollection<string, VectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
+        using var sut = new MongoCollection<string, VectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
-        var upsertResult = await sut.UpsertAsync(model);
+        await sut.UpsertAsync(model);
         var getResult = await sut.GetAsync(model.HotelId);
 
         // Assert
-        Assert.Equal("key", upsertResult);
-
         Assert.NotNull(getResult);
         Assert.Equal("key", getResult.HotelId);
         Assert.Equal("Test Name", getResult.HotelName);
@@ -265,29 +257,27 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     public async Task UpsertWithBsonModelWorksCorrectlyAsync()
     {
         // Arrange
-        var definition = new VectorStoreRecordDefinition
+        var definition = new VectorStoreCollectionDefinition
         {
-            Properties = new List<VectorStoreRecordProperty>
+            Properties = new List<VectorStoreProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string))
+                new VectorStoreKeyProperty("Id", typeof(string)),
+                new VectorStoreDataProperty("HotelName", typeof(string))
             }
         };
 
         var model = new BsonTestModel { Id = "key", HotelName = "Test Name" };
 
-        var sut = new MongoDBVectorStoreRecordCollection<string, BsonTestModel>(
+        using var sut = new MongoCollection<string, BsonTestModel>(
             fixture.MongoDatabase,
             fixture.TestCollection,
-            new() { VectorStoreRecordDefinition = definition });
+            new() { Definition = definition });
 
         // Act
-        var upsertResult = await sut.UpsertAsync(model);
+        await sut.UpsertAsync(model);
         var getResult = await sut.GetAsync(model.Id);
 
         // Assert
-        Assert.Equal("key", upsertResult);
-
         Assert.NotNull(getResult);
         Assert.Equal("key", getResult.Id);
         Assert.Equal("Test Name", getResult.HotelName);
@@ -299,15 +289,13 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         // Arrange
         var model = new BsonVectorStoreTestModel { HotelId = "key", HotelName = "Test Name" };
 
-        var sut = new MongoDBVectorStoreRecordCollection<string, BsonVectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
+        using var sut = new MongoCollection<string, BsonVectorStoreTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
-        var upsertResult = await sut.UpsertAsync(model);
+        await sut.UpsertAsync(model);
         var getResult = await sut.GetAsync(model.HotelId);
 
         // Assert
-        Assert.Equal("key", upsertResult);
-
         Assert.NotNull(getResult);
         Assert.Equal("key", getResult.HotelId);
         Assert.Equal("Test Name", getResult.HotelName);
@@ -319,22 +307,20 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         // Arrange
         var model = new BsonVectorStoreWithNameTestModel { Id = "key", HotelName = "Test Name" };
 
-        var sut = new MongoDBVectorStoreRecordCollection<string, BsonVectorStoreWithNameTestModel>(fixture.MongoDatabase, fixture.TestCollection);
+        using var sut = new MongoCollection<string, BsonVectorStoreWithNameTestModel>(fixture.MongoDatabase, fixture.TestCollection);
 
         // Act
-        var upsertResult = await sut.UpsertAsync(model);
+        await sut.UpsertAsync(model);
         var getResult = await sut.GetAsync(model.Id);
 
         // Assert
-        Assert.Equal("key", upsertResult);
-
         Assert.NotNull(getResult);
         Assert.Equal("key", getResult.Id);
         Assert.Equal("Test Name", getResult.HotelName);
     }
 
     [RetryFact(typeof(MongoCommandException), Skip = SkipReason)]
-    public async Task VectorizedSearchReturnsValidResultsByDefaultAsync()
+    public async Task SearchReturnsValidResultsByDefaultAsync()
     {
         // Arrange
         var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
@@ -342,14 +328,14 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearch");
+        using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearch");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3).ToListAsync();
+        var searchResults = await sut.SearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3).ToListAsync();
 
         // Assert
         var ids = searchResults.Select(l => l.Record.HotelId).ToList();
@@ -364,7 +350,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     }
 
     [RetryFact(typeof(MongoCommandException), Skip = SkipReason)]
-    public async Task VectorizedSearchReturnsValidResultsWithOffsetAsync()
+    public async Task SearchReturnsValidResultsWithOffsetAsync()
     {
         // Arrange
         var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
@@ -372,14 +358,14 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
+        using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
+        var searchResults = await sut.SearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
         {
             Skip = 2
         }).ToListAsync();
@@ -395,7 +381,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     }
 
     [RetryFact(typeof(MongoCommandException), Skip = SkipReason)]
-    public async Task VectorizedSearchReturnsValidResultsWithFilterAsync()
+    public async Task SearchReturnsValidResultsWithFilterAsync()
     {
         // Arrange
         var hotel1 = this.CreateTestHotel(hotelId: "key1", embedding: new[] { 30f, 31f, 32f, 33f });
@@ -403,14 +389,14 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         var hotel3 = this.CreateTestHotel(hotelId: "key3", embedding: new[] { 20f, 20f, 20f, 20f });
         var hotel4 = this.CreateTestHotel(hotelId: "key4", embedding: new[] { -1000f, -1000f, -1000f, -1000f });
 
-        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
+        using var sut = new MongoCollection<string, MongoDBHotel>(fixture.MongoDatabase, "TestVectorizedSearchWithOffset");
 
-        await sut.CreateCollectionIfNotExistsAsync();
+        await sut.EnsureCollectionExistsAsync();
 
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
+        var searchResults = await sut.SearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
         {
             OldFilter = new VectorSearchFilter().EqualTo(nameof(MongoDBHotel.HotelName), "My Hotel key2")
         }).ToListAsync();
@@ -429,15 +415,15 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
-        var options = new MongoDBVectorStoreRecordCollectionOptions<Dictionary<string, object?>>
+        var options = new MongoCollectionOptions
         {
-            VectorStoreRecordDefinition = fixture.HotelVectorStoreRecordDefinition
+            Definition = fixture.HotelVectorStoreRecordDefinition
         };
 
-        var sut = new MongoDBVectorStoreRecordCollection<object, Dictionary<string, object?>>(fixture.MongoDatabase, fixture.TestCollection, options);
+        using var sut = new MongoDynamicCollection(fixture.MongoDatabase, fixture.TestCollection, options);
 
         // Act
-        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
+        await sut.UpsertAsync(new Dictionary<string, object?>
         {
             ["HotelId"] = "DynamicMapper-1",
 
@@ -451,12 +437,9 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
             ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])
         });
 
-        var localGetResult = await sut.GetAsync("DynamicMapper-1", new GetRecordOptions { IncludeVectors = true });
+        var localGetResult = await sut.GetAsync("DynamicMapper-1", new RecordRetrievalOptions { IncludeVectors = true });
 
         // Assert
-        Assert.NotNull(upsertResult);
-        Assert.Equal("DynamicMapper-1", upsertResult);
-
         Assert.NotNull(localGetResult);
         Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
         Assert.Equal("This is a dynamic mapper hotel", localGetResult["Description"]);
@@ -494,10 +477,10 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
 
     private sealed class VectorStoreTestModel
     {
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string? HotelId { get; set; }
 
-        [VectorStoreRecordData(StoragePropertyName = "hotel_name")]
+        [VectorStoreData(StorageName = "hotel_name")]
         public string? HotelName { get; set; }
     }
 
@@ -513,22 +496,22 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     private sealed class BsonVectorStoreTestModel
     {
         [BsonId]
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string? HotelId { get; set; }
 
         [BsonElement("hotel_name")]
-        [VectorStoreRecordData]
+        [VectorStoreData]
         public string? HotelName { get; set; }
     }
 
     private sealed class BsonVectorStoreWithNameTestModel
     {
         [BsonId]
-        [VectorStoreRecordKey]
+        [VectorStoreKey]
         public string? Id { get; set; }
 
         [BsonElement("bson_hotel_name")]
-        [VectorStoreRecordData(StoragePropertyName = "storage_hotel_name")]
+        [VectorStoreData(StorageName = "storage_hotel_name")]
         public string? HotelName { get; set; }
     }
 

@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Connectors\Connectors.Memory.AzureCosmosDBMongoDB\Connectors.Memory.AzureCosmosDBMongoDB.csproj"/>
+    <ProjectReference Include="..\..\Connectors\Connectors.Memory.CosmosMongoDB\Connectors.Memory.CosmosMongoDB.csproj"/>
     <ProjectReference Include="..\..\VectorDataIntegrationTests\VectorDataIntegrationTests\VectorDataIntegrationTests.csproj"/>
   </ItemGroup>
 

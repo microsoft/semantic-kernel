@@ -10,12 +10,12 @@ namespace Step02.Steps;
 /// </summary>
 public class NewAccountStep : KernelProcessStep
 {
-    public static class Functions
+    public static class ProcessStepFunctions
     {
         public const string CreateNewAccount = nameof(CreateNewAccount);
     }
 
-    [KernelFunction(Functions.CreateNewAccount)]
+    [KernelFunction(ProcessStepFunctions.CreateNewAccount)]
     public async Task CreateNewAccountAsync(KernelProcessStepContext context, bool previousCheckSucceeded, NewCustomerForm customerDetails, List<ChatMessageContent> interactionTranscript, Kernel _kernel)
     {
         // Placeholder for a call to API to create new account for user
