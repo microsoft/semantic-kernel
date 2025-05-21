@@ -463,10 +463,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
             foreach (ProcessEvent errorEvent in processErrorEvents)
             {
-                if (errorEdge.OutputTarget is not KernelProcessFunctionTarget functionTarget)
-                {
-                    throw new KernelException("The target for the edge is not a function target.").Log(this._logger);
-                }
                 var errorMessage = ProcessMessageFactory.CreateFromEdge(errorEdge, errorEvent.SourceId, errorEvent.Data);
                 var scopedErrorMessageBufferId = this.ScopedActorId(new ActorId(functionTarget.StepId));
                 var errorStepQueue = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedErrorMessageBufferId, nameof(MessageBufferActor));

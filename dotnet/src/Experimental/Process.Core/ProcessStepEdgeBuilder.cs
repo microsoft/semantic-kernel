@@ -86,7 +86,6 @@ public class ProcessStepEdgeBuilder
     /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
     /// </summary>
     /// <param name="target">The output target.</param>
-    /// <param name="metadata"> Optional metadata to include with the event.</param>
     /// <returns>A fresh builder instance for fluid definition</returns>
     public ProcessStepEdgeBuilder SendEventTo(ProcessTargetBuilder target)
     {

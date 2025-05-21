@@ -10,8 +10,6 @@ namespace PgVectorIntegrationTests.Filter;
 
 #pragma warning disable CS0252 // Possible unintended reference comparison; left hand side needs cast
 
-#pragma warning disable CS0252 // Possible unintended reference comparison; left hand side needs cast
-
 public class PostgresBasicFilterTests(PostgresBasicFilterTests.Fixture fixture)
     : BasicFilterTests<int>(fixture), IClassFixture<PostgresBasicFilterTests.Fixture>
 {

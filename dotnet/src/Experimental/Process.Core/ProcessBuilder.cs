@@ -480,7 +480,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
     /// </summary>
     /// <returns></returns>
-    internal ListenForBuilder ListenFor()
+    public ListenForBuilder ListenFor()
     {
         return new ListenForBuilder(this);
     }
@@ -555,19 +555,6 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     public static Task<KernelProcess?> LoadFromYamlAsync(string yaml, List<string> assemblyPaths)
         => LoadFromYamlInternalAsync(yaml, assemblyPaths: assemblyPaths);
 
-        try
-        {
-            var workflow = WorkflowSerializer.DeserializeFromYaml(yaml);
-    var builder = new WorkflowBuilder();
-    var process = await builder.BuildProcessAsync(workflow, yaml).ConfigureAwait(false);
-
-            return process;
-        }
-        catch (Exception ex)
-        {
-            throw new ArgumentException("Failed to deserialize the process string.", ex);
-        }
-    }
     #endregion
 
     #region private
@@ -583,30 +570,30 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         string yaml,
         List<string>? assemblyPaths = null,
         Dictionary<string, Type>? stepTypes = null)
-{
-    Verify.NotNullOrWhiteSpace(yaml);
-
-    try
     {
-        var workflow = WorkflowSerializer.DeserializeFromYaml(yaml);
-        var builder = new WorkflowBuilder();
+        Verify.NotNullOrWhiteSpace(yaml);
 
-        if (stepTypes is not null)
+        try
         {
-            return await builder.BuildProcessAsync(workflow, yaml, stepTypes).ConfigureAwait(false);
-        }
-        else if (assemblyPaths is { Count: > 0 })
-        {
-            var loadedStepTypes = ProcessStepLoader.LoadStepTypesFromAssemblies(assemblyPaths);
-            return await builder.BuildProcessAsync(workflow, yaml, loadedStepTypes).ConfigureAwait(false);
-        }
+            var workflow = WorkflowSerializer.DeserializeFromYaml(yaml);
+            var builder = new WorkflowBuilder();
 
-        return await builder.BuildProcessAsync(workflow, yaml).ConfigureAwait(false);
+            if (stepTypes is not null)
+            {
+                return await builder.BuildProcessAsync(workflow, yaml, stepTypes).ConfigureAwait(false);
+            }
+            else if (assemblyPaths is { Count: > 0 })
+            {
+                var loadedStepTypes = ProcessStepLoader.LoadStepTypesFromAssemblies(assemblyPaths);
+                return await builder.BuildProcessAsync(workflow, yaml, loadedStepTypes).ConfigureAwait(false);
+            }
+
+            return await builder.BuildProcessAsync(workflow, yaml).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            throw new ArgumentException("Failed to deserialize the process string.", ex);
+        }
     }
-    catch (Exception ex)
-    {
-        throw new ArgumentException("Failed to deserialize the process string.", ex);
-    }
-}
     #endregion
 }

@@ -37,9 +37,6 @@ internal sealed class PineconeTestStore : TestStore
     public PineconeVectorStore GetVectorStore(PineconeVectorStoreOptions options)
         => new(this.Client, options);
 
-    public PineconeVectorStore GetVectorStore(PineconeVectorStoreOptions options)
-        => new(this.Client, options);
-
     // Pinecone does not support distance functions other than PGA which is always enabled.
     public override string DefaultIndexKind => "";
 

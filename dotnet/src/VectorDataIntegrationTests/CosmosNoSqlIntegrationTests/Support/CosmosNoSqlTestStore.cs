@@ -12,14 +12,12 @@ namespace CosmosNoSqlIntegrationTests.Support;
 
 #pragma warning disable CA1001 // Type owns disposable fields (_connection) but is not disposable
 
-internal sealed class CosmosNoSQLTestStore : TestStore
+internal sealed class CosmosNoSqlTestStore : TestStore
 {
-    public static CosmosNoSQLTestStore Instance { get; } = new();
+    public static CosmosNoSqlTestStore Instance { get; } = new();
 
     private CosmosClient? _client;
     private Database? _database;
-
-    public override string DefaultIndexKind => Microsoft.Extensions.VectorData.IndexKind.Flat;
 
     public override string DefaultIndexKind => Microsoft.Extensions.VectorData.IndexKind.Flat;
 
@@ -32,7 +30,7 @@ internal sealed class CosmosNoSQLTestStore : TestStore
     public CosmosNoSqlVectorStore GetVectorStore(CosmosNoSqlVectorStoreOptions options)
         => new(this.Database, options);
 
-    private CosmosNoSQLTestStore()
+    private CosmosNoSqlTestStore()
     {
     }
 
