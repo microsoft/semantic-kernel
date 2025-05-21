@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -25,20 +26,22 @@ public sealed class TextSearchProvider : AIContextProvider
     private const string DefaultIncludeCitationsPrompt = "Include citations to the source document with document name and link if document name and link is available.";
 
     private readonly ITextSearch _textSearch;
-
+    private readonly ILogger<TextSearchProvider>? _logger;
     private readonly AIFunction[] _aIFunctions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TextSearchProvider"/> class.
     /// </summary>
     /// <param name="textSearch">The text search component to retrieve results from.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="options">Options that configure the behavior of the component.</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public TextSearchProvider(ITextSearch textSearch, TextSearchProviderOptions? options = default)
+    public TextSearchProvider(ITextSearch textSearch, ILoggerFactory? loggerFactory = default, TextSearchProviderOptions? options = default)
     {
         Verify.NotNull(textSearch);
 
         this._textSearch = textSearch;
+        this._logger = loggerFactory?.CreateLogger<TextSearchProvider>();
         this.Options = options ?? new();
 
         this._aIFunctions =
@@ -77,7 +80,12 @@ public sealed class TextSearchProvider : AIContextProvider
 
         var results = await searchResults.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        return new() { Instructions = this.FormatResults(results) };
+        var formatted = this.FormatResults(results);
+
+        this._logger?.LogInformation("TextSearchBehavior: Retrieved {Count} search results.", results.Count);
+        this._logger?.LogTrace("TextSearchBehavior:\nInput Messages:{Input}\nOutput context instructions:\n{Instructions}", input, formatted);
+
+        return new() { Instructions = formatted };
     }
 
     /// <summary>
@@ -93,7 +101,9 @@ public sealed class TextSearchProvider : AIContextProvider
 
         var results = await searchResults.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        return this.FormatResults(results);
+        var formatted = this.FormatResults(results);
+
+        return formatted;
     }
 
     /// <summary>

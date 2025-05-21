@@ -63,7 +63,7 @@ public class TextSearchProviderTests
             IncludeCitationsPrompt = overrideCitationsPrompt
         };
 
-        var component = new TextSearchProvider(mockTextSearch.Object, options);
+        var component = new TextSearchProvider(mockTextSearch.Object, options: options);
 
         // Act
         var result = await component.ModelInvokingAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
@@ -97,7 +97,7 @@ public class TextSearchProviderTests
             PluginFunctionDescription = overridePluginFunctionDescription
         };
 
-        var component = new TextSearchProvider(mockTextSearch.Object, options);
+        var component = new TextSearchProvider(mockTextSearch.Object, options: options);
 
         // Act
         var aiContextAdditions = await component.ModelInvokingAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);
@@ -157,7 +157,7 @@ public class TextSearchProviderTests
             IncludeCitationsPrompt = overrideCitationsPrompt
         };
 
-        var component = new TextSearchProvider(mockTextSearch.Object, options);
+        var component = new TextSearchProvider(mockTextSearch.Object, options: options);
 
         // Act
         var result = await component.SearchAsync("Sample user question?", CancellationToken.None);
@@ -213,7 +213,7 @@ public class TextSearchProviderTests
             ContextFormatter = results => $"Custom formatted context with {results.Count} results."
         };
 
-        var component = new TextSearchProvider(mockTextSearch.Object, options);
+        var component = new TextSearchProvider(mockTextSearch.Object, options: options);
 
         // Act
         var result = await component.ModelInvokingAsync([new ChatMessage(ChatRole.User, "Sample user question?")], CancellationToken.None);

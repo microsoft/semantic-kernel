@@ -58,7 +58,7 @@ public class Mem0ProviderTests : IDisposable
             .Setup(x => x.MockableSendAsync(It.IsAny<HttpMethod>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(httpResponse);
 
-        var sut = new Mem0Provider(this._httpClient, new() { ApplicationId = "test-app-id", AgentId = "test-agent-id", ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = scopePerOperationThread });
+        var sut = new Mem0Provider(this._httpClient, options: new() { ApplicationId = "test-app-id", AgentId = "test-agent-id", ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = scopePerOperationThread });
 
         // Act
         await sut.MessageAddingAsync("test-thread-id-1", new ChatMessage(ChatRole.User, "Hello, my name is Caoimhe."));
@@ -89,7 +89,7 @@ public class Mem0ProviderTests : IDisposable
             .Setup(x => x.MockableSendAsync(It.IsAny<HttpMethod>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(httpResponse);
 
-        var sut = new Mem0Provider(this._httpClient, new()
+        var sut = new Mem0Provider(this._httpClient, options: new()
         {
             ApplicationId = "test-app-id",
             AgentId = "test-agent-id",
@@ -123,7 +123,7 @@ public class Mem0ProviderTests : IDisposable
             .Setup(x => x.MockableSendAsync(It.IsAny<HttpMethod>(), It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(httpResponse);
 
-        var sut = new Mem0Provider(this._httpClient, new() { ApplicationId = "test-app-id", AgentId = "test-agent-id", ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = scopePerOperationThread });
+        var sut = new Mem0Provider(this._httpClient, options: new() { ApplicationId = "test-app-id", AgentId = "test-agent-id", ThreadId = "test-thread-id", UserId = "test-user-id", ScopeToPerOperationThreadId = scopePerOperationThread });
         await sut.ConversationCreatedAsync("test-thread-id-1");
 
         // Act
@@ -138,7 +138,7 @@ public class Mem0ProviderTests : IDisposable
     public async Task ThrowsExceptionWhenThreadIdChangesAfterBeingSet()
     {
         // Arrange
-        var sut = new Mem0Provider(this._httpClient, new() { ScopeToPerOperationThreadId = true });
+        var sut = new Mem0Provider(this._httpClient, options: new() { ScopeToPerOperationThreadId = true });
 
         // Act
         await sut.ConversationCreatedAsync("initial-thread-id");
