@@ -60,7 +60,7 @@ public sealed class WhiteboardProvider : AIContextProvider
     public IReadOnlyList<string> CurrentWhiteboardContent => this._currentWhiteboardContent;
 
     /// <inheritdoc/>
-    public override async Task MessageAddingAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
+    public override async Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(newMessage.Text))
         {

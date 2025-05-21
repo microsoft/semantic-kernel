@@ -12,10 +12,10 @@ namespace SemanticKernel.UnitTests.Memory;
 /// <summary>
 /// Contains tests for the <see cref="AIContextProvider"/> class.
 /// </summary>
-public class AIContextBehaviorTests
+public class AIContextProviderTests
 {
     [Fact]
-    public async Task OnThreadCreatedBaseImplementationSucceeds()
+    public async Task ConversationCreatedAsyncBaseImplementationSucceeds()
     {
         // Arrange.
         var mockPart = new Mock<AIContextProvider>() { CallBase = true };
@@ -25,7 +25,7 @@ public class AIContextBehaviorTests
     }
 
     [Fact]
-    public async Task OnNewMessageBaseImplementationSucceeds()
+    public async Task MessageAddingAsyncBaseImplementationSucceeds()
     {
         // Arrange.
         var mockPart = new Mock<AIContextProvider>() { CallBase = true };
@@ -36,7 +36,7 @@ public class AIContextBehaviorTests
     }
 
     [Fact]
-    public async Task OnThreadDeleteBaseImplementationSucceeds()
+    public async Task ConversationDeletingAsyncBaseImplementationSucceeds()
     {
         // Arrange.
         var mockPart = new Mock<AIContextProvider>() { CallBase = true };
@@ -46,7 +46,7 @@ public class AIContextBehaviorTests
     }
 
     [Fact]
-    public async Task OnSuspendBaseImplementationSucceeds()
+    public async Task SuspendingAsyncBaseImplementationSucceeds()
     {
         // Arrange.
         var mockPart = new Mock<AIContextProvider>() { CallBase = true };
@@ -56,7 +56,7 @@ public class AIContextBehaviorTests
     }
 
     [Fact]
-    public async Task OnResumeBaseImplementationSucceeds()
+    public async Task ResumingAsyncBaseImplementationSucceeds()
     {
         // Arrange.
         var mockPart = new Mock<AIContextProvider>() { CallBase = true };

@@ -14,7 +14,7 @@ namespace SemanticKernel.UnitTests.Memory;
 /// <summary>
 /// Contains tests for the <see cref="AggregateAIContextProvider"/> class.
 /// </summary>
-public class AggregateAIContextBehaviorTests
+public class AggregateAIContextProviderTests
 {
     [Fact]
     public void ConstructorShouldInitializeEmptyPartsList()

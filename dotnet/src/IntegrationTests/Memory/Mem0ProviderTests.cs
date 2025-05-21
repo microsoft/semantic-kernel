@@ -15,7 +15,7 @@ namespace SemanticKernel.IntegrationTests.Memory;
 /// <summary>
 /// Contains tests for the <see cref="Mem0Provider"/> class.
 /// </summary>
-public class Mem0BehaviorTests : IDisposable
+public class Mem0ProviderTests : IDisposable
 {
     // If null, all tests will be enabled
     private const string SkipReason = "Requires a Mem0 service configured";
@@ -23,13 +23,13 @@ public class Mem0BehaviorTests : IDisposable
     private readonly HttpClient _httpClient;
     private bool _disposedValue;
 
-    public Mem0BehaviorTests()
+    public Mem0ProviderTests()
     {
         IConfigurationRoot configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<Mem0BehaviorTests>()
+            .AddUserSecrets<Mem0ProviderTests>()
             .Build();
 
         var mem0Settings = configuration.GetRequiredSection("Mem0").Get<Mem0Configuration>()!;

@@ -12,7 +12,7 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithStatePartConformance;
 
-public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAgentFixture) : IAsyncLifetime
+public abstract class AgentWithAIContextProviderTests<TFixture>(Func<TFixture> createAgentFixture) : IAsyncLifetime
     where TFixture : AgentFixture
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.

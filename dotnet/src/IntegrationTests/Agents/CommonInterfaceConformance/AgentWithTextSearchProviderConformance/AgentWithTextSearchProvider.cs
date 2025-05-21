@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithTextSearchBehaviorConformance;
 
-public abstract class AgentWithTextSearchBehavior<TFixture>(Func<TFixture> createAgentFixture, ITestOutputHelper output) : IAsyncLifetime
+public abstract class AgentWithTextSearchProvider<TFixture>(Func<TFixture> createAgentFixture, ITestOutputHelper output) : IAsyncLifetime
     where TFixture : AgentFixture
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.

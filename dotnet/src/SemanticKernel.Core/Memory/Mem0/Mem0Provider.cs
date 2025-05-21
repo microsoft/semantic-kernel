@@ -84,19 +84,19 @@ public sealed class Mem0Provider : AIContextProvider
     }
 
     /// <inheritdoc/>
-    public override Task ConversationCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
+    public override Task ConversationCreatedAsync(string? conversationId, CancellationToken cancellationToken = default)
     {
-        this.ValidatePerOperationThreadId(threadId);
+        this.ValidatePerOperationThreadId(conversationId);
 
-        this._perOperationThreadId ??= threadId;
+        this._perOperationThreadId ??= conversationId;
         return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    public override async Task MessageAddingAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
+    public override async Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessage);
-        this.ValidatePerOperationThreadId(threadId);
+        this.ValidatePerOperationThreadId(conversationId);
 
         switch (newMessage.Role)
         {
@@ -108,7 +108,7 @@ public sealed class Mem0Provider : AIContextProvider
                 return;
         }
 
-        this._perOperationThreadId ??= threadId;
+        this._perOperationThreadId ??= conversationId;
 
         if (!string.IsNullOrWhiteSpace(newMessage.Text))
         {

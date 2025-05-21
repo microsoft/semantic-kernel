@@ -11,11 +11,11 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.Memory;
 
-public class WhiteboardBehaviorTests
+public class WhiteboardProviderTests
 {
     private readonly Mock<IChatClient> _mockChatClient;
 
-    public WhiteboardBehaviorTests()
+    public WhiteboardProviderTests()
     {
         this._mockChatClient = new Mock<IChatClient>();
     }

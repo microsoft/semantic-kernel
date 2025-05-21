@@ -12,9 +12,9 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
-/// Tests for the AggregateAIContextBehaviorExtensions class.
+/// Tests for the AggregateAIContextProviderExtensions class.
 /// </summary>
-public class AggregateAIContextBehaviorExtensionsTests
+public class AggregateAIContextProviderExtensionsTests
 {
     [Fact]
     public async Task OnNewMessageShouldConvertMessageAndInvokeRegisteredPartsAsync()

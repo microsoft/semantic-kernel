@@ -17,13 +17,13 @@ namespace SemanticKernel.UnitTests.Memory;
 /// <summary>
 /// Contains tests for the <see cref="Mem0Provider"/> class.
 /// </summary>
-public class Mem0BehaviorTests : IDisposable
+public class Mem0ProviderTests : IDisposable
 {
     private readonly HttpClient _httpClient;
     private readonly Mock<MockableMessageHandler> _mockMessageHandler;
     private bool _disposedValue;
 
-    public Mem0BehaviorTests()
+    public Mem0ProviderTests()
     {
         this._mockMessageHandler = new Mock<MockableMessageHandler>() { CallBase = true };
         this._httpClient = new HttpClient(this._mockMessageHandler.Object)
@@ -149,7 +149,7 @@ public class Mem0BehaviorTests : IDisposable
             await sut.ConversationCreatedAsync("new-thread-id");
         });
 
-        Assert.Equal("The Mem0Behavior can only be used with one thread at a time when ScopeToPerOperationThreadId is set to true.", exception.Message);
+        Assert.Equal("The Mem0Provider can only be used with one thread at a time when ScopeToPerOperationThreadId is set to true.", exception.Message);
     }
 
     protected virtual void Dispose(bool disposing)

@@ -4,6 +4,6 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithTextSearchBehaviorConformance;
 
-public class ChatCompletionAgentWithTextSearchBehaviorTests(ITestOutputHelper output) : AgentWithTextSearchBehavior<ChatCompletionAgentFixture>(() => new ChatCompletionAgentFixture(), output)
+public class ChatCompletionAgentWithTextSearchProviderTests(ITestOutputHelper output) : AgentWithTextSearchProvider<ChatCompletionAgentFixture>(() => new ChatCompletionAgentFixture(), output)
 {
 }
