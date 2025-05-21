@@ -214,14 +214,17 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
             raise VectorStoreModelException(
                 f"Vector field '{options.vector_property_name}' not found in the data model definition."
             )
-
         return_list = []
-        filtered_records = self._get_filtered_records(options)
+        # first we create the vector to search with
         np_vector = np.array(vector, dtype=np.float32).reshape(1, -1)
         # then do the actual vector search
         distances, indexes = self.indexes[field.name].search(
             np_vector, min(options.top, self.indexes[field.name].ntotal)
         )  # type: ignore[call-arg]
+        # since Faiss indexes do not contain the full records,
+        # we get the filtered records, this is a dict of the records that match the search filters
+        # and use that to get the actual records
+        filtered_records = self._get_filtered_records(options)
         # we then iterate through the results, the order is the order of relevance
         # (less or most distance, dependant on distance metric used)
         for i, index in enumerate(indexes[0]):
