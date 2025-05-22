@@ -391,7 +391,7 @@ def _parse_vector_store_record_field_class(
     if (args := getattr(property_type, "__args__", None)) and NoneType in args and len(args) == 2:
         property_type = args[0]
     property_type_name = str(property_type) if hasattr(property_type, "__args__") else property_type.__name__
-    return field_type(name=field.name, type_=property_type_name)
+    return field_type(name=field.name, type=property_type_name)
 
 
 def _parse_vector_store_record_field_instance(

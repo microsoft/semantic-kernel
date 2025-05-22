@@ -2,12 +2,12 @@
 
 from .azure_ai_search import AzureAISearchCollection, AzureAISearchSettings, AzureAISearchStore
 from .azure_cosmos_db import (
-    AzureCosmosDBforMongoDBSettings,
-    AzureCosmosDBNoSQLCompositeKey,
-    AzureCosmosDBNoSQLSettings,
     CosmosMongoCollection,
+    CosmosMongoSettings,
     CosmosMongoStore,
     CosmosNoSqlCollection,
+    CosmosNoSqlCompositeKey,
+    CosmosNoSqlSettings,
     CosmosNoSqlStore,
 )
 from .chroma import ChromaCollection, ChromaStore
@@ -25,14 +25,14 @@ __all__ = [
     "AzureAISearchCollection",
     "AzureAISearchSettings",
     "AzureAISearchStore",
-    "AzureCosmosDBNoSQLCompositeKey",
-    "AzureCosmosDBNoSQLSettings",
-    "AzureCosmosDBforMongoDBSettings",
     "ChromaCollection",
     "ChromaStore",
     "CosmosMongoCollection",
+    "CosmosMongoSettings",
     "CosmosMongoStore",
     "CosmosNoSqlCollection",
+    "CosmosNoSqlCompositeKey",
+    "CosmosNoSqlSettings",
     "CosmosNoSqlStore",
     "FaissCollection",
     "FaissStore",
