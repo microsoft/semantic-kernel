@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// A component that does a search based on any messages that the AI model is invoked with and injects the results into the AI model invocation context.
 /// </summary>
 [Experimental("SKEXP0130")]
-public sealed class TextSearchBehavior : AIContextBehavior
+public sealed class TextSearchProvider : AIContextProvider
 {
     private const string DefaultPluginSearchFunctionName = "Search";
     private const string DefaultPluginSearchFunctionDescription = "Allows searching for additional information to help answer the user question.";
@@ -29,12 +29,12 @@ public sealed class TextSearchBehavior : AIContextBehavior
     private readonly AIFunction[] _aIFunctions;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="TextSearchBehavior"/> class.
+    /// Initializes a new instance of the <see cref="TextSearchProvider"/> class.
     /// </summary>
     /// <param name="textSearch">The text search component to retrieve results from.</param>
     /// <param name="options">Options that configure the behavior of the component.</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public TextSearchBehavior(ITextSearch textSearch, TextSearchBehaviorOptions? options = default)
+    public TextSearchProvider(ITextSearch textSearch, TextSearchProviderOptions? options = default)
     {
         Verify.NotNull(textSearch);
 
@@ -53,12 +53,12 @@ public sealed class TextSearchBehavior : AIContextBehavior
     /// <summary>
     /// Gets the options that have been configured for this component.
     /// </summary>
-    public TextSearchBehaviorOptions Options { get; }
+    public TextSearchProviderOptions Options { get; }
 
     /// <inheritdoc/>
-    public override async Task<AIContextPart> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override async Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
-        if (this.Options.SearchTime != TextSearchBehaviorOptions.RagBehavior.BeforeAIInvoke)
+        if (this.Options.SearchTime != TextSearchProviderOptions.RagBehavior.BeforeAIInvoke)
         {
             return new()
             {

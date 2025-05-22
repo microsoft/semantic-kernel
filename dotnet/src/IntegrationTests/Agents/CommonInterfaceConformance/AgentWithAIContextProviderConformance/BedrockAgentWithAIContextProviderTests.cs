@@ -5,7 +5,7 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithStatePartConformance;
 
-public class BedrockAgentWithStatePartTests() : AgentWithStatePartTests<BedrockAgentFixture>(() => new BedrockAgentFixture())
+public class BedrockAgentWithAIContextProviderTests() : AgentWithAIContextProviderTests<BedrockAgentFixture>(() => new BedrockAgentFixture())
 {
     private const string ManualVerificationSkipReason = "This test is for manual verification.";
 

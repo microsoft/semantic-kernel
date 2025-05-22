@@ -16,21 +16,21 @@ using Xunit.Abstractions;
 namespace SemanticKernel.IntegrationTests.Memory;
 
 /// <summary>
-/// Contains tests for the <see cref="WhiteboardBehavior"/> class.
+/// Contains tests for the <see cref="WhiteboardProvider"/> class.
 /// </summary>
-public class WhiteboardBehaviorTests
+public class WhiteboardProviderTests
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<WhiteboardBehaviorTests>()
+            .AddUserSecrets<WhiteboardProviderTests>()
             .Build();
 
     private readonly ITestOutputHelper _output;
     private readonly IChatClient _chatClient;
 
-    public WhiteboardBehaviorTests(ITestOutputHelper output)
+    public WhiteboardProviderTests(ITestOutputHelper output)
     {
         this._output = output;
 
@@ -136,17 +136,17 @@ public class WhiteboardBehaviorTests
     private async Task CanAddMessagesToWhiteboardAsync(ChatMessage[] chatMessages, string[][] expectedWhiteboardContent)
     {
         // Arrange
-        var whiteboardBehavior = new WhiteboardBehavior(this._chatClient);
+        var WhiteboardProvider = new WhiteboardProvider(this._chatClient);
 
         // Act
         foreach (var chatMessage in chatMessages)
         {
-            await whiteboardBehavior.MessageAddingAsync(null, chatMessage);
+            await WhiteboardProvider.MessageAddingAsync(null, chatMessage);
         }
 
         // Assert
-        await whiteboardBehavior.WhenProcessingCompleteAsync();
-        var aiContextAdditions = await whiteboardBehavior.ModelInvokingAsync(new List<ChatMessage> { new(ChatRole.User, string.Empty) });
+        await WhiteboardProvider.WhenProcessingCompleteAsync();
+        var aiContextAdditions = await WhiteboardProvider.ModelInvokingAsync(new List<ChatMessage> { new(ChatRole.User, string.Empty) });
         var whiteboardContent = aiContextAdditions.Instructions!;
         this._output.WriteLine(string.Join(Environment.NewLine, whiteboardContent));
 

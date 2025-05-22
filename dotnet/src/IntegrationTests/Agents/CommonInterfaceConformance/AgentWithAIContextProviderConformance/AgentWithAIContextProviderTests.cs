@@ -12,7 +12,7 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithStatePartConformance;
 
-public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAgentFixture) : IAsyncLifetime
+public abstract class AgentWithAIContextProviderTests<TFixture>(Func<TFixture> createAgentFixture) : IAsyncLifetime
     where TFixture : AgentFixture
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -25,9 +25,9 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     public virtual async Task StatePartReceivesMessagesFromAgentAsync()
     {
         // Arrange
-        var mockStatePart = new Mock<AIContextBehavior>() { CallBase = true };
+        var mockStatePart = new Mock<AIContextProvider>() { CallBase = true };
         mockStatePart.Setup(x => x.MessageAddingAsync(It.IsAny<string>(), It.IsAny<ChatMessage>(), It.IsAny<CancellationToken>()));
-        mockStatePart.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContextPart());
+        mockStatePart.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContext());
 
         var agent = this.Fixture.Agent;
 
@@ -35,7 +35,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
 
         try
         {
-            agentThread.AIContextBehaviors.Add(mockStatePart.Object);
+            agentThread.AIContextProviders.Add(mockStatePart.Object);
 
             // Act
             var inputMessage = "What is the capital of France?";
@@ -58,9 +58,9 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     public virtual async Task StatePartReceivesMessagesFromAgentWhenStreamingAsync()
     {
         // Arrange
-        var mockStatePart = new Mock<AIContextBehavior>() { CallBase = true };
+        var mockStatePart = new Mock<AIContextProvider>() { CallBase = true };
         mockStatePart.Setup(x => x.MessageAddingAsync(It.IsAny<string>(), It.IsAny<ChatMessage>(), It.IsAny<CancellationToken>()));
-        mockStatePart.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContextPart());
+        mockStatePart.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContext());
 
         var agent = this.Fixture.Agent;
 
@@ -68,7 +68,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
 
         try
         {
-            agentThread.AIContextBehaviors.Add(mockStatePart.Object);
+            agentThread.AIContextProviders.Add(mockStatePart.Object);
 
             // Act
             var inputMessage = "What is the capital of France?";
@@ -92,8 +92,8 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     public virtual async Task StatePartPreInvokeStateIsUsedByAgentAsync()
     {
         // Arrange
-        var mockStatePart = new Mock<AIContextBehavior>() { CallBase = true };
-        mockStatePart.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContextPart { Instructions = "User name is Caoimhe" });
+        var mockStatePart = new Mock<AIContextProvider>() { CallBase = true };
+        mockStatePart.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContext { Instructions = "User name is Caoimhe" });
 
         var agent = this.Fixture.Agent;
 
@@ -101,7 +101,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
 
         try
         {
-            agentThread.AIContextBehaviors.Add(mockStatePart.Object);
+            agentThread.AIContextProviders.Add(mockStatePart.Object);
 
             // Act
             var inputMessage = "What is my name?.";
@@ -122,8 +122,8 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
     public virtual async Task StatePartPreInvokeStateIsUsedByAgentWhenStreamingAsync()
     {
         // Arrange
-        var mockStatePart = new Mock<AIContextBehavior>() { CallBase = true };
-        mockStatePart.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContextPart { Instructions = "User name is Caoimhe" });
+        var mockStatePart = new Mock<AIContextProvider>() { CallBase = true };
+        mockStatePart.Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AIContext { Instructions = "User name is Caoimhe" });
 
         var agent = this.Fixture.Agent;
 
@@ -131,7 +131,7 @@ public abstract class AgentWithStatePartTests<TFixture>(Func<TFixture> createAge
 
         try
         {
-            agentThread.AIContextBehaviors.Add(mockStatePart.Object);
+            agentThread.AIContextProviders.Add(mockStatePart.Object);
 
             // Act
             var inputMessage = "What is my name?.";

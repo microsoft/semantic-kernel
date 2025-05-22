@@ -12,16 +12,16 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
-/// Tests for the AggregateAIContextBehaviorExtensions class.
+/// Tests for the AggregateAIContextProviderExtensions class.
 /// </summary>
-public class AggregateAIContextBehaviorExtensionsTests
+public class AggregateAIContextProviderExtensionsTests
 {
     [Fact]
     public async Task OnNewMessageShouldConvertMessageAndInvokeRegisteredPartsAsync()
     {
         // Arrange
-        var manager = new AggregateAIContextBehavior();
-        var partMock = new Mock<AIContextBehavior>();
+        var manager = new AggregateAIContextProvider();
+        var partMock = new Mock<AIContextProvider>();
         manager.Add(partMock.Object);
 
         var newMessage = new ChatMessageContent(AuthorRole.User, "Test Message");
@@ -37,8 +37,8 @@ public class AggregateAIContextBehaviorExtensionsTests
     public async Task OnAIInvocationShouldConvertMessagesInvokeRegisteredPartsAsync()
     {
         // Arrange
-        var manager = new AggregateAIContextBehavior();
-        var partMock = new Mock<AIContextBehavior>();
+        var manager = new AggregateAIContextProvider();
+        var partMock = new Mock<AIContextProvider>();
         manager.Add(partMock.Object);
 
         var messages = new List<ChatMessageContent>
@@ -49,7 +49,7 @@ public class AggregateAIContextBehaviorExtensionsTests
 
         partMock
             .Setup(x => x.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new AIContextPart { Instructions = "Combined Context" });
+            .ReturnsAsync(new AIContext { Instructions = "Combined Context" });
 
         // Act
         var result = await manager.ModelInvokingAsync(messages);

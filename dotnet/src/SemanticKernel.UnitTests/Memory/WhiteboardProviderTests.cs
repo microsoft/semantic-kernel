@@ -11,11 +11,11 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.Memory;
 
-public class WhiteboardBehaviorTests
+public class WhiteboardProviderTests
 {
     private readonly Mock<IChatClient> _mockChatClient;
 
-    public WhiteboardBehaviorTests()
+    public WhiteboardProviderTests()
     {
         this._mockChatClient = new Mock<IChatClient>();
     }
@@ -24,7 +24,7 @@ public class WhiteboardBehaviorTests
     public async Task ShouldInvokeAIAndReturnWhiteboardMessagesInContextAsync()
     {
         // Arrange
-        var sut = new WhiteboardBehavior(this._mockChatClient.Object);
+        var sut = new WhiteboardProvider(this._mockChatClient.Object);
         var chatMessage = new ChatMessage(ChatRole.User, "I want to create a presentation");
 
         this._mockChatClient

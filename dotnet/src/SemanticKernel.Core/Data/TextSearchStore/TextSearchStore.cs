@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// with the <see cref="VectorStoreTextSearch{TRecord}"/> class instead.
 /// </para>
 /// <para>
-/// This class can also be used with the <see cref="TextSearchBehavior"/> to easily add RAG capabilities to an Agent.
+/// This class can also be used with the <see cref="TextSearchProvider"/> to easily add RAG capabilities to an Agent.
 /// </para>
 /// </remarks>
 /// <typeparam name="TKey">The key type to use with the vector store. Choose a key type supported by your chosen vector store type. Currently this class only supports string or Guid.</typeparam>

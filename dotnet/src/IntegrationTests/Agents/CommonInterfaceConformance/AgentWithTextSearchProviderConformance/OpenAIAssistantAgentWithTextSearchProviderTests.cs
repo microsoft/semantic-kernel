@@ -4,6 +4,6 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithTextSearchBehaviorConformance;
 
-public class AzureAIAgentWithTextSearchBehaviorTests(ITestOutputHelper output) : AgentWithTextSearchBehavior<AzureAIAgentFixture>(() => new AzureAIAgentFixture(), output)
+public class OpenAIAssistantAgentWithTextSearchProviderTests(ITestOutputHelper output) : AgentWithTextSearchProvider<OpenAIAssistantAgentFixture>(() => new OpenAIAssistantAgentFixture(), output)
 {
 }

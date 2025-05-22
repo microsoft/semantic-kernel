@@ -105,7 +105,7 @@ internal static class AssistantThreadActions
     /// <param name="client">The assistant client</param>
     /// <param name="threadId">The thread identifier</param>
     /// <param name="invocationOptions">Options to utilize for the invocation</param>
-    /// <param name="behaviorsContext">Additional context from <see cref="AIContextBehavior"/> instances to pass to the invoke method.</param>
+    /// <param name="providersAdditionalInstructions">Additional instructions from <see cref="AIContextProvider"/> instances to pass to the invoke method.</param>
     /// <param name="logger">The logger to utilize (might be agent or channel scoped)</param>
     /// <param name="kernel">The <see cref="Kernel"/> plugins and other state.</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
@@ -116,7 +116,7 @@ internal static class AssistantThreadActions
         AssistantClient client,
         string threadId,
         RunCreationOptions? invocationOptions,
-        string? behaviorsContext,
+        string? providersAdditionalInstructions,
         ILogger logger,
         Kernel kernel,
         KernelArguments? arguments,
@@ -135,7 +135,7 @@ internal static class AssistantThreadActions
 
         string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.RunOptions, instructions, invocationOptions, behaviorsContext);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.RunOptions, instructions, invocationOptions, providersAdditionalInstructions);
 
         options.ToolsOverride.AddRange(tools);
 
@@ -337,7 +337,7 @@ internal static class AssistantThreadActions
     /// <param name="threadId">The thread identifier</param>
     /// <param name="messages">The receiver for the completed messages generated</param>
     /// <param name="invocationOptions">Options to utilize for the invocation</param>
-    /// <param name="behaviorsContext">Additional context from <see cref="AIContextBehavior"/> instances to pass to the invoke method.</param>
+    /// <param name="providersAdditionalInstructions">Additional instructions from <see cref="AIContextProvider"/> instances to pass to the invoke method.</param>
     /// <param name="logger">The logger to utilize (might be agent or channel scoped)</param>
     /// <param name="kernel">The <see cref="Kernel"/> plugins and other state.</param>
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
@@ -353,7 +353,7 @@ internal static class AssistantThreadActions
         string threadId,
         IList<ChatMessageContent>? messages,
         RunCreationOptions? invocationOptions,
-        string? behaviorsContext,
+        string? providersAdditionalInstructions,
         ILogger logger,
         Kernel kernel,
         KernelArguments? arguments,
@@ -365,7 +365,7 @@ internal static class AssistantThreadActions
 
         string? instructions = await agent.GetInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.RunOptions, instructions, invocationOptions, behaviorsContext);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(agent.RunOptions, instructions, invocationOptions, providersAdditionalInstructions);
 
         options.ToolsOverride.AddRange(tools);
 
