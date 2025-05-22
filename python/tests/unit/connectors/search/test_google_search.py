@@ -5,13 +5,13 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import HTTPStatusError, RequestError, Response
 
-from semantic_kernel.connectors.search.google.google_search import GoogleSearch
-from semantic_kernel.connectors.search.google.google_search_response import (
+from semantic_kernel.connectors.search.google import (
+    GoogleSearch,
     GoogleSearchInformation,
     GoogleSearchResponse,
+    GoogleSearchResult,
 )
-from semantic_kernel.connectors.search.google.google_search_result import GoogleSearchResult
-from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, TextSearchOptions
+from semantic_kernel.data.text_search import TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 
@@ -37,10 +37,8 @@ async def test_google_search_init_validation_error(google_search_unit_test_env) 
 
 async def test_google_search_top_greater_than_10_raises_error(google_search) -> None:
     """Test that passing a top value greater than 10 raises ServiceInvalidRequestError."""
-    options = TextSearchOptions()
-    options.top = 11  # Invalid
     with pytest.raises(ServiceInvalidRequestError) as exc:
-        await google_search.search(query="test query", options=options)
+        await google_search.search(query="test query", top=11)
     assert "count value must be less than or equal to 10." in str(exc.value)
 
 
@@ -109,7 +107,7 @@ async def test_get_text_search_results(google_search) -> None:
     mock_response = GoogleSearchResponse(items=[item_1, item_2])
 
     with patch.object(google_search, "_inner_search", new=AsyncMock(return_value=mock_response)):
-        result = await google_search.get_text_search_results("test")
+        result = await google_search.search("test", output_type=TextSearchResult)
         items = [item async for item in result.results]
         assert len(items) == 2
         assert items[0].name == "Title1"
@@ -127,24 +125,11 @@ async def test_get_search_results(google_search) -> None:
     mock_response = GoogleSearchResponse(items=[item_1, item_2])
 
     with patch.object(google_search, "_inner_search", new=AsyncMock(return_value=mock_response)):
-        result = await google_search.get_search_results("test")
+        result = await google_search.search("test", output_type="Any")
         items = [item async for item in result.results]
         assert len(items) == 2
         assert items[0].title == "Title1"
         assert items[1].link == "Link2"
-
-
-async def test_build_query_equal_to_filter(google_search) -> None:
-    """Test that if an EqualTo filter is recognized, it is sent along in query params."""
-    filters = [
-        EqualTo(field_name="lr", value="lang_en"),
-        AnyTagsEqualTo(field_name="tags", value="tag1"),
-    ]  # second one is not recognized
-    options = TextSearchOptions()
-    options.filter.filters = filters
-
-    with patch.object(google_search, "_inner_search", new=AsyncMock(return_value=GoogleSearchResponse())):
-        await google_search.search(query="hello world", options=options)
 
 
 async def test_google_search_includes_total_count(google_search) -> None:
@@ -155,11 +140,47 @@ async def test_google_search_includes_total_count(google_search) -> None:
     mock_response = GoogleSearchResponse(search_information=search_info, items=None)
 
     with patch.object(google_search, "_inner_search", new=AsyncMock(return_value=mock_response)):
-        options = TextSearchOptions()
-        options.include_total_count = True  # not standard, so we'll set it dynamically
-        result = await google_search.search(query="test query", options=options)
+        result = await google_search.search(query="test query", include_total_count=True)
         assert result.total_count == 42
         # if we set it to false, total_count should be None
-        options.include_total_count = False
-        result_no_count = await google_search.search(query="test query", options=options)
+        result_no_count = await google_search.search(query="test query", include_total_count=False)
         assert result_no_count.total_count is None
+
+
+@pytest.mark.parametrize(
+    "filter_lambda,expected",
+    [
+        ("lambda x: x.cr == 'US'", [{"cr": "US"}]),
+        ("lambda x: x.dateRestrict == 'd7'", [{"dateRestrict": "d7"}]),
+        ("lambda x: x.fileType == 'pdf'", [{"fileType": "pdf"}]),
+        ("lambda x: x.lr == 'lang_en'", [{"lr": "lang_en"}]),
+        ("lambda x: x.orTerms == 'foo bar'", [{"orTerms": "foo+bar"}]),
+        ("lambda x: x.siteSearch == 'example.com'", [{"siteSearch": "example.com"}]),
+        ("lambda x: x.siteSearchFilter == 'e'", [{"siteSearchFilter": "e"}]),
+        ("lambda x: x.rights == 'cc_publicdomain'", [{"rights": "cc_publicdomain"}]),
+        ("lambda y: y.rights == 'cc_publicdomain'", [{"rights": "cc_publicdomain"}]),
+        ("lambda x: x.hl == 'en'", [{"hl": "en"}]),
+        ("lambda x: x.filter == '1'", [{"filter": "1"}]),
+        ("lambda x: x.cr == 'US' and x.lr == 'lang_en'", [{"cr": "US"}, {"lr": "lang_en"}]),
+        (lambda x: x.cr == "US" and x.lr == "lang_en", [{"cr": "US"}, {"lr": "lang_en"}]),
+        ("x.cr == 'US'", [{"cr": "US"}]),
+    ],
+)
+def test_parse_filter_lambda_valid(google_search, filter_lambda, expected):
+    assert google_search._parse_filter_lambda(filter_lambda) == expected
+
+
+@pytest.mark.parametrize(
+    "filter_lambda,exception_type",
+    [
+        ("lambda x: x.cr != 'US'", NotImplementedError),
+        ("lambda x: x.cr == y", NotImplementedError),
+        ("lambda x: x.cr == None", NotImplementedError),
+        ("lambda x: x.cr > 'US'", NotImplementedError),
+        ("lambda x: x.unknown == 'foo'", ValueError),
+        ("lambda x: x.cr == 'US' or x.lr == 'lang_en'", NotImplementedError),
+    ],
+)
+def test_parse_filter_lambda_invalid(google_search, filter_lambda, exception_type):
+    with pytest.raises(exception_type):
+        google_search._parse_filter_lambda(filter_lambda)

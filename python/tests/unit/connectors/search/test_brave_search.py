@@ -6,7 +6,7 @@ import httpx
 import pytest
 
 from semantic_kernel.connectors.search.brave import BraveSearch, BraveSearchResponse, BraveWebPage, BraveWebPages
-from semantic_kernel.data.text_search import KernelSearchResults, SearchFilter, TextSearchOptions, TextSearchResult
+from semantic_kernel.data.text_search import KernelSearchResults, SearchOptions, TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 
@@ -80,8 +80,7 @@ async def test_search_success(brave_unit_test_env, async_client_mock):
         patch.object(BraveSearchResponse, "model_validate_json", return_value=mock_response),
     ):
         search_instance = BraveSearch()
-        options = TextSearchOptions(include_total_count=True)
-        kernel_results: KernelSearchResults[str] = await search_instance.search("Test query", options)
+        kernel_results: KernelSearchResults[str] = await search_instance.search("Test query", include_total_count=True)
 
     # Assert
     results_list = []
@@ -146,12 +145,10 @@ async def test_search_generic_exception(brave_unit_test_env, async_client_mock):
 
 async def test_validate_options_raises_error_for_large_top(brave_search):
     """Test that _validate_options raises ServiceInvalidRequestError when top >= 21."""
-    # Arrange
-    options = TextSearchOptions(top=21)
 
     # Act / Assert
     with pytest.raises(ServiceInvalidRequestError) as exc_info:
-        await brave_search.search("test", options)
+        await brave_search.search("test", top=21)
     assert "count value must be less than 21." in str(exc_info.value)
 
 
@@ -178,9 +175,8 @@ async def test_get_text_search_results_success(brave_unit_test_env, async_client
         patch.object(BraveSearchResponse, "model_validate_json", return_value=mock_response),
     ):
         search_instance = BraveSearch()
-        options = TextSearchOptions(include_total_count=True)
-        kernel_results: KernelSearchResults[TextSearchResult] = await search_instance.get_text_search_results(
-            "Test query", options
+        kernel_results: KernelSearchResults[TextSearchResult] = await search_instance.search(
+            "Test query", include_total_count=True, output_type=TextSearchResult
         )
 
     # Assert
@@ -218,8 +214,7 @@ async def test_get_search_results_success(brave_unit_test_env, async_client_mock
     ):
         # Act
         search_instance = BraveSearch()
-        options = TextSearchOptions(include_total_count=True)
-        kernel_results = await search_instance.get_search_results("Another query", options)
+        kernel_results = await search_instance.search("Another query", include_total_count=True, output_type="Any")
 
     # Assert
     results_list = []
@@ -237,10 +232,10 @@ async def test_get_search_results_success(brave_unit_test_env, async_client_mock
 async def test_search_no_filter(brave_search, async_client_mock, mock_brave_search_response):
     """Test that search properly sets params when no filter is provided."""
     # Arrange
-    options = TextSearchOptions()
+    options = SearchOptions()
 
     # Act
-    await brave_search.search("test query", options)
+    await brave_search.search("test query")
 
     # Assert
     params = async_client_mock.get.call_args.kwargs["params"]
@@ -252,39 +247,38 @@ async def test_search_no_filter(brave_search, async_client_mock, mock_brave_sear
     assert params["q"] == "test query"
 
 
-async def test_search_equal_to_filter(brave_search, async_client_mock, mock_brave_search_response):
-    """Test that search properly sets params with an EqualTo filter."""
-
-    # Arrange
-    my_filter = SearchFilter.equal_to(field_name="spellcheck", value=True)
-    options = TextSearchOptions(filter=my_filter)
-
-    # Act
-    await brave_search.search("test query", options)
-
-    # Assert
-    params = async_client_mock.get.call_args.kwargs["params"]
-
-    assert params["count"] == options.top
-    assert params["offset"] == options.skip
-    # 'spellcheck' is recognized in QUERY_PARAMETERS, so 'spellcheck' should be set
-    assert "spellcheck" in params
-    assert params["spellcheck"]
-
-    assert params["q"] == "test query"
+@pytest.mark.parametrize(
+    "filter_lambda,expected",
+    [
+        ("lambda x: x.country == 'US'", [{"country": "US"}]),
+        ("lambda x: x.search_lang == 'en'", [{"search_lang": "en"}]),
+        ("lambda x: x.ui_lang == 'fr'", [{"ui_lang": "fr"}]),
+        ("lambda x: x.safesearch == 'strict'", [{"safesearch": "strict"}]),
+        ("lambda x: x.text_decorations == '1'", [{"text_decorations": "1"}]),
+        ("lambda x: x.spellcheck == '0'", [{"spellcheck": "0"}]),
+        ("lambda x: x.result_filter == 'web'", [{"result_filter": "web"}]),
+        ("lambda x: x.units == 'metric'", [{"units": "metric"}]),
+        ("lambda x: x.country == 'US' and x.ui_lang == 'fr'", [{"country": "US"}, {"ui_lang": "fr"}]),
+        (lambda x: x.country == "US" and x.ui_lang == "fr", [{"country": "US"}, {"ui_lang": "fr"}]),
+    ],
+)
+def test_parse_filter_lambda_valid(brave_search, filter_lambda, expected):
+    assert brave_search._parse_filter_lambda(filter_lambda) == expected
 
 
-async def test_search_not_recognized_filter(brave_search, async_client_mock, mock_brave_search_response):
-    """Test that search properly appends non-recognized filters to the q parameter."""
-
-    # Arrange
-    # 'customProperty' is presumably not in QUERY_PARAMETERS
-    my_filter = SearchFilter.equal_to(field_name="customProperty", value="customValue")
-    options = TextSearchOptions(filter=my_filter)
-
-    # Act
-    with pytest.raises(ServiceInvalidRequestError) as exc_info:
-        await brave_search.search("test query", options)
-
-    # Assert
-    assert "Observed an unwanted parameter named customProperty with value customValue ." in str(exc_info.value)
+@pytest.mark.parametrize(
+    "filter_lambda,exception_type",
+    [
+        ("lambda x: x.country != 'US'", NotImplementedError),
+        ("lambda x: x.country == y", NotImplementedError),
+        ("lambda x: x.country == None", NotImplementedError),
+        ("lambda x: x.country > 'US'", NotImplementedError),
+        ("lambda x: x.unknown == 'foo'", ValueError),
+        ("lambda x: x.country == 'US' or x.ui_lang == 'fr'", NotImplementedError),
+        ("lambda x: x.cr == 'US'", ValueError),  # not in Brave QUERY_PARAMETERS
+        ("lambda x: x.lr == 'lang_en'", ValueError),  # not in Brave QUERY_PARAMETERS
+    ],
+)
+def test_parse_filter_lambda_invalid(brave_search, filter_lambda, exception_type):
+    with pytest.raises(exception_type):
+        brave_search._parse_filter_lambda(filter_lambda)
