@@ -458,7 +458,7 @@ class TestVectorStore(VectorStoreTestBase):
                 ) as collection,
             ):
                 try:
-                    await collection.delete_collection()
+                    await collection.ensure_collection_deleted()
                 except Exception as exc:
                     logger.warning(f"Failed to delete collection: {exc}")
 
@@ -479,7 +479,7 @@ class TestVectorStore(VectorStoreTestBase):
                 assert result is None
 
                 try:
-                    await collection.delete_collection()
+                    await collection.ensure_collection_deleted()
                 except Exception as exc:
                     pytest.fail(f"Failed to delete collection: {exc}")
         except MemoryConnectorConnectionException as exc:

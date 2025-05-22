@@ -240,7 +240,7 @@ async def test_does_collection_exist(collection):
 
 
 async def test_delete_collection(collection):
-    await collection.delete_collection()
+    await collection.ensure_collection_deleted()
 
 
 @mark.parametrize(

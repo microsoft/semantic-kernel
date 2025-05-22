@@ -63,9 +63,9 @@ async def test_collection_operations(vector_store_record_collection):
     record = {"id": "id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     await vector_store_record_collection.upsert(record)
     assert len(vector_store_record_collection.inner_storage) == 1
-    await vector_store_record_collection.delete_collection()
+    await vector_store_record_collection.ensure_collection_deleted()
     assert vector_store_record_collection.inner_storage == {}
-    await vector_store_record_collection.create_collection_if_not_exists()
+    await vector_store_record_collection.ensure_collection_exists()
 
 
 async def test_collection_create_if_not_exists(DictVectorStoreRecordCollection, definition):
@@ -77,7 +77,7 @@ async def test_collection_create_if_not_exists(DictVectorStoreRecordCollection, 
         record_type=dict,
         definition=definition,
     )
-    await vector_store_record_collection.create_collection_if_not_exists()
+    await vector_store_record_collection.ensure_collection_exists()
     create_mock.assert_called_once()
 
 
@@ -276,7 +276,7 @@ async def test_get_fail_multiple(DictVectorStoreRecordCollection, definition):
     await vector_store_record_collection.upsert(record)
     assert len(vector_store_record_collection.inner_storage) == 1
     with (
-        patch("semantic_kernel.data.vector_storage.VectorStoreRecordCollection.deserialize") as deserialize_mock,
+        patch("semantic_kernel.data.vectors.VectorStoreRecordCollection.deserialize") as deserialize_mock,
         raises(
             VectorStoreModelDeserializationException, match="Error deserializing record, multiple records returned:"
         ),

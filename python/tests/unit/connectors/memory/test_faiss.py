@@ -85,7 +85,7 @@ async def test_create_collection_custom(store, data_model_def):
     assert collection.indexes["vector"] is not None
     assert collection.indexes["vector"] == index
     assert collection.indexes["vector"].is_trained is True
-    await collection.delete_collection()
+    await collection.ensure_collection_deleted()
 
 
 async def test_create_collection_custom_untrained(store, data_model_def):
@@ -104,7 +104,7 @@ async def test_create_collection_custom_dict(store, data_model_def):
     assert collection.indexes
     assert collection.indexes["vector"] is not None
     assert collection.indexes["vector"] == index
-    await collection.delete_collection()
+    await collection.ensure_collection_deleted()
 
 
 async def test_upsert(faiss_collection):
@@ -113,7 +113,7 @@ async def test_upsert(faiss_collection):
     key = await faiss_collection.upsert(record)
     assert key == "testid"
     assert faiss_collection.inner_storage == {"testid": record}
-    await faiss_collection.delete_collection()
+    await faiss_collection.ensure_collection_deleted()
 
 
 async def test_get(faiss_collection):
@@ -123,14 +123,14 @@ async def test_get(faiss_collection):
     result = await faiss_collection.get("testid")
     assert result["id"] == record["id"]
     assert result["content"] == record["content"]
-    await faiss_collection.delete_collection()
+    await faiss_collection.ensure_collection_deleted()
 
 
 async def test_get_missing(faiss_collection):
     await faiss_collection.create_collection()
     result = await faiss_collection.get("testid")
     assert result is None
-    await faiss_collection.delete_collection()
+    await faiss_collection.ensure_collection_deleted()
 
 
 async def test_delete(faiss_collection):
@@ -139,14 +139,14 @@ async def test_delete(faiss_collection):
     await faiss_collection.upsert(record)
     await faiss_collection.delete("testid")
     assert faiss_collection.inner_storage == {}
-    await faiss_collection.delete_collection()
+    await faiss_collection.ensure_collection_deleted()
 
 
 async def test_does_collection_exist(faiss_collection):
     assert await faiss_collection.does_collection_exist() is False
     await faiss_collection.create_collection()
     assert await faiss_collection.does_collection_exist() is True
-    await faiss_collection.delete_collection()
+    await faiss_collection.ensure_collection_deleted()
 
 
 async def test_delete_collection(faiss_collection):
@@ -154,7 +154,7 @@ async def test_delete_collection(faiss_collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await faiss_collection.upsert(record)
     assert faiss_collection.inner_storage == {"testid": record}
-    await faiss_collection.delete_collection()
+    await faiss_collection.ensure_collection_deleted()
     assert faiss_collection.inner_storage == {}
 
 
@@ -178,4 +178,4 @@ async def test_create_collection_and_search(faiss_collection, dist):
     async for res in results.results:
         assert res.record == record1 if idx == 0 else record2
         idx += 1
-    await faiss_collection.delete_collection()
+    await faiss_collection.ensure_collection_deleted()

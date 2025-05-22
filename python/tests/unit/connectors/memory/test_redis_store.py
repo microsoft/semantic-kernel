@@ -287,8 +287,8 @@ async def test_does_collection_exist_false(collection_hash, mock_does_collection
 
 
 async def test_delete_collection(collection_hash, mock_delete_collection):
-    await collection_hash.delete_collection()
-    await collection_hash.delete_collection()
+    await collection_hash.ensure_collection_deleted()
+    await collection_hash.ensure_collection_deleted()
 
 
 async def test_create_index(collection_hash, mock_create_collection):

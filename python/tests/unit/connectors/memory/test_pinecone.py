@@ -196,7 +196,7 @@ async def test_create_collection_integrated(collection, mock_create_index_for_mo
 
 async def test_delete_collection(collection):
     # Test deleting the collection
-    await collection.delete_collection()
+    await collection.ensure_collection_deleted()
     assert collection.index is None
     assert collection.index_client is None
 

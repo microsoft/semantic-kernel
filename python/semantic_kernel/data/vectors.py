@@ -958,7 +958,7 @@ class VectorStore(KernelBaseModel):
         except VectorStoreOperationException:
             return False
 
-    async def delete_collection(self, collection_name: str) -> None:
+    async def ensure_collection_deleted(self, collection_name: str) -> None:
         """Delete a collection.
 
         This is a wrapper around the get_collection method of a collection,

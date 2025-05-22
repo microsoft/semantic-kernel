@@ -72,7 +72,7 @@ async def test_chroma_collection_create_collection(chroma_collection, mock_clien
 
 
 async def test_chroma_collection_delete_collection(chroma_collection, mock_client):
-    await chroma_collection.delete_collection()
+    await chroma_collection.ensure_collection_deleted()
     mock_client.delete_collection.assert_called_once_with(name="test_collection")
 
 

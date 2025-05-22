@@ -229,7 +229,7 @@ async def test_does_collection_exist(collection, mock_list_collection_names):
 
 
 async def test_delete_collection(collection, mock_delete_collection):
-    await collection.delete_collection()
+    await collection.ensure_collection_deleted()
 
 
 async def test_create_index_from_index(collection, mock_create_collection):
@@ -285,7 +285,7 @@ async def test_vector_store_does_collection_exists(vector_store, mock_list_colle
 
 async def test_vector_store_delete_collection(vector_store, mock_delete_collection):
     assert vector_store.search_index_client is not None
-    await vector_store.delete_collection("test")
+    await vector_store.ensure_collection_deleted("test")
     mock_delete_collection.assert_called_once()
 
 

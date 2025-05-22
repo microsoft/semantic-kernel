@@ -131,7 +131,7 @@ async def cleanup(record_collection):
         print("Skipping deletion.")
         return
     print_with_color("Deleting collection!", Colors.CBLUE)
-    await record_collection.delete_collection()
+    await record_collection.ensure_collection_deleted()
     print_with_color("Done!", Colors.CGREY)
 
 

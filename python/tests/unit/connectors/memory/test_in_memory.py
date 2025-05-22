@@ -60,7 +60,7 @@ async def test_delete_collection(collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await collection.upsert(record)
     assert collection.inner_storage == {"testid": record}
-    await collection.delete_collection()
+    await collection.ensure_collection_deleted()
     assert collection.inner_storage == {}
 
 

@@ -85,7 +85,7 @@ async def main():
     ) as record_collection:
         # Create the collection after wiping it
         print_with_color("Creating test collection!", Colors.CGREY)
-        await record_collection.delete_collection()
+        await record_collection.ensure_collection_deleted()
         await record_collection.create_collection_if_not_exists()
 
         # First add vectors to the records
@@ -130,7 +130,7 @@ async def main():
 
         # lets cleanup!
         print_with_color("Deleting collection!", Colors.CBLUE)
-        await record_collection.delete_collection()
+        await record_collection.ensure_collection_deleted()
         print_with_color("Done!", Colors.CGREY)
 
 
