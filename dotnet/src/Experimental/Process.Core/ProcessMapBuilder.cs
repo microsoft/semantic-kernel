@@ -17,7 +17,7 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
     /// </summary>
     /// <param name="mapOperation">The target of the map operation.  May target a step or process</param>
     internal ProcessMapBuilder(ProcessStepBuilder mapOperation)
-        : base($"Map{mapOperation.Name}", mapOperation.ProcessBuilder)
+        : base($"Map{mapOperation.StepId}", mapOperation.ProcessBuilder)
     {
         this.MapOperation = mapOperation;
     }
@@ -79,7 +79,7 @@ public sealed class ProcessMapBuilder : ProcessStepBuilder
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
         // Define the map state
-        KernelProcessMapState state = new(this.Name, this.Version, this.Id);
+        KernelProcessMapState state = new(this.StepId, this.Version, this.StepId);
 
         return new KernelProcessMap(state, this.MapOperation.BuildStep(processBuilder), builtEdges);
     }

@@ -18,14 +18,10 @@ public abstract class ProcessStepBuilder
     #region Public Interface
 
     /// <summary>
-    /// The unique identifier for the step. This may be null until the step is run within a process.
+    /// The unique identifier for the step within a process. A process cannot have two steps with the same stepId.
+    /// This can be human-readable but is required to be unique within the process.
     /// </summary>
-    public string Id { get; }
-
-    /// <summary>
-    /// The name of the step. This is intended to be a human-readable name and is not required to be unique.
-    /// </summary>
-    public string Name { get; }
+    public string StepId { get; }
 
     /// <summary>
     /// Alternative names that have been used to previous versions of the step
@@ -78,7 +74,7 @@ public abstract class ProcessStepBuilder
             eventName = this.GetFunctionResultEventId(functionName);
         }
 
-        return $"{this.Id}.{eventName}";
+        return $"{this.StepId}.{eventName}";
     }
 
     /// <summary>
@@ -159,11 +155,11 @@ public abstract class ProcessStepBuilder
     {
         if (this.FunctionsDict.Count == 0)
         {
-            throw new KernelException($"The step {this.Name} has no functions.");
+            throw new KernelException($"The step {this.StepId} has no functions.");
         }
         else if (this.FunctionsDict.Count > 1)
         {
-            throw new KernelException($"The step {this.Name} has more than one function, so a function name must be provided.");
+            throw new KernelException($"The step {this.StepId} has more than one function, so a function name must be provided.");
         }
 
         return this.FunctionsDict.Keys.First();
@@ -201,7 +197,7 @@ public abstract class ProcessStepBuilder
 
         if (this.FunctionsDict.Count == 0)
         {
-            throw new KernelException($"The target step {this.Name} has no functions.");
+            throw new KernelException($"The target step {this.StepId} has no functions.");
         }
 
         // If the function name is null or whitespace, then there can only one function on the step
@@ -218,7 +214,7 @@ public abstract class ProcessStepBuilder
         // Verify that the target function exists
         if (!this.FunctionsDict.TryGetValue(verifiedFunctionName!, out var kernelFunctionMetadata) || kernelFunctionMetadata is null)
         {
-            throw new KernelException($"The function {functionName} does not exist on step {this.Name}");
+            throw new KernelException($"The function {functionName} does not exist on step {this.StepId}");
         }
 
         // If the parameter name is null or whitespace, then the function must have 0 or 1 parameters
@@ -243,7 +239,7 @@ public abstract class ProcessStepBuilder
         Verify.NotNull(verifiedFunctionName);
 
         return new KernelProcessFunctionTarget(
-            stepId: this.Id!,
+            stepId: this.StepId!,
             functionName: verifiedFunctionName,
             parameterName: verifiedParameterName
         );
@@ -275,10 +271,10 @@ public abstract class ProcessStepBuilder
     {
         Verify.NotNullOrWhiteSpace(id, nameof(id));
 
-        this.Id ??= id;
-        this.Name = id;
+        this.StepId ??= id;
+        this.StepId = id;
         this.FunctionsDict = [];
-        this._eventNamespace = this.Id;
+        this._eventNamespace = this.StepId;
         this.Edges = new Dictionary<string, List<ProcessStepEdgeBuilder>>(StringComparer.OrdinalIgnoreCase);
         this.ProcessBuilder = processBuilder;
     }
@@ -335,17 +331,17 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
             // If the step has a user-defined state then we need to validate that the initial state is of the correct type.
             if (this._initialState is not null && this._initialState.GetType() != userStateType)
             {
-                throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
+                throw new KernelException($"The initial state provided for step {this.StepId} is not of the correct type. The expected type is {userStateType.Name}.");
             }
 
             var initialState = this._initialState ?? Activator.CreateInstance(userStateType);
-            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, stepMetadataAttributes.Version, null);
+            stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.StepId, stepMetadataAttributes.Version, null);
             stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, initialState);
         }
         else
         {
             // The step is a KernelProcessStep with no user-defined state, so we can use the base KernelProcessStepState.
-            stateObject = new KernelProcessStepState(this.Name, stepMetadataAttributes.Version);
+            stateObject = new KernelProcessStepState(this.StepId, stepMetadataAttributes.Version);
         }
 
         Verify.NotNull(stateObject);

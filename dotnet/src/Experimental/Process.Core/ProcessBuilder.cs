@@ -153,7 +153,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     private bool StepNameAlreadyExists(string stepName)
     {
-        return this._steps.Select(step => step.Name).Contains(stepName);
+        return this._steps.Select(step => step.StepId).Contains(stepName);
     }
 
     /// <summary>
@@ -161,9 +161,9 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     private TBuilder AddStep<TBuilder>(TBuilder builder, IReadOnlyList<string>? aliases) where TBuilder : ProcessStepBuilder
     {
-        if (this.StepNameAlreadyExists(builder.Name))
+        if (this.StepNameAlreadyExists(builder.StepId))
         {
-            throw new InvalidOperationException($"Step name {builder.Name} is already used, assign a different name for step");
+            throw new InvalidOperationException($"Step name {builder.StepId} is already used, assign a different name for step");
         }
 
         if (aliases != null && aliases.Count > 0)
@@ -496,12 +496,12 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
 
         if (!this._externalEventTargetMap.TryGetValue(eventId, out var target))
         {
-            throw new KernelException($"The process named '{this.Name}' does not expose an event with Id '{eventId}'.");
+            throw new KernelException($"The process named '{this.StepId}' does not expose an event with Id '{eventId}'.");
         }
 
         if (target is not ProcessFunctionTargetBuilder functionTargetBuilder)
         {
-            throw new KernelException($"The process named '{this.Name}' does not expose an event with Id '{eventId}'.");
+            throw new KernelException($"The process named '{this.StepId}' does not expose an event with Id '{eventId}'.");
         }
 
         // Targets for external events on a process should be scoped to the process itself rather than the step inside the process.
@@ -523,7 +523,7 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
         var builtSteps = this.BuildWithStateMetadata();
 
         // Create the process
-        KernelProcessState state = new(this.Name, version: this.Version);
+        KernelProcessState state = new(this.StepId, version: this.Version);
         KernelProcess process = new(state, builtSteps, builtEdges) { Threads = this._threads, UserStateType = this.StateType, Description = this.Description };
 
         return process;

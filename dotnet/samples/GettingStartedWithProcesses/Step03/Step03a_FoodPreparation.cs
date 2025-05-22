@@ -39,9 +39,9 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
         var process = FishSandwichProcess.CreateProcess();
 
         string mermaidGraph = process.ToMermaid(1);
-        Console.WriteLine($"=== Start - Mermaid Diagram for '{process.Name}' ===");
+        Console.WriteLine($"=== Start - Mermaid Diagram for '{process.StepId}' ===");
         Console.WriteLine(mermaidGraph);
-        Console.WriteLine($"=== End - Mermaid Diagram for '{process.Name}' ===");
+        Console.WriteLine($"=== End - Mermaid Diagram for '{process.StepId}' ===");
 
         await UsePrepareSpecificProductAsync(process, FishSandwichProcess.ProcessEvents.PrepareFishSandwich);
     }
@@ -67,10 +67,10 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
         Kernel kernel = CreateKernelWithChatCompletion();
 
         // Assert
-        Console.WriteLine($"=== Start SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== Start SK Process '{processBuilder.StepId}' ===");
         await ExecuteProcessWithStateAsync(processBuilder.Build(), kernel, null, externalTriggerEvent, "Order 1");
         await ExecuteProcessWithStateAsync(processBuilder.Build(), kernel, null, externalTriggerEvent, "Order 2");
-        Console.WriteLine($"=== End SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== End SK Process '{processBuilder.StepId}' ===");
     }
 
     /// <summary>
@@ -87,11 +87,11 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = processBuilder.Build();
 
-        Console.WriteLine($"=== Start SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== Start SK Process '{processBuilder.StepId}' ===");
         await ExecuteProcessWithStateAsync(kernelProcess, kernel, null, externalTriggerEvent, "Order 1");
         await ExecuteProcessWithStateAsync(kernelProcess, kernel, null, externalTriggerEvent, "Order 2");
         await ExecuteProcessWithStateAsync(kernelProcess, kernel, null, externalTriggerEvent, "Order 3");
-        Console.WriteLine($"=== End SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== End SK Process '{processBuilder.StepId}' ===");
     }
 
     [Fact]
@@ -103,11 +103,11 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
         Kernel kernel = CreateKernelWithChatCompletion();
         KernelProcess kernelProcess = processBuilder.Build();
 
-        Console.WriteLine($"=== Start SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== Start SK Process '{processBuilder.StepId}' ===");
         await ExecuteProcessWithStateAsync(kernelProcess, kernel, null, externalTriggerEvent, "Order 1");
         await ExecuteProcessWithStateAsync(kernelProcess, kernel, null, externalTriggerEvent, "Order 2");
         await ExecuteProcessWithStateAsync(kernelProcess, kernel, null, externalTriggerEvent, "Order 3");
-        Console.WriteLine($"=== End SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== End SK Process '{processBuilder.StepId}' ===");
     }
 
     private async Task<KernelProcess> ExecuteProcessWithStateAsync(KernelProcess process, Kernel kernel, IProcessStorageConnector? storageConnector, string externalTriggerEvent, string orderLabel = "Order 1", string? processId = null)
@@ -225,12 +225,12 @@ public class Step03a_FoodPreparation(ITestOutputHelper output) : BaseTest(output
         KernelProcess kernelProcess = processBuilder.Build();
 
         // Assert
-        Console.WriteLine($"=== Start SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== Start SK Process '{processBuilder.StepId}' ===");
         await using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent()
         {
             Id = externalTriggerEvent, Data = new List<string>()
         });
-        Console.WriteLine($"=== End SK Process '{processBuilder.Name}' ===");
+        Console.WriteLine($"=== End SK Process '{processBuilder.StepId}' ===");
     }
 
     // Step03a Utils for saving and loading SK Processes from/to repository

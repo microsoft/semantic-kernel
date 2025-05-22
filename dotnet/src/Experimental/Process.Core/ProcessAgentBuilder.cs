@@ -224,7 +224,7 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
                 OnError = this.OnErrorBuilder?.Build()
             });
 
-        var state = new KernelProcessStepState(this.Name, "1.0", this.Id);
+        var state = new KernelProcessStepState(this.StepId, "1.0", this.StepId);
 
         return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges, this.DefaultThreadName, this.Inputs) { AgentIdResolver = this.AgentIdResolver, HumanInLoopMode = this.HumanInLoopMode };
     }

@@ -24,8 +24,8 @@ public class ProcessStepBuilderTests
         var stepBuilder = new TestProcessStepBuilder(name);
 
         // Assert
-        Assert.Equal(name, stepBuilder.Name);
-        Assert.NotNull(stepBuilder.Id);
+        Assert.Equal(name, stepBuilder.StepId);
+        Assert.NotNull(stepBuilder.StepId);
         Assert.NotNull(stepBuilder.FunctionsDict);
         Assert.NotNull(stepBuilder.Edges);
     }
@@ -237,7 +237,7 @@ public class ProcessStepBuilderTests
 
         internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder)
         {
-            return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.Name, version: "v1", id: this.Id), []);
+            return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.StepId, version: "v1", id: this.StepId), []);
         }
 
         internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
