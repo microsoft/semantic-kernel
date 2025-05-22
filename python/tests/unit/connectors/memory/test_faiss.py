@@ -5,27 +5,27 @@ from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.memory.faiss import FaissCollection, FaissStore
 from semantic_kernel.data import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+    VectorStoreCollectionDefinition,
+    VectorStoreDataField,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
 )
 from semantic_kernel.data.const import DistanceFunction
 from semantic_kernel.exceptions import VectorStoreInitializationException
 
 
 @fixture(scope="function")
-def data_model_def() -> VectorStoreRecordDefinition:
-    return VectorStoreRecordDefinition(
+def data_model_def() -> VectorStoreCollectionDefinition:
+    return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreRecordKeyField(name="id"),
-            VectorStoreRecordDataField(name="content"),
-            VectorStoreRecordVectorField(
+            VectorStoreKeyField(name="id"),
+            VectorStoreDataField(name="content"),
+            VectorStoreVectorField(
                 name="vector",
                 dimensions=5,
                 index_kind="flat",
                 distance_function="dot_prod",
-                property_type="float",
+                type_="float",
             ),
         ]
     )
@@ -38,14 +38,14 @@ def store() -> FaissStore:
 
 @fixture(scope="function")
 def faiss_collection(data_model_def):
-    return FaissCollection(data_model_type=dict, data_model_definition=data_model_def, collection_name="test")
+    return FaissCollection(record_type=dict, definition=data_model_def, collection_name="test")
 
 
 async def test_store_get_collection(store, data_model_def):
-    collection = store.get_collection(dict, data_model_definition=data_model_def, collection_name="test")
+    collection = store.get_collection(dict, definition=data_model_def, collection_name="test")
     assert collection.collection_name == "test"
-    assert collection.data_model_type is dict
-    assert collection.data_model_definition == data_model_def
+    assert collection.record_type is dict
+    assert collection.definition == data_model_def
     assert collection.inner_storage == {}
 
 
@@ -60,9 +60,7 @@ async def test_create_collection(store, data_model_def, dist):
     for field in data_model_def.fields:
         if field.name == "vector":
             field.distance_function = dist
-    collection = store.get_collection(
-        collection_name="test", data_model_type=dict, data_model_definition=data_model_def
-    )
+    collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
     await collection.create_collection()
     assert collection.inner_storage == {}
     assert collection.indexes
@@ -73,18 +71,14 @@ async def test_create_collection_incompatible_dist(store, data_model_def):
     for field in data_model_def.fields:
         if field.name == "vector":
             field.distance_function = "cosine_distance"
-    collection = store.get_collection(
-        collection_name="test", data_model_type=dict, data_model_definition=data_model_def
-    )
+    collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
     with raises(VectorStoreInitializationException):
         await collection.create_collection()
 
 
 async def test_create_collection_custom(store, data_model_def):
     index = faiss.IndexFlat(5)
-    collection = store.get_collection(
-        collection_name="test", data_model_type=dict, data_model_definition=data_model_def
-    )
+    collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
     await collection.create_collection(index=index)
     assert collection.inner_storage == {}
     assert collection.indexes
@@ -96,9 +90,7 @@ async def test_create_collection_custom(store, data_model_def):
 
 async def test_create_collection_custom_untrained(store, data_model_def):
     index = faiss.IndexIVFFlat(faiss.IndexFlat(5), 5, 10)
-    collection = store.get_collection(
-        collection_name="test", data_model_type=dict, data_model_definition=data_model_def
-    )
+    collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
     with raises(VectorStoreInitializationException):
         await collection.create_collection(index=index)
     del index
@@ -106,9 +98,7 @@ async def test_create_collection_custom_untrained(store, data_model_def):
 
 async def test_create_collection_custom_dict(store, data_model_def):
     index = faiss.IndexFlat(5)
-    collection = store.get_collection(
-        collection_name="test", data_model_type=dict, data_model_definition=data_model_def
-    )
+    collection = store.get_collection(collection_name="test", record_type=dict, definition=data_model_def)
     await collection.create_collection(indexes={"vector": index})
     assert collection.inner_storage == {}
     assert collection.indexes
@@ -170,7 +160,7 @@ async def test_delete_collection(faiss_collection):
 
 @mark.parametrize("dist", [DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE, DistanceFunction.DOT_PROD])
 async def test_create_collection_and_search(faiss_collection, dist):
-    for field in faiss_collection.data_model_definition.fields:
+    for field in faiss_collection.definition.fields:
         if field.name == "vector":
             field.distance_function = dist
     await faiss_collection.create_collection()

@@ -175,7 +175,7 @@ def default_dynamic_filter_function(
 
 @release_candidate
 class TextSearch:
-    """The base class for all text searches."""
+    """The base class for all text searchers."""
 
     @property
     def options_class(self) -> type["SearchOptions"]:

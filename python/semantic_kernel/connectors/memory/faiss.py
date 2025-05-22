@@ -11,10 +11,9 @@ from pydantic import Field
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.memory.in_memory import IN_MEMORY_SCORE_KEY, InMemoryCollection, InMemoryStore, TKey
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
-from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import SearchType, VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import TModel
+from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreVectorField
+from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data.vectors import SearchType, TModel, VectorSearchOptions, VectorSearchResult
 from semantic_kernel.exceptions import VectorStoreInitializationException, VectorStoreOperationException
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelException
 
@@ -36,7 +35,7 @@ INDEX_KIND_MAP: Final[dict[IndexKind, bool]] = {
 }
 
 
-def _create_index(field: VectorStoreRecordVectorField) -> faiss.Index:
+def _create_index(field: VectorStoreVectorField) -> faiss.Index:
     """Create a Faiss index."""
     if field.index_kind not in INDEX_KIND_MAP:
         raise VectorStoreInitializationException(f"Index kind {field.index_kind} is not supported.")
@@ -70,8 +69,8 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
 
     def __init__(
         self,
-        data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        record_type: type[TModel],
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
@@ -90,14 +89,14 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
 
         Args:
             collection_name: The name of the collection.
-            data_model_type: The type of the data model.
-            data_model_definition: The definition of the data model.
+            record_type: The type of the data model.
+            definition: The definition of the data model.
             embedding_generator: The embedding generator.
             kwargs: Additional arguments.
         """
         super().__init__(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             embedding_generator=embedding_generator,
             **kwargs,
@@ -110,14 +109,14 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
             index: The index to use, this can be used when there is only one vector field.
             indexes: A dictionary of indexes, the key is the name of the vector field.
         """
-        if len(self.data_model_definition.vector_fields) == 1 and index is not None:
+        if len(self.definition.vector_fields) == 1 and index is not None:
             if not isinstance(index, faiss.Index):
                 raise VectorStoreInitializationException("Index must be a subtype of faiss.Index")
             if not index.is_trained:
                 raise VectorStoreInitializationException("Index must be trained before using.")
-            self.indexes[self.data_model_definition.vector_fields[0].name] = index
+            self.indexes[self.definition.vector_fields[0].name] = index
             return
-        for vector_field in self.data_model_definition.vector_fields:
+        for vector_field in self.definition.vector_fields:
             if indexes and vector_field.name in indexes:
                 if not isinstance(indexes[vector_field.name], faiss.Index):
                     raise VectorStoreInitializationException(
@@ -157,8 +156,8 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
     @override
     async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         """Upsert records."""
-        for vector_field in self.data_model_definition.vector_fields:
-            vectors_to_add = [record.get(vector_field.storage_property_name or vector_field.name) for record in records]
+        for vector_field in self.definition.vector_fields:
+            vectors_to_add = [record.get(vector_field.storage_name or vector_field.name) for record in records]
             vectors = np.array(vectors_to_add, dtype=np.float32)
             if not self.indexes[vector_field.name].is_trained:
                 raise VectorStoreOperationException(
@@ -170,14 +169,14 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
             self.indexes[vector_field.name].add(vectors)  # type: ignore
             start = len(self.indexes_key_map[vector_field.name])
             for i, record in enumerate(records):
-                key = record[self.data_model_definition.key_field.name]
+                key = record[self.definition.key_field.name]
                 self.indexes_key_map[vector_field.name][key] = start + i
         return await super()._inner_upsert(records, **kwargs)
 
     @override
     async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
         for key in keys:
-            for vector_field in self.data_model_definition.vector_field_names:
+            for vector_field in self.definition.vector_field_names:
                 if key in self.indexes_key_map[vector_field]:
                     vector_index = self.indexes_key_map[vector_field][key]
                     self.indexes[vector_field].remove_ids(np.array([vector_index]))
@@ -185,13 +184,13 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
         await super()._inner_delete(keys, **kwargs)
 
     @override
-    async def delete_collection(self, **kwargs: Any) -> None:
-        for vector_field in self.data_model_definition.vector_field_names:
+    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
+        for vector_field in self.definition.vector_field_names:
             if vector_field in self.indexes:
                 del self.indexes[vector_field]
             if vector_field in self.indexes_key_map:
                 del self.indexes_key_map[vector_field]
-        await super().delete_collection(**kwargs)
+        await super().ensure_collection_deleted(**kwargs)
 
     @override
     async def does_collection_exist(self, **kwargs: Any) -> bool:
@@ -209,7 +208,7 @@ class FaissCollection(InMemoryCollection[TKey, TModel], Generic[TKey, TModel]):
         """Inner search method."""
         if not vector:
             vector = await self._generate_vector_from_values(values, options)
-        field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+        field = self.definition.try_get_vector_field(options.vector_property_name)
         if not field:
             raise VectorStoreModelException(
                 f"Vector field '{options.vector_property_name}' not found in the data model definition."
@@ -255,9 +254,9 @@ class FaissStore(InMemoryStore):
     @override
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
@@ -265,8 +264,8 @@ class FaissStore(InMemoryStore):
         """Get a Faiss collection."""
         return FaissCollection(
             collection_name=collection_name,
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             embedding_generator=embedding_generator or self.embedding_generator,
             **kwargs,
         )
