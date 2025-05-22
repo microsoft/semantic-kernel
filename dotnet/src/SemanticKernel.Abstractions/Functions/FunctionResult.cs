@@ -3,6 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
 
@@ -100,6 +103,105 @@ public sealed class FunctionResult
             if (content.InnerContent is T innerContent)
             {
                 return innerContent;
+            }
+
+            // Attempting to use the new Microsoft.Extensions.AI Chat types will trigger automatic conversion of SK chat contents.
+
+            // ChatMessageContent as ChatMessage
+            if (typeof(T) == typeof(ChatMessage)
+                && content is ChatMessageContent chatMessageContent)
+            {
+                return (T?)(object)chatMessageContent.ToChatMessage();
+            }
+
+            // ChatMessageContent as ChatResponse
+            if (typeof(T) == typeof(ChatResponse)
+                && content is ChatMessageContent singleChoiceMessageContent)
+            {
+                return (T?)(object)new Microsoft.Extensions.AI.ChatResponse(singleChoiceMessageContent.ToChatMessage());
+            }
+        }
+
+        if (this.Value is IReadOnlyList<ChatMessageContent> messageContentList)
+        {
+            if (messageContentList.Count == 0)
+            {
+                throw new InvalidCastException($"Cannot cast a response with no choices to {typeof(T)}");
+            }
+
+            var firstMessage = messageContentList[0];
+            if (typeof(T) == typeof(ChatResponse))
+            {
+                // Ignore multiple choices when converting to Microsoft.Extensions.AI.ChatResponse
+                return (T)(object)new ChatResponse(firstMessage.ToChatMessage());
+            }
+
+            if (typeof(T) == typeof(ChatMessage))
+            {
+                return (T)(object)firstMessage.ToChatMessage();
+            }
+        }
+
+        if (this.Value is Microsoft.Extensions.AI.ChatResponse chatResponse)
+        {
+            // If no choices are present, return default
+            if (chatResponse.Messages.Count == 0)
+            {
+                throw new InvalidCastException($"Cannot cast a response with no messages to {typeof(T)}");
+            }
+
+            var chatMessage = chatResponse.Messages.Last();
+            if (typeof(T) == typeof(string))
+            {
+                return (T?)(object?)chatMessage.ToString();
+            }
+
+            // ChatMessage from a ChatResponse
+            if (typeof(T) == typeof(ChatMessage))
+            {
+                return (T?)(object)chatMessage;
+            }
+
+            if (typeof(Microsoft.Extensions.AI.AIContent).IsAssignableFrom(typeof(T)))
+            {
+                // Return the first matching content type of a message if any
+                var updateContent = chatMessage.Contents.FirstOrDefault(c => c is T);
+                if (updateContent is not null)
+                {
+                    return (T)(object)updateContent;
+                }
+            }
+
+            if (chatMessage.Contents is T contentsList)
+            {
+                return contentsList;
+            }
+
+            if (chatResponse.RawRepresentation is T rawResponseRepresentation)
+            {
+                return rawResponseRepresentation;
+            }
+
+            if (chatMessage.RawRepresentation is T rawMessageRepresentation)
+            {
+                return rawMessageRepresentation;
+            }
+
+            if (typeof(Microsoft.Extensions.AI.AIContent).IsAssignableFrom(typeof(T)))
+            {
+                // Return the first matching content type of a message if any
+                var updateContent = chatMessage.Contents.FirstOrDefault(c => c is T);
+                if (updateContent is not null)
+                {
+                    return (T)(object)updateContent;
+                }
+            }
+
+            // Avoid breaking changes this transformation will be dropped once we migrate fully to Microsoft.Extensions.AI abstractions.
+            // This is also necessary to don't break existing code using KernelContents when using IChatClient connectors.
+            if (typeof(KernelContent).IsAssignableFrom(typeof(T)))
+            {
+                return (T)(object)chatMessage.ToChatMessageContent();
             }
         }
 
