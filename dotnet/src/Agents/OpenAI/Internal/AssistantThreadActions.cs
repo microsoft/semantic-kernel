@@ -416,13 +416,14 @@ internal static class AssistantThreadActions
                     {
                         yield return toolContent;
                     }
-                    else if (detailsUpdate.FunctionOutput != null)
+                    else if (detailsUpdate.FunctionName != null || detailsUpdate.FunctionArguments != null)
                     {
                         yield return
                             new StreamingChatMessageContent(AuthorRole.Assistant, null)
                             {
                                 AuthorName = agent.Name,
-                                Items = [new StreamingFunctionCallUpdateContent(detailsUpdate.ToolCallId, detailsUpdate.FunctionName, detailsUpdate.FunctionArguments)]
+                                Items = [new StreamingFunctionCallUpdateContent(detailsUpdate.ToolCallId, detailsUpdate.FunctionName, detailsUpdate.FunctionArguments, detailsUpdate.ToolCallIndex ?? 0)],
+                                InnerContent = detailsUpdate,
                             };
                     }
                 }
