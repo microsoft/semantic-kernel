@@ -1,0 +1,10 @@
+{
+  "processName": "FishSandwichWithStatefulStepsProcess",
+  "processInstance": "myId",
+  "steps": {
+    "FriedFishWithStatefulStepsProcess": "myId_021dfcf8-6214-4eb9-a3a1-bc1da07418fa",
+    "AddBunsStep": "myId_8055d683-c7f0-46ab-8536-2badb6155d23",
+    "AddSpecialSauceStep": "myId_23f1d31b-3ccf-488f-b3ce-517351f70bfe",
+    "ExternalFriedFishStep": "myId_6ab8c76d-0444-449a-8d23-97e44087ddc6"
+  }
+}
