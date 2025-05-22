@@ -45,7 +45,7 @@ async def main():
             "azure_assistant_spec.yaml",
         )
 
-        # Create the AzureAI Agent from the YAML spec
+        # Create the Responses Agent from the YAML spec
         agent: AzureResponsesAgent = await AgentRegistry.create_from_file(
             file_path,
             plugins=[MenuPlugin()],

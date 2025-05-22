@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents import AzureAssistantAgent
+from semantic_kernel.agents import AzureResponsesAgent
 from semantic_kernel.agents.agent import AgentRegistry
 
 """
@@ -35,8 +35,8 @@ tools:
 
 
 async def main():
-    # Setup the OpenAI Assistant client
-    client = AzureAssistantAgent.create_client()
+    # Setup the Azure OpenAI client
+    client = AzureResponsesAgent.create_client()
 
     # Read and upload the file to the OpenAI AI service
     pdf_file_path = os.path.join(
@@ -45,24 +45,24 @@ async def main():
         "file_search",
         "employees.pdf",
     )
-    # Upload the pdf file to the assistant service
+    # Upload the pdf file to the server
     with open(pdf_file_path, "rb") as file:
         file = await client.files.create(file=file, purpose="assistants")
 
     vector_store = await client.vector_stores.create(
-        name="assistant_file_search",
+        name="responses_file_search",
         file_ids=[file.id],
     )
 
     try:
-        # Create the AzureAI Agent from the YAML spec
+        # Create the Responses Agent from the YAML spec
         # Note: the extras can be provided in the short-format (shown below) or
-        # in the long-format (as shown in the YAML spec, with the `AzureAI:` prefix).
+        # in the long-format (as shown in the YAML spec, with the `AzureOpenAI:` prefix).
         # The short-format is used here for brevity
-        agent: AzureAssistantAgent = await AgentRegistry.create_from_yaml(
+        agent: AzureResponsesAgent = await AgentRegistry.create_from_yaml(
             yaml_str=spec,
             client=client,
-            extras={"OpenAI:VectorStoreId": vector_store.id},
+            extras={"AzureOpenAI:VectorStoreId": vector_store.id},
         )
 
         # Define the task for the agent
@@ -77,7 +77,6 @@ async def main():
             print(f"# {response.name}: {response}")
     finally:
         # Cleanup: Delete the agent, vector store, and file
-        await client.beta.assistants.delete(agent.id)
         await client.vector_stores.delete(vector_store.id)
         await client.files.delete(file.id)
 

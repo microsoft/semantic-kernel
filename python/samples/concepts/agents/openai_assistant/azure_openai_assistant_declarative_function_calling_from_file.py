@@ -45,7 +45,7 @@ async def main():
             "azure_assistant_spec.yaml",
         )
 
-        # Create the AzureAI Agent from the YAML spec
+        # Create the Assistant Agent from the YAML spec
         agent: AzureAssistantAgent = await AgentRegistry.create_from_file(
             file_path,
             plugins=[MenuPlugin()],

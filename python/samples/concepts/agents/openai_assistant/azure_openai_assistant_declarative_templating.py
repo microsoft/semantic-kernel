@@ -45,9 +45,9 @@ async def main():
     client = AzureAssistantAgent.create_client()
 
     try:
-        # Create the AzureAI Agent from the YAML spec
+        # Create the Assistant Agent from the YAML spec
         # Note: the extras can be provided in the short-format (shown below) or
-        # in the long-format (as shown in the YAML spec, with the `AzureAI:` prefix).
+        # in the long-format (as shown in the YAML spec, with the `AzureOpenAI:` prefix).
         # The short-format is used here for brevity
         agent: AzureAssistantAgent = await AgentRegistry.create_from_yaml(
             yaml_str=spec,

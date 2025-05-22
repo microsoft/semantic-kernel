@@ -586,7 +586,7 @@ class OpenAIResponsesAgent(DeclarativeSpecMixin, Agent):
             raise AgentInitializationException(f"Expected OpenAISettings, got {type(settings).__name__}")
 
         field_mapping.update({
-            "ChatModelId": cls._get_setting(getattr(settings, "chat_model_id", None)),
+            "ChatModelId": cls._get_setting(getattr(settings, "responses_model_id", None)),
             "AgentId": cls._get_setting(getattr(settings, "agent_id", None)),
             "ApiKey": cls._get_setting(getattr(settings, "api_key", None)),
         })

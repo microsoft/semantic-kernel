@@ -388,7 +388,6 @@ tools:
 """
     client, definition = mock_azure_openai_client_and_definition
     definition.name = "CodeAgent"
-    # Optionally update definition.tools if you want to check the tools parsing
     definition.tools = [{"type": "code_interpreter", "options": {"file_ids": ["file-123"]}}]
     agent = await AgentRegistry.create_from_yaml(spec, client=client, extras={"AzureOpenAI:FileId1": "file-123"})
     assert agent.name == "CodeAgent"

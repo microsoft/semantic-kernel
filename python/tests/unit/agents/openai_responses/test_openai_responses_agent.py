@@ -19,6 +19,11 @@ from semantic_kernel.kernel import Kernel
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 
+@pytest.fixture
+def mock_openai_client():
+    return AsyncMock(spec=AsyncOpenAI)
+
+
 class SamplePlugin:
     @kernel_function
     def test_plugin(self, *args, **kwargs):
@@ -250,7 +255,7 @@ async def test_open_ai_agent_missing_chat_deployment_name_throws(kernel, openai_
         )
 
 
-async def test_openai_assistant_agent_from_yaml_minimal(openai_unit_test_env, mock_openai_client_and_definition):
+async def test_openai_assistant_agent_from_yaml_minimal(openai_unit_test_env, mock_openai_client):
     spec = """
 type: openai_responses_agent
 name: MinimalAgent
@@ -259,43 +264,38 @@ model:
   connection:
     api_key: ${OpenAI:ApiKey}
 """
-    client, definition = mock_openai_client_and_definition
-    definition.name = "MinimalAgent"
+    client = mock_openai_client
     agent: OpenAIResponsesAgent = await AgentRegistry.create_from_yaml(spec, client=client)
     assert isinstance(agent, OpenAIResponsesAgent)
     assert agent.name == "MinimalAgent"
-    assert agent.definition.model == "gpt-4o"
+    assert agent.ai_model_id == openai_unit_test_env.get("OPENAI_RESPONSES_MODEL_ID")
 
 
-async def test_openai_assistant_agent_with_tools(openai_unit_test_env, mock_openai_client_and_definition):
+async def test_openai_assistant_agent_with_tools(openai_unit_test_env, mock_openai_client):
     spec = """
 type: openai_responses_agent
-name: CodeAgent
-description: Uses code interpreter.
+name: FileSearchAgent
+description: Uses file search.
 model:
   id: ${OpenAI:ChatModelId}
   connection:
     api_key: ${OpenAI:ApiKey}
 tools:
-  - type: code_interpreter
+  - type: file_search
+    description: File search for document retrieval.
     options:
-      file_ids:
-        - ${OpenAI:FileId1}
+      vector_store_ids:
+        - ${OpenAI:VectorStoreId}
 """
-    client, definition = mock_openai_client_and_definition
-    definition.name = "CodeAgent"
-    # Optionally update definition.tools if you want to check the tools parsing
-    definition.tools = [{"type": "code_interpreter", "options": {"file_ids": ["file-123"]}}]
+    client = mock_openai_client
     agent: OpenAIResponsesAgent = await AgentRegistry.create_from_yaml(
-        spec, client=client, extras={"OpenAI:FileId1": "file-123"}
+        spec, client=client, extras={"OpenAI:VectorStoreId": "vector-store-123"}
     )
-    assert agent.name == "CodeAgent"
-    assert any(t["type"] == "code_interpreter" for t in agent.definition.tools)
+    assert agent.name == "FileSearchAgent"
+    assert any(t["type"] == "file_search" for t in agent.tools)
 
 
-async def test_openai_assistant_agent_with_inputs_outputs_template(
-    openai_unit_test_env, mock_openai_client_and_definition
-):
+async def test_openai_assistant_agent_with_inputs_outputs_template(openai_unit_test_env, mock_openai_client):
     spec = """
 type: openai_responses_agent
 name: StoryAgent
@@ -318,8 +318,7 @@ outputs:
 template:
   format: semantic-kernel
 """
-    client, definition = mock_openai_client_and_definition
-    definition.name = "StoryAgent"
+    client = mock_openai_client
     agent: OpenAIResponsesAgent = await AgentRegistry.create_from_yaml(spec, client=client)
     assert agent.name == "StoryAgent"
     assert agent.prompt_template.prompt_template_config.template_format == "semantic-kernel"
@@ -339,7 +338,7 @@ type: openai_responses_agent
         await AgentRegistry.create_from_yaml(spec)
 
 
-async def test_agent_from_file_success(tmp_path, openai_unit_test_env, mock_openai_client_and_definition):
+async def test_agent_from_file_success(tmp_path, openai_unit_test_env, mock_openai_client):
     file_path = tmp_path / "spec.yaml"
     file_path.write_text(
         """
@@ -352,7 +351,7 @@ model:
 """,
         encoding="utf-8",
     )
-    client, _ = mock_openai_client_and_definition
+    client = mock_openai_client
     agent: OpenAIResponsesAgent = await AgentRegistry.create_from_file(str(file_path), client=client)
     assert agent.name == "DeclarativeAgent"
     assert isinstance(agent, OpenAIResponsesAgent)
