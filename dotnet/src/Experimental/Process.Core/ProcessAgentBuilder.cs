@@ -208,10 +208,8 @@ public class ProcessAgentBuilder<TProcessState> : ProcessStepBuilder<KernelProce
 
     #endregion
 
-    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder)
     {
-        KernelProcessMapStateMetadata? mapMetadata = stateMetadata as KernelProcessMapStateMetadata;
-
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
         var agentActions = new ProcessAgentActions(

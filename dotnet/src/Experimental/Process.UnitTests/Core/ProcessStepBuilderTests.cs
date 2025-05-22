@@ -235,7 +235,7 @@ public class ProcessStepBuilderTests
     {
         public TestProcessStepBuilder(string name) : base(name, null) { }
 
-        internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
+        internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder)
         {
             return new KernelProcessStepInfo(typeof(TestProcessStepBuilder), new KernelProcessStepState(this.Name, version: "v1", id: this.Id), []);
         }

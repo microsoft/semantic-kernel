@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Process.Internal;
-using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel;
 
@@ -30,7 +29,7 @@ internal sealed class EndStep : ProcessStepBuilder
         return [];
     }
 
-    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder)
     {
         // The end step has no state.
         return new KernelProcessStepInfo(typeof(KernelProcessStepState), new KernelProcessStepState(ProcessConstants.EndStepName, version: ProcessConstants.InternalStepsVersion), []);

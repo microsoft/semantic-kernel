@@ -129,12 +129,11 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// Builds the step.
     /// </summary>
     /// <param name="processBuilder">ProcessBuilder to build the step for</param>
-    /// <param name="stateMetadata">State to apply to the step on the build process</param>
     /// <returns></returns>
-    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder)
     {
         // The step is a, process so we can return the step info directly.
-        return this.Build(stateMetadata as KernelProcessStateMetadata);
+        return this.Build();
     }
 
     /// <summary>
@@ -517,13 +516,13 @@ public sealed partial class ProcessBuilder : ProcessStepBuilder
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcess"/></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public KernelProcess Build(KernelProcessStateMetadata? stateMetadata = null)
+    public KernelProcess Build()
     {
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
-        // Build the steps and injecting initial state if any is provided
-        var builtSteps = this.BuildWithStateMetadata(stateMetadata);
+        // Build the steps
+        var builtSteps = this.BuildWithStateMetadata();
 
         // Create the process
         KernelProcessState state = new(this.Id, version: this.Version);

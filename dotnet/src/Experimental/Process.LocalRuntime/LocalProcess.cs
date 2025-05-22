@@ -224,14 +224,8 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Loads the process and initializes the steps. Once this is complete the process can be started.
-    /// </summary>
-    /// <returns>A <see cref="Task"/></returns>
-    private async ValueTask InitializeProcessAsync()
+    private async Task<Dictionary<string, string>> TryGetCachedProcessStateAsync()
     {
-        // Initialize the input and output edges for the process
-        this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
         Dictionary<string, string> processInfoInstanceMap = [];
 
         // Initialize Storage Manager
@@ -251,6 +245,19 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                 processInfoInstanceMap = processState.Steps;
             }
         }
+
+        return processInfoInstanceMap;
+    }
+
+    /// <summary>
+    /// Loads the process and initializes the steps. Once this is complete the process can be started.
+    /// </summary>
+    /// <returns>A <see cref="Task"/></returns>
+    private async ValueTask InitializeProcessAsync()
+    {
+        // Initialize the input and output edges for the process
+        this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
+        Dictionary<string, string> processInfoInstanceMap = await this.TryGetCachedProcessStateAsync().ConfigureAwait(false);
 
         // TODO: Pull user state from persisted state on resume.
         this._processStateManager = new ProcessStateManager(this._process.UserStateype, null);

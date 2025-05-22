@@ -38,6 +38,7 @@
   </ItemGroup>
 
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/samples/SamplesInternalUtilities.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/process/LocalStorageComponents.props" />
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Schema/*.cs" Link="%(RecursiveDir)/InternalUtilities/Schema/%(Filename)%(Extension)" />
@@ -64,6 +65,14 @@
     <EmbeddedResource Include="$(RepoRoot)/dotnet/samples/LearnResources/Resources/Grimms-The-King-of-the-Golden-Mountain.txt" Link="%(RecursiveDir)Resources/%(Filename)%(Extension)" />
     <EmbeddedResource Include="$(RepoRoot)/dotnet/samples/LearnResources/Resources/Grimms-The-Water-of-Life.txt" Link="%(RecursiveDir)Resources/%(Filename)%(Extension)" />
     <EmbeddedResource Include="$(RepoRoot)/dotnet/samples/LearnResources/Resources/Grimms-The-White-Snake.txt" Link="%(RecursiveDir)Resources/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Step03\States\FriedFishSuccess\" />
+    <Folder Include="Step03\States\FriedFishSuccessLowStock\" />
+    <Folder Include="Step03\States\FriedFishSuccessNoStock\" />
+    <Folder Include="Step03\States\FishSandwichSuccessLowStock\" />
+    <Folder Include="Step03\States\FishSandwichSuccess\" />
   </ItemGroup>
 
 </Project>

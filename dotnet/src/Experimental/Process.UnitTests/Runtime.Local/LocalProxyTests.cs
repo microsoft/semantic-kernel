@@ -269,6 +269,6 @@ public class LocalProxyTests
                     Id = inputEvent,
                     Data = input,
                 },
-                externalMessageChannel);
+                externalMessageChannel: externalMessageChannel);
     }
 }

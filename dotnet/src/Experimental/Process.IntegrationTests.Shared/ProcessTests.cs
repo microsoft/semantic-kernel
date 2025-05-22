@@ -475,10 +475,12 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var echoStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>(id: nameof(CommonSteps.EchoStep));
         var repeatStep = processBuilder.AddStepFromType<RepeatStep>(id: nameof(RepeatStep));
 
-        processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess)
+        processBuilder
+            .OnInputEvent(ProcessTestsEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
 
-        echoStep.OnFunctionResult(nameof(CommonSteps.EchoStep.Echo))
+        echoStep
+            .OnFunctionResult()
             .SendEventTo(new ProcessFunctionTargetBuilder(repeatStep, parameterName: "message"));
 
         return processBuilder;
@@ -512,7 +514,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(echoAStep));
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(repeatBStep, parameterName: "message"));
 
-        echoAStep.OnFunctionResult(nameof(CommonSteps.EchoStep.Echo)).SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "firstInput"));
+        echoAStep.OnFunctionResult().SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "firstInput"));
         repeatBStep.OnEvent(ProcessTestsEvents.OutputReadyPublic).SendEventTo(new ProcessFunctionTargetBuilder(fanInCStep, parameterName: "secondInput"));
 
         return processBuilder;

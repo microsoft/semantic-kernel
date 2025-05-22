@@ -132,7 +132,7 @@ public abstract class ProcessStepBuilder
     /// Builds the step with step state
     /// </summary>
     /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
-    internal abstract KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null);
+    internal abstract KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder);
 
     /// <summary>
     /// Registers a group input mapping for the step.
@@ -317,7 +317,7 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
     /// Builds the step with a state if provided
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcessStepInfo"/></returns>
-    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder, KernelProcessStepStateMetadata? stateMetadata = null)
+    internal override KernelProcessStepInfo BuildStep(ProcessBuilder processBuilder)
     {
         KernelProcessStepState? stateObject = null;
         KernelProcessStepMetadataAttribute stepMetadataAttributes = KernelProcessStepMetadataFactory.ExtractProcessStepMetadataFromType(this._stepType);
@@ -331,18 +331,6 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
 
             var stateType = typeof(KernelProcessStepState<>).MakeGenericType(userStateType);
             Verify.NotNull(stateType);
-
-            if (stateMetadata != null && stateMetadata.State != null && stateMetadata.State is JsonElement jsonState)
-            {
-                try
-                {
-                    this._initialState = jsonState.Deserialize(userStateType);
-                }
-                catch (JsonException)
-                {
-                    throw new KernelException($"The initial state provided for step {this.Name} is not of the correct type. The expected type is {userStateType.Name}.");
-                }
-            }
 
             // If the step has a user-defined state then we need to validate that the initial state is of the correct type.
             if (this._initialState is not null && this._initialState.GetType() != userStateType)

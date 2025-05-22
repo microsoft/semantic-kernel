@@ -8,25 +8,12 @@ namespace Microsoft.SemanticKernel.Process.Internal;
 
 internal static class KernelProcessStateMetadataExtension
 {
-    public static List<KernelProcessStepInfo> BuildWithStateMetadata(this ProcessBuilder processBuilder, KernelProcessStateMetadata? stateMetadata)
+    public static List<KernelProcessStepInfo> BuildWithStateMetadata(this ProcessBuilder processBuilder)
     {
         List<KernelProcessStepInfo> builtSteps = [];
-        // 1- Validate StateMetadata: Migrate previous state versions if needed + sanitize state
-        KernelProcessStateMetadata? sanitizedMetadata = null;
-        if (stateMetadata != null)
-        {
-            sanitizedMetadata = SanitizeProcessStateMetadata(processBuilder, stateMetadata, processBuilder.Steps);
-        }
 
-        // 2- Build steps info with validated stateMetadata
         foreach (ProcessStepBuilder step in processBuilder.Steps)
         {
-            if (sanitizedMetadata != null && sanitizedMetadata.StepsState != null && sanitizedMetadata.StepsState.TryGetValue(step.Name, out var stepStateObject) && stepStateObject != null)
-            {
-                builtSteps.Add(step.BuildStep(processBuilder, stepStateObject));
-                continue;
-            }
-
             builtSteps.Add(step.BuildStep(processBuilder));
         }
 

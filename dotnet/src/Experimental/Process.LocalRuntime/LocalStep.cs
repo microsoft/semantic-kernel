@@ -49,6 +49,7 @@ internal class LocalStep : IKernelProcessMessageChannel
 
         if (stepInfo is KernelProcess)
         {
+            // Only KernelProcess can have a null Id if it is the root process
             stepInfo = stepInfo with { State = stepInfo.State with { Id = instanceId ?? Guid.NewGuid().ToString() } };
         }
         // For any step that is not a process, step id must already be assigned from parent process in the step state
@@ -330,19 +331,14 @@ internal class LocalStep : IKernelProcessMessageChannel
 #pragma warning restore CA1031 // Do not catch general exception types
     }
 
-    /// <summary>
-    /// Initializes the step with the provided step information.
-    /// </summary>
-    /// <returns>A <see cref="ValueTask"/></returns>
-    /// <exception cref="KernelException"></exception>
-    protected virtual async ValueTask InitializeStepAsync()
+    private async Task<Dictionary<string, Dictionary<string, object?>?>?> TryGetCachedInputEdgesValuesAsync()
     {
-        if (this._initialInputs == null || this._stepInstance == null)
+        var storageKeyValues = this.GetStepStorageKeyValues();
+        if (this._initialInputs == null)
         {
             throw new KernelException("Initial Inputs have not been initialize, cannot initialize step properly");
         }
 
-        var storageKeyValues = this.GetStepStorageKeyValues();
         if (this.StorageManager != null)
         {
             var storedEdgesData = await this.StorageManager.GetStepEdgeDataAsync(storageKeyValues.Item1, storageKeyValues.Item2).ConfigureAwait(false);
@@ -357,7 +353,6 @@ internal class LocalStep : IKernelProcessMessageChannel
                 }
             }
             // it is not an edge group, it is regular edge
-            // TODO-estenori: need to find out if only group support will be supported
             else if (!storedEdgesData.Item1 && storedEdgesData.Item2 != null)
             {
                 Dictionary<string, Dictionary<string, object?>?> inputValuesDictionary = [];
@@ -380,37 +375,56 @@ internal class LocalStep : IKernelProcessMessageChannel
                         }
                     }
                 }
-                this._inputs = inputValuesDictionary;
-            }
-            else
-            {
-                this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+
+                return inputValuesDictionary;
             }
         }
-        else
-        {
-            this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
-        }
 
-        // Activate the step with user-defined state if needed
-        Type stateType = this._stepInfo.InnerStepType.ExtractStateType(out Type? userStateType, this._logger);
+        return null;
+    }
 
-        KernelProcessStepState? stateObject = null;
+    private async Task<KernelProcessStepState?> TryGetCachedStepStateAsync(Type stateType, Type? userStateType)
+    {
+        var storageKeyValues = this.GetStepStorageKeyValues();
         if (this.StorageManager != null)
         {
             var storedMetadataState = await this.StorageManager.GetStepDataAsync(storageKeyValues.Item1, storageKeyValues.Item2).ConfigureAwait(false);
             if (storedMetadataState != null)
             {
-                stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, storedMetadataState.VersionInfo, this.Id);
+                var stateObject = (KernelProcessStepState?)Activator.CreateInstance(stateType, this.Name, storedMetadataState.VersionInfo, this.Id);
 
                 if (userStateType != null)
                 {
                     // it is a step with custom state
                     stateType.GetProperty(nameof(KernelProcessStepState<object>.State))?.SetValue(stateObject, storedMetadataState.State);
                 }
+
                 stateObject?.InitializeUserState(stateType, userStateType);
+                return stateObject;
             }
         }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Initializes the step with the provided step information.
+    /// </summary>
+    /// <returns>A <see cref="ValueTask"/></returns>
+    /// <exception cref="KernelException"></exception>
+    protected virtual async ValueTask InitializeStepAsync()
+    {
+        if (this._initialInputs == null || this._stepInstance == null)
+        {
+            throw new KernelException("Initial Inputs have not been initialize, cannot initialize step properly");
+        }
+
+        // Populating step function inputs
+        this._inputs = await this.TryGetCachedInputEdgesValuesAsync().ConfigureAwait(false) ?? this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+
+        // Activate the step with user-defined state if needed
+        Type stateType = this._stepInfo.InnerStepType.ExtractStateType(out Type? userStateType, this._logger);
+        KernelProcessStepState? stateObject = await this.TryGetCachedStepStateAsync(stateType, userStateType).ConfigureAwait(false);
 
         if (stateObject == null)
         {

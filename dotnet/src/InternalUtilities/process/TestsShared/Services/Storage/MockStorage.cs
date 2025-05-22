@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
-namespace SemanticKernel.Process.TestsShared.Services;
+namespace SemanticKernel.Process.TestsShared.Services.Storage;
 
 internal sealed class MockStorage : IProcessStorageConnector
 {
