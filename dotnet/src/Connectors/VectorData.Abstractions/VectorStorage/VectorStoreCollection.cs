@@ -188,7 +188,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <summary>
     /// Disposes the <see cref="VectorStoreCollection{TKey, TRecord}"/> and releases any resources it holds.
     /// </summary>
-    /// <param name="disposing"><see langword="true"/> if called from <see cref="Dispose()"/>; <see cref="false"/> if called from a finalizer.</param>
+    /// <param name="disposing"><see langword="true"/> if called from <see cref="Dispose()"/>; <see langword="false"/> if called from a finalizer.</param>
     protected virtual void Dispose(bool disposing)
     {
     }
