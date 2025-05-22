@@ -155,7 +155,7 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// </para>
     /// <para>
     /// Similarly, the error behavior can vary across databases: where possible, the batch should be upserted atomically, so that any errors cause the entire batch to be rolled
-    /// back. Where not supported, some records may be upserted while others are not. If key properties are set by the user, then the entire upsert operation is idempotent,
+    /// back. Where not supported, some records might be upserted while others are not. If key properties are set by the user, then the entire upsert operation is idempotent,
     /// and can simply be retried again if an error occurs. However, if store-generated keys are in use, the upsert operation is no longer idempotent; in that case, if the
     /// database doesn't guarantee atomicity, retrying could cause duplicate records to be created.
     /// </para>

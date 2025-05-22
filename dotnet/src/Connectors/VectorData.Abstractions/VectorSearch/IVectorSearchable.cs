@@ -41,7 +41,7 @@ public interface IVectorSearchable<TRecord>
     ///   </item>
     ///   <item>
     ///     To work with embeddings directly, pass in a <see cref="ReadOnlyMemory{T}"/> or a .NET array of the appropriate type. Most providers support at least <c>ReadOnlyMemory&lt;float&gt;</c> and <c>float[]</c>,
-    ///     but some support other types (for example, <c>ReadOnlyMemory&lt;Half&gt;</c>, <see cref="BitArray"/>). Some providers may also support their own custom types as well, for example, to represent sparse embeddings.
+    ///     but some support other types (for example, <c>ReadOnlyMemory&lt;Half&gt;</c>, <see cref="BitArray"/>). Some providers might also support their own custom types as well, for example, to represent sparse embeddings.
     ///     Consult your provider's documentation for supported types.
     ///   </item>
     ///   <item>

@@ -30,18 +30,18 @@ public class HybridSearchOptions<TRecord>
     /// Only needs to be set when the collection has multiple vector properties.
     /// </summary>
     /// <remarks>
-    /// If not provided, checks if there is a vector property to use by default, and
+    /// If this property isn't set, <see cref="IKeywordHybridSearchable{TRecord}.HybridSearchAsync{TInput}(TInput, System.Collections.Generic.ICollection{string}, int, Microsoft.Extensions.VectorData.HybridSearchOptions{TRecord}?, System.Threading.CancellationToken)"/> checks if there is a vector property to use by default, and
     /// throws if either none or multiple exist.
     /// </remarks>
     public Expression<Func<TRecord, object?>>? VectorProperty { get; set; }
 
     /// <summary>
-    /// Gets or sets the additional target property to do the text/keyword search on.
+    /// Gets or sets the additional target property to do the text or keyword search on.
     /// The property must have full text indexing enabled.
     /// </summary>
     /// <remarks>
-    /// If not provided, checks if there is a text property with full text indexing enabled, and
-    /// throws if either none or multiple exist.
+    /// If this property isn't set, <see cref="IKeywordHybridSearchable{TRecord}.HybridSearchAsync{TInput}(TInput, System.Collections.Generic.ICollection{string}, int, Microsoft.Extensions.VectorData.HybridSearchOptions{TRecord}?, System.Threading.CancellationToken)"/> checks if there is a text property with full text indexing enabled, and
+    /// throws an exception if either none or multiple exist.
     /// </remarks>
     public Expression<Func<TRecord, object?>>? AdditionalProperty { get; set; }
 

@@ -29,8 +29,8 @@ public class VectorSearchOptions<TRecord>
     /// Only needs to be set when the collection has multiple vector properties.
     /// </summary>
     /// <remarks>
-    /// If not provided, checks if there is a vector property to use by default, and
-    /// throws if either none or multiple exist.
+    /// If this property isn't set provided, <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync{TInput}(TInput, int, VectorSearchOptions{TRecord}, CancellationToken)"/> checks if there is a vector property to use by default, and
+    /// throws an exception if either none or multiple exist.
     /// </remarks>
     public Expression<Func<TRecord, object?>>? VectorProperty { get; set; }
 

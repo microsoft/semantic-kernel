@@ -105,7 +105,7 @@ public sealed class CollectionModel
     /// Gets the vector property with the provided name if a name is provided, and falls back
     /// to a vector property in the schema if not.
     /// </summary>
-    /// <param name="searchOptions">The search options.</param>
+    /// <param name="searchOptions">The search options, which defines the vector property name.</param>
     /// <exception cref="InvalidOperationException"><para>The provided property name is not a valid text data property name.</para><para>OR</para><para>No name was provided and there's more than one vector property.</para></exception>
     public VectorPropertyModel GetVectorPropertyOrSingle<TRecord>(VectorSearchOptions<TRecord> searchOptions)
     {
