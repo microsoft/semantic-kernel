@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents;
 
@@ -152,5 +153,10 @@ internal static class StepExtensions
         }
 
         return inputs;
+    }
+
+    public static bool IsDefault(this KernelProcessEdgeCondition condition)
+    {
+        return condition.DeclarativeDefinition?.Equals(ProcessConstants.Declarative.DefaultCondition, StringComparison.OrdinalIgnoreCase) ?? false;
     }
 }

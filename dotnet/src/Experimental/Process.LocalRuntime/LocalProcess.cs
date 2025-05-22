@@ -407,12 +407,14 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         List<KernelProcessEdge> defaultConditionedEdges = [];
         foreach (var edge in edges)
         {
-            if (edge.Condition.DeclarativeDefinition?.Equals(ProcessConstants.Declarative.DefaultCondition, StringComparison.OrdinalIgnoreCase) ?? false)
+            // Default conditions are processed at the end if no other conditions are met.
+            if (edge.Condition.IsDefault())
             {
                 defaultConditionedEdges.Add(edge);
                 continue;
             }
 
+            // Check if the condition is met for this edge, if not skip it.
             bool isConditionMet = await edge.Condition.Callback(processEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
             if (!isConditionMet)
             {
@@ -429,6 +431,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
                 await (this._processStateManager.ReduceAsync((stateType, state) =>
                 {
+                    // this should all be contained within a callback
                     var stateJson = JsonDocument.Parse(JsonSerializer.Serialize(state));
                     stateJson = JMESUpdate.UpdateState(stateJson, stateTarget.VariableUpdate.Path, stateTarget.VariableUpdate.Operation, stateTarget.VariableUpdate.Value);
                     return Task.FromResult(stateJson.Deserialize(stateType));
@@ -436,7 +439,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             }
             else if (edge.OutputTarget is KernelProcessEmitTarget emitTarget)
             {
-                // Emit target from process
+                // Emit target from the step
             }
             else if (edge.OutputTarget is KernelProcessFunctionTarget functionTarget)
             {
@@ -536,20 +539,21 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                 base.EmitEvent(stepEvent);
             }
 
+            await this.EnqueueEdgesAsync(step.GetEdgeForEvent(stepEvent.QualifiedId), messageChannel, stepEvent).ConfigureAwait(false);
             // Get the edges for the event and queue up the messages to be sent to the next steps.
-            bool foundEdge = false;
-            foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
-            {
-                bool isConditionMet = await edge.Condition.Callback(stepEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
-                if (!isConditionMet)
-                {
-                    continue;
-                }
+            //bool foundEdge = false;
+            //foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
+            //{
+            //    bool isConditionMet = await edge.Condition.Callback(stepEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
+            //    if (!isConditionMet)
+            //    {
+            //        continue;
+            //    }
 
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
-                messageChannel.Enqueue(message);
-                foundEdge = true;
-            }
+            //    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
+            //    messageChannel.Enqueue(message);
+            //    foundEdge = true;
+            //}
 
             //// Get the edges for the event and queue up the messages to be sent to the next steps.
             //bool foundEdge = false;
