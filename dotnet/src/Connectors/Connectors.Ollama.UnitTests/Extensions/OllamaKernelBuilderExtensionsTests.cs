@@ -118,28 +118,64 @@ public class OllamaKernelBuilderExtensionsTests
         Assert.Equal(1, myHttpClientHandler.InvokedCount);
     }
 
-    [Fact]
+    [Theory]
     [Obsolete("Temporarily test for obsolete TextEmbeddingGenerationService.")]
-    public void AddOllamaTextEmbeddingGenerationShouldGetRequiredServiceFromKernel()
+    [MemberData(nameof(AddOllamaApiClientScenarios))]
+    public void AddOllamaTextEmbeddingGenerationShouldGetRequiredServiceFromKernel(ServiceCollectionRegistration registration)
     {
-        var kernel = Kernel
-            .CreateBuilder()
-            .AddOllamaTextEmbeddingGeneration("nomic-embed-text", new Uri("http://127.0.0.1:11434"))
-            .Build();
+        using var httpClient = new HttpClient() { BaseAddress = new Uri("http://localhost:11434"), };
+        using var client = new OllamaApiClient(httpClient);
+        var builder = Kernel.CreateBuilder();
+        string? serviceId = null;
 
-        ITextEmbeddingGenerationService service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        switch (registration)
+        {
+            case ServiceCollectionRegistration.KeyedOllamaApiClient:
+                builder.AddOllamaTextEmbeddingGeneration(serviceId: serviceId = "model", ollamaClient: client);
+                break;
+            case ServiceCollectionRegistration.OllamaApiClient:
+                builder.AddOllamaTextEmbeddingGeneration(ollamaClient: client);
+                break;
+            case ServiceCollectionRegistration.Endpoint:
+                builder.AddOllamaTextEmbeddingGeneration("model", httpClient.BaseAddress);
+                break;
+            case ServiceCollectionRegistration.KeyedIOllamaApiClient:
+                return; // IOllamaApiClient is not supported for KernelBuilder extensions, skipping
+        }
+
+        var kernel = builder.Build();
+
+        ITextEmbeddingGenerationService service = kernel.GetRequiredService<ITextEmbeddingGenerationService>(serviceId);
         Assert.NotNull(service);
     }
 
-    [Fact]
-    public void AddOllamaEmbeddingGeneratorShouldGetRequiredServiceFromKernel()
+    [Theory]
+    [MemberData(nameof(AddOllamaApiClientScenarios))]
+    public void AddOllamaEmbeddingGeneratorShouldGetRequiredServiceFromKernel(ServiceCollectionRegistration registration)
     {
-        var kernel = Kernel
-            .CreateBuilder()
-            .AddOllamaEmbeddingGenerator("nomic-embed-text", new Uri("http://127.0.0.1:11434"))
-            .Build();
+        using var httpClient = new HttpClient() { BaseAddress = new Uri("http://localhost:11434"), };
+        using var client = new OllamaApiClient(httpClient);
+        var builder = Kernel.CreateBuilder();
+        string? serviceId = null;
 
-        var service = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        switch (registration)
+        {
+            case ServiceCollectionRegistration.KeyedOllamaApiClient:
+                builder.AddOllamaEmbeddingGenerator(serviceId: serviceId = "model", ollamaClient: client);
+                break;
+            case ServiceCollectionRegistration.OllamaApiClient:
+                builder.AddOllamaEmbeddingGenerator(ollamaClient: client);
+                break;
+            case ServiceCollectionRegistration.Endpoint:
+                builder.AddOllamaEmbeddingGenerator("model", httpClient.BaseAddress);
+                break;
+            case ServiceCollectionRegistration.KeyedIOllamaApiClient:
+                return; // IOllamaApiClient is not supported for KernelBuilder extensions, skipping
+        }
+
+        var kernel = builder.Build();
+
+        var service = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>(serviceId);
         Assert.NotNull(service);
     }
 
