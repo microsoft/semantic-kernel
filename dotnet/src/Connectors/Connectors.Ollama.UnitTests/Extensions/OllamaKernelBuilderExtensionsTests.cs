@@ -118,6 +118,31 @@ public class OllamaKernelBuilderExtensionsTests
         Assert.Equal(1, myHttpClientHandler.InvokedCount);
     }
 
+    [Fact]
+    [Obsolete("Temporarily test for obsolete TextEmbeddingGenerationService.")]
+    public void AddOllamaTextEmbeddingGenerationShouldGetRequiredServiceFromKernel()
+    {
+        var kernel = Kernel
+            .CreateBuilder()
+            .AddOllamaTextEmbeddingGeneration("nomic-embed-text", new Uri("http://127.0.0.1:11434"))
+            .Build();
+
+        ITextEmbeddingGenerationService service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+        Assert.NotNull(service);
+    }
+
+    [Fact]
+    public void AddOllamaEmbeddingGeneratorShouldGetRequiredServiceFromKernel()
+    {
+        var kernel = Kernel
+            .CreateBuilder()
+            .AddOllamaEmbeddingGenerator("nomic-embed-text", new Uri("http://127.0.0.1:11434"))
+            .Build();
+
+        var service = kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        Assert.NotNull(service);
+    }
+
     [Theory]
     [MemberData(nameof(AddOllamaApiClientScenarios))]
     [Obsolete("Temporarily test for obsolete TextEmbeddingGenerationService.")]
