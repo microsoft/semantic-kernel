@@ -8,7 +8,7 @@ from weaviate.classes.config import Configure, DataType, Property
 from weaviate.collections.classes.config_vectorizers import VectorDistances
 from weaviate.collections.classes.data import DataObject
 
-from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
+from semantic_kernel.connectors.memory.weaviate import WeaviateCollection
 from semantic_kernel.exceptions import (
     ServiceInvalidExecutionSettingsError,
     VectorStoreInitializationException,
@@ -17,7 +17,7 @@ from semantic_kernel.exceptions import (
 
 
 @patch(
-    "semantic_kernel.connectors.memory.weaviate.weaviate_collection.use_async_with_weaviate_cloud",
+    "semantic_kernel.connectors.memory.weaviate.use_async_with_weaviate_cloud",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_collection_init_with_weaviate_cloud(
@@ -47,7 +47,7 @@ def test_weaviate_collection_init_with_weaviate_cloud(
 
 
 @patch(
-    "semantic_kernel.connectors.memory.weaviate.weaviate_collection.use_async_with_local",
+    "semantic_kernel.connectors.memory.weaviate.use_async_with_local",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_collection_init_with_local(
@@ -73,7 +73,7 @@ def test_weaviate_collection_init_with_local(
 
 
 @patch(
-    "semantic_kernel.connectors.memory.weaviate.weaviate_collection.use_async_with_embedded",
+    "semantic_kernel.connectors.memory.weaviate.use_async_with_embedded",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_collection_init_with_embedded(
@@ -153,7 +153,7 @@ def test_weaviate_collection_init_with_custom_client(
 
 
 @patch(
-    "semantic_kernel.connectors.memory.weaviate.weaviate_collection.use_async_with_local",
+    "semantic_kernel.connectors.memory.weaviate.use_async_with_local",
     side_effect=Exception,
 )
 def test_weaviate_collection_init_fail_to_create_client(
@@ -175,7 +175,7 @@ def test_weaviate_collection_init_fail_to_create_client(
 
 
 @patch(
-    "semantic_kernel.connectors.memory.weaviate.weaviate_collection.use_async_with_weaviate_cloud",
+    "semantic_kernel.connectors.memory.weaviate.use_async_with_weaviate_cloud",
     return_value=AsyncMock(spec=WeaviateAsyncClient),
 )
 def test_weaviate_collection_init_with_lower_case_collection_name(
@@ -424,6 +424,6 @@ async def test_weaviate_collection_deserialize_data(
     )
 
     with patch.object(collection, "_inner_get", return_value=[weaviate_data_object]) as mock_inner_get:
-        await collection.get(data.id)
+        await collection.get(key=data.id)
 
-        mock_inner_get.assert_called_once_with([data.id], include_vectors=True)
+        mock_inner_get.assert_called_once_with([data.id], include_vectors=False, options=None)

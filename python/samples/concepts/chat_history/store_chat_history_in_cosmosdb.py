@@ -7,7 +7,7 @@ from typing import Annotated
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
-from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_store import AzureCosmosDBNoSQLStore
+from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBNoSQLStore
 from semantic_kernel.contents import ChatHistory, ChatMessageContent
 from semantic_kernel.core_plugins.math_plugin import MathPlugin
 from semantic_kernel.core_plugins.time_plugin import TimePlugin
@@ -40,8 +40,8 @@ in order to search for similar conversations.
 @dataclass
 class ChatHistoryModel:
     session_id: Annotated[str, VectorStoreRecordKeyField]
-    user_id: Annotated[str, VectorStoreRecordDataField(is_filterable=True)]
-    messages: Annotated[list[dict[str, str]], VectorStoreRecordDataField(is_filterable=True)]
+    user_id: Annotated[str, VectorStoreRecordDataField(is_indexed=True)]
+    messages: Annotated[list[dict[str, str]], VectorStoreRecordDataField(is_indexed=True)]
 
 
 # 2. We then create a class that extends the ChatHistory class
