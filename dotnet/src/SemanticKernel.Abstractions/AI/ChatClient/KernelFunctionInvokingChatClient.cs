@@ -111,4 +111,34 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
 
         return result;
     }
+
+    public override Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        // If the autoInvoke is false, we don't call any function, just process the messages as is.
+        if (options is KernelChatOptions kernelChatOptions && (
+                kernelChatOptions.ExecutionSettings?.FunctionChoiceBehavior is AutoFunctionChoiceBehavior autoFunctionChoiceBehavior && !autoFunctionChoiceBehavior.AutoInvoke
+                || kernelChatOptions.ExecutionSettings?.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior && !requiredFunctionChoiceBehavior.AutoInvoke
+            ))
+        {
+            // Skip function invocation
+            return base.InnerClient.GetResponseAsync(messages, options, cancellationToken);
+        }
+
+        return base.GetResponseAsync(messages, options, cancellationToken);
+    }
+
+    public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        // If the autoInvoke is false, we don't call any function, just process the messages as is.
+        if (options is KernelChatOptions kernelChatOptions && (
+                kernelChatOptions.ExecutionSettings?.FunctionChoiceBehavior is AutoFunctionChoiceBehavior autoFunctionChoiceBehavior && !autoFunctionChoiceBehavior.AutoInvoke
+                || kernelChatOptions.ExecutionSettings?.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior && !requiredFunctionChoiceBehavior.AutoInvoke
+            ))
+        {
+            // Skip function invocation
+            return base.InnerClient.GetStreamingResponseAsync(messages, options, cancellationToken);
+        }
+
+        return base.GetStreamingResponseAsync(messages, options, cancellationToken);
+    }
 }
