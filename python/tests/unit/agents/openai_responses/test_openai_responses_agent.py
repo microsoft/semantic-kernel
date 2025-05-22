@@ -6,6 +6,7 @@ import pytest
 from openai import AsyncOpenAI
 from pydantic import BaseModel, ValidationError
 
+from semantic_kernel.agents.agent import AgentRegistry
 from semantic_kernel.agents.open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -247,3 +248,120 @@ async def test_open_ai_agent_missing_chat_deployment_name_throws(kernel, openai_
             api_key="test_api_key",
             default_headers={"user_agent": "test"},
         )
+
+
+async def test_openai_assistant_agent_from_yaml_minimal(openai_unit_test_env, mock_openai_client_and_definition):
+    spec = """
+type: openai_responses_agent
+name: MinimalAgent
+model:
+  id: ${OpenAI:ChatModelId}
+  connection:
+    api_key: ${OpenAI:ApiKey}
+"""
+    client, definition = mock_openai_client_and_definition
+    definition.name = "MinimalAgent"
+    agent: OpenAIResponsesAgent = await AgentRegistry.create_from_yaml(spec, client=client)
+    assert isinstance(agent, OpenAIResponsesAgent)
+    assert agent.name == "MinimalAgent"
+    assert agent.definition.model == "gpt-4o"
+
+
+async def test_openai_assistant_agent_with_tools(openai_unit_test_env, mock_openai_client_and_definition):
+    spec = """
+type: openai_responses_agent
+name: CodeAgent
+description: Uses code interpreter.
+model:
+  id: ${OpenAI:ChatModelId}
+  connection:
+    api_key: ${OpenAI:ApiKey}
+tools:
+  - type: code_interpreter
+    options:
+      file_ids:
+        - ${OpenAI:FileId1}
+"""
+    client, definition = mock_openai_client_and_definition
+    definition.name = "CodeAgent"
+    # Optionally update definition.tools if you want to check the tools parsing
+    definition.tools = [{"type": "code_interpreter", "options": {"file_ids": ["file-123"]}}]
+    agent: OpenAIResponsesAgent = await AgentRegistry.create_from_yaml(
+        spec, client=client, extras={"OpenAI:FileId1": "file-123"}
+    )
+    assert agent.name == "CodeAgent"
+    assert any(t["type"] == "code_interpreter" for t in agent.definition.tools)
+
+
+async def test_openai_assistant_agent_with_inputs_outputs_template(
+    openai_unit_test_env, mock_openai_client_and_definition
+):
+    spec = """
+type: openai_responses_agent
+name: StoryAgent
+model:
+  id: ${OpenAI:ChatModelId}
+  connection:
+    api_key: ${OpenAI:ApiKey}
+inputs:
+  topic:
+    description: The story topic.
+    required: true
+    default: AI
+  length:
+    description: The length of story.
+    required: true
+    default: 2
+outputs:
+  output1:
+    description: The story.
+template:
+  format: semantic-kernel
+"""
+    client, definition = mock_openai_client_and_definition
+    definition.name = "StoryAgent"
+    agent: OpenAIResponsesAgent = await AgentRegistry.create_from_yaml(spec, client=client)
+    assert agent.name == "StoryAgent"
+    assert agent.prompt_template.prompt_template_config.template_format == "semantic-kernel"
+
+
+async def test_openai_assistant_agent_from_dict_missing_type():
+    data = {"name": "NoType"}
+    with pytest.raises(AgentInitializationException, match="Missing 'type'"):
+        await AgentRegistry.create_from_dict(data)
+
+
+async def test_openai_assistant_agent_from_yaml_missing_required_fields():
+    spec = """
+type: openai_responses_agent
+"""
+    with pytest.raises(AgentInitializationException):
+        await AgentRegistry.create_from_yaml(spec)
+
+
+async def test_agent_from_file_success(tmp_path, openai_unit_test_env, mock_openai_client_and_definition):
+    file_path = tmp_path / "spec.yaml"
+    file_path.write_text(
+        """
+type: openai_responses_agent
+name: DeclarativeAgent
+model:
+  id: ${OpenAI:ChatModelId}
+  connection:
+    api_key: ${OpenAI:ApiKey}
+""",
+        encoding="utf-8",
+    )
+    client, _ = mock_openai_client_and_definition
+    agent: OpenAIResponsesAgent = await AgentRegistry.create_from_file(str(file_path), client=client)
+    assert agent.name == "DeclarativeAgent"
+    assert isinstance(agent, OpenAIResponsesAgent)
+
+
+async def test_openai_assistant_agent_from_yaml_invalid_type():
+    spec = """
+type: not_registered
+name: ShouldFail
+"""
+    with pytest.raises(AgentInitializationException, match="not registered"):
+        await AgentRegistry.create_from_yaml(spec)

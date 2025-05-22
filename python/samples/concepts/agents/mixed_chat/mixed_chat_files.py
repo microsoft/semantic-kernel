@@ -34,7 +34,7 @@ async def main():
     client = AzureAssistantAgent.create_client()
 
     # If desired, create using OpenAI resources
-    # client, model = OpenAIAssistantAgent.setup_resources()
+    # client = OpenAIAssistantAgent.create_client()
 
     # Load the text file as a FileObject
     with open(file_path, "rb") as file:

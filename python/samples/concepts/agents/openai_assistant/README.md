@@ -32,7 +32,7 @@ OpenAI Assistant Agents are created in the following way:
 from semantic_kernel.agents import OpenAIAssistantAgent
 
 # Create the client using OpenAI resources and configuration
-client, model = OpenAIAssistantAgent.setup_resources()
+client = OpenAIAssistantAgent.create_client()
 
 # Create the assistant definition
 definition = await client.beta.assistants.create(

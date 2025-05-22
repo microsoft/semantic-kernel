@@ -2,10 +2,8 @@
 
 import asyncio
 
-from azure.identity.aio import DefaultAzureCredential
-
-from semantic_kernel.agents import AzureAIAgent
 from semantic_kernel.agents.agent import AgentRegistry
+from semantic_kernel.agents.open_ai.openai_assistant_agent import OpenAIAssistantAgent
 
 """
 The following sample demonstrates how to create an OpenAI Assistant Agent based 
@@ -14,43 +12,41 @@ on an existing agent ID.
 
 # Define the YAML string for the sample
 spec = """
-id: ${AzureAI:AgentId}
-type: foundry_agent
+id: ${OpenAI:AgentId}
+type: openai_assistant
 instructions: You are helpful agent who always responds in French.
 """
 
 
 async def main():
-    async with (
-        DefaultAzureCredential() as creds,
-        AzureAIAgent.create_client(credential=creds) as client,
-    ):
-        try:
-            # Create the AzureAI Agent from the YAML spec
-            # Note: the extras can be provided in the short-format (shown below) or
-            # in the long-format (as shown in the YAML spec, with the `AzureAI:` prefix).
-            # The short-format is used here for brevity
-            agent: AzureAIAgent = await AgentRegistry.create_from_yaml(
-                yaml_str=spec,
-                client=client,
-                extras={"AgentId": "<my-agent-id>"},  # Specify the existing agent ID
-            )
+    client = OpenAIAssistantAgent.create_client()
 
-            # Define the task for the agent
-            TASK = "Why is the sky blue?"
+    try:
+        # Create the AzureAI Agent from the YAML spec
+        # Note: the extras can be provided in the short-format (shown below) or
+        # in the long-format (as shown in the YAML spec, with the `AzureAI:` prefix).
+        # The short-format is used here for brevity
+        agent: OpenAIAssistantAgent = await AgentRegistry.create_from_yaml(
+            yaml_str=spec,
+            client=client,
+            extras={"AgentId": "<my-agent-id>"},  # Specify the existing agent ID
+        )
 
-            print(f"# User: '{TASK}'")
+        # Define the task for the agent
+        TASK = "Why is the sky blue?"
 
-            # Invoke the agent for the specified task
-            async for response in agent.invoke(
-                messages=TASK,
-            ):
-                print(f"# {response.name}: {response}")
-        finally:
-            # Cleanup: Delete the thread and agent
-            await client.agents.delete_agent(agent.id)
+        print(f"# User: '{TASK}'")
 
-        """
+        # Invoke the agent for the specified task
+        async for response in agent.invoke(
+            messages=TASK,
+        ):
+            print(f"# {response.name}: {response}")
+    finally:
+        # Cleanup: Delete the thread and agent
+        await client.agents.delete_agent(agent.id)
+
+    """
         Sample output:
 
         # User: 'Why is the sky blue?'
