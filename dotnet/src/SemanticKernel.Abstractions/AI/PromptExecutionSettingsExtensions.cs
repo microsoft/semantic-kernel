@@ -158,15 +158,11 @@ public static class PromptExecutionSettingsExtensions
             else
             if (settings.FunctionChoiceBehavior is NoneFunctionChoiceBehavior noneFunctionChoiceBehavior)
             {
-                // If the function choice behavior is None, we don't need to set the tools.
-                // The model will not call any functions.
                 options.ToolMode = ChatToolMode.None;
             }
             else
             if (settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior)
             {
-                // If the function choice behavior is Required, we need to set the tools.
-                // The model will call all functions.
                 options.ToolMode = ChatToolMode.RequireAny;
                 options.AllowMultipleToolCalls = requiredFunctionChoiceBehavior.Options?.AllowParallelCalls;
             }
