@@ -54,6 +54,7 @@ public sealed class TestConfiguration
     public static CrewAIConfig CrewAI => LoadSection<CrewAIConfig>();
     public static BedrockConfig Bedrock => LoadSection<BedrockConfig>();
     public static BedrockAgentConfig BedrockAgent => LoadSection<BedrockAgentConfig>();
+    public static A2AConfig A2A => LoadSection<A2AConfig>();
 
     public static IConfiguration GetSection(string caller)
     {
@@ -356,5 +357,10 @@ public sealed class TestConfiguration
         public string AgentResourceRoleArn { get; set; }
         public string FoundationModel { get; set; }
         public string? KnowledgeBaseId { get; set; }
+    }
+
+    public class A2AConfig
+    {
+        public string Agent { get; set; } = "http://localhost:5000";
     }
 }
