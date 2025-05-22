@@ -329,11 +329,11 @@ def dataclass_vector_data_model(
                 index_kind=index_kind,
                 dimensions=dimensions,
                 distance_function=distance_function,
-                type_=vector_property_type,
+                type=vector_property_type,
             ),
         ] = None
-        id: Annotated[str, VectorStoreKeyField(type_="str")] = field(default_factory=lambda: str(uuid4()))
-        content: Annotated[str, VectorStoreDataField(type_="str")] = "content1"
+        id: Annotated[str, VectorStoreKeyField(type="str")] = field(default_factory=lambda: str(uuid4()))
+        content: Annotated[str, VectorStoreDataField(type="str")] = "content1"
 
     return MyDataModel
 
@@ -344,14 +344,14 @@ def definition(
 ) -> VectorStoreCollectionDefinition:
     return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreKeyField(name="id", type_="str"),
-            VectorStoreDataField(name="content", type_="str", is_full_text_indexed=True),
+            VectorStoreKeyField(name="id", type="str"),
+            VectorStoreDataField(name="content", type="str", is_full_text_indexed=True),
             VectorStoreVectorField(
                 name="vector",
                 dimensions=dimensions,
                 index_kind=index_kind,
                 distance_function=distance_function,
-                type_=vector_property_type,
+                type=vector_property_type,
             ),
         ]
     )
@@ -366,10 +366,10 @@ def definition_pandas(index_kind: str, distance_function: str, vector_property_t
                 index_kind=index_kind,
                 dimensions=dimensions,
                 distance_function=distance_function,
-                type_=vector_property_type,
+                type=vector_property_type,
             ),
             VectorStoreKeyField(name="id"),
-            VectorStoreDataField(name="content", type_="str"),
+            VectorStoreDataField(name="content", type="str"),
         ],
         container_mode=True,
         to_dict=lambda x: x.to_dict(orient="records"),
@@ -387,7 +387,7 @@ def record_type(index_kind: str, distance_function: str, vector_property_type: s
             VectorStoreVectorField(
                 index_kind=index_kind,
                 distance_function=distance_function,
-                type_=vector_property_type,
+                type=vector_property_type,
                 dimensions=dimensions,
             ),
         ]
@@ -410,7 +410,7 @@ def record_type_with_key_as_key_field(
             VectorStoreVectorField(
                 index_kind=index_kind,
                 distance_function=distance_function,
-                type_=vector_property_type,
+                type=vector_property_type,
                 dimensions=dimensions,
             ),
         ]

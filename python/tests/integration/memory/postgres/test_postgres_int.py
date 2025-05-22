@@ -58,7 +58,7 @@ class SimpleDataModel(BaseModel):
     ] = None
     data: Annotated[
         dict[str, Any],
-        VectorStoreDataField(has_embedding=True, embedding_property_name="embedding", type_="JSONB"),
+        VectorStoreDataField(has_embedding=True, embedding_property_name="embedding", type="JSONB"),
     ]
 
 
@@ -70,11 +70,11 @@ def DataModelPandas(record) -> tuple:
                 index_kind="hnsw",
                 dimensions=3,
                 distance_function="cosine_similarity",
-                type_="float",
+                type="float",
             ),
-            "id": VectorStoreKeyField(name="id", type_="int"),
+            "id": VectorStoreKeyField(name="id", type="int"),
             "data": VectorStoreDataField(
-                name="data", has_embedding=True, embedding_property_name="embedding", type_="dict"
+                name="data", has_embedding=True, embedding_property_name="embedding", type="dict"
             ),
         },
         container_mode=True,

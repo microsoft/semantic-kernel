@@ -25,7 +25,7 @@ def data_model_def() -> VectorStoreCollectionDefinition:
                 dimensions=5,
                 index_kind="flat",
                 distance_function="dot_prod",
-                type_="float",
+                type="float",
             ),
         ]
     )

@@ -36,13 +36,13 @@ def record_type() -> type:
                 index_kind="flat",
                 dimensions=5,
                 distance_function="cosine_similarity",
-                type_="float",
+                type="float",
             ),
         ] = None
         id: Annotated[str, VectorStoreKeyField()] = field(default_factory=lambda: str(uuid4()))
         product_type: Annotated[str, VectorStoreDataField()] = "N/A"
         description: Annotated[
-            str, VectorStoreDataField(has_embedding=True, embedding_property_name="vector", type_="str")
+            str, VectorStoreDataField(has_embedding=True, embedding_property_name="vector", type="str")
         ] = "N/A"
 
     return TestDataModelType
@@ -68,13 +68,13 @@ def record_type_with_key_as_key_field() -> type:
                 index_kind="flat",
                 dimensions=5,
                 distance_function="cosine_similarity",
-                type_="float",
+                type="float",
             ),
         ] = None
         key: Annotated[str, VectorStoreKeyField()] = field(default_factory=lambda: str(uuid4()))
         product_type: Annotated[str, VectorStoreDataField()] = "N/A"
         description: Annotated[
-            str, VectorStoreDataField(has_embedding=True, embedding_property_name="vector", type_="str")
+            str, VectorStoreDataField(has_embedding=True, embedding_property_name="vector", type="str")
         ] = "N/A"
 
     return TestDataModelType

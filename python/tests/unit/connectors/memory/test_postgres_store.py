@@ -68,7 +68,7 @@ class SimpleDataModel:
             index_kind=IndexKind.HNSW,
             dimensions=1536,
             distance_function=DistanceFunction.COSINE_SIMILARITY,
-            type_="float",
+            type="float",
         ),
     ] = None
 
@@ -267,12 +267,12 @@ async def test_vector_search(
                 index_kind=IndexKind.HNSW,
                 dimensions=1536,
                 distance_function=distance_function,
-                type_="float",
+                type="float",
             ),
         ]
         data: Annotated[
             dict[str, Any],
-            VectorStoreDataField(type_="JSONB"),
+            VectorStoreDataField(type="JSONB"),
         ]
 
     collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
@@ -337,12 +337,12 @@ async def test_model_post_init_conflicting_distance_column_name(vector_store: Po
                 index_kind=IndexKind.HNSW,
                 dimensions=1536,
                 distance_function=DistanceFunction.COSINE_SIMILARITY,
-                type_="float",
+                type="float",
             ),
         ]
         data: Annotated[
             dict[str, Any],
-            VectorStoreDataField(type_="JSONB"),
+            VectorStoreDataField(type="JSONB"),
         ]
 
     collection = vector_store.get_collection(collection_name="test_collection", record_type=ConflictingDataModel)

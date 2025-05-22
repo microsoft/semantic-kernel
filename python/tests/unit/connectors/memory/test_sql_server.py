@@ -110,13 +110,13 @@ class TestQueryBuildFunctions:
     def test_build_create_table_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreKeyField(name="id", type_="str")
+        key_field = VectorStoreKeyField(name="id", type="str")
         data_fields = [
-            VectorStoreDataField(name="name", type_="str"),
-            VectorStoreDataField(name="age", type_="int"),
+            VectorStoreDataField(name="name", type="str"),
+            VectorStoreDataField(name="age", type="int"),
         ]
         vector_fields = [
-            VectorStoreVectorField(name="embedding", type_="float", dimensions=1536),
+            VectorStoreVectorField(name="embedding", type="float", dimensions=1536),
         ]
         cmd = _build_create_table_query(schema, table, key_field, data_fields, vector_fields)
         assert not cmd.parameters
@@ -149,13 +149,13 @@ class TestQueryBuildFunctions:
     def test_build_merge_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreKeyField(name="id", type_="str")
+        key_field = VectorStoreKeyField(name="id", type="str")
         data_fields = [
-            VectorStoreDataField(name="name", type_="str"),
-            VectorStoreDataField(name="age", type_="int"),
+            VectorStoreDataField(name="name", type="str"),
+            VectorStoreDataField(name="age", type="int"),
         ]
         vector_fields = [
-            VectorStoreVectorField(name="embedding", type_="float", dimensions=5),
+            VectorStoreVectorField(name="embedding", type="float", dimensions=5),
         ]
         records = [
             {
@@ -182,13 +182,13 @@ class TestQueryBuildFunctions:
     def test_build_select_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreKeyField(name="id", type_="str")
+        key_field = VectorStoreKeyField(name="id", type="str")
         data_fields = [
-            VectorStoreDataField(name="name", type_="str"),
-            VectorStoreDataField(name="age", type_="int"),
+            VectorStoreDataField(name="name", type="str"),
+            VectorStoreDataField(name="age", type="int"),
         ]
         vector_fields = [
-            VectorStoreVectorField(name="embedding", type_="float", dimensions=5),
+            VectorStoreVectorField(name="embedding", type="float", dimensions=5),
         ]
         keys = ["test"]
         cmd = _build_select_query(schema, table, key_field, data_fields, vector_fields, keys)
@@ -199,7 +199,7 @@ class TestQueryBuildFunctions:
     def test_build_delete_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreKeyField(name="id", type_="str")
+        key_field = VectorStoreKeyField(name="id", type="str")
         keys = ["test"]
         cmd = _build_delete_query(schema, table, key_field, keys)
         str_cmd = str(cmd)
@@ -209,15 +209,15 @@ class TestQueryBuildFunctions:
     def test_build_search_query(self):
         schema = "dbo"
         table = "Test"
-        key_field = VectorStoreKeyField(name="id", type_="str")
+        key_field = VectorStoreKeyField(name="id", type="str")
         data_fields = [
-            VectorStoreDataField(name="name", type_="str"),
-            VectorStoreDataField(name="age", type_="int"),
+            VectorStoreDataField(name="name", type="str"),
+            VectorStoreDataField(name="age", type="int"),
         ]
         vector_fields = [
             VectorStoreVectorField(
                 name="embedding",
-                type_="float",
+                type="float",
                 dimensions=5,
                 distance_function=DistanceFunction.COSINE_DISTANCE,
             ),

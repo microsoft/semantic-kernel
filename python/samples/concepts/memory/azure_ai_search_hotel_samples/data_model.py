@@ -73,9 +73,9 @@ class HotelSampleClass(BaseModel):
     Category: Annotated[str, VectorStoreDataField()]
     Tags: Annotated[list[str], VectorStoreDataField(is_indexed=True)]
     ParkingIncluded: Annotated[bool | None, VectorStoreDataField()] = None
-    LastRenovationDate: Annotated[str | None, VectorStoreDataField(type_=SearchFieldDataType.DateTimeOffset)] = None
+    LastRenovationDate: Annotated[str | None, VectorStoreDataField(type=SearchFieldDataType.DateTimeOffset)] = None
     Rating: Annotated[float, VectorStoreDataField()]
-    Location: Annotated[dict[str, Any], VectorStoreDataField(type_=SearchFieldDataType.GeographyPoint)]
+    Location: Annotated[dict[str, Any], VectorStoreDataField(type=SearchFieldDataType.GeographyPoint)]
     Address: Annotated[Address, VectorStoreDataField()]
     Rooms: Annotated[list[Rooms], VectorStoreDataField()]
 
