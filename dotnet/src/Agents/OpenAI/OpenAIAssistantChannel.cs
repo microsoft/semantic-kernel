@@ -36,7 +36,7 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     {
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id, agent.GetDisplayName(), agent.Description),
-            () => AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken),
+            () => AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, invocationOptions: null, providersAdditionalInstructions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken),
             cancellationToken);
     }
 
@@ -45,7 +45,7 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     {
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id, agent.GetDisplayName(), agent.Description),
-            () => AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken),
+            () => AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, providersAdditionalInstructions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken),
             cancellationToken);
     }
 

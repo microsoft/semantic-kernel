@@ -185,6 +185,19 @@ public sealed partial class AzureAIAgent : Agent
             () => new AzureAIAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
+        var kernel = (options?.Kernel ?? this.Kernel).Clone();
+
+        // Get the context contributions from the AIContextProviders.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var providersContext = await azureAIAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, providersContext.Instructions);
+        var extensionsContextOptions = options is null ?
+            new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
+            new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
+
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
             () => InternalInvokeAsync(),
@@ -196,9 +209,9 @@ public sealed partial class AzureAIAgent : Agent
                 this,
                 this.Client,
                 azureAIAgentThread.Id!,
-                options?.ToAzureAIInvocationOptions(),
+                extensionsContextOptions?.ToAzureAIInvocationOptions(),
                 this.Logger,
-                options?.Kernel ?? this.Kernel,
+                kernel,
                 options?.KernelArguments,
                 cancellationToken).ConfigureAwait(false))
             {
@@ -302,14 +315,27 @@ public sealed partial class AzureAIAgent : Agent
             () => new AzureAIAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
+        var kernel = (options?.Kernel ?? this.Kernel).Clone();
+
+        // Get the context contributions from the AIContextProviders.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var providersContext = await azureAIAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        var mergedAdditionalInstructions = MergeAdditionalInstructions(options?.AdditionalInstructions, providersContext.Instructions);
+        var extensionsContextOptions = options is null ?
+            new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
+            new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
+
 #pragma warning disable CS0618 // Type or member is obsolete
         // Invoke the Agent with the thread that we already added our message to.
         var newMessagesReceiver = new ChatHistory();
         var invokeResults = this.InvokeStreamingAsync(
             azureAIAgentThread.Id!,
-            options?.ToAzureAIInvocationOptions(),
+            extensionsContextOptions.ToAzureAIInvocationOptions(),
             options?.KernelArguments,
-            options?.Kernel ?? this.Kernel,
+            kernel,
             newMessagesReceiver,
             cancellationToken);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -436,4 +462,19 @@ public sealed partial class AzureAIAgent : Agent
 
         return new AzureAIChannel(this.Client, thread.Id);
     }
+
+    private static string MergeAdditionalInstructions(string? optionsAdditionalInstructions, string? extensionsContext) =>
+        (optionsAdditionalInstructions, extensionsContext) switch
+        {
+            (string ai, string ec) when !string.IsNullOrWhiteSpace(ai) && !string.IsNullOrWhiteSpace(ec) => string.Concat(
+                ai,
+                Environment.NewLine,
+                Environment.NewLine,
+                ec),
+            (string ai, string ec) when string.IsNullOrWhiteSpace(ai) => ec,
+            (string ai, string ec) when string.IsNullOrWhiteSpace(ec) => ai,
+            (null, string ec) => ec,
+            (string ai, null) => ai,
+            _ => string.Empty
+        };
 }
