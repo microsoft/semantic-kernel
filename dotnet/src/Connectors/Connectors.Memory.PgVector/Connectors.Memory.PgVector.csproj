@@ -27,7 +27,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Npgsql" />
     <PackageReference Include="Pgvector" />
   </ItemGroup>

@@ -24,9 +24,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.Numerics.Tensors" />
-    <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,9 +36,7 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Connectors.HuggingFace\Connectors.HuggingFace.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
-    <ProjectReference Include="..\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj" />
     <ProjectReference Include="..\Connectors.Memory.PgVector\Connectors.Memory.PgVector.csproj" />
     <ProjectReference Include="..\Connectors.Memory.SqliteVec\Connectors.Memory.SqliteVec.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
