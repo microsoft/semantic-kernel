@@ -16,8 +16,8 @@ namespace SemanticKernel.UnitTests.Memory;
 public class WhiteboardProviderTests
 {
     private readonly Mock<IChatClient> _mockChatClient;
-    private readonly Mock<Microsoft.Extensions.Logging.ILogger<WhiteboardProvider>> _loggerMock;
-    private readonly Mock<Microsoft.Extensions.Logging.ILoggerFactory> _loggerFactoryMock;
+    private readonly Mock<ILogger<WhiteboardProvider>> _loggerMock;
+    private readonly Mock<ILoggerFactory> _loggerFactoryMock;
 
     public WhiteboardProviderTests()
     {
