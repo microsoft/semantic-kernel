@@ -666,7 +666,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
         IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
         {
             kernel ??= this.Kernel;
-            return AssistantThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, providersContext: null, this.Logger, kernel, arguments, cancellationToken);
+            return AssistantThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, providersAdditionalInstructions: null, this.Logger, kernel, arguments, cancellationToken);
         }
     }
 
