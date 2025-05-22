@@ -411,6 +411,14 @@ public sealed partial class OpenAIAssistantAgent : Agent
             AdditionalInstructions = options?.AdditionalInstructions,
         });
 
+        var kernel = (options?.Kernel ?? this.Kernel).Clone();
+
+        // Get the context contributions from the AIContextProviders.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var providersContext = await openAIAssistantAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
             () => InternalInvokeAsync(),
@@ -423,8 +431,9 @@ public sealed partial class OpenAIAssistantAgent : Agent
                 this.Client,
                 openAIAssistantAgentThread.Id!,
                 internalOptions,
+                providersContext.Instructions,
                 this.Logger,
-                options?.Kernel ?? this.Kernel,
+                kernel,
                 options?.KernelArguments,
                 cancellationToken).ConfigureAwait(false))
             {
@@ -496,7 +505,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {
             kernel ??= this.Kernel;
-            await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this.Client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
+            await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this.Client, threadId, options, null, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
             {
                 if (isVisible)
                 {
@@ -547,6 +556,14 @@ public sealed partial class OpenAIAssistantAgent : Agent
             () => new OpenAIAssistantAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
+        var kernel = (options?.Kernel ?? this.Kernel).Clone();
+
+        // Get the context contributions from the AIContextProviders.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var providersContext = await openAIAssistantAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
+        kernel.Plugins.AddFromAIContext(providersContext, "Tools");
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
         // Create options that use the RunCreationOptions from the options param if provided or
         // falls back to creating a new RunCreationOptions if additional instructions is provided
         // separately.
@@ -555,17 +572,28 @@ public sealed partial class OpenAIAssistantAgent : Agent
             AdditionalInstructions = options?.AdditionalInstructions,
         });
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        // Invoke the Agent with the thread that we already added our message to.
+#pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         var newMessagesReceiver = new ChatHistory();
-        var invokeResults = this.InvokeStreamingAsync(
-            openAIAssistantAgentThread.Id!,
-            internalOptions,
-            options?.KernelArguments,
-            options?.Kernel ?? this.Kernel,
-            newMessagesReceiver,
+        var invokeResults = ActivityExtensions.RunWithActivityAsync(
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
+            () => InternalInvokeStreamingAsync(),
             cancellationToken);
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
+
+        IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
+        {
+            return AssistantThreadActions.InvokeStreamingAsync(
+                this,
+                this.Client,
+                openAIAssistantAgentThread.Id!,
+                newMessagesReceiver,
+                internalOptions,
+                providersContext.Instructions,
+                this.Logger,
+                kernel,
+                options?.KernelArguments,
+                cancellationToken);
+        }
 
         // Return the chunks to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
@@ -638,7 +666,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
         IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
         {
             kernel ??= this.Kernel;
-            return AssistantThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
+            return AssistantThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, providersAdditionalInstructions: null, this.Logger, kernel, arguments, cancellationToken);
         }
     }
 
