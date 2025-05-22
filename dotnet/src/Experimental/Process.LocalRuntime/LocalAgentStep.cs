@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -10,6 +9,7 @@ using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
 namespace Microsoft.SemanticKernel.Process;
+
 internal class LocalAgentStep : LocalStep
 {
     private new readonly KernelProcessAgentStep _stepInfo;
@@ -66,7 +66,7 @@ internal class LocalAgentStep : LocalStep
                     this._eventNamespace,
                     sourceId: $"{targetFunction}.OnResult",
                     eventVisibility: KernelProcessEventVisibility.Public,
-                    writtenToThread: this._agentThread.ThreadId)); // TODO: This is keeping track of the thread the message has been written to, clean it up, name it better, etc. 
+                    writtenToThread: this._agentThread.ThreadId)); // TODO: This is keeping track of the thread the message has been written to, clean it up, name it better, etc.
         }
         catch (Exception ex)
         {
@@ -145,7 +145,7 @@ internal class LocalAgentStep : LocalStep
                 {
                     foreach (var update in declarativeCondition.Updates)
                     {
-                        stateJson = this.UpdateState(stateJson, update.Path, update.Operation, update.Value);
+                        stateJson = JMESUpdate.UpdateState(stateJson, update.Path, update.Operation, update.Value);
                     }
                 }
 
@@ -165,217 +165,5 @@ internal class LocalAgentStep : LocalStep
 
             return Task.FromResult(stateJson.Deserialize(stateType));
         }).ConfigureAwait(false);
-    }
-
-    private JsonDocument UpdateState(JsonDocument document, string path, StateUpdateOperations operation, object? value = null)
-    {
-        if (document == null)
-        {
-            throw new ArgumentNullException(nameof(document));
-        }
-
-        if (string.IsNullOrEmpty(path))
-        {
-            throw new ArgumentException("Path cannot be null or empty", nameof(path));
-        }
-
-        try
-        {
-            // Clone the document for immutability
-            using var memoryStream = new MemoryStream();
-            using (var jsonWriter = new Utf8JsonWriter(memoryStream))
-            {
-                this.UpdateJsonElement(document.RootElement, jsonWriter, path.Split('.'), 0, operation, value);
-                jsonWriter.Flush();
-            }
-
-            memoryStream.Position = 0;
-            return JsonDocument.Parse(memoryStream);
-        }
-        catch (JsonException ex)
-        {
-            throw new InvalidOperationException($"JSON processing error: {ex.Message}", ex);
-        }
-        catch (IOException ex)
-        {
-            throw new InvalidOperationException($"I/O error during JSON update: {ex.Message}", ex);
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            throw new ArgumentException($"Invalid path: {ex.Message}", ex);
-        }
-    }
-
-    private void UpdateJsonElement(JsonElement element, Utf8JsonWriter writer, string[] pathParts, int depth, StateUpdateOperations operation, object? value)
-    {
-        // If we're at the target element
-        if (depth == pathParts.Length)
-        {
-            this.PerformOperation(element, writer, operation, value);
-            return;
-        }
-
-        // If we're at an intermediate level
-        switch (element.ValueKind)
-        {
-            case JsonValueKind.Object:
-                writer.WriteStartObject();
-
-                foreach (var property in element.EnumerateObject())
-                {
-                    if (property.Name == pathParts[depth])
-                    {
-                        writer.WritePropertyName(property.Name);
-                        this.UpdateJsonElement(property.Value, writer, pathParts, depth + 1, operation, value);
-                    }
-                    else
-                    {
-                        property.WriteTo(writer);
-                    }
-                }
-
-                writer.WriteEndObject();
-                break;
-
-            case JsonValueKind.Array:
-                writer.WriteStartArray();
-
-                // Check if the path part is a valid array index
-                if (int.TryParse(pathParts[depth], out int index) && index < element.GetArrayLength())
-                {
-                    int i = 0;
-                    foreach (var item in element.EnumerateArray())
-                    {
-                        if (i == index)
-                        {
-                            this.UpdateJsonElement(item, writer, pathParts, depth + 1, operation, value);
-                        }
-                        else
-                        {
-                            item.WriteTo(writer);
-                        }
-                        i++;
-                    }
-                }
-                else
-                {
-                    // If the index is invalid, just copy the array unchanged
-                    foreach (var item in element.EnumerateArray())
-                    {
-                        item.WriteTo(writer);
-                    }
-                }
-
-                writer.WriteEndArray();
-                break;
-
-            default:
-                // We've reached a leaf node before the full path was traversed
-                // Just write the current value and return
-                element.WriteTo(writer);
-                break;
-        }
-    }
-
-    private void PerformOperation(JsonElement element, Utf8JsonWriter writer, StateUpdateOperations operation, object? value)
-    {
-        try
-        {
-            switch (operation)
-            {
-                case StateUpdateOperations.Set:
-                    this.WriteValue(writer, value);
-                    break;
-
-                case StateUpdateOperations.Increment:
-                    if (element.ValueKind != JsonValueKind.Number)
-                    {
-                        throw new InvalidOperationException("Cannot increment non-numeric value at the specified path");
-                    }
-
-                    if (element.TryGetInt32(out int intValue))
-                    {
-                        int incrementBy = value != null ? Convert.ToInt32(value) : 1;
-                        writer.WriteNumberValue(intValue + incrementBy);
-                    }
-                    else if (element.TryGetDouble(out double doubleValue))
-                    {
-                        double incrementBy = value != null ? Convert.ToDouble(value) : 1.0;
-                        writer.WriteNumberValue(doubleValue + incrementBy);
-                    }
-                    break;
-
-                case StateUpdateOperations.Decrement:
-                    if (element.ValueKind != JsonValueKind.Number)
-                    {
-                        throw new InvalidOperationException("Cannot decrement non-numeric value at the specified path");
-                    }
-
-                    if (element.TryGetInt32(out int intVal))
-                    {
-                        int decrementBy = value != null ? Convert.ToInt32(value) : 1;
-                        writer.WriteNumberValue(intVal - decrementBy);
-                    }
-                    else if (element.TryGetDouble(out double doubleVal))
-                    {
-                        double decrementBy = value != null ? Convert.ToDouble(value) : 1.0;
-                        writer.WriteNumberValue(doubleVal - decrementBy);
-                    }
-                    break;
-
-                default:
-                    throw new NotSupportedException($"Operation {operation} is not supported");
-            }
-        }
-        catch (FormatException ex)
-        {
-            throw new ArgumentException($"Value format error: {ex.Message}", ex);
-        }
-        catch (OverflowException ex)
-        {
-            throw new ArgumentException($"Numeric overflow during operation: {ex.Message}", ex);
-        }
-    }
-
-    private void WriteValue(Utf8JsonWriter writer, object? value)
-    {
-        if (value == null)
-        {
-            writer.WriteNullValue();
-            return;
-        }
-
-        switch (value)
-        {
-            case string strValue:
-                writer.WriteStringValue(strValue);
-                break;
-            case int intValue:
-                writer.WriteNumberValue(intValue);
-                break;
-            case long longValue:
-                writer.WriteNumberValue(longValue);
-                break;
-            case double doubleValue:
-                writer.WriteNumberValue(doubleValue);
-                break;
-            case decimal decimalValue:
-                writer.WriteNumberValue(decimalValue);
-                break;
-            case bool boolValue:
-                writer.WriteBooleanValue(boolValue);
-                break;
-            case DateTime dateTimeValue:
-                writer.WriteStringValue(dateTimeValue);
-                break;
-            default:
-                // For complex objects, serialize them to JSON
-                var json = JsonSerializer.Serialize(value);
-                using (var doc = JsonDocument.Parse(json))
-                {
-                    doc.RootElement.WriteTo(writer);
-                }
-                break;
-        }
     }
 }

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -260,7 +261,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         Dictionary<string, string> processInfoInstanceMap = await this.TryGetCachedProcessStateAsync().ConfigureAwait(false);
 
         // TODO: Pull user state from persisted state on resume.
-        this._processStateManager = new ProcessStateManager(this._process.UserStateype, null);
+        this._processStateManager = new ProcessStateManager(this._process.UserStateType, null);
 
         // Initialize threads. TODO: Need to implement state management here.
         foreach (var kvp in this._process.Threads)
@@ -390,6 +391,9 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 
         try
         {
+            //
+            await this.EnqueueOnEnterMessagesAsync(messageChannel).ConfigureAwait(false);
+
             // Run the Pregel algorithm until there are no more messages being sent.
             LocalStep? finalStep = null;
             for (int superstep = 0; superstep < maxSupersteps; superstep++)
@@ -451,6 +455,107 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         return;
     }
 
+    private async Task EnqueueEdgesAsync(IEnumerable<KernelProcessEdge> edges, Queue<ProcessMessage> messageChannel, ProcessEvent processEvent)
+    {
+        bool foundEdge = false;
+        List<KernelProcessEdge> defaultConditionedEdges = [];
+        foreach (var edge in edges)
+        {
+            // Default conditions are processed at the end if no other conditions are met.
+            if (edge.Condition.IsDefault())
+            {
+                defaultConditionedEdges.Add(edge);
+                continue;
+            }
+
+            // Check if the condition is met for this edge, if not skip it.
+            bool isConditionMet = await edge.Condition.Callback(processEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
+            if (!isConditionMet)
+            {
+                continue;
+            }
+
+            // Handle different target types
+            if (edge.OutputTarget is KernelProcessStateTarget stateTarget)
+            {
+                if (this._processStateManager is null)
+                {
+                    throw new KernelException("The process state manager is not initialized.").Log(this._logger);
+                }
+
+                await (this._processStateManager.ReduceAsync((stateType, state) =>
+                {
+                    // this should all be contained within a callback
+                    var stateJson = JsonDocument.Parse(JsonSerializer.Serialize(state));
+                    stateJson = JMESUpdate.UpdateState(stateJson, stateTarget.VariableUpdate.Path, stateTarget.VariableUpdate.Operation, stateTarget.VariableUpdate.Value);
+                    return Task.FromResult(stateJson.Deserialize(stateType));
+                })).ConfigureAwait(false);
+            }
+            else if (edge.OutputTarget is KernelProcessEmitTarget emitTarget)
+            {
+                // Emit target from the step
+            }
+            else if (edge.OutputTarget is KernelProcessFunctionTarget functionTarget)
+            {
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, processEvent.SourceId, processEvent.Data);
+                messageChannel.Enqueue(message);
+            }
+            else if (edge.OutputTarget is KernelProcessAgentInvokeTarget agentInvokeTarget)
+            {
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, processEvent.SourceId, processEvent.Data);
+                messageChannel.Enqueue(message);
+            }
+            else
+            {
+                throw new KernelException("Failed to process edge type.");
+            }
+
+            foundEdge = true;
+        }
+
+        // If no edges were found for the event, check if there are any default conditioned edges to process.
+        if (!foundEdge && defaultConditionedEdges.Count > 0)
+        {
+            foreach (KernelProcessEdge edge in defaultConditionedEdges)
+            {
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, this._process.State.Id!, null, null);
+                messageChannel.Enqueue(message);
+
+                // TODO: Handle state here as well
+            }
+        }
+
+        // Error event was raised with no edge to handle it, send it to an edge defined as the global error target.
+        if (!foundEdge && processEvent.IsError)
+        {
+            if (this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? errorEdges))
+            {
+                foreach (KernelProcessEdge edge in errorEdges)
+                {
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, processEvent.SourceId, processEvent.Data);
+                    messageChannel.Enqueue(message);
+                }
+            }
+        }
+    }
+
+    private async Task EnqueueOnEnterMessagesAsync(Queue<ProcessMessage> messageChannel)
+    {
+        // TODO: Process edges for the OnProcessStart event
+        foreach (var kvp in this._process.Edges.Where(e => e.Key.EndsWith(ProcessConstants.Declarative.OnEnterEvent, StringComparison.OrdinalIgnoreCase)))
+        {
+            var processEvent = new ProcessEvent
+            {
+                Namespace = this.Name,
+                SourceId = this._process.State.Id!,
+                Data = null,
+                Visibility = KernelProcessEventVisibility.Internal
+            };
+
+            await this.EnqueueEdgesAsync(kvp.Value, messageChannel, processEvent).ConfigureAwait(false);
+        }
+    }
+
     /// <summary>
     /// Processes external events that have been sent to the process, translates them to <see cref="ProcessMessage"/>s, and enqueues
     /// them to the provided message channel so that they can be processed in the next superstep.
@@ -488,33 +593,87 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                 base.EmitEvent(stepEvent);
             }
 
+            await this.EnqueueEdgesAsync(step.GetEdgeForEvent(stepEvent.QualifiedId), messageChannel, stepEvent).ConfigureAwait(false);
             // Get the edges for the event and queue up the messages to be sent to the next steps.
-            bool foundEdge = false;
-            foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
-            {
-                bool isConditionMet = await edge.Condition.Callback(stepEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
-                if (!isConditionMet)
-                {
-                    continue;
-                }
+            //bool foundEdge = false;
+            //foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
+            //{
+            //    bool isConditionMet = await edge.Condition.Callback(stepEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
+            //    if (!isConditionMet)
+            //    {
+            //        continue;
+            //    }
 
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
-                messageChannel.Enqueue(message);
-                foundEdge = true;
-            }
+            //    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
+            //    messageChannel.Enqueue(message);
+            //    foundEdge = true;
+            //}
 
-            // Error event was raised with no edge to handle it, send it to an edge defined as the global error target.
-            if (!foundEdge && stepEvent.IsError)
-            {
-                if (this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
-                {
-                    foreach (KernelProcessEdge edge in edges)
-                    {
-                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data);
-                        messageChannel.Enqueue(message);
-                    }
-                }
-            }
+            //// Get the edges for the event and queue up the messages to be sent to the next steps.
+            //bool foundEdge = false;
+            //List<KernelProcessEdge> defaultConditionedEdges = [];
+            //foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
+            //{
+            //    // TODO: Make this not a string comparison
+            //    // Save default conditions for the end
+            //    if (edge.Condition.DeclarativeDefinition?.Equals(ProcessConstants.Declarative.DefaultCondition, StringComparison.OrdinalIgnoreCase) ?? false)
+            //    {
+            //        defaultConditionedEdges.Add(edge);
+            //        continue;
+            //    }
+
+            //    bool isConditionMet = await edge.Condition.Callback(stepEvent.ToKernelProcessEvent(), this._processStateManager?.GetState()).ConfigureAwait(false);
+            //    if (!isConditionMet)
+            //    {
+            //        continue;
+            //    }
+
+            //    // Handle different target types
+            //    if (edge.OutputTarget is KernelProcessStateTarget stateTarget)
+            //    {
+            //        // TODO: Update state
+            //    }
+            //    else if (edge.OutputTarget is KernelProcessEmitTarget emitTarget)
+            //    {
+            //        // Emit target from process
+            //    }
+            //    else if (edge.OutputTarget is KernelProcessFunctionTarget functionTarget)
+            //    {
+            //        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
+            //        messageChannel.Enqueue(message);
+            //    }
+            //    else
+            //    {
+            //        throw new KernelException("Failed to process edge type.");
+            //    }
+
+            //    foundEdge = true;
+            //}
+
+            //// If no edges were found for the event, check if there are any default conditioned edges to process.
+            //if (!foundEdge && defaultConditionedEdges.Count > 0)
+            //{
+            //    foreach (KernelProcessEdge edge in defaultConditionedEdges)
+            //    {
+            //        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data, stepEvent.WrittenToThread);
+            //        messageChannel.Enqueue(message);
+
+            //        // TODO: Handle state here as well
+            //    }
+            //}
+
+            //// Error event was raised with no edge to handle it, send it to an edge defined as the global error target.
+            //if (!foundEdge && stepEvent.IsError)
+            //{
+            //    if (this._outputEdges.TryGetValue(ProcessConstants.GlobalErrorEventId, out List<KernelProcessEdge>? edges))
+            //    {
+            //        foreach (KernelProcessEdge edge in edges)
+            //        {
+            //            ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data);
+            //            messageChannel.Enqueue(message);
+            //        }
+            //    }
+            //}
         }
     }
 

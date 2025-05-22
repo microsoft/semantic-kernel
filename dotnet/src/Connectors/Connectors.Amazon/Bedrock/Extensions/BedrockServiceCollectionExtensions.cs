@@ -45,14 +45,14 @@ public static class BedrockServiceCollectionExtensions
             try
             {
                 IAmazonBedrockRuntime runtime = bedrockRuntime ?? serviceProvider.GetRequiredService<IAmazonBedrockRuntime>();
-                var logger = serviceProvider.GetService<ILoggerFactory>();
+                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
                 // Check if the runtime instance is a proxy object
                 if (runtime.GetType().BaseType == typeof(AmazonServiceClient))
                 {
                     // Cast to AmazonServiceClient and subscribe to the event
                     ((AmazonServiceClient)runtime).BeforeRequestEvent += BedrockClientUtilities.BedrockServiceClientRequestHandler;
                 }
-                return new BedrockChatCompletionService(modelId, runtime, logger);
+                return new BedrockChatCompletionService(modelId, runtime, loggerFactory);
             }
             catch (Exception ex)
             {
@@ -87,14 +87,14 @@ public static class BedrockServiceCollectionExtensions
             try
             {
                 IAmazonBedrockRuntime runtime = bedrockRuntime ?? serviceProvider.GetRequiredService<IAmazonBedrockRuntime>();
-                var logger = serviceProvider.GetService<ILoggerFactory>();
+                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
                 // Check if the runtime instance is a proxy object
                 if (runtime.GetType().BaseType == typeof(AmazonServiceClient))
                 {
                     // Cast to AmazonServiceClient and subscribe to the event
                     ((AmazonServiceClient)runtime).BeforeRequestEvent += BedrockClientUtilities.BedrockServiceClientRequestHandler;
                 }
-                return new BedrockTextGenerationService(modelId, runtime, logger);
+                return new BedrockTextGenerationService(modelId, runtime, loggerFactory);
             }
             catch (Exception ex)
             {
@@ -113,6 +113,7 @@ public static class BedrockServiceCollectionExtensions
     /// <param name="bedrockRuntime">The optional <see cref="IAmazonBedrockRuntime" /> to use. If not provided will be retrieved from the Service Collection.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <returns>Returns back <see cref="IServiceCollection"/> with a configured service.</returns>
+    [Obsolete("Use AddBedrockEmbeddingGenerator instead.")]
     public static IServiceCollection AddBedrockTextEmbeddingGenerationService(
         this IServiceCollection services,
         string modelId,
@@ -129,14 +130,14 @@ public static class BedrockServiceCollectionExtensions
             try
             {
                 IAmazonBedrockRuntime runtime = bedrockRuntime ?? serviceProvider.GetRequiredService<IAmazonBedrockRuntime>();
-                var logger = serviceProvider.GetService<ILoggerFactory>();
+                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
                 // Check if the runtime instance is a proxy object
                 if (runtime.GetType().BaseType == typeof(AmazonServiceClient))
                 {
                     // Cast to AmazonServiceClient and subscribe to the event
                     ((AmazonServiceClient)runtime).BeforeRequestEvent += BedrockClientUtilities.BedrockServiceClientRequestHandler;
                 }
-                return new BedrockTextEmbeddingGenerationService(modelId, runtime, logger);
+                return new BedrockTextEmbeddingGenerationService(modelId, runtime, loggerFactory);
             }
             catch (Exception ex)
             {

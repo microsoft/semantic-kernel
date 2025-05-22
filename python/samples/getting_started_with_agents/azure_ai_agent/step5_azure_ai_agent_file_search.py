@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from azure.ai.projects.models import FileSearchTool, OpenAIFile, VectorStore
+from azure.ai.agents.models import FileInfo, FileSearchTool, VectorStore
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
@@ -23,8 +23,6 @@ USER_INPUTS = [
 
 
 async def main() -> None:
-    ai_agent_settings = AzureAIAgentSettings()
-
     async with (
         DefaultAzureCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
@@ -33,8 +31,8 @@ async def main() -> None:
         pdf_file_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "employees.pdf"
         )
-        file: OpenAIFile = await client.agents.upload_file_and_poll(file_path=pdf_file_path, purpose="assistants")
-        vector_store: VectorStore = await client.agents.create_vector_store_and_poll(
+        file: FileInfo = await client.agents.files.upload_and_poll(file_path=pdf_file_path, purpose="assistants")
+        vector_store: VectorStore = await client.agents.vector_stores.create_and_poll(
             file_ids=[file.id], name="my_vectorstore"
         )
 
@@ -43,7 +41,7 @@ async def main() -> None:
 
         # 3. Create an agent on the Azure AI agent service with the file search tool
         agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.model_deployment_name,
+            model=AzureAIAgentSettings().model_deployment_name,
             tools=file_search.definitions,
             tool_resources=file_search.resources,
         )
@@ -70,8 +68,8 @@ async def main() -> None:
         finally:
             # 7. Cleanup: Delete the thread and agent and other resources
             await thread.delete() if thread else None
-            await client.agents.delete_vector_store(vector_store.id)
-            await client.agents.delete_file(file.id)
+            await client.agents.vector_stores.delete(vector_store.id)
+            await client.agents.files.delete(file.id)
             await client.agents.delete_agent(agent.id)
 
         """

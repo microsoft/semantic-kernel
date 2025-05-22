@@ -20,42 +20,10 @@ public record KernelProcessTarget
         this.Type = type;
     }
 
-    ///// <summary>
-    ///// Initializes a new instance of the <see cref="KernelProcessTarget"/> class.
-    ///// </summary>
-    ///// <param name="functionTarget"></param>
-    //public KernelProcessTarget(KernelProcessFunctionTarget functionTarget)
-    //{
-    //    Verify.NotNull(functionTarget, nameof(functionTarget));
-    //    this.Type = ProcessTargetType.KernelFunction;
-    //    this.FunctionTarget = functionTarget;
-    //}
-
-    ///// <summary>
-    ///// Initializes a new instance of the <see cref="KernelProcessTarget"/> class.
-    ///// </summary>
-    ///// <param name="variableUpdate"></param>
-    //public KernelProcessTarget(VariableUpdate variableUpdate)
-    //{
-    //    Verify.NotNull(variableUpdate, nameof(variableUpdate));
-    //    this.Type = ProcessTargetType.StateUpdate;
-    //    this.VariableUpdate = variableUpdate;
-    //}
-
     /// <summary>
     /// The type of target.
     /// </summary>
     public ProcessTargetType Type { get; init; } = ProcessTargetType.Invocation;
-
-    ///// <summary>
-    ///// The associated <see cref="KernelProcessFunctionTarget"/>. Null when <see cref="Type"/> is not <see cref="ProcessTargetType.KernelFunction"/>."/>
-    ///// </summary>
-    //public KernelProcessFunctionTarget? FunctionTarget { get; init; }
-
-    ///// <summary>
-    ///// The associated <see cref="VariableUpdate"/>. Null when <see cref="Type"/> is not <see cref="ProcessTargetType.StateUpdate"/>."/>
-    ///// </summary>
-    //public VariableUpdate? VariableUpdate { get; init; }
 }
 
 /// <summary>
@@ -103,6 +71,50 @@ public record KernelProcessEmitTarget : KernelProcessTarget
     /// /// The payload to be sent with the event.
     /// </summary>
     public Dictionary<string, string>? Payload { get; init; }
+}
+
+/// <summary>
+/// Represents an agent invocation target for an edge in a Process
+/// </summary>
+public record KernelProcessAgentInvokeTarget : KernelProcessTarget
+{
+    /// <summary>
+    /// Creates an instance of the <see cref="KernelProcessAgentInvokeTarget"/> class.
+    /// </summary>
+    /// <param name="stepId"></param>
+    /// <param name="threadEval"></param>
+    /// <param name="messagesInEval"></param>
+    /// <param name="inputEvals"></param>
+    public KernelProcessAgentInvokeTarget(string stepId, string? threadEval, List<string>? messagesInEval, Dictionary<string, string> inputEvals) : base(ProcessTargetType.Invocation)
+    {
+        Verify.NotNullOrWhiteSpace(stepId);
+        Verify.NotNull(inputEvals);
+
+        this.StepId = stepId;
+        this.ThreadEval = threadEval;
+        this.MessagesInEval = messagesInEval;
+        this.InputEvals = inputEvals;
+    }
+
+    /// <summary>
+    /// The unique identifier of the Step being targeted.
+    /// </summary>
+    public string StepId { get; init; }
+
+    /// <summary>
+    /// An evaluation string that will be evaluated to determine the thread to run on.
+    /// </summary>
+    public string? ThreadEval { get; init; }
+
+    /// <summary>
+    /// An evaluation string that will be evaluated to determine the messages to send to the target.
+    /// </summary>
+    public List<string>? MessagesInEval { get; init; }
+
+    /// <summary>
+    /// An evaluation string that will be evaluated to determine the inputs to send to the target.
+    /// </summary>
+    public Dictionary<string, string> InputEvals { get; init; }
 }
 
 /// <summary>

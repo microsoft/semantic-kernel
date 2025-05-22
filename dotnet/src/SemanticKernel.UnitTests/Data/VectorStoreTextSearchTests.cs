@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Data;
+using Microsoft.SemanticKernel.Embeddings;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Data;
@@ -15,14 +16,14 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
     public void CanCreateVectorStoreTextSearchWithEmbeddingGenerationService()
     {
         // Arrange.
-        var vectorStore = new InMemoryVectorStore();
+        using var vectorStore = new InMemoryVectorStore();
         var vectorSearch = vectorStore.GetCollection<Guid, DataModelWithRawEmbedding>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
         using var embeddingGenerationService = new MockTextEmbeddingGenerator();
 
         // Act.
-        var sut = new VectorStoreTextSearch<DataModelWithRawEmbedding>(vectorSearch, embeddingGenerationService, stringMapper, resultMapper);
+        var sut = new VectorStoreTextSearch<DataModelWithRawEmbedding>(vectorSearch, (ITextEmbeddingGenerationService)embeddingGenerationService, stringMapper, resultMapper);
 
         // Assert.
         Assert.NotNull(sut);
@@ -33,7 +34,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
     public void CanCreateVectorStoreTextSearchWithIVectorSearch()
     {
         // Arrange.
-        var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = new MockTextEmbeddingGenerator() });
+        using var vectorStore = new InMemoryVectorStore(new() { EmbeddingGenerator = new MockTextEmbeddingGenerator() });
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
@@ -76,6 +77,45 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
     {
         // Arrange.
         var sut = await CreateVectorStoreTextSearchAsync();
+
+        // Act.
+        KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
+        var results = await searchResults.Results.ToListAsync();
+
+        Assert.Equal(2, results.Count);
+    }
+
+    [Fact]
+    public async Task CanSearchWithEmbeddingGeneratorAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchWithEmbeddingGeneratorAsync();
+
+        // Act.
+        KernelSearchResults<string> searchResults = await sut.SearchAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
+        var results = await searchResults.Results.ToListAsync();
+
+        Assert.Equal(2, results.Count);
+    }
+
+    [Fact]
+    public async Task CanGetTextSearchResultsWithEmbeddingGeneratorAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchWithEmbeddingGeneratorAsync();
+
+        // Act.
+        KernelSearchResults<TextSearchResult> searchResults = await sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
+        var results = await searchResults.Results.ToListAsync();
+
+        Assert.Equal(2, results.Count);
+    }
+
+    [Fact]
+    public async Task CanGetSearchResultsWithEmbeddingGeneratorAsync()
+    {
+        // Arrange.
+        var sut = await CreateVectorStoreTextSearchWithEmbeddingGeneratorAsync();
 
         // Act.
         KernelSearchResults<object> searchResults = await sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });

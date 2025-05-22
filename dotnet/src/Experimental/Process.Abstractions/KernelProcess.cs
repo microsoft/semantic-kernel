@@ -25,7 +25,7 @@ public sealed record KernelProcess : KernelProcessStepInfo
     /// <summary>
     /// The type of the user state. This is used to identify the underlying state type.
     /// </summary>
-    public Type? UserStateype { get; init; } = null;
+    public Type? UserStateType { get; init; } = null;
 
     /// <summary>
     /// Captures Kernel Process State into <see cref="KernelProcessStateMetadata"/> after process has run

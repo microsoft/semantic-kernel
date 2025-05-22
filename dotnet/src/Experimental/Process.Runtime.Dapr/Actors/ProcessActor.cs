@@ -419,7 +419,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 {
                     if (edge.OutputTarget is not KernelProcessFunctionTarget functionTarget)
                     {
-                        throw new KernelException("Only KernelProcessFunctionTarget can be used as input events.");
+                        throw new KernelException("The target for the edge is not a function target.").Log(this._logger);
                     }
 
                     ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Id, externalEvent.Data);
@@ -494,7 +494,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                     {
                         if (edge.OutputTarget is not KernelProcessFunctionTarget functionTarget)
                         {
-                            throw new KernelException("Only KernelProcessFunctionTarget can be used as input events.");
+                            throw new KernelException("The target for the edge is not a function target.").Log(this._logger);
                         }
 
                         ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, scopedEvent.SourceId, scopedEvent.Data);

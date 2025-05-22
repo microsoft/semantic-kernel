@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Builds a workflow from a YAML definition.
 /// </summary>
-public class WorkflowBuilder
+internal class WorkflowBuilder
 {
     private readonly Dictionary<string, ProcessStepBuilder> _stepBuilders = [];
     private readonly Dictionary<string, CloudEvent> _inputEvents = [];
@@ -28,11 +28,10 @@ public class WorkflowBuilder
     /// <summary>
     /// Builds a process from a workflow definition.
     /// </summary>
-    /// <param name="workflow"></param>
-    /// <param name="yaml"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public async Task<KernelProcess?> BuildProcessAsync(Workflow workflow, string yaml)
+    /// <param name="workflow">An instance of <see cref="Workflow"/>.</param>
+    /// <param name="yaml">Workflow definition in YAML format.</param>
+    /// <param name="stepTypes">Collection of preloaded step types.</param>
+    public async Task<KernelProcess?> BuildProcessAsync(Workflow workflow, string yaml, Dictionary<string, Type>? stepTypes = null)
     {
         this._yaml = yaml;
         var stepBuilders = new Dictionary<string, ProcessStepBuilder>();
@@ -47,13 +46,10 @@ public class WorkflowBuilder
             throw new ArgumentException("Workflow inputs are not specified.");
         }
 
-        // TODO: Process metadata
-        // TODO: Process inputs
         // TODO: Process outputs
         // TODO: Process variables
-        // TODO: Process schemas
 
-        ProcessBuilder processBuilder = new(workflow.Name, null);
+        ProcessBuilder processBuilder = new(workflow.Id, description: workflow.Description, stateType: typeof(ProcessDefaultState));
 
         if (workflow.Inputs.Events?.CloudEvents is not null)
         {
@@ -71,7 +67,7 @@ public class WorkflowBuilder
         // Process the nodes
         foreach (var step in workflow.Nodes)
         {
-            await this.AddStepAsync(step, processBuilder).ConfigureAwait(false);
+            await this.AddStepAsync(step, processBuilder, stepTypes).ConfigureAwait(false);
         }
 
         // Process the orchestration
@@ -102,13 +98,13 @@ public class WorkflowBuilder
 
     #region Nodes and Steps
 
-    internal async Task AddStepAsync(Node node, ProcessBuilder processBuilder)
+    internal async Task AddStepAsync(Node node, ProcessBuilder processBuilder, Dictionary<string, Type>? stepTypes = null)
     {
         Verify.NotNull(node);
 
         if (node.Type == "dotnet")
         {
-            await this.BuildDotNetStepAsync(node, processBuilder).ConfigureAwait(false);
+            await this.BuildDotNetStepAsync(node, processBuilder, stepTypes).ConfigureAwait(false);
         }
         else if (node.Type == "python")
         {
@@ -182,7 +178,7 @@ public class WorkflowBuilder
         throw new KernelException("Python nodes are not supported in the dotnet runtime.");
     }
 
-    private Task BuildDotNetStepAsync(Node node, ProcessBuilder processBuilder)
+    private Task BuildDotNetStepAsync(Node node, ProcessBuilder processBuilder, Dictionary<string, Type>? stepTypes = null)
     {
         Verify.NotNull(node);
 
@@ -195,7 +191,14 @@ public class WorkflowBuilder
         Type? dotnetAgentType = null;
         try
         {
-            dotnetAgentType = Type.GetType(node.Agent.Type);
+            if (stepTypes is not null && stepTypes.TryGetValue(node.Agent.Type, out var type) && type is not null)
+            {
+                dotnetAgentType = type;
+            }
+            else
+            {
+                dotnetAgentType = Type.GetType(node.Agent.Type);
+            }
         }
         catch (TypeLoadException tle)
         {
@@ -326,32 +329,32 @@ public class WorkflowBuilder
             Description = process.Description,
             FormatVersion = "1.0",
             Name = process.State.Name,
-            Nodes = [],
+            Nodes = [new Node { Id = "End", Type = "declarative", Version = "1.0", Description = "Terminal state" }],
             Variables = [],
         };
 
         // Add variables
         foreach (var thread in process.Threads)
         {
-            workflow.Variables.Add(thread.Key, new Variable()
+            workflow.Variables.Add(thread.Key, new VariableDefinition()
             {
-                Type = "thread"
+                Type = VariableType.Thread,
             });
         }
 
-        if (process.UserStateype != null)
+        if (process.UserStateType != null)
         {
             // Get all public properties
-            PropertyInfo[] properties = process.UserStateype.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            PropertyInfo[] properties = process.UserStateType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             // Loop through each property and output its type
             foreach (PropertyInfo property in properties)
             {
                 if (property.PropertyType == typeof(List<ChatMessageContent>))
                 {
-                    workflow.Variables.Add(property.Name, new Variable()
+                    workflow.Variables.Add(property.Name, new VariableDefinition()
                     {
-                        Type = "messages"
+                        Type = VariableType.Messages,
                     });
 
                     continue;
@@ -365,13 +368,8 @@ public class WorkflowBuilder
                 .IgnoreUnmatchedProperties()
                 .Build();
 
-                var yamlSchema = deserializer.Deserialize(schemaJson);
-                if (yamlSchema is null)
-                {
-                    throw new KernelException("Failed to deserialize schema.");
-                }
-
-                workflow.Variables.Add(property.Name, yamlSchema);
+                var yamlSchema = deserializer.Deserialize(schemaJson) ?? throw new KernelException("Failed to deserialize schema.");
+                workflow.Variables.Add(property.Name, new VariableDefinition { Type = VariableType.UserDefined, Schema = yamlSchema });
             }
         }
 
@@ -478,7 +476,6 @@ public class WorkflowBuilder
             Type = agentStep.AgentDefinition.Type!,
             Agent = agentStep.AgentDefinition,
             HumanInLoopType = agentStep.HumanInLoopMode,
-            Thread = agentStep.ThreadName,
             OnComplete = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnComplete),
             OnError = ToEventActions(agentStep.Actions?.DeclarativeActions?.OnError),
             Inputs = agentStep.Inputs.ToDictionary((kvp) => kvp.Key, (kvp) =>
@@ -531,31 +528,38 @@ public class WorkflowBuilder
     {
         Verify.NotNullOrWhiteSpace(eventName);
 
-        if (eventName.EndsWith("Invoke.OnResult", StringComparison.Ordinal))
+        if (eventName.EndsWith("Invoke.OnResult", StringComparison.Ordinal) || eventName.EndsWith(ProcessConstants.Declarative.OnCompleteEvent, StringComparison.OrdinalIgnoreCase))
         {
-            return "_on_complete_";
+            return ProcessConstants.Declarative.OnExitEvent;
         }
-        if (eventName.EndsWith("Invoke.OnError", StringComparison.Ordinal))
+        if (eventName.EndsWith(ProcessConstants.Declarative.OnErrorEvent, StringComparison.Ordinal))
         {
-            return "_on_error_";
+            return ProcessConstants.Declarative.OnErrorEvent;
         }
-        if (eventName.EndsWith("Invoke.OnEnter", StringComparison.Ordinal))
+        if (eventName.EndsWith(ProcessConstants.Declarative.OnEnterEvent, StringComparison.Ordinal))
         {
-            return "_on_enter_";
+            return ProcessConstants.Declarative.OnEnterEvent;
         }
-        if (eventName.EndsWith("Invoke.OnExit", StringComparison.Ordinal))
+        if (eventName.EndsWith(ProcessConstants.Declarative.OnExitEvent, StringComparison.Ordinal))
         {
-            return "_on_exit_";
+            return ProcessConstants.Declarative.OnExitEvent;
+        }
+
+        // remove the first part of the event name before the first period
+        int index = eventName.IndexOf(ProcessConstants.EventIdSeparator);
+        if (index > 0)
+        {
+            eventName = eventName.Substring(index + 1);
         }
 
         return eventName;
     }
 
-    private static List<OnEventAction> ToEventActions(KernelProcessDeclarativeConditionHandler? handler)
+    private static List<OnEventAction>? ToEventActions(KernelProcessDeclarativeConditionHandler? handler)
     {
         if (handler is null)
         {
-            return [];
+            return null;
         }
 
         List<OnEventAction> actions = [];

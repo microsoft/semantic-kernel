@@ -15,6 +15,7 @@ from azure.ai.inference.models import (
     FunctionCall,
     StreamingChatChoiceUpdate,
     StreamingChatCompletionsUpdate,
+    StreamingChatResponseToolCallUpdate,
 )
 from azure.core.credentials import AzureKeyCredential
 
@@ -249,7 +250,7 @@ def mock_azure_ai_inference_streaming_chat_completion_response_with_tool_call(mo
                     delta=ChatResponseMessage(
                         role="assistant",
                         tool_calls=[
-                            ChatCompletionsToolCall(
+                            StreamingChatResponseToolCallUpdate(
                                 id="test_id",
                                 function=FunctionCall(
                                     name="getLightStatus",

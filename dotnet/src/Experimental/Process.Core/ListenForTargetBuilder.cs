@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
 
@@ -37,29 +38,24 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
     }
 
     /// <summary>
-    /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
+    /// Signals that the specified state variable should be updated in the process state.
     /// </summary>
-    /// <param name="target">The output target.</param>
-    /// <param name="inputs"> The inputs to the target.</param>
-    /// <param name="messagesIn"> The messages to be sent to the target.</param>
-    /// <param name="thread"> The thread to send the event to.</param>
-    /// <returns>A fresh builder instance for fluid definition</returns>
-    public ProcessStepEdgeBuilder SendEventToAgent(ProcessAgentBuilder target, Dictionary<string, string>? inputs = null, string? messagesIn = null, string? thread = null)
-    {
-        // TODO: Move this method to agent builder
-        return this.SendEventTo_Internal(new ProcessFunctionTargetBuilder(target));
-    }
-
-    /// <summary>
-    /// Signals the specified variable update to be performed.
-    /// </summary>
-    /// <param name="variableUpdate"></param>
+    /// <param name="path"></param>
+    /// <param name="operation"></param>
+    /// <param name="value"></param>
     /// <returns></returns>
-    public ListenForTargetBuilder Update(VariableUpdate variableUpdate)
+    internal ListenForTargetBuilder UpdateProcessState(string path, StateUpdateOperations operation, object? value)
     {
-        Verify.NotNull(variableUpdate, nameof(variableUpdate));
-        this.VariableUpdate = variableUpdate;
-        this.SendEventTo_Internal(new ProcessStateTargetBuilder(this.VariableUpdate), this.Metadata);
+        Verify.NotNullOrWhiteSpace(path);
+
+        if (!path.StartsWith(ProcessConstants.Declarative.VariablePrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            path = $"{ProcessConstants.Declarative.VariablePrefix}.{path}";
+        }
+
+        // TODO: Should metadata go into the target now?
+        this.VariableUpdate = new VariableUpdate { Path = path, Operation = operation, Value = value };
+        this.SendEventTo_Internal(new ProcessStateTargetBuilder(this.VariableUpdate));
 
         return new ListenForTargetBuilder(this._messageSources, this._processBuilder, this.EdgeGroupBuilder);
     }
@@ -70,41 +66,19 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
     /// <param name="eventName"></param>
     /// <param name="payload"></param>
     /// <returns></returns>
-    public ListenForTargetBuilder EmitEvent(string eventName, Dictionary<string, string>? payload = null)
+    internal ListenForTargetBuilder EmitEvent(string eventName, Dictionary<string, string>? payload = null)
     {
         Verify.NotNullOrWhiteSpace(eventName, nameof(eventName));
-        this.SendEventTo_Internal(new ProcessEmitTargetBuilder(eventName, payload), this.Metadata);
+        this.SendEventTo_Internal(new ProcessEmitTargetBuilder(eventName, payload));
         return new ListenForTargetBuilder(this._messageSources, this._processBuilder, this.EdgeGroupBuilder);
-    }
-
-    /// <summary>
-    /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
-    /// </summary>
-    /// <param name="target">The output target.</param>
-    /// <param name="inputs"> The inputs to the target.</param>
-    /// <param name="messagesIn"> The messages to be sent to the target.</param>
-    /// <param name="thread"> The thread to send the event to.</param>
-    /// <returns>A fresh builder instance for fluid definition</returns>
-    public ProcessStepEdgeBuilder SendEventToAgent<TProcessState>(ProcessAgentBuilder<TProcessState> target, Dictionary<string, string>? inputs = null, string? messagesIn = null, string? thread = null) where TProcessState : class, new()
-    {
-        // TODO: Move this method to agent builder
-        var metaData = new Dictionary<string, object?>()
-        {
-            { "foundryAgent.inputs", inputs },
-            { "foundryAgent.messagesIn", messagesIn },
-            { "foundryAgent.thread", thread }
-        };
-
-        return this.SendEventTo_Internal(new ProcessFunctionTargetBuilder(target), metaData);
     }
 
     /// <summary>
     /// Sends the event to the specified target.
     /// </summary>
     /// <param name="target">The target to send the event to.</param>
-    /// <param name="metadata">Optional metadata to include with the event.</param>
     /// <returns>A new instance of <see cref="ListenForTargetBuilder"/>.</returns>
-    internal override ProcessStepEdgeBuilder SendEventTo_Internal(ProcessTargetBuilder target, Dictionary<string, object?>? metadata = null)
+    internal override ProcessStepEdgeBuilder SendEventTo_Internal(ProcessTargetBuilder target)
     {
         foreach (var messageSource in this._messageSources)
         {
@@ -129,13 +103,12 @@ public sealed partial class ListenForTargetBuilder : ProcessStepEdgeBuilder
             }
 
             onEventBuilder.EdgeGroupBuilder = this.EdgeGroupBuilder;
-            onEventBuilder.Metadata = metadata ?? [];
 
             if (messageSource.Condition != null)
             {
                 onEventBuilder.Condition = messageSource.Condition;
             }
-            onEventBuilder.SendEventTo(target, metadata);
+            onEventBuilder.SendEventTo(target);
         }
 
         return new ListenForTargetBuilder(this._messageSources, this._processBuilder, edgeGroup: this.EdgeGroupBuilder);

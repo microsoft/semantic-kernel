@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
@@ -64,6 +65,7 @@ public abstract class TestsBase
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
     };
 
+    [Obsolete("Temporary test utility for Obsolete ITextEmbeddingGenerationService")]
     protected ITextEmbeddingGenerationService GetEmbeddingService(ServiceType serviceType) => serviceType switch
     {
         ServiceType.GoogleAI => new GoogleAITextEmbeddingGenerationService(
@@ -77,6 +79,20 @@ public abstract class TestsBase
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
     };
 
+    protected IEmbeddingGenerator<string, Embedding<float>> GetEmbeddingGenerator(ServiceType serviceType) => serviceType switch
+    {
+        ServiceType.GoogleAI => new GoogleAIEmbeddingGenerator(
+            this.GoogleAI.EmbeddingModelId,
+            this.GoogleAI.ApiKey),
+        ServiceType.VertexAI => new VertexAIEmbeddingGenerator(
+            modelId: this.VertexAI.EmbeddingModelId,
+            bearerKey: this.VertexAI.BearerKey,
+            location: this.VertexAI.Location,
+            projectId: this.VertexAI.ProjectId),
+        _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
+    };
+
+    [Obsolete("Temporary test utility for Obsolete ITextEmbeddingGenerationService")]
     protected ITextEmbeddingGenerationService GetEmbeddingServiceWithDimensions(ServiceType serviceType, int dimensions) => serviceType switch
     {
         ServiceType.GoogleAI => new GoogleAITextEmbeddingGenerationService(

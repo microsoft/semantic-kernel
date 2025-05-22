@@ -293,6 +293,8 @@ internal class LocalStep : IKernelProcessMessageChannel
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
+            // TODO: Process edges for the OnStepEnter event: This feels like a good use for filters in the non-declarative version
+
             FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
             this.EmitEvent(
                 ProcessEvent.Create(
@@ -300,6 +302,8 @@ internal class LocalStep : IKernelProcessMessageChannel
                     this._eventNamespace,
                     sourceId: $"{targetFunction}.OnResult",
                     eventVisibility: KernelProcessEventVisibility.Public));
+
+            // TODO: Process edges for the OnStepExit event: This feels like a good use for filters in the non-declarative version
         }
         catch (Exception ex)
         {

@@ -1,10 +1,11 @@
 workflow:
+  id: combined_workflow
   name: ProductSummarization
   inputs:
     events:
       cloud_events:
         - type: input_message_received
-          data_schema: 
+          data_schema:
             type: string
   nodes:
     - id: GetProductInfo
@@ -32,7 +33,7 @@ workflow:
               - event_type: ProcessCompleted
   orchestration:
     - listen_for:
-        event: input_message_received    
+        event: input_message_received
         from: _workflow_
       then:
         - node: GetProductInfo

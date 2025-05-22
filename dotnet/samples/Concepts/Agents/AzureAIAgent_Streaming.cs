@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.ComponentModel;
-using Azure.AI.Projects;
+using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Agent = Azure.AI.Projects.Agent;
 
 namespace Agents;
 
@@ -21,23 +20,30 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         const string AgentInstructions = "Repeat the user message in the voice of a pirate and then end with a parrot sound.";
 
         // Define the agent
-        Agent definition = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
             AgentInstructions);
-        AzureAIAgent agent = new(definition, this.AgentsClient);
+        AzureAIAgent agent = new(definition, this.Client);
 
-        // Create a thread for the agent conversation.
-        AzureAIAgentThread agentThread = new(this.AgentsClient, metadata: SampleMetadata);
+        try
+        {
+            // Create a thread for the agent conversation.
+            AzureAIAgentThread agentThread = new(this.Client, metadata: SampleMetadata);
 
-        // Respond to user input
-        await InvokeAgentAsync(agent, agentThread, "Fortune favors the bold.");
-        await InvokeAgentAsync(agent, agentThread, "I came, I saw, I conquered.");
-        await InvokeAgentAsync(agent, agentThread, "Practice makes perfect.");
+            // Respond to user input
+            await InvokeAgentAsync(agent, agentThread, "Fortune favors the bold.");
+            await InvokeAgentAsync(agent, agentThread, "I came, I saw, I conquered.");
+            await InvokeAgentAsync(agent, agentThread, "Practice makes perfect.");
 
-        // Output the entire chat history
-        await DisplayChatHistoryAsync(agentThread);
+            // Output the entire chat history
+            await DisplayChatHistoryAsync(agentThread);
+        }
+        finally
+        {
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
+        }
     }
 
     [Fact]
@@ -47,26 +53,34 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         const string AgentInstructions = "Answer questions about the menu.";
 
         // Define the agent
-        Agent definition = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
             AgentInstructions);
-        AzureAIAgent agent = new(definition, this.AgentsClient);
+        AzureAIAgent agent = new(definition, this.Client);
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        AzureAIAgentThread agentThread = new(this.AgentsClient, metadata: SampleMetadata);
+        AzureAIAgentThread agentThread = new(this.Client, metadata: SampleMetadata);
 
-        // Respond to user input
-        await InvokeAgentAsync(agent, agentThread, "What is the special soup and its price?");
-        await InvokeAgentAsync(agent, agentThread, "What is the special drink and its price?");
+        try
+        {
+            // Respond to user input
+            await InvokeAgentAsync(agent, agentThread, "What is the special soup and its price?");
+            await InvokeAgentAsync(agent, agentThread, "What is the special drink and its price?");
 
-        // Output the entire chat history
-        await DisplayChatHistoryAsync(agentThread);
+            // Output the entire chat history
+            await DisplayChatHistoryAsync(agentThread);
+        }
+        finally
+        {
+            await this.Client.Threads.DeleteThreadAsync(agentThread.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
+        }
     }
 
     [Fact]
@@ -76,23 +90,31 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         const string AgentInstructions = "Solve math problems with code.";
 
         // Define the agent
-        Agent definition = await this.AgentsClient.CreateAgentAsync(
+        PersistentAgent definition = await this.Client.Administration.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             AgentName,
             null,
             AgentInstructions,
             [new CodeInterpreterToolDefinition()]);
-        AzureAIAgent agent = new(definition, this.AgentsClient);
+        AzureAIAgent agent = new(definition, this.Client);
 
         // Create a thread for the agent conversation.
-        AzureAIAgentThread agentThread = new(this.AgentsClient, metadata: SampleMetadata);
+        AzureAIAgentThread agentThread = new(this.Client, metadata: SampleMetadata);
 
-        // Respond to user input
-        await InvokeAgentAsync(agent, agentThread, "Is 191 a prime number?");
-        await InvokeAgentAsync(agent, agentThread, "Determine the values in the Fibonacci sequence that that are less then the value of 101");
+        try
+        {
+            // Respond to user input
+            await InvokeAgentAsync(agent, agentThread, "Is 191 a prime number?");
+            await InvokeAgentAsync(agent, agentThread, "Determine the values in the Fibonacci sequence that that are less then the value of 101");
 
-        // Output the entire chat history
-        await DisplayChatHistoryAsync(agentThread);
+            // Output the entire chat history
+            await DisplayChatHistoryAsync(agentThread);
+        }
+        finally
+        {
+            await this.Client.Threads.DeleteThreadAsync(agentThread.Id);
+            await this.Client.Administration.DeleteAgentAsync(agent.Id);
+        }
     }
 
     // Local function to invoke agent and display the conversation messages.
@@ -116,9 +138,10 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
             if (string.IsNullOrEmpty(response.Content))
             {
                 StreamingFunctionCallUpdateContent? functionCall = response.Items.OfType<StreamingFunctionCallUpdateContent>().SingleOrDefault();
-                if (functionCall != null)
+                if (functionCall?.Name != null)
                 {
-                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}: FUNCTION CALL - {functionCall.Name}");
+                    (string? pluginName, string functionName) = this.ParseFunctionName(functionCall.Name);
+                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}: FUNCTION CALL - {$"{pluginName}." ?? string.Empty}{functionName}");
                 }
 
                 continue;
@@ -165,11 +188,12 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
         public string GetSpecials()
         {
-            return @"
-Special Soup: Clam Chowder
-Special Salad: Cobb Salad
-Special Drink: Chai Tea
-";
+            return
+                """
+                Special Soup: Clam Chowder
+                Special Salad: Cobb Salad
+                Special Drink: Chai Tea
+                """;
         }
 
         [KernelFunction, Description("Provides the price of the requested menu item.")]

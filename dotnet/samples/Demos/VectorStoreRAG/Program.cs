@@ -2,12 +2,14 @@
 
 using System.Globalization;
 using Azure;
+using Azure.AI.OpenAI;
 using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Data;
+using OpenAI;
 using VectorStoreRAG;
 using VectorStoreRAG.Options;
 
@@ -49,16 +51,16 @@ switch (appConfig.RagConfig.AIChatService)
 switch (appConfig.RagConfig.AIEmbeddingService)
 {
     case "AzureOpenAIEmbeddings":
-        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
-            appConfig.AzureOpenAIEmbeddingsConfig.DeploymentName,
-            appConfig.AzureOpenAIEmbeddingsConfig.Endpoint,
-            new AzureCliCredential());
+        builder.Services.AddSingleton<IEmbeddingGenerator>(
+            sp => new AzureOpenAIClient(new Uri(appConfig.AzureOpenAIEmbeddingsConfig.Endpoint), new AzureCliCredential())
+                .GetEmbeddingClient(appConfig.AzureOpenAIEmbeddingsConfig.DeploymentName)
+                .AsIEmbeddingGenerator());
         break;
     case "OpenAIEmbeddings":
-        kernelBuilder.AddOpenAITextEmbeddingGeneration(
-            appConfig.OpenAIEmbeddingsConfig.ModelId,
-            appConfig.OpenAIEmbeddingsConfig.ApiKey,
-            appConfig.OpenAIEmbeddingsConfig.OrgId);
+        builder.Services.AddSingleton<IEmbeddingGenerator>(
+            sp => new OpenAIClient(appConfig.OpenAIEmbeddingsConfig.ApiKey)
+                .GetEmbeddingClient(appConfig.OpenAIEmbeddingsConfig.ModelId)
+                .AsIEmbeddingGenerator());
         break;
     default:
         throw new NotSupportedException($"AI Embedding Service type '{appConfig.RagConfig.AIEmbeddingService}' is not supported.");
@@ -69,29 +71,29 @@ switch (appConfig.RagConfig.AIEmbeddingService)
 switch (appConfig.RagConfig.VectorStoreType)
 {
     case "AzureAISearch":
-        kernelBuilder.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddAzureAISearchCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             new Uri(appConfig.AzureAISearchConfig.Endpoint),
             new AzureKeyCredential(appConfig.AzureAISearchConfig.ApiKey));
         break;
-    case "AzureCosmosDBMongoDB":
-        kernelBuilder.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TextSnippet<string>>(
+    case "CosmosMongoDB":
+        kernelBuilder.Services.AddCosmosMongoCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
-            appConfig.AzureCosmosDBMongoDBConfig.ConnectionString,
-            appConfig.AzureCosmosDBMongoDBConfig.DatabaseName);
+            appConfig.CosmosMongoConfig.ConnectionString,
+            appConfig.CosmosMongoConfig.DatabaseName);
         break;
-    case "AzureCosmosDBNoSQL":
-        kernelBuilder.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TextSnippet<string>>(
+    case "CosmosNoSql":
+        kernelBuilder.Services.AddCosmosNoSqlCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
-            appConfig.AzureCosmosDBNoSQLConfig.ConnectionString,
-            appConfig.AzureCosmosDBNoSQLConfig.DatabaseName);
+            appConfig.CosmosNoSqlConfig.ConnectionString,
+            appConfig.CosmosNoSqlConfig.DatabaseName);
         break;
     case "InMemory":
-        kernelBuilder.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(
+        kernelBuilder.Services.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(
             appConfig.RagConfig.CollectionName);
         break;
     case "Qdrant":
-        kernelBuilder.AddQdrantVectorStoreRecordCollection<Guid, TextSnippet<Guid>>(
+        kernelBuilder.Services.AddQdrantCollection<Guid, TextSnippet<Guid>>(
             appConfig.RagConfig.CollectionName,
             appConfig.QdrantConfig.Host,
             appConfig.QdrantConfig.Port,
@@ -99,16 +101,16 @@ switch (appConfig.RagConfig.VectorStoreType)
             appConfig.QdrantConfig.ApiKey);
         break;
     case "Redis":
-        kernelBuilder.AddRedisJsonVectorStoreRecordCollection<TextSnippet<string>>(
+        kernelBuilder.Services.AddRedisJsonCollection<TextSnippet<string>>(
             appConfig.RagConfig.CollectionName,
             appConfig.RedisConfig.ConnectionConfiguration);
         break;
     case "Weaviate":
-        kernelBuilder.AddWeaviateVectorStoreRecordCollection<TextSnippet<Guid>>(
+        kernelBuilder.Services.AddWeaviateCollection<TextSnippet<Guid>>(
             // Weaviate collection names must start with an upper case letter.
             char.ToUpper(appConfig.RagConfig.CollectionName[0], CultureInfo.InvariantCulture) + appConfig.RagConfig.CollectionName.Substring(1),
-            null,
-            new() { Endpoint = new Uri(appConfig.WeaviateConfig.Endpoint) });
+            endpoint: new Uri(appConfig.WeaviateConfig.Endpoint),
+            apiKey: null);
         break;
     default:
         throw new NotSupportedException($"Vector store type '{appConfig.RagConfig.VectorStoreType}' is not supported.");
@@ -118,8 +120,8 @@ switch (appConfig.RagConfig.VectorStoreType)
 switch (appConfig.RagConfig.VectorStoreType)
 {
     case "AzureAISearch":
-    case "AzureCosmosDBMongoDB":
-    case "AzureCosmosDBNoSQL":
+    case "CosmosMongoDB":
+    case "CosmosNoSql":
     case "InMemory":
     case "Redis":
         RegisterServices<string>(builder, kernelBuilder, appConfig);
@@ -140,16 +142,7 @@ static void RegisterServices<TKey>(HostApplicationBuilder builder, IKernelBuilde
     where TKey : notnull
 {
     // Add a text search implementation that uses the registered vector store record collection for search.
-    kernelBuilder.AddVectorStoreTextSearch<TextSnippet<TKey>>(
-        new TextSearchStringMapper((result) => (result as TextSnippet<TKey>)!.Text!),
-        new TextSearchResultMapper((result) =>
-        {
-            // Create a mapping from the Vector Store data type to the data type returned by the Text Search.
-            // This text search will ultimately be used in a plugin and this TextSearchResult will be returned to the prompt template
-            // when the plugin is invoked from the prompt template.
-            var castResult = result as TextSnippet<TKey>;
-            return new TextSearchResult(value: castResult!.Text!) { Name = castResult.ReferenceDescription, Link = castResult.ReferenceLink };
-        }));
+    kernelBuilder.AddVectorStoreTextSearch<TextSnippet<TKey>>();
 
     // Add the key generator and data loader to the dependency injection container.
     builder.Services.AddSingleton<UniqueKeyGenerator<Guid>>(new UniqueKeyGenerator<Guid>(() => Guid.NewGuid()));

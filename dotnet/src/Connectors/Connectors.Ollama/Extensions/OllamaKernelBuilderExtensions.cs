@@ -2,6 +2,7 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
 using OllamaSharp;
 
 namespace Microsoft.SemanticKernel;
@@ -173,6 +174,7 @@ public static class OllamaKernelBuilderExtensions
     /// <param name="endpoint">The endpoint to Ollama hosted service.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Obsolete("Use AddOllamaEmbeddingGenerator instead.")]
     public static IKernelBuilder AddOllamaTextEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -194,6 +196,7 @@ public static class OllamaKernelBuilderExtensions
     /// <param name="httpClient">The optional custom HttpClient.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Obsolete("Use AddOllamaEmbeddingGenerator instead.")]
     public static IKernelBuilder AddOllamaTextEmbeddingGeneration(
         this IKernelBuilder builder,
         string modelId,
@@ -214,6 +217,7 @@ public static class OllamaKernelBuilderExtensions
     /// <param name="ollamaClient">The Ollama Sharp library client.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <returns>The updated kernel builder.</returns>
+    [Obsolete("Use AddOllamaEmbeddingGenerator instead.")]
     public static IKernelBuilder AddOllamaTextEmbeddingGeneration(
         this IKernelBuilder builder,
         OllamaApiClient? ollamaClient = null,
@@ -222,6 +226,67 @@ public static class OllamaKernelBuilderExtensions
         Verify.NotNull(builder);
 
         builder.Services.AddOllamaTextEmbeddingGeneration(ollamaClient, serviceId);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Add Ollama Embedding Generator to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="endpoint">The endpoint to Ollama hosted service.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddOllamaEmbeddingGenerator(
+        this IKernelBuilder builder,
+        string modelId,
+        Uri endpoint,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddOllamaEmbeddingGenerator(modelId, endpoint, serviceId);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Add Ollama Embedding Generator to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddOllamaEmbeddingGenerator(
+        this IKernelBuilder builder,
+        string modelId,
+        HttpClient? httpClient = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddOllamaEmbeddingGenerator(modelId, httpClient, serviceId);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Add Ollama Embedding Generator to the kernel builder.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="ollamaClient">The Ollama Sharp library client.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>The updated kernel builder.</returns>
+    public static IKernelBuilder AddOllamaEmbeddingGenerator(
+        this IKernelBuilder builder,
+        OllamaApiClient? ollamaClient = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddOllamaEmbeddingGenerator(ollamaClient, serviceId);
 
         return builder;
     }

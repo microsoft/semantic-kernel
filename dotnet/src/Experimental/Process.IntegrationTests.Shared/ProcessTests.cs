@@ -3,7 +3,6 @@
 #pragma warning disable IDE0005 // Using directive is unnecessary.
 using System;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -564,8 +563,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
             Assert.Equal(expectedInvocationCount.Value, outputStepResult.State.InvocationCount);
         }
     }
-
-    private void AssertStepState<T>(KernelProcess processInfo, string stepName, Predicate<KernelProcessStepState<T>> predicate) where T : class, new()
+    private void AssertStepState<T>(KernelProcess processInfo, string stepName, Func<KernelProcessStepState<T>, bool> predicate) where T : class, new()
     {
         KernelProcessStepInfo? stepInfo = processInfo.Steps.FirstOrDefault(s => s.State.Name == stepName);
         Assert.NotNull(stepInfo);

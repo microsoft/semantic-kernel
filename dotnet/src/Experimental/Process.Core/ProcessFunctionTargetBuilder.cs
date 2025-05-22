@@ -92,6 +92,55 @@ public record ProcessEmitTargetBuilder : ProcessTargetBuilder
 }
 
 /// <summary>
+/// Provides functionality for incrementally defining a process agent invocation target.
+/// </summary>
+public record ProcessAgentInvokeTargetBuilder : ProcessTargetBuilder
+{
+    /// <summary>
+    /// Creates an instance of the <see cref="KernelProcessAgentInvokeTarget"/> class.
+    /// </summary>
+    /// <param name="step"></param>
+    /// <param name="threadEval"></param>
+    /// <param name="messagesInEval"></param>
+    /// <param name="inputEvals"></param>
+    public ProcessAgentInvokeTargetBuilder(ProcessStepBuilder step, string? threadEval, List<string>? messagesInEval, Dictionary<string, string> inputEvals) : base(ProcessTargetType.Invocation)
+    {
+        Verify.NotNull(step);
+        Verify.NotNull(inputEvals);
+
+        this.Step = step;
+        this.ThreadEval = threadEval;
+        this.MessagesInEval = messagesInEval;
+        this.InputEvals = inputEvals;
+    }
+
+    /// <summary>
+    /// The unique identifier of the Step being targeted.
+    /// </summary>
+    public ProcessStepBuilder Step { get; init; }
+
+    /// <summary>
+    /// An evaluation string that will be evaluated to determine the thread to run on.
+    /// </summary>
+    public string? ThreadEval { get; init; }
+
+    /// <summary>
+    /// An evaluation string that will be evaluated to determine the messages to send to the target.
+    /// </summary>
+    public List<string>? MessagesInEval { get; init; }
+
+    /// <summary>
+    /// An evaluation string that will be evaluated to determine the inputs to send to the target.
+    /// </summary>
+    public Dictionary<string, string> InputEvals { get; init; }
+
+    internal override KernelProcessTarget Build(ProcessBuilder? processBuilder = null)
+    {
+        return new KernelProcessAgentInvokeTarget(this.Step.Id, this.ThreadEval, this.MessagesInEval, this.InputEvals);
+    }
+}
+
+/// <summary>
 /// Provides functionality for incrementally defining a process function target.
 /// </summary>
 public record ProcessFunctionTargetBuilder : ProcessTargetBuilder

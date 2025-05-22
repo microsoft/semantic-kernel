@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Data;
 
 namespace VectorStoreRAG;
 
@@ -10,18 +11,26 @@ namespace VectorStoreRAG;
 /// <typeparam name="TKey">The type of the data model key.</typeparam>
 internal sealed class TextSnippet<TKey>
 {
-    [VectorStoreRecordKey]
+    [VectorStoreKey]
     public required TKey Key { get; set; }
 
-    [VectorStoreRecordData]
+    [TextSearchResultValue]
+    [VectorStoreData]
     public string? Text { get; set; }
 
-    [VectorStoreRecordData]
+    [TextSearchResultName]
+    [VectorStoreData]
     public string? ReferenceDescription { get; set; }
 
-    [VectorStoreRecordData]
+    [TextSearchResultLink]
+    [VectorStoreData]
     public string? ReferenceLink { get; set; }
 
-    [VectorStoreRecordVector(1536)]
-    public ReadOnlyMemory<float> TextEmbedding { get; set; }
+    /// <summary>
+    /// The text embedding for this snippet. This is used to search the vector store.
+    /// While this is a string property it has the vector attribute, which means whatever
+    /// text it contains will be converted to a vector and stored as a vector in the vector store.
+    /// </summary>
+    [VectorStoreVector(1536)]
+    public string? TextEmbedding => this.Text;
 }

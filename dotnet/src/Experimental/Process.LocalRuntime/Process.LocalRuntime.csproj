@@ -17,11 +17,13 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel Process - LocalRuntime</Title>
-    <Description>Semantic Kernel Process LocalRuntime. This package is automatically installed by Semantic Kernel Process packages if needed.</Description>
+    <Description>Semantic Kernel Process LocalRuntime. This package is automatically installed by
+      Semantic Kernel Process packages if needed.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Agents\OpenAI\Agents.OpenAI.csproj" />
+    <ProjectReference Include="..\..\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Process.Abstractions\Process.Abstractions.csproj" />
   </ItemGroup>
@@ -40,7 +42,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.AI.Projects" />
     <PackageReference Include="Azure.Identity" />
   </ItemGroup>
 
