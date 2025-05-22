@@ -1,0 +1,11 @@
+{
+  "edgesData": {
+    "ChopFood": {
+      "foodActions": null
+    },
+    "SliceFood": {
+      "foodActions": null
+    }
+  },
+  "isGroupEdge": false
+}

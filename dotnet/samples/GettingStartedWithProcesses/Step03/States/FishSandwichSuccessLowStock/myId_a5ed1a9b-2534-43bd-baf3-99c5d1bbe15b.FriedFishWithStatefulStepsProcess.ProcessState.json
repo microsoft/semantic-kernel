@@ -1,0 +1,9 @@
+{
+  "processName": "FriedFishWithStatefulStepsProcess",
+  "processInstance": "myId_a5ed1a9b-2534-43bd-baf3-99c5d1bbe15b",
+  "steps": {
+    "GatherFriedFishIngredientsWithStockStep": "myId_a5ed1a9b-2534-43bd-baf3-99c5d1bbe15b_a1ef573e-5e92-4dbc-8d1d-8bc903014829",
+    "CutFoodStep": "myId_a5ed1a9b-2534-43bd-baf3-99c5d1bbe15b_4b8faeff-a108-4427-a88a-3ebf7307973f",
+    "FryFoodStep": "myId_a5ed1a9b-2534-43bd-baf3-99c5d1bbe15b_ef0e3c06-62fb-47eb-9212-072f9e2e27ed"
+  }
+}

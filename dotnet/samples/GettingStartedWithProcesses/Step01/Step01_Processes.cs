@@ -68,9 +68,9 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
 
         // Generate a Mermaid diagram for the process and print it to the console
         string mermaidGraph = kernelProcess.ToMermaid();
-        Console.WriteLine($"=== Start - Mermaid Diagram for '{process.Name}' ===");
+        Console.WriteLine($"=== Start - Mermaid Diagram for '{process.StepId}' ===");
         Console.WriteLine(mermaidGraph);
-        Console.WriteLine($"=== End - Mermaid Diagram for '{process.Name}' ===");
+        Console.WriteLine($"=== End - Mermaid Diagram for '{process.StepId}' ===");
 
         // Generate an image from the Mermaid diagram
         string generatedImagePath = await MermaidRenderer.GenerateMermaidImageAsync(mermaidGraph, "ChatBotProcess.png");

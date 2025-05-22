@@ -15,7 +15,7 @@ public sealed record KernelProcess : KernelProcessStepInfo
     /// <summary>
     /// The collection of Steps in the Process.
     /// </summary>
-    public IList<KernelProcessStepInfo> Steps { get; }
+    public IList<KernelProcessStepInfo> Steps { get; init; }
 
     /// <summary>
     /// The collection of Threads in the Process.

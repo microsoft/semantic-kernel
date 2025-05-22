@@ -22,7 +22,7 @@ public class ProcessTestFixture
     /// <returns>A <see cref="Task{KernelProcessContext}"/></returns>
     public async Task<KernelProcessContext> StartProcessAsync(KernelProcess process, Kernel kernel, KernelProcessEvent initialEvent, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
     {
-        return await process.StartAsync(kernel, initialEvent, externalMessageChannel);
+        return await process.StartAsync(kernel, initialEvent, externalMessageChannel: externalMessageChannel);
     }
 
     /// <summary>
