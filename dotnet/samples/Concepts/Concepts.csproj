@@ -47,7 +47,6 @@
     <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="AWSSDK.Core" />
     <PackageReference Include="AWSSDK.SecurityToken" />
-    <PackageReference Include="ModelContextProtocol" />
   </ItemGroup>
 
   <PropertyGroup>

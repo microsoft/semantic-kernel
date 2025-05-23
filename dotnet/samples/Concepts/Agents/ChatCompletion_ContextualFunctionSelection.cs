@@ -7,15 +7,18 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Functions;
-using ModelContextProtocol.Client;
 
 namespace Agents;
 
 #pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 /// <summary>
-/// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
-/// adding contextual function selection capabilities to it.
+/// Demonstrates the creation of a <see cref="ChatCompletionAgent"/> and adding capabilities
+/// for contextual function selection to it. Contextual function selection involves using
+/// Retrieval-Augmented Generation (RAG) to identify and select the most relevant functions
+/// based on the current context. The provider vectorizes the function names and descriptions,
+/// stores them in a specified vector store, and performs a vector search to find and provide
+/// the most pertinent functions to the AI model/agent for a given context.
 /// </summary>
 public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output) : BaseTest(output)
 {
@@ -35,22 +38,18 @@ public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output
         ChatCompletionAgent agent =
             new()
             {
-                Name = "GithubAssistant",
-                Instructions = "You are a friendly assistant that helps with GitHub-related tasks. " +
+                Name = "ReviewGuru",
+                Instructions = "You are a friendly assistant that summarizes key points and sentiments from customer reviews. " +
                                "For each response, list available functions",
                 Kernel = kernel,
                 Arguments = new(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new FunctionChoiceBehaviorOptions { RetainArgumentTypes = true }) })
             };
 
-        // Create MCP client to access GitHub server.
-        await using IMcpClient mcpClient = await CreateClientForGitHubMCPServerAsync();
-
-        // Retrieve the list of tools available to work with GitHub.
-        var gitHubMcpTools = await mcpClient.ListToolsAsync();
-
         // Create a thread and register context based function selection provider that will do RAG on
         // provided functions to advertise only those that are relevant to the current context.
         ChatHistoryAgentThread agentThread = new();
+
+        var allAvailableFunctions = GetAvailableFunctions();
 
         agentThread.AIContextProviders.Add(
             new ContextualFunctionProvider(
@@ -58,50 +57,100 @@ public class ChatCompletion_ContextualFunctionSelection(ITestOutputHelper output
                 vectorDimensions: 1536,
                 options: new()
                 {
-                    // Selecting top three relevant functions.
+                    // Selecting top five relevant functions.
                     MaxNumberOfFunctions = 3,
-
-                    // Use the last user message as context as relevant functions might be required to answer it.
-                    ContextEmbeddingValueProvider = (messages, _) => Task.FromResult(messages.Last(m => m.Role == ChatRole.User).Text)
                 },
-                functions: [.. gitHubMcpTools]
+                functions: allAvailableFunctions
             )
         );
 
         // Invoke and display assistant response
-        ChatMessageContent message = await agent.InvokeAsync("Get the two latest pull requests from the microsoft/semantic-kernel GitHub repository.", agentThread).FirstAsync();
+        ChatMessageContent message = await agent.InvokeAsync("Get and summarize customer review.", agentThread).FirstAsync();
         Console.WriteLine(message.Content);
 
         //Expected output:
-        /*
-            Here are the two latest pull requests from the `microsoft/semantic-kernel` GitHub repository:
-            1. **Pull Request #12224**
-               - **Title:** Python: Use BaseModel instead of KernelBaseModel in samples
-               - **State:** Open
-               - **Created At:** May 21, 2025
-               - **Link:** [View Pull Request](https://github.com/microsoft/semantic-kernel/pull/12224)
-            2. **Pull Request #12221**
-               - **Title:** .Net: Remove Kusto and DuckDB
-               - **User:** [westey-m](https://github.com/westey-m)
-               - **State:** Open
-               - **Created At:** May 21, 2025
-               - **Link:** [View Pull Request](https://github.com/microsoft/semantic-kernel/pull/12221)
-
-            If you need any more information or assistance, feel free to ask!
-
-            ### Available Functions
-            - List and filter repository pull requests
-            - Get the list of files changed in a pull request
-            - Search for issues and pull requests across GitHub repositories
-        */
+        /*  
+            Retrieves and summarizes customer reviews.  
+  
+            ### Customer Reviews:  
+            1. **John D.** - ★★★★★  
+                *Comment:* Great product and fast shipping!  
+                *Date:* 2023-10-01  
+            2. **Jane S.** - ★★★★  
+                *Comment:* Good quality, but delivery was a bit slow.  
+                *Date:* 2023-09-28  
+            3. **Mike J.** - ★★★  
+                *Comment:* Average. Works as expected.  
+                *Date:* 2023-09-25  
+  
+            ### Summary:  
+            The reviews indicate overall customer satisfaction, with highlights on product quality and shipping efficiency.  
+            While some customers experienced excellent service, others mentioned areas for improvement, particularly regarding delivery times.  
+  
+            If you need further analysis or insights, feel free to ask!  
+  
+            Available functions:  
+            - Tools-GetCustomerReviews  
+            - Tools-Summarize  
+            - Tools-CollectSentiments  
+         */
     }
 
-    private static async Task<IMcpClient> CreateClientForGitHubMCPServerAsync()
+    /// <summary>
+    /// Returns a list of functions that belong to different categories.
+    /// Some categories/functions are related to the prompt, while others
+    /// are not. This is intentionally done to demonstrate the contextual
+    /// function selection capabilities of the provider.
+    /// </summary>
+    private IReadOnlyList<AIFunction> GetAvailableFunctions()
     {
-        return await McpClientFactory.CreateAsync(new StdioClientTransport(new()
-        {
-            Command = "npx",
-            Arguments = ["-y", "@modelcontextprotocol/server-github"],
-        }));
+        List<AIFunction> reviewFunctions = [
+            AIFunctionFactory.Create(() => """
+            [  
+                {  
+                    "reviewer": "John D.",  
+                    "date": "2023-10-01",  
+                    "rating": 5,  
+                    "comment": "Great product and fast shipping!"  
+                },  
+                {  
+                    "reviewer": "Jane S.",  
+                    "date": "2023-09-28",  
+                    "rating": 4,  
+                    "comment": "Good quality, but delivery was a bit slow."  
+                },  
+                {  
+                    "reviewer": "Mike J.",  
+                    "date": "2023-09-25",  
+                    "rating": 3,  
+                    "comment": "Average. Works as expected."  
+                }  
+            ]
+            """
+            , "GetCustomerReviews"),
+        ];
+
+        List<AIFunction> sentimentFunctions = [
+            AIFunctionFactory.Create((string text) => "The collected sentiment is mostly positive with a few neutral and negative opinions.", "CollectSentiments"),
+            AIFunctionFactory.Create((string text) => "Sentiment trend identified: predominantly positive with increasing positive feedback.", "IdentifySentimentTrend"),
+        ];
+
+        List<AIFunction> summaryFunctions = [
+            AIFunctionFactory.Create((string text) => "Summary generated based on input data: key points include market growth and customer satisfaction.", "Summarize"),
+            AIFunctionFactory.Create((string text) => "Extracted themes: innovation, efficiency, customer satisfaction.", "ExtractThemes"),
+        ];
+
+        List<AIFunction> communicationFunctions = [
+            AIFunctionFactory.Create((string address, string content) => "Email sent.", "SendEmail"),
+            AIFunctionFactory.Create((string number, string text) => "Message sent.", "SendSms"),
+            AIFunctionFactory.Create(() => "user@domain.com", "MyEmail"),
+        ];
+
+        List<AIFunction> dateTimeFunctions = [
+            AIFunctionFactory.Create(() => DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), "GetCurrentDateTime"),
+            AIFunctionFactory.Create(() => DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"), "GetCurrentUtcDateTime"),
+        ];
+
+        return [.. reviewFunctions, .. sentimentFunctions, .. summaryFunctions, .. communicationFunctions, .. dateTimeFunctions];
     }
 }

@@ -12,25 +12,25 @@ using Microsoft.Extensions.VectorData;
 namespace Microsoft.SemanticKernel.Functions;
 
 /// <summary>
-/// A component that performs RAG (Retrieval-Augmented Generation) on the provided functions to identify
-/// the most relevant functions for the current context. This component vectorizes the provided function names and descriptions
+/// Represents a contextual function provider that performs RAG (Retrieval-Augmented Generation) on the provided functions to identify
+/// the most relevant functions for the current context. The provider vectorizes the provided function names and descriptions
 /// and stores them in the specified vector store, allowing for a vector search to find the most relevant
 /// functions for a given context and provide the functions to the AI model/agent.
 /// </summary>
 /// <remarks>
 /// <list type="bullet">
 /// <item>
-/// This component is designed to work with `Connectors.Memory.InMemory` vector store. Using other
+/// The provider is designed to work with `Connectors.Memory.InMemory` vector store. Using other
 /// vector stores will require the data synchronization and data lifetime management to be done by the caller.
 /// </item>
 /// <item>
-/// The in-memory vector store is supposed to be created per component and not shared between components
-/// unless each component uses a different collection name. Not following this may lead to a situation
-/// where one component identifies a function belonging to another component as relevant and, as a result,
-/// an attempt to access it by the first component will fail because the function is not registered with it.
+/// The in-memory vector store is supposed to be created per provider and not shared between providers
+/// unless each provider uses a different collection name. Not following this may lead to a situation
+/// where one provider identifies a function belonging to another provider as relevant and, as a result,
+/// an attempt to access it by the first provider will fail because the function is not registered with it.
 /// </item>
 /// <item>
-/// The component uses function name as a key for the records and as such the specified vector store
+/// The provider uses function name as a key for the records and as such the specified vector store
 /// should support record keys of string type.
 /// </item>
 /// </list>
