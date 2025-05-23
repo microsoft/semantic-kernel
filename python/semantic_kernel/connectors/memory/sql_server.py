@@ -18,15 +18,22 @@ from pydantic import SecretStr, ValidationError, field_validator
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+from semantic_kernel.data.definitions import (
+    VectorStoreCollectionDefinition,
+    VectorStoreDataField,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
 )
-from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import GetFilteredRecordOptions, VectorStore, VectorStoreRecordCollection
+from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data.vectors import (
+    GetFilteredRecordOptions,
+    SearchType,
+    VectorSearch,
+    VectorSearchOptions,
+    VectorSearchResult,
+    VectorStore,
+    VectorStoreRecordCollection,
+)
 from semantic_kernel.exceptions import VectorStoreOperationException
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorSearchExecutionException,
@@ -280,8 +287,8 @@ class SqlServerCollection(
 
     def __init__(
         self,
-        data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        record_type: type[TModel],
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         connection_string: str | None = None,
@@ -293,8 +300,8 @@ class SqlServerCollection(
         """Initialize the collection.
 
         Args:
-            data_model_type: The type of the data model.
-            data_model_definition: The data model definition.
+            record_type: The type of the data model.
+            definition: The data model definition.
             collection_name: The name of the collection, which corresponds to the table name.
             embedding_generator: The embedding generator to use.
             connection_string: The connection string to the database.
@@ -319,8 +326,8 @@ class SqlServerCollection(
 
         super().__init__(
             collection_name=collection_name,
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             connection=connection,
             settings=settings,
             managed_client=managed_client,
@@ -364,21 +371,19 @@ class SqlServerCollection(
             raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
         if not records:
             return []
-        data_fields = self.data_model_definition.data_fields
-        vector_fields = self.data_model_definition.vector_fields
+        data_fields = self.definition.data_fields
+        vector_fields = self.definition.vector_fields
         schema, table = self._get_schema_and_table()
         # Check how many parameters are likely to be passed
         # to the command, if it exceeds the maximum, split the records
         # into smaller chunks
-        max_records = SQL_PARAMETER_SAFETY_MAX_COUNT // len(self.data_model_definition.fields)
+        max_records = SQL_PARAMETER_SAFETY_MAX_COUNT // len(self.definition.fields)
         batches = []
         for i in range(0, len(records), max_records):
             batches.append(records[i : i + max_records])
         keys = []
         for batch in batches:
-            command = _build_merge_query(
-                schema, table, self.data_model_definition.key_field, data_fields, vector_fields, batch
-            )
+            command = _build_merge_query(schema, table, self.definition.key_field, data_fields, vector_fields, batch)
             with self.connection.cursor() as cur:
                 cur.execute(*command.to_execute())
                 while cur.nextset():
@@ -400,9 +405,9 @@ class SqlServerCollection(
             return None
         query = _build_select_query(
             *self._get_schema_and_table(),
-            self.data_model_definition.key_field,
-            self.data_model_definition.data_fields,
-            self.data_model_definition.vector_fields if kwargs.get("include_vectors", True) else None,
+            self.definition.key_field,
+            self.definition.data_fields,
+            self.definition.vector_fields if kwargs.get("include_vectors", True) else None,
             keys,
         )
         records = [record async for record in self._fetch_records(query)]
@@ -423,7 +428,7 @@ class SqlServerCollection(
             return
         query = _build_delete_query(
             *self._get_schema_and_table(),
-            self.data_model_definition.key_field,
+            self.definition.key_field,
             keys,
         )
         with self.connection.cursor() as cur:
@@ -473,9 +478,9 @@ class SqlServerCollection(
 
         create_table_query = _build_create_table_query(
             *self._get_schema_and_table(),
-            key_field=self.data_model_definition.key_field,
-            data_fields=self.data_model_definition.data_fields,
-            vector_fields=self.data_model_definition.vector_fields,
+            key_field=self.definition.key_field,
+            data_fields=self.definition.data_fields,
+            vector_fields=self.definition.vector_fields,
             if_not_exists=create_if_not_exists,
         )
         with self.connection.cursor() as cursor:
@@ -503,7 +508,7 @@ class SqlServerCollection(
             return bool(row)
 
     @override
-    async def delete_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
         """Delete the collection."""
         if self.connection is None:
             raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
@@ -527,9 +532,9 @@ class SqlServerCollection(
             raise VectorSearchExecutionException("No vector provided.")
         query = _build_search_query(
             *self._get_schema_and_table(),
-            self.data_model_definition.key_field,
-            self.data_model_definition.data_fields,
-            self.data_model_definition.vector_fields,
+            self.definition.key_field,
+            self.definition.data_fields,
+            self.definition.vector_fields,
             vector,
             options,
             self._build_filter(options.filter),  # type: ignore
@@ -550,7 +555,7 @@ class SqlServerCollection(
                 record = {
                     col: (
                         json.loads(row.__getattribute__(col))
-                        if col in self.data_model_definition.vector_field_names
+                        if col in self.definition.vector_field_names
                         else row.__getattribute__(col)
                     )
                     for col in col_names
@@ -621,14 +626,14 @@ class SqlServerCollection(
                             raise NotImplementedError("Unary +, -, ~ are not supported in SQL filters.")
                 case ast.Attribute():
                     # Only allow attributes that are in the data model
-                    if node.attr not in self.data_model_definition.storage_property_names:
+                    if node.attr not in self.definition.storage_names:
                         raise VectorStoreOperationException(
                             f"Field '{node.attr}' not in data model (storage property names are used)."
                         )
                     return f"[{node.attr}]"
                 case ast.Name():
                     # Only allow names that are in the data model
-                    if node.id not in self.data_model_definition.storage_property_names:
+                    if node.id not in self.definition.storage_names:
                         raise VectorStoreOperationException(
                             f"Field '{node.id}' not in data model (storage property names are used)."
                         )
@@ -750,16 +755,16 @@ class SqlServerStore(VectorStore):
     @override
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> SqlServerCollection:
         return SqlServerCollection(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             connection=self.connection,
             embedding_generator=embedding_generator or self.embedding_generator,
@@ -840,9 +845,9 @@ def _add_cast_check(placeholder: str, value: Any) -> str:
 def _build_create_table_query(
     schema: str,
     table: str,
-    key_field: VectorStoreRecordKeyField,
-    data_fields: list[VectorStoreRecordDataField],
-    vector_fields: list[VectorStoreRecordVectorField],
+    key_field: VectorStoreKeyField,
+    data_fields: list[VectorStoreDataField],
+    vector_fields: list[VectorStoreVectorField],
     if_not_exists: bool = False,
 ) -> SqlCommand:
     """Build the CREATE TABLE query based on the data model."""
@@ -856,14 +861,12 @@ def _build_create_table_query(
         with command.query.in_parenthesis(suffix=";"):
             # add the key field
             command.query.append(
-                f'"{key_field.storage_property_name or key_field.name}" '
-                f"{_python_type_to_sql(key_field.property_type, is_key=True)} NOT NULL,\n"
+                f'"{key_field.storage_name or key_field.name}" '
+                f"{_python_type_to_sql(key_field.type_, is_key=True)} NOT NULL,\n"
             )
             # add the data fields
             [
-                command.query.append(
-                    f'"{field.storage_property_name or field.name}" {_python_type_to_sql(field.property_type)} NULL,\n'
-                )
+                command.query.append(f'"{field.storage_name or field.name}" {_python_type_to_sql(field.type_)} NULL,\n')
                 for field in data_fields
             ]
             # add the vector fields
@@ -872,9 +875,7 @@ def _build_create_table_query(
                     raise VectorStoreOperationException(
                         f"Index kind '{field.index_kind}' is not supported for field '{field.name}'"
                     )
-                command.query.append(
-                    f'"{field.storage_property_name or field.name}" VECTOR({field.dimensions}) NULL,\n'
-                )
+                command.query.append(f'"{field.storage_name or field.name}" VECTOR({field.dimensions}) NULL,\n')
             # set the primary key
             with command.query.in_parenthesis("PRIMARY KEY", "\n"):
                 command.query.append(key_field.name)
@@ -927,9 +928,9 @@ def _build_select_table_name_query(
 
 def _add_field_names(
     command: SqlCommand,
-    key_field: VectorStoreRecordKeyField,
-    data_fields: list[VectorStoreRecordDataField],
-    vector_fields: list[VectorStoreRecordVectorField] | None,
+    key_field: VectorStoreKeyField,
+    data_fields: list[VectorStoreDataField],
+    vector_fields: list[VectorStoreVectorField] | None,
     table_identifier: str | None = None,
 ) -> None:
     """Add the field names to the query builder.
@@ -946,26 +947,25 @@ def _add_field_names(
     """
     fields = chain([key_field], data_fields, vector_fields or [])
     if table_identifier:
-        strings = [f"{table_identifier}.{field.storage_property_name or field.name}" for field in fields]
+        strings = [f"{table_identifier}.{field.storage_name or field.name}" for field in fields]
     else:
-        strings = [field.storage_property_name or field.name for field in fields]
+        strings = [field.storage_name or field.name for field in fields]
     command.query.append_list(strings)
 
 
 def _build_merge_query(
     schema: str,
     table: str,
-    key_field: VectorStoreRecordKeyField,
-    data_fields: list[VectorStoreRecordDataField],
-    vector_fields: list[VectorStoreRecordVectorField],
+    key_field: VectorStoreKeyField,
+    data_fields: list[VectorStoreDataField],
+    vector_fields: list[VectorStoreVectorField],
     records: Sequence[dict[str, Any]],
 ) -> SqlCommand:
     """Build the MERGE TABLE query based on the data model."""
     command = SqlCommand()
     # Declare a temp table to store the keys that are updated
     command.query.append(
-        "DECLARE @UpsertedKeys TABLE (KeyColumn "
-        f"{_python_type_to_sql(key_field.property_type or 'str', is_key=True)});\n"
+        f"DECLARE @UpsertedKeys TABLE (KeyColumn {_python_type_to_sql(key_field.type_ or 'str', is_key=True)});\n"
     )
     # start the MERGE statement
     command.query.append_table_name(schema, table, prefix="MERGE INTO", suffix="AS t", newline=True)
@@ -977,7 +977,7 @@ def _build_merge_query(
                 query_list = []
                 param_list = []
                 for field in chain([key_field], data_fields, vector_fields):
-                    value = record.get(field.storage_property_name or field.name)
+                    value = record.get(field.storage_name or field.name)
                     # add the field name to the query list
                     query_list.append(_add_cast_check("?", value))
                     # add the field value to the parameter list
@@ -991,15 +991,14 @@ def _build_merge_query(
     # add the ON clause
     with command.query.in_parenthesis("ON", "\n"):
         command.query.append(
-            f"t.{key_field.storage_property_name or key_field.name} = "
-            f"s.{key_field.storage_property_name or key_field.name}"
+            f"t.{key_field.storage_name or key_field.name} = s.{key_field.storage_name or key_field.name}"
         )
     # Set the Matched clause
     command.query.append("WHEN MATCHED THEN\n")
     command.query.append("UPDATE SET ")
     command.query.append_list(
         [
-            f"t.{field.storage_property_name or field.name} = s.{field.storage_property_name or field.name}"
+            f"t.{field.storage_name or field.name} = s.{field.storage_name or field.name}"
             for field in chain(data_fields, vector_fields)
         ],
         suffix="\n",
@@ -1020,9 +1019,9 @@ def _build_merge_query(
 def _build_select_query(
     schema: str,
     table: str,
-    key_field: VectorStoreRecordKeyField,
-    data_fields: list[VectorStoreRecordDataField],
-    vector_fields: list[VectorStoreRecordVectorField] | None,
+    key_field: VectorStoreKeyField,
+    data_fields: list[VectorStoreDataField],
+    vector_fields: list[VectorStoreVectorField] | None,
     keys: Sequence[Any],
 ) -> SqlCommand:
     """Build the SELECT query based on the data model."""
@@ -1035,7 +1034,7 @@ def _build_select_query(
     command.query.append_table_name(schema, table, prefix=" FROM", newline=True)
     # add the WHERE clause
     if keys:
-        command.query.append(f"WHERE {key_field.storage_property_name or key_field.name} IN\n")
+        command.query.append(f"WHERE {key_field.storage_name or key_field.name} IN\n")
         with command.query.in_parenthesis():
             # add the keys
             command.query.append_list(["?"] * len(keys))
@@ -1047,7 +1046,7 @@ def _build_select_query(
 def _build_delete_query(
     schema: str,
     table: str,
-    key_field: VectorStoreRecordKeyField,
+    key_field: VectorStoreKeyField,
     keys: Sequence[Any],
 ) -> SqlCommand:
     """Build the DELETE query based on the data model."""
@@ -1055,7 +1054,7 @@ def _build_delete_query(
     # start the DELETE statement
     command.query.append_table_name(schema, table)
     # add the WHERE clause
-    command.query.append(f"WHERE [{key_field.storage_property_name or key_field.name}] IN")
+    command.query.append(f"WHERE [{key_field.storage_name or key_field.name}] IN")
     with command.query.in_parenthesis():
         # add the keys
         command.query.append_list(["?"] * len(keys))
@@ -1067,9 +1066,9 @@ def _build_delete_query(
 def _build_search_query(
     schema: str,
     table: str,
-    key_field: VectorStoreRecordKeyField,
-    data_fields: list[VectorStoreRecordDataField],
-    vector_fields: list[VectorStoreRecordVectorField],
+    key_field: VectorStoreKeyField,
+    data_fields: list[VectorStoreDataField],
+    vector_fields: list[VectorStoreVectorField],
     vector: Sequence[float | int],
     options: VectorSearchOptions,
     filter: SqlCommand | list[SqlCommand] | None = None,
@@ -1080,7 +1079,7 @@ def _build_search_query(
     # add the data and vector fields
     _add_field_names(command, key_field, data_fields, vector_fields if options.include_vectors else None)
     # add the vector search clause
-    vector_field: VectorStoreRecordVectorField | None = None
+    vector_field: VectorStoreVectorField | None = None
     if options.vector_property_name:
         vector_field = next(
             (field for field in vector_fields if field.name == options.vector_property_name),
@@ -1099,7 +1098,7 @@ def _build_search_query(
     asc = DISTANCE_FUNCTION_DIRECTION_HELPER[vector_field.distance_function](0, 1)
 
     command.query.append(
-        f", VECTOR_DISTANCE('{distance_function}', {vector_field.storage_property_name or vector_field.name}, CAST(? AS VECTOR({vector_field.dimensions}))) as {SCORE_FIELD_NAME}\n",  # noqa: E501
+        f", VECTOR_DISTANCE('{distance_function}', {vector_field.storage_name or vector_field.name}, CAST(? AS VECTOR({vector_field.dimensions}))) as {SCORE_FIELD_NAME}\n",  # noqa: E501
     )
     command.add_parameter(_cast_value(vector))
     # add the FROM clause

@@ -38,9 +38,9 @@ def get_weaviate_store():
 
 
 def get_azure_cosmos_db_no_sql_store():
-    from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBNoSQLStore
+    from semantic_kernel.connectors.memory.azure_cosmos_db import CosmosNoSqlStore
 
-    return AzureCosmosDBNoSQLStore(database_name="test_database", create_database=True)
+    return CosmosNoSqlStore(database_name="test_database", create_database=True)
 
 
 def get_chroma_store():

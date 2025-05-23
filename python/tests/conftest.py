@@ -12,11 +12,11 @@ from pydantic import BaseModel
 from pytest import fixture
 
 from semantic_kernel.agents import Agent, DeclarativeSpecMixin, register_agent_type
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+from semantic_kernel.data.definitions import (
+    VectorStoreCollectionDefinition,
+    VectorStoreDataField,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
     vectorstoremodel,
 )
 
@@ -325,53 +325,51 @@ def dataclass_vector_data_model(
     class MyDataModel:
         vector: Annotated[
             str | list[float] | None,
-            VectorStoreRecordVectorField(
+            VectorStoreVectorField(
                 index_kind=index_kind,
                 dimensions=dimensions,
                 distance_function=distance_function,
-                property_type=vector_property_type,
+                type=vector_property_type,
             ),
         ] = None
-        id: Annotated[str, VectorStoreRecordKeyField(property_type="str")] = field(default_factory=lambda: str(uuid4()))
-        content: Annotated[str, VectorStoreRecordDataField(property_type="str")] = "content1"
+        id: Annotated[str, VectorStoreKeyField(type="str")] = field(default_factory=lambda: str(uuid4()))
+        content: Annotated[str, VectorStoreDataField(type="str")] = "content1"
 
     return MyDataModel
 
 
 @fixture
-def data_model_definition(
+def definition(
     index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
-) -> VectorStoreRecordDefinition:
-    return VectorStoreRecordDefinition(
+) -> VectorStoreCollectionDefinition:
+    return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreRecordKeyField(name="id", property_type="str"),
-            VectorStoreRecordDataField(name="content", property_type="str", is_full_text_indexed=True),
-            VectorStoreRecordVectorField(
+            VectorStoreKeyField(name="id", type="str"),
+            VectorStoreDataField(name="content", type="str", is_full_text_indexed=True),
+            VectorStoreVectorField(
                 name="vector",
                 dimensions=dimensions,
                 index_kind=index_kind,
                 distance_function=distance_function,
-                property_type=vector_property_type,
+                type=vector_property_type,
             ),
         ]
     )
 
 
 @fixture
-def data_model_definition_pandas(
-    index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
-) -> object:
-    return VectorStoreRecordDefinition(
+def definition_pandas(index_kind: str, distance_function: str, vector_property_type: str, dimensions: int) -> object:
+    return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreRecordVectorField(
+            VectorStoreVectorField(
                 name="vector",
                 index_kind=index_kind,
                 dimensions=dimensions,
                 distance_function=distance_function,
-                property_type=vector_property_type,
+                type=vector_property_type,
             ),
-            VectorStoreRecordKeyField(name="id"),
-            VectorStoreRecordDataField(name="content", property_type="str"),
+            VectorStoreKeyField(name="id"),
+            VectorStoreDataField(name="content", type="str"),
         ],
         container_mode=True,
         to_dict=lambda x: x.to_dict(orient="records"),
@@ -380,43 +378,43 @@ def data_model_definition_pandas(
 
 
 @fixture
-def data_model_type(index_kind: str, distance_function: str, vector_property_type: str, dimensions: int) -> object:
+def record_type(index_kind: str, distance_function: str, vector_property_type: str, dimensions: int) -> object:
     @vectorstoremodel
     class DataModelClass(BaseModel):
-        content: Annotated[str, VectorStoreRecordDataField()]
+        content: Annotated[str, VectorStoreDataField()]
         vector: Annotated[
             str | list[float] | None,
-            VectorStoreRecordVectorField(
+            VectorStoreVectorField(
                 index_kind=index_kind,
                 distance_function=distance_function,
-                property_type=vector_property_type,
+                type=vector_property_type,
                 dimensions=dimensions,
             ),
         ]
-        id: Annotated[str, VectorStoreRecordKeyField()]
+        id: Annotated[str, VectorStoreKeyField()]
 
     return DataModelClass
 
 
 @fixture
-def data_model_type_with_key_as_key_field(
+def record_type_with_key_as_key_field(
     index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
 ) -> object:
     """Data model type with key as key field."""
 
     @vectorstoremodel
     class DataModelClass(BaseModel):
-        content: Annotated[str, VectorStoreRecordDataField()]
+        content: Annotated[str, VectorStoreDataField()]
         vector: Annotated[
             str | list[float] | None,
-            VectorStoreRecordVectorField(
+            VectorStoreVectorField(
                 index_kind=index_kind,
                 distance_function=distance_function,
-                property_type=vector_property_type,
+                type=vector_property_type,
                 dimensions=dimensions,
             ),
         ]
-        key: Annotated[str, VectorStoreRecordKeyField()]
+        key: Annotated[str, VectorStoreKeyField()]
 
     return DataModelClass
 

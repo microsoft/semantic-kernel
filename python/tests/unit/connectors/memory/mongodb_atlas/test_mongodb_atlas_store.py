@@ -12,12 +12,12 @@ def test_mongodb_atlas_store_initialization(mongodb_atlas_unit_test_env):
     assert isinstance(store.mongo_client, AsyncMongoClient)
 
 
-def test_mongodb_atlas_store_get_collection(mongodb_atlas_unit_test_env, data_model_definition):
+def test_mongodb_atlas_store_get_collection(mongodb_atlas_unit_test_env, definition):
     store = MongoDBAtlasStore()
     collection = store.get_collection(
         collection_name="test_collection",
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
+        record_type=dict,
+        definition=definition,
     )
     assert collection is not None
     assert isinstance(collection, MongoDBAtlasCollection)

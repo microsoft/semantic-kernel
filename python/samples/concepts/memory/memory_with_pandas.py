@@ -9,19 +9,19 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings, OpenAITextEmbedding
 from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
 from semantic_kernel.data import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+    VectorStoreCollectionDefinition,
+    VectorStoreDataField,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
 )
-from semantic_kernel.data.vector_storage import add_vector_to_records
+from semantic_kernel.data.vectors import add_vector_to_records
 
-model_fields = VectorStoreRecordDefinition(
+model_fields = VectorStoreCollectionDefinition(
     container_mode=True,
     fields={
-        "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector"),
-        "id": VectorStoreRecordKeyField(),
-        "vector": VectorStoreRecordVectorField(
+        "content": VectorStoreDataField(has_embedding=True, embedding_property_name="vector"),
+        "id": VectorStoreKeyField(),
+        "vector": VectorStoreVectorField(
             embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)}
         ),
     },
@@ -37,8 +37,8 @@ async def main():
 
     # create the record collection
     async with AzureAISearchCollection[pd.DataFrame](
-        data_model_type=pd.DataFrame,
-        data_model_definition=model_fields,
+        record_type=pd.DataFrame,
+        definition=model_fields,
     ) as record_collection:
         # create some records
         records = [
@@ -48,7 +48,7 @@ async def main():
 
         # create the dataframe and add the embeddings
         df = pd.DataFrame(records)
-        df = await add_vector_to_records(kernel, df, None, data_model_definition=model_fields)
+        df = await add_vector_to_records(kernel, df, None, definition=model_fields)
         print("Records with embeddings:")
         print(df.shape)
         print(df.head(5))

@@ -12,14 +12,14 @@ from pydantic import BaseModel
 
 from semantic_kernel.connectors.memory.postgres import PostgresCollection, PostgresSettings, PostgresStore
 from semantic_kernel.data import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+    VectorStoreCollectionDefinition,
+    VectorStoreDataField,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition import vectorstoremodel
-from semantic_kernel.data.vector_search import VectorSearchOptions
+from semantic_kernel.data.definitions import vectorstoremodel
+from semantic_kernel.data.vectors import VectorSearchOptions
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorConnectionException,
     MemoryConnectorInitializationError,
@@ -47,10 +47,10 @@ pytestmark = pytest.mark.skipif(
 
 @vectorstoremodel
 class SimpleDataModel(BaseModel):
-    id: Annotated[int, VectorStoreRecordKeyField()]
+    id: Annotated[int, VectorStoreKeyField()]
     embedding: Annotated[
         list[float] | None,
-        VectorStoreRecordVectorField(
+        VectorStoreVectorField(
             index_kind=IndexKind.HNSW,
             dimensions=3,
             distance_function=DistanceFunction.COSINE_SIMILARITY,
@@ -58,23 +58,23 @@ class SimpleDataModel(BaseModel):
     ] = None
     data: Annotated[
         dict[str, Any],
-        VectorStoreRecordDataField(has_embedding=True, embedding_property_name="embedding", property_type="JSONB"),
+        VectorStoreDataField(has_embedding=True, embedding_property_name="embedding", type="JSONB"),
     ]
 
 
 def DataModelPandas(record) -> tuple:
-    definition = VectorStoreRecordDefinition(
+    definition = VectorStoreCollectionDefinition(
         fields={
-            "embedding": VectorStoreRecordVectorField(
+            "embedding": VectorStoreVectorField(
                 name="embedding",
                 index_kind="hnsw",
                 dimensions=3,
                 distance_function="cosine_similarity",
-                property_type="float",
+                type="float",
             ),
-            "id": VectorStoreRecordKeyField(name="id", property_type="int"),
-            "data": VectorStoreRecordDataField(
-                name="data", has_embedding=True, embedding_property_name="embedding", property_type="dict"
+            "id": VectorStoreKeyField(name="id", type="int"),
+            "data": VectorStoreDataField(
+                name="data", has_embedding=True, embedding_property_name="embedding", type="dict"
             ),
         },
         container_mode=True,
@@ -114,7 +114,7 @@ async def create_simple_collection(
     try:
         yield collection
     finally:
-        await collection.delete_collection()
+        await collection.ensure_collection_deleted()
 
 
 def test_create_store(vector_store):
@@ -134,7 +134,7 @@ async def test_create_does_collection_exist_and_delete(vector_store: PostgresSto
     does_exist_2 = await collection.does_collection_exist()
     assert does_exist_2 is True
 
-    await collection.delete_collection()
+    await collection.ensure_collection_deleted()
     does_exist_3 = await collection.does_collection_exist()
     assert does_exist_3 is False
 
@@ -180,7 +180,7 @@ async def test_upsert_get_and_delete_pandas(vector_store):
 
     suffix = str(uuid.uuid4()).replace("-", "")[:8]
     collection = vector_store.get_collection(
-        f"test_collection_{suffix}", data_model_type=pd.DataFrame, data_model_definition=definition
+        f"test_collection_{suffix}", record_type=pd.DataFrame, definition=definition
     )
     await collection.create_collection()
 
@@ -200,7 +200,7 @@ async def test_upsert_get_and_delete_pandas(vector_store):
         result_after_delete = await collection.get(1)
         assert result_after_delete is None
     finally:
-        await collection.delete_collection()
+        await collection.ensure_collection_deleted()
 
 
 async def test_upsert_get_and_delete_batch(vector_store: PostgresStore):

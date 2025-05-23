@@ -96,12 +96,12 @@ async def store(pinecone_unit_test_env) -> PineconeStore:
 
 
 @fixture
-async def collection(pinecone_unit_test_env, data_model_definition) -> PineconeCollection:
+async def collection(pinecone_unit_test_env, definition) -> PineconeCollection:
     """Fixture to create a Pinecone store."""
     async with PineconeCollection(
         collection_name="test_collection",
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
+        record_type=dict,
+        definition=definition,
     ) as collection:
         yield collection
 
@@ -131,22 +131,20 @@ def test_create_store_grpc(pinecone_unit_test_env):
 
 
 @mark.parametrize("exclude_list", [["PINECONE_API_KEY"]], indirect=True)
-async def test_create_collection_fail(pinecone_unit_test_env, data_model_definition):
+async def test_create_collection_fail(pinecone_unit_test_env, definition):
     with raises(VectorStoreInitializationException):
         PineconeCollection(
             collection_name="test_collection",
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
             env_file_path="test.env",
         )
 
 
-async def test_get_collection(store: PineconeStore, data_model_definition):
+async def test_get_collection(store: PineconeStore, definition):
     """Test the creation of a Pinecone collection."""
     # Create a collection
-    collection = store.get_collection(
-        collection_name="test_collection", data_model_type=dict, data_model_definition=data_model_definition
-    )
+    collection = store.get_collection(collection_name="test_collection", record_type=dict, definition=definition)
     assert collection is not None
     assert collection.collection_name == "test_collection"
 
@@ -198,7 +196,7 @@ async def test_create_collection_integrated(collection, mock_create_index_for_mo
 
 async def test_delete_collection(collection):
     # Test deleting the collection
-    await collection.delete_collection()
+    await collection.ensure_collection_deleted()
     assert collection.index is None
     assert collection.index_client is None
 

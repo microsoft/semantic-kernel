@@ -13,10 +13,10 @@ from semantic_kernel.connectors.memory.in_memory import InMemoryStore
 from semantic_kernel.data import (
     VectorSearchOptions,
     VectorStore,
+    VectorStoreDataField,
+    VectorStoreKeyField,
     VectorStoreRecordCollection,
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+    VectorStoreVectorField,
     vectorstoremodel,
 )
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext, PromptRenderContext
@@ -32,9 +32,9 @@ RECORD_ID_KEY = "cache_record_id"
 @vectorstoremodel(collection_name=COLLECTION_NAME)
 @dataclass
 class CacheRecord:
-    result: Annotated[str, VectorStoreRecordDataField(is_full_text_indexed=True)]
-    prompt: Annotated[str | None, VectorStoreRecordVectorField(dimensions=1536)] = None
-    id: Annotated[str, VectorStoreRecordKeyField] = field(default_factory=lambda: str(uuid4()))
+    result: Annotated[str, VectorStoreDataField(is_full_text_indexed=True)]
+    prompt: Annotated[str | None, VectorStoreVectorField(dimensions=1536)] = None
+    id: Annotated[str, VectorStoreKeyField] = field(default_factory=lambda: str(uuid4()))
 
 
 # Define the filters, one for caching the results and one for using the cache.
@@ -50,7 +50,7 @@ class PromptCacheFilter:
             raise ValueError("The vector store must have an embedding generator.")
         self.vector_store = vector_store
         self.collection: VectorStoreRecordCollection[str, CacheRecord] = vector_store.get_collection(
-            data_model_type=CacheRecord
+            record_type=CacheRecord
         )
         self.score_threshold = score_threshold
 
@@ -65,7 +65,7 @@ class PromptCacheFilter:
         closer the match.
         """
         await next(context)
-        await self.collection.create_collection_if_not_exists()
+        await self.collection.ensure_collection_exists()
         results = await self.collection.search(
             context.rendered_prompt, options=VectorSearchOptions(vector_property_name="prompt", top=1)
         )
@@ -86,7 +86,7 @@ class PromptCacheFilter:
         result = context.result
         if result and result.rendered_prompt and RECORD_ID_KEY not in result.metadata:
             cache_record = CacheRecord(prompt=result.rendered_prompt, result=str(result))
-            await self.collection.create_collection_if_not_exists()
+            await self.collection.ensure_collection_exists()
             await self.collection.upsert(cache_record)
 
 

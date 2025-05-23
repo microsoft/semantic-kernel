@@ -9,12 +9,7 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
 from semantic_kernel.connectors.memory import AzureAISearchCollection
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.data import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
-    vectorstoremodel,
-)
+from semantic_kernel.data import VectorStoreDataField, VectorStoreKeyField, VectorStoreVectorField, vectorstoremodel
 from semantic_kernel.functions.kernel_function import KernelFunction
 
 """
@@ -31,11 +26,11 @@ And we then call a function that can check if the answer is grounded or not.
 @vectorstoremodel(collection_name="generic")
 @dataclass
 class InfoItem:
-    key: Annotated[str, VectorStoreRecordKeyField]
-    text: Annotated[str, VectorStoreRecordDataField]
+    key: Annotated[str, VectorStoreKeyField]
+    text: Annotated[str, VectorStoreDataField]
     embedding: Annotated[
         list[float] | str | None,
-        VectorStoreRecordVectorField(dimensions=1536, embedding_generator=OpenAITextEmbedding()),
+        VectorStoreVectorField(dimensions=1536, embedding_generator=OpenAITextEmbedding()),
     ] = None
 
     def __post_init__(self):
@@ -46,7 +41,7 @@ class InfoItem:
 async def main() -> None:
     kernel = Kernel()
 
-    async with AzureAISearchCollection(data_model_type=InfoItem) as collection:
+    async with AzureAISearchCollection(record_type=InfoItem) as collection:
         # Setting up OpenAI services for text completion and text embedding
         kernel.add_service(OpenAIChatCompletion())
         kernel.add_function(
@@ -59,7 +54,7 @@ async def main() -> None:
         )
 
         print("Creating index for memory...")
-        await collection.delete_collection()
+        await collection.ensure_collection_deleted()
         await collection.create_collection()
 
         print("Populating memory...")
@@ -147,7 +142,7 @@ async def main() -> None:
 
         print("-" * 50)
         print("Removing collection...")
-        await collection.delete_collection()
+        await collection.ensure_collection_deleted()
 
 
 """
