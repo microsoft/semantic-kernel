@@ -132,7 +132,7 @@ internal sealed class FunctionStore
     {
         List<(string, string)> nameSourcePairs = new(this._functionByName.Count);
 
-        var provider = (Func<AIFunction, CancellationToken, Task<string>>?)this._options.FunctionEmbeddingValueProvider ?? ((function, _) =>
+        var provider = (Func<AIFunction, CancellationToken, Task<string>>?)this._options.EmbeddingValueProvider ?? ((function, _) =>
         {
             return Task.FromResult($"Function name: {function.Name}. Description: {function.Description}");
         });

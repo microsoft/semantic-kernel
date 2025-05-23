@@ -28,5 +28,5 @@ internal sealed class FunctionStoreOptions
     /// to the context.
     /// If not provided, the default behavior is to concatenate the function name and description into a single string.
     /// </summary>
-    public Func<AIFunction, CancellationToken, Task<string>>? FunctionEmbeddingValueProvider { get; set; }
+    public Func<AIFunction, CancellationToken, Task<string>>? EmbeddingValueProvider { get; set; }
 }
