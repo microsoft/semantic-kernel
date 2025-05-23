@@ -259,25 +259,18 @@ public class SqlServerCollection<TKey, TRecord>
             key,
             includeVectors);
 
-        try
-        {
-            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-            using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-            await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
-            return reader.HasRows
-                ? this._mapper.MapFromStorageToDataModel(reader, includeVectors)
-                : null;
-        }
-        catch (SqlException ex)
-        {
-            throw new VectorStoreException("Call to vector store failed.", ex)
+        return await connection.ExecuteWithErrorHandlingAsync(
+            this._collectionMetadata,
+            operationName: "Get",
+            async () =>
             {
-                VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
-                OperationName = "Get"
-            };
-        }
+                using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                return reader.HasRows
+                    ? this._mapper.MapFromStorageToDataModel(reader, includeVectors)
+                    : null;
+            },
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -327,25 +320,17 @@ public class SqlServerCollection<TKey, TRecord>
 
             while (true)
             {
-                TRecord record;
-                try
-                {
-                    if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                    {
-                        break;
-                    }
+                TRecord? record = await VectorStoreErrorHandler.RunOperationAsync<TRecord?, SqlException>(
+                    this._collectionMetadata,
+                    "GetBatch",
+                    async () => await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
+                        ? this._mapper.MapFromStorageToDataModel(reader, includeVectors)
+                        : null)
+                        .ConfigureAwait(false);
 
-                    record = this._mapper.MapFromStorageToDataModel(reader, includeVectors);
-                }
-                catch (SqlException ex)
+                if (record is null)
                 {
-                    throw new VectorStoreException("Call to vector store failed.", ex)
-                    {
-                        VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
-                        VectorStoreName = this._collectionMetadata.VectorStoreName,
-                        CollectionName = this.Name,
-                        OperationName = "GetBatch"
-                    };
+                    break;
                 }
 
                 yield return record;
