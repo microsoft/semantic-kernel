@@ -19,7 +19,7 @@ type: foundry_agent
 name: FileSearchAgent
 description: Agent with file search tool.
 instructions: >
-  Use the file searh tool to answer questions from the user.
+  Use the file search tool to answer questions from the user.
 model:
   id: ${AzureAI:ChatModelId}
   connection:
