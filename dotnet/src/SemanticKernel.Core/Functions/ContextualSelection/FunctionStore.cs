@@ -21,6 +21,7 @@ internal sealed class FunctionStore
     private readonly string _collectionName;
     private readonly FunctionStoreOptions _options;
     private readonly VectorStoreCollection<object, Dictionary<string, object?>> _collection;
+    private bool _isCollectionExistenceAsserted = false;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionStore"/> class.
@@ -103,10 +104,7 @@ internal sealed class FunctionStore
     /// <param name="cancellationToken">The cancellation token to use for cancellation.</param>
     public async Task<IEnumerable<AIFunction>> SearchAsync(string context, CancellationToken cancellationToken = default)
     {
-        if (!await this._collection.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
-        {
-            throw new InvalidOperationException($"Collection '{this._collectionName}' does not exist.");
-        }
+        await this.AssertCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         var requestEmbedding = await this._embeddingGenerator.GenerateAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -145,5 +143,22 @@ internal sealed class FunctionStore
         }
 
         return nameSourcePairs;
+    }
+
+    /// <summary>
+    /// Asserts that the collection exists in the vector store.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token to use for cancellation.</param>
+    private async Task AssertCollectionExistsAsync(CancellationToken cancellationToken)
+    {
+        if (!this._isCollectionExistenceAsserted)
+        {
+            if (!await this._collection.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+            {
+                throw new InvalidOperationException($"Collection '{this._collectionName}' does not exist.");
+            }
+
+            this._isCollectionExistenceAsserted = true;
+        }
     }
 }
