@@ -37,7 +37,7 @@ public sealed class VectorStoreVectorAttribute : Attribute
     public int Dimensions { get; private set; }
 
     /// <summary>
-    /// Gets the kind of index to use.
+    /// Gets or sets the kind of index to use.
     /// </summary>
     /// <value>
     /// The default value varies by database type. See the documentation of your chosen database connector for more information.
@@ -48,7 +48,7 @@ public sealed class VectorStoreVectorAttribute : Attribute
 #pragma warning restore CA1019
 
     /// <summary>
-    /// Gets the distance function to use when comparing vectors.
+    /// Gets or sets the distance function to use when comparing vectors.
     /// </summary>
     /// <value>
     /// The default value varies by database type. See the documentation of your chosen database connector for more information.

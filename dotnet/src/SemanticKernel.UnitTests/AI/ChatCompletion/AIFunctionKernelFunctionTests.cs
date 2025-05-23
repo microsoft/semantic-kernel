@@ -31,6 +31,24 @@ public class AIFunctionKernelFunctionTests
     }
 
     [Fact]
+    private void AIFunctionKernelFunctionFromAIFunctionShouldHavePluginName()
+    {
+        AIFunction aiFunc = AIFunctionFactory.Create(() => { }, "f1");
+        Assert.Equal("f1", aiFunc.Name);
+
+        KernelFunction kernelFunction = aiFunc.AsKernelFunction();
+        Assert.Equal("f1", kernelFunction.Name);
+        Assert.Null(kernelFunction.PluginName);
+
+        Kernel kernel = new();
+        kernel.Plugins.AddFromFunctions("Tools", [kernelFunction]);
+
+        KernelFunction pluginFunction = kernel.Plugins.ElementAt(0).ElementAt(0);
+        Assert.Equal("f1", pluginFunction.Name);
+        Assert.Equal("Tools", pluginFunction.PluginName);
+    }
+
+    [Fact]
     public void ShouldUseKernelFunctionNameWhenWrappingKernelFunction()
     {
         // Arrange
@@ -55,7 +73,7 @@ public class AIFunctionKernelFunctionTests
 
         // Assert
         Assert.Equal("TestPlugin_TestFunction", sut.Name);
-        Assert.Equal("TestPlugin", sut.PluginName);
+        Assert.Null(sut.PluginName);
     }
 
     [Fact]
@@ -127,8 +145,8 @@ public class AIFunctionKernelFunctionTests
 
         // Assert
         Assert.Equal("NewPlugin", cloned.PluginName);
-        Assert.Equal("NewPlugin_TestFunction", cloned.Name);
-        Assert.Equal("NewPlugin_TestFunction", cloned.ToString());
+        Assert.Equal("TestFunction", cloned.Name);
+        Assert.Equal("NewPlugin.TestFunction", cloned.ToString());
     }
 
     [Fact]

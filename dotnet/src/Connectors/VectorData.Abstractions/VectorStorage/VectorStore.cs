@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Represents a vector store which contains collections of records.
+/// Represents a vector store that contains collections of records.
 /// </summary>
 /// <remarks>
 /// <para>This type can be used with collections of any schema type, but requires you to provide schema information when getting a collection.</para>
@@ -64,7 +64,7 @@ public abstract class VectorStore : IDisposable
     /// <summary>
     /// Deletes the collection from the vector store.
     /// </summary>
-    /// <param name="name">The name of the collection.</param>
+    /// <param name="name">The name of the collection to delete.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> that completes when the collection has been deleted.</returns>
     public abstract Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default);
@@ -75,16 +75,16 @@ public abstract class VectorStore : IDisposable
     /// <returns>The found object, otherwise <see langword="null"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly-typed services that might be provided by the <see cref="VectorStore"/>,
+    /// The purpose of this method is to allow for the retrieval of strongly typed services that might be provided by the <see cref="VectorStore"/>,
     /// including itself or any services it might be wrapping. For example, to access the <see cref="VectorStoreMetadata"/> for the instance,
-    /// <see cref="GetService"/> may be used to request it.
+    /// <see cref="GetService"/> can be used to request it.
     /// </remarks>
     public abstract object? GetService(Type serviceType, object? serviceKey = null);
 
     /// <summary>
     /// Disposes the <see cref="VectorStore"/> and releases any resources it holds.
     /// </summary>
-    /// <param name="disposing">True if called from <see cref="Dispose()"/>, false if called from a finalizer.</param>
+    /// <param name="disposing"><see langword="true"/> if called from <see cref="Dispose()"/>; <see langword="false"/> if called from a finalizer.</param>
     protected virtual void Dispose(bool disposing)
     {
     }
