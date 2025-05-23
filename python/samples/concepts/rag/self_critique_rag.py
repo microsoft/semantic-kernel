@@ -9,7 +9,7 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
 from semantic_kernel.connectors.memory import AzureAISearchCollection
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.data import VectorStoreDataField, VectorStoreKeyField, VectorStoreVectorField, vectorstoremodel
+from semantic_kernel.data import VectorStoreField, vectorstoremodel
 from semantic_kernel.functions.kernel_function import KernelFunction
 
 """
@@ -26,11 +26,11 @@ And we then call a function that can check if the answer is grounded or not.
 @vectorstoremodel(collection_name="generic")
 @dataclass
 class InfoItem:
-    key: Annotated[str, VectorStoreKeyField]
-    text: Annotated[str, VectorStoreDataField]
+    key: Annotated[str, VectorStoreField("key")]
+    text: Annotated[str, VectorStoreField("data")]
     embedding: Annotated[
         list[float] | str | None,
-        VectorStoreVectorField(dimensions=1536, embedding_generator=OpenAITextEmbedding()),
+        VectorStoreField("vector", dimensions=1536, embedding_generator=OpenAITextEmbedding()),
     ] = None
 
     def __post_init__(self):

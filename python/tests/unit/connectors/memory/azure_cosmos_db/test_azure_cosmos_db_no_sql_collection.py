@@ -433,13 +433,12 @@ async def test_azure_cosmos_db_no_sql_get(
     vector_collection._get_container_proxy = AsyncMock(return_value=mock_container_proxy)
 
     get_results = MagicMock(spec=AsyncGenerator)
-    get_results.__aiter__.return_value = [{"content": "test_content", "vector": [1.0, 2.0, 3.0], "id": "test_id"}]
+    get_results.__aiter__.return_value = [{"content": "test_content", "id": "test_id"}]
     mock_container_proxy.query_items.return_value = get_results
 
     record = await vector_collection.get("test_id")
     assert isinstance(record, record_type)
     assert record.content == "test_content"
-    assert record.vector == [1.0, 2.0, 3.0]
     assert record.id == "test_id"
 
 

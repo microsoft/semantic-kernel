@@ -13,12 +13,10 @@ from pytest import fixture
 from semantic_kernel.data import (
     KernelSearchResults,
     VectorStoreCollectionDefinition,
-    VectorStoreDataField,
-    VectorStoreKeyField,
     VectorStoreRecordCollection,
-    VectorStoreVectorField,
     vectorstoremodel,
 )
+from semantic_kernel.data.definitions import VectorStoreField
 from semantic_kernel.data.vectors import VectorSearch, VectorSearchResult
 from semantic_kernel.kernel_types import OptionalOneOrMany
 
@@ -100,9 +98,9 @@ def DictVectorStoreRecordCollection() -> type[VectorSearch]:
 def definition() -> object:
     return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreKeyField(name="id"),
-            VectorStoreDataField(name="content"),
-            VectorStoreVectorField(dimensions=5, name="vector"),
+            VectorStoreField("key", name="id"),
+            VectorStoreField("data", name="content"),
+            VectorStoreField("vector", dimensions=5, name="vector"),
         ]
     )
 
@@ -117,9 +115,9 @@ def data_model_serialize_definition() -> object:
 
     return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreKeyField(name="id"),
-            VectorStoreDataField(name="content"),
-            VectorStoreVectorField(dimensions=5, name="vector"),
+            VectorStoreField("key", name="id"),
+            VectorStoreField("data", name="content"),
+            VectorStoreField("vector", dimensions=5, name="vector"),
         ],
         serialize=serialize,
         deserialize=deserialize,
@@ -136,9 +134,9 @@ def data_model_to_from_dict_definition() -> object:
 
     return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreKeyField(name="id"),
-            VectorStoreDataField(name="content"),
-            VectorStoreVectorField(dimensions=5, name="vector"),
+            VectorStoreField("key", name="id"),
+            VectorStoreField("data", name="content"),
+            VectorStoreField("vector", dimensions=5, name="vector"),
         ],
         to_dict=to_dict,
         from_dict=from_dict,
@@ -159,9 +157,9 @@ def data_model_container_definition() -> object:
 
     return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreKeyField(name="id"),
-            VectorStoreDataField(name="content"),
-            VectorStoreVectorField(dimensions=5, name="vector"),
+            VectorStoreField("key", name="id"),
+            VectorStoreField("data", name="content"),
+            VectorStoreField("vector", dimensions=5, name="vector"),
         ],
         container_mode=True,
         to_dict=to_dict,
@@ -183,9 +181,9 @@ def data_model_container_serialize_definition() -> object:
 
     return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreKeyField(name="id"),
-            VectorStoreDataField(name="content"),
-            VectorStoreVectorField(dimensions=5, name="vector"),
+            VectorStoreField("key", name="id"),
+            VectorStoreField("data", name="content"),
+            VectorStoreField("vector", dimensions=5, name="vector"),
         ],
         container_mode=True,
         serialize=serialize,
@@ -199,15 +197,17 @@ def data_model_pandas_definition() -> object:
 
     return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreVectorField(
+            VectorStoreField(
+                "vector",
                 name="vector",
                 index_kind="hnsw",
                 dimensions=5,
                 distance_function="cosine_similarity",
                 type="float",
             ),
-            VectorStoreKeyField(name="id"),
-            VectorStoreDataField(
+            VectorStoreField("key", name="id"),
+            VectorStoreField(
+                "data",
                 name="content",
                 type="str",
             ),
@@ -224,9 +224,9 @@ def record_type_vanilla():
     class DataModelClass:
         def __init__(
             self,
-            content: Annotated[str, VectorStoreDataField()],
-            id: Annotated[str, VectorStoreKeyField()],
-            vector: Annotated[list[float] | str | None, VectorStoreVectorField(dimensions=5)] = None,
+            content: Annotated[str, VectorStoreField("data")],
+            id: Annotated[str, VectorStoreField("key")],
+            vector: Annotated[list[float] | str | None, VectorStoreField("vector", dimensions=5)] = None,
         ):
             self.content = content
             self.vector = vector
@@ -244,11 +244,12 @@ def record_type_vector_array():
     class DataModelClass:
         def __init__(
             self,
-            id: Annotated[str, VectorStoreKeyField()],
-            content: Annotated[str, VectorStoreDataField()],
+            id: Annotated[str, VectorStoreField("key")],
+            content: Annotated[str, VectorStoreField("data")],
             vector: Annotated[
                 list[float] | str | None,
-                VectorStoreVectorField(
+                VectorStoreField(
+                    "vector",
                     dimensions=5,
                 ),
             ] = None,
@@ -269,9 +270,9 @@ def record_type_vanilla_serialize():
     class DataModelClass:
         def __init__(
             self,
-            id: Annotated[str, VectorStoreKeyField()],
-            content: Annotated[str, VectorStoreDataField()],
-            vector: Annotated[list[float] | str | None, VectorStoreVectorField(dimensions=5)] = None,
+            id: Annotated[str, VectorStoreField("key")],
+            content: Annotated[str, VectorStoreField("data")],
+            vector: Annotated[list[float] | str | None, VectorStoreField("vector", dimensions=5)] = None,
         ):
             self.content = content
             self.vector = vector
@@ -298,9 +299,9 @@ def record_type_vanilla_to_from_dict():
     class DataModelClass:
         def __init__(
             self,
-            id: Annotated[str, VectorStoreKeyField()],
-            content: Annotated[str, VectorStoreDataField()],
-            vector: Annotated[str | list[float] | None, VectorStoreVectorField(dimensions=5)] = None,
+            id: Annotated[str, VectorStoreField("key")],
+            content: Annotated[str, VectorStoreField("data")],
+            vector: Annotated[str | list[float] | None, VectorStoreField("vector", dimensions=5)] = None,
         ):
             self.content = content
             self.vector = vector
@@ -325,9 +326,9 @@ def record_type_vanilla_to_from_dict():
 def record_type_pydantic():
     @vectorstoremodel
     class DataModelClass(BaseModel):
-        content: Annotated[str, VectorStoreDataField()]
-        id: Annotated[str, VectorStoreKeyField()]
-        vector: Annotated[str | list[float] | None, VectorStoreVectorField(dimensions=5)] = None
+        content: Annotated[str, VectorStoreField("data")]
+        id: Annotated[str, VectorStoreField("key")]
+        vector: Annotated[str | list[float] | None, VectorStoreField("vector", dimensions=5)] = None
 
     return DataModelClass
 
@@ -337,9 +338,9 @@ def record_type_dataclass():
     @vectorstoremodel
     @dataclass
     class DataModelClass:
-        content: Annotated[str, VectorStoreDataField()]
-        id: Annotated[str, VectorStoreKeyField()]
-        vector: Annotated[list[float] | str | None, VectorStoreVectorField(dimensions=5)] = None
+        content: Annotated[str, VectorStoreField("data")]
+        id: Annotated[str, VectorStoreField("key")]
+        vector: Annotated[list[float] | str | None, VectorStoreField("vector", dimensions=5)] = None
 
     return DataModelClass
 

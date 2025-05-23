@@ -9,12 +9,7 @@ from pydantic import BaseModel, ConfigDict
 from pydantic.dataclasses import dataclass as pydantic_dataclass
 from pytest import raises
 
-from semantic_kernel.data import (
-    VectorStoreCollectionDefinition,
-    VectorStoreDataField,
-    VectorStoreKeyField,
-    VectorStoreVectorField,
-)
+from semantic_kernel.data import VectorStoreCollectionDefinition, VectorStoreField
 from semantic_kernel.data.definitions import vectorstoremodel
 from semantic_kernel.exceptions import VectorStoreModelException
 
@@ -28,12 +23,12 @@ def test_vanilla():
     class DataModelClassVanilla:
         def __init__(
             self,
-            content: Annotated[str, VectorStoreDataField()],
-            content2: Annotated[str, VectorStoreDataField],
-            vector: Annotated[list[float], VectorStoreVectorField(dimensions=5)],
-            id: Annotated[str, VectorStoreKeyField()],
+            content: Annotated[str, VectorStoreField("data")],
+            content2: Annotated[str, VectorStoreField("data")],
+            vector: Annotated[list[float], VectorStoreField("vector", dimensions=5)],
+            id: Annotated[str, VectorStoreField("key")],
             non_vector_store_content: str | None = None,
-            optional_content: Annotated[str | None, VectorStoreDataField()] = None,
+            optional_content: Annotated[str | None, VectorStoreField("data")] = None,
             annotated_content: Annotated[str | None, "description"] = None,
         ):
             self.content = content
@@ -66,8 +61,8 @@ def test_vanilla_2():
     class DataModelClassVanilla2:
         def __init__(
             self,
-            content: Annotated[str, VectorStoreDataField()],
-            id: Annotated[str, VectorStoreKeyField()],
+            content: Annotated[str, VectorStoreField("data")],
+            id: Annotated[str, VectorStoreField("key")],
         ):
             self.content = content
             self.id = id
@@ -82,12 +77,12 @@ def test_dataclass():
     @vectorstoremodel
     @dataclass
     class DataModelClassDataclass:
-        content: Annotated[str, VectorStoreDataField()]
-        content2: Annotated[str, VectorStoreDataField]
-        vector: Annotated[list[float], VectorStoreVectorField(dimensions=5)]
-        id: Annotated[str, VectorStoreKeyField()]
+        content: Annotated[str, VectorStoreField("data")]
+        content2: Annotated[str, VectorStoreField("data")]
+        vector: Annotated[list[float], VectorStoreField("vector", dimensions=5)]
+        id: Annotated[str, VectorStoreField("key")]
         non_vector_store_content: str | None = None
-        optional_content: Annotated[str | None, VectorStoreDataField()] = None
+        optional_content: Annotated[str | None, VectorStoreField("data")] = None
         annotated_content: Annotated[str | None, "description"] = None
 
     assert hasattr(DataModelClassDataclass, "__kernel_vectorstoremodel__")
@@ -113,19 +108,19 @@ def test_dataclass_inverse_fail():
         @dataclass
         @vectorstoremodel
         class DataModelClass:
-            id: Annotated[str, VectorStoreKeyField()]
-            content: Annotated[str, VectorStoreDataField()]
+            id: Annotated[str, VectorStoreField("key")]
+            content: Annotated[str, VectorStoreField("data")]
 
 
 def test_pydantic_base_model():
     @vectorstoremodel
     class DataModelClassPydantic(BaseModel):
-        content: Annotated[str, VectorStoreDataField()]
-        content2: Annotated[str, VectorStoreDataField]
-        vector: Annotated[list[float], VectorStoreVectorField(dimensions=5)]
-        id: Annotated[str, VectorStoreKeyField()]
+        content: Annotated[str, VectorStoreField("data")]
+        content2: Annotated[str, VectorStoreField("data")]
+        vector: Annotated[list[float], VectorStoreField("vector", dimensions=5)]
+        id: Annotated[str, VectorStoreField("key")]
         non_vector_store_content: str | None = None
-        optional_content: Annotated[str | None, VectorStoreDataField()] = None
+        optional_content: Annotated[str | None, VectorStoreField("data")] = None
         annotated_content: Annotated[str | None, "description"] = None
 
     assert hasattr(DataModelClassPydantic, "__kernel_vectorstoremodel__")
@@ -149,12 +144,12 @@ def test_pydantic_dataclass():
     @vectorstoremodel
     @pydantic_dataclass
     class DataModelClassPydanticDataclass:
-        content: Annotated[str, VectorStoreDataField()]
-        content2: Annotated[str, VectorStoreDataField]
-        vector: Annotated[list[float], VectorStoreVectorField(dimensions=5)]
-        id: Annotated[str, VectorStoreKeyField()]
+        content: Annotated[str, VectorStoreField("data")]
+        content2: Annotated[str, VectorStoreField("data")]
+        vector: Annotated[list[float], VectorStoreField("vector", dimensions=5)]
+        id: Annotated[str, VectorStoreField("key")]
         non_vector_store_content: str | None = None
-        optional_content: Annotated[str | None, VectorStoreDataField()] = None
+        optional_content: Annotated[str | None, VectorStoreField("data")] = None
         annotated_content: Annotated[str | None, "description"] = None
 
     assert hasattr(DataModelClassPydanticDataclass, "__kernel_vectorstoremodel__")
@@ -208,13 +203,13 @@ def test_non_vector_list_and_dict():
     @vectorstoremodel
     @dataclass
     class DataModelClassListDict:
-        key: Annotated[str, VectorStoreKeyField()]
-        list1: Annotated[list[int], VectorStoreDataField()]
-        list2: Annotated[list[str], VectorStoreDataField]
-        list3: Annotated[list[str] | None, VectorStoreDataField]
-        dict1: Annotated[dict[str, int], VectorStoreDataField()]
-        dict2: Annotated[dict[str, str], VectorStoreDataField]
-        dict3: Annotated[dict[str, str] | None, VectorStoreDataField]
+        key: Annotated[str, VectorStoreField("key")]
+        list1: Annotated[list[int], VectorStoreField("data")]
+        list2: Annotated[list[str], VectorStoreField("data")]
+        list3: Annotated[list[str] | None, VectorStoreField("data")]
+        dict1: Annotated[dict[str, int], VectorStoreField("data")]
+        dict2: Annotated[dict[str, str], VectorStoreField("data")]
+        dict3: Annotated[dict[str, str] | None, VectorStoreField("data")]
 
     assert hasattr(DataModelClassListDict, "__kernel_vectorstoremodel__")
     assert hasattr(DataModelClassListDict, "__kernel_vectorstoremodel_definition__")
@@ -239,12 +234,12 @@ def test_vector_fields_checks():
     @vectorstoremodel
     class DataModelClassVectorFields(BaseModel):
         model_config = ConfigDict(arbitrary_types_allowed=True)
-        id: Annotated[str, VectorStoreKeyField()]
-        vector_str: Annotated[str, VectorStoreVectorField(dimensions=5)]
-        vector_list: Annotated[list[float], VectorStoreVectorField(dimensions=5)]
+        id: Annotated[str, VectorStoreField("key")]
+        vector_str: Annotated[str, VectorStoreField("vector", dimensions=5)]
+        vector_list: Annotated[list[float], VectorStoreField("vector", dimensions=5)]
         vector_array: Annotated[
             ndarray,
-            VectorStoreVectorField(dimensions=5),
+            VectorStoreField("vector", dimensions=5),
         ]
 
     assert hasattr(DataModelClassVectorFields, "__kernel_vectorstoremodel__")
