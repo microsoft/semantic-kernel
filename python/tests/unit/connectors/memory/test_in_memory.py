@@ -8,8 +8,8 @@ from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperat
 
 
 @fixture
-def collection(data_model_definition):
-    return InMemoryCollection(collection_name="test", data_model_type=dict, data_model_definition=data_model_definition)
+def collection(definition):
+    return InMemoryCollection(collection_name="test", record_type=dict, definition=definition)
 
 
 def test_store_init():
@@ -17,14 +17,12 @@ def test_store_init():
     assert store is not None
 
 
-def test_store_get_collection(data_model_definition):
+def test_store_get_collection(definition):
     store = InMemoryStore()
-    collection = store.get_collection(
-        collection_name="test", data_model_type=dict, data_model_definition=data_model_definition
-    )
+    collection = store.get_collection(collection_name="test", record_type=dict, definition=definition)
     assert collection.collection_name == "test"
-    assert collection.data_model_type is dict
-    assert collection.data_model_definition == data_model_definition
+    assert collection.record_type is dict
+    assert collection.definition == definition
 
 
 async def test_upsert(collection):
@@ -62,7 +60,7 @@ async def test_delete_collection(collection):
     record = {"id": "testid", "content": "test content", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
     await collection.upsert(record)
     assert collection.inner_storage == {"testid": record}
-    await collection.delete_collection()
+    await collection.ensure_collection_deleted()
     assert collection.inner_storage == {}
 
 
@@ -83,7 +81,7 @@ async def test_create_collection(collection):
     ],
 )
 async def test_vectorized_search_similar(collection, distance_function):
-    for field in collection.data_model_definition.fields:
+    for field in collection.definition.fields:
         if field.name == "vector":
             field.distance_function = distance_function
     record1 = {"id": "testid1", "content": "test content", "vector": [1.0, 1.0, 1.0, 1.0, 1.0]}

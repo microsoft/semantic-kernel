@@ -29,12 +29,15 @@ from typing_extensions import override
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import (
+from semantic_kernel.data.definitions import VectorStoreCollectionDefinition
+from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
+    SearchType,
     TModel,
+    VectorSearch,
+    VectorSearchOptions,
+    VectorSearchResult,
     VectorStore,
     VectorStoreRecordCollection,
 )
@@ -131,8 +134,8 @@ class QdrantCollection(
 
     def __init__(
         self,
-        data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        record_type: type[TModel],
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         named_vectors: bool = True,
@@ -159,8 +162,8 @@ class QdrantCollection(
         You can also supply a async qdrant client directly.
 
         Args:
-            data_model_type (type[TModel]): The type of the data model.
-            data_model_definition (VectorStoreRecordDefinition): The model fields, optional.
+            record_type (type[TModel]): The type of the data model.
+            definition (VectorStoreRecordDefinition): The model fields, optional.
             collection_name (str): The name of the collection, optional.
             embedding_generator (EmbeddingGeneratorBase): The embedding generator to use, optional.
             named_vectors (bool): If true, vectors are stored with name (default: True).
@@ -180,8 +183,8 @@ class QdrantCollection(
         """
         if client:
             super().__init__(
-                data_model_type=data_model_type,
-                data_model_definition=data_model_definition,
+                record_type=record_type,
+                definition=definition,
                 collection_name=collection_name,
                 qdrant_client=client,  # type: ignore
                 named_vectors=named_vectors,  # type: ignore
@@ -213,8 +216,8 @@ class QdrantCollection(
         except ValueError as ex:
             raise VectorStoreInitializationException("Failed to create Qdrant client.", ex) from ex
         super().__init__(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             qdrant_client=client,
             named_vectors=named_vectors,
@@ -278,15 +281,12 @@ class QdrantCollection(
         if not vector:
             raise VectorSearchExecutionException("Search requires a vector.")
 
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+        vector_field = self.definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreOperationException(
                 f"Vector field {options.vector_property_name} not found in data model definition."
             )
-        if self.named_vectors:
-            query_vector = (vector_field.storage_property_name or vector_field.name, vector)
-        else:
-            query_vector = vector
+        query_vector = (vector_field.storage_name or vector_field.name, vector) if self.named_vectors else vector
         filters: Filter | list[Filter] | None = self._build_filter(options.filter)  # type: ignore
         filter: Filter | None = Filter(must=filters) if filters and isinstance(filters, list) else filters  # type: ignore
         if search_type == SearchType.VECTOR:
@@ -308,9 +308,9 @@ class QdrantCollection(
                 raise VectorSearchExecutionException("Hybrid search requires a keyword field name.")
             text_field = next(
                 field
-                for field in self.data_model_definition.fields
+                for field in self.definition.fields
                 if field.name == options.additional_property_name
-                or field.storage_property_name == options.additional_property_name
+                or field.storage_name == options.additional_property_name
             )
             if not text_field:
                 raise VectorStoreOperationException(
@@ -319,7 +319,7 @@ class QdrantCollection(
             keyword_filter = deepcopy(filter) if filter else Filter()
             keyword_sub_filter = Filter(
                 should=[
-                    FieldCondition(key=text_field.storage_property_name or text_field.name, match=MatchAny(any=[kw]))
+                    FieldCondition(key=text_field.storage_name or text_field.name, match=MatchAny(any=[kw]))
                     for kw in values
                 ]
             )
@@ -335,7 +335,7 @@ class QdrantCollection(
                 prefetch=[
                     Prefetch(
                         query=vector,  # type: ignore
-                        using=vector_field.storage_property_name or vector_field.name,
+                        using=vector_field.storage_name or vector_field.name,
                         filter=filter,
                         limit=options.top,
                     ),
@@ -418,14 +418,14 @@ class QdrantCollection(
                         raise NotImplementedError("Unary +, -, ~ are not supported in Qdrant filters.")
             case ast.Attribute():
                 # Only allow attributes that are in the data model
-                if node.attr not in self.data_model_definition.storage_property_names:
+                if node.attr not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.attr}' not in data model (storage property names are used)."
                     )
                 return node.attr
             case ast.Name():
                 # Only allow names that are in the data model
-                if node.id not in self.data_model_definition.storage_property_names:
+                if node.id not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.id}' not in data model (storage property names are used)."
                     )
@@ -445,11 +445,10 @@ class QdrantCollection(
         return [
             PointStruct(
                 id=record.pop(self._key_field_name),
-                vector=record.pop(self.data_model_definition.vector_field_names[0])
+                vector=record.pop(self.definition.vector_field_names[0])
                 if not self.named_vectors
                 else {
-                    field.storage_property_name or field.name: record.pop(field.name)
-                    for field in self.data_model_definition.vector_fields
+                    field.storage_name or field.name: record.pop(field.name) for field in self.definition.vector_fields
                 },
                 payload=record,
             )
@@ -471,7 +470,7 @@ class QdrantCollection(
                     if not record.vector
                     else record.vector
                     if isinstance(record.vector, dict)
-                    else {self.data_model_definition.vector_field_names[0]: record.vector}
+                    else {self.definition.vector_field_names[0]: record.vector}
                 ),
             }
             for record in records
@@ -490,21 +489,21 @@ class QdrantCollection(
         if "vectors_config" not in kwargs:
             if self.named_vectors:
                 vectors_config: MutableMapping[str, VectorParams] = {}
-                for field in self.data_model_definition.vector_fields:
+                for field in self.definition.vector_fields:
                     if field.index_kind not in INDEX_KIND_MAP:
                         raise VectorStoreOperationException(f"Index kind {field.index_kind} is not supported.")
                     if field.distance_function not in DISTANCE_FUNCTION_MAP:
                         raise VectorStoreOperationException(
                             f"Distance function {field.distance_function} is not supported."
                         )
-                    vectors_config[field.storage_property_name or field.name] = VectorParams(
+                    vectors_config[field.storage_name or field.name] = VectorParams(
                         size=field.dimensions,
                         distance=DISTANCE_FUNCTION_MAP[field.distance_function],
-                        datatype=TYPE_MAPPER_VECTOR[field.property_type or "default"],
+                        datatype=TYPE_MAPPER_VECTOR[field.type_ or "default"],
                     )
                 kwargs["vectors_config"] = vectors_config
             else:
-                vector = self.data_model_definition.try_get_vector_field(None)
+                vector = self.definition.try_get_vector_field(None)
                 if not vector:
                     raise VectorStoreOperationException("Vector field not found in data model definition.")
                 if vector.distance_function not in DISTANCE_FUNCTION_MAP:
@@ -514,7 +513,7 @@ class QdrantCollection(
                 kwargs["vectors_config"] = VectorParams(
                     size=vector.dimensions,
                     distance=DISTANCE_FUNCTION_MAP[vector.distance_function],
-                    datatype=TYPE_MAPPER_VECTOR[vector.property_type or "default"],
+                    datatype=TYPE_MAPPER_VECTOR[vector.type_ or "default"],
                 )
         if "collection_name" not in kwargs:
             kwargs["collection_name"] = self.collection_name
@@ -525,7 +524,7 @@ class QdrantCollection(
         return await self.qdrant_client.collection_exists(self.collection_name, **kwargs)
 
     @override
-    async def delete_collection(self, **kwargs) -> None:
+    async def ensure_collection_deleted(self, **kwargs) -> None:
         await self.qdrant_client.delete_collection(self.collection_name, **kwargs)
 
     def _validate_data_model(self):
@@ -536,7 +535,7 @@ class QdrantCollection(
         Checks should include, allowed naming of parameters, allowed data types, allowed vector dimensions.
         """
         super()._validate_data_model()
-        if len(self.data_model_definition.vector_field_names) > 1 and not self.named_vectors:
+        if len(self.definition.vector_field_names) > 1 and not self.named_vectors:
             raise VectorStoreModelValidationError("Only one vector field is allowed when not using named vectors.")
 
     @override
@@ -626,16 +625,16 @@ class QdrantStore(VectorStore):
     @override
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> QdrantCollection:
         return QdrantCollection(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             client=self.qdrant_client,
             embedding_generator=embedding_generator or self.embedding_generator,

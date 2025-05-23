@@ -30,17 +30,20 @@ from pydantic import SecretStr, ValidationError
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+from semantic_kernel.data.definitions import (
+    VectorStoreCollectionDefinition,
+    VectorStoreDataField,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
 )
-from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import (
+from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
+    SearchType,
     TModel,
+    VectorSearch,
+    VectorSearchOptions,
+    VectorSearchResult,
     VectorStore,
     VectorStoreRecordCollection,
     _get_collection_name_from_model,
@@ -192,9 +195,9 @@ def _get_search_index_client(
     )
 
 
-def _data_model_definition_to_azure_ai_search_index(
+def _definition_to_azure_ai_search_index(
     collection_name: str,
-    definition: VectorStoreRecordDefinition,
+    definition: VectorStoreCollectionDefinition,
     encryption_key: SearchResourceEncryptionKey | None = None,
 ) -> SearchIndex:
     """Convert a VectorStoreRecordDefinition to an Azure AI Search index."""
@@ -203,21 +206,21 @@ def _data_model_definition_to_azure_ai_search_index(
     search_algos = []
 
     for field in definition.fields:
-        if isinstance(field, VectorStoreRecordDataField):
-            if not field.property_type:
+        if isinstance(field, VectorStoreDataField):
+            if not field.type_:
                 logger.debug(f"Field {field.name} has not specified type, defaulting to Edm.String.")
-            if field.property_type and field.property_type not in TYPE_MAP_DATA:
-                if field.property_type.startswith("dict"):
+            if field.type_ and field.type_ not in TYPE_MAP_DATA:
+                if field.type_.startswith("dict"):
                     type_ = TYPE_MAP_DATA["dict"]
-                elif field.property_type.startswith("list") and "dict" in field.property_type:
+                elif field.type_.startswith("list") and "dict" in field.type_:
                     type_ = TYPE_MAP_DATA["list[dict]"]
                 else:
-                    raise VectorStoreOperationException(f"{field.property_type} not supported in Azure AI Search.")
+                    raise VectorStoreOperationException(f"{field.type_} not supported in Azure AI Search.")
             else:
-                type_ = TYPE_MAP_DATA[field.property_type or "default"]
+                type_ = TYPE_MAP_DATA[field.type_ or "default"]
             fields.append(
                 SearchField(
-                    name=field.storage_property_name or field.name,
+                    name=field.storage_name or field.name,
                     type=type_,
                     filterable=field.is_indexed or field.is_full_text_indexed,
                     # searchable is set first on the value of is_full_text_searchable,
@@ -229,30 +232,30 @@ def _data_model_definition_to_azure_ai_search_index(
                     hidden=False,
                 )
             )
-        elif isinstance(field, VectorStoreRecordKeyField):
+        elif isinstance(field, VectorStoreKeyField):
             fields.append(
                 SimpleField(
-                    name=field.storage_property_name or field.name,
+                    name=field.storage_name or field.name,
                     type="Edm.String",  # hardcoded, only allowed type for key
                     key=True,
                     filterable=True,
                     searchable=True,
                 )
             )
-        elif isinstance(field, VectorStoreRecordVectorField):
-            if not field.property_type:
+        elif isinstance(field, VectorStoreVectorField):
+            if not field.type_:
                 logger.debug(f"Field {field.name} has not specified type, defaulting to Collection(Edm.Single).")
             if field.index_kind not in INDEX_ALGORITHM_MAP:
                 raise VectorStoreOperationException(f"{field.index_kind} not supported in Azure AI Search.")
             if field.distance_function not in DISTANCE_FUNCTION_MAP:
                 raise VectorStoreOperationException(f"{field.distance_function} not supported in Azure AI Search.")
 
-            profile_name = f"{field.storage_property_name or field.name}_profile"
-            algo_name = f"{field.storage_property_name or field.name}_algorithm"
+            profile_name = f"{field.storage_name or field.name}_profile"
+            algo_name = f"{field.storage_name or field.name}_algorithm"
             fields.append(
                 SearchField(
-                    name=field.storage_property_name or field.name,
-                    type=TYPE_MAP_VECTOR[field.property_type or "default"],
+                    name=field.storage_name or field.name,
+                    type=TYPE_MAP_VECTOR[field.type_ or "default"],
                     searchable=True,
                     vector_search_dimensions=field.dimensions,
                     vector_search_profile_name=profile_name,
@@ -293,8 +296,8 @@ class AzureAISearchCollection(
 
     def __init__(
         self,
-        data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        record_type: type[TModel],
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         search_index_client: SearchIndexClient | None = None,
         search_client: SearchClient | None = None,
@@ -305,15 +308,15 @@ class AzureAISearchCollection(
 
         The collection name can be set in four ways:
         1. By passing it in the constructor.
-        2. By passing it in the data model definition or data_model_type.
+        2. By passing it in the data model definition or record_type.
         3. By passing it in the search client.
         4. By setting the AZURE_AI_SEARCH_INDEX_NAME environment variable.
 
         They are checked in that order, so if the collection name is passed in the constructor it is used.
 
         Args:
-            data_model_type: The type of the data model.
-            data_model_definition: The model definition, optional.
+            record_type: The type of the data model.
+            definition: The model definition, optional.
             collection_name: The name of the collection, optional.
             search_index_client: The search index client for interacting with Azure AI Search,
                 used for creating and deleting indexes.
@@ -331,15 +334,15 @@ class AzureAISearchCollection(
 
         """
         if not collection_name:
-            collection_name = _get_collection_name_from_model(data_model_type, data_model_definition)
+            collection_name = _get_collection_name_from_model(record_type, definition)
         if not collection_name and search_client:
             collection_name = search_client._index_name
         if search_client and search_index_client:
             if collection_name and search_client._index_name != collection_name:
                 search_client._index_name = collection_name
             super().__init__(
-                data_model_type=data_model_type,
-                data_model_definition=data_model_definition,
+                record_type=record_type,
+                definition=definition,
                 collection_name=collection_name,
                 search_client=search_client,
                 search_index_client=search_index_client,
@@ -361,8 +364,8 @@ class AzureAISearchCollection(
             except ValidationError as exc:
                 raise VectorStoreInitializationException("Failed to create Azure Cognitive Search settings.") from exc
             super().__init__(
-                data_model_type=data_model_type,
-                data_model_definition=data_model_definition,
+                record_type=record_type,
+                definition=definition,
                 collection_name=azure_ai_search_settings.index_name,
                 search_client=_get_search_client(
                     search_index_client=search_index_client, collection_name=azure_ai_search_settings.index_name
@@ -389,8 +392,8 @@ class AzureAISearchCollection(
             token_credential=kwargs.get("token_credentials"),
         )
         super().__init__(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=azure_ai_search_settings.index_name,
             search_client=_get_search_client(
                 search_index_client=search_index_client,
@@ -424,7 +427,7 @@ class AzureAISearchCollection(
         elif kwargs.get("include_vectors"):
             selected_fields = ["*"]
         else:
-            selected_fields = self.data_model_definition.get_storage_property_names(include_vector_fields=False)
+            selected_fields = self.definition.get_storage_names(include_vector_fields=False)
         if keys is not None:
             gather_result = await asyncio.gather(
                 *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],  # type: ignore
@@ -436,7 +439,7 @@ class AzureAISearchCollection(
             if options.order_by:
                 order_by = options.order_by if isinstance(options.order_by, Sequence) else [options.order_by]
                 for order in order_by:
-                    if order.field not in self.data_model_definition.storage_property_names:
+                    if order.field not in self.definition.storage_names:
                         logger.warning(f"Field {order.field} not in data model, skipping.")
                         continue
                     ordering.append(order.field if order.ascending else f"{order.field} desc")
@@ -481,9 +484,9 @@ class AzureAISearchCollection(
                 return
             raise VectorStoreOperationException("Invalid index type supplied, should be a SearchIndex object.")
         await self.search_index_client.create_index(
-            index=_data_model_definition_to_azure_ai_search_index(
+            index=_definition_to_azure_ai_search_index(
                 collection_name=self.collection_name,
-                definition=self.data_model_definition,
+                definition=self.definition,
                 encryption_key=kwargs.pop("encryption_key", None),
             ),
             **kwargs,
@@ -498,7 +501,7 @@ class AzureAISearchCollection(
         ]
 
     @override
-    async def delete_collection(self, **kwargs) -> None:
+    async def ensure_collection_deleted(self, **kwargs) -> None:
         await self.search_index_client.delete_index(self.collection_name, **kwargs)
 
     @override
@@ -518,38 +521,34 @@ class AzureAISearchCollection(
         if options.include_vectors:
             search_args["select"] = ["*"]
         else:
-            search_args["select"] = self.data_model_definition.get_storage_property_names(include_vector_fields=False)
+            search_args["select"] = self.definition.get_storage_names(include_vector_fields=False)
         if filter := self._build_filter(options.filter):
             search_args["filter"] = filter if isinstance(filter, str) else " and ".join(filter)
         match search_type:
             case SearchType.VECTOR:
                 if vector is not None:
-                    vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+                    vector_field = self.definition.try_get_vector_field(options.vector_property_name)
                     search_args["vector_queries"] = [
                         VectorizedQuery(
                             vector=vector,  # type: ignore
-                            fields=vector_field.storage_property_name or vector_field.name if vector_field else None,
+                            fields=vector_field.storage_name or vector_field.name if vector_field else None,
                         )
                     ]
                 elif values is not None:
                     generated_vector = await self._generate_vector_from_values(values or "*", options)
-                    vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+                    vector_field = self.definition.try_get_vector_field(options.vector_property_name)
                     if generated_vector is not None:
                         search_args["vector_queries"] = [
                             VectorizedQuery(
                                 vector=generated_vector,  # type: ignore
-                                fields=vector_field.storage_property_name or vector_field.name
-                                if vector_field
-                                else None,
+                                fields=vector_field.storage_name or vector_field.name if vector_field else None,
                             )
                         ]
                     else:
                         search_args["vector_queries"] = [
                             VectorizableTextQuery(
                                 text=values,
-                                fields=vector_field.storage_property_name or vector_field.name
-                                if vector_field
-                                else None,
+                                fields=vector_field.storage_name or vector_field.name if vector_field else None,
                             )
                         ]
                 else:
@@ -557,14 +556,14 @@ class AzureAISearchCollection(
             case SearchType.KEYWORD_HYBRID:
                 if values is None:
                     raise VectorStoreOperationException("No vector and/or keywords provided for search.")
-                vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+                vector_field = self.definition.try_get_vector_field(options.vector_property_name)
                 search_args["search_fields"] = (
                     [options.additional_property_name]
                     if options.additional_property_name is not None
                     else [
                         field.name
-                        for field in self.data_model_definition.fields
-                        if isinstance(field, VectorStoreRecordDataField) and field.is_full_text_indexed
+                        for field in self.definition.fields
+                        if isinstance(field, VectorStoreDataField) and field.is_full_text_indexed
                     ]
                 )
                 if not search_args["search_fields"]:
@@ -612,7 +611,7 @@ class AzureAISearchCollection(
             prop_path = "/".join(reversed(parts))
             # Check if the top-level property is in the data model
             top_level = parts[-1] if parts else None
-            if top_level and top_level not in self.data_model_definition.storage_property_names:
+            if top_level and top_level not in self.definition.storage_names:
                 raise VectorStoreOperationException(
                     f"Field '{top_level}' not in data model (storage property names are used)."
                 )
@@ -745,9 +744,9 @@ class AzureAISearchStore(VectorStore):
     @override
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         search_client: SearchClient | None = None,
@@ -757,16 +756,16 @@ class AzureAISearchStore(VectorStore):
 
         Args:
             collection_name: The name of the collection.
-            data_model_type: The type of the data model.
-            data_model_definition: The model fields, optional.
+            record_type: The type of the data model.
+            definition: The model fields, optional.
             search_client: The search client for interacting with Azure AI Search,
                 will be created if not supplied.
             embedding_generator: The embedding generator, optional.
             **kwargs: Additional keyword arguments, passed to the collection constructor.
         """
         return AzureAISearchCollection(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             search_index_client=self.search_index_client,
             search_client=search_client,

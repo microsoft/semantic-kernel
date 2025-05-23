@@ -8,10 +8,10 @@ from uuid import uuid4
 from pydantic import BaseModel
 from pytest import fixture
 
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+from semantic_kernel.data.definitions import (
+    VectorStoreDataField,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
     vectorstoremodel,
 )
 
@@ -27,22 +27,22 @@ def data_record() -> dict[str, Any]:
 
 
 @fixture
-def data_model_type() -> type:
+def record_type() -> type:
     @vectorstoremodel
     class TestDataModelType(BaseModel):
         vector: Annotated[
             list[float] | None,
-            VectorStoreRecordVectorField(
+            VectorStoreVectorField(
                 index_kind="flat",
                 dimensions=5,
                 distance_function="cosine_similarity",
-                property_type="float",
+                type="float",
             ),
         ] = None
-        id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
-        product_type: Annotated[str, VectorStoreRecordDataField()] = "N/A"
+        id: Annotated[str, VectorStoreKeyField()] = field(default_factory=lambda: str(uuid4()))
+        product_type: Annotated[str, VectorStoreDataField()] = "N/A"
         description: Annotated[
-            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
+            str, VectorStoreDataField(has_embedding=True, embedding_property_name="vector", type="str")
         ] = "N/A"
 
     return TestDataModelType
@@ -59,22 +59,22 @@ def data_record_with_key_as_key_field() -> dict[str, Any]:
 
 
 @fixture
-def data_model_type_with_key_as_key_field() -> type:
+def record_type_with_key_as_key_field() -> type:
     @vectorstoremodel
     class TestDataModelType(BaseModel):
         vector: Annotated[
             list[float] | None,
-            VectorStoreRecordVectorField(
+            VectorStoreVectorField(
                 index_kind="flat",
                 dimensions=5,
                 distance_function="cosine_similarity",
-                property_type="float",
+                type="float",
             ),
         ] = None
-        key: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
-        product_type: Annotated[str, VectorStoreRecordDataField()] = "N/A"
+        key: Annotated[str, VectorStoreKeyField()] = field(default_factory=lambda: str(uuid4()))
+        product_type: Annotated[str, VectorStoreDataField()] = "N/A"
         description: Annotated[
-            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
+            str, VectorStoreDataField(has_embedding=True, embedding_property_name="vector", type="str")
         ] = "N/A"
 
     return TestDataModelType

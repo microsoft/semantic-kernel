@@ -1,55 +1,82 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 import logging
 import sys
 from abc import abstractmethod
-from collections.abc import Mapping, Sequence
-from typing import Any, ClassVar, Generic, TypeVar, overload
+from ast import AST, Lambda, NodeVisitor, expr, parse
+from collections.abc import AsyncIterable, Callable, Mapping, Sequence
+from copy import deepcopy
+from enum import Enum
+from inspect import getsource
+from typing import Annotated, Any, ClassVar, Generic, Literal, TypeVar, overload
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, ValidationError, model_validator
 from pydantic.dataclasses import dataclass
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.data.record_definition import (
+from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
+from semantic_kernel.data.definitions import (
     SerializeMethodProtocol,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+    VectorStoreCollectionDefinition,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
+)
+from semantic_kernel.data.search import (
+    DynamicFilterFunction,
+    KernelSearchResults,
+    SearchOptions,
+    TextSearch,
+    create_options,
+    default_dynamic_filter_function,
 )
 from semantic_kernel.exceptions import (
+    VectorSearchExecutionException,
+    VectorSearchOptionsException,
     VectorStoreModelDeserializationException,
     VectorStoreModelException,
     VectorStoreModelSerializationException,
     VectorStoreModelValidationError,
     VectorStoreOperationException,
+    VectorStoreOperationNotSupportedException,
 )
+from semantic_kernel.exceptions.search_exceptions import TextSearchException
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.functions.kernel_function import KernelFunction
+from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
+from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
+from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrList, OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import release_candidate
+from semantic_kernel.utils.list_handler import desync_list
 
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
     from typing_extensions import Self  # pragma: no cover
 
+logger = logging.getLogger(__name__)
+
 
 TModel = TypeVar("TModel", bound=object)
 TKey = TypeVar("TKey")
 _T = TypeVar("_T", bound="VectorStoreRecordHandler")
+TSearchOptions = TypeVar("TSearchOptions", bound=SearchOptions)
+TFilters = TypeVar("TFilters")
 
-logger = logging.getLogger(__name__)
+# region: Helpers
 
 
 def _get_collection_name_from_model(
-    data_model_type: type[TModel],
-    data_model_definition: VectorStoreRecordDefinition | None = None,
+    record_type: type[TModel],
+    definition: VectorStoreCollectionDefinition | None = None,
 ) -> str | None:
     """Get the collection name from the data model type or definition."""
-    if data_model_type and not data_model_definition:
-        data_model_definition = getattr(data_model_type, "__kernel_vectorstoremodel_definition__", None)
-    if data_model_definition and data_model_definition.collection_name:
-        return data_model_definition.collection_name
+    if record_type and not definition:
+        definition = getattr(record_type, "__kernel_vectorstoremodel_definition__", None)
+    if definition and definition.collection_name:
+        return definition.collection_name
     return None
 
 
@@ -70,6 +97,54 @@ class GetFilteredRecordOptions:
     order_by: OptionalOneOrMany[OrderBy] = None
 
 
+class LambdaVisitor(NodeVisitor, Generic[TFilters]):
+    """Visitor class to visit the AST nodes."""
+
+    def __init__(self, lambda_parser: Callable[[expr], TFilters], output_filters: list[TFilters] | None = None) -> None:
+        """Initialize the visitor with a lambda parser and output filters."""
+        self.lambda_parser = lambda_parser
+        self.output_filters = output_filters if output_filters is not None else []
+
+    def visit_Lambda(self, node: Lambda) -> None:
+        """This method is called when a lambda expression is found."""
+        self.output_filters.append(self.lambda_parser(node.body))
+
+
+@release_candidate
+class SearchType(str, Enum):
+    """Enumeration for search types.
+
+    Contains: vector and keyword_hybrid.
+    """
+
+    VECTOR = "vector"
+    KEYWORD_HYBRID = "keyword_hybrid"
+
+
+@release_candidate
+class VectorSearchOptions(SearchOptions):
+    """Options for vector search, builds on TextSearchOptions.
+
+    When multiple filters are used, they are combined with an AND operator.
+    """
+
+    vector_property_name: str | None = None
+    additional_property_name: str | None = None
+    top: Annotated[int, Field(gt=0)] = 3
+    include_vectors: bool = False
+
+
+@release_candidate
+class VectorSearchResult(KernelBaseModel, Generic[TModel]):
+    """The result of a vector search."""
+
+    record: TModel
+    score: float | None = None
+
+
+# region: VectorStoreRecordHandler
+
+
 @release_candidate
 class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
     """Vector Store Record Handler class.
@@ -79,32 +154,30 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
     It is subclassed by VectorStoreRecordCollection and VectorSearchBase.
     """
 
-    data_model_type: type[TModel]
-    data_model_definition: VectorStoreRecordDefinition
+    record_type: type[TModel]
+    definition: VectorStoreCollectionDefinition
     supported_key_types: ClassVar[set[str] | None] = None
     supported_vector_types: ClassVar[set[str] | None] = None
     embedding_generator: EmbeddingGeneratorBase | None = None
 
     @property
     def _key_field_name(self) -> str:
-        return self.data_model_definition.key_field_name
+        return self.definition.key_name
 
     @property
-    def _key_field_storage_property_name(self) -> str:
-        return self.data_model_definition.key_field.storage_property_name or self.data_model_definition.key_field_name
+    def _key_field_storage_name(self) -> str:
+        return self.definition.key_field.storage_name or self.definition.key_name
 
     @property
     def _container_mode(self) -> bool:
-        return self.data_model_definition.container_mode
+        return self.definition.container_mode
 
     @model_validator(mode="before")
     @classmethod
-    def _ensure_data_model_definition(cls: type[_T], data: Any) -> dict[str, Any]:
+    def _ensure_definition(cls: type[_T], data: Any) -> dict[str, Any]:
         """Ensure there is a  data model definition, if it isn't passed, try to get it from the data model type."""
-        if isinstance(data, dict) and not data.get("data_model_definition"):
-            data["data_model_definition"] = getattr(
-                data["data_model_type"], "__kernel_vectorstoremodel_definition__", None
-            )
+        if isinstance(data, dict) and not data.get("definition"):
+            data["definition"] = getattr(data["record_type"], "__kernel_vectorstoremodel_definition__", None)
         return data
 
     def model_post_init(self, __context: object | None = None):
@@ -128,19 +201,18 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
         """
         if (
             self.supported_key_types
-            and self.data_model_definition.key_field.property_type
-            and self.data_model_definition.key_field.property_type not in self.supported_key_types
+            and self.definition.key_field.type_
+            and self.definition.key_field.type_ not in self.supported_key_types
         ):
             raise VectorStoreModelValidationError(
-                f"Key field must be one of {self.supported_key_types}, "
-                f"got {self.data_model_definition.key_field.property_type}"
+                f"Key field must be one of {self.supported_key_types}, got {self.definition.key_field.type_}"
             )
         if not self.supported_vector_types:
             return
-        for field in self.data_model_definition.vector_fields:
-            if field.property_type and field.property_type not in self.supported_vector_types:
+        for field in self.definition.vector_fields:
+            if field.type_ and field.type_ not in self.supported_vector_types:
                 raise VectorStoreModelValidationError(
-                    f"Vector field {field.name} must be one of {self.supported_vector_types}, got {field.property_type}"
+                    f"Vector field {field.name} must be one of {self.supported_vector_types}, got {field.type_}"
                 )
 
     @abstractmethod
@@ -212,8 +284,8 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
             if not all(result):
                 return None
             return result
-        if self.data_model_definition.serialize:
-            return self.data_model_definition.serialize(record, **kwargs)
+        if self.definition.serialize:
+            return self.definition.serialize(record, **kwargs)
         if isinstance(record, SerializeMethodProtocol):
             return record.serialize(**kwargs)
         return None
@@ -225,14 +297,14 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
 
         The output of this should be passed to the serialize_dict_to_store_model method.
         """
-        if self.data_model_definition.to_dict:
-            return self.data_model_definition.to_dict(record, **kwargs)
+        if self.definition.to_dict:
+            return self.definition.to_dict(record, **kwargs)
         if isinstance(record, BaseModel):
             return record.model_dump()
 
         store_model = {}
-        for field in self.data_model_definition.fields:
-            store_model[field.storage_property_name or field.name] = (
+        for field in self.definition.fields:
+            store_model[field.storage_name or field.name] = (
                 record.get(field.name, None) if isinstance(record, Mapping) else getattr(record, field.name)
             )
         return store_model
@@ -281,11 +353,11 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
 
         The developer is responsible for correctly deserializing for the specific data source.
         """
-        if self.data_model_definition.deserialize:
+        if self.definition.deserialize:
             if isinstance(record, Sequence):
-                return self.data_model_definition.deserialize(record, **kwargs)
-            return self.data_model_definition.deserialize([record], **kwargs)
-        if func := getattr(self.data_model_type, "deserialize", None):
+                return self.definition.deserialize(record, **kwargs)
+            return self.definition.deserialize([record], **kwargs)
+        if func := getattr(self.record_type, "deserialize", None):
             if isinstance(record, Sequence):
                 return [func(rec, **kwargs) for rec in record]
             return func(record, **kwargs)
@@ -299,10 +371,10 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
 
         The input of this should come from the _deserialized_store_model_to_dict function.
         """
-        if self.data_model_definition.from_dict:
+        if self.definition.from_dict:
             if isinstance(record, Sequence):
-                return self.data_model_definition.from_dict(record, **kwargs)
-            ret = self.data_model_definition.from_dict([record], **kwargs)
+                return self.definition.from_dict(record, **kwargs)
+            ret = self.definition.from_dict([record], **kwargs)
             return ret if self._container_mode else ret[0]
         if isinstance(record, Sequence):
             if len(record) > 1:
@@ -310,26 +382,23 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
                     "Cannot deserialize multiple records to a single record unless you are using a container."
                 )
             record = record[0]
-        if func := getattr(self.data_model_type, "from_dict", None):
+        if func := getattr(self.record_type, "from_dict", None):
             return func(record)
-        if issubclass(self.data_model_type, BaseModel):
-            for field in self.data_model_definition.fields:
-                if field.storage_property_name and field.storage_property_name in record:
-                    record[field.name] = record.pop(field.storage_property_name)
-            return self.data_model_type.model_validate(record)  # type: ignore
+        if issubclass(self.record_type, BaseModel):
+            for field in self.definition.fields:
+                if field.storage_name and field.storage_name in record:
+                    record[field.name] = record.pop(field.storage_name)
+            return self.record_type.model_validate(record)  # type: ignore
         data_model_dict: dict[str, Any] = {}
-        for field in self.data_model_definition.fields:
-            value = record.get(field.storage_property_name or field.name, None)
-            if isinstance(field, VectorStoreRecordVectorField) and not kwargs.get("include_vectors"):
+        for field in self.definition.fields:
+            value = record.get(field.storage_name or field.name, None)
+            if isinstance(field, VectorStoreVectorField) and not kwargs.get("include_vectors"):
                 continue
             data_model_dict[field.name] = value
-        if self.data_model_type is dict:
+        if self.record_type is dict:
             return data_model_dict  # type: ignore
-        return self.data_model_type(**data_model_dict)
+        return self.record_type(**data_model_dict)
 
-    # region: add_vector_to_records
-
-    @release_candidate
     async def _add_vectors_to_records(
         self,
         records: OneOrMany[dict[str, Any]],
@@ -352,12 +421,12 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
         # dict of embedding_field.name and tuple of record, settings, field_name
         embeddings_to_make: list[tuple[str, int, EmbeddingGeneratorBase]] = []
 
-        for field in self.data_model_definition.vector_fields:
+        for field in self.definition.vector_fields:
             embedding_generator = field.embedding_generator or self.embedding_generator
             if not embedding_generator:
                 continue
             embeddings_to_make.append((
-                field.storage_property_name or field.name,
+                field.storage_name or field.name,
                 field.dimensions,
                 embedding_generator,
             ))
@@ -368,7 +437,7 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
                 field_name=field_name,
                 dimensions=dimensions,
                 embedding_generator=embedder,
-                container_mode=self.data_model_definition.container_mode,
+                container_mode=self.definition.container_mode,
                 **kwargs,
             )
         return records
@@ -439,11 +508,7 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generi
         if (
             isinstance(data, dict)
             and not data.get("collection_name")
-            and (
-                collection_name := _get_collection_name_from_model(
-                    data["data_model_type"], data.get("data_model_definition")
-                )
-            )
+            and (collection_name := _get_collection_name_from_model(data["record_type"], data.get("definition")))
         ):
             data["collection_name"] = collection_name
         return data
@@ -541,11 +606,25 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generi
         """
         ...  # pragma: no cover
 
-    async def create_collection_if_not_exists(self, **kwargs: Any) -> bool:
+    async def delete_create_collection(self, **kwargs: Any) -> None:
+        """Create the collection in the service, after first trying to delete it.
+
+        First uses does_collection_exist to check if it exists, if it does deletes it.
+        Then, creates the collection.
+
+        """
+        if await self.does_collection_exist(**kwargs):
+            await self.ensure_collection_deleted(**kwargs)
+        await self.create_collection(**kwargs)
+
+    async def ensure_collection_exists(self, **kwargs: Any) -> bool:
         """Create the collection in the service if it does not exists.
 
         First uses does_collection_exist to check if it exists, if it does returns False.
         Otherwise, creates the collection and returns True.
+
+        Returns:
+            bool: True if the collection was created, False if it already exists.
 
         """
         if await self.does_collection_exist(**kwargs):
@@ -579,7 +658,7 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generi
         ...  # pragma: no cover
 
     @abstractmethod
-    async def delete_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
         """Delete the collection.
 
         This should be overridden by the child class.
@@ -589,8 +668,6 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generi
             This is different then the `_inner_x` methods, as this is a public method.
         """
         ...  # pragma: no cover
-
-    # region Public Methods
 
     async def upsert(
         self,
@@ -828,6 +905,9 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler[TKey, TModel], Generi
             raise VectorStoreOperationException(f"Error deleting record(s): {exc}") from exc
 
 
+# region: VectorStore
+
+
 @release_candidate
 class VectorStore(KernelBaseModel):
     """Base class for vector stores."""
@@ -838,9 +918,9 @@ class VectorStore(KernelBaseModel):
     @abstractmethod
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
@@ -848,8 +928,8 @@ class VectorStore(KernelBaseModel):
         """Get a vector store record collection instance tied to this store.
 
         Args:
-            data_model_type: The type of the data model.
-            data_model_definition: The data model definition.
+            record_type: The type of the records that will be used.
+            definition: The data model definition.
             collection_name: The name of the collection.
             embedding_generator: The embedding generator to use.
             **kwargs: Additional arguments.
@@ -872,26 +952,22 @@ class VectorStore(KernelBaseModel):
         to check if the collection exists.
         """
         try:
-            data_model = VectorStoreRecordDefinition(fields=[VectorStoreRecordKeyField(name="id")])
-            collection = self.get_collection(
-                data_model_type=dict, data_model_definition=data_model, collection_name=collection_name
-            )
+            data_model = VectorStoreCollectionDefinition(fields=[VectorStoreKeyField(name="id")])
+            collection = self.get_collection(record_type=dict, definition=data_model, collection_name=collection_name)
             return await collection.does_collection_exist()
         except VectorStoreOperationException:
             return False
 
-    async def delete_collection(self, collection_name: str) -> None:
+    async def ensure_collection_deleted(self, collection_name: str) -> None:
         """Delete a collection.
 
         This is a wrapper around the get_collection method of a collection,
         to delete the collection.
         """
         try:
-            data_model = VectorStoreRecordDefinition(fields=[VectorStoreRecordKeyField(name="id")])
-            collection = self.get_collection(
-                data_model_type=dict, data_model_definition=data_model, collection_name=collection_name
-            )
-            await collection.delete_collection()
+            data_model = VectorStoreCollectionDefinition(fields=[VectorStoreKeyField(name="id")])
+            collection = self.get_collection(record_type=dict, definition=data_model, collection_name=collection_name)
+            await collection.ensure_collection_deleted()
         except VectorStoreOperationException:
             pass
 
@@ -908,3 +984,523 @@ class VectorStore(KernelBaseModel):
         in that case the managed_client should be set to False.
         """
         pass  # pragma: no cover
+
+
+# region: Vector Search
+
+
+@release_candidate
+class VectorSearch(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TModel]):
+    """Base class for searching vectors."""
+
+    supported_search_types: ClassVar[set[SearchType]] = Field(default_factory=set)
+
+    @property
+    def options_class(self) -> type[SearchOptions]:
+        """The options class for the search."""
+        return VectorSearchOptions
+
+    @abstractmethod
+    async def _inner_search(
+        self,
+        search_type: SearchType,
+        options: VectorSearchOptions,
+        values: Any | None = None,
+        vector: Sequence[float | int] | None = None,
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        """Inner search method.
+
+        This is the main search method that should be implemented, and will be called by the public search methods.
+        Currently, at least one of the three search contents will be provided
+        (through the public interface mixin functions), in the future, this may be expanded to allow multiple of them.
+
+        This method should return a KernelSearchResults object with the results of the search.
+        The inner "results" object of the KernelSearchResults should be a async iterator that yields the search results,
+        this allows things like paging to be implemented.
+
+        There is a default helper method "_get_vector_search_results_from_results" to convert
+        the results to a async iterable VectorSearchResults, but this can be overridden if necessary.
+
+        Options might be a object of type VectorSearchOptions, or a subclass of it.
+
+        The implementation of this method must deal with the possibility that multiple search contents are provided,
+        and should handle them in a way that makes sense for that particular store.
+
+        The public methods will catch and reraise the three exceptions mentioned below, others are caught and turned
+        into a VectorSearchExecutionException.
+
+        Args:
+            search_type: The type of search to perform.
+            options: The search options, can be None.
+            values: The values to search for, optional.
+            vector: The vector to search for, optional.
+            **kwargs: Additional arguments that might be needed.
+
+        Returns:
+            The search results, wrapped in a KernelSearchResults object.
+
+        Raises:
+            VectorSearchExecutionException: If an error occurs during the search.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+            VectorSearchOptionsException: If the search options are invalid.
+            VectorStoreOperationNotSupportedException: If the search type is not supported.
+
+        """
+        ...
+
+    @abstractmethod
+    def _get_record_from_result(self, result: Any) -> Any:
+        """Get the record from the returned search result.
+
+        Does any unpacking or processing of the result to get just the record.
+
+        If the underlying SDK of the store returns a particular type that might include something
+        like a score or other metadata, this method should be overridden to extract just the record.
+
+        Likely returns a dict, but in some cases could return the record in the form of a SDK specific object.
+
+        This method is used as part of the _get_vector_search_results_from_results method,
+        the output of it is passed to the deserializer.
+        """
+        ...
+
+    @abstractmethod
+    def _get_score_from_result(self, result: Any) -> float | None:
+        """Get the score from the result.
+
+        Does any unpacking or processing of the result to get just the score.
+
+        If the underlying SDK of the store returns a particular type with a score or other metadata,
+        this method extracts it.
+        """
+        ...
+
+    async def _get_vector_search_results_from_results(
+        self, results: AsyncIterable[Any] | Sequence[Any], options: VectorSearchOptions | None = None
+    ) -> AsyncIterable[VectorSearchResult[TModel]]:
+        if isinstance(results, Sequence):
+            results = desync_list(results)
+        async for result in results:
+            if not result:
+                continue
+            try:
+                record = self.deserialize(
+                    self._get_record_from_result(result), include_vectors=options.include_vectors if options else True
+                )
+            except VectorStoreModelDeserializationException:
+                raise
+            except Exception as exc:
+                raise VectorStoreModelDeserializationException(
+                    f"An error occurred while deserializing the record: {exc}"
+                ) from exc
+            score = self._get_score_from_result(result)
+            if record is not None:
+                # single records are always returned as single records by the deserializer
+                yield VectorSearchResult(record=record, score=score)  # type: ignore
+
+    @overload
+    async def search(
+        self,
+        values: Any,
+        *,
+        vector_field_name: str | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 3,
+        skip: int = 0,
+        include_total_count: bool = False,
+        include_vectors: bool = False,
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        """Search the vector store with Vector search for records that match the given value and filter.
+
+        Args:
+            values: The values to search for. These will be vectorized,
+                either by the store or using the provided generator.
+            vector_field_name: The name of the vector field to use for the search.
+            filter: The filter to apply to the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
+            include_vectors: Whether to include the vectors in the results.
+            kwargs: If options are not set, this is used to create them.
+                they are passed on to the inner search method.
+
+        Raises:
+            VectorSearchExecutionException: If an error occurs during the search.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+            VectorSearchOptionsException: If the search options are invalid.
+            VectorStoreOperationNotSupportedException: If the search type is not supported.
+
+        """
+        ...
+
+    @overload
+    async def search(
+        self,
+        *,
+        vector: Sequence[float | int],
+        vector_field_name: str | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 3,
+        skip: int = 0,
+        include_total_count: bool = False,
+        include_vectors: bool = False,
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        """Search the vector store with Vector search for records that match the given vector and filter.
+
+        Args:
+            vector: The vector to search for
+            vector_field_name: The name of the vector field to use for the search.
+            filter: The filter to apply to the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
+            include_vectors: Whether to include the vectors in the results.
+            kwargs: If options are not set, this is used to create them.
+                they are passed on to the inner search method.
+
+        Raises:
+            VectorSearchExecutionException: If an error occurs during the search.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+            VectorSearchOptionsException: If the search options are invalid.
+            VectorStoreOperationNotSupportedException: If the search type is not supported.
+
+        """
+        ...
+
+    async def search(
+        self,
+        values=None,
+        *,
+        vector=None,
+        vector_property_name=None,
+        filter=None,
+        top=3,
+        skip=0,
+        include_total_count=False,
+        include_vectors=False,
+        **kwargs,
+    ):
+        """Search the vector store for records that match the given value and filter.
+
+        Args:
+            values: The values to search for.
+            vector: The vector to search for, if not provided, the values will be used to generate a vector.
+            vector_property_name: The name of the vector property to use for the search.
+            filter: The filter to apply to the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
+            include_vectors: Whether to include the vectors in the results.
+            kwargs: If options are not set, this is used to create them.
+                they are passed on to the inner search method.
+
+        Raises:
+            VectorSearchExecutionException: If an error occurs during the search.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+            VectorSearchOptionsException: If the search options are invalid.
+            VectorStoreOperationNotSupportedException: If the search type is not supported.
+
+        """
+        if SearchType.VECTOR not in self.supported_search_types:
+            raise VectorStoreOperationNotSupportedException(
+                f"Vector search is not supported by this vector store: {self.__class__.__name__}"
+            )
+        options = VectorSearchOptions(
+            filter=filter,
+            vector_property_name=vector_property_name,
+            top=top,
+            skip=skip,
+            include_total_count=include_total_count,
+            include_vectors=include_vectors,
+        )
+        try:
+            return await self._inner_search(
+                search_type=SearchType.VECTOR,
+                values=values,
+                options=options,
+                vector=vector,
+                **kwargs,
+            )
+        except (
+            VectorStoreModelDeserializationException,
+            VectorSearchOptionsException,
+            VectorSearchExecutionException,
+            VectorStoreOperationNotSupportedException,
+            VectorStoreOperationException,
+        ):
+            raise  # pragma: no cover
+        except Exception as exc:
+            raise VectorSearchExecutionException(f"An error occurred during the search: {exc}") from exc
+
+    async def hybrid_search(
+        self,
+        values: Any,
+        *,
+        vector: list[float | int] | None = None,
+        vector_property_name: str | None = None,
+        additional_property_name: str | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 3,
+        skip: int = 0,
+        include_total_count: bool = False,
+        include_vectors: bool = False,
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        """Search the vector store for records that match the given values and filter.
+
+        Args:
+            values: The values to search for.
+            vector: The vector to search for, if not provided, the values will be used to generate a vector.
+            vector_property_name: The name of the vector field to use for the search.
+            additional_property_name: The name of the additional property field to use for the search.
+            filter: The filter to apply to the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            include_total_count: Whether to include the total count of results.
+            include_vectors: Whether to include the vectors in the results.
+            kwargs: If options are not set, this is used to create them.
+                they are passed on to the inner search method.
+
+        Raises:
+            VectorSearchExecutionException: If an error occurs during the search.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+            VectorSearchOptionsException: If the search options are invalid.
+            VectorStoreOperationNotSupportedException: If the search type is not supported.
+
+        """
+        if SearchType.KEYWORD_HYBRID not in self.supported_search_types:
+            raise VectorStoreOperationNotSupportedException(
+                f"Keyword hybrid search is not supported by this vector store: {self.__class__.__name__}"
+            )
+        options = VectorSearchOptions(
+            filter=filter,
+            vector_property_name=vector_property_name,
+            additional_property_name=additional_property_name,
+            top=top,
+            skip=skip,
+            include_total_count=include_total_count,
+            include_vectors=include_vectors,
+        )
+        try:
+            return await self._inner_search(
+                search_type=SearchType.KEYWORD_HYBRID,
+                values=values,
+                vector=vector,
+                options=options,
+                **kwargs,
+            )
+        except (
+            VectorStoreModelDeserializationException,
+            VectorSearchOptionsException,
+            VectorSearchExecutionException,
+            VectorStoreOperationNotSupportedException,
+            VectorStoreOperationException,
+        ):
+            raise  # pragma: no cover
+        except Exception as exc:
+            raise VectorSearchExecutionException(f"An error occurred during the search: {exc}") from exc
+
+    async def _generate_vector_from_values(
+        self,
+        values: Any | None,
+        options: VectorSearchOptions,
+    ) -> Sequence[float | int] | None:
+        """Generate a vector from the given keywords."""
+        if values is None:
+            return None
+        vector_field = self.definition.try_get_vector_field(options.vector_property_name)
+        if not vector_field:
+            raise VectorSearchOptionsException(
+                f"Vector field '{options.vector_property_name}' not found in data model definition."
+            )
+        embedding_generator = (
+            vector_field.embedding_generator if vector_field.embedding_generator else self.embedding_generator
+        )
+        if not embedding_generator:
+            raise VectorSearchOptionsException(
+                f"Embedding generator not found for vector field '{options.vector_property_name}'."
+            )
+
+        return (
+            await embedding_generator.generate_embeddings(
+                # TODO (eavanvalkenburg): this only deals with string values, should support other types as well
+                # but that requires work on the embedding generators first.
+                texts=[values if isinstance(values, str) else json.dumps(values)],
+                settings=PromptExecutionSettings(dimensions=vector_field.dimensions),
+            )
+        )[0].tolist()
+
+    def _build_filter(self, search_filter: OptionalOneOrMany[Callable | str] | None) -> OptionalOneOrMany[Any]:
+        """Create the filter based on the filters.
+
+        This function returns None, a single filter, or a list of filters.
+        If a single filter is passed, a single filter is returned.
+
+        It takes the filters, which can be a Callable (lambda) or a string, and parses them into a filter object,
+        using the _lambda_parser method that is specific to each vector store.
+
+        If a list of filters, is passed, the parsed filters are also returned as a list, so the caller needs to
+        combine them in the appropriate way.
+
+        Often called like this (when filters are strings):
+        ```python
+        if filter := self._build_filter(options.filter):
+            search_args["filter"] = filter if isinstance(filter, str) else " and ".join(filter)
+        ```
+        """
+        if not search_filter:
+            return None
+
+        filters = search_filter if isinstance(search_filter, list) else [search_filter]
+
+        created_filters: list[Any] = []
+
+        visitor = LambdaVisitor(self._lambda_parser)
+        for filter_ in filters:
+            # parse lambda expression with AST
+            tree = parse(filter_ if isinstance(filter_, str) else getsource(filter_).strip())
+            visitor.visit(tree)
+        created_filters = visitor.output_filters
+        if len(created_filters) == 0:
+            raise VectorStoreOperationException("No filter strings found.")
+        if len(created_filters) == 1:
+            return created_filters[0]
+        return created_filters
+
+    @abstractmethod
+    def _lambda_parser(self, node: AST) -> Any:
+        """Parse the lambda expression and return the filter string.
+
+        This follows from the ast specs: https://docs.python.org/3/library/ast.html
+        """
+        # This method should be implemented in the derived class
+        # to parse the lambda expression and return the filter string.
+        pass
+
+    def create_search_function(
+        self,
+        function_name: str = DEFAULT_FUNCTION_NAME,
+        description: str = DEFAULT_DESCRIPTION,
+        *,
+        search_type: Literal["vector", "keyword_hybrid"] = "vector",
+        parameters: list[KernelParameterMetadata] | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        filter: OptionalOneOrList[Callable | str] = None,
+        top: int = 5,
+        skip: int = 0,
+        vector_property_name: str | None = None,
+        additional_property_name: str | None = None,
+        include_vectors: bool = False,
+        include_total_count: bool = False,
+        filter_update_function: DynamicFilterFunction | None = None,
+        string_mapper: Callable[[VectorSearchResult[TModel]], str] | None = None,
+    ) -> KernelFunction:
+        """Create a kernel function from a search function.
+
+        Args:
+            function_name: The name of the function, to be used in the kernel, default is "search".
+            description: The description of the function, a default is provided.
+            search_type: The type of search to perform, can be 'vector' or 'keyword_hybrid'.
+            parameters: The parameters for the function,
+                use an empty list for a function without parameters,
+                use None for the default set, which is "query", "top", and "skip".
+            return_parameter: The return parameter for the function.
+            filter: The filter to apply to the search.
+            top: The number of results to return.
+            skip: The number of results to skip.
+            vector_property_name: The name of the vector property to use for the search.
+            additional_property_name: The name of the additional property field to use for the search.
+            include_vectors: Whether to include the vectors in the results.
+            include_total_count: Whether to include the total count of results.
+            filter_update_function: A function to update the filters.
+                The function should return the updated filter.
+                The default function uses the parameters and the kwargs to update the filters, it
+                adds equal to filters to the options for all parameters that are not "query".
+                As well as adding equal to filters for parameters that have a default value.
+            string_mapper: The function to map the search results to strings.
+        """
+        search_types = SearchType(search_type)
+        if search_types not in self.supported_search_types:
+            raise VectorStoreOperationNotSupportedException(
+                f"Search type '{search_types.value}' is not supported by this vector store: {self.__class__.__name__}"
+            )
+        options = VectorSearchOptions(
+            filter=filter,
+            skip=skip,
+            top=top,
+            include_total_count=include_total_count,
+            include_vectors=include_vectors,
+            vector_property_name=vector_property_name,
+            additional_property_name=additional_property_name,
+        )
+        return self._create_kernel_function(
+            search_type=search_types,
+            options=options,
+            parameters=parameters,
+            filter_update_function=filter_update_function,
+            return_parameter=return_parameter,
+            function_name=function_name,
+            description=description,
+            string_mapper=string_mapper,
+        )
+
+    def _create_kernel_function(
+        self,
+        search_type: SearchType,
+        options: SearchOptions | None = None,
+        parameters: list[KernelParameterMetadata] | None = None,
+        filter_update_function: DynamicFilterFunction | None = None,
+        return_parameter: KernelParameterMetadata | None = None,
+        function_name: str = DEFAULT_FUNCTION_NAME,
+        description: str = DEFAULT_DESCRIPTION,
+        string_mapper: Callable[[VectorSearchResult[TModel]], str] | None = None,
+    ) -> KernelFunction:
+        """Create a kernel function from a search function."""
+        update_func = filter_update_function or default_dynamic_filter_function
+
+        @kernel_function(name=function_name, description=description)
+        async def search_wrapper(**kwargs: Any) -> Sequence[str]:
+            query = kwargs.pop("query", "")
+            try:
+                inner_options = create_options(self.options_class, deepcopy(options), **kwargs)
+            except ValidationError:
+                # this usually only happens when the kwargs are invalid, so blank options in this case.
+                inner_options = self.options_class()
+            inner_options.filter = update_func(filter=inner_options.filter, parameters=parameters, **kwargs)
+            match search_type:
+                case SearchType.VECTOR:
+                    try:
+                        results = await self.search(
+                            values=query,
+                            **inner_options.model_dump(exclude_defaults=True, exclude_none=True),
+                        )
+                    except Exception as e:
+                        msg = f"Exception in search function: {e}"
+                        logger.error(msg)
+                        raise TextSearchException(msg) from e
+                case SearchType.KEYWORD_HYBRID:
+                    try:
+                        results = await self.hybrid_search(
+                            values=query,
+                            **inner_options.model_dump(exclude_defaults=True, exclude_none=True),
+                        )
+                    except Exception as e:
+                        msg = f"Exception in hybrid search function: {e}"
+                        logger.error(msg)
+                        raise TextSearchException(msg) from e
+                case _:
+                    raise VectorStoreOperationNotSupportedException(
+                        f"Search type '{search_type}' is not supported by this vector store: {self.__class__.__name__}"
+                    )
+            if string_mapper:
+                return [string_mapper(result) async for result in results.results]
+            return [result.model_dump_json(exclude_none=True) async for result in results.results]
+
+        return KernelFunctionFromMethod(
+            method=search_wrapper,
+            parameters=TextSearch._default_parameter_metadata() if parameters is None else parameters,
+            return_parameter=return_parameter or TextSearch._default_return_parameter_metadata(),
+        )

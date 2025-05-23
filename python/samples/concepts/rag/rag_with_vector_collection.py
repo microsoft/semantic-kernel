@@ -11,12 +11,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAITextEmbedding,
 )
 from semantic_kernel.connectors.memory import InMemoryCollection
-from semantic_kernel.data import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
-    vectorstoremodel,
-)
+from semantic_kernel.data import VectorStoreDataField, VectorStoreKeyField, VectorStoreVectorField, vectorstoremodel
 from semantic_kernel.functions import KernelArguments
 
 """
@@ -32,11 +27,11 @@ Finally, in two different ways we call the function to search the collection.
 @vectorstoremodel(collection_name="budget")
 @dataclass
 class BudgetItem:
-    id: Annotated[str, VectorStoreRecordKeyField]
-    text: Annotated[str, VectorStoreRecordDataField]
+    id: Annotated[str, VectorStoreKeyField]
+    text: Annotated[str, VectorStoreDataField]
     embedding: Annotated[
         list[float] | str | None,
-        VectorStoreRecordVectorField(dimensions=1536, embedding_generator=OpenAITextEmbedding()),
+        VectorStoreVectorField(dimensions=1536, embedding_generator=OpenAITextEmbedding()),
     ] = None
 
     def __post_init__(self):
@@ -49,7 +44,7 @@ async def main():
 
     kernel.add_service(OpenAIChatCompletion())
 
-    async with InMemoryCollection(data_model_type=BudgetItem) as collection:
+    async with InMemoryCollection(record_type=BudgetItem) as collection:
         # Add information to the collection
         await collection.upsert(
             [

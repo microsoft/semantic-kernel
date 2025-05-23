@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.data.vector_search import VectorSearchOptions
+from semantic_kernel.data.vectors import VectorSearchOptions
 
 
 def test_lambda_filter():

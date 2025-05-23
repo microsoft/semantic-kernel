@@ -18,10 +18,10 @@ from semantic_kernel.connectors.memory.postgres import (
     PostgresStore,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+from semantic_kernel.data.definitions import (
+    VectorStoreDataField,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
     vectorstoremodel,
 )
 
@@ -61,14 +61,14 @@ async def vector_store(postgres_unit_test_env) -> AsyncGenerator[PostgresStore, 
 @vectorstoremodel
 @dataclass
 class SimpleDataModel:
-    id: Annotated[int, VectorStoreRecordKeyField()]
+    id: Annotated[int, VectorStoreKeyField()]
     data: Annotated[
         list[float] | str | None,
-        VectorStoreRecordVectorField(
+        VectorStoreVectorField(
             index_kind=IndexKind.HNSW,
             dimensions=1536,
             distance_function=DistanceFunction.COSINE_SIMILARITY,
-            property_type="float",
+            type="float",
         ),
     ] = None
 
@@ -98,20 +98,20 @@ async def test_list_collection_names(vector_store: PostgresStore, mock_cursor: M
 
 
 def test_get_collection(vector_store: PostgresStore) -> None:
-    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
     assert collection.collection_name == "test_collection"
 
 
 async def test_does_collection_exist(vector_store: PostgresStore, mock_cursor: Mock) -> None:
     mock_cursor.fetchall.return_value = [("test_collection",)]
-    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
     result = await collection.does_collection_exist()
     assert result is True
 
 
 async def test_delete_collection(vector_store: PostgresStore, mock_cursor: Mock) -> None:
-    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
-    await collection.delete_collection()
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
+    await collection.ensure_collection_deleted()
 
     assert mock_cursor.execute.call_count == 1
     execute_args, _ = mock_cursor.execute.call_args
@@ -122,7 +122,7 @@ async def test_delete_collection(vector_store: PostgresStore, mock_cursor: Mock)
 
 
 async def test_delete_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
-    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
     await collection.delete([1, 2])
 
     assert mock_cursor.execute.call_count == 1
@@ -134,7 +134,7 @@ async def test_delete_records(vector_store: PostgresStore, mock_cursor: Mock) ->
 
 
 async def test_create_collection_simple_model(vector_store: PostgresStore, mock_cursor: Mock) -> None:
-    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
     await collection.create_collection()
 
     # 2 calls, once for the table creation and once for the index creation
@@ -159,14 +159,14 @@ async def test_create_collection_model_with_python_types(vector_store: PostgresS
     @vectorstoremodel
     @dataclass
     class ModelWithImplicitTypes:
-        name: Annotated[str, VectorStoreRecordKeyField()]
-        age: Annotated[int, VectorStoreRecordDataField()]
-        data: Annotated[dict[str, Any], VectorStoreRecordDataField()]
-        embedding: Annotated[list[float], VectorStoreRecordVectorField(dimensions=20)]
-        scores: Annotated[list[float], VectorStoreRecordDataField()]
-        tags: Annotated[list[str], VectorStoreRecordDataField()]
+        name: Annotated[str, VectorStoreKeyField()]
+        age: Annotated[int, VectorStoreDataField()]
+        data: Annotated[dict[str, Any], VectorStoreDataField()]
+        embedding: Annotated[list[float], VectorStoreVectorField(dimensions=20)]
+        scores: Annotated[list[float], VectorStoreDataField()]
+        tags: Annotated[list[str], VectorStoreDataField()]
 
-    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=ModelWithImplicitTypes)
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=ModelWithImplicitTypes)
 
     await collection.create_collection()
 
@@ -193,7 +193,7 @@ async def test_create_collection_model_with_python_types(vector_store: PostgresS
 
 
 async def test_upsert_records(vector_store: PostgresStore, mock_cursor: Mock) -> None:
-    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
     await collection.upsert([
         SimpleDataModel(id=1, data=[1.0, 2.0, 3.0]),
         SimpleDataModel(id=2, data=[4.0, 5.0, 6.0]),
@@ -224,7 +224,7 @@ async def test_get_records(vector_store: PostgresStore, mock_cursor: Mock) -> No
         (3, "[5.0, 6.0, 1.0]", {"key": "value3"}),
     ]
 
-    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
     records = await collection.get([1, 2, 3])
 
     assert len(records) == 3
@@ -260,22 +260,22 @@ async def test_vector_search(
     @vectorstoremodel
     @dataclass
     class SimpleDataModel:
-        id: Annotated[int, VectorStoreRecordKeyField()]
+        id: Annotated[int, VectorStoreKeyField()]
         embedding: Annotated[
             list[float],
-            VectorStoreRecordVectorField(
+            VectorStoreVectorField(
                 index_kind=IndexKind.HNSW,
                 dimensions=1536,
                 distance_function=distance_function,
-                property_type="float",
+                type="float",
             ),
         ]
         data: Annotated[
             dict[str, Any],
-            VectorStoreRecordDataField(property_type="JSONB"),
+            VectorStoreDataField(type="JSONB"),
         ]
 
-    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=SimpleDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=SimpleDataModel)
     assert isinstance(collection, PostgresCollection)
 
     search_results = await collection.search(
@@ -326,26 +326,26 @@ async def test_model_post_init_conflicting_distance_column_name(vector_store: Po
     @vectorstoremodel
     @dataclass
     class ConflictingDataModel:
-        id: Annotated[int, VectorStoreRecordKeyField()]
+        id: Annotated[int, VectorStoreKeyField()]
         sk_pg_distance: Annotated[
-            float, VectorStoreRecordDataField()
+            float, VectorStoreDataField()
         ]  # Note: test depends on value of DISTANCE_COLUMN_NAME constant
 
         embedding: Annotated[
             list[float],
-            VectorStoreRecordVectorField(
+            VectorStoreVectorField(
                 index_kind=IndexKind.HNSW,
                 dimensions=1536,
                 distance_function=DistanceFunction.COSINE_SIMILARITY,
-                property_type="float",
+                type="float",
             ),
         ]
         data: Annotated[
             dict[str, Any],
-            VectorStoreRecordDataField(property_type="JSONB"),
+            VectorStoreDataField(type="JSONB"),
         ]
 
-    collection = vector_store.get_collection(collection_name="test_collection", data_model_type=ConflictingDataModel)
+    collection = vector_store.get_collection(collection_name="test_collection", record_type=ConflictingDataModel)
     assert isinstance(collection, PostgresCollection)
 
     # Ensure that the distance column name has been changed to avoid conflict

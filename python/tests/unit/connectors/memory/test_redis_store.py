@@ -25,42 +25,42 @@ def vector_store(redis_unit_test_env):
 
 
 @fixture
-def collection_hash(redis_unit_test_env, data_model_definition):
+def collection_hash(redis_unit_test_env, definition):
     return RedisHashsetCollection(
-        data_model_type=dict,
+        record_type=dict,
         collection_name="test",
-        data_model_definition=data_model_definition,
+        definition=definition,
         env_file_path="test.env",
     )
 
 
 @fixture
-def collection_json(redis_unit_test_env, data_model_definition):
+def collection_json(redis_unit_test_env, definition):
     return RedisJsonCollection(
-        data_model_type=dict,
+        record_type=dict,
         collection_name="test",
-        data_model_definition=data_model_definition,
+        definition=definition,
         env_file_path="test.env",
     )
 
 
 @fixture
-def collection_with_prefix_hash(redis_unit_test_env, data_model_definition):
+def collection_with_prefix_hash(redis_unit_test_env, definition):
     return RedisHashsetCollection(
-        data_model_type=dict,
+        record_type=dict,
         collection_name="test",
-        data_model_definition=data_model_definition,
+        definition=definition,
         prefix_collection_name_to_key_names=True,
         env_file_path="test.env",
     )
 
 
 @fixture
-def collection_with_prefix_json(redis_unit_test_env, data_model_definition):
+def collection_with_prefix_json(redis_unit_test_env, definition):
     return RedisJsonCollection(
-        data_model_type=dict,
+        record_type=dict,
         collection_name="test",
-        data_model_definition=data_model_definition,
+        definition=definition,
         prefix_collection_name_to_key_names=True,
         env_file_path="test.env",
     )
@@ -163,77 +163,77 @@ async def test_store_list_collection_names(vector_store, moc_list_collection_nam
 
 
 @mark.parametrize("type_", ["hashset", "json"])
-def test_get_collection(vector_store, data_model_definition, type_):
+def test_get_collection(vector_store, definition, type_):
     if type_ == "hashset":
         collection = vector_store.get_collection(
             collection_name="test",
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
             collection_type=RedisCollectionTypes.HASHSET,
         )
         assert isinstance(collection, RedisHashsetCollection)
     else:
         collection = vector_store.get_collection(
             collection_name="test",
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
             collection_type=RedisCollectionTypes.JSON,
         )
         assert isinstance(collection, RedisJsonCollection)
     assert collection.collection_name == "test"
     assert collection.redis_database == vector_store.redis_database
-    assert collection.data_model_type is dict
-    assert collection.data_model_definition == data_model_definition
+    assert collection.record_type is dict
+    assert collection.definition == definition
 
 
 @mark.parametrize("type_", ["hashset", "json"])
-def test_collection_init(redis_unit_test_env, data_model_definition, type_):
+def test_collection_init(redis_unit_test_env, definition, type_):
     if type_ == "hashset":
         collection = RedisHashsetCollection(
-            data_model_type=dict,
+            record_type=dict,
             collection_name="test",
-            data_model_definition=data_model_definition,
+            definition=definition,
             env_file_path="test.env",
         )
     else:
         collection = RedisJsonCollection(
-            data_model_type=dict,
+            record_type=dict,
             collection_name="test",
-            data_model_definition=data_model_definition,
+            definition=definition,
             env_file_path="test.env",
         )
     assert collection.collection_name == "test"
     assert collection.redis_database is not None
-    assert collection.data_model_type is dict
-    assert collection.data_model_definition == data_model_definition
+    assert collection.record_type is dict
+    assert collection.definition == definition
     assert collection.prefix_collection_name_to_key_names is False
 
 
 @mark.parametrize("type_", ["hashset", "json"])
-def test_init_with_type(redis_unit_test_env, data_model_type, type_):
+def test_init_with_type(redis_unit_test_env, record_type, type_):
     if type_ == "hashset":
-        collection = RedisHashsetCollection(data_model_type=data_model_type, collection_name="test")
+        collection = RedisHashsetCollection(record_type=record_type, collection_name="test")
     else:
-        collection = RedisJsonCollection(data_model_type=data_model_type, collection_name="test")
+        collection = RedisJsonCollection(record_type=record_type, collection_name="test")
     assert collection is not None
-    assert collection.data_model_type is data_model_type
+    assert collection.record_type is record_type
     assert collection.collection_name == "test"
 
 
 @mark.parametrize("exclude_list", [["REDIS_CONNECTION_STRING"]], indirect=True)
-def test_collection_fail(redis_unit_test_env, data_model_definition):
+def test_collection_fail(redis_unit_test_env, definition):
     with raises(VectorStoreInitializationException, match="Failed to create Redis settings."):
         RedisHashsetCollection(
-            data_model_type=dict,
+            record_type=dict,
             collection_name="test",
-            data_model_definition=data_model_definition,
+            definition=definition,
             env_file_path="test.env",
         )
     with raises(VectorStoreInitializationException, match="Failed to create Redis settings."):
         RedisJsonCollection(
-            data_model_type=dict,
+            record_type=dict,
             collection_name="test",
-            data_model_definition=data_model_definition,
+            definition=definition,
             env_file_path="test.env",
         )
 
@@ -287,8 +287,8 @@ async def test_does_collection_exist_false(collection_hash, mock_does_collection
 
 
 async def test_delete_collection(collection_hash, mock_delete_collection):
-    await collection_hash.delete_collection()
-    await collection_hash.delete_collection()
+    await collection_hash.ensure_collection_deleted()
+    await collection_hash.ensure_collection_deleted()
 
 
 async def test_create_index(collection_hash, mock_create_collection):

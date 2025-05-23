@@ -18,18 +18,21 @@ from pydantic_settings import SettingsConfigDict
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+from semantic_kernel.data.definitions import (
+    VectorStoreCollectionDefinition,
+    VectorStoreDataField,
+    VectorStoreFieldBase,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
 )
-from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import (
+from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
+    SearchType,
     TModel,
+    VectorSearch,
+    VectorSearchOptions,
+    VectorSearchResult,
     VectorStore,
     VectorStoreRecordCollection,
 )
@@ -140,7 +143,7 @@ def _python_type_to_postgres(python_type_str: str) -> str | None:
 
 
 def _convert_row_to_dict(
-    row: tuple[Any, ...], fields: Sequence[tuple[str, VectorStoreRecordField | None]]
+    row: tuple[Any, ...], fields: Sequence[tuple[str, VectorStoreFieldBase | None]]
 ) -> dict[str, Any]:
     """Convert a row from a PostgreSQL query to a dictionary.
 
@@ -154,10 +157,10 @@ def _convert_row_to_dict(
         A dictionary representation of the row.
     """
 
-    def _convert(v: Any | None, field: VectorStoreRecordField | None) -> Any | None:
+    def _convert(v: Any | None, field: VectorStoreFieldBase | None) -> Any | None:
         if v is None:
             return None
-        if isinstance(field, VectorStoreRecordVectorField) and isinstance(v, str):
+        if isinstance(field, VectorStoreVectorField) and isinstance(v, str):
             # psycopg returns vector as a string if pgvector is not loaded.
             # If pgvector is registered with the connection, no conversion is required.
             return json.loads(v)
@@ -168,7 +171,7 @@ def _convert_row_to_dict(
 
 def _convert_dict_to_row(
     record: dict[str, Any],
-    fields: list[VectorStoreRecordKeyField | VectorStoreRecordVectorField | VectorStoreRecordDataField],
+    fields: list[VectorStoreKeyField | VectorStoreVectorField | VectorStoreDataField],
 ) -> tuple[Any, ...]:
     """Convert a dictionary to a row for a PostgreSQL query.
 
@@ -186,7 +189,7 @@ def _convert_dict_to_row(
             return json.dumps(v)
         return v
 
-    return tuple(_convert(record.get(field.storage_property_name or field.name)) for field in fields)
+    return tuple(_convert(record.get(field.storage_name or field.name)) for field in fields)
 
 
 # region: Settings
@@ -324,8 +327,8 @@ class PostgresCollection(
 
     def __init__(
         self,
-        data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        record_type: type[TModel],
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         connection_pool: AsyncConnectionPool | None = None,
@@ -338,8 +341,8 @@ class PostgresCollection(
         """Initialize the collection.
 
         Args:
-            data_model_type: The type of the data model.
-            data_model_definition: The data model definition.
+            record_type: The type of the data model.
+            definition: The data model definition.
             collection_name: The name of the collection, which corresponds to the table name.
             embedding_generator: The embedding generator.
             connection_pool: The connection pool.
@@ -352,8 +355,8 @@ class PostgresCollection(
         """
         super().__init__(
             collection_name=collection_name,
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             embedding_generator=embedding_generator,
             connection_pool=connection_pool,
             db_schema=db_schema,
@@ -375,7 +378,7 @@ class PostgresCollection(
 
         distance_column_name = DISTANCE_COLUMN_NAME
         tries = 0
-        while distance_column_name in self.data_model_definition.get_storage_property_names():
+        while distance_column_name in self.definition.get_storage_names():
             # Reset the distance column name, ensuring no collision with existing model fields
             # Avoid bandit B311 - random is not used for a security/cryptographic purpose
             suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))  # nosec B311
@@ -404,7 +407,7 @@ class PostgresCollection(
     @override
     def _validate_data_model(self) -> None:
         """Validate the data model."""
-        for field in self.data_model_definition.vector_fields:
+        for field in self.definition.vector_fields:
             if field.dimensions is not None and field.dimensions > MAX_DIMENSIONALITY:
                 raise VectorStoreModelValidationError(
                     f"Dimensionality of {field.dimensions} exceeds the maximum allowed value of {MAX_DIMENSIONALITY}."
@@ -443,7 +446,7 @@ class PostgresCollection(
             for i in range(0, len(records), max_rows_per_transaction):
                 record_batch = records[i : i + max_rows_per_transaction]
 
-                fields = self.data_model_definition.fields
+                fields = self.definition.fields
 
                 row_values = [_convert_dict_to_row(record, fields) for record in record_batch]
 
@@ -456,22 +459,22 @@ class PostgresCollection(
                         schema=sql.Identifier(self.db_schema),
                         table=sql.Identifier(self.collection_name),
                         col_names=sql.SQL(", ").join(
-                            sql.Identifier(field.storage_property_name or field.name) for field in fields
+                            sql.Identifier(field.storage_name or field.name) for field in fields
                         ),
                         placeholders=sql.SQL(", ").join(sql.Placeholder() * len(fields)),
-                        key_name=sql.Identifier(self.data_model_definition.key_field_storage_property_name),
+                        key_name=sql.Identifier(self.definition.key_field_storage_name),
                         update_columns=sql.SQL(", ").join(
                             sql.SQL("{field} = EXCLUDED.{field}").format(
-                                field=sql.Identifier(field.storage_property_name or field.name)
+                                field=sql.Identifier(field.storage_name or field.name)
                             )
                             for field in fields
-                            if field.name != self.data_model_definition.key_field_name
+                            if field.name != self.definition.key_name
                         ),
                     ),
                     row_values,
                 )
                 keys.extend(
-                    record[self.data_model_definition.key_field_storage_property_name]  # type: ignore
+                    record[self.definition.key_field_storage_name]  # type: ignore
                     for record in record_batch
                 )
         return keys
@@ -492,14 +495,14 @@ class PostgresCollection(
                 "Connection pool is not available, use the collection as a context manager."
             )
 
-        fields = [(field.storage_property_name or field.name, field) for field in self.data_model_definition.fields]
+        fields = [(field.storage_name or field.name, field) for field in self.definition.fields]
         async with self.connection_pool.connection() as conn, conn.cursor() as cur:
             await cur.execute(
                 sql.SQL("SELECT {select_list} FROM {schema}.{table} WHERE {key_name} IN ({keys})").format(
                     select_list=sql.SQL(", ").join(sql.Identifier(name) for (name, _) in fields),
                     schema=sql.Identifier(self.db_schema),
                     table=sql.Identifier(self.collection_name),
-                    key_name=sql.Identifier(self.data_model_definition.key_field_storage_property_name),
+                    key_name=sql.Identifier(self.definition.key_field_storage_name),
                     keys=sql.SQL(", ").join(sql.Literal(key) for key in keys),
                 )
             )
@@ -536,7 +539,7 @@ class PostgresCollection(
                     sql.SQL("DELETE FROM {schema}.{table} WHERE {name} IN ({keys})").format(
                         schema=sql.Identifier(self.db_schema),
                         table=sql.Identifier(self.collection_name),
-                        name=sql.Identifier(self.data_model_definition.key_field_storage_property_name),
+                        name=sql.Identifier(self.definition.key_field_storage_name),
                         keys=sql.SQL(", ").join(sql.Literal(key) for key in key_batch),
                     )
                 )
@@ -574,35 +577,35 @@ class PostgresCollection(
         column_definitions = []
         table_name = self.collection_name
 
-        for field in self.data_model_definition.fields:
-            if not field.property_type:
+        for field in self.definition.fields:
+            if not field.type_:
                 raise ValueError(f"Property type is not defined for field '{field.name}'")
 
             # If the property type represents a Python type, convert it to a PostgreSQL type
-            property_type = _python_type_to_postgres(field.property_type) or field.property_type.upper()
+            property_type = _python_type_to_postgres(field.type_) or field.type_.upper()
 
             # For Vector fields with dimensions, use pgvector's VECTOR type
             # Note that other vector types are supported in pgvector (e.g. halfvec),
             # but would need to be created outside of this method.
-            if isinstance(field, VectorStoreRecordVectorField):
+            if isinstance(field, VectorStoreVectorField):
                 column_definitions.append(
                     sql.SQL("{name} VECTOR({dimensions})").format(
-                        name=sql.Identifier(field.storage_property_name or field.name),
+                        name=sql.Identifier(field.storage_name or field.name),
                         dimensions=sql.Literal(field.dimensions),
                     )
                 )
-            elif isinstance(field, VectorStoreRecordKeyField):
+            elif isinstance(field, VectorStoreKeyField):
                 # Use the property_type directly for key fields
                 column_definitions.append(
                     sql.SQL("{name} {col_type} PRIMARY KEY").format(
-                        name=sql.Identifier(field.storage_property_name or field.name), col_type=sql.SQL(property_type)
+                        name=sql.Identifier(field.storage_name or field.name), col_type=sql.SQL(property_type)
                     )
                 )
             else:
                 # Use the property_type directly for other types
                 column_definitions.append(
                     sql.SQL("{name} {col_type}").format(
-                        name=sql.Identifier(field.storage_property_name or field.name), col_type=sql.SQL(property_type)
+                        name=sql.Identifier(field.storage_name or field.name), col_type=sql.SQL(property_type)
                     )
                 )
 
@@ -619,7 +622,7 @@ class PostgresCollection(
         logger.info(f"Postgres table '{table_name}' created successfully.")
 
         # If the vector field defines an index, apply it
-        for vector_field in self.data_model_definition.vector_fields:
+        for vector_field in self.definition.vector_fields:
             await self._create_index(table_name, vector_field)
 
     @override
@@ -643,7 +646,7 @@ class PostgresCollection(
             return bool(row)
 
     @override
-    async def delete_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
         """Delete the collection."""
         if self.connection_pool is None:
             raise VectorStoreOperationException(
@@ -658,7 +661,7 @@ class PostgresCollection(
             )
             await conn.commit()
 
-    async def _create_index(self, table_name: str, vector_field: VectorStoreRecordVectorField) -> None:
+    async def _create_index(self, table_name: str, vector_field: VectorStoreVectorField) -> None:
         """Create an index on a column in the table.
 
         Args:
@@ -682,7 +685,7 @@ class PostgresCollection(
                 "Please set the index kind in the vector field definition."
             )
 
-        column_name = vector_field.storage_property_name or vector_field.name
+        column_name = vector_field.storage_name or vector_field.name
         index_name = f"{table_name}_{column_name}_idx"
 
         if (
@@ -759,7 +762,7 @@ class PostgresCollection(
         vector: Sequence[float | int],
         options: VectorSearchOptions,
         **kwargs: Any,
-    ) -> tuple[sql.Composed, list[Any], list[tuple[str, VectorStoreRecordField | None]]]:
+    ) -> tuple[sql.Composed, list[Any], list[tuple[str, VectorStoreFieldBase | None]]]:
         """Construct a vector search query.
 
         Args:
@@ -772,7 +775,7 @@ class PostgresCollection(
         """
         # Get the vector field we will be searching against,
         # defaulting to the first vector field if not specified
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+        vector_field = self.definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreOperationException(
                 f"Vector field '{options.vector_property_name}' not found in the data model."
@@ -785,12 +788,10 @@ class PostgresCollection(
             )
 
         # Select all fields except all vector fields if include_vectors is False
-        select_list = self.data_model_definition.get_storage_property_names(
-            include_vector_fields=options.include_vectors
-        )
+        select_list = self.definition.get_storage_names(include_vector_fields=options.include_vectors)
         query = sql.SQL("SELECT {select_list}, {vec_col} {dist_op} %s as {dist_col} FROM {schema}.{table}").format(
             select_list=sql.SQL(", ").join(sql.Identifier(name) for name in select_list),
-            vec_col=sql.Identifier(vector_field.storage_property_name or vector_field.name),
+            vec_col=sql.Identifier(vector_field.storage_name or vector_field.name),
             dist_op=sql.SQL(DISTANCE_FUNCTION_MAP_OPS[vector_field.distance_function]),
             dist_col=sql.Identifier(self._distance_column_name),
             schema=sql.Identifier(self.db_schema),
@@ -844,9 +845,9 @@ class PostgresCollection(
             params,
             [
                 *(
-                    (field.storage_property_name or field.name, field)
-                    for field in self.data_model_definition.fields
-                    if field.storage_property_name or field.name in select_list
+                    (field.storage_name or field.name, field)
+                    for field in self.definition.fields
+                    if field.storage_name or field.name in select_list
                 ),
                 (self._distance_column_name, None),
             ],
@@ -904,14 +905,14 @@ class PostgresCollection(
                         raise NotImplementedError("Unary +, -, ~ are not supported in PostgreSQL filters.")
             case ast.Attribute():
                 # Only allow attributes that are in the data model
-                if node.attr not in self.data_model_definition.storage_property_names:
+                if node.attr not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.attr}' not in data model (storage property names are used)."
                     )
                 return f'"{node.attr}"'
             case ast.Name():
                 # Only allow names that are in the data model
-                if node.id not in self.data_model_definition.storage_property_names:
+                if node.id not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.id}' not in data model (storage property names are used)."
                     )
@@ -973,16 +974,16 @@ class PostgresStore(VectorStore):
     @override
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> PostgresCollection:
         return PostgresCollection(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             embedding_generator=embedding_generator or self.embedding_generator,
             connection_pool=self.connection_pool,

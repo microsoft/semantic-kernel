@@ -35,7 +35,7 @@ The second function is a details function that allows you to get details about a
 
 # Create an Azure AI Search collection.
 collection = AzureAISearchCollection[str, HotelSampleClass](
-    data_model_type=HotelSampleClass, embedding_generator=OpenAITextEmbedding()
+    record_type=HotelSampleClass, embedding_generator=OpenAITextEmbedding()
 )
 # load the records
 records = load_records()
@@ -210,7 +210,7 @@ async def chat():
 
         delete_collection = input("Do you want to delete the collection? (y/n): ")
         if delete_collection.lower() == "y":
-            await collection.delete_collection()
+            await collection.ensure_collection_deleted()
             print("Collection deleted.")
         else:
             print("Collection not deleted.")

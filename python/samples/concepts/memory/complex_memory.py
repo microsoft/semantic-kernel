@@ -13,9 +13,9 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureTextEmbedding, OpenAITextEmbedding
 from semantic_kernel.connectors.memory import (
     AzureAISearchCollection,
-    AzureCosmosDBforMongoDBCollection,
-    AzureCosmosDBNoSQLCollection,
     ChromaCollection,
+    CosmosMongoCollection,
+    CosmosNoSqlCollection,
     FaissCollection,
     InMemoryCollection,
     PineconeCollection,
@@ -27,14 +27,13 @@ from semantic_kernel.connectors.memory import (
     WeaviateCollection,
 )
 from semantic_kernel.data import (
-    VectorSearch,
+    VectorStoreDataField,
+    VectorStoreKeyField,
     VectorStoreRecordCollection,
-    VectorStoreRecordDataField,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+    VectorStoreVectorField,
     vectorstoremodel,
 )
-from semantic_kernel.data.vector_search import SearchType
+from semantic_kernel.data.vectors import SearchType, VectorSearch
 
 # This is a rather complex sample, showing how to use the vector store
 # with a number of different collections.
@@ -49,14 +48,14 @@ from semantic_kernel.data.vector_search import SearchType
 @vectorstoremodel(collection_name="test")
 @dataclass
 class DataModel:
-    title: Annotated[str, VectorStoreRecordDataField(is_full_text_indexed=True)]
-    content: Annotated[str, VectorStoreRecordDataField(is_full_text_indexed=True)]
+    title: Annotated[str, VectorStoreDataField(is_full_text_indexed=True)]
+    content: Annotated[str, VectorStoreDataField(is_full_text_indexed=True)]
     embedding: Annotated[
         str | None,
-        VectorStoreRecordVectorField(dimensions=1536, property_type="float"),
+        VectorStoreVectorField(dimensions=1536, type_="float"),
     ] = None
-    id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
-    tag: Annotated[str | None, VectorStoreRecordDataField(property_type="str", is_indexed=True)] = None
+    id: Annotated[str, VectorStoreKeyField()] = field(default_factory=lambda: str(uuid4()))
+    tag: Annotated[str | None, VectorStoreDataField(type_="str", is_indexed=True)] = None
 
     def __post_init__(self, **kwargs):
         if self.embedding is None:
@@ -96,32 +95,32 @@ class DataModel:
 # Using a function allows for lazy initialization of the collection,
 # so that settings for unused collections do not cause validation errors.
 collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
-    "ai_search": lambda: AzureAISearchCollection[str, DataModel](data_model_type=DataModel),
-    "postgres": lambda: PostgresCollection[str, DataModel](data_model_type=DataModel),
+    "ai_search": lambda: AzureAISearchCollection[str, DataModel](record_type=DataModel),
+    "postgres": lambda: PostgresCollection[str, DataModel](record_type=DataModel),
     "redis_json": lambda: RedisJsonCollection[str, DataModel](
-        data_model_type=DataModel,
+        record_type=DataModel,
         prefix_collection_name_to_key_names=True,
     ),
     "redis_hash": lambda: RedisHashsetCollection[str, DataModel](
-        data_model_type=DataModel,
+        record_type=DataModel,
         prefix_collection_name_to_key_names=True,
     ),
     "qdrant": lambda: QdrantCollection[str, DataModel](
-        data_model_type=DataModel,
+        record_type=DataModel,
         prefer_grpc=True,
         named_vectors=False,
     ),
-    "in_memory": lambda: InMemoryCollection[str, DataModel](data_model_type=DataModel),
-    "weaviate": lambda: WeaviateCollection[str, DataModel](data_model_type=DataModel),
-    "azure_cosmos_nosql": lambda: AzureCosmosDBNoSQLCollection[str, DataModel](
-        data_model_type=DataModel,
+    "in_memory": lambda: InMemoryCollection[str, DataModel](record_type=DataModel),
+    "weaviate": lambda: WeaviateCollection[str, DataModel](record_type=DataModel),
+    "azure_cosmos_nosql": lambda: CosmosNoSqlCollection[str, DataModel](
+        record_type=DataModel,
         create_database=True,
     ),
-    "azure_cosmos_mongodb": lambda: AzureCosmosDBforMongoDBCollection[str, DataModel](data_model_type=DataModel),
-    "faiss": lambda: FaissCollection[str, DataModel](data_model_type=DataModel),
-    "chroma": lambda: ChromaCollection[str, DataModel](data_model_type=DataModel),
-    "pinecone": lambda: PineconeCollection[str, DataModel](data_model_type=DataModel),
-    "sql_server": lambda: SqlServerCollection[str, DataModel](data_model_type=DataModel),
+    "azure_cosmos_mongodb": lambda: CosmosMongoCollection[str, DataModel](record_type=DataModel),
+    "faiss": lambda: FaissCollection[str, DataModel](record_type=DataModel),
+    "chroma": lambda: ChromaCollection[str, DataModel](record_type=DataModel),
+    "pinecone": lambda: PineconeCollection[str, DataModel](record_type=DataModel),
+    "sql_server": lambda: SqlServerCollection[str, DataModel](record_type=DataModel),
 }
 
 
@@ -132,7 +131,7 @@ async def cleanup(record_collection):
         print("Skipping deletion.")
         return
     print_with_color("Deleting collection!", Colors.CBLUE)
-    await record_collection.delete_collection()
+    await record_collection.ensure_collection_deleted()
     print_with_color("Done!", Colors.CGREY)
 
 
@@ -147,7 +146,7 @@ async def main(collection: str, use_azure_openai: bool):
         record_collection.embedding_generator = embedder
         print_with_color(f"Creating {collection} collection!", Colors.CGREY)
         # cleanup any existing collection
-        await record_collection.delete_collection()
+        await record_collection.ensure_collection_deleted()
         # create a new collection
         await record_collection.create_collection()
 

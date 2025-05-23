@@ -81,4 +81,5 @@ __all__ = [
     "VectorStoreModelSerializationException",
     "VectorStoreModelValidationError",
     "VectorStoreOperationException",
+    "VectorStoreOperationNotSupportedException",
 ]

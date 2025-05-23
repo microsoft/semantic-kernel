@@ -8,10 +8,10 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 
 from semantic_kernel.data import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+    VectorStoreCollectionDefinition,
+    VectorStoreDataField,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
     vectorstoremodel,
 )
 
@@ -44,22 +44,18 @@ from semantic_kernel.data import (
 @vectorstoremodel
 @dataclass
 class DataModelDataclass:
-    vector: Annotated[list[float], VectorStoreRecordVectorField]
-    key: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
-    content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")] = (
-        "content1"
-    )
+    vector: Annotated[list[float], VectorStoreVectorField]
+    key: Annotated[str, VectorStoreKeyField()] = field(default_factory=lambda: str(uuid4()))
+    content: Annotated[str, VectorStoreDataField(has_embedding=True, embedding_property_name="vector")] = "content1"
     other: str | None = None
 
 
 # Data model using Pydantic BaseModels
 @vectorstoremodel
 class DataModelPydantic(BaseModel):
-    id: Annotated[str, VectorStoreRecordKeyField()] = Field(default_factory=lambda: str(uuid4()))
-    content: Annotated[str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")] = (
-        "content1"
-    )
-    vector: Annotated[list[float], VectorStoreRecordVectorField]
+    id: Annotated[str, VectorStoreKeyField()] = Field(default_factory=lambda: str(uuid4()))
+    content: Annotated[str, VectorStoreDataField(has_embedding=True, embedding_property_name="vector")] = "content1"
+    vector: Annotated[list[float], VectorStoreVectorField]
     other: str | None = None
 
 
@@ -69,10 +65,10 @@ class DataModelPydantic(BaseModel):
 class DataModelPython:
     def __init__(
         self,
-        vector: Annotated[list[float], VectorStoreRecordVectorField],
-        key: Annotated[str, VectorStoreRecordKeyField] = None,
+        vector: Annotated[list[float], VectorStoreVectorField],
+        key: Annotated[str, VectorStoreKeyField] = None,
         content: Annotated[
-            str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector")
+            str, VectorStoreDataField(has_embedding=True, embedding_property_name="vector")
         ] = "content1",
         other: str | None = None,
     ):
@@ -105,13 +101,11 @@ class DataModelPython:
 # even when requesting a batch of records.
 # There is also a to_dict and from_dict method, which are used to convert the data model to and from a dict,
 # these should be specific to the type used, if using dict as type then these can be left off.
-data_model_definition_pandas = VectorStoreRecordDefinition(
+definition_pandas = VectorStoreCollectionDefinition(
     fields={
-        "vector": VectorStoreRecordVectorField(property_type="list[float]"),
-        "key": VectorStoreRecordKeyField(property_type="str"),
-        "content": VectorStoreRecordDataField(
-            property_type="str", has_embedding=True, embedding_property_name="vector"
-        ),
+        "vector": VectorStoreVectorField(type_="list[float]"),
+        "key": VectorStoreKeyField(type_="str"),
+        "content": VectorStoreDataField(type_="str", has_embedding=True, embedding_property_name="vector"),
     },
     container_mode=True,
     to_dict=lambda record, **_: record.to_dict(orient="records"),
@@ -132,12 +126,12 @@ if __name__ == "__main__":
     print(f"DataClass:\n  {data_item1.__kernel_vectorstoremodel_definition__}", end="\n\n")
     print(f"Pydantic:\n  {data_item2.__kernel_vectorstoremodel_definition__}", end="\n\n")
     print(f"Python:\n  {data_item3.__kernel_vectorstoremodel_definition__}", end="\n\n")
-    print(f"Definition for use with Pandas:\n  {data_model_definition_pandas}", end="\n\n")
+    print(f"Definition for use with Pandas:\n  {definition_pandas}", end="\n\n")
     if (
         data_item1.__kernel_vectorstoremodel_definition__.fields
         == data_item2.__kernel_vectorstoremodel_definition__.fields
         == data_item3.__kernel_vectorstoremodel_definition__.fields
-        == data_model_definition_pandas.fields
+        == definition_pandas.fields
     ):
         print("All data models are the same")
     else:

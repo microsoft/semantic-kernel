@@ -14,7 +14,7 @@ from semantic_kernel.connectors.memory.azure_ai_search import (
     AzureAISearchCollection,
     AzureAISearchSettings,
     AzureAISearchStore,
-    _data_model_definition_to_azure_ai_search_index,
+    _definition_to_azure_ai_search_index,
     _get_search_index_client,
 )
 from semantic_kernel.exceptions import (
@@ -94,93 +94,89 @@ def mock_delete():
 
 
 @fixture
-def collection(azure_ai_search_unit_test_env, data_model_definition):
-    return AzureAISearchCollection(data_model_type=dict, data_model_definition=data_model_definition)
+def collection(azure_ai_search_unit_test_env, definition):
+    return AzureAISearchCollection(record_type=dict, definition=definition)
 
 
-async def test_init(azure_ai_search_unit_test_env, data_model_definition):
-    async with AzureAISearchCollection(data_model_type=dict, data_model_definition=data_model_definition) as collection:
+async def test_init(azure_ai_search_unit_test_env, definition):
+    async with AzureAISearchCollection(record_type=dict, definition=definition) as collection:
         assert collection is not None
-        assert collection.data_model_type is dict
-        assert collection.data_model_definition == data_model_definition
+        assert collection.record_type is dict
+        assert collection.definition == definition
         assert collection.collection_name == "test-index-name"
         assert collection.search_index_client is not None
         assert collection.search_client is not None
 
 
-def test_init_with_type(azure_ai_search_unit_test_env, data_model_type):
-    collection = AzureAISearchCollection(data_model_type=data_model_type)
+def test_init_with_type(azure_ai_search_unit_test_env, record_type):
+    collection = AzureAISearchCollection(record_type=record_type)
     assert collection is not None
-    assert collection.data_model_type is data_model_type
+    assert collection.record_type is record_type
     assert collection.collection_name == "test-index-name"
     assert collection.search_index_client is not None
     assert collection.search_client is not None
 
 
 @mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_ENDPOINT"]], indirect=True)
-def test_init_endpoint_fail(azure_ai_search_unit_test_env, data_model_definition):
+def test_init_endpoint_fail(azure_ai_search_unit_test_env, definition):
     with raises(VectorStoreInitializationException):
-        AzureAISearchCollection(
-            data_model_type=dict, data_model_definition=data_model_definition, env_file_path="test.env"
-        )
+        AzureAISearchCollection(record_type=dict, definition=definition, env_file_path="test.env")
 
 
 @mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_INDEX_NAME"]], indirect=True)
-def test_init_index_fail(azure_ai_search_unit_test_env, data_model_definition):
+def test_init_index_fail(azure_ai_search_unit_test_env, definition):
     with raises(VectorStoreInitializationException):
-        AzureAISearchCollection(
-            data_model_type=dict, data_model_definition=data_model_definition, env_file_path="test.env"
-        )
+        AzureAISearchCollection(record_type=dict, definition=definition, env_file_path="test.env")
 
 
-def test_init_with_clients(azure_ai_search_unit_test_env, data_model_definition):
+def test_init_with_clients(azure_ai_search_unit_test_env, definition):
     search_index_client = MagicMock(spec=SearchIndexClient)
     search_client = MagicMock(spec=SearchClient)
     search_client._index_name = "test-index-name"
 
     collection = AzureAISearchCollection(
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
+        record_type=dict,
+        definition=definition,
         search_index_client=search_index_client,
         search_client=search_client,
     )
     assert collection is not None
-    assert collection.data_model_type is dict
-    assert collection.data_model_definition == data_model_definition
+    assert collection.record_type is dict
+    assert collection.definition == definition
     assert collection.collection_name == "test-index-name"
     assert collection.search_index_client == search_index_client
     assert collection.search_client == search_client
 
 
-def test_init_with_search_index_client(azure_ai_search_unit_test_env, data_model_definition):
+def test_init_with_search_index_client(azure_ai_search_unit_test_env, definition):
     search_index_client = MagicMock(spec=SearchIndexClient)
     with patch("semantic_kernel.connectors.memory.azure_ai_search._get_search_client") as get_search_client:
         search_client = MagicMock(spec=SearchClient)
         get_search_client.return_value = search_client
 
         collection = AzureAISearchCollection(
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
             collection_name="test",
             search_index_client=search_index_client,
         )
         assert collection is not None
-        assert collection.data_model_type is dict
-        assert collection.data_model_definition == data_model_definition
+        assert collection.record_type is dict
+        assert collection.definition == definition
         assert collection.collection_name == "test"
         assert collection.search_index_client == search_index_client
         assert collection.search_client == search_client
 
 
 @mark.parametrize("exclude_list", [["AZURE_AI_SEARCH_INDEX_NAME"]], indirect=True)
-def test_init_with_search_index_client_fail(azure_ai_search_unit_test_env, data_model_definition):
+def test_init_with_search_index_client_fail(azure_ai_search_unit_test_env, definition):
     search_index_client = MagicMock(spec=SearchIndexClient)
     search_index_client._endpoint = "test-endpoint"
     search_index_client._credential = "test-credential"
     with raises(VectorStoreInitializationException):
         AzureAISearchCollection(
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
             search_index_client=search_index_client,
             env_file_path="test.env",
         )
@@ -233,7 +229,7 @@ async def test_does_collection_exist(collection, mock_list_collection_names):
 
 
 async def test_delete_collection(collection, mock_delete_collection):
-    await collection.delete_collection()
+    await collection.ensure_collection_deleted()
 
 
 async def test_create_index_from_index(collection, mock_create_collection):
@@ -247,7 +243,7 @@ async def test_create_index_from_definition(collection, mock_create_collection):
     from azure.search.documents.indexes.models import SearchIndex
 
     with patch(
-        "semantic_kernel.connectors.memory.azure_ai_search._data_model_definition_to_azure_ai_search_index",
+        "semantic_kernel.connectors.memory.azure_ai_search._definition_to_azure_ai_search_index",
         return_value=MagicMock(spec=SearchIndex),
     ):
         await collection.create_collection()
@@ -260,8 +256,8 @@ async def test_create_index_from_index_fail(collection, mock_create_collection):
 
 
 @mark.parametrize("distance_function", [("cosine_distance")])
-def test_data_model_definition_to_azure_ai_search_index(data_model_definition):
-    index = _data_model_definition_to_azure_ai_search_index("test", data_model_definition)
+def test_definition_to_azure_ai_search_index(definition):
+    index = _definition_to_azure_ai_search_index("test", definition)
     assert index is not None
     assert index.name == "test"
     assert len(index.fields) == 3
@@ -289,15 +285,15 @@ async def test_vector_store_does_collection_exists(vector_store, mock_list_colle
 
 async def test_vector_store_delete_collection(vector_store, mock_delete_collection):
     assert vector_store.search_index_client is not None
-    await vector_store.delete_collection("test")
+    await vector_store.ensure_collection_deleted("test")
     mock_delete_collection.assert_called_once()
 
 
-def test_get_collection(vector_store, data_model_definition):
+def test_get_collection(vector_store, definition):
     collection = vector_store.get_collection(
         collection_name="test",
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
+        record_type=dict,
+        definition=definition,
     )
     assert collection is not None
     assert collection.collection_name == "test"

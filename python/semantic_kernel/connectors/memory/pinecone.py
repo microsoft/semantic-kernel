@@ -14,12 +14,15 @@ from pydantic import SecretStr, ValidationError
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
-from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import (
+from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreVectorField
+from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
+    SearchType,
     TModel,
+    VectorSearch,
+    VectorSearchOptions,
+    VectorSearchResult,
     VectorStore,
     VectorStoreRecordCollection,
     _get_collection_name_from_model,
@@ -86,8 +89,8 @@ class PineconeCollection(
 
     def __init__(
         self,
-        data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        record_type: type[TModel],
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         client: PineconeGRPC | PineconeAsyncio | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
@@ -103,8 +106,8 @@ class PineconeCollection(
         """Initialize the Pinecone collection.
 
         Args:
-            data_model_type: The type of the data model.
-            data_model_definition: The definition of the data model.
+            record_type: The type of the data model.
+            definition: The definition of the data model.
             collection_name: The name of the Pinecone collection.
             client: The Pinecone client to use. If not provided, a new client will be created.
             use_grpc: Whether to use the GRPC client or not. Default is False.
@@ -123,7 +126,7 @@ class PineconeCollection(
             kwargs: Additional arguments to pass to the Pinecone client.
         """
         if not collection_name:
-            collection_name = _get_collection_name_from_model(data_model_type, data_model_definition)
+            collection_name = _get_collection_name_from_model(record_type, definition)
         managed_client = not client
         try:
             settings = PineconeSettings(
@@ -162,8 +165,8 @@ class PineconeCollection(
 
         super().__init__(
             collection_name=collection_name,
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             client=client,
             embed_settings=embed_settings,
             namespace=settings.namespace,
@@ -175,11 +178,11 @@ class PineconeCollection(
     def _validate_data_model(self):
         """Check if there is exactly one vector."""
         super()._validate_data_model()
-        if len(self.data_model_definition.vector_field_names) > 1:
+        if len(self.definition.vector_field_names) > 1:
             raise VectorStoreInitializationException(
                 "Pinecone only supports one (or zero when using the integrated inference) vector field. "
                 "Please use a different data model or "
-                f"remove {len(self.data_model_definition.vector_field_names) - 1} vector fields."
+                f"remove {len(self.definition.vector_field_names) - 1} vector fields."
             )
 
     @override
@@ -197,7 +200,7 @@ class PineconeCollection(
                 - cloud: The cloud provider to use. Default is "aws".
                 - region: The region to use. Default is "us-east-1".
         """
-        vector_field = self.data_model_definition.vector_fields[0] if self.data_model_definition.vector_fields else None
+        vector_field = self.definition.vector_fields[0] if self.definition.vector_fields else None
         await (
             self._create_index_with_integrated_embeddings(vector_field, **kwargs)
             if self.embed_settings is not None or "embed" in kwargs
@@ -205,7 +208,7 @@ class PineconeCollection(
         )
 
     async def _create_index_with_integrated_embeddings(
-        self, vector_field: VectorStoreRecordVectorField | None, **kwargs: Any
+        self, vector_field: VectorStoreVectorField | None, **kwargs: Any
     ) -> None:
         """Create the Pinecone index with the embed parameter."""
         if isinstance(self.client, PineconeGRPC):
@@ -226,9 +229,9 @@ class PineconeCollection(
                 )
             embed["metric"] = DISTANCE_METRIC_MAP[vector_field.distance_function]
         if "field_map" not in embed:
-            for field in self.data_model_definition.vector_fields:
+            for field in self.definition.vector_fields:
                 if not field.embedding_generator and not self.embedding_generator:
-                    embed["field_map"] = {"text": field.storage_property_name or field.name}
+                    embed["field_map"] = {"text": field.storage_name or field.name}
                     break
         index_creation_args = {
             "name": self.collection_name,
@@ -240,7 +243,7 @@ class PineconeCollection(
         self.index = await self.client.create_index_for_model(**index_creation_args)
         await self._load_index_client()
 
-    async def _create_regular_index(self, vector_field: VectorStoreRecordVectorField | None, **kwargs: Any) -> None:
+    async def _create_regular_index(self, vector_field: VectorStoreVectorField | None, **kwargs: Any) -> None:
         """Create the Pinecone index with the embed parameter."""
         if not vector_field:
             raise VectorStoreOperationException(
@@ -300,7 +303,7 @@ class PineconeCollection(
         return exists
 
     @override
-    async def delete_collection(self, **kwargs: Any) -> None:
+    async def ensure_collection_deleted(self, **kwargs: Any) -> None:
         """Delete the Pinecone collection."""
         if not await self.does_collection_exist():
             if self.index or self.index_client:
@@ -319,35 +322,33 @@ class PineconeCollection(
 
     def _record_to_pinecone_vector(self, record: dict[str, Any]) -> Vector | GRPCVector | dict[str, Any]:
         """Convert a record to a Pinecone vector."""
-        metadata_fields = self.data_model_definition.get_storage_property_names(
-            include_key_field=False, include_vector_fields=False
-        )
-        vector_field = self.data_model_definition.vector_fields[0]
+        metadata_fields = self.definition.get_storage_names(include_key_field=False, include_vector_fields=False)
+        vector_field = self.definition.vector_fields[0]
         if isinstance(self.client, PineconeGRPC):
             return GRPCVector(
-                id=record[self._key_field_storage_property_name],
-                values=record.get(vector_field.storage_property_name or vector_field.name, None),
+                id=record[self._key_field_storage_name],
+                values=record.get(vector_field.storage_name or vector_field.name, None),
                 metadata={key: value for key, value in record.items() if key in metadata_fields},
             )
         if self.embed_settings is not None:
-            record.pop(vector_field.storage_property_name or vector_field.name, None)
+            record.pop(vector_field.storage_name or vector_field.name, None)
             record["_id"] = record.pop(self._key_field_name)
             return record
         return Vector(
-            id=record[self._key_field_storage_property_name],
-            values=record.get(vector_field.storage_property_name or vector_field.name, None) or list(),
+            id=record[self._key_field_storage_name],
+            values=record.get(vector_field.storage_name or vector_field.name, None) or list(),
             metadata={key: value for key, value in record.items() if key in metadata_fields},
         )
 
     def _pinecone_vector_to_record(self, record: Vector | dict[str, Any]) -> dict[str, Any]:
         """Convert a Pinecone vector to a record."""
         if isinstance(record, dict):
-            record[self._key_field_storage_property_name] = record.pop("_id")
+            record[self._key_field_storage_name] = record.pop("_id")
             return record
-        vector_field = self.data_model_definition.vector_fields[0]
+        vector_field = self.definition.vector_fields[0]
         ret_record = {
-            self._key_field_storage_property_name: record.id,
-            vector_field.storage_property_name or vector_field.name: record.values,
+            self._key_field_storage_name: record.id,
+            vector_field.storage_name or vector_field.name: record.values,
         }
         ret_record.update(record.metadata)
         return ret_record
@@ -441,7 +442,7 @@ class PineconeCollection(
             raise VectorStoreOperationException(f"Search type {search_type} is not supported by Pinecone.")
         if "namespace" not in kwargs:
             kwargs["namespace"] = self.namespace
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+        vector_field = self.definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreModelException(
                 f"Vector field '{options.vector_property_name}' not found in the data model definition."
@@ -555,14 +556,14 @@ class PineconeCollection(
                         raise NotImplementedError("Unary +, -, ~ are not supported in Pinecone filters.")
             case ast.Attribute():
                 # Only allow attributes that are in the data model
-                if node.attr not in self.data_model_definition.storage_property_names:
+                if node.attr not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.attr}' not in data model (storage property names are used)."
                     )
                 return node.attr
             case ast.Name():
                 # Only allow names that are in the data model
-                if node.id not in self.data_model_definition.storage_property_names:
+                if node.id not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.id}' not in data model (storage property names are used)."
                     )
@@ -665,17 +666,17 @@ class PineconeStore(VectorStore):
     @override
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> PineconeCollection:
         return PineconeCollection(
             collection_name=collection_name,
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             client=self.client,
             embedding_generator=embedding_generator or self.embedding_generator,
             **kwargs,

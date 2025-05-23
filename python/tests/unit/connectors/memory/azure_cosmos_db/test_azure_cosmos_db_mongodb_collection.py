@@ -5,23 +5,23 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from pymongo import AsyncMongoClient
 
-from semantic_kernel.connectors.memory.azure_cosmos_db import AzureCosmosDBforMongoDBCollection
-from semantic_kernel.data.record_definition import (
-    VectorStoreRecordDataField,
-    VectorStoreRecordDefinition,
-    VectorStoreRecordKeyField,
-    VectorStoreRecordVectorField,
+from semantic_kernel.connectors.memory.azure_cosmos_db import CosmosMongoCollection
+from semantic_kernel.data.definitions import (
+    VectorStoreCollectionDefinition,
+    VectorStoreDataField,
+    VectorStoreKeyField,
+    VectorStoreVectorField,
 )
 from semantic_kernel.exceptions import VectorStoreInitializationException
 
 
 @pytest.fixture
-def mock_model() -> VectorStoreRecordDefinition:
-    return VectorStoreRecordDefinition(
+def mock_model() -> VectorStoreCollectionDefinition:
+    return VectorStoreCollectionDefinition(
         fields=[
-            VectorStoreRecordKeyField(name="id"),
-            VectorStoreRecordDataField(name="content"),
-            VectorStoreRecordVectorField(name="vector", dimensions=5),
+            VectorStoreKeyField(name="id"),
+            VectorStoreDataField(name="content"),
+            VectorStoreVectorField(name="vector", dimensions=5),
         ]
     )
 
@@ -35,11 +35,11 @@ async def test_constructor_with_mongo_client_provided(mock_model) -> None:
     mock_client = AsyncMock(spec=AsyncMongoClient)
     collection_name = "test_collection"
 
-    collection = AzureCosmosDBforMongoDBCollection(
+    collection = CosmosMongoCollection(
         collection_name=collection_name,
-        data_model_type=dict,
+        record_type=dict,
         mongo_client=mock_client,
-        data_model_definition=mock_model,
+        definition=mock_model,
     )
 
     assert collection.mongo_client == mock_client
@@ -49,24 +49,24 @@ async def test_constructor_with_mongo_client_provided(mock_model) -> None:
 
 @pytest.mark.parametrize("exclude_list", [["AZURE_COSMOS_DB_MONGODB_CONNECTION_STRING"]], indirect=True)
 async def test_constructor_raises_exception_on_validation_error(
-    azure_cosmos_db_mongo_db_unit_test_env, data_model_definition
+    azure_cosmos_db_mongo_db_unit_test_env, definition
 ) -> None:
     """
     Test that the constructor raises VectorStoreInitializationException when
     AzureCosmosDBforMongoDBSettings fails with ValidationError.
     """
     with pytest.raises(VectorStoreInitializationException) as exc_info:
-        AzureCosmosDBforMongoDBCollection(
+        CosmosMongoCollection(
             collection_name="test_collection",
-            data_model_type=dict,
-            data_model_definition=data_model_definition,
+            record_type=dict,
+            definition=definition,
             database_name="",
             env_file_path=".no.env",
         )
         assert "The Azure CosmosDB for MongoDB connection string is required." in str(exc_info.value)
 
 
-async def test_create_collection_calls_database_methods(data_model_definition) -> None:
+async def test_create_collection_calls_database_methods(definition) -> None:
     """
     Test create_collection to verify that it first creates a collection, then
     calls the appropriate command to create a vector index.
@@ -80,10 +80,10 @@ async def test_create_collection_calls_database_methods(data_model_definition) -
     mock_client.get_database = MagicMock(return_value=mock_database)
 
     # Instantiate
-    collection = AzureCosmosDBforMongoDBCollection(
+    collection = CosmosMongoCollection(
         collection_name="test_collection",
-        data_model_type=dict,
-        data_model_definition=data_model_definition,
+        record_type=dict,
+        definition=definition,
         mongo_client=mock_client,
         database_name="test_db",
     )
@@ -119,11 +119,11 @@ async def test_context_manager_calls_aconnect_and_close_when_managed(mock_model)
         "semantic_kernel.connectors.memory.azure_cosmos_db.AsyncMongoClient",
         return_value=mock_client,
     ):
-        collection = AzureCosmosDBforMongoDBCollection(
+        collection = CosmosMongoCollection(
             collection_name="test_collection",
-            data_model_type=dict,
+            record_type=dict,
             connection_string="mongodb://fake",
-            data_model_definition=mock_model,
+            definition=mock_model,
         )
 
     # "__aenter__" should call 'aconnect'
@@ -145,11 +145,11 @@ async def test_context_manager_does_not_close_when_not_managed(mock_model) -> No
     external_client.aconnect = AsyncMock(name="aconnect")
     external_client.close = AsyncMock(name="close")
 
-    collection = AzureCosmosDBforMongoDBCollection(
+    collection = CosmosMongoCollection(
         collection_name="test_collection",
-        data_model_type=dict,
+        record_type=dict,
         mongo_client=external_client,
-        data_model_definition=mock_model,
+        definition=mock_model,
     )
 
     # "__aenter__" scenario

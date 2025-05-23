@@ -11,7 +11,7 @@ from httpx import AsyncClient, HTTPStatusError, RequestError
 from pydantic import Field, SecretStr, ValidationError
 
 from semantic_kernel.connectors.search.utils import SearchLambdaVisitor
-from semantic_kernel.data.text_search import (
+from semantic_kernel.data.search import (
     KernelSearchResults,
     SearchOptions,
     TextSearch,

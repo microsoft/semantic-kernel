@@ -8,7 +8,7 @@ from qdrant_client.models import Datatype, Distance, FieldCondition, MatchValue,
 
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection, QdrantStore
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.record_definition import VectorStoreRecordVectorField
+from semantic_kernel.data.definitions import VectorStoreVectorField
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
@@ -25,21 +25,21 @@ def vector_store(qdrant_unit_test_env):
 
 
 @fixture
-def collection(qdrant_unit_test_env, data_model_definition):
+def collection(qdrant_unit_test_env, definition):
     return QdrantCollection(
-        data_model_type=dict,
+        record_type=dict,
         collection_name="test",
-        data_model_definition=data_model_definition,
+        definition=definition,
         env_file_path="test.env",
     )
 
 
 @fixture
-def collection_without_named_vectors(qdrant_unit_test_env, data_model_definition):
+def collection_without_named_vectors(qdrant_unit_test_env, definition):
     return QdrantCollection(
-        data_model_type=dict,
+        record_type=dict,
         collection_name="test",
-        data_model_definition=data_model_definition,
+        definition=definition,
         named_vectors=False,
         env_file_path="test.env",
     )
@@ -154,44 +154,42 @@ async def test_store_list_collection_names(vector_store):
     assert collections == ["test"]
 
 
-def test_get_collection(vector_store: QdrantStore, data_model_definition, qdrant_unit_test_env):
-    collection = vector_store.get_collection(
-        collection_name="test", data_model_type=dict, data_model_definition=data_model_definition
-    )
+def test_get_collection(vector_store: QdrantStore, definition, qdrant_unit_test_env):
+    collection = vector_store.get_collection(collection_name="test", record_type=dict, definition=definition)
     assert collection.collection_name == "test"
     assert collection.qdrant_client == vector_store.qdrant_client
-    assert collection.data_model_type is dict
-    assert collection.data_model_definition == data_model_definition
+    assert collection.record_type is dict
+    assert collection.definition == definition
 
 
-async def test_collection_init(data_model_definition, qdrant_unit_test_env):
+async def test_collection_init(definition, qdrant_unit_test_env):
     async with QdrantCollection(
-        data_model_type=dict,
+        record_type=dict,
         collection_name="test",
-        data_model_definition=data_model_definition,
+        definition=definition,
         env_file_path="test.env",
     ) as collection:
         assert collection.collection_name == "test"
         assert collection.qdrant_client is not None
-        assert collection.data_model_type is dict
-        assert collection.data_model_definition == data_model_definition
+        assert collection.record_type is dict
+        assert collection.definition == definition
         assert collection.named_vectors
 
 
-def test_collection_init_fail(data_model_definition):
+def test_collection_init_fail(definition):
     with raises(VectorStoreInitializationException, match="Failed to create Qdrant settings."):
         QdrantCollection(
-            data_model_type=dict,
+            record_type=dict,
             collection_name="test",
-            data_model_definition=data_model_definition,
+            definition=definition,
             url="localhost",
             env_file_path="test.env",
         )
     with raises(VectorStoreInitializationException, match="Failed to create Qdrant client."):
         QdrantCollection(
-            data_model_type=dict,
+            record_type=dict,
             collection_name="test",
-            data_model_definition=data_model_definition,
+            definition=definition,
             location="localhost",
             url="http://localhost",
             env_file_path="test.env",
@@ -199,11 +197,11 @@ def test_collection_init_fail(data_model_definition):
     with raises(
         VectorStoreModelValidationError, match="Only one vector field is allowed when not using named vectors."
     ):
-        data_model_definition.fields.append(VectorStoreRecordVectorField(name="vector2", dimensions=3))
+        definition.fields.append(VectorStoreVectorField(name="vector2", dimensions=3))
         QdrantCollection(
-            data_model_type=dict,
+            record_type=dict,
             collection_name="test",
-            data_model_definition=data_model_definition,
+            definition=definition,
             named_vectors=False,
             env_file_path="test.env",
         )
@@ -242,7 +240,7 @@ async def test_does_collection_exist(collection):
 
 
 async def test_delete_collection(collection):
-    await collection.delete_collection()
+    await collection.ensure_collection_deleted()
 
 
 @mark.parametrize(
@@ -272,7 +270,7 @@ async def test_create_index_with_named_vectors(collection_to_use, results, mock_
 @mark.parametrize("collection_to_use", ["collection", "collection_without_named_vectors"])
 async def test_create_index_fail(collection_to_use, request):
     collection = request.getfixturevalue(collection_to_use)
-    for field in collection.data_model_definition.vector_fields:
+    for field in collection.definition.vector_fields:
         field.distance_function = DistanceFunction.HAMMING
     with raises(VectorStoreOperationException):
         await collection.create_collection()

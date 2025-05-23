@@ -25,7 +25,7 @@ async def main(query: str):
     records = load_records()
     # Create the Azure AI Search collection
     async with AzureAISearchCollection[str, HotelSampleClass](
-        data_model_type=HotelSampleClass, embedding_generator=OpenAITextEmbedding()
+        record_type=HotelSampleClass, embedding_generator=OpenAITextEmbedding()
     ) as collection:
         # Check if the collection exists.
         if not await collection.does_collection_exist():
@@ -64,7 +64,7 @@ async def main(query: str):
                 f"{result.record.Address.Country}): {result.record.Description} (score: {result.score})"
             )
 
-        await collection.delete_collection()
+        await collection.ensure_collection_deleted()
 
 
 if __name__ == "__main__":

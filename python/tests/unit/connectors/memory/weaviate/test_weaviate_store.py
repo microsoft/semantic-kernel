@@ -56,8 +56,8 @@ def test_weaviate_store_init_with_local(
 def test_weaviate_store_init_with_embedded(
     mock_use_weaviate_embedded,
     clear_weaviate_env,
-    data_model_type,
-    data_model_definition,
+    record_type,
+    definition,
 ) -> None:
     """Test the initialization of a WeaviateStore object with Weaviate embedded deployment."""
     store = WeaviateStore(
@@ -91,8 +91,8 @@ def test_weaviate_store_init_with_invalid_settings_no_backends(
 
 def test_weaviate_store_init_with_custom_client(
     clear_weaviate_env,
-    data_model_type,
-    data_model_definition,
+    record_type,
+    definition,
 ) -> None:
     """Test the initialization of a WeaviateStore object with a custom client."""
     store = WeaviateStore(
@@ -109,8 +109,8 @@ def test_weaviate_store_init_with_custom_client(
 )
 def test_weaviate_store_init_fail_to_create_client(
     clear_weaviate_env,
-    data_model_type,
-    data_model_definition,
+    record_type,
+    definition,
 ) -> None:
     """Test the initialization of a WeaviateStore object raises an error when failing to create a client."""
     with pytest.raises(VectorStoreInitializationException):

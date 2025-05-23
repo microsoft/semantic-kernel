@@ -16,12 +16,15 @@ from pymongo.operations import SearchIndexModel
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
-from semantic_kernel.data.text_search import KernelSearchResults
-from semantic_kernel.data.vector_search import SearchType, VectorSearch, VectorSearchOptions, VectorSearchResult
-from semantic_kernel.data.vector_storage import (
+from semantic_kernel.data.definitions import VectorStoreCollectionDefinition, VectorStoreVectorField
+from semantic_kernel.data.search import KernelSearchResults
+from semantic_kernel.data.vectors import (
     GetFilteredRecordOptions,
+    SearchType,
     TModel,
+    VectorSearch,
+    VectorSearchOptions,
+    VectorSearchResult,
     VectorStore,
     VectorStoreRecordCollection,
     _get_collection_name_from_model,
@@ -84,7 +87,7 @@ class MongoDBAtlasSettings(KernelBaseSettings):
     index_name: str = DEFAULT_SEARCH_INDEX_NAME
 
 
-def _create_vector_field(field: VectorStoreRecordVectorField) -> dict:
+def _create_vector_field(field: VectorStoreVectorField) -> dict:
     """Create a vector field.
 
     Args:
@@ -101,20 +104,20 @@ def _create_vector_field(field: VectorStoreRecordVectorField) -> dict:
     return {
         "type": "vector",
         "numDimensions": field.dimensions,
-        "path": field.storage_property_name or field.name,
+        "path": field.storage_name or field.name,
         "similarity": DISTANCE_FUNCTION_MAP[field.distance_function],
     }
 
 
 def _create_index_definitions(
-    record_definition: VectorStoreRecordDefinition, index_name: str
+    record_definition: VectorStoreCollectionDefinition, index_name: str
 ) -> list[SearchIndexModel]:
     """Create the index definitions."""
     indexes = []
     if record_definition.vector_fields:
         vector_fields = [_create_vector_field(field) for field in record_definition.vector_fields]
         filterable_fields = [
-            {"path": field.storage_property_name or field.name, "type": "filter"}
+            {"path": field.storage_name or field.name, "type": "filter"}
             for field in record_definition.data_fields
             if field.is_indexed
         ]
@@ -128,7 +131,7 @@ def _create_index_definitions(
         )
     if record_definition.data_fields:
         ft_indexed_fields = [
-            {field.storage_property_name or field.name: {"type": "string"}}
+            {field.storage_name or field.name: {"type": "string"}}
             for field in record_definition.data_fields
             if field.is_full_text_indexed
         ]
@@ -162,8 +165,8 @@ class MongoDBAtlasCollection(
 
     def __init__(
         self,
-        data_model_type: type[TModel],
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        record_type: type[TModel],
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         index_name: str | None = None,
@@ -177,8 +180,8 @@ class MongoDBAtlasCollection(
         """Initializes a new instance of the MongoDBAtlasCollection class.
 
         Args:
-            data_model_type: The type of the data model.
-            data_model_definition: The model definition, optional.
+            record_type: The type of the data model.
+            definition: The model definition, optional.
             collection_name: The name of the collection, optional.
             embedding_generator: The embedding generator, optional.
             index_name: The name of the index to use for searching, when not passed, will use <collection_name>_idx.
@@ -193,12 +196,12 @@ class MongoDBAtlasCollection(
             **kwargs: Additional keyword arguments
         """
         if not collection_name:
-            collection_name = _get_collection_name_from_model(data_model_type, data_model_definition)
+            collection_name = _get_collection_name_from_model(record_type, definition)
         managed_client = kwargs.get("managed_client", not mongo_client)
         if mongo_client:
             super().__init__(
-                data_model_type=data_model_type,
-                data_model_definition=data_model_definition,
+                record_type=record_type,
+                definition=definition,
                 mongo_client=mongo_client,
                 collection_name=collection_name,
                 database_name=database_name or DEFAULT_DB_NAME,
@@ -225,8 +228,8 @@ class MongoDBAtlasCollection(
         )
 
         super().__init__(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             mongo_client=mongo_client,
             managed_client=managed_client,
@@ -321,16 +324,14 @@ class MongoDBAtlasCollection(
             **kwargs: Additional keyword arguments.
         """
         collection = await self._get_database().create_collection(self.collection_name, **kwargs)
-        await collection.create_search_indexes(
-            models=_create_index_definitions(self.data_model_definition, self.index_name)
-        )
+        await collection.create_search_indexes(models=_create_index_definitions(self.definition, self.index_name))
 
     @override
     async def does_collection_exist(self, **kwargs) -> bool:
         return bool(await self._get_database().list_collection_names(filter={"name": self.collection_name}))
 
     @override
-    async def delete_collection(self, **kwargs) -> None:
+    async def ensure_collection_deleted(self, **kwargs) -> None:
         await self._get_database().drop_collection(self.collection_name, **kwargs)
 
     @override
@@ -356,7 +357,7 @@ class MongoDBAtlasCollection(
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         collection = self._get_collection()
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+        vector_field = self.definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreModelException(
                 f"Vector field '{options.vector_property_name}' not found in the data model definition."
@@ -367,14 +368,14 @@ class MongoDBAtlasCollection(
             "limit": options.top + options.skip,
             "index": self.index_name,
             "queryVector": vector,
-            "path": vector_field.storage_property_name or vector_field.name,
+            "path": vector_field.storage_name or vector_field.name,
         }
         if filter := self._build_filter(options.filter):
             vector_search_query["filter"] = filter if isinstance(filter, dict) else {"$and": filter}
 
         projection_query: dict[str, int | dict] = {
             field: 1
-            for field in self.data_model_definition.get_field_names(
+            for field in self.definition.get_names(
                 include_vector_fields=options.include_vectors,
                 include_key_field=False,  # _id is always included
             )
@@ -400,7 +401,7 @@ class MongoDBAtlasCollection(
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         collection = self._get_collection()
-        vector_field = self.data_model_definition.try_get_vector_field(options.vector_property_name)
+        vector_field = self.definition.try_get_vector_field(options.vector_property_name)
         if not vector_field:
             raise VectorStoreModelException(
                 f"Vector field '{options.vector_property_name}' not found in the data model definition."
@@ -411,14 +412,14 @@ class MongoDBAtlasCollection(
             "limit": options.top + options.skip,
             "index": self.index_name,
             "queryVector": vector,
-            "path": vector_field.storage_property_name or vector_field.name,
+            "path": vector_field.storage_name or vector_field.name,
         }
         if filter := self._build_filter(options.filter):
             vector_search_query["filter"] = filter if isinstance(filter, dict) else {"$and": filter}
 
         projection_query: dict[str, int | dict] = {
             field: 1
-            for field in self.data_model_definition.get_field_names(
+            for field in self.definition.get_names(
                 include_vector_fields=options.include_vectors,
                 include_key_field=False,  # _id is always included
             )
@@ -489,14 +490,14 @@ class MongoDBAtlasCollection(
                         raise NotImplementedError("Unary +, -, ~ are not supported in MongoDB filters.")
             case ast.Attribute():
                 # Only allow attributes that are in the data model
-                if node.attr not in self.data_model_definition.storage_property_names:
+                if node.attr not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.attr}' not in data model (storage property names are used)."
                     )
                 return node.attr
             case ast.Name():
                 # Only allow names that are in the data model
-                if node.id not in self.data_model_definition.storage_property_names:
+                if node.id not in self.definition.storage_names:
                     raise VectorStoreOperationException(
                         f"Field '{node.id}' not in data model (storage property names are used)."
                     )
@@ -592,16 +593,16 @@ class MongoDBAtlasStore(VectorStore):
     @override
     def get_collection(
         self,
-        data_model_type: type[TModel],
+        record_type: type[TModel],
         *,
-        data_model_definition: VectorStoreRecordDefinition | None = None,
+        definition: VectorStoreCollectionDefinition | None = None,
         collection_name: str | None = None,
         embedding_generator: EmbeddingGeneratorBase | None = None,
         **kwargs: Any,
     ) -> MongoDBAtlasCollection:
         return MongoDBAtlasCollection(
-            data_model_type=data_model_type,
-            data_model_definition=data_model_definition,
+            record_type=record_type,
+            definition=definition,
             collection_name=collection_name,
             mongo_client=self.mongo_client,
             managed_client=False,
